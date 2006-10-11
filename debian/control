@@ -1,0 +1,19 @@
+Source: libnss-ldap
+Section: net
+Priority: extra
+Maintainer: Stephen Frost <sfrost@debian.org>
+Standards-Version: 3.5.9.0
+Build-Depends: cdbs, debhelper (>= 4.1.13), libkrb5-dev, libldap2-dev, libsasl2-dev, autoconf, automake1.9, po-debconf (>= 0.5.0)
+
+Package: libnss-ldap
+Architecture: any
+Depends: ${shlibs:Depends}, debconf | debconf-2.0
+Recommends: nscd, libpam-ldap
+Description: NSS module for using LDAP as a naming service
+ This package provides a Name Service Switch that allows your LDAP server
+ act as a name service. This means providing user account information,
+ group id's, host information, aliases, netgroups, and basically anything
+ else that you would normally get from /etc flat files or NIS.
+ .
+ If used with glibc 2.1's nscd (Name Service Cache Daemon) it will help
+ reduce your network traffic and speed up lookups for entries.

@@ -1,0 +1,185 @@
+#!/bin/sh -e
+
+PACKAGE=libnss-ldap
+CONFFILE="/etc/libnss-ldap.conf"
+PASSWDFILE="/etc/libnss-ldap.secret"
+
+add_missing()
+{
+	# FIXME: it would be nice to get the prototype from a template.
+	
+	parameter=$1
+	value=$2
+	echo "$parameter $value" >> $CONFFILE
+}
+
+change_value()
+{
+	parameter=$1
+	value=$2
+	commented=0 ; notthere=0
+
+	egrep -i -q "^$parameter " $CONFFILE || notthere=1
+	if [ "$notthere" = "1" ]; then
+		if ( egrep -i -q "^# *$parameter" $CONFFILE ); then
+			notthere=0
+			commented=1	
+		fi
+	fi
+
+	if [ "$notthere" = "1" ]; then
+		add_missing $parameter $value
+	else
+		replacestring="^$parameter .*"	
+		if [ "$commented" = "1" ]; then
+			replacestring="^# *$parameter .*"	
+		fi
+		# i really need a better way to do this...
+		# currently we replace only the first match, we need a better
+		# way of dealing with multiple hits.
+		value=$value parameter=$parameter perl -i -p -e 's/^# *\Q$ENV{"parameter"}\E .*/$ENV{"parameter"} $ENV{"value"}/i
+			and $match=1 unless ($match)' $CONFFILE
+	fi
+}
+
+disable_param()
+{
+	parameter=$1
+	enabled=0
+	egrep -q "^$parameter " $CONFFILE && enabled=1
+	if [ "$enabled" = "1" ]; then
+		perl -i -p -e "s/^($parameter .*)/#\$1/i" $CONFFILE
+	fi
+}
+
+# Real functions begin here.
+case "$1" in
+    configure)
+		# ok, lets get to business..
+		. /usr/share/debconf/confmodule
+
+		# lets create the configuration from example if it's not there.
+		examplefile=/usr/share/$PACKAGE/ldap.conf
+		if [ ! -e $CONFFILE -a -e $examplefile ]; then
+			cat > $CONFFILE << EOM
+###DEBCONF###
+# the configuration of this file will be done by debconf as long as the
+# first line of the file says '###DEBCONF###'
+#
+# you should use dpkg-reconfigure libnss-ldap to configure this file.
+#
+EOM
+			cat $examplefile >> $CONFFILE
+			chmod 0644 $CONFFILE
+			db_set libnss-ldap/override true
+		fi
+
+		db_get libnss-ldap/override
+		if [ "$RET" = "true" ]; then
+			if ( head -1 $CONFFILE | grep -q -v '^###DEBCONF###$' ); then
+				mv $CONFFILE $CONFFILE.tmp
+				cat > $CONFFILE << EOM
+###DEBCONF###
+EOM
+				cat $CONFFILE.tmp >> $CONFFILE
+				rm -f $CONFFILE.tmp
+				chmod 0644 $CONFFILE
+			fi
+
+			db_get shared/ldapns/ldap-server
+			if echo $RET | egrep -q '^ldaps?://'; then
+				disable_param host
+				change_value uri "$RET"
+			else
+				disable_param uri
+				change_value host "$RET"
+			fi
+
+			db_get shared/ldapns/base-dn
+			change_value base "$RET"
+
+			db_get shared/ldapns/ldap_version
+			change_value ldap_version "$RET"
+
+			db_get libnss-ldap/dbrootlogin
+			if [ "$RET" = "true" ]; then
+				# user wants to log in to the database, so be it.
+				db_get libnss-ldap/rootbinddn
+				change_value rootbinddn "$RET"
+
+				db_get libnss-ldap/rootbindpw
+				if [ "$RET" != "" ]; then
+					rm -f $PASSWDFILE
+					echo $RET > $PASSWDFILE
+					chmod 0600 $PASSWDFILE
+					db_set libnss-ldap/rootbindpw ''
+				fi
+			else
+				# ok, so the user refused to use this feature, better make
+				# sure it's really off.
+				disable_param rootbinddn
+				rm -f $PASSWDFILE
+			fi
+
+			db_get libnss-ldap/dblogin
+			if [ "$RET" = "true" ]; then
+				# user wants to log in to the database, so be it.
+				db_get libnss-ldap/binddn
+				change_value binddn "$RET"
+
+				db_get libnss-ldap/bindpw
+				if [ "$RET" != "" ]; then
+					change_value bindpw "$RET"
+					db_set libnss-ldap/bindpw ''
+				fi
+			else
+				# once again, user didn't.. lets make sure we dont.
+				disable_param binddn
+				disable_param bindpw
+			fi
+
+			db_get libnss-ldap/confperm
+			if [ "$RET" = "true" ]; then
+				# FIXME: we need a way to check if the file
+				#        was 0700 and we removed the flag.
+				chmod 0600 $CONFFILE
+			else
+				# ICK! ugly hack, but i didn't get anything
+				# better to work.
+			        find $CONFFILE -perm 0600 -exec chmod 0644 {} \;
+			fi
+		fi
+		db_stop
+       ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+       exit 0
+       ;;
+
+    *)
+       echo "postinst called with unknown argument \`$1'" >&2
+       exit 1
+       ;;
+esac
+
+if [ -e /etc/ldap.secret -a ! -e /etc/libnss-ldap.secret ]; then
+	cp -p /etc/ldap.secret /etc/libnss-ldap.secret
+fi
+
+if [ -s /usr/sbin/nscd ]; then
+	if [ `pidof -s nscd` ]; then 
+		if which invoke-rc.d >/dev/null 2>&1; then
+			invoke-rc.d nscd restart
+		else
+			/etc/init.d/nscd restart
+		fi
+	fi
+fi
+
+# This directory was used earlier, and should no longer have any
+# function (we use /lib/init/rw instead).
+if [ -d /var/lib/libnss-ldap ]; then
+	rm -rf /var/lib/libnss-ldap
+fi
+
+#DEBHELPER#

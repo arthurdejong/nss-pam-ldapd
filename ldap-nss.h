@@ -140,9 +140,9 @@
 #ifdef DEBUG
 #ifdef DEBUG_SYSLOG
 #ifdef HAVE_NSSWITCH_H
-#define debug(fmt, args...) syslog(LOG_DEBUG, "nss_ldap: %s:%d thread %u - " fmt, __FILE__, __LINE__, thr_self() , ## args)
+#define debug(fmt, args...) syslog(LOG_AUTHPRIV | LOG_DEBUG, "nss_ldap: %s:%d thread %u - " fmt, __FILE__, __LINE__, thr_self() , ## args)
 #else
-#define debug(fmt, args...) syslog(LOG_DEBUG, "nss_ldap: %s:%d thread %u - " fmt, __FILE__, __LINE__, pthread_self() , ## args)
+#define debug(fmt, args...) syslog(LOG_AUTHPRIV | LOG_DEBUG, "nss_ldap: %s:%d thread %u - " fmt, __FILE__, __LINE__, pthread_self() , ## args)
 #endif /* HAVE_NSSWITCH_H */
 #else
 #ifndef __GNUC__
@@ -687,6 +687,9 @@ extern int __multi_threaded;
 #define NSS_LDAP_UNLOCK(m)
 #define NSS_LDAP_DEFINE_LOCK(m)
 #endif
+
+void _nss_ldap_block_sigpipe (void);
+void _nss_ldap_unblock_sigpipe (void);
 
 /*
  * Acquire global nss_ldap lock and blocks SIGPIPE.

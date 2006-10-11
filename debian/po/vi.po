@@ -1,0 +1,197 @@
+# Vietnamese Translation for libnss-ldap.
+# Copyright © 2005 Free Software Foundation, Inc.
+# Clytie Siddall <clytie@riverland.net.au>, 2005.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: libnss-ldap 238-1\n"
+"POT-Creation-Date: 2003-03-23 10:45+0200\n"
+"PO-Revision-Date: 2005-06-08 15:25+0930\n"
+"Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
+"Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+
+#.Description
+#:../templates:4
+msgid "make configuration readable/writeable by owner only"
+msgstr "cho phép chỉ người sở hữu đọc/ghi vào cấu hình"
+
+#.Description
+#:../templates:4
+msgid ""
+"Should the libnss-ldap configuration file be readable and writable only by "
+"the file owner?"
+msgstr "Cho phép chỉ người sở hữu tập tin cấu hình libnss-ldap đọc và ghi vào nó không?"
+
+#.Description
+#:../templates:4
+msgid ""
+"If you use passwords in your libnss-ldap configuration, it is usually a good "
+"idea to have the configuration set with mode 0600 (readable and writable "
+"only by the file's owner)."
+msgstr "Nếu bạn sử dụng mật khẩu trong cấu hình libnss-ldap thì thường là ý kiến tốt để lập cấu hình ấy trong chế độ 0600 (chỉ cho phép chỉ người sở hữu tập tin ấy đọc/ghi vào nó)."
+
+#.Description
+#:../templates:4
+msgid ""
+"Note: As a sanity check, libnss-ldap will check if you have nscd installed "
+"and will only set the mode to 0600 if nscd is present."
+msgstr "Ghi chú: để đảm bảo thông tin hữu ích, trình libnss-ldap sẽ kiểm tra nếu bạn đã cài đặt nscd hay không, và sẽ chỉ lập chế độ thành 0600 nếu có ncsd."
+
+#.Description
+#:../templates:17
+msgid "nsswitch.conf is not managed automatically"
+msgstr "Không tự động quản lý tập tin nsswitch.conf"
+
+#.Description
+#:../templates:17
+msgid ""
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
+"examples/nsswitch.ldap which can be used as an example for your nsswitch "
+"setup, or it can be copied over your current setup."
+msgstr "Gói tin này sẽ hoạt động sau khi bạn sửa đổi tập tin «/etc/nsswitch.conf» để dùng nguồn dữ liệu LDAP. Có một tập tin thí dụ tại «usr/share/doc/libnss-ldap/examples/nsswitch.ldap» mà bạn có thể sử dụng là lời thí dụ cho thiết lập nsswitch bạn, hoặc có thể sao chép nó trên thiết lập hiện có."
+
+#.Description
+#:../templates:17
+msgid ""
+"Also, before removing this package, it is wise to remove the ldap entries "
+"from nsswitch.conf to keep basic services functioning."
+msgstr "Hơn nữa, trước loại bỏ gói tin này, bạn nên loại bỏ các mục nhập LDAP ra tập tin nsswitch.conf, để cho phép dịch vụ cơ bản tiếp tục hoạt động."
+
+#.Default
+#:../templates:29
+msgid "dc=example,dc=net"
+msgstr "dc=thídụ,dc=net"
+
+#.Description
+#:../templates:30
+msgid "distinguished name of the search base"
+msgstr "tên phân biệt của cơ bản tìm kiếm"
+
+#.Description
+#:../templates:30
+msgid ""
+"Please enter the distinguished name of the LDAP search base.  Many sites use "
+"the components of their domain names for this purpose.  For example, the "
+"domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
+"name of the search base."
+msgstr "Hãy nhập tên phân biệt của cơ bản tìm kiếm LDAP. Nhiều nơi Mạng sử dụng thành phần của tên miền là giá trị này. Lấy thí dụ, miền «thídụ.net» sẽ dùng «dc=thídụ,dc=net» là tên phân biệt của cơ baản tìm kiếm."
+
+#.Description
+#:../templates:39
+msgid "database requires login"
+msgstr "cơ sở dữ liệu cần đến đăng nhập"
+
+#.Description
+#:../templates:39
+msgid "Does the LDAP database require login?"
+msgstr "Cơ sở dữ liệu LDAP ấy cần đến đăng nhập không?"
+
+#.Description
+#:../templates:39
+msgid ""
+"Answer this question affirmatively only if you can't retreive entries from "
+"the database without logging in."
+msgstr "Trả lời «Có» tại đây chỉ nếu bạn không gọi được mục nhập từ cơ sở dữ liệu ấy khi chưa đang nhập."
+
+#.Description
+#:../templates:39
+msgid "Note: Under a normal setup, this is not needed."
+msgstr "Ghi chú: trong một thiết lập thường, không cần điều này."
+
+#.Description
+#:../templates:50
+msgid "enable automatic configuration updates by debconf"
+msgstr "hiệu lực debconf tự động cập nhật cấu hình"
+
+#.Description
+#:../templates:50
+msgid "Should debconf automatically update libnss-ldap's configuration file?"
+msgstr "Cho phép debconf tự động cập nhật tập tin cấu hình của libnss-ldap không?"
+
+#.Description
+#:../templates:50
+msgid "libnss-ldap has been moved to use debconf for its configuration."
+msgstr "Đã lập libnss-ldap sẽ dùng debconf để cấu hình."
+
+#.Description
+#:../templates:50
+msgid ""
+"The file will be prepended with \"###DEBCONF###\"; you can disable the "
+"debconf updates by removing that line."
+msgstr "Sẽ thêm «###DEBCONF###» vào đầu tập tin ấy: bạn có thể vô hiệu hóa thiết lập tự cập nhật debconf bằng cách loại bỏ dòng ấy."
+
+#.Description
+#:../templates:50
+msgid "All new installations will have this by default."
+msgstr "Mọi bản cài đặt mới sẽ có thiết lập này theo mặc định."
+
+#.Default
+#:../templates:62
+msgid "cn=proxyuser,dc=example,dc=net"
+msgstr "cn=proxyuser,dc=example,dc=net"
+
+#.Description
+#:../templates:63
+msgid "unprivileged database user"
+msgstr "người dùng cơ sở dữ liệu không có quyền truy cập đặc biệt"
+
+#.Description
+#:../templates:63
+msgid ""
+"Enter the name of the account that will be used to log in to the LDAP "
+"database."
+msgstr "Hãy nhập tên của tài khoản sẽ được dùng để đăng nhập vào cơ sở dữ liệu LDAP."
+
+#.Description
+#:../templates:69
+msgid "password for database login account"
+msgstr "mật khẩu cho tài khoản cơ sở dữ liệu"
+
+#.Description
+#:../templates:69
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr "Hãy nhập mật khẩu sẽ được dùng để đăng nhập vào cơ sở dữ liệu LDAP."
+
+#.Choices
+#:../templates:74
+msgid "3, 2"
+msgstr "3, 2"
+
+#.Description
+#:../templates:76
+msgid "LDAP version to use"
+msgstr "Phiên bản LDAP cần dùng"
+
+#.Description
+#:../templates:76
+msgid ""
+"Please enter which version of the LDAP protocol ldapns is to use.  It is "
+"usually a good idea to set this to highest available version number."
+msgstr "Hãy nhập phiên bản giao thức LDAP nào mà ldapns nên dùng. Thường là ý kiến tốt để lập số phiên bản cao nhất có thể."
+
+#.Default
+#:../templates:82
+msgid "127.0.0.1"
+msgstr "127.0.0.1"
+
+#.Description
+#:../templates:83
+msgid "LDAP server host address"
+msgstr "Địa chỉ máy phục vụ LDAP"
+
+#.Description
+#:../templates:83
+msgid "Please enter the address of the LDAP server used."
+msgstr "Hãy nhập địa chỉ của máy phục vụ LDAP sẽ dùng."
+
+#.Description
+#:../templates:83
+msgid ""
+"Note: It is usually a good idea to use an IP address; this reduces risks of "
+"failure in the event name service is unavailable."
+msgstr "Ghi chú: thường là ý kiến tốt để sử dụng một địa chỉ dạng IP vì sẽ gặp ít lỗi hơn nếu dịch vụ tên miền không sẵn sàng."

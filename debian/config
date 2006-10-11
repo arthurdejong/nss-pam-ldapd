@@ -1,0 +1,97 @@
+#!/usr/bin/perl
+# Debconf configuration script for PADL-ldap tools.
+# By Sami Haahtinen <ressu@debian.org>
+
+$conffile="/etc/libnss-ldap.conf";
+$action=shift;
+$from_version=shift;
+
+use Debconf::Client::ConfModule ':all';
+version('2.0');
+
+# Not yet.. i'll prolly fix this later...
+# my $capb=capb('backup');
+
+my @ret;
+my @current_config;
+
+# The 'override' thing really ought to go, but let's see how this works
+# out first.
+
+if(-e $conffile) {
+	open CONFIG, "<$conffile";
+	if(<CONFIG> =~ /^###DEBCONF###$/) {
+		set("libnss-ldap/override", "true");
+	} else {
+		my $oldval=get("libnss-ldap/override");
+		set("libnss-ldap/override", "false"); 
+		if ($oldval eq "true") {
+			fset("libnss-ldap/override", "seen", "false")
+		}
+
+		# well, this was a screwy from the start.. lets make it more
+		# sane. priority is critical when running reconfigure, 
+		# otherwise it's high.. 
+		#           -- i hope thats enough..
+		
+		input($action =~ /reconfigure/ ? "critical" : "high", 
+			"libnss-ldap/override");
+		$ret=go();
+	};
+	@current_config = <CONFIG>;
+	close CONFIG;
+} else { 
+	set("libnss-ldap/override", "true");
+};
+
+# ok, previously in Configuring LDAP services.. 
+#  - Configuration file was tested for ###DEBCONF### and override was
+#    set accordingly.
+#  - Eric was dumped because of an secret affair with Karen.
+# Tune in next time for the next episode of, configuring LDAP services..
+
+if(get("libnss-ldap/override") eq "true") {
+	read_and_input('shared/ldapns/ldap-server', 'uri', 'critical');
+	read_and_input('shared/ldapns/base-dn', 'base', 'critical');
+	read_and_input('shared/ldapns/ldap_version', 'ldap_version', 'critical');
+	$ret = go();  # yeah, we don't need that.. but in case we sometime do
+
+	# Anyone with database that requires logging in should have 
+	# atleast medium priority..
+	input("medium", "libnss-ldap/dblogin");
+	input("medium", "libnss-ldap/dbrootlogin");
+	input("medium", "libnss-ldap/confperm");
+	$ret = go();
+
+        if(get("libnss-ldap/dbrootlogin") eq "true") {
+                read_and_input('libnss-ldap/rootbinddn', 'rootbinddn', 'critical');
+                input('critical', 'libnss-ldap/rootbindpw');
+                $ret = go()
+        }
+
+	if(get("libnss-ldap/dblogin") eq "true") {
+		# user wants to login.. 
+		# we better set these at critical.. just in case
+		read_and_input('libnss-ldap/binddn', 'binddn', 'critical');
+		read_and_input('libnss-ldap/bindpw', 'bindpw', 'critical');
+		$ret = go();
+	}
+}
+
+input("critical", "libnss-ldap/nsswitch");
+$ret = go();
+
+sub read_and_input
+{
+	my ($debconf_name, $conffile_name, $priority) = @_;
+	$priority = 'medium' unless $priority;
+
+	my @valuelist = grep(/^$conffile_name\s/, @current_config);
+	if (@valuelist) {
+		my $value = pop(@valuelist);
+		chomp($value);
+		$value =~ s/^$conffile_name\s+//;
+		set($debconf_name, $value);
+	}
+	input($priority, $debconf_name);
+}

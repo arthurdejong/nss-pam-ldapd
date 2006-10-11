@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+
+export DH_COMPAT=4
+export LIBS=-lpthread
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/autotools.mk
+
+DEB_CONFIGURE_EXTRA_FLAGS += --enable-rfc2307bis --with-ldap-lib=openldap --with-ldap-conf-file=/etc/libnss-ldap.conf --with-ldap-secret-file=/etc/libnss-ldap.secret --enable-schema-mapping --enable-paged-results --enable-configurable-krb5-ccname-gssapi
+DEB_DESTDIR = $(CURDIR)/debian/tmp
+DEB_OPT_FLAG += -fPIC
+DEB_DH_INSTALLINIT_ARGS = --no-start -- start 03 S . start 01 0 . stop 01 2 . stop 01 3 . stop 01 4 . stop 01 5 . start 01 6 .
+
+MY_INST_DIR = $(CURDIR)/debian/libnss-ldap/usr/share
+
+binary-post-install/libnss-ldap::
+	# rename man page
+	mv $(MY_INST_DIR)/man/man5/nss_ldap.5 $(MY_INST_DIR)/man/man5/libnss-ldap.conf.5
+	# change all references from /etc/ldap.conf to /etc/libnss-ldap.conf
+	for file in $(MY_INST_DIR)/man/man5/libnss-ldap.conf.5 \
+		$(MY_INST_DIR)/libnss-ldap/ldap.conf ; do \
+	  sed -i -e 's:/etc/ldap.conf:/etc/libnss-ldap.conf:g' \
+	  	 -e 's:/etc/ldap.secret:/etc/libnss-ldap.secret:g' $$file; \
+	done

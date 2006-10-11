@@ -1,0 +1,239 @@
+#
+#
+#
+#
+#.   Translators, if you are not familiar with the PO format, gettext
+#.   documentation is worth reading, especially sections dedicated to
+#.   this format, e.g. by running:
+#.        info -n '(gettext)PO Files'
+#.        info -n '(gettext)Header Entry'
+#.   Some information specific to po-debconf are available at
+#.           /usr/share/doc/po-debconf/README-trans
+#.        or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#.   Developers do not need to manually edit POT or PO files.
+msgid ""
+msgstr ""
+"Project-Id-Version: libnss-ldap\n"
+"POT-Creation-Date: 2003-03-23 10:45+0200\n"
+"PO-Revision-Date: 2004-02-17 07:40+0100\n"
+"Last-Translator: Philippe Batailler <philippe.batailler@free.fr>\n"
+"Language-Team: French <debian-l10n-french@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-15\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Description
+#: ../templates:4
+msgid "make configuration readable/writeable by owner only"
+msgstr ""
+"Le fichier de configuration doit-il être lisible et modifiable uniquement "
+"par son propriétaire ?"
+
+#. Description
+#: ../templates:4
+msgid ""
+"Should the libnss-ldap configuration file be readable and writable only by "
+"the file owner?"
+msgstr ""
+"Vous pouvez choisir de réserver l'accès en lecture et en écriture au fichier "
+"de configuration de libnss-ldap à son seul propriétaire."
+
+#. Description
+#: ../templates:4
+msgid ""
+"If you use passwords in your libnss-ldap configuration, it is usually a good "
+"idea to have the configuration set with mode 0600 (readable and writable "
+"only by the file's owner)."
+msgstr ""
+"Si vous utilisez des mots de passe dans la configuration de libnss-ldap, "
+"mettre le système des permissions à 0600 (seul le propriétaire peut lire ou "
+"modifier le fichier) est recommandé."
+
+#. Description
+#: ../templates:4
+msgid ""
+"Note: As a sanity check, libnss-ldap will check if you have nscd installed "
+"and will only set the mode to 0600 if nscd is present."
+msgstr ""
+"Note : bien sûr, libnss-ldap vérifiera que nscd est installé et ne mettra le "
+"mode à 0600 que si nscd est présent."
+
+#. Description
+#: ../templates:17
+msgid "nsswitch.conf is not managed automatically"
+msgstr "Nsswitch.conf n'est pas géré automatiquement"
+
+#. Description
+#: ../templates:17
+msgid ""
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
+"examples/nsswitch.ldap which can be used as an example for your nsswitch "
+"setup, or it can be copied over your current setup."
+msgstr ""
+"Pour que ce paquet fonctionne, vous devez modifier /etc/nsswitch.conf pour "
+"qu'il utilise la base de données LDAP. Un fichier modèle se trouve dans /usr/"
+"share/doc/libnss-ldap/examples/nsswitch.ldap ; vous pouvez l'utiliser pour "
+"la configuration de nsswitch ou bien le mettre à la place de votre "
+"configuration actuelle."
+
+#. Description
+#: ../templates:17
+msgid ""
+"Also, before removing this package, it is wise to remove the ldap entries "
+"from nsswitch.conf to keep basic services functioning."
+msgstr ""
+"Avant de supprimer ce paquet, il est sage de supprimer les entrées LDAP du "
+"fichier nsswitch.conf pour que les services de base continuent à fonctionner."
+
+#. Default
+#: ../templates:29
+msgid "dc=example,dc=net"
+msgstr "dc=exemple,dc=net"
+
+#. Description
+#: ../templates:30
+msgid "distinguished name of the search base"
+msgstr "Nom distinctif (DN) de la base de recherche :"
+
+#. Description
+#: ../templates:30
+msgid ""
+"Please enter the distinguished name of the LDAP search base.  Many sites use "
+"the components of their domain names for this purpose.  For example, the "
+"domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
+"name of the search base."
+msgstr ""
+"Veuillez indiquer le nom distinctif de la base de recherche. Beaucoup de "
+"sites utilisent ici les composants de leurs noms de domaine. Ainsi, pour le "
+"domaine « exemple.net », le nom distinctif utilisé serait « dc=exemple,"
+"dc=net »."
+
+#. Description
+#: ../templates:39
+msgid "database requires login"
+msgstr "La base de données demande-t-elle une identification ?"
+
+#. Description
+#: ../templates:39
+msgid "Does the LDAP database require login?"
+msgstr "La base LDAP demande-t-elle une identification ?"
+
+#. Description
+#: ../templates:39
+msgid ""
+"Answer this question affirmatively only if you can't retreive entries from "
+"the database without logging in."
+msgstr ""
+"Choisissez cette option s'il est nécessaire de s'identifier avant de pouvoir "
+"utiliser la base."
+
+#. Description
+#: ../templates:39
+msgid "Note: Under a normal setup, this is not needed."
+msgstr "Note : avec une configuration classique, ce n'est pas nécessaire."
+
+#. Description
+#: ../templates:50
+msgid "enable automatic configuration updates by debconf"
+msgstr ""
+"Faut-il autoriser les mises à jour automatiques de la configuration par "
+"Debconf ?"
+
+#. Description
+#: ../templates:50
+msgid "Should debconf automatically update libnss-ldap's configuration file?"
+msgstr ""
+"Debconf peut-il mettre à jour automatiquement le fichier de configuration de "
+"libnss-ldap ?"
+
+#. Description
+#: ../templates:50
+msgid "libnss-ldap has been moved to use debconf for its configuration."
+msgstr "Libnss-ldap a été modifié pour utiliser debconf pour sa configuration."
+
+#. Description
+#: ../templates:50
+msgid ""
+"The file will be prepended with \"###DEBCONF###\"; you can disable the "
+"debconf updates by removing that line."
+msgstr ""
+"Ce fichier commencera par « ###DEBCONF### » ; vous pouvez désactiver la "
+"gestion par debconf en supprimant cette ligne."
+
+#. Description
+#: ../templates:50
+msgid "All new installations will have this by default."
+msgstr ""
+"Cette possibilité est activée par défaut pour les premières installations."
+
+#. Default
+#: ../templates:62
+msgid "cn=proxyuser,dc=example,dc=net"
+msgstr "cn=proxyuser,dc=exemple,dc=net"
+
+#. Description
+#: ../templates:63
+msgid "unprivileged database user"
+msgstr "Utilisateur non privilégié de la base :"
+
+#. Description
+#: ../templates:63
+msgid ""
+"Enter the name of the account that will be used to log in to the LDAP "
+"database."
+msgstr "Veuillez indiquer l'identifiant qui permettra l'accès à la base LDAP."
+
+#. Description
+#: ../templates:69
+msgid "password for database login account"
+msgstr "Mot de passe de l'utilisateur de la base :"
+
+#. Description
+#: ../templates:69
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr ""
+"Veuillez indiquer le mot de passe qui permettra l'accès à la base LDAP."
+
+#. Choices
+#: ../templates:74
+msgid "3, 2"
+msgstr "3, 2"
+
+#. Description
+#: ../templates:76
+msgid "LDAP version to use"
+msgstr "Version de LDAP à utiliser :"
+
+#. Description
+#: ../templates:76
+msgid ""
+"Please enter which version of the LDAP protocol ldapns is to use.  It is "
+"usually a good idea to set this to highest available version number."
+msgstr ""
+"Veuillez indiquer la version du protocole LDAP que doit utiliser ldapns. Il "
+"est recommandé de choisir le numéro de version le plus élevé disponible."
+
+#. Default
+#: ../templates:82
+msgid "127.0.0.1"
+msgstr "127.0.0.1"
+
+#. Description
+#: ../templates:83
+msgid "LDAP server host address"
+msgstr "Adresse du serveur LDAP :"
+
+#. Description
+#: ../templates:83
+msgid "Please enter the address of the LDAP server used."
+msgstr "Veuillez indiquer l'adresse IP du serveur LDAP :"
+
+#. Description
+#: ../templates:83
+msgid ""
+"Note: It is usually a good idea to use an IP address; this reduces risks of "
+"failure in the event name service is unavailable."
+msgstr ""
+"Note : utiliser une adresse IP est recommandé ; les risques d'échec sont "
+"réduits en cas d'indisponibilité du service de noms."

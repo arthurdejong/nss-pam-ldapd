@@ -533,7 +533,9 @@ static void
 do_atfork_child (void)
 {
   debug ("==> do_atfork_child");
+  _nss_ldap_block_sigpipe();
   do_close_no_unbind ();
+  _nss_ldap_unblock_sigpipe();
   NSS_LDAP_UNLOCK (__lock);
   debug ("<== do_atfork_child");
 }
@@ -554,13 +556,9 @@ do_atfork_setup (void)
 }
 #endif
 
-/*
- * Acquires global lock, blocks SIGPIPE.
- */
 void
-_nss_ldap_enter (void)
+_nss_ldap_block_sigpipe (void)
 {
-
 #ifdef HAVE_SIGACTION
   struct sigaction new_handler;
 
@@ -573,10 +571,6 @@ _nss_ldap_enter (void)
   sigemptyset (&new_handler.sa_mask);
   new_handler.sa_flags = 0;
 #endif /* HAVE_SIGACTION */
-
-  debug ("==> _nss_ldap_enter");
-
-  NSS_LDAP_LOCK (__lock);
 
   /*
    * Patch for Debian Bug 130006:
@@ -596,18 +590,11 @@ _nss_ldap_enter (void)
 #else
   __sigpipe_handler = signal (SIGPIPE, SIG_IGN);
 #endif /* HAVE_SIGSET */
-
-  debug ("<== _nss_ldap_enter");
 }
 
-/*
- * Releases global mutex, releases SIGPIPE.
- */
 void
-_nss_ldap_leave (void)
+_nss_ldap_unblock_sigpipe (void)
 {
-  debug ("==> _nss_ldap_leave");
-
 #ifdef HAVE_SIGACTION
   if (__sigaction_retval == 0)
     (void) sigaction (SIGPIPE, &__stored_handler, NULL);
@@ -621,7 +608,31 @@ _nss_ldap_leave (void)
 # endif	/* HAVE_SIGSET */
     }
 #endif /* HAVE_SIGACTION */
+}
 
+/*
+ * Acquires global lock, blocks SIGPIPE.
+ */
+void
+_nss_ldap_enter (void)
+{
+  debug ("==> _nss_ldap_enter");
+
+  NSS_LDAP_LOCK (__lock);
+  _nss_ldap_block_sigpipe();
+
+  debug ("<== _nss_ldap_enter");
+}
+
+/*
+ * Releases global mutex, releases SIGPIPE.
+ */
+void
+_nss_ldap_leave (void)
+{
+  debug ("==> _nss_ldap_leave");
+
+  _nss_ldap_unblock_sigpipe();
   NSS_LDAP_UNLOCK (__lock);
 
   debug ("<== _nss_ldap_leave");
@@ -697,7 +708,7 @@ do_close (void)
 # else
       sd = __session.ls_conn->ld_sb.sb_sd;
 # endif /* LDAP_OPT_DESC */
-      syslog (LOG_INFO, "nss_ldap: closing connection %p fd %d",
+      syslog (LOG_AUTHPRIV | LOG_INFO, "nss_ldap: closing connection %p fd %d",
 	      __session.ls_conn, sd);
 #endif /* DEBUG */
 
@@ -973,7 +984,7 @@ do_close_no_unbind (void)
   closeSd = do_get_our_socket (&sd);
 
 #if defined(DEBUG) || defined(DEBUG_SOCKETS)
-  syslog (LOG_INFO, "nss_ldap: %sclosing connection (no unbind) %p fd %d",
+  syslog (LOG_AUTHPRIV | LOG_INFO, "nss_ldap: %sclosing connection (no unbind) %p fd %d",
 	  closeSd ? "" : "not ", __session.ls_conn, sd);
 #endif /* DEBUG */
 
@@ -1128,11 +1139,11 @@ do_init (void)
 
 #ifdef DEBUG
 #ifdef HAVE_PTHREAD_ATFORK
-  syslog (LOG_DEBUG,
+  syslog (LOG_AUTHPRIV | LOG_DEBUG,
 	  "nss_ldap: __session.ls_state=%d, __session.ls_conn=%p, __euid=%i, euid=%i",
 	  __session.ls_state, __session.ls_conn, __euid, euid);
 #elif defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
-  syslog (LOG_DEBUG,
+  syslog (LOG_AUTHPRIV | LOG_DEBUG,
 	  "nss_ldap: libpthreads=%s, __session.ls_state=%d, __session.ls_conn=%p, __pid=%i, pid=%i, __euid=%i, euid=%i",
 	  (__pthread_once == NULL ? "FALSE" : "TRUE"),
 	  __session.ls_state,
@@ -1140,7 +1151,7 @@ do_init (void)
 	  (__pthread_once == NULL ? __pid : -1),
 	  (__pthread_once == NULL ? pid : -1), __euid, euid);
 #else
-  syslog (LOG_DEBUG,
+  syslog (LOG_AUTHPRIV | LOG_DEBUG,
 	  "nss_ldap: __session.ls_state=%d, __session.ls_conn=%p, __pid=%i, pid=%i, __euid=%i, euid=%i",
 	  __session.ls_state, __session.ls_conn, __pid, pid, __euid, euid);
 #endif
@@ -1626,7 +1637,7 @@ do_open (void)
   if (rc != LDAP_SUCCESS)
     {
       /* log actual LDAP error code */
-      syslog (LOG_INFO,
+      syslog (LOG_AUTHPRIV | LOG_INFO,
 	      "nss_ldap: failed to bind to LDAP server %s: %s",
 	      cfg->ldc_uris[__session.ls_current_uri],
 	      ldap_err2string (rc));
@@ -1784,6 +1795,9 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
 #else
 	  rc = ld->ld_errno;
 #endif /* LDAP_OPT_ERROR_NUMBER */
+	  /* Notify if we failed. */
+	  syslog (LOG_AUTHPRIV | LOG_ERR, "nss_ldap: could not connect to any LDAP server as %s - %s",
+			  dn, ldap_err2string (rc));
 	  debug ("<== do_bind");
 
 	  return rc;
@@ -2398,7 +2412,7 @@ do_result (ent_context_t * ctx, int all)
 #else
 	  rc = __session.ls_conn->ld_errno;
 #endif /* LDAP_OPT_ERROR_NUMBER */
-	  syslog (LOG_ERR, "nss_ldap: could not get LDAP result - %s",
+	  syslog (LOG_AUTHPRIV | LOG_ERR, "nss_ldap: could not get LDAP result - %s",
 		  ldap_err2string (rc));
 	  stat = NSS_UNAVAIL;
 	  break;
@@ -2428,7 +2442,7 @@ do_result (ent_context_t * ctx, int all)
 		{
 		  stat = NSS_UNAVAIL;
 		  ldap_abandon (__session.ls_conn, ctx->ec_msgid);
-		  syslog (LOG_ERR,
+		  syslog (LOG_AUTHPRIV | LOG_ERR,
 			  "nss_ldap: could not get LDAP result - %s",
 			  ldap_err2string (rc));
 		}
@@ -2502,7 +2516,7 @@ do_with_reconnect (const char *base, int scope,
 	  else if (backoff < __session.ls_config->ldc_reconnect_maxsleeptime)
 	    backoff *= 2;
 
-	  syslog (LOG_INFO,
+	  syslog (LOG_AUTHPRIV | LOG_INFO,
 		  "nss_ldap: reconnecting to LDAP server (sleeping %d seconds)...",
 		  backoff);
 	  (void) sleep (backoff);
@@ -2510,7 +2524,7 @@ do_with_reconnect (const char *base, int scope,
       else if (tries > 1)
 	{
 	  /* Don't sleep, reconnect immediately. */
-	  syslog (LOG_INFO, "nss_ldap: reconnecting to LDAP server...");
+	  syslog (LOG_AUTHPRIV | LOG_INFO, "nss_ldap: reconnecting to LDAP server...");
 	}
 
       /* For each "try", attempt to connect to all specified URIs */
@@ -2554,6 +2568,16 @@ do_with_reconnect (const char *base, int scope,
 	  if (__session.ls_config->ldc_reconnect_pol == LP_RECONNECT_SOFT)
 	    hard = 0;
 
+	  /*
+	   * If the file /lib/init/rw/libnss-ldap.bind_policy_soft exists,
+	   * then ignore the actual bind_policy definition and use the
+	   * soft semantics.  This file should only exist during early
+	   * boot and late shutdown, points at which the networking or
+	   * the LDAP server itself are likely to be unavailable anyway.
+	   */
+	  if (access("/lib/init/rw/libnss-ldap.bind_policy_soft",R_OK) == 0)
+	      hard = 0;
+
 	  ++tries;
 	}
     }
@@ -2561,11 +2585,11 @@ do_with_reconnect (const char *base, int scope,
   switch (stat)
     {
     case NSS_UNAVAIL:
-      syslog (LOG_ERR, "nss_ldap: could not search LDAP server - %s",
+      syslog (LOG_AUTHPRIV | LOG_ERR, "nss_ldap: could not search LDAP server - %s",
 	      ldap_err2string (rc));
       break;
     case NSS_TRYAGAIN:
-      syslog (LOG_ERR,
+      syslog (LOG_AUTHPRIV | LOG_ERR,
 	      "nss_ldap: could not %s %sconnect to LDAP server - %s",
 	      hard ? "hard" : "soft", tries ? "re" : "",
 	      ldap_err2string (rc));
@@ -2580,11 +2604,11 @@ do_with_reconnect (const char *base, int scope,
 	    uri = "(null)";
 
 	  if (tries)
-	    syslog (LOG_INFO,
+	    syslog (LOG_AUTHPRIV | LOG_INFO,
 	      "nss_ldap: reconnected to LDAP server %s after %d attempt%s",
 	      uri, tries, (tries == 1) ? "" : "s");
 	  else
-	    syslog (LOG_INFO, "nss_ldap: reconnected to LDAP server %s", uri);
+	    syslog (LOG_AUTHPRIV | LOG_INFO, "nss_ldap: reconnected to LDAP server %s", uri);
 	}
       time (&__session.ls_timestamp);
       break;

@@ -1,0 +1,45 @@
+This package was debianized by Ben Collins <bcollins@debian.org> on
+Thu, 11 Feb 1999 22:46:20 -0500.
+Davide Puricelli (evo) <evo@debian.org> took maintenance on
+Wed, 23 Aug 2000 21:51:06 +0200.
+Sami Haahtinen <ressu@debian.org> was the maintainer since
+Wed, 28 Feb 2001 15:24:38 +0200.
+
+Stephen Frost <sfrost@debian.org> is the actual maintainer since
+Wed, 10 Sep 2003 22:19:21 -0400.
+
+It was downloaded from ftp://ftp.padl.com/pub 
+
+Main Upstream Author: Luke Howard, PADL Software, lukeh@padl.com
+Copyright: 1997-2006 Luke Howard
+
+The following files are also copyright:
+
+ depcomp:      1999, 2000 Free Software Foundation, Inc.
+ irs.h:        1996, 1999 by Internet Software Consortium
+ ltf.c:        1998 Netscape Communications Corporation
+ nss_common.h: 2002 Jeremy Allison
+ nss_dbdefs.h: 2002 Jeremy Allison
+ pagectrl.c:   2002 Max Caines
+ resolve.c:    1995, 1996, 1997 Kungliga Tekniska Hvgskolan
+ resolve.h:    1995, 1996, 1997 Kungliga Tekniska Hvgskolan
+
+License:
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Library General Public License for more details.
+
+You should have received a copy of the GNU Library General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA
+02110-1301 USA
+
+On Debian systems, the complete text of the GNU Library General Public
+License, version 2, can be found in /usr/share/common-licenses/LGPL-2.

@@ -1,0 +1,27 @@
+libnss-ldap for Debian
+----------------------
+
+This package was compiled against OpenLDAP and provides an excellent way
+of merging LDAP into an NIS network.
+An example for /etc/nsswitch.conf is installed in
+/usr/share/doc/libnss-ldap/examples/nsswitch.ldap. 
+
+ -- Configuration files --
+
+The configuration file will be changed if the first line of configuration says
+###DEBCONF### there is a note about this in debconf when the package is first
+installed. 
+
+the debconf configuration should be fairly safe in any case, it only changes
+the entries it asks about, nothing else.
+
+ -- Sami Haahtinen <ressu@debian.org>
+
+
+
+Debian uses /etc/libnss-ldap.conf as libnss-ldap's configuration file and
+/etc/libnss-ldap.secret as the file to store the password of the rootbinddn.
+
+See LDAP-Permissions.txt for details about the required LDAP permissions.
+
+ -- Peter Marschall <peter@adpm.de>

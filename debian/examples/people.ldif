@@ -1,0 +1,50 @@
+dn: ou=People,dc=example,dc=com
+ou: People
+objectClass: organizationalUnit
+objectClass: top
+
+dn: cn=Local Root,ou=People,dc=example,dc=com
+cn: Local Root
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: organizationalRole
+uid: root
+uidNumber: 0
+gidNumber: 0
+homeDirectory: /root
+
+dn: cn=Andrew Suffield,ou=People,dc=example,dc=com
+cn: Andrew Suffield
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+givenName: Andrew
+sn: Suffield
+uid: asuffield
+uidNumber: 1000
+gidNumber: 5001
+homeDirectory: /home/asuffield
+loginShell: /bin/bash
+
+dn: cn=Test User,ou=People,dc=example,dc=com
+cn: Test User
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+sn: User
+uid: test
+uidNumber: 1001
+gidNumber: 1001
+homeDirectory: /home/test
+
+dn: cn=Test User 2,ou=People,dc=example,dc=com
+cn: Test User 2
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+sn: User
+uid: test2
+uidNumber: 1002
+gidNumber: 1002
+homeDirectory: /home/test2
+

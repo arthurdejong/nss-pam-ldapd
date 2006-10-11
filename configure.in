@@ -263,7 +263,7 @@ dnl AC_CHECK_LIB(sasl, sasl_client_init,[LIBS="-lsasl $LIBS"],,$LIBS)
 
 if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = umich -o $with_ldap_lib = openldap \); then
   AC_CHECK_LIB(lber, main)
-  AC_CHECK_LIB(ldap, main, [LIBS="-lldap $LIBS" found_ldap_lib=yes],,$LIBS)
+  AC_CHECK_LIB(ldap, main, [LIBS="-lldap_r $LIBS" found_ldap_lib=yes],,$LIBS)
 fi
 if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape5 \); then
 AC_CHECK_LIB(ldap50, main, LIBS="-lldap50 -lssldap50 -lssl3 -lnss3 -lnspr4 -lprldap50 -lplc4 -lplds4 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)

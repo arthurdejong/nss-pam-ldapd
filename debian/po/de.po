@@ -1,0 +1,278 @@
+#
+# This file is from the DDTP, the Debian Description Translation Project
+#
+# See http://ddtp.debian.org/ for more information.
+# Erik Schanze <mail@erikschanze.de>, 2004.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libnss-ldap_220-1_de\n"
+"POT-Creation-Date: 2003-03-23 10:45+0200\n"
+"PO-Revision-Date: 2004-11-12 21:55+0100\n"
+"Last-Translator: Erik Schanze <mail@erikschanze.de>\n"
+"org>\n"
+"Language-Team: German <debian-l10n-german@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.3.1\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+
+#  Template: libnss-ldap/confperm
+#  ddtp-prioritize: 56
+#
+#. Description
+#: ../templates:4
+msgid "make configuration readable/writeable by owner only"
+msgstr "Konfiguration nur für den Eigentümer les-/schreibbar machen"
+
+#
+#. Description
+#: ../templates:4
+msgid ""
+"Should the libnss-ldap configuration file be readable and writable only by "
+"the file owner?"
+msgstr ""
+"Soll die libnss-ldap-Konfigurationsdatei nur vom Eigentümer les- und "
+"schreibbar sein?"
+
+#
+#. Description
+#: ../templates:4
+msgid ""
+"If you use passwords in your libnss-ldap configuration, it is usually a good "
+"idea to have the configuration set with mode 0600 (readable and writable "
+"only by the file's owner)."
+msgstr ""
+"Falls Sie Passworte in Ihrer libnss-ldap-Konfiguration verwenden, ist es "
+"üblicherweise eine gute Idee, die Konfiguration auf den Modus 0600 (les- und "
+"schreibbar nur durch den Eigentümer) zu setzen."
+
+#
+#. Description
+#: ../templates:4
+msgid ""
+"Note: As a sanity check, libnss-ldap will check if you have nscd installed "
+"and will only set the mode to 0600 if nscd is present."
+msgstr ""
+"Anmerkung: Als Sinnprüfung checkt libnss-ldap, ob Sie nscd installierten und "
+"setzt mode 0600 nur, falls nscd vorhanden ist."
+
+#  Template: libnss-ldap/nsswitch
+#  ddtp-prioritize: 56
+#
+#. Description
+#: ../templates:17
+msgid "nsswitch.conf is not managed automatically"
+msgstr "nsswitch.conf wird nicht automatisch verwaltet"
+
+#
+#. Description
+#: ../templates:17
+msgid ""
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
+"examples/nsswitch.ldap which can be used as an example for your nsswitch "
+"setup, or it can be copied over your current setup."
+msgstr ""
+"Damit dieses Paket arbeitet, müssen Sie Ihre Datei /etc/nsswitch.conf für "
+"die ldap-Datenquelle anpassen.  Es gibt eine Beispieldatei unter /usr/share/"
+"doc/libnss-ldap/examples/nsswitch.ldap, die als Beispiel für Ihr nsswitch-"
+"Setup verwendet kann oder mit der Ihr aktuelles Setup überschrieben werden "
+"kann."
+
+#
+#. Description
+#: ../templates:17
+msgid ""
+"Also, before removing this package, it is wise to remove the ldap entries "
+"from nsswitch.conf to keep basic services functioning."
+msgstr ""
+"Darüberhinaus ist es klug, die ldap-Einträge aus der nsswitch.conf zu "
+"löschen, bevor Sie dieses Paket entfernen, um die Funktion der "
+"Grunddienste zu erhalten."
+
+#. Default
+#: ../templates:29
+msgid "dc=example,dc=net"
+msgstr "dc=example,dc=net"
+
+#  Template: shared/ldapns/base-dn
+#  ddtp-prioritize: 56
+#
+#. Description
+#: ../templates:30
+msgid "distinguished name of the search base"
+msgstr "DN (distinguished name) der Suchbasis"
+
+#
+#. Description
+#: ../templates:30
+msgid ""
+"Please enter the distinguished name of the LDAP search base.  Many sites use "
+"the components of their domain names for this purpose.  For example, the "
+"domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
+"name of the search base."
+msgstr ""
+"Bitte geben Sie den DN der LDAP-Suchbasis ein. Viele "
+"Sites benutzen Teile ihrer Domain-Namen für diesen Zweck. Beispielsweise "
+"würde die Domäne »example.net« »dc=example,dc=net« als den DN der Suchbasis "
+"benutzen."
+
+#  Template: libnss-ldap/dblogin
+#  ddtp-prioritize: 56
+#
+#. Description
+#: ../templates:39
+msgid "database requires login"
+msgstr "Datenbank benötigt Login"
+
+#
+#. Description
+#: ../templates:39
+msgid "Does the LDAP database require login?"
+msgstr "Benötigt die LDAP-Datenbank einen Login?"
+
+#
+#. Description
+#: ../templates:39
+msgid ""
+"Answer this question affirmatively only if you can't retreive entries from "
+"the database without logging in."
+msgstr ""
+"Bestätigen Sie das nur, wenn Sie keine Abfragen aus der Datenbank ohne Login "
+"vornehmen können."
+
+#
+#. Description
+#: ../templates:39
+msgid "Note: Under a normal setup, this is not needed."
+msgstr "Anmerkung: Bei einem normalen Setup ist das nicht nötig."
+
+#  Template: libnss-ldap/override
+#  ddtp-prioritize: 56
+#
+#. Description
+#: ../templates:50
+msgid "enable automatic configuration updates by debconf"
+msgstr "Aktivieren automatischer Konfigurations-Updates durch debconf"
+
+#
+#. Description
+#: ../templates:50
+msgid "Should debconf automatically update libnss-ldap's configuration file?"
+msgstr "Soll debconf automatisch die Konfigurations-Datei von libnss-ldap updaten?"
+
+#
+#. Description
+#: ../templates:50
+msgid "libnss-ldap has been moved to use debconf for its configuration."
+msgstr ""
+"libnss-ldap wurde auf den Gebrauch von debconf für die Konfiguration "
+"umgestellt."
+
+#
+#. Description
+#: ../templates:50
+msgid ""
+"The file will be prepended with \"###DEBCONF###\"; you can disable the "
+"debconf updates by removing that line."
+msgstr ""
+"Der Datei wird ein »###DEBCONF###« vorangestellt; Sie können Updates durch "
+"debconf verhindern, indem Sie diese Zeile entfernen."
+
+#
+#. Description
+#: ../templates:50
+msgid "All new installations will have this by default."
+msgstr "Alle Neuinstallationen werden das als Voreinstellung haben."
+
+#. Default
+#: ../templates:62
+msgid "cn=proxyuser,dc=example,dc=net"
+msgstr "cn=proxyuser,dc=example,dc=net"
+
+#  Template: libnss-ldap/binddn
+#  ddtp-prioritize: 56
+#
+#. Description
+#: ../templates:63
+msgid "unprivileged database user"
+msgstr "nicht priviligierter Datenbank-Nutzer"
+
+#
+#. Description
+#: ../templates:63
+msgid ""
+"Enter the name of the account that will be used to log in to the LDAP "
+"database."
+msgstr "Geben Sie den Namen eines Benutzerkontos für die LDAP-Datenbank ein."
+
+#  Template: libnss-ldap/bindpw
+#  ddtp-prioritize: 56
+#
+#. Description
+#: ../templates:69
+msgid "password for database login account"
+msgstr "Passwort für das Datenbank-Login-Konto"
+
+#
+#. Description
+#: ../templates:69
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr "Geben Sie das Passwort für das Login zur LDAP-Datenbank ein."
+
+#. Choices
+#: ../templates:74
+msgid "3, 2"
+msgstr "3, 2"
+
+#  Template: shared/ldapns/ldap_version
+#  ddtp-prioritize: 56
+#
+#. Description
+#: ../templates:76
+msgid "LDAP version to use"
+msgstr "Welche LDAP-Version soll genutzt werden?"
+
+#
+#. Description
+#: ../templates:76
+msgid ""
+"Please enter which version of the LDAP protocol ldapns is to use.  It is "
+"usually a good idea to set this to highest available version number."
+msgstr ""
+"Bitte geben Sie an, welche Version des LDAP-Protokolls von ldapns genutzt "
+"werden soll.  Es ist üblicherweise eine gute Idee, die höchstmögliche "
+"Versionsnummer zu setzen."
+
+#. Default
+#: ../templates:82
+msgid "127.0.0.1"
+msgstr "127.0.0.1"
+
+#  Template: shared/ldapns/ldap-server
+#  ddtp-prioritize: 56
+#
+#. Description
+#: ../templates:83
+msgid "LDAP server host address"
+msgstr "LDAP-Server Host-Adresse"
+
+#
+#. Description
+#: ../templates:83
+msgid "Please enter the address of the LDAP server used."
+msgstr "Bitte geben Sie die vom LDAP-Server genutzte Adresse an."
+
+#
+#. Description
+#: ../templates:83
+msgid ""
+"Note: It is usually a good idea to use an IP address; this reduces risks of "
+"failure in the event name service is unavailable."
+msgstr ""
+"Beachten Sie:  Es ist üblicherweise eine gute Idee, eine IP-Adresse zu "
+"verwenden; dieses reduziert das Risiko eines Ausfalls, falls der Name-"
+"Service einmal unerreichbar ist."
+

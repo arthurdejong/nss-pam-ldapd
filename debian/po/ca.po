@@ -1,0 +1,232 @@
+# libnss-ldap (debconf) translation to Catalan.
+# Copyright (C) 2004 Free Software Foundation, Inc.
+# Aleix Badia i Bosch <abadia@ica.es>, 2004.
+# Guillem Jover <guillem@debian.org>, 2004.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libnss-ldap 211-4\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2003-07-20 11:44+0200\n"
+"PO-Revision-Date: 2004-11-02 20:49+0100\n"
+"Last-Translator: Guillem Jover <guillem@debian.org>\n"
+"Language-Team: Catalan <debian-l10n-catalan@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit"
+
+#. Description
+#: ../templates:4
+msgid "make configuration readable/writeable by owner only"
+msgstr "fes que la configuració només la pugui llegir/escriure el propietari"
+
+#. Description
+#: ../templates:4
+msgid ""
+"Should the libnss-ldap configuration file be readable and writable only by "
+"the file owner?"
+msgstr ""
+"Voleu que la configuració del libnss-ldap només la pugui llegir i escriure "
+"el propietari del fitxer?"
+
+#. Description
+#: ../templates:4
+msgid ""
+"If you use passwords in your libnss-ldap configuration, it is usually a good "
+"idea to have the configuration set with mode 0600 (readable and writable "
+"only by the file's owner)."
+msgstr ""
+"Si la configuració del libnss-ldap conté contrasenyes, és una bona idea "
+"definir el mode 0600 pel fitxer (només el pot llegir i escriure el "
+"propietari)."
+
+#. Description
+#: ../templates:4
+msgid ""
+"Note: As a sanity check, libnss-ldap will check if you have nscd installed "
+"and will only set the mode to 0600 if nscd is present."
+msgstr ""
+"Nota: el libnss-ldap comprovarà si teniu instal·lat l'nscd. Si ho està, "
+"definirà el mode 0600."
+
+#. Description
+#: ../templates:17
+msgid "nsswitch.conf is not managed automatically"
+msgstr "el fitxer nsswitch.conf no es gestiona automàticament"
+
+#. Description
+#: ../templates:17
+msgid ""
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
+"examples/nsswitch.ldap which can be used as an example for your nsswitch "
+"setup, or it can be copied over your current setup."
+msgstr ""
+"Per fer funcionar el paquet necessiteu modificar el fitxer /etc/nsswitch."
+"conf perquè utilitzi l'origen de dades de l'LDAP. Podeu utilitzar d'exemple "
+"el fitxer /usr/share/doc/libnss-ldap/examples/nsswitch.ldap o copiar-lo "
+"sobre la vostra configuració actual."
+
+#. Description
+#: ../templates:17
+msgid ""
+"Also, before removing this package, it is wise to remove the ldap entries "
+"from nsswitch.conf to keep basic services functioning."
+msgstr ""
+"Per mantenir els serveis bàsics funcionant i abans de suprimir el paquet, "
+"cal suprimir les entrades d'LDAP del fitxer nsswitch.conf."
+
+#. Default
+#: ../templates:29
+msgid "dc=example,dc=net"
+msgstr "dc=exemple,dc=net"
+
+#. Description
+#: ../templates:30
+msgid "distinguished name of the search base"
+msgstr "nom distingit de la base de la cerca"
+
+#. Description
+#: ../templates:30
+msgid ""
+"Please enter the distinguished name of the LDAP search base.  Many sites use "
+"the components of their domain names for this purpose.  For example, the "
+"domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
+"name of the search base."
+msgstr ""
+"Introduïu el nom distingit de la base de la cerca de l'LDAP. Molts llocs "
+"utilitzen els components del seu nom del domini. Per exemple, el domini "
+"«exemple.net» utilitzaria el nom distingit de la base de la cerca "
+"«dc=exemple,dc=net»."
+
+#. Description
+#: ../templates:39
+msgid "database requires login"
+msgstr "la base de dades requereix d'autenticació d'accés"
+
+#. Description
+#: ../templates:39
+msgid "Does the LDAP database require login?"
+msgstr "La base de dades d'LDAP requereix d'autenticació d'accés?"
+
+#. Description
+#: ../templates:39
+msgid ""
+"Answer this question affirmatively only if you can't retreive entries from "
+"the database without logging in."
+msgstr ""
+"Contesteu positivament només si no podeu obtenir les entrades de la base de "
+"dades sense autenticar-vos."
+
+#. Description
+#: ../templates:39
+msgid "Note: Under a normal setup, this is not needed."
+msgstr "Nota: en una configuració normal no és necessari."
+
+#. Description
+#: ../templates:50
+msgid "enable automatic configuration updates by debconf"
+msgstr ""
+"habilita les actualitzacions de configuració automàtiques a través del "
+"debconf"
+
+#. Description
+#: ../templates:50
+msgid "Should debconf automatically update libnss-ldap's configuration file?"
+msgstr ""
+"Voleu que el debconf actualitzi automàticament el fitxer de configuració del "
+"libnss-ldap?"
+
+#. Description
+#: ../templates:50
+msgid "libnss-ldap has been moved to use debconf for its configuration."
+msgstr "el libnss-ldap ha canviat a utilitzar el debconf en la configuració."
+
+#. Description
+#: ../templates:50
+msgid ""
+"The file will be prepended with \"###DEBCONF###\"; you can disable the "
+"debconf updates by removing that line."
+msgstr ""
+"S'afegirà la línia «###DEBCONF###» al principi del fitxer; podeu "
+"inhabilitar-ne les actualitzacions del debconf suprimint-la."
+
+#. Description
+#: ../templates:50
+msgid "All new installations will have this by default."
+msgstr "Totes les noves instal·lacions ho tindran de forma predeterminada."
+
+#. Default
+#: ../templates:62
+msgid "cn=proxyuser,dc=example,dc=net"
+msgstr "cn=proxyuser,dc=exemple,dc=net"
+
+#. Description
+#: ../templates:63
+msgid "unprivileged database user"
+msgstr "usuari de la base de dades sense privilegis"
+
+#. Description
+#: ../templates:63
+msgid ""
+"Enter the name of the account that will be used to log in to the LDAP "
+"database."
+msgstr ""
+"Introduïu el nom del compte que s'utilitzarà per entrar a la base de dades "
+"de l'LDAP."
+
+#. Description
+#: ../templates:69
+msgid "password for database login account"
+msgstr "contrasenya pel compte d'accés autenticat de la base de dades"
+
+#. Description
+#: ../templates:69
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr ""
+"Introduïu la contrasenya que s'utilitzarà per a l'accés autenticat a la base "
+"de dades de l'LDAP."
+
+#. Choices
+#: ../templates:74
+msgid "3, 2"
+msgstr "3, 2"
+
+#. Description
+#: ../templates:76
+msgid "LDAP version to use"
+msgstr "Versió de l'LDAP a utilitzar"
+
+#. Description
+#: ../templates:76
+msgid ""
+"Please enter which version of the LDAP protocol ldapns is to use.  It is "
+"usually a good idea to set this to highest available version number."
+msgstr ""
+"Introduïu la versió del protocol d'LDAP que utilitza el ldapns. Normalment "
+"és una bona idea especificar el nombre de versió més gran disponible."
+
+#. Default
+#: ../templates:82
+msgid "127.0.0.1"
+msgstr "127.0.0.1"
+
+#. Description
+#: ../templates:83
+msgid "LDAP server host address"
+msgstr "adreça de l'ordinador del servidor d'LDAP"
+
+#. Description
+#: ../templates:83
+msgid "Please enter the address of the LDAP server used."
+msgstr "Introduïu l'adreça del servidor d'LDAP utilitzat."
+
+#. Description
+#: ../templates:83
+msgid ""
+"Note: It is usually a good idea to use an IP address; this reduces risks of "
+"failure in the event name service is unavailable."
+msgstr ""
+"Nota: normalment és una bona idea utilitzar una adreça d'IP; redueix el risc "
+"de produir-se errors si el serveis de noms dels esdeveniments no està "
+"disponible."

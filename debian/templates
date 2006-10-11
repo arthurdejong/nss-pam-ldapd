@@ -1,0 +1,121 @@
+Template: libnss-ldap/confperm
+Type: boolean
+Default: false
+_Description: make configuration readable/writeable by owner only
+ Should the libnss-ldap configuration file be readable and writable only by
+ the file owner?
+ .
+ If you use passwords in your libnss-ldap configuration, it is usually a
+ good idea to have the configuration set with mode 0600 (readable and
+ writable only by the file's owner).
+ .
+ Note: As a sanity check, libnss-ldap will check if you have nscd installed
+ and will only set the mode to 0600 if nscd is present.
+
+Template: libnss-ldap/nsswitch
+Type: note
+_Description: nsswitch.conf is not managed automatically
+ For this package to work, you need to modify your /etc/nsswitch.conf to
+ use the ldap datasource.  There is an example file at
+ /usr/share/doc/libnss-ldap/examples/nsswitch.ldap which can be used as an
+ example for your nsswitch setup, or it can be copied over your current
+ setup.
+ .
+ Also, before removing this package, it is wise to remove the ldap entries
+ from nsswitch.conf to keep basic services functioning.
+
+Template: shared/ldapns/base-dn
+Type: string
+_Default: dc=example,dc=net
+_Description: distinguished name of the search base
+ Please enter the distinguished name of the LDAP search base.  Many sites
+ use the components of their domain names for this purpose.  For example,
+ the domain "example.net" would use "dc=example,dc=net" as the
+ distinguished name of the search base.
+
+Template: libnss-ldap/dblogin
+Type: boolean
+Default: false
+_Description: database requires login
+ Does the LDAP database require login?
+ .
+ Answer this question affirmatively only if you can't retreive entries from
+ the database without logging in.
+ .
+ Note: Under a normal setup, this is not needed.
+
+Template: libnss-ldap/override
+Type: boolean
+Default: true
+_Description: enable automatic configuration updates by debconf
+ Should debconf automatically update libnss-ldap's configuration file?
+ .
+ libnss-ldap has been moved to use debconf for its configuration.
+ .
+ The file will be prepended with "###DEBCONF###"; you can disable the
+ debconf updates by removing that line.
+ .
+ All new installations will have this by default.
+
+Template: libnss-ldap/binddn
+Type: string
+_Default: cn=proxyuser,dc=example,dc=net
+_Description: unprivileged database user
+ Enter the name of the account that will be used to log in to the LDAP
+ database.
+
+Template: libnss-ldap/bindpw
+Type: password
+_Description: password for database login account
+ Enter the password that will be used to log in to the LDAP database.
+
+Template: shared/ldapns/ldap_version
+Type: select
+_Choices: 3, 2
+Default: 3
+_Description: LDAP version to use
+ Please enter which version of the LDAP protocol ldapns is to use.  It is
+ usually a good idea to set this to highest available version number.
+
+Template: shared/ldapns/ldap-server
+Type: string
+_Default: ldap://127.0.0.1/
+_Description: LDAP server Uniform Resource Identifier
+ Please enter the URI of the LDAP server used. This is a string in the
+ form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also
+ be used. The port number is optional.
+ .
+ Note: It is usually a good idea to use an IP address; this reduces risks
+ of failure in the event name service is unavailable.
+
+Template: libnss-ldap/dbrootlogin
+Type: boolean
+Default: true
+_Description: special LDAP privileges for root
+ This option will allow tools that perform requests to the nss system
+ with libnss-ldap as backend to return more information when called
+ as root.
+ .
+ If you are using NFS mounted /etc or any other custom setup, you should
+ disable this.
+
+Template: libnss-ldap/rootbinddn
+Type: string
+Default: cn=manager,dc=example,dc=net
+_Description: LDAP account for root
+ This account will be used for nss requests with root privileges.
+ .
+ Note: For this to work the account needs permission to access the
+ attributes in the LDAP directory that are related to the users' shadow
+ entries as well as users' and groups' passwords.
+
+Template: libnss-ldap/rootbindpw
+Type: password
+_Description: LDAP root account password
+ This password will be used when libnss-ldap tries to login to the LDAP
+ directory using the LDAP account for root.
+ .
+ The password will be stored in a separate file /etc/libnss-ldap.secret
+ which will be made readable to root only.
+ .
+ Entering an empty password will re-use the old password.

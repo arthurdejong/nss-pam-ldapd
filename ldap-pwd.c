@@ -86,9 +86,11 @@ _nss_ldap_parse_pw (LDAPMessage * e,
   struct passwd *pw = (struct passwd *) result;
   char *uid, *gid;
   NSS_STATUS stat;
-  char tmpbuf[sizeof "-4294967295"];
+  char tmpbuf[ sizeof( uid_t ) * 8 / 3 + 2 ];
   size_t tmplen;
   char *tmp;
+  
+  tmpbuf[ sizeof(tmpbuf) - 1 ] = '\0';
 
   if (_nss_ldap_oc_check (e, "shadowAccount") == NSS_SUCCESS)
     {
@@ -117,7 +119,7 @@ _nss_ldap_parse_pw (LDAPMessage * e,
     return stat;
 
   tmp = tmpbuf;
-  tmplen = sizeof (tmpbuf);
+  tmplen = sizeof (tmpbuf) - 1;
   stat =
     _nss_ldap_assign_attrval (e, AT (uidNumber), &uid, &tmp, &tmplen);
   if (stat != NSS_SUCCESS)
@@ -125,7 +127,7 @@ _nss_ldap_parse_pw (LDAPMessage * e,
   pw->pw_uid = (*uid == '\0') ? UID_NOBODY : (uid_t) atol (uid);
 
   tmp = tmpbuf;
-  tmplen = sizeof (tmpbuf);
+  tmplen = sizeof (tmpbuf) - 1;
   stat =
     _nss_ldap_assign_attrval (e, ATM (LM_PASSWD, gidNumber), &gid, &tmp,
                               &tmplen);

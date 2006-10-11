@@ -1,0 +1,27 @@
+dn: ou=Group,dc=example,dc=com
+ou: Group
+objectClass: organizationalUnit
+objectClass: top
+
+dn: cn=root,ou=Group,dc=example,dc=com
+cn: root
+objectClass: posixGroup
+objectClass: top
+gidNumber: 0
+memberUid: 0
+
+dn: cn=users,ou=Group,dc=example,dc=com
+cn: users
+objectClass: posixGroup
+objectClass: top
+gidNumber: 5000
+memberUid: asuffield
+memberUid: test
+memberUid: test2
+
+dn: cn=admin,ou=Group,dc=example,dc=com
+cn: admin
+objectClass: posixGroup
+objectClass: top
+gidNumber: 5001
+memberUid: asuffield

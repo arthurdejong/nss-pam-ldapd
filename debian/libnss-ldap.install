@@ -1,0 +1,7 @@
+debian/tmp/usr/lib/* lib
+nss_ldap.5 usr/share/man/man5
+ldap.conf usr/share/libnss-ldap
+debian/examples usr/share/doc/libnss-ldap
+ldap.conf usr/share/doc/libnss-ldap/examples
+nsswitch.ldap usr/share/doc/libnss-ldap/examples
+debian/LDAP-Permissions.txt usr/share/doc/libnss-ldap

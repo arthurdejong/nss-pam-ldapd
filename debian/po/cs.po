@@ -1,0 +1,230 @@
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#    Developers do not need to manually edit POT or PO files.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libnss-ldap\n"
+"POT-Creation-Date: 2003-03-23 10:45+0200\n"
+"PO-Revision-Date: 2005-07-10 16:33+0200\n"
+"Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
+"Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Description
+#: ../templates:4
+msgid "make configuration readable/writeable by owner only"
+msgstr "Umožnit čtení/zápis do konfigurace pouze vlastníkovi"
+
+#. Description
+#: ../templates:4
+msgid ""
+"Should the libnss-ldap configuration file be readable and writable only by "
+"the file owner?"
+msgstr ""
+"Nastavit oprávnění konfiguračního souboru libnss-ldap tak, aby jej mohl "
+"číst/zapisovat pouze vlastník souboru?"
+
+#. Description
+#: ../templates:4
+msgid ""
+"If you use passwords in your libnss-ldap configuration, it is usually a good "
+"idea to have the configuration set with mode 0600 (readable and writable "
+"only by the file's owner)."
+msgstr ""
+"Používáte-li ve své konfiguraci libnss-ldap hesla, je obvykle dobrým nápadem "
+"nastavit souboru práva 0600 (čtení a zápis pouze pro vlastníka souboru)."
+
+#. Description
+#: ../templates:4
+msgid ""
+"Note: As a sanity check, libnss-ldap will check if you have nscd installed "
+"and will only set the mode to 0600 if nscd is present."
+msgstr ""
+"Poznámka: libnss-ldap ještě zkontroluje, zda máte nainstalován nscd a "
+"oprávnění změní pouze v případě, že ano."
+
+#. Description
+#: ../templates:17
+msgid "nsswitch.conf is not managed automatically"
+msgstr "nsswitch.conf není spravován automaticky"
+
+#. Description
+#: ../templates:17
+msgid ""
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
+"examples/nsswitch.ldap which can be used as an example for your nsswitch "
+"setup, or it can be copied over your current setup."
+msgstr ""
+"Aby tento balík fungoval, musíte upravit svůj /etc/nsswitch.conf, aby "
+"jako zdroj dat používal ldap. V /usr/share/doc/libnss-ldap/examples/"
+"nsswitch.ldap se nachází vzorový soubor, který můžete použít jako "
+"základ pro vaše nastavení (stačí jej i prostě zkopírovat)."
+
+#. Description
+#: ../templates:17
+msgid ""
+"Also, before removing this package, it is wise to remove the ldap entries "
+"from nsswitch.conf to keep basic services functioning."
+msgstr ""
+"Podobně je vhodné při odinstalování balíčku tyto ldap záznamy z "
+"nsswitch.conf zase odstranit, aby byla zachována funkčnost základních služeb."
+
+#. Default
+#: ../templates:29
+msgid "dc=example,dc=net"
+msgstr "dc=priklad,dc=cz"
+
+#. Description
+#: ../templates:30
+msgid "distinguished name of the search base"
+msgstr "Rozlišitelný název prohledávaného stromu"
+
+#. Description
+#: ../templates:30
+msgid ""
+"Please enter the distinguished name of the LDAP search base.  Many sites use "
+"the components of their domain names for this purpose.  For example, the "
+"domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
+"name of the search base."
+msgstr ""
+"Zadejte prosím rozlišitelný název prohledávaného LDAP stromu. Mnoho serverů "
+"pro tento účel využívá části svých doménových jmen. Například doména "
+"\"priklad.cz\" by jako rozlišitelné jméno svého stromu použila "
+"\"dc=priklad,dc=cz\"."
+
+#. Description
+#: ../templates:39
+msgid "database requires login"
+msgstr "Databáze vyžaduje přihlášení"
+
+#. Description
+#: ../templates:39
+msgid "Does the LDAP database require login?"
+msgstr "Vyžaduje LDAP databáze přihlášení?"
+
+#. Description
+#: ../templates:39
+msgid ""
+"Answer this question affirmatively only if you can't retreive entries from "
+"the database without logging in."
+msgstr ""
+"Souhlaste pouze v případě, že nemůžete získávat záznamy z databáze bez "
+"přihlášení."
+
+#. Description
+#: ../templates:39
+msgid "Note: Under a normal setup, this is not needed."
+msgstr "Poznámka: při běžném nastavení to není potřeba."
+
+#. Description
+#: ../templates:50
+msgid "enable automatic configuration updates by debconf"
+msgstr "Povolit automatické zásahy do konfigurace pomocí debconfu"
+
+#. Description
+#: ../templates:50
+msgid "Should debconf automatically update libnss-ldap's configuration file?"
+msgstr "Má debconf automaticky aktualizovat konfigurační soubor libnss-ldap?"
+
+#. Description
+#: ../templates:50
+msgid "libnss-ldap has been moved to use debconf for its configuration."
+msgstr ""
+"libnss-ldap se konečně pochlapil a pro svou konfiguraci používá debconf."
+
+#. Description
+#: ../templates:50
+msgid ""
+"The file will be prepended with \"###DEBCONF###\"; you can disable the "
+"debconf updates by removing that line."
+msgstr ""
+"Na začátek souboru bude přidán řádek \"###DEBCONF###\". Chcete-li, aby "
+"debconf do souboru nezasahoval, stačí zmíněný řádek odstranit."
+
+#. Description
+#: ../templates:50
+msgid "All new installations will have this by default."
+msgstr "Toto je výchozí nastavení pro všechny nové instalace."
+
+#. Default
+#: ../templates:62
+msgid "cn=proxyuser,dc=example,dc=net"
+msgstr "cn=proxyuzivatel,dc=priklad,dc=cz"
+
+#. Description
+#: ../templates:63
+msgid "unprivileged database user"
+msgstr "Neprivilegovaný databázový uživatel"
+
+#. Description
+#: ../templates:63
+msgid ""
+"Enter the name of the account that will be used to log in to the LDAP "
+"database."
+msgstr "Zadejte jméno účtu, který se použije pro přístup k LDAP databázi."
+
+#. Description
+#: ../templates:69
+msgid "password for database login account"
+msgstr "Heslo pro přihlášení k databázi"
+
+#. Description
+#: ../templates:69
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr "Zadejte heslo, které se použije pro přístup k LDAP databázi."
+
+#. Choices
+#: ../templates:74
+msgid "3, 2"
+msgstr "3, 2"
+
+#. Description
+#: ../templates:76
+msgid "LDAP version to use"
+msgstr "Verze LDAPu, která se má použít"
+
+#. Description
+#: ../templates:76
+msgid ""
+"Please enter which version of the LDAP protocol ldapns is to use.  It is "
+"usually a good idea to set this to highest available version number."
+msgstr ""
+"Zadejte verzi LDAP protokolu, kterou má ldapns používat. Obvykle se "
+"doporučuje použít nejvyšší dostupnou verzi."
+
+#. Default
+#: ../templates:82
+msgid "127.0.0.1"
+msgstr "127.0.0.1"
+
+#. Description
+#: ../templates:83
+msgid "LDAP server host address"
+msgstr "Adresa počítače s LDAP serverem"
+
+#. Description
+#: ../templates:83
+msgid "Please enter the address of the LDAP server used."
+msgstr "Zadejte prosím adresu použitého LDAP serveru."
+
+#. Description
+#: ../templates:83
+msgid ""
+"Note: It is usually a good idea to use an IP address; this reduces risks of "
+"failure in the event name service is unavailable."
+msgstr ""
+"Poznámka: vždy je lepší použít IP adresu, protože se tím snižuje riziko "
+"chyby v případě, že je služba překladu jmen nedostupná."
