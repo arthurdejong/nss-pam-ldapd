@@ -1,0 +1,64 @@
+#!
+
+* Group-related routines (not used on AIX directly)
+gr_pvtinit
+gr_close
+gr_rewind
+gr_minimize
+gr_next
+gr_byname
+gr_bygid
+
+* Host-related routines
+ho_pvtinit
+ho_close
+ho_rewind
+ho_minimize
+ho_next
+ho_byname
+* No ho_byname2
+ho_byaddr
+
+* Netgroup-related routines
+ng_pvtinit
+ng_close
+ng_rewind
+ng_minimize
+ng_next
+ng_test
+
+* Networks-related routines
+nw_pvtinit
+nw_close
+nw_rewind
+nw_minimize
+nw_next
+nw_byname
+nw_byaddr
+
+* Protocols-related routines
+pr_pvtinit
+pr_close
+pr_rewind
+pr_minimize
+pr_next
+pr_byname
+pr_bynumber
+
+* Password-related routines (not used on AIX directly)
+pw_pvtinit
+pw_close
+pw_rewind
+pw_minimize
+pw_next
+pw_byname
+pw_byuid
+
+* Services-related routines
+sv_pvtinit
+sv_close
+sv_rewind
+sv_minimize
+sv_next
+sv_byname
+sv_byport

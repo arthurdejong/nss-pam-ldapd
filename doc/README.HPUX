@@ -1,0 +1,6 @@
+
+nss_ldap will not work on HP-UX using an LDAP library that requires
+thread local storage. Specifically, the Netscape SSL-enabled libraries
+(and perhaps all the Netscape libraries) will not work. Use OpenLDAP
+instead.
+

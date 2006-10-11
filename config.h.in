@@ -1,0 +1,316 @@
+/* config.h.in.  Generated from configure.in by autoheader.  */
+/* Define to the number of arguments to ldap_set_rebindproc */
+#undef LDAP_SET_REBIND_PROC_ARGS
+
+/* define to the number of args to gethostbyname_r */
+#undef GETHOSTBYNAME_R_ARGS
+
+/* define to set RFC2307BIS support */
+#undef RFC2307BIS
+
+/* define to enable debug code */
+#undef DEBUG
+
+/* define to enable attribute/objectclass mapping */
+#undef AT_OC_MAP
+
+/* define to enable proxy authentication for AIX */
+#undef PROXY_AUTH
+
+/* define to enable paged results control */
+#undef PAGE_RESULTS
+
+/* define to enable configurable Kerberos credentials cache */
+#undef CONFIGURE_KRB5_CCNAME
+
+/* define to enable configurable Kerberos credentials cache (putenv method) */
+#undef CONFIGURE_KRB5_CCNAME_ENV
+
+/* define to enable configurable Kerberos credentials cache (gssapi method) */
+#undef CONFIGURE_KRB5_CCNAME_GSSAPI
+
+/* Define to 1 if you have the <gssapi/gssapi_krb5.h> header file. */
+#undef HAVE_GSSAPI_GSSAPI_KRB5_H
+
+/* define to enable struct ether_addr definition */
+#undef HAVE_STRUCT_ETHER_ADDR
+
+/* define to enable socklen_t definition */
+#undef HAVE_SOCKLEN_T
+
+/* define if struct passwd has a pw_change member */
+#undef HAVE_PASSWD_PW_CHANGE
+
+/* define if struct passwd has a pw_expire member */
+#undef HAVE_PASSWD_PW_EXPIRE
+
+/* path to LDAP configuration file */
+#define NSS_LDAP_PATH_CONF              "/etc/ldap.conf"
+
+/* path to LDAP root secret file */
+#define NSS_LDAP_PATH_ROOTPASSWD        "/etc/ldap.secret"
+
+/* maximum number of group members in static buffer */
+#define LDAP_NSS_NGROUPS	 64
+
+
+/* Define to 1 if you have the <aliases.h> header file. */
+#undef HAVE_ALIASES_H
+
+/* Define to 1 if you have the <alignof.h> header file. */
+#undef HAVE_ALIGNOF_H
+
+/* Define to 1 if you have the <bits/libc-lock.h> header file. */
+#undef HAVE_BITS_LIBC_LOCK_H
+
+/* Define to 1 if you have the <ctype.h> header file. */
+#undef HAVE_CTYPE_H
+
+/* Define to 1 if you have the `dn_expand' function. */
+#undef HAVE_DN_EXPAND
+
+/* Define to 1 if you have the `ether_aton' function. */
+#undef HAVE_ETHER_ATON
+
+/* Define to 1 if you have the `ether_ntoa' function. */
+#undef HAVE_ETHER_NTOA
+
+/* Define to 1 if you have the `gethostbyname' function. */
+#undef HAVE_GETHOSTBYNAME
+
+/* Define to 1 if you have the `gethostbyname_r' function. */
+#undef HAVE_GETHOSTBYNAME_R
+
+/* Define to 1 if you have the <gssapi/gssapi_krb5.h> header file. */
+#undef HAVE_GSSAPI_GSSAPI_KRB5_H
+
+/* Define to 1 if you have the <gssapi.h> header file. */
+#undef HAVE_GSSAPI_H
+
+/* Define to 1 if you have the <gssldap.h> header file. */
+#undef HAVE_GSSLDAP_H
+
+/* Define to 1 if you have the <gsssasl.h> header file. */
+#undef HAVE_GSSSASL_H
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <irs.h> header file. */
+#undef HAVE_IRS_H
+
+/* Define to 1 if you have the <lber.h> header file. */
+#undef HAVE_LBER_H
+
+/* Define to 1 if you have the `ldapssl_client_init' function. */
+#undef HAVE_LDAPSSL_CLIENT_INIT
+
+/* Define to 1 if you have the `ldap_controls_free' function. */
+#undef HAVE_LDAP_CONTROLS_FREE
+
+/* Define to 1 if you have the `ldap_create_control' function. */
+#undef HAVE_LDAP_CREATE_CONTROL
+
+/* Define to 1 if you have the `ldap_create_page_control' function. */
+#undef HAVE_LDAP_CREATE_PAGE_CONTROL
+
+/* Define to 1 if you have the `ldap_explode_rdn' function. */
+#undef HAVE_LDAP_EXPLODE_RDN
+
+/* Define to 1 if you have the `ldap_get_lderrno' function. */
+#undef HAVE_LDAP_GET_LDERRNO
+
+/* Define to 1 if you have the `ldap_get_option' function. */
+#undef HAVE_LDAP_GET_OPTION
+
+/* Define to 1 if you have the <ldap.h> header file. */
+#undef HAVE_LDAP_H
+
+/* Define to 1 if you have the `ldap_init' function. */
+#undef HAVE_LDAP_INIT
+
+/* Define to 1 if you have the `ldap_initialize' function. */
+#undef HAVE_LDAP_INITIALIZE
+
+/* Define to 1 if you have the `ldap_ld_free' function. */
+#undef HAVE_LDAP_LD_FREE
+
+/* Define to 1 if you have the `ldap_memfree' function. */
+#undef HAVE_LDAP_MEMFREE
+
+/* Define to 1 if you have the `ldap_parse_page_control' function. */
+#undef HAVE_LDAP_PARSE_PAGE_CONTROL
+
+/* Define to 1 if you have the `ldap_parse_result' function. */
+#undef HAVE_LDAP_PARSE_RESULT
+
+/* Define to 1 if you have the `ldap_pvt_tls_set_option' function. */
+#undef HAVE_LDAP_PVT_TLS_SET_OPTION
+
+/* Define to 1 if you have the `ldap_sasl_interactive_bind_s' function. */
+#undef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
+
+/* Define to 1 if you have the `ldap_search_ext' function. */
+#undef HAVE_LDAP_SEARCH_EXT
+
+/* Define to 1 if you have the `ldap_set_option' function. */
+#undef HAVE_LDAP_SET_OPTION
+
+/* Define to 1 if you have the `ldap_set_rebind_proc' function. */
+#undef HAVE_LDAP_SET_REBIND_PROC
+
+/* Define to 1 if you have the <ldap_ssl.h> header file. */
+#undef HAVE_LDAP_SSL_H
+
+/* Define to 1 if you have the `ldap_start_tls' function. */
+#undef HAVE_LDAP_START_TLS
+
+/* Define to 1 if you have the `ldap_start_tls_s' function. */
+#undef HAVE_LDAP_START_TLS_S
+
+/* Define to 1 if you have the <libc-lock.h> header file. */
+#undef HAVE_LIBC_LOCK_H
+
+/* Define to 1 if you have the `lber' library (-llber). */
+#undef HAVE_LIBLBER
+
+/* Define to 1 if you have the `nsl' library (-lnsl). */
+#undef HAVE_LIBNSL
+
+/* Define to 1 if you have the `pthread' library (-lpthread). */
+#undef HAVE_LIBPTHREAD
+
+/* Define to 1 if you have the `resolv' library (-lresolv). */
+#undef HAVE_LIBRESOLV
+
+/* Define to 1 if you have the `socket' library (-lsocket). */
+#undef HAVE_LIBSOCKET
+
+/* Define to 1 if you have the <malloc.h> header file. */
+#undef HAVE_MALLOC_H
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <netinet/ether.h> header file. */
+#undef HAVE_NETINET_ETHER_H
+
+/* Define to 1 if you have the <netinet/if_ether.h> header file. */
+#undef HAVE_NETINET_IF_ETHER_H
+
+/* Define to 1 if you have the <net/route.h> header file. */
+#undef HAVE_NET_ROUTE_H
+
+/* Define to 1 if you have the `nsdispatch' function. */
+#undef HAVE_NSDISPATCH
+
+/* Define to 1 if you have the <nsswitch.h> header file. */
+#undef HAVE_NSSWITCH_H
+
+/* Define to 1 if you have the <nss.h> header file. */
+#undef HAVE_NSS_H
+
+/* Define to 1 if you have the <port_after.h> header file. */
+#undef HAVE_PORT_AFTER_H
+
+/* Define to 1 if you have the <port_before.h> header file. */
+#undef HAVE_PORT_BEFORE_H
+
+/* Define to 1 if you have the <prot.h> header file. */
+#undef HAVE_PROT_H
+
+/* Define to 1 if you have the `pthread_atfork' function. */
+#undef HAVE_PTHREAD_ATFORK
+
+/* Define to 1 if you have the <pthread.h> header file. */
+#undef HAVE_PTHREAD_H
+
+/* Define to 1 if you have the `res_search' function. */
+#undef HAVE_RES_SEARCH
+
+/* Define to 1 if you have the <rpc/rpcent.h> header file. */
+#undef HAVE_RPC_RPCENT_H
+
+/* Define to 1 if you have the `sasl_auxprop_request' function. */
+#undef HAVE_SASL_AUXPROP_REQUEST
+
+/* Define to 1 if you have the <sasl.h> header file. */
+#undef HAVE_SASL_H
+
+/* Define to 1 if you have the <sasl/sasl.h> header file. */
+#undef HAVE_SASL_SASL_H
+
+/* Define to 1 if you have the <shadow.h> header file. */
+#undef HAVE_SHADOW_H
+
+/* Define to 1 if you have the `sigaction' function. */
+#undef HAVE_SIGACTION
+
+/* Define to 1 if you have the `sigset' function. */
+#undef HAVE_SIGSET
+
+/* Define to 1 if you have the `snprintf' function. */
+#undef HAVE_SNPRINTF
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the `strtok_r' function. */
+#undef HAVE_STRTOK_R
+
+/* Define to 1 if you have the <synch.h> header file. */
+#undef HAVE_SYNCH_H
+
+/* Define to 1 if you have the <sys/byteorder.h> header file. */
+#undef HAVE_SYS_BYTEORDER_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <sys/un.h> header file. */
+#undef HAVE_SYS_UN_H
+
+/* Define to 1 if you have the <thread.h> header file. */
+#undef HAVE_THREAD_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the <usersec.h> header file. */
+#undef HAVE_USERSEC_H
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Version number of package */
+#undef VERSION

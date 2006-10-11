@@ -1,0 +1,141 @@
+Quick notes for using nss_ldap on AIX
+=====================================
+
+1. Introduction
+---------------
+
+The C library on AIX includes the IRS library which can also found in the
+BIND 8.x distribution. Of course, IBM did some things The Other Way(tm)...
+You can alo find related documentation at:
+  <URI:http://www.padl.com/Articles/nss_ldaponAIX.html>
+
+2. Compilation
+--------------
+
+I'm assuming you have successfully installed OpenLDAP 2.x or one of the
+Netscape LDAP client libraries. I haven't tested it with IBM's LDAP
+libraries. 
+
+I'm using AIX 4.3.3. It may work with 4.[12]. It won't work with 3.x.
+It is going to work on 5.x.
+
+You need to ensure that bos.adt.syscalls has been installed for -lsys
+and -lcsys to work as the /lib/syscalls.exp file (this is found
+on the Kernel Extensions developer kit). [Kyle_Chapman@G1.com]
+
+Run "configure" and "make" as usual. As of nss_ldap-196, it is no
+longer necessary to specify --enable-proxy-auth if you want to use
+the AIX authentication functionality; it is enabled by default.
+
+The /etc/ldap.conf is already used by the LDAP client from
+IBM SecureWay, so use
+
+  --with-ldap-conf-file=/etc/nss_ldap.conf
+
+to avoid confusion.  If everything went OK, you will get two
+objects: nss_ldap.so and NSS_LDAP.
+
+Some notes on dynamic linking that apply to dependent libraries
+(such as Cyrus SASL and OpenLDAP; the nss_ldap Makefile will
+take care of these for you within nss_ldap itself):
+
+   o You may find it useful to build a current libtool and
+     use that rather than the version distributed with many
+     third party packages.
+
+   o The GNU linker cannot reliably build shared libraries
+     on AIX and, even if newer versions can, libtool doesn't
+     think it can.
+
+   o You should ensure libtool is using the runtime linker
+     (-brtl) -- this builds shared libraries that resolve
+     their symbols at runtime rather than link time.
+
+eg. for configuring libtool:
+
+   $ LD=/usr/ccs/bin/ld LDFLAGS=-Wl,-brtl ./configure
+
+3. Installation
+---------------
+
+Copy nss_ldap.so to /usr/lib/netsvc/dynload (create the directory if it does
+not exist), and copy NSS_LDAP to /usr/lib/security. ("make install" will
+do this for you.)
+
+4. Configuration
+----------------
+
+Edit /etc/irs.conf as you like (create it if it does not exist). "man
+irs.conf" tells everything you need. As you would guess, you have to use the
+"nss_ldap" mechanism name to use nss_ldap. This lets you access host,
+network, service, and protocol information using LDAP (well, you can also
+configure netgroups here, but when I'm writing this, nss_ldap does not have
+netgroup support).
+
+Due to the missing netgroup support, you will get lots of "dlsym of symbol:
+ng_pvtinit failed: Function not implemented (ng_pvtinit)" in the system
+logs. That's ugly, but harmless.
+
+Now, the interesting part: users and groups. Have I said that IBM did it The
+Other Way(tm)? Ok, add the following stanza to /lib/security/methods.cfg:
+
+LDAP:
+	program = /usr/lib/security/NSS_LDAP
+
+If you are running AIX version which is less than 4.3.3 you will have
+to add the stanza to /etc/security/login.cfg.  In case of version
+4.3.3 you will have to add the same stanza to both files. Make sure
+you comment out existing references to LDAP, which are for IBM's
+SecureWay implementation.
+
+Use chuser(8) to edit /etc/security/user. Change the "SYSTEM"
+attribute of the "default" entry to "compat OR LDAP", i.e.:
+
+# chuser SYSTEM="compat or LDAP" default
+
+if you want to use the LDAP authentication system wide.
+Alternatively, you can enable it on a per-user basis:
+
+# chuser SYSTEM="compat or LDAP" username
+
+After that you should be able to use getpwnam() and friends to get the
+information from the LDAP server.  If you want to allow users to
+change their passwords using the standard passwd(1) command, you will
+have to change the registry attribute as well:
+
+# chuser registry=LDAP username
+
+(This is pointless right now as there is no support for password
+changing in nss_ldap.)
+
+NB:  The registry attribute is used to fetch/modify all the other user
+attributes which are not supported by the LDAP.  In particular the
+chuser(8) will fail to operate properly.  However, it is possible to
+use the "-R" option to specify the registry on which the command
+should operate.  For example, to change back to the normal files based
+authentication and identification:
+
+# chuser -R files SYSTEM=compat registry=files default
+
+NB:  Users should exist in the /etc/passwd file.  That doesn't seem to
+be necessary, but many strange things can happen depending on the AIX
+version running.  YMMV.
+
+5. What's missing
+-----------------
+
+The provided NSS_LDAP authentication module supports the identification
+and authentication interfaces. There is, however, no support for
+modifying user/group attributes (which means you won't be able to use
+the "chuser" command etc. to alter user/group attributes; you have to
+make all modifications directly via LDAP).
+
+Also, lsgroup does not support querying group membership, although
+group membership will be evaluted correctly when a user logs on.
+
+Enjoy.
+
+Gabor Gombas <gombasg@inf.elte.hu>
+Luke Howard <dev@padl.com>
+Dejan Muhamedagic <dejan.muhamedagic@at.ibm.com>
+

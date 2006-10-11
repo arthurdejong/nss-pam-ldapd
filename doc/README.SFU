@@ -1,0 +1,164 @@
+*******************************************************************
+
+nss_ldap-AD-pwdgrp
+
+  This file describes the modifications that were made to, and the
+  build process of, the nss_ldap-150 source to allow passwd and 
+  group info to be retrieved from a Windows 2000 Active Directory.
+
+  Modified by: 	djflux (Andrew Rechenberg) - dj_flux@yahoo.com
+  Date:		3 May 2001
+  URL:		http://w3.one.net/~djflux/nss_ldap-AD.shtml
+
+*******************************************************************
+
+***              ***
+*** IMPORTANT!!! ***
+***              ***
+-- One MUST have Microsoft Server for NIS from Microsoft Services 
+   for UNIX 2.0 installed on a Windows 2000 Server Domain Controller 
+   in order for this modified module to operate correctly.  See the 
+   URL below for more info about SFU 2.0:
+	
+	http://www.microsoft.com/windows2000/sfu
+
+-- One must also have the LDAP devel libraries installed on the machine
+   in order to properly build this module.  The proper headers and 
+   libraries can be found in the openldap-devel package.
+
+From: "Rechenberg, Andrew" <arechenberg@shermfin.com>
+Subject: RE: [nssldap] Can not get nss_ldap to work, can anyone please hel p me?
+To: "'Allister Maguire'" <amaguire@actonz.com>, nssldap@padl.com
+Date: Thu, 24 Jan 2002 09:28:36 -0500
+
+
+The README.SFU is slightly little out of date and off topic now.  I
+originally wrote README.SFU when I modified nss_ldap and Luke Howard
+integrated the patch into nss_ldap-150 I believe as a configure option.
+
+There is now the ability to do schema mapping in nss_ldap and change which
+attributes are used for LDAP lookups.  You have to use the following
+configure option:
+
+./configure --enable-schema-mapping [REST_OF_YOUR_OPTIONS_HERE]
+
+Once nss_ldap is compiled then you edit your ldap.conf file and uncomment
+the attribute mapping under the MSSFU section (use your favorite text editor
+and search for MSSFU and you should find it).  Once you do that, and you
+modify your nsswitch.conf, you should be off and running.
+
+Let me know if you need anymore help.
+
+Regards,
+Andy.
+
+
+
+*
+*** Test systems specifications ***
+*
+This module has been tested and works with the following operating
+system versions:
+
+RedHat Linux 7.1, kernel 2.4.2-2, against Win2000 Server SP1 mixed-mode
+RedHat Linux 6.2, kernel 2.2.17 (smp, custom), Win2000 Server SP1 mixed mode
+RedHat Linux 6.1, kernel 2.2.17 (smp, custom), Win2000 Server SP1 mixed mode
+
+The module should compile work with other *NIX/*BSD OS's, but your mileage 
+may vary.
+
+I believe there is a coding difference in certain applications between Red 
+Hat 6.1, and versions 6.2 and greater.  When testing the modified module I 
+used 'id [USERNAME]' to make sure that the correct information was being 
+retrieved from the AD.  In Red Hat versions 6.2 or greater (7.0 not tested,
+but it should be the same), 'id [USERNAME]' would only return UID, and primary
+GID.  If [USERNAME] was logged in interactively and ran 'id' the command showed
+UID, primary GID, and all other group memberships.
+
+However, when running 'id [USERNAME]' in Red Hat 6.1, the command returned a 
+"Segmentation Fault."  If the user is logged in interactively on 6.1, all of
+the correct information is still retrieved.
+
+I am going to check into this issue, but the module should still behave correctly
+under 6.1.  Let me know if you find out anything different.
+ 
+
+*
+*** What was modified ***  
+*
+There is very little to modify in order to retrieve passwd and group 
+information from a Windows 2000 Active Directory.
+
+[Ed note: the patches are incorporated, so all you need to do is
+ run ./configure --enable-mssfu-schema]
+
+Supplied in the ./admods directory is the context diff of ldap-schema.h.  
+This file shows the attributes that needed to be modified in order to 
+use nss_ldap for user and group information on a Linux machine.  Besides
+a slight modification of the Makefile, this is the only file that needs 
+to be changed.
+
+Below are the lines that need to be modified in the Makefile.  Just make 
+the lines in your Makefile similar to the ones below.
+
+nss_ldap_so_LDFLAGS = -shared -L/lib/libdb.so
+LDFLAGS = -L/lib/libdb.so
+NSS_LDAP_LDFLAGS = -enss_ldap_initialize -lsys -lcsys -lc -ldb
+LIBS = -lldap -llber -lnsl -lresolv -ldb
+
+The "-ldb" in NSS_LDAP_LDFLAGS and LIBS may not be necessary, but I 
+wasn't about the change anything in the module after I had it working :)
+Also, the -L switch should have the path to your libdb.so (e.g if libdb.so.3
+is in /usr/local/lib then your LDFLAGS should have -L/usr/local/lib/libdb.so.3).
+
+
+*
+*** Building it ***
+*
+This is the procedure that was used to build this module. The ldap-schema.h
+file include in this source tree has already been modified to work with 
+SFUed Active Directory, so you do not need to modify that file.  The 
+ldap-schema.diff file has been provided for illustration purposes so one 
+knows what attributes have been modified.
+
+1) make distclean
+2) ./configure --with-ldap=openldap --libdir=/lib --enable-mssfu-schema
+3) Modify Makefile so that the lines in Makefile are similar to those listed 
+    above.
+4) make install
+
+That's it!
+
+
+*
+*** /etc/ldap.conf ***
+*
+Modify your /etc/ldap.conf file to match your Active Directory/LDAP 
+configuration.  Unless you have changed your AD from the stock install, 
+you should have the following RFC2307bis naming contexts in your 
+ldap.conf file:
+
+nss_base_passwd		cn=Users,dc=yourdomain,dc=com?one
+nss_base_group		cn=Users,dc=yourdomain,dc=com?one
+
+With the stock Active Directory, all users and groups are located in the 
+cn=users container underneath your domain.  If your AD has been modified, 
+then modify the naming contexts to suit your directory.
+
+You should also set the PAM login attribute.  Mine is as follows:
+
+pam_login_attribute	msSFUName
+
+
+*
+*** Basic info ***
+*
+For basic setup of LDAP authentication and information storage and retrieval
+see the following URLs (specific to OpenLDAP and Linux, but they give one a
+good base understanding of how the process works):
+
+http://www.linux.com/howto/LDAP-Implementation-HOWTO/pamnss.html
+http://www.openldap.org/lists/openldap-software//200010/msg00097.html
+
+
+

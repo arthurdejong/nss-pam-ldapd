@@ -1,0 +1,314 @@
+
+Using nss-ldap with BIND/IRS under FreeBSD / Quick'n'Dirty guide
+================================================================
+
+[ Notes by Luke Howard <lukeh@padl.com> Sep 2001 ]
+
+Emile's patch was a little unclean, and I'm not able to generate
+a clean diff, so here is a list of the modifications you need to
+make to the IRS to get things to compile "right". You will 
+need to apply these diffs by hand, sorry.
+
+- Add a prototype to irs/gen.c:
+
+  struct irs_acc *irs_ldap_acc(const char *);
+
+- Edit gen.c and add "ldap" to the two stanzas, I suggest between
+  irs_nis and irs_irp.
+
+diff -u --recursive --new-file bind/src/lib/irs/gen.c bind-nss/src/lib/irs/gen.c
+--- bind/src/lib/irs/gen.c      Wed Oct 13 18:39:29 1999
++++ bind-nss/src/lib/irs/gen.c  Fri Sep  1 15:31:09 2000
+@@ -66,6 +66,7 @@
+        { "local", irs_lcl },
+        { "dns", irs_dns },
+        { "nis", irs_nis },
++       { "ldap", irs_ldap },
+        { "irp", irs_irp },
+        { NULL, irs_nacc }
+ };
+
+and also:
+
+@@ -80,6 +81,7 @@
+ #else
+        NULL,
+ #endif
++       irs_ldap_acc,
+        irs_irp_acc,
+        NULL
+ };
+
+- Edit gen_p.h and add irs_ldap between irs_nis and irs_irp:
+
+diff -u --recursive --new-file bind/src/lib/irs/gen_p.h bind-nss/src/lib/irs/gen_p.h
+--- bind/src/lib/irs/gen_p.h    Mon Jan 18 08:46:50 1999
++++ bind-nss/src/lib/irs/gen_p.h        Fri Sep  1 15:31:23 2000
+@@ -43,6 +43,7 @@
+        irs_lcl,        /* Local. */
+        irs_dns,        /* DNS or Hesiod. */
+        irs_nis,        /* Sun NIS ("YP"). */
++       irs_ldap,       /* LDAP */
+
+- Edit the Makefile and add the full path to each object file
+  in nss_ldap, eg:
+
+diff -u --recursive --new-file bind/src/lib/irs/Makefile bind-nss/src/lib/irs/Makefile
+--- bind/src/lib/irs/Makefile   Mon Feb 22 03:47:58 1999
++++ bind-nss/src/lib/irs/Makefile       Thu Aug 31 18:18:52 2000
+@@ -42,6 +42,8 @@
+ INSTALL_LIB=-o bin -g bin
+ THREADED= threaded
+
++LDAP=/usr/local/src/nss_ldap
++
+ SRCS=  dns.c dns_gr.c dns_ho.c dns_nw.c dns_pr.c dns_pw.c \
+        dns_sv.c gai_strerror.c gen.c gen_gr.c gen_ho.c \
+        gen_ng.c gen_nw.c gen_pr.c gen_pw.c gen_sv.c \
+@@ -70,7 +72,12 @@
+        lcl.${O} lcl_gr.${O} \
+        lcl_ho.${O} lcl_ng.${O} lcl_nw.${O} lcl_pr.${O} lcl_pw.${O} \
+        lcl_sv.${O} nis.${O} nis_gr.${O} nis_ho.${O} nis_ng.${O} nis_nw.${O} \
+-       nis_pr.${O} nis_pw.${O} nis_sv.${O} nul_ng.${O} util.${O}
++       nis_pr.${O} nis_pw.${O} nis_sv.${O} nul_ng.${O} util.${O} \
++       ${LDAP}/ldap-nss.o ${LDAP}/ldap-pwd.o ${LDAP}/ldap-grp.o \
++       ${LDAP}/ldap-hosts.o ${LDAP}/ldap-network.o ${LDAP}/ldap-proto.o \
++       ${LDAP}/ldap-service.o ${LDAP}/util.o ${LDAP}/globals.o \
++       ${LDAP}/ltf.o ${LDAP}/resolve.o ${LDAP}/dnsconfig.o ${LDAP}/irs-nss.o \
++       ${LDAP}/snprintf.o
+
+[ Instructions from Emile Heitor <eheitor@isdnet.net> ]
+
+Tested under FreeBSD 4.1, but should work under 3.x & 4.x.
+
+o Get nss_ldap (http://www.padl.com/nss_ldap.html)
+o Get bind-8.2.2p5 (http://www.isc.org)
+
+nss_ldap includes a patch to IRS in irs-nss.diff.
+
+then:
+
+tar zxvf nss_ldap-115.tar.gz
+mkdir bind-nss
+cd bind-nss
+tar zxvf ../bind-src.tar.gz
+patch -p1 < ../irs-nss.diff
+cd src
+make depend
+cd ../../nss_ldap
+
+At this point, you may modify Makefile's TOP variable to suit to your
+needs. Quit/Save.
+
+make clean && make
+cd ../bind-nss/src
+make all
+
+Ok, I know about nslookup's warnings and errors here, this is because of
+newly linked nss-ldap stuff, just ignore it if you plan to use only
+libbind for its IRS feature ( hey, I said "Quick'n'Dirty ;) ).
+This will be cleaner very soon, i.e. when I'll make it a dynamic library
+& will work around bind Makefiles.
+
+See if it works !
+=================
+
+Launch an LDAP server with your favourite data inside, then compile the
+following :
+
+[cut here]
+/* NSS-LDAP use exemple code */
+
+#include <sys/types.h>
+#include <pwd.h>
+
+int main(int argc, char **argv) {
+
+  struct passwd *pw;
+  
+  if (argc < 2 ) {
+    printf("bad arg number\n");
+    return(1);
+  }
+  
+  pw=getpwnam(argv[1]);
+
+  if (!pw)
+    printf("Failure\n", argv[1]);
+  else
+    printf("getpwnam return value:\n%s\ns%s\n",
+           pw->pw_name, pw->pw_passwd);
+
+  return(0);
+}
+[cut here]
+
+With the following Makefile :
+( change LIBBIND and LIBDIR to suit to your needs )
+
+[cut here]
+LIBBIND=/home/imil/pub/net/bind-nss/src/lib/libbind.a
+LIBDIR=-L/usr/local/openldap2/lib
+LIBS=-lldap_r -llber -lc_r
+
+all:    tpass
+
+tpass:  tpass.o $(LIBBIND)
+        cc -g -o tpass tpass.o $(LIBBIND) $(LIBDIR) $(LIBS)
+
+clean:
+        rm -f *.o tpass
+[cut here]
+
+launch it:
+
+./tpass user
+
+Watch your LDAP server logs, they should be nice ;)
+
+---
+
+All the best,
+
+--------------------------
+Emile Heitor
+Ingenieur Systeme Unix
+Cable & Wireless isdnet
+http://www.isdnet.net
+Email : eheitor@isdnet.net
+Tel   : 06.03.29.65.70
+--------------------------
+
+
+Subject:      Re: Documentation for IRS in BIND 8.x
+From:         Paul Vixie <paul@vix.com>
+Date:         1997/06/26
+Message-ID:   <g3radp5avm.fsf@wisdom.home.vix.com>
+Newsgroups:   comp.protocols.dns.bind
+_[More Headers]_
+
+
+Ooops.  I forgot to check in the man page for irs.conf(5).  Here's one:
+
+IRS.CONF(5)                 BSD Programmer's Manual                IRS.CONF(5)
+
+NAME
+     irs.conf - Information Retrieval System configuration file
+
+SYNOPSIS
+     irs.conf
+
+DESCRIPTION
+     The irs(3) functions are a set of routines in the C library which provide
+     access to various system maps.  The maps that irs currently controls are
+     the following: passwd, group, services, protocols, hosts, networks and
+     netgroup.  When a program first calls a function that accesses one of
+     these maps, the irs configuration file is read, and the source of each
+     map is determined for the life of the process.
+
+     If this file does not exist, the irs routines default to using local
+     sources for all information, with the exception of the host and networks
+     maps, which use the Domain Name System (DNS).
+
+     Each record in the file consists of one line.  A record consists of a
+     map-name, an access-method and possibly a (comma delimited) set of op-
+     tions, separated by tabs or spaces.  Blank lines, and text between a #
+     and a newline are ignored.
+
+     Available maps:
+
+           Map name        Information in map
+           =========       ==================================
+           passwd          User authentication information
+           group           User group membership information
+           services        Network services directory
+           protocols       Network protocols directory
+           hosts           Network hosts directory
+           networks        Network "network names" directory
+           netgroup        Network "host groups" directory
+
+     Available access methods:
+
+           Access method   Description
+           =============   =================================================
+           local           Use a local file, usually in /etc
+           dns             Use the domain name service (includes hesiod)
+           nis             Use the Sun-compatible Network Information Service
+>>         ldap            Use the Lightweight Directory Access Protocol
+
+     Available options:
+
+           Option          Description
+           ========        ================================================
+           continue        don't stop searching if you can't find something
+           merge           don't stop searching if you CAN find something
+
+     The continue option creates ``union namespaces'' whereby subsequent ac-
+     cess methods of the same map type can be tried if a name cannot be found
+     using earlier access methods.  This can be quite confusing in the case of
+     host names, since the name to address and address to name mappings can be
+     visibly asymmetric even though the data used by any given access method
+     is entirely consistent.  This behavior is, therefore, not the default.
+
+     The merge option only affects lookups in the groups map.  If set, subse-
+     quent access methods will be tried in order to cause local users to ap-
+     pear in NIS (or other remote) groups in addition to the local groups.
+
+EXAMPLE
+           # Get password entries from local file, or failing that, NIS
+           passwd          local   continue
+           passwd          nis
+
+           # Build group membership from both local file, and NIS.
+           group           local   continue,merge
+           group           nis
+
+           # Services comes from just the local file.
+           services        local
+
+           protocols       local
+
+           # Hosts comes first from DNS, failing that, the local file
+           hosts           dns     continue
+           hosts           local
+
+           networks        local
+
+           netgroup        local
+
+NOTES
+     If a local user needs to be in the local host's ``wheel'' group but not
+     in every host's ``wheel'' group, put them in the local host's /etc/group
+     ``wheel'' entry and set up the ``groups'' portion of your /etc/irs.conf
+     file as:
+
+           group   local   continue,merge
+           group   nis
+
+     The dns access method is only supported for the ``hosts'' and
+     ``networks'' maps.  The other maps fall under the control of Hesiod, and
+     have not been well tested.
+
+     NIS takes a long time to time out.  Especially for hosts if you use the
+     -d option to your server's ``ypserv'' daemon.
+
+     It is important that the irs.conf file contain an entry for each map.  If
+     a map is not mentioned in the irs.conf file, all queries to that map will
+     fail.
+
+FILES
+     /etc/irs.conf      The file irs.conf resides in /etc.
+
+SEE ALSO
+     groups(5),  hosts(5),  netgroup(5),  networks(5),  passwd(5),
+     protocols(5),  services(5)
+
+ BSDI                           August 8, 1996                               2
+
+-- 
+Paul Vixie
+La Honda, CA
+<_paul@vix.com_>			"Many NANOG members have been around
+pacbell!vixie!paul		 longer than most." --Jim Fleming
+
+

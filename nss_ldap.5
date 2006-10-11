@@ -1,0 +1,460 @@
+.TH nss_ldap 5
+.\" Copyright 1997-2005 Luke Howard."
+.\" Copying restrictions apply. See COPYING.
+.\" $Id: nss_ldap.5,v 2.14 2006/03/09 03:48:34 lukeh Exp $
+.SH NAME
+nss_ldap \- LDAP nameservice provider
+.SH DESCRIPTION
+The
+.B nss_ldap
+module is a set of C library extensions which allows X.500 and LDAP
+directory servers to be used as a primary source of name service
+information. (Name service information typically includes users,
+hosts, groups, and other such data historically stored in flat files
+or NIS.)
+.LP
+Features of the PADL nss_ldap module include support for both the
+RFC 2307 and RFC 2307bis schema, a common implementation across multiple
+platforms, Kerberos and SSL security, configurable schema mapping,
+and configuration file compatibility with the
+.BR pam_ldap (5)
+module.
+.LP
+Because LDAP is a hierarchical directory service, one can distribute the
+information in a manner which reflects organizational structure.
+This contrasts with the flat, single domain policy of NIS. LDAP has many
+of the advantages of NIS+ (security and scalability) without the complexity.
+.LP
+.B
+nss_ldap
+will work alongside existing NIS, NIS+, DNS and flat file
+name services. More importantly, because it builds as a shared library,
+it is not necessary to recompile any applications to take advantage
+of LDAP. 
+.LP
+The present version of
+.B
+nss_ldap
+supports AIX 4.3.3 and above, FreeBSD 5.1, HP-UX 11i, Linux and
+Solaris 2.6 and above. Many vendors provide their own LDAP nameservice
+providers, often also called nss_ldap. This manual page applies to the
+PADL
+.B
+nss_ldap
+module only. If you are using a vendor provided module, consult the
+relevant documentation instead.
+.LP
+The features supported by the version of
+.B
+nss_ldap
+depend on which flags
+were enabled when the software was built. Most features are enabled
+in the configuration file, described below. (The location of the
+configuration file is
+configurable at compile time; the default path is /etc/ldap.conf.)
+Also, some features may be unavailable on certain
+operating systems or with certain LDAP libraries. For more information,
+consult your vendor.
+.SH CONFIGURATION
+.B
+nss_ldap
+stores its configuration in the
+.B
+ldap.conf
+file, the location of which is configurable at compile time.
+(It should be noted that some LDAP client libraries, such as
+OpenLDAP, also use a configuration file of the same name.
+.B
+nss_ldap
+supports many of the same configuration file options as OpenLDAP,
+but it adds several that are specific to the functionality it provides.
+Additionally, it is not guaranteed that
+.B
+nss_ldap
+will continue to match the configuration file semantics of OpenLDAP.
+You may wish to use different files.)
+.LP
+Configuration file options consist of a keyword followed by a
+space and any arguments. The following options are supported by
+both
+.B
+nss_ldap
+and the PADL
+.B
+pam_ldap
+module:
+.B
+.TP
+.B host <name:port ...>
+Specifies the name(s) or IP address(es) of the
+.I
+LDAP
+server(s) to connect to. In the case that
+.B
+nss_ldap
+is used for host name resolution, each server should be specified as an
+IP address or name that can be resolved without using
+.I
+LDAP.
+Multiple servers may be specified, each separated by a space.
+The failover time depends on whether the
+.I
+LDAP
+client library supports configurable network or connect timeouts
+(see
+.B
+bind_timelimit
+below).
+.TP
+.B base <base>
+Specifies the default base distinguished name (DN) to use for searches.
+.TP
+.B uri <ldap[is]://[name[:port]] ...>
+For
+.I
+LDAP
+client libraries that support it, specifies the URI(s) of the LDAP
+server(s) to connect to. The URI scheme may be
+.B
+ldap,
+.B
+ldapi,
+or
+.B
+ldaps,
+specifying LDAP over TCP, IPC and SSL respectively. If applicable,
+a port number can be specified; the default port number for the
+selected protocol is used if omitted. This option takes
+precedence over the
+.B
+host
+option; it is not possible to combine the two.
+.TP
+.B
+ldap_version <version>
+Specifies the version of the
+.I
+LDAP
+protocol to use. Presently
+.B
+version
+must be 2 or 3. The default is to use the maximum version supported
+by the client library.
+.TP
+.B binddn <binddn>
+Specifies the distinguished name with which to bind to the directory
+server(s). This option is optional; the default is to bind
+anonymously.
+.TP
+.B bindpw <bindpw>
+Specifies the cleartext credentials with which to bind. This option
+is only applicable when used with
+.B binddn
+above. The default is no credential (anonymous bind). When binding to
+the directory using
+.I
+SASL
+or other authentication mechanisms apart from simple binds, this
+option is not used.
+.TP
+.B rootbinddn <binddn>
+This option has the same syntax and effect as the
+.B binddn
+option above, except it applies when the effective user ID is
+zero. If not specified, then the identity specified in
+.B binddn
+is used instead. Because the configuration file may be readable by
+many users, the root bind DN credentials are stored in the
+.B ldap.secret
+file instead. This file is usually in the same directory as the
+configuration file.
+.TP
+.B port <port>
+Specifies the port to connect to; this option is used with the
+.B host
+option, and is ignored with the
+.B uri
+option.
+.TP
+.B scope <sub|one|base>
+Specifies the search scope (subtree, one level or base object). The
+default scope is subtree; base scope is almost never useful for
+nameservice lookups.
+.TP
+.B deref <never|searching|finding|always>
+Specifies the policy for dereferencing aliases. The default policy is
+to never dereference aliases.
+.TP
+.B timelimit <timelimit>
+Specifies the time limit (in seconds) to use when performing searches. A value
+of zero (0), which is the default, is to wait indefinitely for
+searches to be completed.
+.TP
+.B bind_timelimit <timelimit>
+Specifies the time limit (in seconds) to use when connecting to the directory
+server. This is distinct from the time limit specified in
+.B timelimit
+and affects the initial server connection only. (Server connections
+are otherwise cached.) Only some
+.I
+LDAP
+client libraries have the underlying functionality necessary to
+support this option. The default bind timelimit is 30 seconds.
+.TP
+.B referrals <yes|no>
+Specifies whether automatic referral chasing should be enabled. The
+default behaviour is specifed by the
+.I
+LDAP
+client library.
+.TP
+.B restart <yes|no>
+Specifies whether the
+.I LDAP
+client library should restart the
+.BR
+select(2)
+system call when interrupted. This feature is not supported by all
+client libraries.
+.TP
+.B logdir <directory>
+Specifies the directory used for logging by the
+.I LDAP
+client library. This feature is not supported by all client
+libraries.
+.TP
+.B debug <level>
+Specifies the debug level used for logging by the
+.I LDAP
+client library. This feature is not supported by all client
+libraries, and does not apply to the
+.B nss_ldap
+and
+.B pam_ldap
+modules themselves (debugging, if any, is configured separately
+and usually at compile time).
+.TP
+.B ssl <on|off|start_tls>
+Specifies whether to use SSL/TLS or not (the default is not to). If
+.B
+start_tls
+is specified then StartTLS is used rather than raw LDAP over SSL.
+Not all
+.I LDAP
+client libraries support both SSL and StartTLS, and all related
+configuration options.
+.TP
+.B sslpath <cert7_path>
+For the Netscape and Mozilla
+.I
+LDAP
+client libraries only, this specifies the path to the X.509
+certificate database.
+.TP
+.B tls_checkpeer <yes|no>
+Specifies whether to require and verify the server certificate
+or not, when using SSL/TLS with the OpenLDAP client library.
+The default is to use the default behaviour of the client
+library; for OpenLDAP 2.0 and earlier it is "no", for OpenLDAP
+2.1 and later it is "yes". At least one of
+.B tls_cacertdir
+and
+.B tls_cacertfile
+is required if peer verification is enabled.
+.TP
+.B tls_cacertdir <certificate_dir>
+Specifies the directory containing X.509 certificates for peer
+authentication.
+.TP
+.B tls_cacertfile <certificate_file>
+Specifies the path to the X.509 certificate for peer authentication.
+.TP
+.B tls_randfile <entropy_file>
+Specifies the path to an entropy source.
+.TP
+.B tls_ciphers <ciphers>
+Specifies the ciphers to use for TLS. See your TLS implementation's
+documentation for further information.
+.TP
+.B tls_cert <certificate_file>
+Specifies the path to the file containing the local certificate for
+client TLS authentication.
+.TP
+.B tls_key <key_file>
+Specifies the path to the file containing the private key for client
+TLS authentication.
+.TP
+The following configuration options apply to nss_ldap only:
+.TP
+.B bind_policy <hard_open|hard_init|soft>
+Specifies the policy to use for reconnecting to an unavailable
+.I
+LDAP
+server. The default is
+.B hard_open,
+which reconnects if opening the connection to the directory server
+failed. By contrast,
+.B hard_init
+reconnects if initializing the connection failed. Initializing may not
+actually contact the directory server, and it is possible that a
+malformed configuration file will trigger reconnection. If
+.B soft
+is specified, then
+.B nss_ldap
+will return immediately on server failure. All "hard" reconnect
+policies block with exponential backoff before retrying.
+.TP
+.B nss_connect_policy <persist|oneshot>
+Determines whether nss_ldap persists connections. The default
+is for the connection to the LDAP server to remain open after
+the first request.
+.TP
+.B idle_timelimit <timelimit>
+Specifies the time (in seconds) after which
+.B
+nss_ldap
+will close connections to the directory server. The default is not to
+time out connections.
+.TP
+.B sasl_authid <authid>
+Specifies the authorization identity to be used when performing SASL
+authentication.
+.TP
+.B rootsasl_auth_id <authid>
+Specifies the authorization identity to be used when performing SASL
+authentication as root (when the effective user ID is zero).
+.TP
+.B sasl_secprops <properties>
+Specifies Cyrus SASL security properties. Allowed values are described
+in the
+.BR
+ldap.conf(5)
+manual page.
+.TP
+.B rootuse_sasl <yes|no>
+Specifies whether SASL authentication should be used when the effective
+user ID is zero.
+.TP
+.B krb5_ccname <PREFIX:args>
+If
+.B nss_ldap
+is built with configurable GSS-API credentials cache name support,
+specifies the Kerberos credentials cache to use.
+.TP
+.B nss_paged_results <yes|no>
+.BR
+Enables support for paged results.
+.TP
+.B pagesize <pagesize>
+When paged results are enabled (see above), specifies the number of
+entries to return in a single page. The default is 1000.
+.TP
+.B nss_base_<map> <basedn?scope?filter>
+Specify the search base, scope and filter to be used for specific
+maps. (Note that
+.B map
+forms part of the configuration file keyword and is one of
+passwd, shadow, group, hosts, services, networks, protocols,
+rpc, ethers, netmasks, bootparams, aliases and netgroup.)
+The syntax of
+.B basedn
+and
+.B scope
+are the same as for the configuration file options of the same
+name, with the addition of being able to omit the trailing suffix
+of the base DN (in which case the global base DN will be appended
+instead).  The
+.B filter
+is a search filter to be added to the default search filter for a
+specific map, such that the effective filter is the logical
+intersection of the two. The base DN, scope and filter are separated
+with literal question marks (?) as given above; this is for
+compatibility with the DUA configuration profile schema and the
+.B
+ldapprofile
+tool. This option may be specified multiple times.
+.TP
+.B nss_map_attribute <from_attribute> <to_attribute>
+This option may be specified multiple times, and directs
+.B nss_ldap
+to use the attribute
+.B to_attribute
+instead of the RFC 2307 attribute
+.B from_attribute
+in all lookups.
+If 
+.B nss_ldap
+was built without schema mapping support, then this option
+is ignored.
+.TP
+.B nss_map_objectclass <from_objectclass> <to_objectclass>
+This option may be specified multiple times, and directs
+.B nss_ldap
+to use the object class
+.B to_objectclass
+instead of the RFC 2307 object class
+.B from_objectclass
+in all lookups.
+If
+.B nss_ldap
+was built without schema mapping support, then this option
+is ignored.
+.TP
+.B nss_default_attribute_value <attribute> <value>
+Specifies the default value to use for entries that lack the
+specified attribute. This option may be specified multiple times,
+for different attributes.
+If
+.B nss_ldap
+was built without schema mapping support, then this option
+is ignored.
+.TP
+.B nss_override_attribute_value <attribute> <value>
+Specifies a value to use for the specified attribute in preference 
+to that contained in the actual entry. This option may be specified
+multiple times, for different attributes.
+If
+.B nss_ldap
+was built without schema mapping support, then this option
+is ignored.
+.TP
+.B nss_schema <rfc2307bis|rfc2307>
+If the value of this option is
+.BR
+rfc2307bis
+then support for the RFC2307bis schema (distinguished names in
+groups) will be enabled.
+.TP
+.B nss_initgroups <backlink>
+This option directs the
+.B nss_ldap
+implementation of
+.BR initgroups(3)
+to determine a user's group membership by reading the memberOf
+attribute of their directory entry (and of any nested groups),
+rather than querying on uniqueMember. This may provide increased
+performance with certain directory servers that have peculiar
+indexing configurations.
+If RFC2307bis support is disabled, then this option is ignored.
+.TP
+.B nss_initgroups_ignoreusers <user1,user2,...,userN>
+This option directs the
+.B nss_ldap
+implementation of
+.BR initgroups(3)
+to return NSS_STATUS_NOTFOUND if called with a listed users as
+its argument.
+.TP
+.B nss_srv_domain <domain>
+This option determines the DNS domain used for performing SRV
+lookups.
+.SH AUTHOR
+The
+.B nss_ldap
+module was developed by PADL Software Pty Ltd (www.padl.com).
+
+.SH FILES
+.TP
+/etc/ldap.conf, /etc/ldap.secret, /etc/nsswitch.conf
+.SH SEE ALSO
+.BR nsswitch.conf (5)

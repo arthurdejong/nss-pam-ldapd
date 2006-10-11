@@ -1,0 +1,30 @@
+#ident $Id: exports.solaris,v 2.6 2006/01/12 10:19:20 lukeh Exp $
+nss_ldap.so.1 {
+	global:
+		# Published NSS service module interfaces
+		_nss_ldap_bootparams_constr;
+		_nss_ldap_ethers_constr;
+		_nss_ldap_group_constr;
+		_nss_ldap_hosts_constr;
+		_nss_ldap_networks_constr;
+		_nss_ldap_protocols_constr;
+		_nss_ldap_passwd_constr;
+		_nss_ldap_rpc_constr;
+		_nss_ldap_services_constr;
+		_nss_ldap_shadow_constr;
+		_nss_ldap_netgroup_constr;
+		# libsldap library interfaces
+		__ns_ldap_getMappedAttributes;
+		__ns_ldap_getMappedObjectClass;
+		__ns_ldap_getParam;
+		__ns_ldap_freeError;
+		__ns_ldap_freeEntry;
+		__ns_ldap_freeResult;
+		__ns_ldap_list;
+		__ns_ldap_err2str;
+		__ns_ldap_firstEntry;
+		__ns_ldap_nextEntry;
+		__ns_ldap_endEntry;
+	local:
+		*;
+};

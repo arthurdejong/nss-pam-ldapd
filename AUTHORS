@@ -1,0 +1,70 @@
+
+nss_ldap was written by Luke Howard <lukeh@padl.com>.
+
+Development commenced in mid-1997 and continues to this day.
+
+Special thanks go to people who have volunteered their time, effort,
+and ideas to make this software available.
+
+Please note that unless specifically indicated otherwise,
+Luke Howard retains copyright in all contributed code.
+
+	Steven Barrus <sbarrus@eng.utah.edu>
+	David Begley <david@avarice.nepean.uws.edu.au>
+	Maxim Batourine <Batourine_M@ald.utoronto.ca>
+	Michael Brownea <mbrown@fensystems.co.uk>
+	Max Caines <Max.Caines@wlv.ac.uk>
+	Carlos Celso <carlos.celso@embraer.com.br>
+	Peter Cherny <peterc@luddite.com.au>
+	Howard Chu <hyc@symas.com>
+	Ben Collins <bcollins@debian.org>
+	Stephan Cremer <scremer@dohle.com>
+	Alejandro Forero Cuervo <azul@freaks-unidos.net>
+	Guenther Deschner <gd@samba.org>
+	Luca Filipozzi <lucaf+nssldap@ece.ubc.ca>
+	Andrew Findlay <Andrew.Findlay@skills-1st.co.uk>
+	Cristian Gafton <gafton@redhat.com>
+	Gabor Gombas <gombasg@inf.elte.hu>
+	DJ Gregor <dj@gregor.com>
+	Bob Guo <bob@mail.ied.ac.cn>
+	Daniel Hanks <hanksdc@plug.org>
+	Leif Hedstrom <leif@ogre.com>
+	Emile Heitor <eheitor@isdnet.net>
+	Geert Jansen <undisclosed>
+	Szymon Juraszczyk <szymon@ssk.pl>
+	Anselm Kruis <kruis@till-photonics.com>
+	Thorsten Kukuk <kukuk@suse.de>
+	Steve Langasek <vorlon@netexpress.net>
+	Joe Little <jlittle@open-it.org>
+	Phillip Liu <phillip@loudcloud.com>
+	Larry Lile <llile@dreamworks.com>
+	Jeff Mandel <jeff.mandel@probes.com>
+	Peter Marschall <peter@adpm.de>
+	Michael Mattice <mike@bmisystems.com>
+	Dejan Muhamedagic <dejan.muhamedagic@at.ibm.com>
+	Doug Nazar <nazard@dragoninc.on.ca>
+	Frode Nordahl <frode@nordahl.net>
+	Lars Oergel <lars.oergel@innominate.de>
+	Fredrik Ohrn <ohrn@chl.chalmers.se>
+	Rakesh Patel <rpatel@globix.com>
+	Nathan Hawkins <Nathan.Hawkins@FMR.COM>
+	Andrew Rechenberg <ARechenberg@shermanfinancialgroup.com>
+	Greg Retowski <greg@rage.net>
+	Alain Richard <alain.richard@equation.fr>
+	Michael Shuey <shuey@ecn.purdue.edu>
+	Oliver Schulze L. <oliver@samera.com.py>
+	Alexander Spannagel <spannagel@jobpilot.com>
+	Scott M. Stone <sstone@foo3.com>
+	Gero Treuner <gero@faveve.uni-stuttgart.de>
+	Jarkko Turkulainen <jt@wapit.com>
+	Stein Vrale <stein@terminator.net>
+	Simon Wilkinson <sxw@sxw.org.uk>
+
+If I've forgotton anyone, please let me know.
+
+Contributors should appraise themselves of the document at
+http://www.padl.com/Articles/GuidelinesforContributing.html.
+
+-- 
+Luke Howard <lukeh@padl.com>
+

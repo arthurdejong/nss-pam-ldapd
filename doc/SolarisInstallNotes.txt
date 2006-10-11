@@ -1,0 +1,198 @@
+Date: Sat, Jun 16 2001 03:33:50
+Request created by sstone@foo3.com
+
+OK, this might just be a result of the specific combination I was using:
+
+OpenLDAP 2.0.11 with OpenSSL 0.9.6a, OpenLDAP compiled for SSL/TLS,
+OpenSSL compiled to use RSAREF.  slapd running on a freeBSD 4.3-STABLE
+machine, client in question that these docs refer to is a Sun
+SPARCStation4 (sun4m) running Solaris 7.  A lot of my frustration here is
+due to the fact that it compiles things really SLOW (only a 70mhz cpu...)
+
+This information is primarily for you to review and integrate into your
+docs, to hopefully make your product more usable.  I should preface this
+by saying that after I did all this stuff, it eventually DOES work
+correctly, so it has a happy ending.  I'm authenticating users on the
+solaris machine using SSL now, or so says my packet sniffer, snort. :)
+
+1) your docs should say, "Your openldap libs *and* your SSL/RSAREF libs
+must be DYNAMIC LIBRARIES or neither nss_ldap nor pam_ldap will work".
+You also should say that you need to have all these shared libraries in
+/usr/lib, since LD_LIBRARY_PATH doesn't get sourced when these modules are
+called, and if it's in /usr/local/ssl/lib or /usr/local/lib it's not going
+to find them and the dynamic link calls will fail, and so will your LDAP
+auth. [NB: compiling with -Wl,-R or -Wl,-rpath *will* include the 
+qualified library path in the resulting library or executable. LH]
+
+1a) compiling rsaref dynamically is a pain.  You have to do it yourself
+cuz its makefile will NOT.  commandline:
+
+cd rsaref/install
+make
+rm -f rdemo.o
+gcc -o librsaref.so.2 -shared -Wl,-soname,librsaref.so.2 *.o
+
+this will create you both the .a and the .so.2 file.  you must have gnu
+binutils for that to work.  Then, install with:
+
+cp librsaref.so.2 /usr/lib
+ln -sf /usr/lib/librsaref.so.2 /usr/lib/librsaref.so
+
+2)  On Solaris, you need GNU Make and GNU binutils to compile openssl
+dynamically.  Using these tools on Solaris makes your configure/makefile
+scripts act funny.  I had to take out the "-Wl,./mapfile" from the LDFLAGS
+in both nss_ldap and pam_ldap to make it link properly (but it works once
+you do that).  I was getting an error: "./mapfile: invalid file format"
+
+2a) to compile OpenSSL with RSAREF and dynamic lib support, you must:
+
+cd openssl-0.9.6a
+./config rsaref dynamic
+make
+make install
+
+3)  In your makefiles, you check for main in -lldap.  BUT you don't check
+for the SSL libraries, so this check will ALWAYS FAIL if libldap.so.2 was
+compiled with TLS support.  Go into the configure script and change:
+
+-lldap $LIBS
+
+to
+
+-lldap -lcrypto -lssl -lRSAglue -lrsaref -lsocket $LIBS
+
+and it works.  yeah, you need -lsocket too.  I dont have autoconf on my
+solaris box or I'd have fixed the configure.in directly, but I'll leave
+that up to you :)  You need to make that change both in the place where it
+specifies the libs to compile conftest.c and in in the place where it adds
+the values to the $LIBS variable for eventual linking.
+
+4) you need a random number generator.  Solaris doesn't come with one, and
+Sun's SUNWski package seems to irritate OpenSSL to the point of coredump.
+I used ANDI-rand, available as a solaris pkg for 2.5.1, 2.6, 2.7, and 2.8.
+it works.
+
+
+Anyway I hope this helps.  I figured all of this out on my own, since the
+end-to-end process isn't really well-documented ANYWHERE.  If you use my
+information here in your docs, I'd appreciate a small byline, ie,
+"portions contributed by Scott Stone <sstone@foo3.com>" or something like
+that :)  thanks!
+
+--------------------------
+Scott M. Stone <sstone@foo3.com>
+Cisco Certified Network Associate, Sun Solaris Certified Systems Administrator
+Senior Technical Consultant - UNIX and Networking
+Taos - The SysAdmin Company 
+
+[http://www.css-solutions.ca/ad4unix/solaris8.html]
+
+To enable support of nss_ldap and pam_ldap modules from PADL for 64bit application on SUN SPARC platform using Sun C/C++ compiler version 5.0+ is required!!! (Note: with latest gcc 3.0.2 there is some support for 64bit platforms, but we didn't find what options are required for that kind of compilation... GNU as produced some errors, but GNU ld explicitly supported 64bit linking.) Our succesfull implementation was based on "Sun WorkShop 6 update 1 C 5.2 Patch 109513-07 2001/08/27" compiler and nss_ldap v.173 and pam_ldap v.133 modules from PADL Software. There was some issues with compailing and compatibility:
+
+1.	For nss_ldap with --enable-schema-mapping configure option Berkeley db library is required. There is no precompiled 64bit Berkeley db library available. You can download db library sources from www.sleepycat.com and compile it with the follow batch file:
+
+             #!/bin/sh             
+             
+             CC64=" -xtarget=native64 -KPIC " 
+             #CC64="" 
+             export CC64 
+             
+             
+             CC=cc 
+             export CC 
+             CFLAGS=" $CC64 " 
+             export CFLAGS 
+             LDFLAGS=" $CC64 -R/usr/local/lib/sparcv9" 
+             export LDFLAGS 
+             
+             cd db-3.3.11/dist 
+             ./configure \ 
+             --prefix=/usr/local \ 
+             --bindir=/usr/local/bin/sparcv9 \ 
+             --libdir=/usr/local/lib/sparcv9 \ 
+             --enable-compat185 
+             make
+             make install
+I guess if you compile it for 64bit you also would like to compile for 32bit, for that just comment CC64 option and uncomment follow CC64 empty option, remove /sparcv9 suffix from LDFLAGS and remove --bindir and --libdir prefixes from configure command line.
+
+
+2.	The nss_ldap v.173 requires some patching for compatibility with Sun C (not only with Sun, but AIX C has same symptoms): 
+*	Sun C compiler (latest from Sun and same issues as AIX C compiler) does not support construction like:
+in ldap-nss.h near line 600:
+#define debug(fmt, args...) fprintf(stderr, fmt, ## args)
+workaround was - coping AIX workaround for SUN C:-)
+
+*	Also Sun C compiler does not support initialization of arrays by not constant values (by functions for example - macro AT with class mapping will replaced by function call)...
+in util.c (line 204) from:
+const char *attrs[] = { AT (uid), attrs[1] = NULL };
+LDAPMessage *res;
+to:
+LDAPMessage *res;
+const char *attrs[2];
+attrs[0] = AT (uid) ;
+attrs[1] = NULL ;
+
+
+
+
+Luke Howard from PADL Software said that in the next releases these problems will be patched.
+
+3.	There is our batch file for compiling nss_ldap.so 64 bit with Sun C/C++ compiler (for compiling 32bit module comment CC64 statment and uncomment follow CC64 empty statment also remove /sparcv9 suffix from LDFLAGS):
+
+
+             #!/bin/sh 
+
+
+             CC64=" -xtarget=native64 -KPIC " 
+             #CC64="" 
+             export CC64 
+             
+             CC=cc 
+             export CC 
+             CFLAGS=" $CC64 " 
+             export CFLAGS 
+             CPPFLAGS=" -I/usr/local/include " 
+             export CPPFLAGS 
+             LDFLAGS=" $CC64 -L/usr/local/lib/sparcv9 -R/usr/local/lib/sparcv9 " 
+             export LDFLAGS 
+             
+             cd nss_ldap-173 
+             ./configure --enable-schema-mapping \ 
+             --enable-rfc2307bis
+             # --enable-debugging 
+
+4.	Batch file for compiling pam_ldap module is same, just change directory to pam_ldap-xxx and run ./configure without any parametrs.
+
+
+32bit version
+We found some incompatibility BUG in the gcc produced code (3.0.1 and 3.0.2) and dynamic linking with dlopen function calls. That BUG we found in 32bit compiled libraries with Sun C/C++ and applications that was compiled by GNU gcc 3.0.1 and 3.0.2 (we could not test it with GNU gcc 64 bit and we did not test it with other versions of GNU gcc). If Application was compiled with Sun C/C++ there is no problem. Workaround for that was erasing linked modules and relinking modules by explicitly call ld: 
+
+1.	Erase modules:
+for PAM
+rm pam_ldap.so 
+or for NSS
+rm nss_ldap.so 
+2.	run ld linker explicitly:
+for PAM: 
+*	for native Sun linker
+/usr/ccs/bin/ld -M mapfile -R/usr/local/lib -o pam_ldap.so -G pam_ldap.o md5.o -lldap -lnsl -lcrypt -lresolv -lpam -ldl
+*	for GNU lg
+/usr/local/bin/ld -R/usr/local/lib -o pam_ldap.so -G pam_ldap.o md5.o -lldap -lnsl -lcrypt -lresolv -lpam -ldl 
+
+or for for NSS:
+*	for native Sun linker
+/usr/ccs/bin/ld -R/usr/local/lib -o nss_ldap.so -M ./mapfile -G \ 
+ldap-nss.o ldap-pwd.o ldap-grp.o ldap-rpc.o ldap-hosts.o ldap-network.o \ 
+ldap-proto.o ldap-spwd.o ldap-alias.o ldap-service.o ldap-schema.o ldap-ethers.o \ 
+ldap-bp.o util.o globals.o ltf.o snprintf.o resolve.o dnsconfig.o irs-nss.o \ 
+-lldap -Bdynamic -ldb -ldl -lnsl -lresolv
+*	for GNU lg
+/usr/local/bin/ld -R/usr/local/lib -o nss_ldap.so -G \ 
+ldap-nss.o ldap-pwd.o ldap-grp.o ldap-rpc.o ldap-hosts.o ldap-network.o \ 
+ldap-proto.o ldap-spwd.o ldap-alias.o ldap-service.o ldap-schema.o ldap-ethers.o \ 
+ldap-bp.o util.o globals.o ltf.o snprintf.o resolve.o dnsconfig.o irs-nss.o \ 
+-lldap -Bdynamic -ldb -ldl -lnsl -lresolv 
+
+
+3.	make install :-)
+

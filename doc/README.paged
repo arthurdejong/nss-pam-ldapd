@@ -1,0 +1,53 @@
+Purpose
+-------
+
+These  amendments  cause  all "getXXent"   calls  implemented  by
+NSS_LDAP  to  request paging of results in  accordance  with  RFC
+2696. 
+
+If  you  are  using  LDAP searches  against  a  Microsoft  Active
+Directory  database,  you  will  find  that  search  results  are
+divided  into  "chunks".  A standard  "ldap_search"   against  an
+untweaked AD returns a maximum of 1000 entries. To get more  than
+that,  you have to either use an extended search with paging,  or
+increase  the  query  policy limits on your AD.  If  you  have  a
+large  number  of  users (we have over 30K)  raising  the  policy
+limits that high is worrying.  
+
+The  page  size requested is 1000 entries, and is  not  a  config
+file item. However, it should be OK with any Active Directory.
+
+Because  of the way the page control is used, any  LDAPv3  server
+that  does  not  implement paging should  simply  ignore  it  and
+return  entries as normal; however, I haven't been able  to  test
+this.
+
+Installing
+----------
+
+The  TAR file contains 3 context diff files and one extra C  file
+(pagectrl. c)  that implements the standard API calls  for  paged
+results  controls.  If your LDAP library supports  these  anyway,
+you  shouldn't  need it, but I don't know of one that  does.  The
+Sun  library  has the entry points, but I couldn't  get  them  to
+work. 
+
+1. Unpack the TAR file in your NSS LDAP directory.
+
+2. Run "patch" to apply the 3 diff files. On my system that is:
+
+	patch ldap-nss.c < ldap-nss.c.diff
+	patch ldap-nss.h < ldap-nss.h.diff
+	patch Makefile.in < Makefile.in.diff
+
+3. Run  "configure" as specified in the  NSS  LDAP  installation
+instructions, to recreate the Makefile.
+
+4. Run "make clean"
+
+5. Run "make"
+
+You should now have a new nss_ldap.so ready to copy to /lib.
+
+Max Caines (max.caines@wlv.ac.uk)
+16 April 2002

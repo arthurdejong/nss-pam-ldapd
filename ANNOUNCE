@@ -1,0 +1,125 @@
+
+                      ANNOUNCING NSS_LDAP
+                      ===================
+
+1. What is nss_ldap?
+--------------------
+
+nss_ldap is a set of C library extensions which allows X.500 and LDAP
+directory servers to be used as a primary source of aliases, ethers,
+groups, hosts, networks, protocol, users, RPCs, services and shadow
+passwords (instead of or in addition to using flat files or NIS).
+
+nss_ldap nominally supports the following operating system libraries:
+
+	o the Nameservice Switch in Solaris 2.4 to 9
+	o the Nameservice Switch in HP-UX 11
+	o the Nameservice Switch in the GNU C Library 2.1 (as
+          in libc.so.6 under Linux)
+	o the Nameservice Switch in FreeBSD 5.x
+	o the Information Retrieval Service (IRS) in BIND 
+	o the Information Retrieval Service (IRS) and proprietary
+	  authentication and identity interface in AIX 4.3.3
+
+nss_ldap is an implementation of the schema specified in RFC 2307
+and is compatible with that used in PADL Software Pty Ltd's
+NIS/LDAP gateway (ypldapd), and current versions of Solaris,
+HP-UX and MacOS X.
+
+2. What can it do for me?
+-------------------------
+
+nss_ldap lets you use LDAP servers, like Netscape's Directory Server,
+to distribute users, hosts, groups and other like information throughout
+an organization. Because LDAP is a hierarchical directory service,
+you can distribute the information in a manner which reflects an
+organizational structure. This contrasts with the flat, single domain
+policy of NIS. LDAP has many of the advantages of NIS+ (security and
+scalability) without the complexity.
+
+nss_ldap will work alongside your existing NIS, NIS+, DNS and flat file
+name services. More importantly, because it builds as a shared library,
+you don't have to recompile any of your applications to take advantage
+of LDAP. When used with a directory server under NT, it may be helpful
+in synchronizing Unix and NT accounts.
+
+3. What are its limitations?
+----------------------------
+
+Currently, some "maps" (like bootparams) are not supported. It's also
+alpha software, so use it at your own risk. This should be considered
+with respect to the fact the nss_ldap is loaded into the address space
+of *every* process which uses the C library's resolver functions and
+has LDAP in its search order. (This isn't entirely true under Solaris,
+but the implications are similar.)
+
+Finally, it only supports Linux and Solaris (and some versions of
+BSD). You might want to look at ypldapd (see below) if you need to
+support NIS clients.
+
+4. How much does it cost?
+-------------------------
+
+It's free, and distributed under the GNU General Library Public
+Licence (LGPL). Please read the file COPYING.LIB For more information.
+
+5. Where do I get it?
+---------------------
+
+nss_ldap is available from:
+
+	<URL:http://www.padl.com/download/nss_ldap.tgz>
+	<URL:ftp://ftp.padl.com/pub/nss_ldap.tgz>
+
+We have also made available some Perl scripts for populating LDAP
+databases from existing flat files, NIS and/or NetInfo data.
+
+	<URL:http://www.padl.com/download/MigrationTools.tgz>
+	<URL:ftp://www.padl.com/pub/MigrationTools.tgz>
+
+You'll need to compile a position-independent LDAP client library
+(libldap). You can either get the entire LDAP package from the University
+of Michigan (see below) and add "-fPIC" (if you're using gcc) to the
+C compiler flags; download the Mozilla SDK from www.mozilla.org;
+download the prebuilt Netscape LDAP SDK from developer.netscape.com;
+or download OpenLDAP from www.openldap.org.
+
+6. Where can I get more information?
+------------------------------------
+
+To discuss nss_ldap, ypldapd, and related technologies, you may subscribe
+to the following mailing list:
+
+	<URL:mailto:ldap-nis-request@padl.com>
+
+Send an electronic mail message with "subscribe" in the message body to
+join the list.
+
+To contact the developers, email:
+
+	<URL:mailto:dev@padl.com>
+
+Note that PADL offer commercial support on a per-incident basis. The
+support@padl.com is for commercial support customers only.
+
+For more information on using LDAP for name resolution, and related software,
+see:
+
+	<URL:http://www.padl.com>
+
+And if you need an LDAP server, or some general information on LDAP,
+see:
+
+	<URL:http://www.openldap.org>
+
+7. Who wrote it?
+----------------
+
+nss_ldap was written by PADL Software Pty Ltd <dev@padl.com>. Many
+others have contributed, see the file AUTHORS in this directory.
+
+Please read the following document before submitting any
+contributions:
+
+	<URL:http://www.padl.com/Articles/GuidelinesforContributing.html>
+

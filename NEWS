@@ -1,0 +1,149 @@
+#ident $Id: NEWS,v 2.5 2004/06/19 05:23:05 lukeh Exp $
+
+Please contact PADL Software Development Support <dev@padl.com>
+if you wish to contribute.
+
+Please see http://bugzilla.padl.com for more information!
+
+BUGZILLA BUGS:
+==============
+
+BUGS 18, 19, 20, 34 would be good to fix soon.
+
+[BUG#12]
+- we should probably put the session, under Solaris, in the backend. 
+  We need to do so in a way that remains compatible with the GNU NSS,
+  where I expect we need to open a connection for every lookup.
+  In nscd, where the backends are cached, it doesn't make sense to keep
+  opening and closing sockets to the LDAP server, particularly as the
+  rebinding logic was put there to *allow* the connection to be long
+  lived (marked RESOLVED LATER; a single connection is now used per
+  process)
+
+[BUG#12]
+- ditto for IRS: the private data should contain the session and be long
+  lived. 
+
+[BUG#13]
+- we could clean up the text segment a bit by generating filters on the
+  fly from object classes and attributes, instead of storing them. This
+  seems to be important under Solaris as the linker doesn't intern strings (?)
+  All that filter-constructing stuff in the ldap-*.h headers is UGLY.
+  (marked RESOLVED LATER)
+
+[BUG#14]
+- infinite recursion is host lookup -- libldap uses gethostbyname(). Perhaps
+  we should link with a custom gethostbyname() which uses DNS only??? (This
+  is nominally the LDAP client library's problem but we could short-circuit
+  by resolving the IP addresses ourselves). (marked RESOLVED INVALID)
+
+[BUG#16]
+- finish implementing dl-*.c  (LOW priority). In fact I'm tempted to remove
+  this from the line up: SGI have their own LDAP C library support, and
+  so do DEC (with SIA). (removed dl-*.c; marked RESOLVED WONTFIX)
+
+[BUG#17]
+- implement gethostbyname2() and
+  debug IPv6 support in ldap-hosts.c (and ldap-network.c?) (Uli?)
+
+[BUG#19]
+- add support for DHCP and coldstart configuration. Coldstart should
+  update /etc/ldap.conf (/var/ldap/LDAP_CLIENT_CACHE?). Should probably
+  add support for the HP/Sun server profile schema (marked RESOLVED
+  LATER)
+
+[BUG#21]
+- write testsuite (marked RESOLVED LATER)
+
+[BUG#22]
+- support for bootparams map (marked RESOLVED LATER)
+
+[BUG#34]
+- shells hang on Solaris for LDAP users (marked RESOLVED LATER;
+Solaris 7 users get patch cluster 106541-12)
+
+[BUG#49]
+- race condition in ldap-nss.c (FIXED in nss_ldap-121)
+
+[BUG#50]
+- check return value of ldap_simple_bind() (FIXED in nss_ldap-122)
+
+[BUG#63]
+- integrate support for runtime schema mapping (FIXED in nss_ldap-168)
+
+To: linux-ldap@rage.net
+Cc: ldap-nis@padl.com
+Subject: Re: Netgroups [in nss_ldap]
+Fcc: +outgoing
+Reply-To: lukeh@padl.com
+
+[ ldap-nis readers may find this interesting. ]
+
+Matt,
+
+>Ok, i am going to see if I can do something with netgroups. Which of
+>the services would be best to model ldap-netgrp.c after?
+>
+>I am not familiar with adding a new service to nss_ldap. What is
+>involved? Do you think you could give a general overview of what has
+>to happen to get the netgroup service doing SOMETHING?
+
+First, you need to familiarize yourself with the netgroup resolution
+APIs. It's important that you implement something that works for both
+Solaris and the GNU C Library (and, possibly, the BIND IRS, although
+no one seems to be particularly interested in that switch).  I haven't
+looked into them in great detail. You'll need to create ldap-netgrp.c
+(rip off ldap-pwd.c for starters). and implement the following:
+
+Linux
+=====
+
+NSS_STATUS
+_nss_ldap_setnetgrent(const char *group, struct __netgrent *result);
+
+NSS_STATUS
+_nss_ldap_endnetgrent(struct __netgrent *result);
+
+NSS_STATUS
+_nss_ldap_getnetgrent_r(struct __netgrent *result, char *buffer,
+	size_t buflen, int *errnop);
+
+Because netgroups are just triples in LDAP, you should be able to avail
+yourself of the _nss_netgroup_parseline() helper function. (Having
+the glibc source handy would be helpful.) Call this from the parser
+(see below) for values of the "nisNetgroupTriple" attribute.
+
+Solaris
+=======
+
+Check out /usr/include/nss_dbdefs.h. It looks pretty hairy:
+FYI, let's look at how a user is resolved:
+
+NSS_STATUS
+_nss_ldap_getpwnam_r (
+                       const char *name,
+                       struct passwd * result,
+                       char *buffer,
+                       size_t buflen,
+                       int *errnop)
+{
+  LOOKUP_NAME (name, result, buffer, buflen, errnop, filt_getpwnam, pw_attributes, _nss_ldap_parse_pw);
+}
+
+The LOOKUP_NAME macro marshalls arguments to pass to
+_nss_ldap_getbyname(), which is responsible for searching in the
+directory. If the search is successful, this function will call
+the parser (_nss_ldap_parse_pw()) with the LDAP result, and
+the buffers supplied by the user. The parser is responsible
+for mapping the LDAP entry into a struct pwent or whatever.
+There are helper functions provided for doing such, for example
+_nss_ldap_assign_attrval():
+
+  stat = _nss_ldap_assign_attrval (ld, e, LDAP_ATTR_USERNAME, &pw->pw_name, &buffer, &buflen);
+  if (stat != NSS_SUCCESS)
+
+This model works well when there is a 1:1 mapping between LDAP
+entries and entities that the host API is responsible for. Things
+get a bit trickier for things like getgroupsbymember(). Hope
+this helps. Note that for Solaris, each backend has a dispatch
+table, a "constructor" (_nss_ldap_passwd_constr, for example).

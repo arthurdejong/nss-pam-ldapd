@@ -1,0 +1,169 @@
+
+LDAP NAMESERVICE SWITCH LIBRARY
+===============================
+
+This is the nss_ldap library, an LDAP module for the Solaris Nameservice
+Switch (NSS), the GNU libc NSS, and the ISC BIND IRS (used on BSDI
+and IRS).
+
+The LDAP schema used is described in RFC 2307
+
+Insert this:
+
+passwd:     files nis ldap
+group:      files nis ldap
+
+or something similar in /etc/nsswitch.conf.
+
+The source code is distributed under the GNU General Library Public Licence
+(see COPYING.LIB). 
+
+Platforms this has been built under:
+
+	o Linux 2.x
+	o Solaris 2.4, 2.6, 7, 8
+	o FreeBSD BIND 8.x (not useful unless you recompile libc)
+	o AIX 4.3.3 with IRS
+
+If you are willing to use an older, and possibly buggy, version
+of nss_ldap, you *might* find patches to get it to work with the
+"real" FreeBSD nsswitch at http://www.nectar.com/freebsd/nsswitch.
+
+To install:
+
+% ./configure
+% make
+% make install
+
+NB: you need to use GNU make! (often called gmake or gnumake)
+
+1. Installation
+---------------
+
+You need to ensure libnss_ldap.so.1 (or nss_ldap.so.1, for Solaris) is in
+/usr/lib.
+
+2. Building shared LDAP client libraries
+----------------------------------------
+
+You can build a position independent LDAP client library by compiling
+-fPIC and linking with -shared, or downloading the Mozilla or Netscape
+LDAP SDKs. Note that OpenLDAP only appears to build shared libraries
+on some platforms (apparently not Solaris?). To build these, configure
+with --enable-shared.
+
+Q: Using the Netscape LDAP library with pam_ldap on Solaris 8
+- aka Solaris 2.8 - fails to link properly! David Begley writes:
+
+There are two releases of the Netscape LDAP library, one marked
+for Solaris 8 and the other marked for Solaris 2.6 - the additional
+catch is that the Solaris 8 library is a 64-bit library (this is marked
+on Netscape's site) whilst the other is a 32-bit library.
+
+It doesn't matter if you have a 64-bit UltraSPARC processor running
+the 64-bit Solaris kernel, if your compiler only works with 32-bit
+objects then it won't successfully link the 64-bit Solaris 8
+Netscape LDAP library.
+
+GCC (up to version 2.95.2) does not work properly with 64-bit objects
+under Solaris, so just use the Solaris 2.6 (32-bit) Netscape LDAP
+library and everything should be fine.
+
+Q: Can I use a third-party client LDAP library (such as Netscape's)
+on Solaris 7? David Begley writes:
+
+Yes, but if you have the Solaris 7 LDAP library installed (package
+SUNWlldap or SUNWldapx) configure will find it before the third-party
+library - in this case, you can't rely on the auto-lib-type detection of
+configure and must use the "--with-ldap-lib=" parameter.
+
+Q: Why does linking fail on Solaris 2.6 (complaining about
+relocations remaining against libcrypt)? David Begley
+writes:
+
+In short, the problem is that GCC is looking for a shared libcrypt
+(in response to the "--shared" parameter) which doesn't exist on
+Solaris 2.6 (but does on Solaris 7).  The fix is quite simple, use
+"-G" instead of "--shared" (could this be a GCC bug?).  This change
+should already be included in newer versions of pam_ldap.
+
+It doesn't look like libcrypt is even needed if you're using the
+Netscape LDAP client library (maybe it's required for OpenLDAP?).
+
+Scott M. Stone <sstone@foo3.com> writes:
+Your openldap libs *and* your SSL/RSAREF libs must be DYNAMIC LIBRARIES
+or neither nss_ldap nor pam_ldap will work.  
+
+3. glibc 2.0 compatibility
+--------------------------
+
+Current versions of the nss_ldap library are designed to work with
+glibc 2.1, not glibc 2.0. They _may_ work with glibc 2.0. YMMV.
+
+4. RFC2307BIS
+-------------
+
+Compiling with -DRFC2307BIS adds rfc2307bis support, which at the
+moment just gets you support for groups with distinguished name
+members (instead of login names). A posixGroup can thus have the
+both memberUid and uniqueMember attributes.
+
+5. Building under FreeBSD
+-------------------------
+
+Here's what I do to build it under FreeBSD. You will need to
+link it into libbind.a for it actually to be useful.
+
+CPPFLAGS="-I/usr/local/include -I/usr/local/include/bind -DPIC"
+export CPPFLAGS
+CFLAGS=$CPPFLAGS # this is weird
+export CFLAGS
+LDFLAGS="-L/usr/local/lib"
+LIBS="-lbind_r -lgnuregex -lsasl -lkrb"
+export LDFLAGS LIBS
+./configure
+make
+
+6. Solaris, shadowAccount
+-------------------------
+
+Joerg Paysen notes:
+
+> I think its extremly important that you have a
+> /etc/shadow file so that an ObjectClass shadowAccount
+> will be created in the ldap database. My experience is
+> that without shadowAccount nss_ldap does not work on
+> solaris!!
+
+7. Secret file
+--------------
+
+If using /etc/ldap.secret, it must have a newline at the end
+of the secret.
+
+8. Mailing lists
+----------------
+
+To discuss nss_ldap and related technologies, you may
+subscribe to the following mailing lists:    
+
+        <URL:mailto:nssldap-request@padl.com>
+and
+        <URL:mailto:ldap-nis-request@padl.com>
+
+Send an electronic mail message with "subscribe" in the
+message body to join the list.
+
+9. Commercial support
+---------------------
+
+Note that PADL now offer commercial support on a
+per-incident basis.      
+
+To request a support incident, send email to: nssldap-support@padl.com
+
+--
+PADL Software Pty Ltd
+nssldap-support@padl.com
+http://www.padl.com/
+
