@@ -1,9 +1,47 @@
-AC_INIT(ldap-nss.c)
-AC_CANONICAL_SYSTEM
+# configure.ac - process this file with autoconf to produce configure
+# Copyright (C) 2006 Luke Howard
+# Copyright (C) 2006 Arthur de Jong
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+AC_PREREQ(2.59)
+AC_COPYRIGHT(
+[Copyright (C) 2006 Luke Howard
+Copyright (C) 2006 Arthur de Jong
+
+This configure script is derived from configure.ac which is free software;
+you can redistribute it and/or modify it under the terms of the GNU Library
+General Public License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version. See the
+configure.ac file for more details.])
+
+# initialize and set version and bugreport address
+AC_INIT([libnss-ldapd],[0.1.0],[arthur@ch.tudelft.nl])
+RELEASE_MONTH="Oct 2006"
+AC_SUBST(RELEASE_MONTH)
+AC_CONFIG_SRCDIR([ldap-nss.c])
+
+AC_CANONICAL_TARGET
 AC_PREFIX_DEFAULT()
 
-AM_INIT_AUTOMAKE(nss_ldap, 251)
-AM_CONFIG_HEADER(config.h)
+# display notice and initialize automake
+AC_MSG_NOTICE([configuring AC_PACKAGE_TARNAME AC_PACKAGE_VERSION])
+AM_INIT_AUTOMAKE(AC_PACKAGE_TARNAME,AC_PACKAGE_VERSION)
+
+# create a config.h file (Automake will add -DHAVE_CONFIG_H)
+AC_CONFIG_HEADERS([config.h])
 
 AC_PROG_CC
 AC_PROG_CPP
@@ -57,7 +95,7 @@ AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_ROOTPASSWD, "$NSS_LDAP_PATH_ROOTPASSWD")
 AC_SUBST(NSS_LDAP_PATH_CONF)
 AC_SUBST(NSS_LDAP_PATH_ROOTPASSWD)
 
-if test "$ac_cv_prog_gcc" = "yes"; then CFLAGS="$CFLAGS -Wall -fPIC"; fi
+if test "$ac_cv_c_compiler_gnu" = "yes"; then CFLAGS="$CFLAGS -Wall -fPIC"; fi
 
 dnl This is needed for the native Solaris LDAP SDK and
 dnl OpenLDAP 2.2, respectively
@@ -73,7 +111,7 @@ esac
 # but only invoke directly if compiling with gcc (?)
 
 case "$target_os" in
-aix*) if test "$ac_cv_prog_gcc" = "yes"; then
+aix*) if test "$ac_cv_c_compiler_gnu" = "yes"; then
     nss_ldap_so_LD="/usr/bin/ld"
   fi
   LDFLAGS="$LDFLAGS -Wl,-brtl"
@@ -82,11 +120,11 @@ aix*) if test "$ac_cv_prog_gcc" = "yes"; then
   CPPFLAGS="$CPPFLAGS -I."
   need_pthread=yes
   TARGET_OS=AIX ;;
-solaris*) if test "$ac_cv_prog_gcc" = yes; then
+solaris*) if test "$ac_cv_c_compiler_gnu" = yes; then
     nss_ldap_so_LD="/usr/ccs/bin/ld"
   fi
   nss_ldap_so_LDFLAGS="-Bdynamic -M \$(srcdir)/exports.solaris -G" ;;
-hpux*) if test "$ac_cv_prog_gcc" = yes; then
+hpux*) if test "$ac_cv_c_compiler_gnu" = yes; then
     nss_ldap_so_LD="/bin/ld"
   fi
   nss_ldap_so_LDFLAGS="-b -dynamic -G `cat exports.hpux`"
@@ -134,14 +172,12 @@ AC_CHECK_HEADERS(ldap.h, , AC_MSG_ERROR(could not locate <ldap.h>))
 AC_CHECK_HEADERS(ldap_ssl.h)
 
 dnl AC_MSG_CHECKING(for ldap_ssl.h)
-dnl AC_TRY_COMPILE([#include <sys/types.h>
+dnl AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 dnl	#include <ldap.h>
-dnl	#include <ldap_ssl.h>], ,
-dnl	[
+dnl	#include <ldap_ssl.h>]], [[]])],[dnl	
 dnl		AC_MSG_RESULT(yes),
 dnl		AC_DEFINE(HAVE_LDAP_SSL_H, 1)
-dnl	],
-dnl	AC_MSG_RESULT(no))
+dnl	],[dnl	AC_MSG_RESULT(no)])
 
 # For HP-UX and AIX we use private API, the headers for which
 # are included locally. We need to do something to stop both
@@ -199,44 +235,32 @@ AC_CHECK_FUNCS(ether_aton)
 AC_CHECK_FUNCS(ether_ntoa)
 
 AC_MSG_CHECKING(for struct ether_addr)
-AC_TRY_COMPILE([#include <sys/types.h>
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 	#include <sys/socket.h>
 	#include <net/if.h>
 	#include <netinet/in.h>
-	#include <netinet/if_ether.h>],
-	[struct ether_addr x;],
-	[
+	#include <netinet/if_ether.h>]], [[struct ether_addr x;]])],[
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(HAVE_STRUCT_ETHER_ADDR, 1)
-	],
-	AC_MSG_RESULT(no))
+	],[AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING(for socklen_t)
-AC_TRY_COMPILE([#include <sys/types.h>
-	#include <sys/socket.h>],
-	[socklen_t len;],
-	[
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
+	#include <sys/socket.h>]], [[socklen_t len;]])],[
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(HAVE_SOCKLEN_T, 1)
-	],
-	AC_MSG_RESULT(no))
+	],[AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING(for pw_change in struct passwd)
-AC_TRY_COMPILE([#include <pwd.h>],
-	[struct passwd pwd; time_t t = pwd.pw_change],
-	[
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <pwd.h>]], [[struct passwd pwd; time_t t = pwd.pw_change]])],[
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(HAVE_PASSWD_PW_CHANGE, 1)
-	],
-	AC_MSG_RESULT(no))
+	],[AC_MSG_RESULT(no)])
 AC_MSG_CHECKING(for pw_expire in struct passwd)
-AC_TRY_COMPILE([#include <pwd.h>],
-	[struct passwd pwd; time_t t = pwd.pw_expire],
-	[
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <pwd.h>]], [[struct passwd pwd; time_t t = pwd.pw_expire]])],[
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(HAVE_PASSWD_PW_EXPIRE, 1)
-	],
-	AC_MSG_RESULT(no))
+	],[AC_MSG_RESULT(no)])
 
 dnl check which ldap library we have
 dnl check which ldap library we have
@@ -306,16 +330,17 @@ AC_CHECK_FUNCS(gethostbyname_r)
 
 if test "$ac_cv_func_gethostbyname_r" = "yes"; then
 AC_CACHE_CHECK(whether gethostbyname_r takes 6 arguments, nss_ldap_cv_gethostbyname_r_args, [
-AC_TRY_COMPILE([
-#include <netdb.h>], [gethostbyname_r(0, 0, 0, 0, 0, 0);], [nss_ldap_cv_gethostbyname_r_args=6], [nss_ldap_cv_gethostbyname_r_args=5]) ])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <netdb.h>]], [[gethostbyname_r(0, 0, 0, 0, 0, 0);]])],[nss_ldap_cv_gethostbyname_r_args=6],[nss_ldap_cv_gethostbyname_r_args=5]) ])
 AC_DEFINE_UNQUOTED(GETHOSTBYNAME_R_ARGS, $nss_ldap_cv_gethostbyname_r_args)
 fi
 
 AC_CHECK_FUNCS(ldap_set_rebind_proc)
 AC_CACHE_CHECK(whether ldap_set_rebind_proc takes 3 arguments, nss_ldap_cv_ldap_set_rebind_proc, [
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <lber.h>
-#include <ldap.h>], [ldap_set_rebind_proc(0, 0, 0);], [nss_ldap_cv_ldap_set_rebind_proc=3], [nss_ldap_cv_ldap_set_rebind_proc=2]) ])
+#include <ldap.h>]], [[ldap_set_rebind_proc(0, 0, 0);]])],[nss_ldap_cv_ldap_set_rebind_proc=3],[nss_ldap_cv_ldap_set_rebind_proc=2]) ])
 AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS, $nss_ldap_cv_ldap_set_rebind_proc)
 
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

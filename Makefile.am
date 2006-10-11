@@ -1,3 +1,24 @@
+# Makefile.am - use automake to generate Makefile.in
+# Copyright (C) 2006 Luke Howard
+# Copyright (C) 2006 Arthur de Jong
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+
+# TODO: move AIX hacks to configure
+
 if AIX
 authmod = NSS_LDAP
 else
@@ -13,16 +34,16 @@ INST_GID=root
 endif
 
 EXTRA_DIST = CVSVersionInfo.txt ChangeLog \
-	     AUTHORS ANNOUNCE NEWS INSTALL README LICENSE.OpenLDAP COPYING\
-	     ldap.conf nss_ldap.spec nsswitch.ldap 
+             AUTHORS ANNOUNCE NEWS INSTALL README LICENSE.OpenLDAP COPYING\
+             ldap.conf nss_ldap.spec nsswitch.ldap 
 
 man_MANS = nss_ldap.5
 
 nss_ldap_so_SOURCES = ldap-nss.c ldap-pwd.c ldap-grp.c ldap-netgrp.c ldap-rpc.c \
-	ldap-hosts.c ldap-network.c ldap-proto.c ldap-spwd.c \
-	ldap-alias.c ldap-service.c ldap-schema.c ldap-ethers.c \
-	ldap-bp.c ldap-automount.c util.c ltf.c snprintf.c resolve.c \
-	dnsconfig.c irs-nss.c pagectrl.c ldap-sldap.c
+        ldap-hosts.c ldap-network.c ldap-proto.c ldap-spwd.c \
+        ldap-alias.c ldap-service.c ldap-schema.c ldap-ethers.c \
+        ldap-bp.c ldap-automount.c util.c ltf.c snprintf.c resolve.c \
+        dnsconfig.c irs-nss.c pagectrl.c ldap-sldap.c
 
 nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
 
