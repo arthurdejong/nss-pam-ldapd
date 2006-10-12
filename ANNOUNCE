@@ -12,14 +12,14 @@ passwords (instead of or in addition to using flat files or NIS).
 
 nss_ldap nominally supports the following operating system libraries:
 
-	o the Nameservice Switch in Solaris 2.4 to 9
-	o the Nameservice Switch in HP-UX 11
-	o the Nameservice Switch in the GNU C Library 2.1 (as
+        o the Nameservice Switch in Solaris 2.4 to 9
+        o the Nameservice Switch in HP-UX 11
+        o the Nameservice Switch in the GNU C Library 2.1 (as
           in libc.so.6 under Linux)
-	o the Nameservice Switch in FreeBSD 5.x
-	o the Information Retrieval Service (IRS) in BIND 
-	o the Information Retrieval Service (IRS) and proprietary
-	  authentication and identity interface in AIX 4.3.3
+        o the Nameservice Switch in FreeBSD 5.x
+        o the Information Retrieval Service (IRS) in BIND 
+        o the Information Retrieval Service (IRS) and proprietary
+          authentication and identity interface in AIX 4.3.3
 
 nss_ldap is an implementation of the schema specified in RFC 2307
 and is compatible with that used in PADL Software Pty Ltd's
@@ -68,14 +68,14 @@ Licence (LGPL). Please read the file COPYING.LIB For more information.
 
 nss_ldap is available from:
 
-	<URL:http://www.padl.com/download/nss_ldap.tgz>
-	<URL:ftp://ftp.padl.com/pub/nss_ldap.tgz>
+        <URL:http://www.padl.com/download/nss_ldap.tgz>
+        <URL:ftp://ftp.padl.com/pub/nss_ldap.tgz>
 
 We have also made available some Perl scripts for populating LDAP
 databases from existing flat files, NIS and/or NetInfo data.
 
-	<URL:http://www.padl.com/download/MigrationTools.tgz>
-	<URL:ftp://www.padl.com/pub/MigrationTools.tgz>
+        <URL:http://www.padl.com/download/MigrationTools.tgz>
+        <URL:ftp://www.padl.com/pub/MigrationTools.tgz>
 
 You'll need to compile a position-independent LDAP client library
 (libldap). You can either get the entire LDAP package from the University
@@ -90,14 +90,14 @@ or download OpenLDAP from www.openldap.org.
 To discuss nss_ldap, ypldapd, and related technologies, you may subscribe
 to the following mailing list:
 
-	<URL:mailto:ldap-nis-request@padl.com>
+        <URL:mailto:ldap-nis-request@padl.com>
 
 Send an electronic mail message with "subscribe" in the message body to
 join the list.
 
 To contact the developers, email:
 
-	<URL:mailto:dev@padl.com>
+        <URL:mailto:dev@padl.com>
 
 Note that PADL offer commercial support on a per-incident basis. The
 support@padl.com is for commercial support customers only.
@@ -105,12 +105,12 @@ support@padl.com is for commercial support customers only.
 For more information on using LDAP for name resolution, and related software,
 see:
 
-	<URL:http://www.padl.com>
+        <URL:http://www.padl.com>
 
 And if you need an LDAP server, or some general information on LDAP,
 see:
 
-	<URL:http://www.openldap.org>
+        <URL:http://www.openldap.org>
 
 7. Who wrote it?
 ----------------
@@ -121,5 +121,5 @@ others have contributed, see the file AUTHORS in this directory.
 Please read the following document before submitting any
 contributions:
 
-	<URL:http://www.padl.com/Articles/GuidelinesforContributing.html>
+        <URL:http://www.padl.com/Articles/GuidelinesforContributing.html>
 

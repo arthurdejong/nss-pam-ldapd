@@ -33,7 +33,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -68,8 +68,8 @@ static ent_context_t *serv_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_serv (LDAPMessage * e,
-		      ldap_state_t * state,
-		      void *result, char *buffer, size_t buflen)
+                      ldap_state_t * state,
+                      void *result, char *buffer, size_t buflen)
 {
   struct servent *service = (struct servent *) result;
   char *port;
@@ -83,66 +83,66 @@ _nss_ldap_parse_serv (LDAPMessage * e,
   if (state->ls_type == LS_TYPE_KEY)
     {
       if (state->ls_info.ls_key == NULL)
-	{
-	  /* non-deterministic behaviour is ok */
-	  stat =
-	    _nss_ldap_assign_attrval (e, AT (ipServiceProtocol),
-				      &service->s_proto, &buffer, &buflen);
-	  if (stat != NSS_SUCCESS)
-	    {
-	      return stat;
-	    }
-	}
+        {
+          /* non-deterministic behaviour is ok */
+          stat =
+            _nss_ldap_assign_attrval (e, AT (ipServiceProtocol),
+                                      &service->s_proto, &buffer, &buflen);
+          if (stat != NSS_SUCCESS)
+            {
+              return stat;
+            }
+        }
       else
-	{
-	  register int len;
-	  len = strlen (state->ls_info.ls_key);
-	  if (buflen < (size_t) (len + 1))
-	    {
-	      return NSS_TRYAGAIN;
-	    }
-	  strncpy (buffer, state->ls_info.ls_key, len);
-	  buffer[len] = '\0';
-	  service->s_proto = buffer;
-	  buffer += len + 1;
-	  buflen -= len + 1;
-	}
+        {
+          register int len;
+          len = strlen (state->ls_info.ls_key);
+          if (buflen < (size_t) (len + 1))
+            {
+              return NSS_TRYAGAIN;
+            }
+          strncpy (buffer, state->ls_info.ls_key, len);
+          buffer[len] = '\0';
+          service->s_proto = buffer;
+          buffer += len + 1;
+          buflen -= len + 1;
+        }
     }
   else
     {
       char **vals = _nss_ldap_get_values (e, AT (ipServiceProtocol));
       int len;
       if (vals == NULL)
-	{
-	  state->ls_info.ls_index = -1;
-	  return NSS_NOTFOUND;
-	}
+        {
+          state->ls_info.ls_index = -1;
+          return NSS_NOTFOUND;
+        }
 
       switch (state->ls_info.ls_index)
-	{
-	case 0:
-	  /* last time. decrementing ls_index to -1 AND returning !NSS_SUCCESS
-	     will force this entry to be discarded.
-	   */
-	  stat = NSS_NOTFOUND;
-	  break;
-	case -1:
-	  /* first time */
-	  state->ls_info.ls_index = ldap_count_values (vals);
-	  /* fall off to default ... */
-	default:
-	  len = strlen (vals[state->ls_info.ls_index - 1]);
-	  if (buflen < (size_t) (len + 1))
-	    {
-	      return NSS_TRYAGAIN;
-	    }
-	  strncpy (buffer, vals[state->ls_info.ls_index - 1], len);
-	  buffer[len] = '\0';
-	  service->s_proto = buffer;
-	  buffer += len + 1;
-	  buflen -= len + 1;
-	  stat = NSS_SUCCESS;
-	}
+        {
+        case 0:
+          /* last time. decrementing ls_index to -1 AND returning !NSS_SUCCESS
+             will force this entry to be discarded.
+           */
+          stat = NSS_NOTFOUND;
+          break;
+        case -1:
+          /* first time */
+          state->ls_info.ls_index = ldap_count_values (vals);
+          /* fall off to default ... */
+        default:
+          len = strlen (vals[state->ls_info.ls_index - 1]);
+          if (buflen < (size_t) (len + 1))
+            {
+              return NSS_TRYAGAIN;
+            }
+          strncpy (buffer, vals[state->ls_info.ls_index - 1], len);
+          buffer[len] = '\0';
+          service->s_proto = buffer;
+          buffer += len + 1;
+          buflen -= len + 1;
+          stat = NSS_SUCCESS;
+        }
 
       ldap_value_free (vals);
       state->ls_info.ls_index--;
@@ -163,7 +163,7 @@ _nss_ldap_parse_serv (LDAPMessage * e,
 
   stat =
     _nss_ldap_assign_attrvals (e, ATM (LM_SERVICES, cn), service->s_name,
-			       &service->s_aliases, &buffer, &buflen, NULL);
+                               &service->s_aliases, &buffer, &buflen, NULL);
   if (stat != NSS_SUCCESS)
     {
       return stat;
@@ -171,7 +171,7 @@ _nss_ldap_parse_serv (LDAPMessage * e,
 
   stat =
     _nss_ldap_assign_attrval (e, AT (ipServicePort), &port, &buffer,
-			      &buflen);
+                              &buflen);
   if (stat != NSS_SUCCESS)
     {
       return stat;
@@ -184,9 +184,9 @@ _nss_ldap_parse_serv (LDAPMessage * e,
 
 enum nss_status
 _nss_ldap_getservbyname_r (const char *name,
-			   const char *proto,
-			   struct servent * result,
-			   char *buffer, size_t buflen, int *errnop)
+                           const char *proto,
+                           struct servent * result,
+                           char *buffer, size_t buflen, int *errnop)
 {
   ldap_args_t a;
 
@@ -196,16 +196,16 @@ _nss_ldap_getservbyname_r (const char *name,
   LA_STRING2 (a) = proto;
 
   return _nss_ldap_getbyname (&a, result, buffer, buflen, errnop,
-			      ((proto == NULL) ? _nss_ldap_filt_getservbyname
-			       : _nss_ldap_filt_getservbynameproto),
-			      LM_SERVICES, _nss_ldap_parse_serv);
+                              ((proto == NULL) ? _nss_ldap_filt_getservbyname
+                               : _nss_ldap_filt_getservbynameproto),
+                              LM_SERVICES, _nss_ldap_parse_serv);
 }
 
 enum nss_status
 _nss_ldap_getservbyport_r (int port,
-			   const char *proto,
-			   struct servent * result,
-			   char *buffer, size_t buflen, int *errnop)
+                           const char *proto,
+                           struct servent * result,
+                           char *buffer, size_t buflen, int *errnop)
 {
   ldap_args_t a;
 
@@ -214,10 +214,10 @@ _nss_ldap_getservbyport_r (int port,
   LA_TYPE (a) = (proto == NULL) ? LA_TYPE_NUMBER : LA_TYPE_NUMBER_AND_STRING;
   LA_STRING2 (a) = proto;
   return _nss_ldap_getbyname (&a, result, buffer, buflen, errnop,
-			      (proto ==
-			       NULL) ? _nss_ldap_filt_getservbyport :
-			      _nss_ldap_filt_getservbyportproto,
-			      LM_SERVICES, _nss_ldap_parse_serv);
+                              (proto ==
+                               NULL) ? _nss_ldap_filt_getservbyport :
+                              _nss_ldap_filt_getservbyportproto,
+                              LM_SERVICES, _nss_ldap_parse_serv);
 }
 
      enum nss_status _nss_ldap_setservent (void)
@@ -232,9 +232,9 @@ _nss_ldap_getservbyport_r (int port,
 
 enum nss_status
 _nss_ldap_getservent_r (struct servent *result, char *buffer, size_t buflen,
-			int *errnop)
+                        int *errnop)
 {
   LOOKUP_GETENT (serv_context, result, buffer, buflen, errnop,
-		 _nss_ldap_filt_getservent, LM_SERVICES,
-		 _nss_ldap_parse_serv, LDAP_NSS_BUFLEN_DEFAULT);
+                 _nss_ldap_filt_getservent, LM_SERVICES,
+                 _nss_ldap_parse_serv, LDAP_NSS_BUFLEN_DEFAULT);
 }

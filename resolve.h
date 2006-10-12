@@ -47,13 +47,13 @@
 /* We use these, but they are not always present in <arpa/nameser.h> */
 
 #ifndef T_TXT
-#define T_TXT		16
+#define T_TXT           16
 #endif
 #ifndef T_AFSDB
-#define T_AFSDB		18
+#define T_AFSDB         18
 #endif
 #ifndef T_SRV
-#define T_SRV		 33
+#define T_SRV            33
 #endif
 
 struct dns_query
@@ -88,7 +88,7 @@ struct resource_record
   {
     void *data;
     struct mx_record *mx;
-    struct mx_record *afsdb;	/* mx and afsdb are identical */
+    struct mx_record *afsdb;    /* mx and afsdb are identical */
     struct srv_record *srv;
     struct in_addr *a;
     char *txt;
@@ -98,8 +98,8 @@ struct resource_record
 };
 
 
-#ifndef HAVE_ARPA_NAMESER_H	/* XXX */
-typedef int HEADER;		/* will never be used */
+#ifndef HAVE_ARPA_NAMESER_H     /* XXX */
+typedef int HEADER;             /* will never be used */
 #endif
 
 struct dns_reply
@@ -109,8 +109,8 @@ struct dns_reply
   struct resource_record *head;
 };
 
-#define dns_lookup	_nss_ldap_dns_lookup
-#define dns_free_data	_nss_ldap_dns_free_data
+#define dns_lookup      _nss_ldap_dns_lookup
+#define dns_free_data   _nss_ldap_dns_free_data
 
 struct dns_reply *dns_lookup (const char *, const char *);
 

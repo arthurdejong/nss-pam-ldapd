@@ -32,8 +32,8 @@
  */
 
 static enum nss_status _nss_ldap_parse_host (LDAPMessage * e,
-					ldap_state_t * pvt,
-					void *result,
-					char *buffer, size_t buflen, int af);
+                                        ldap_state_t * pvt,
+                                        void *result,
+                                        char *buffer, size_t buflen, int af);
 
 #endif /* _LDAP_NSS_LDAP_LDAP_HOSTS_H */

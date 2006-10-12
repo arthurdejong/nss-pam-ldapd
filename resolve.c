@@ -102,9 +102,9 @@ dns_free_data (struct dns_reply *r)
     {
       struct resource_record *tmp = rr;
       if (rr->domain)
-	free (rr->domain);
+        free (rr->domain);
       if (rr->u.data)
-	free (rr->u.data);
+        free (rr->u.data);
       rr = rr->next;
       free (tmp);
     }
@@ -157,10 +157,10 @@ parse_reply (unsigned char *data, int len)
       unsigned int type, class, ttl, size;
       status = dn_expand (data, data + len, p, host, sizeof (host));
       if (status < 0)
-	{
-	  dns_free_data (r);
-	  return NULL;
-	}
+        {
+          dns_free_data (r);
+          return NULL;
+        }
       p += status;
       if (p + 10 > data + len)
         {
@@ -181,87 +181,87 @@ parse_reply (unsigned char *data, int len)
           return NULL;
         }
       *rr = (struct resource_record *) calloc (1,
-					       sizeof (struct
-						       resource_record));
+                                               sizeof (struct
+                                                       resource_record));
       (*rr)->domain = strdup (host);
       (*rr)->type = type;
       (*rr)->class = class;
       (*rr)->ttl = ttl;
       (*rr)->size = size;
       switch (type)
-	{
-	case T_NS:
-	case T_CNAME:
-	case T_PTR:
-	  status = dn_expand (data, data + len, p, host, sizeof (host));
-	  if (status < 0)
-	    {
-	      dns_free_data (r);
-	      return NULL;
-	    }
-	  (*rr)->u.txt = strdup (host);
-	  break;
-	case T_MX:
-	case T_AFSDB:
-	  {
+        {
+        case T_NS:
+        case T_CNAME:
+        case T_PTR:
+          status = dn_expand (data, data + len, p, host, sizeof (host));
+          if (status < 0)
+            {
+              dns_free_data (r);
+              return NULL;
+            }
+          (*rr)->u.txt = strdup (host);
+          break;
+        case T_MX:
+        case T_AFSDB:
+          {
             if (p + 2 > data + len)
               {
                 dns_free_data (r);
                 return NULL;
               }
-	    status = dn_expand (data, data + len, p + 2, host, sizeof (host));
-	    if (status < 0)
-	      {
-		dns_free_data (r);
-		return NULL;
-	      }
+            status = dn_expand (data, data + len, p + 2, host, sizeof (host));
+            if (status < 0)
+              {
+                dns_free_data (r);
+                return NULL;
+              }
 
-	    (*rr)->u.mx =
-	      (struct mx_record *) malloc (sizeof (struct mx_record) +
-					   strlen (host));
-	    (*rr)->u.mx->preference = (p[0] << 8) | p[1];
-	    strcpy ((*rr)->u.mx->domain, host);
-	    break;
-	  }
-	case T_SRV:
-	  {
+            (*rr)->u.mx =
+              (struct mx_record *) malloc (sizeof (struct mx_record) +
+                                           strlen (host));
+            (*rr)->u.mx->preference = (p[0] << 8) | p[1];
+            strcpy ((*rr)->u.mx->domain, host);
+            break;
+          }
+        case T_SRV:
+          {
             if (p + 6 > data + len)
               {
                 dns_free_data (r);
                 return NULL;
               }
-	    status = dn_expand (data, data + len, p + 6, host, sizeof (host));
-	    if (status < 0)
-	      {
-		dns_free_data (r);
-		return NULL;
-	      }
-	    (*rr)->u.srv =
-	      (struct srv_record *) malloc (sizeof (struct srv_record) +
-					    strlen (host));
-	    (*rr)->u.srv->priority = (p[0] << 8) | p[1];
-	    (*rr)->u.srv->weight = (p[2] << 8) | p[3];
-	    (*rr)->u.srv->port = (p[4] << 8) | p[5];
-	    strcpy ((*rr)->u.srv->target, host);
-	    break;
-	  }
-	case T_TXT:
-	  {
+            status = dn_expand (data, data + len, p + 6, host, sizeof (host));
+            if (status < 0)
+              {
+                dns_free_data (r);
+                return NULL;
+              }
+            (*rr)->u.srv =
+              (struct srv_record *) malloc (sizeof (struct srv_record) +
+                                            strlen (host));
+            (*rr)->u.srv->priority = (p[0] << 8) | p[1];
+            (*rr)->u.srv->weight = (p[2] << 8) | p[3];
+            (*rr)->u.srv->port = (p[4] << 8) | p[5];
+            strcpy ((*rr)->u.srv->target, host);
+            break;
+          }
+        case T_TXT:
+          {
             if (p + *p > data + len)
               {
                 dns_free_data (r);
                 return NULL;
               }
-	    (*rr)->u.txt = (char *) malloc (size + 1);
-	    strncpy ((*rr)->u.txt, (char *) p + 1, *p);
-	    (*rr)->u.txt[*p] = 0;
-	    break;
-	  }
+            (*rr)->u.txt = (char *) malloc (size + 1);
+            strncpy ((*rr)->u.txt, (char *) p + 1, *p);
+            (*rr)->u.txt[*p] = 0;
+            break;
+          }
 
-	default:
-	  (*rr)->u.data = (unsigned char *) malloc (size);
-	  memcpy ((*rr)->u.data, p, size);
-	}
+        default:
+          (*rr)->u.data = (unsigned char *) malloc (size);
+          memcpy ((*rr)->u.data, p, size);
+        }
       p += size;
       rr = &(*rr)->next;
     }
@@ -331,35 +331,35 @@ main (int argc, char **argv)
     {
       printf ("%s %s %d ", rr->domain, type_to_string (rr->type), rr->ttl);
       switch (rr->type)
-	{
-	case T_NS:
-	  printf ("%s\n", (char *) rr->data);
-	  break;
-	case T_A:
-	  printf ("%d.%d.%d.%d\n",
-		  ((unsigned char *) rr->data)[0],
-		  ((unsigned char *) rr->data)[1],
-		  ((unsigned char *) rr->data)[2],
-		  ((unsigned char *) rr->data)[3]);
-	  break;
-	case T_MX:
-	case T_AFSDB:
-	  {
-	    struct mx_record *mx = (struct mx_record *) rr->data;
-	    printf ("%d %s\n", mx->preference, mx->domain);
-	    break;
-	  }
-	case T_SRV:
-	  {
-	    struct srv_record *srv = (struct srv_record *) rr->data;
-	    printf ("%d %d %d %s\n", srv->priority, srv->weight,
-		    srv->port, srv->target);
-	    break;
-	  }
-	default:
-	  printf ("\n");
-	  break;
-	}
+        {
+        case T_NS:
+          printf ("%s\n", (char *) rr->data);
+          break;
+        case T_A:
+          printf ("%d.%d.%d.%d\n",
+                  ((unsigned char *) rr->data)[0],
+                  ((unsigned char *) rr->data)[1],
+                  ((unsigned char *) rr->data)[2],
+                  ((unsigned char *) rr->data)[3]);
+          break;
+        case T_MX:
+        case T_AFSDB:
+          {
+            struct mx_record *mx = (struct mx_record *) rr->data;
+            printf ("%d %s\n", mx->preference, mx->domain);
+            break;
+          }
+        case T_SRV:
+          {
+            struct srv_record *srv = (struct srv_record *) rr->data;
+            printf ("%d %d %d %s\n", srv->priority, srv->weight,
+                    srv->port, srv->target);
+            break;
+          }
+        default:
+          printf ("\n");
+          break;
+        }
     }
 
   return 0;

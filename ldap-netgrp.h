@@ -26,7 +26,7 @@
 
 
 static enum nss_status _nss_ldap_parse_netgr (void *result,
-					 char *buffer, size_t buflen);
+                                         char *buffer, size_t buflen);
 
 
 #endif /* _LDAP_NSS_LDAP_LDAP_NETGRP_H */

@@ -27,7 +27,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>

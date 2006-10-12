@@ -27,7 +27,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -70,36 +70,36 @@ static ent_context_t *hosts_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_hostv4 (LDAPMessage * e,
-			ldap_state_t * pvt,
-			void *result, char *buffer, size_t buflen)
+                        ldap_state_t * pvt,
+                        void *result, char *buffer, size_t buflen)
 {
   return _nss_ldap_parse_host (e, pvt, result, buffer, buflen,
-			       AF_INET);
+                               AF_INET);
 }
 
 #ifdef INET6
 static enum nss_status
 _nss_ldap_parse_hostv6 (LDAPMessage * e,
-			ldap_state_t * pvt,
-			void *result, char *buffer, size_t buflen)
+                        ldap_state_t * pvt,
+                        void *result, char *buffer, size_t buflen)
 {
   return _nss_ldap_parse_host (e, pvt, result, buffer, buflen,
-			       AF_INET6);
+                               AF_INET6);
 }
 #endif
 
 static enum nss_status
 _nss_ldap_parse_host (LDAPMessage * e,
-		      ldap_state_t * pvt,
-		      void *result, char *buffer, size_t buflen,
-		      int af)
+                      ldap_state_t * pvt,
+                      void *result, char *buffer, size_t buflen,
+                      int af)
 {
   /* this code needs reviewing. XXX */
   struct hostent *host = (struct hostent *) result;
   enum nss_status stat;
 #ifdef INET6
   char addressbuf[sizeof ("ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255") *
-		  MAXALIASES];
+                  MAXALIASES];
 #else
   char addressbuf[sizeof ("255.255.255.255") * MAXALIASES];
 #endif
@@ -113,7 +113,7 @@ _nss_ldap_parse_host (LDAPMessage * e,
   *addressbuf = *buffer = '\0';
 
   stat = _nss_ldap_assign_attrval (e, ATM (LM_HOSTS, cn), &host->h_name,
-				   &buffer, &buflen);
+                                   &buffer, &buflen);
   if (stat != NSS_SUCCESS)
     return stat;
 
@@ -125,7 +125,7 @@ _nss_ldap_parse_host (LDAPMessage * e,
 
   stat =
     _nss_ldap_assign_attrvals (e, AT (ipHostNumber), NULL, &addresses,
-			       &p_addressbuf, &addresslen, &addresscount);
+                               &p_addressbuf, &addresslen, &addresscount);
   if (stat != NSS_SUCCESS)
     return stat;
   if (addresscount == 0)
@@ -135,14 +135,14 @@ _nss_ldap_parse_host (LDAPMessage * e,
   if (af == AF_INET6)
     {
       if (bytesleft (buffer, buflen, char *) <
-	  (size_t) ((addresscount + 1) * IN6ADDRSZ))
-	  return NSS_TRYAGAIN;
+          (size_t) ((addresscount + 1) * IN6ADDRSZ))
+          return NSS_TRYAGAIN;
     }
   else
     {
       if (bytesleft (buffer, buflen, char *) <
-	  (size_t) ((addresscount + 1) * INADDRSZ))
-	  return NSS_TRYAGAIN;
+          (size_t) ((addresscount + 1) * INADDRSZ))
+          return NSS_TRYAGAIN;
     }
 #else
   if (bytesleft (buffer, buflen, char *) <
@@ -173,29 +173,29 @@ _nss_ldap_parse_host (LDAPMessage * e,
       /* from glibc NIS parser. Thanks, Uli. */
 
       if (af == AF_INET && inet_pton (AF_INET, addr, entdata) > 0)
-	{
-	  if (_res.options & RES_USE_INET6)
-	    {
-	      map_v4v6_address ((char *) entdata,
-				(char *) entdata);
-	      host->h_addrtype = AF_INET6;
-	      host->h_length = IN6ADDRSZ;
-	    }
-	  else
-	    {
-	      host->h_addrtype = AF_INET;
-	      host->h_length = INADDRSZ;
-	    }
-	}
+        {
+          if (_res.options & RES_USE_INET6)
+            {
+              map_v4v6_address ((char *) entdata,
+                                (char *) entdata);
+              host->h_addrtype = AF_INET6;
+              host->h_length = IN6ADDRSZ;
+            }
+          else
+            {
+              host->h_addrtype = AF_INET;
+              host->h_length = INADDRSZ;
+            }
+        }
       else if (af == AF_INET6
-	       && inet_pton (AF_INET6, addr, entdata) > 0)
-	{
-	  host->h_addrtype = AF_INET6;
-	  host->h_length = IN6ADDRSZ;
-	}
+               && inet_pton (AF_INET6, addr, entdata) > 0)
+        {
+          host->h_addrtype = AF_INET6;
+          host->h_length = IN6ADDRSZ;
+        }
       else
-	/* Illegal address: ignore line.  */
-	continue;
+        /* Illegal address: ignore line.  */
+        continue;
 
 #else
       unsigned long haddr;
@@ -203,7 +203,7 @@ _nss_ldap_parse_host (LDAPMessage * e,
 #endif
 
       if (buflen < (size_t) host->h_length)
-	return NSS_TRYAGAIN;
+        return NSS_TRYAGAIN;
 
 #ifdef INET6
       memcpy (buffer, entdata, host->h_length);
@@ -233,8 +233,8 @@ _nss_ldap_parse_host (LDAPMessage * e,
 
 enum nss_status
 _nss_ldap_gethostbyname2_r (const char *name, int af, struct hostent * result,
-			    char *buffer, size_t buflen, int *errnop,
-			    int *h_errnop)
+                            char *buffer, size_t buflen, int *errnop,
+                            int *h_errnop)
 {
   enum nss_status status;
   ldap_args_t a;
@@ -244,17 +244,17 @@ _nss_ldap_gethostbyname2_r (const char *name, int af, struct hostent * result,
   LA_TYPE (a) = LA_TYPE_STRING;
 
   status = _nss_ldap_getbyname (&a,
-				result,
-				buffer,
-				buflen,
-				errnop,
-				_nss_ldap_filt_gethostbyname,
-				LM_HOSTS,
+                                result,
+                                buffer,
+                                buflen,
+                                errnop,
+                                _nss_ldap_filt_gethostbyname,
+                                LM_HOSTS,
 #ifdef INET6
-				(af == AF_INET6) ?
-				_nss_ldap_parse_hostv6 :
+                                (af == AF_INET6) ?
+                                _nss_ldap_parse_hostv6 :
 #endif
-				_nss_ldap_parse_hostv4);
+                                _nss_ldap_parse_hostv4);
 
   MAP_H_ERRNO (status, *h_errnop);
 
@@ -263,22 +263,22 @@ _nss_ldap_gethostbyname2_r (const char *name, int af, struct hostent * result,
 
 enum nss_status
 _nss_ldap_gethostbyname_r (const char *name, struct hostent * result,
-			   char *buffer, size_t buflen, int *errnop,
-			   int *h_errnop)
+                           char *buffer, size_t buflen, int *errnop,
+                           int *h_errnop)
 {
   return _nss_ldap_gethostbyname2_r (name,
 #ifdef INET6
-				     (_res.options & RES_USE_INET6) ?
-				     AF_INET6 :
+                                     (_res.options & RES_USE_INET6) ?
+                                     AF_INET6 :
 #endif
-				     AF_INET, result, buffer, buflen,
-				     errnop, h_errnop);
+                                     AF_INET, result, buffer, buflen,
+                                     errnop, h_errnop);
 }
 
 enum nss_status
 _nss_ldap_gethostbyaddr_r (struct in_addr * addr, int len, int type,
-			   struct hostent * result, char *buffer,
-			   size_t buflen, int *errnop, int *h_errnop)
+                           struct hostent * result, char *buffer,
+                           size_t buflen, int *errnop, int *h_errnop)
 {
   enum nss_status status;
   ldap_args_t a;
@@ -293,17 +293,17 @@ _nss_ldap_gethostbyaddr_r (struct in_addr * addr, int len, int type,
   LA_TYPE (a) = LA_TYPE_STRING;
 
   status = _nss_ldap_getbyname (&a,
-				result,
-				buffer,
-				buflen,
-				errnop,
-				_nss_ldap_filt_gethostbyaddr,
-				LM_HOSTS,
+                                result,
+                                buffer,
+                                buflen,
+                                errnop,
+                                _nss_ldap_filt_gethostbyaddr,
+                                LM_HOSTS,
 #ifdef INET6
-				(type == AF_INET6) ?
-				_nss_ldap_parse_hostv6 :
+                                (type == AF_INET6) ?
+                                _nss_ldap_parse_hostv6 :
 #endif
-				_nss_ldap_parse_hostv4);
+                                _nss_ldap_parse_hostv4);
 
   MAP_H_ERRNO (status, *h_errnop);
 
@@ -322,21 +322,21 @@ _nss_ldap_gethostbyaddr_r (struct in_addr * addr, int len, int type,
 
 enum nss_status
 _nss_ldap_gethostent_r (struct hostent * result, char *buffer, size_t buflen,
-			int *errnop, int *h_errnop)
+                        int *errnop, int *h_errnop)
 {
   enum nss_status status;
 
   status = _nss_ldap_getent (&hosts_context,
-			     result,
-			     buffer,
-			     buflen,
-			     errnop,
-			     _nss_ldap_filt_gethostent, LM_HOSTS,
+                             result,
+                             buffer,
+                             buflen,
+                             errnop,
+                             _nss_ldap_filt_gethostent, LM_HOSTS,
 #ifdef INET6
-			     (_res.options & RES_USE_INET6) ?
-			     _nss_ldap_parse_hostv6 :
+                             (_res.options & RES_USE_INET6) ?
+                             _nss_ldap_parse_hostv6 :
 #endif
-			     _nss_ldap_parse_hostv4);
+                             _nss_ldap_parse_hostv4);
 
   MAP_H_ERRNO (status, *h_errnop);
 

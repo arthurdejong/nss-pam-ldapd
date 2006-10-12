@@ -20,10 +20,10 @@ The source code is distributed under the GNU General Library Public Licence
 
 Platforms this has been built under:
 
-	o Linux 2.x
-	o Solaris 2.4, 2.6, 7, 8
-	o FreeBSD BIND 8.x (not useful unless you recompile libc)
-	o AIX 4.3.3 with IRS
+        o Linux 2.x
+        o Solaris 2.4, 2.6, 7, 8
+        o FreeBSD BIND 8.x (not useful unless you recompile libc)
+        o AIX 4.3.3 with IRS
 
 If you are willing to use an older, and possibly buggy, version
 of nss_ldap, you *might* find patches to get it to work with the

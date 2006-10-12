@@ -44,19 +44,19 @@ struct ether
 };
 
 static enum nss_status _nss_ldap_parse_ether (LDAPMessage * e,
-					 ldap_state_t * pvt,
-					 void *result,
-					 char *buffer, size_t buflen);
+                                         ldap_state_t * pvt,
+                                         void *result,
+                                         char *buffer, size_t buflen);
 
 /* for the record */
 enum nss_status _nss_ldap_gethostton_r (const char *name, struct ether *eth,
-				   char *buffer, size_t buflen, int *errnop);
+                                   char *buffer, size_t buflen, int *errnop);
 enum nss_status _nss_ldap_getntohost_r (struct ether_addr *addr, struct ether *eth,
-				   char *buffer, size_t buflen, int *errnop);
+                                   char *buffer, size_t buflen, int *errnop);
 enum nss_status _nss_ldap_endetherent (void);
 enum nss_status _nss_ldap_setetherent (void);
 enum nss_status _nss_ldap_getetherent_r (struct ether *result, char *buffer,
-				    size_t buflen, int *errnop);
+                                    size_t buflen, int *errnop);
 
 
 #endif /* _LDAP_NSS_LDAP_LDAP_ETHERS_H */

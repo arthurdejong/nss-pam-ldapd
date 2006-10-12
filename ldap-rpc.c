@@ -33,7 +33,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -68,8 +68,8 @@ static ent_context_t *rpc_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_rpc (LDAPMessage * e,
-		     ldap_state_t * pvt,
-		     void *result, char *buffer, size_t buflen)
+                     ldap_state_t * pvt,
+                     void *result, char *buffer, size_t buflen)
 {
 
   struct rpcent *rpc = (struct rpcent *) result;
@@ -84,7 +84,7 @@ _nss_ldap_parse_rpc (LDAPMessage * e,
 
   stat =
     _nss_ldap_assign_attrval (e, AT (oncRpcNumber), &number, &buffer,
-			      &buflen);
+                              &buflen);
   if (stat != NSS_SUCCESS)
     return stat;
 
@@ -101,20 +101,20 @@ _nss_ldap_parse_rpc (LDAPMessage * e,
 
 enum nss_status
 _nss_ldap_getrpcbyname_r (const char *name, struct rpcent *result,
-			  char *buffer, size_t buflen, int *errnop)
+                          char *buffer, size_t buflen, int *errnop)
 {
   LOOKUP_NAME (name, result, buffer, buflen, errnop,
-	       _nss_ldap_filt_getrpcbyname, LM_RPC, _nss_ldap_parse_rpc,
-	       LDAP_NSS_BUFLEN_DEFAULT);
+               _nss_ldap_filt_getrpcbyname, LM_RPC, _nss_ldap_parse_rpc,
+               LDAP_NSS_BUFLEN_DEFAULT);
 }
 
 enum nss_status
 _nss_ldap_getrpcbynumber_r (int number, struct rpcent *result,
-			    char *buffer, size_t buflen, int *errnop)
+                            char *buffer, size_t buflen, int *errnop)
 {
   LOOKUP_NUMBER (number, result, buffer, buflen, errnop,
-		 _nss_ldap_filt_getrpcbynumber, LM_RPC, _nss_ldap_parse_rpc,
-	 	 LDAP_NSS_BUFLEN_DEFAULT);
+                 _nss_ldap_filt_getrpcbynumber, LM_RPC, _nss_ldap_parse_rpc,
+                 LDAP_NSS_BUFLEN_DEFAULT);
 }
 
      enum nss_status _nss_ldap_setrpcent (void)
@@ -129,9 +129,9 @@ _nss_ldap_getrpcbynumber_r (int number, struct rpcent *result,
 
 enum nss_status
 _nss_ldap_getrpcent_r (struct rpcent *result, char *buffer, size_t buflen,
-		       int *errnop)
+                       int *errnop)
 {
   LOOKUP_GETENT (rpc_context, result, buffer, buflen, errnop,
-		 _nss_ldap_filt_getrpcent, LM_RPC, _nss_ldap_parse_rpc,
-		 LDAP_NSS_BUFLEN_DEFAULT);
+                 _nss_ldap_filt_getrpcent, LM_RPC, _nss_ldap_parse_rpc,
+                 LDAP_NSS_BUFLEN_DEFAULT);
 }

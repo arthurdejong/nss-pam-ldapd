@@ -84,11 +84,11 @@ AC_ARG_ENABLE(configurable-krb5-ccname-gssapi, [  --enable-configurable-krb5-ccn
 AC_ARG_WITH(ldap-lib, [  --with-ldap-lib=type      select ldap library [auto|netscape5|netscape4|netscape3|umich|openldap]])
 AC_ARG_WITH(ldap-dir, [  --with-ldap-dir=DIR       base directory of LDAP SDK])
 AC_ARG_WITH(ldap-conf-file, [  --with-ldap-conf-file     path to LDAP configuration file],
-	    [ NSS_LDAP_PATH_CONF="$with_ldap_conf_file" ],
-	    [ NSS_LDAP_PATH_CONF="/etc/ldap.conf" ])
+            [ NSS_LDAP_PATH_CONF="$with_ldap_conf_file" ],
+            [ NSS_LDAP_PATH_CONF="/etc/ldap.conf" ])
 AC_ARG_WITH(ldap-secret-file, [  --with-ldap-secret-file   path to LDAP root secret file],
-	    [ NSS_LDAP_PATH_ROOTPASSWD="$with_ldap_secret_file" ],
-	    [ NSS_LDAP_PATH_ROOTPASSWD="/etc/ldap.secret" ])
+            [ NSS_LDAP_PATH_ROOTPASSWD="$with_ldap_secret_file" ],
+            [ NSS_LDAP_PATH_ROOTPASSWD="/etc/ldap.secret" ])
 AC_ARG_WITH(gssapi-dir, [  --with-gssapi-dir=DIR     base directory of gssapi SDK])
 ldap_nss_ngroups=64
 AC_ARG_WITH(ngroups, [  --with-ngroups=num        average group size hint, experts only], [ldap_nss_ngroups=$with_ngroups])
@@ -177,11 +177,11 @@ AC_CHECK_HEADERS(ldap_ssl.h)
 
 dnl AC_MSG_CHECKING(for ldap_ssl.h)
 dnl AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
-dnl	#include <ldap.h>
-dnl	#include <ldap_ssl.h>]], [[]])],[dnl	
-dnl		AC_MSG_RESULT(yes),
-dnl		AC_DEFINE(HAVE_LDAP_SSL_H, 1)
-dnl	],[dnl	AC_MSG_RESULT(no)])
+dnl     #include <ldap.h>
+dnl     #include <ldap_ssl.h>]], [[]])],[dnl    
+dnl             AC_MSG_RESULT(yes),
+dnl             AC_DEFINE(HAVE_LDAP_SSL_H, 1)
+dnl     ],[dnl  AC_MSG_RESULT(no)])
 
 # For HP-UX and AIX we use private API, the headers for which
 # are included locally. We need to do something to stop both
@@ -240,31 +240,31 @@ AC_CHECK_FUNCS(ether_ntoa)
 
 AC_MSG_CHECKING(for struct ether_addr)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <net/if.h>
-	#include <netinet/in.h>
-	#include <netinet/if_ether.h>]], [[struct ether_addr x;]])],[
-		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_STRUCT_ETHER_ADDR, 1, [Define to enable struct ether_addr definition.])
-	],[AC_MSG_RESULT(no)])
+        #include <sys/socket.h>
+        #include <net/if.h>
+        #include <netinet/in.h>
+        #include <netinet/if_ether.h>]], [[struct ether_addr x;]])],[
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(HAVE_STRUCT_ETHER_ADDR, 1, [Define to enable struct ether_addr definition.])
+        ],[AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING(for socklen_t)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
-	#include <sys/socket.h>]], [[socklen_t len;]])],[
-		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_SOCKLEN_T, 1, [Define to enable socklen_t definition.])
-	],[AC_MSG_RESULT(no)])
+        #include <sys/socket.h>]], [[socklen_t len;]])],[
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(HAVE_SOCKLEN_T, 1, [Define to enable socklen_t definition.])
+        ],[AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING(for pw_change in struct passwd)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <pwd.h>]], [[struct passwd pwd; time_t t = pwd.pw_change]])],[
-		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_PASSWD_PW_CHANGE, 1, [Define if struct passwd has a pw_change member.])
-	],[AC_MSG_RESULT(no)])
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(HAVE_PASSWD_PW_CHANGE, 1, [Define if struct passwd has a pw_change member.])
+        ],[AC_MSG_RESULT(no)])
 AC_MSG_CHECKING(for pw_expire in struct passwd)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <pwd.h>]], [[struct passwd pwd; time_t t = pwd.pw_expire]])],[
-		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_PASSWD_PW_EXPIRE, 1, [Define if struct passwd has a pw_expire member.])
-	],[AC_MSG_RESULT(no)])
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(HAVE_PASSWD_PW_EXPIRE, 1, [Define if struct passwd has a pw_expire member.])
+        ],[AC_MSG_RESULT(no)])
 
 dnl check which ldap library we have
 dnl check which ldap library we have

@@ -57,7 +57,7 @@
 /* map gnu.org into DC=gnu,DC=org */
 enum nss_status
 _nss_ldap_getdnsdn (char *src_domain,
-		    char **rval, char **buffer, size_t * buflen)
+                    char **rval, char **buffer, size_t * buflen)
 {
   char *p;
   int len = 0;
@@ -90,26 +90,26 @@ _nss_ldap_getdnsdn (char *src_domain,
       len = strlen (p);
 
       if (*buflen < (size_t) (len + DC_ATTR_AVA_LEN + 1 /* D C = [,|\0] */ ))
-	{
-	  free (domain_copy);
-	  return NSS_TRYAGAIN;
-	}
+        {
+          free (domain_copy);
+          return NSS_TRYAGAIN;
+        }
 
       if (domain == NULL)
-	{
-	  strcpy (bptr, ",");
-	  bptr++;
-	}
+        {
+          strcpy (bptr, ",");
+          bptr++;
+        }
       else
-	{
-	  domain = NULL;
-	}
+        {
+          domain = NULL;
+        }
 
       strcpy (bptr, DC_ATTR_AVA);
       bptr += DC_ATTR_AVA_LEN;
 
       strcpy (bptr, p);
-      bptr += len;		/* don't include comma */
+      bptr += len;              /* don't include comma */
       *buffer += len + DC_ATTR_AVA_LEN + 1;
       *buflen -= len + DC_ATTR_AVA_LEN + 1;
     }
@@ -126,7 +126,7 @@ _nss_ldap_getdnsdn (char *src_domain,
 
 enum nss_status
 _nss_ldap_mergeconfigfromdns (ldap_config_t * result,
-			      char **buffer, size_t *buflen)
+                              char **buffer, size_t *buflen)
 {
   enum nss_status stat = NSS_SUCCESS;
   struct dns_reply *r;
@@ -158,18 +158,18 @@ _nss_ldap_mergeconfigfromdns (ldap_config_t * result,
   for (rr = r->head; rr != NULL; rr = rr->next)
     {
       if (rr->type == T_SRV)
-	{
-	  snprintf (uribuf, sizeof(uribuf), "ldap%s:%s:%d",
-	    (rr->u.srv->port == LDAPS_PORT) ? "s" : "",
-	    rr->u.srv->target,
-	    rr->u.srv->port);
+        {
+          snprintf (uribuf, sizeof(uribuf), "ldap%s:%s:%d",
+            (rr->u.srv->port == LDAPS_PORT) ? "s" : "",
+            rr->u.srv->target,
+            rr->u.srv->port);
 
-	  stat = _nss_ldap_add_uri (result, uribuf, buffer, buflen);
-	  if (stat != NSS_SUCCESS)
-	    {
-	      break;
-	    }
-	}
+          stat = _nss_ldap_add_uri (result, uribuf, buffer, buflen);
+          if (stat != NSS_SUCCESS)
+            {
+              break;
+            }
+        }
     }
 
   dns_free_data (r);
@@ -178,7 +178,7 @@ _nss_ldap_mergeconfigfromdns (ldap_config_t * result,
   if (result->ldc_base == NULL)
     {
       stat = _nss_ldap_getdnsdn (_res.defdname, &result->ldc_base,
-				 buffer, buflen);
+                                 buffer, buflen);
     }
 
   return stat;

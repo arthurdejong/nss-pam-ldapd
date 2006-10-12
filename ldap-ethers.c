@@ -27,7 +27,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -79,8 +79,8 @@ static ent_context_t *ether_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_ether (LDAPMessage * e,
-		       ldap_state_t * pvt,
-		       void *result, char *buffer, size_t buflen)
+                       ldap_state_t * pvt,
+                       void *result, char *buffer, size_t buflen)
 {
   struct ether *ether = (struct ether *) result;
   char *saddr;
@@ -88,12 +88,12 @@ _nss_ldap_parse_ether (LDAPMessage * e,
   struct ether_addr *addr;
 
   stat = _nss_ldap_assign_attrval (e, ATM (LM_ETHERS, cn),
-				   &ether->e_name, &buffer, &buflen);
+                                   &ether->e_name, &buffer, &buflen);
   if (stat != NSS_SUCCESS)
     return stat;
 
   stat = _nss_ldap_assign_attrval (e, AT (macAddress), &saddr,
-				   &buffer, &buflen);
+                                   &buffer, &buflen);
 
   if (stat != NSS_SUCCESS || ((addr = ether_aton (saddr)) == NULL))
     return NSS_NOTFOUND;
@@ -105,23 +105,23 @@ _nss_ldap_parse_ether (LDAPMessage * e,
 
 enum nss_status
 _nss_ldap_gethostton_r (const char *name, struct ether * result,
-			char *buffer, size_t buflen, int *errnop)
+                        char *buffer, size_t buflen, int *errnop)
 {
   LOOKUP_NAME (name, result, buffer, buflen, errnop,
-	       _nss_ldap_filt_gethostton, LM_ETHERS, _nss_ldap_parse_ether,
-	       LDAP_NSS_BUFLEN_DEFAULT);
+               _nss_ldap_filt_gethostton, LM_ETHERS, _nss_ldap_parse_ether,
+               LDAP_NSS_BUFLEN_DEFAULT);
 }
 
 enum nss_status
 _nss_ldap_getntohost_r (struct ether_addr * addr, struct ether * result,
-			char *buffer, size_t buflen, int *errnop)
+                        char *buffer, size_t buflen, int *errnop)
 {
 /* The correct ether_ntoa call would have a struct ether instead of whatever
    result->e_addr is */
 
   LOOKUP_NAME (ether_ntoa ((struct ether_addr *) (&result->e_addr)), result,
-	       buffer, buflen, errnop, _nss_ldap_filt_getntohost, LM_ETHERS,
-	       _nss_ldap_parse_ether, LDAP_NSS_BUFLEN_DEFAULT);
+               buffer, buflen, errnop, _nss_ldap_filt_getntohost, LM_ETHERS,
+               _nss_ldap_parse_ether, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
      enum nss_status _nss_ldap_setetherent (void)
@@ -136,9 +136,9 @@ _nss_ldap_getntohost_r (struct ether_addr * addr, struct ether * result,
 
 enum nss_status
 _nss_ldap_getetherent_r (struct ether * result, char *buffer, size_t buflen,
-			 int *errnop)
+                         int *errnop)
 {
   LOOKUP_GETENT (ether_context, result, buffer, buflen, errnop,
-		 _nss_ldap_filt_getetherent, LM_ETHERS,
-		 _nss_ldap_parse_ether, LDAP_NSS_BUFLEN_DEFAULT);
+                 _nss_ldap_filt_getetherent, LM_ETHERS,
+                 _nss_ldap_parse_ether, LDAP_NSS_BUFLEN_DEFAULT);
 }

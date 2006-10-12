@@ -26,40 +26,40 @@
 #define _LDAP_NSS_LDAP_LDAP_PARSE_H
 
 #define LOOKUP_NAME(name, result, buffer, buflen, errnop, filter, selector, parser, req_buflen) \
-	ldap_args_t a; \
-	if (buflen < req_buflen) { \
-		*errnop = ERANGE; \
-		return NSS_TRYAGAIN; \
-	} \
-	LA_INIT(a); \
-	LA_STRING(a) = name; \
-	LA_TYPE(a) = LA_TYPE_STRING; \
-	return _nss_ldap_getbyname(&a, result, buffer, buflen, errnop, filter, selector, parser);
+        ldap_args_t a; \
+        if (buflen < req_buflen) { \
+                *errnop = ERANGE; \
+                return NSS_TRYAGAIN; \
+        } \
+        LA_INIT(a); \
+        LA_STRING(a) = name; \
+        LA_TYPE(a) = LA_TYPE_STRING; \
+        return _nss_ldap_getbyname(&a, result, buffer, buflen, errnop, filter, selector, parser);
 #define LOOKUP_NUMBER(number, result, buffer, buflen, errnop, filter, selector, parser, req_buflen) \
-	ldap_args_t a; \
-	if (buflen < req_buflen) { \
-		*errnop = ERANGE; \
-		return NSS_TRYAGAIN; \
-	} \
-	LA_INIT(a); \
-	LA_NUMBER(a) = number; \
-	LA_TYPE(a) = LA_TYPE_NUMBER; \
-	return _nss_ldap_getbyname(&a, result, buffer, buflen, errnop, filter, selector, parser)
+        ldap_args_t a; \
+        if (buflen < req_buflen) { \
+                *errnop = ERANGE; \
+                return NSS_TRYAGAIN; \
+        } \
+        LA_INIT(a); \
+        LA_NUMBER(a) = number; \
+        LA_TYPE(a) = LA_TYPE_NUMBER; \
+        return _nss_ldap_getbyname(&a, result, buffer, buflen, errnop, filter, selector, parser)
 #define LOOKUP_GETENT(key, result, buffer, buflen, errnop, filter, selector, parser, req_buflen) \
-	if (buflen < req_buflen) { \
-		*errnop = ERANGE; \
-		return NSS_TRYAGAIN; \
-	} \
-	return _nss_ldap_getent(&key, result, buffer, buflen, errnop, filter, selector, parser)
+        if (buflen < req_buflen) { \
+                *errnop = ERANGE; \
+                return NSS_TRYAGAIN; \
+        } \
+        return _nss_ldap_getent(&key, result, buffer, buflen, errnop, filter, selector, parser)
 
 #define LOOKUP_SETENT(key) \
-	if (_nss_ldap_ent_context_init(&key) == NULL) \
-		return NSS_UNAVAIL; \
-	return NSS_SUCCESS
+        if (_nss_ldap_ent_context_init(&key) == NULL) \
+                return NSS_UNAVAIL; \
+        return NSS_SUCCESS
 #define LOOKUP_ENDENT(key) \
-	_nss_ldap_enter(); \
-	_nss_ldap_ent_context_release(key); \
-	_nss_ldap_leave(); \
-	return NSS_SUCCESS
+        _nss_ldap_enter(); \
+        _nss_ldap_ent_context_release(key); \
+        _nss_ldap_leave(); \
+        return NSS_SUCCESS
 
 #endif /* _LDAP_NSS_LDAP_LDAP_PARSE_H */

@@ -27,7 +27,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -54,8 +54,8 @@ static ent_context_t *alias_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_alias (LDAPMessage * e,
-		       ldap_state_t * pvt,
-		       void *result, char *buffer, size_t buflen)
+                       ldap_state_t * pvt,
+                       void *result, char *buffer, size_t buflen)
 {
 
   struct aliasent *alias = (struct aliasent *) result;
@@ -69,8 +69,8 @@ _nss_ldap_parse_alias (LDAPMessage * e,
 
   stat =
     _nss_ldap_assign_attrvals (e, AT (rfc822MailMember), NULL,
-			       &alias->alias_members, &buffer, &buflen,
-			       &alias->alias_members_len);
+                               &alias->alias_members, &buffer, &buflen,
+                               &alias->alias_members_len);
 
   alias->alias_local = 0;
 
@@ -79,11 +79,11 @@ _nss_ldap_parse_alias (LDAPMessage * e,
 
 enum nss_status
 _nss_ldap_getaliasbyname_r (const char *name, struct aliasent * result,
-			    char *buffer, size_t buflen, int *errnop)
+                            char *buffer, size_t buflen, int *errnop)
 {
   LOOKUP_NAME (name, result, buffer, buflen, errnop,
-	       _nss_ldap_filt_getaliasbyname, LM_ALIASES,
-	       _nss_ldap_parse_alias, LDAP_NSS_BUFLEN_DEFAULT);
+               _nss_ldap_filt_getaliasbyname, LM_ALIASES,
+               _nss_ldap_parse_alias, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
 enum nss_status _nss_ldap_setaliasent (void)
@@ -98,11 +98,11 @@ enum nss_status _nss_ldap_endaliasent (void)
 
 enum nss_status
 _nss_ldap_getaliasent_r (struct aliasent *result, char *buffer, size_t buflen,
-			 int *errnop)
+                         int *errnop)
 {
   LOOKUP_GETENT (alias_context, result, buffer, buflen, errnop,
-		 _nss_ldap_filt_getaliasent, LM_ALIASES,
-		 _nss_ldap_parse_alias, LDAP_NSS_BUFLEN_DEFAULT);
+                 _nss_ldap_filt_getaliasent, LM_ALIASES,
+                 _nss_ldap_parse_alias, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
 #endif /* HAVE_ALIASES_H */

@@ -33,7 +33,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -63,8 +63,8 @@ static ent_context_t *proto_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_proto (LDAPMessage * e,
-		       ldap_state_t * pvt,
-		       void *result, char *buffer, size_t buflen)
+                       ldap_state_t * pvt,
+                       void *result, char *buffer, size_t buflen)
 {
 
   struct protoent *proto = (struct protoent *) result;
@@ -79,7 +79,7 @@ _nss_ldap_parse_proto (LDAPMessage * e,
 
   stat =
     _nss_ldap_assign_attrval (e, AT (ipProtocolNumber), &number, &buffer,
-			      &buflen);
+                              &buflen);
   if (stat != NSS_SUCCESS)
     return stat;
 
@@ -87,7 +87,7 @@ _nss_ldap_parse_proto (LDAPMessage * e,
 
   stat =
     _nss_ldap_assign_attrvals (e, ATM (LM_PROTOCOLS, cn), proto->p_name,
-			       &proto->p_aliases, &buffer, &buflen, NULL);
+                               &proto->p_aliases, &buffer, &buflen, NULL);
   if (stat != NSS_SUCCESS)
     return stat;
 
@@ -96,20 +96,20 @@ _nss_ldap_parse_proto (LDAPMessage * e,
 
 enum nss_status
 _nss_ldap_getprotobyname_r (const char *name, struct protoent *result,
-			    char *buffer, size_t buflen, int *errnop)
+                            char *buffer, size_t buflen, int *errnop)
 {
   LOOKUP_NAME (name, result, buffer, buflen, errnop,
-	       _nss_ldap_filt_getprotobyname, LM_PROTOCOLS,
-	       _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
+               _nss_ldap_filt_getprotobyname, LM_PROTOCOLS,
+               _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
 enum nss_status
 _nss_ldap_getprotobynumber_r (int number, struct protoent *result,
-			      char *buffer, size_t buflen, int *errnop)
+                              char *buffer, size_t buflen, int *errnop)
 {
   LOOKUP_NUMBER (number, result, buffer, buflen, errnop,
-		 _nss_ldap_filt_getprotobynumber, LM_PROTOCOLS,
-		 _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
+                 _nss_ldap_filt_getprotobynumber, LM_PROTOCOLS,
+                 _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
      enum nss_status _nss_ldap_setprotoent (void)
@@ -124,9 +124,9 @@ _nss_ldap_getprotobynumber_r (int number, struct protoent *result,
 
 enum nss_status
 _nss_ldap_getprotoent_r (struct protoent *result, char *buffer, size_t buflen,
-			 int *errnop)
+                         int *errnop)
 {
   LOOKUP_GETENT (proto_context, result, buffer, buflen, errnop,
-		 _nss_ldap_filt_getprotoent, LM_PROTOCOLS,
-		 _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
+                 _nss_ldap_filt_getprotoent, LM_PROTOCOLS,
+                 _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
 }

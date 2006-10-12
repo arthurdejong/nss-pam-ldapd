@@ -43,10 +43,10 @@ void _nss_ldap_am_context_free(ldap_automount_context_t **pContext);
 enum nss_status _nss_ldap_am_context_init(const char *mapname, ldap_automount_context_t **pContext);
 enum nss_status _nss_ldap_setautomntent(const char *mapname, void **context);
 enum nss_status _nss_ldap_getautomntent(void *context, const char **key, const char **value,
-				   char *buffer, size_t buflen, int *errnop);
+                                   char *buffer, size_t buflen, int *errnop);
 enum nss_status _nss_ldap_endautomntent(void **context);
 enum nss_status _nss_ldap_getautomntbyname_r(void *private, const char *key,
-					const char **canon_key, const char **value,
-					char *buffer, size_t buflen, int *errnop);
+                                        const char **canon_key, const char **value,
+                                        char *buffer, size_t buflen, int *errnop);
 
 #endif /* _LDAP_NSS_LDAP_LDAP_AUTOMOUNT_H */

@@ -32,7 +32,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -167,23 +167,23 @@ _nss_ldap_parse_netgr (void *vresultp, char *buffer, size_t buflen)
       char *name = cp;
 
       while (*cp != '\0' && !isspace ((int) *cp))
-	++cp;
+        ++cp;
 
       if (name != cp)
-	{
-	  /* It is another netgroup name. */
-	  int last = *cp == '\0';
+        {
+          /* It is another netgroup name. */
+          int last = *cp == '\0';
 
-	  result->type = group_val;
-	  result->val.group = name;
-	  *cp = '\0';
-	  if (!last)
-	    ++cp;
-	  result->cursor = cp;
-	  result->first = 0;
+          result->type = group_val;
+          result->val.group = name;
+          *cp = '\0';
+          if (!last)
+            ++cp;
+          result->cursor = cp;
+          result->first = 0;
 
-	  return NSS_SUCCESS;
-	}
+          return NSS_SUCCESS;
+        }
       return result->first ? NSS_NOTFOUND : NSS_RETURN;
     }
 
@@ -232,8 +232,8 @@ _nss_ldap_parse_netgr (void *vresultp, char *buffer, size_t buflen)
 
 static enum nss_status
 _nss_ldap_load_netgr (LDAPMessage * e,
-		      ldap_state_t * pvt,
-		      void *vresultp, char *buffer, size_t buflen)
+                      ldap_state_t * pvt,
+                      void *vresultp, char *buffer, size_t buflen)
 {
   int attr;
   int nvals;
@@ -246,47 +246,47 @@ _nss_ldap_load_netgr (LDAPMessage * e,
   for (attr = 0; attr < 2; attr++)
     {
       switch (attr)
-	{
-	case 1:
-	  vals = _nss_ldap_get_values (e, AT (nisNetgroupTriple));
-	  break;
-	default:
-	  vals = _nss_ldap_get_values (e, AT (memberNisNetgroup));
-	  break;
-	}
+        {
+        case 1:
+          vals = _nss_ldap_get_values (e, AT (nisNetgroupTriple));
+          break;
+        default:
+          vals = _nss_ldap_get_values (e, AT (memberNisNetgroup));
+          break;
+        }
 
       nvals = ldap_count_values (vals);
 
       if (vals == NULL)
-	continue;
+        continue;
 
       if (nvals == 0)
-	{
-	  ldap_value_free (vals);
-	  continue;
-	}
+        {
+          ldap_value_free (vals);
+          continue;
+        }
 
       if (result->data_size > 0
-	  && result->cursor - result->data + 1 > result->data_size)
-	EXPAND (1);
+          && result->cursor - result->data + 1 > result->data_size)
+        EXPAND (1);
 
       if (result->data_size > 0)
-	*result->cursor++ = ' ';
+        *result->cursor++ = ' ';
 
       valcount += nvals;
       valiter = vals;
 
       while (*valiter != NULL)
-	{
-	  int curlen = strlen (*valiter);
-	  if (result->cursor - result->data + curlen + 1 > result->data_size)
-	    EXPAND (curlen + 1);
-	  memcpy (result->cursor, *valiter, curlen + 1);
-	  result->cursor += curlen;
-	  valiter++;
-	  if (*valiter != NULL)
-	    *result->cursor++ = ' ';
-	}
+        {
+          int curlen = strlen (*valiter);
+          if (result->cursor - result->data + curlen + 1 > result->data_size)
+            EXPAND (curlen + 1);
+          memcpy (result->cursor, *valiter, curlen + 1);
+          result->cursor += curlen;
+          valiter++;
+          if (*valiter != NULL)
+            *result->cursor++ = ' ';
+        }
       ldap_value_free (vals);
     }
 
@@ -334,15 +334,15 @@ _nss_ldap_setnetgrent (char *group, struct __netgrent *result)
 
   stat =
     _nss_ldap_getbyname (&a, result, buffer, buflen, &errnop,
-			 _nss_ldap_filt_getnetgrent, LM_NETGROUP,
-			 _nss_ldap_load_netgr);
+                         _nss_ldap_filt_getnetgrent, LM_NETGROUP,
+                         _nss_ldap_load_netgr);
 
   LOOKUP_SETENT (_ngbe);
 }
 
 enum nss_status
 _nss_ldap_getnetgrent_r (struct __netgrent *result,
-			 char *buffer, size_t buflen, int *errnop)
+                         char *buffer, size_t buflen, int *errnop)
 {
   return _nss_ldap_parse_netgr (result, buffer, buflen);
 }

@@ -27,7 +27,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -59,21 +59,21 @@
 
 static enum nss_status
 _nss_ldap_parse_automount (LDAPMessage * e,
-			   ldap_state_t * pvt,
-			   void *result, char *buffer, size_t buflen)
+                           ldap_state_t * pvt,
+                           void *result, char *buffer, size_t buflen)
 {
   enum nss_status stat;
   char ***keyval = result;
 
   stat = 
     _nss_ldap_assign_attrval (e, AT (automountKey), keyval[0],
-			      &buffer, &buflen);
+                              &buffer, &buflen);
   if (stat != NSS_SUCCESS)
     return stat;
 
   stat = 
     _nss_ldap_assign_attrval (e, AT (automountInformation), keyval[1],
-			      &buffer, &buflen);
+                              &buffer, &buflen);
   if (stat != NSS_SUCCESS)
     return stat;
 
@@ -99,7 +99,7 @@ _nss_ldap_am_context_alloc(ldap_automount_context_t **pContext)
 
   /* List of DNs, grown on demand */
   context->lac_dn_list = (char **)malloc (context->lac_dn_size *
-					  sizeof(char *));
+                                          sizeof(char *));
   if (context->lac_dn_list == NULL)
     {
       free (context);
@@ -132,13 +132,13 @@ _nss_ldap_am_context_free(ldap_automount_context_t **pContext)
   if (context->lac_dn_list != NULL)
     {
       for (i = 0; i < context->lac_dn_count; i++)
-	{
+        {
 #ifdef HAVE_LDAP_MEMFREE
-	  ldap_memfree (context->lac_dn_list[i]);
+          ldap_memfree (context->lac_dn_list[i]);
 #else
-	  free (context->lac_dn_list[i]);
+          free (context->lac_dn_list[i]);
 #endif /* HAVE_LDAP_MEMFREE */
-	}
+        }
       free (context->lac_dn_list);
     }
 
@@ -158,8 +158,8 @@ _nss_ldap_am_context_free(ldap_automount_context_t **pContext)
 
 static enum nss_status
 am_context_add_dn (LDAPMessage * e,
-		   ldap_state_t * pvt,
-		   void *result, char *buffer, size_t buflen)
+                   ldap_state_t * pvt,
+                   void *result, char *buffer, size_t buflen)
 {
   ldap_automount_context_t *context = (ldap_automount_context_t *) result;
   char *dn;
@@ -175,16 +175,16 @@ am_context_add_dn (LDAPMessage * e,
       char **new_dns;
 
       new_dns = (char **)realloc(context->lac_dn_list,
-				 2 * context->lac_dn_size * sizeof(char *));
+                                 2 * context->lac_dn_size * sizeof(char *));
       if (new_dns == NULL)
-	{
+        {
 #ifdef HAVE_LDAP_MEMFREE
-	  ldap_memfree (dn);
+          ldap_memfree (dn);
 #else
-	  free (dn);
+          free (dn);
 #endif /* HAVE_LDAP_MEMFREE */
-	  return NSS_TRYAGAIN;
-	}
+          return NSS_TRYAGAIN;
+        }
 
       context->lac_dn_list = new_dns;
       context->lac_dn_size *= 2;
@@ -218,12 +218,12 @@ _nss_ldap_am_context_init(const char *mapname, ldap_automount_context_t **pConte
   do
     {
       stat = _nss_ldap_getent_ex (&a, &key,
-				  (void *)context,
-				  NULL, 0, &errnop,
-				  _nss_ldap_filt_setautomntent,
-				  LM_AUTOMOUNT,
-				  no_attrs,
-				  am_context_add_dn);
+                                  (void *)context,
+                                  NULL, 0, &errnop,
+                                  _nss_ldap_filt_setautomntent,
+                                  LM_AUTOMOUNT,
+                                  no_attrs,
+                                  am_context_add_dn);
     }
   while (stat == NSS_SUCCESS);
 
@@ -283,7 +283,7 @@ enum nss_status _nss_ldap_setautomntent(const char *mapname, void **private)
 }
 
 enum nss_status _nss_ldap_getautomntent_r(void *private, const char **key, const char **value,
-				     char *buffer, size_t buflen, int *errnop)
+                                     char *buffer, size_t buflen, int *errnop)
 {
   enum nss_status stat;
   ldap_automount_context_t *context = (ldap_automount_context_t *)private;
@@ -309,19 +309,19 @@ enum nss_status _nss_ldap_getautomntent_r(void *private, const char **key, const
       LA_BASE (a) = context->lac_dn_list[context->lac_dn_index];
 
       stat = _nss_ldap_getent_ex (&a, &context->lac_state,
-				  (void *)keyval,
-				  buffer, buflen, errnop,
-				  _nss_ldap_filt_getautomntent,
-				  LM_AUTOMOUNT,
-				  NULL,
-				  _nss_ldap_parse_automount);
+                                  (void *)keyval,
+                                  buffer, buflen, errnop,
+                                  _nss_ldap_filt_getautomntent,
+                                  LM_AUTOMOUNT,
+                                  NULL,
+                                  _nss_ldap_parse_automount);
       if (stat == NSS_NOTFOUND)
-	{
-	  if (context->lac_dn_index < context->lac_dn_count - 1)
-	    context->lac_dn_index++;
-	  else
-	    break; /* move along, nothing more to see here */
-	}
+        {
+          if (context->lac_dn_index < context->lac_dn_count - 1)
+            context->lac_dn_index++;
+          else
+            break; /* move along, nothing more to see here */
+        }
     }
   while (stat == NSS_NOTFOUND);
 
@@ -350,8 +350,8 @@ enum nss_status _nss_ldap_endautomntent(void **private)
 }
 
 enum nss_status _nss_ldap_getautomntbyname_r(void *private, const char *key,
-					const char **canon_key, const char **value,
-					char *buffer, size_t buflen, int *errnop)
+                                        const char **canon_key, const char **value,
+                                        char *buffer, size_t buflen, int *errnop)
 {
   enum nss_status stat = NSS_NOTFOUND;
   ldap_automount_context_t *context = (ldap_automount_context_t *)private;
@@ -376,16 +376,16 @@ enum nss_status _nss_ldap_getautomntbyname_r(void *private, const char *key,
 
       /* we do not acquire lock in this case */
       stat = _nss_ldap_getbyname (&a,
-				  (void *)keyval,
-				  buffer, buflen, errnop,
-				  _nss_ldap_filt_getautomntbyname,
-				  LM_AUTOMOUNT,
-				  _nss_ldap_parse_automount);
+                                  (void *)keyval,
+                                  buffer, buflen, errnop,
+                                  _nss_ldap_filt_getautomntbyname,
+                                  LM_AUTOMOUNT,
+                                  _nss_ldap_parse_automount);
 
       if (stat != NSS_NOTFOUND)
-	{
-	  break; /* on success or error other than not found */
-	}
+        {
+          break; /* on success or error other than not found */
+        }
     }
 
   debug ("<== _nss_ldap_getautomntbyname_r");

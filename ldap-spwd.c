@@ -29,7 +29,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -61,8 +61,8 @@ static ent_context_t *sp_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_sp (LDAPMessage * e,
-		    ldap_state_t * pvt,
-		    void *result, char *buffer, size_t buflen)
+                    ldap_state_t * pvt,
+                    void *result, char *buffer, size_t buflen)
 {
   struct spwd *sp = (struct spwd *) result;
   enum nss_status stat;
@@ -76,13 +76,13 @@ _nss_ldap_parse_sp (LDAPMessage * e,
 
   stat =
     _nss_ldap_assign_attrval (e, ATM (LM_SHADOW, uid), &sp->sp_namp, &buffer,
-			      &buflen);
+                              &buflen);
   if (stat != NSS_SUCCESS)
     return stat;
 
   stat =
     _nss_ldap_assign_attrval (e, AT (shadowLastChange), &tmp, &buffer,
-			      &buflen);
+                              &buflen);
   sp->sp_lstchg = (stat == NSS_SUCCESS) ? _nss_ldap_shadow_date (tmp) : -1;
 
   stat =
@@ -95,17 +95,17 @@ _nss_ldap_parse_sp (LDAPMessage * e,
 
   stat =
     _nss_ldap_assign_attrval (e, AT (shadowWarning), &tmp, &buffer,
-			      &buflen);
+                              &buflen);
   sp->sp_warn = (stat == NSS_SUCCESS) ? atol (tmp) : -1;
 
   stat =
     _nss_ldap_assign_attrval (e, AT (shadowInactive), &tmp, &buffer,
-			      &buflen);
+                              &buflen);
   sp->sp_inact = (stat == NSS_SUCCESS) ? atol (tmp) : -1;
 
   stat =
     _nss_ldap_assign_attrval (e, AT (shadowExpire), &tmp, &buffer,
-			      &buflen);
+                              &buflen);
   sp->sp_expire = (stat == NSS_SUCCESS) ? _nss_ldap_shadow_date (tmp) : -1;
 
   stat =
@@ -119,11 +119,11 @@ _nss_ldap_parse_sp (LDAPMessage * e,
 
 enum nss_status
 _nss_ldap_getspnam_r (const char *name,
-		      struct spwd * result,
-		      char *buffer, size_t buflen, int *errnop)
+                      struct spwd * result,
+                      char *buffer, size_t buflen, int *errnop)
 {
   LOOKUP_NAME (name, result, buffer, buflen, errnop, _nss_ldap_filt_getspnam,
-	       LM_SHADOW, _nss_ldap_parse_sp, LDAP_NSS_BUFLEN_DEFAULT);
+               LM_SHADOW, _nss_ldap_parse_sp, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
 enum nss_status _nss_ldap_setspent (void)
@@ -138,11 +138,11 @@ enum nss_status _nss_ldap_endspent (void)
 
 enum nss_status
 _nss_ldap_getspent_r (struct spwd *result,
-		      char *buffer, size_t buflen, int *errnop)
+                      char *buffer, size_t buflen, int *errnop)
 {
   LOOKUP_GETENT (sp_context, result, buffer, buflen, errnop,
-		 _nss_ldap_filt_getspent, LM_SHADOW, _nss_ldap_parse_sp,
-		 LDAP_NSS_BUFLEN_DEFAULT);
+                 _nss_ldap_filt_getspent, LM_SHADOW, _nss_ldap_parse_sp,
+                 LDAP_NSS_BUFLEN_DEFAULT);
 }
 
 #endif /* HAVE_SHADOW_H */

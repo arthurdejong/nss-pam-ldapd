@@ -23,7 +23,7 @@
 
 #include "config.h"
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -56,21 +56,21 @@
 #include "util.h"
 
 static enum nss_status do_getrdnvalue (const char *dn,
-				  const char *rdntype,
-				  char **rval, char **buffer,
-				  size_t * buflen);
+                                  const char *rdntype,
+                                  char **rval, char **buffer,
+                                  size_t * buflen);
 
 
 static enum nss_status do_parse_map_statement (ldap_config_t * cfg,
-					  const char *statement,
-					  ldap_map_type_t type);
+                                          const char *statement,
+                                          ldap_map_type_t type);
 
 static enum nss_status do_searchdescriptorconfig (const char *key,
-					     const char *value,
-					     size_t valueLength,
-					     ldap_service_search_descriptor_t
-					     ** result, char **buffer,
-					     size_t * buflen);
+                                             const char *value,
+                                             size_t valueLength,
+                                             ldap_service_search_descriptor_t
+                                             ** result, char **buffer,
+                                             size_t * buflen);
 
 #include <fcntl.h>
 static void *__cache = NULL;
@@ -92,10 +92,10 @@ dn2uid_cache_put (const char *dn, const char *uid)
     {
       __cache = _nss_ldap_db_open ();
       if (__cache == NULL)
-	{
-	  cache_unlock ();
-	  return NSS_TRYAGAIN;
-	}
+        {
+          cache_unlock ();
+          return NSS_TRYAGAIN;
+        }
     }
 
   key.data = (void *) dn;
@@ -150,28 +150,15 @@ dn2uid_cache_get (const char *dn, char **uid, char **buffer, size_t * buflen)
   return NSS_SUCCESS;
 }
 
-#ifdef HPUX
-static int lock_inited = 0;
-#endif
-
 enum nss_status
 _nss_ldap_dn2uid (const char *dn, char **uid, char **buffer, size_t * buflen,
-		  int *pIsNestedGroup, LDAPMessage ** pRes)
+                  int *pIsNestedGroup, LDAPMessage ** pRes)
 {
   enum nss_status stat;
 
   debug ("==> _nss_ldap_dn2uid");
 
   *pIsNestedGroup = 0;
-
-#ifdef HPUX
-  /* XXX this is not thread-safe */
-  if (!lock_inited)
-    {
-      __thread_mutex_init (&__cache_lock, NULL);
-      lock_inited = 1;
-    }
-#endif
 
   stat = dn2uid_cache_get (dn, uid, buffer, buflen);
   if (stat == NSS_NOTFOUND)
@@ -185,25 +172,25 @@ _nss_ldap_dn2uid (const char *dn, char **uid, char **buffer, size_t * buflen,
       attrs[3] = NULL;
 
       if (_nss_ldap_read (dn, attrs, &res) == NSS_SUCCESS)
-	{
-	  LDAPMessage *e = _nss_ldap_first_entry (res);
-	  if (e != NULL)
-	    {
-	      if (_nss_ldap_oc_check (e, OC (posixGroup)) == NSS_SUCCESS)
-		{
-		  *pIsNestedGroup = 1;
-		  *pRes = res;
-		  debug ("<== _nss_ldap_dn2uid (nested group)");
-		  return NSS_SUCCESS;
-		}
+        {
+          LDAPMessage *e = _nss_ldap_first_entry (res);
+          if (e != NULL)
+            {
+              if (_nss_ldap_oc_check (e, OC (posixGroup)) == NSS_SUCCESS)
+                {
+                  *pIsNestedGroup = 1;
+                  *pRes = res;
+                  debug ("<== _nss_ldap_dn2uid (nested group)");
+                  return NSS_SUCCESS;
+                }
 
-	      stat =
-		_nss_ldap_assign_attrval (e, ATM (LM_PASSWD, uid), uid,
-					  buffer, buflen);
-	      if (stat == NSS_SUCCESS)
-		dn2uid_cache_put (dn, *uid);
-	    }
-	}
+              stat =
+                _nss_ldap_assign_attrval (e, ATM (LM_PASSWD, uid), uid,
+                                          buffer, buflen);
+              if (stat == NSS_SUCCESS)
+                dn2uid_cache_put (dn, *uid);
+            }
+        }
       ldap_msgfree (res);
     }
 
@@ -214,8 +201,8 @@ _nss_ldap_dn2uid (const char *dn, char **uid, char **buffer, size_t * buflen,
 
 enum nss_status
 _nss_ldap_getrdnvalue (LDAPMessage * entry,
-		       const char *rdntype,
-		       char **rval, char **buffer, size_t * buflen)
+                       const char *rdntype,
+                       char **rval, char **buffer, size_t * buflen)
 {
   char *dn;
   enum nss_status status;
@@ -245,24 +232,24 @@ _nss_ldap_getrdnvalue (LDAPMessage * entry,
       vals = _nss_ldap_get_values (entry, rdntype);
 
       if (vals != NULL)
-	{
-	  int rdnlen = strlen (*vals);
-	  if (*buflen > rdnlen)
-	    {
-	      char *rdnvalue = *buffer;
-	      strncpy (rdnvalue, *vals, rdnlen);
-	      rdnvalue[rdnlen] = '\0';
-	      *buffer += rdnlen + 1;
-	      *buflen -= rdnlen + 1;
-	      *rval = rdnvalue;
-	      status = NSS_SUCCESS;
-	    }
-	  else
-	    {
-	      status = NSS_TRYAGAIN;
-	    }
-	  ldap_value_free (vals);
-	}
+        {
+          int rdnlen = strlen (*vals);
+          if (*buflen > rdnlen)
+            {
+              char *rdnvalue = *buffer;
+              strncpy (rdnvalue, *vals, rdnlen);
+              rdnvalue[rdnlen] = '\0';
+              *buffer += rdnlen + 1;
+              *buflen -= rdnlen + 1;
+              *rval = rdnvalue;
+              status = NSS_SUCCESS;
+            }
+          else
+            {
+              status = NSS_TRYAGAIN;
+            }
+          ldap_value_free (vals);
+        }
     }
 
   return status;
@@ -270,8 +257,8 @@ _nss_ldap_getrdnvalue (LDAPMessage * entry,
 
 static enum nss_status
 do_getrdnvalue (const char *dn,
-		const char *rdntype,
-		char **rval, char **buffer, size_t * buflen)
+                const char *rdntype,
+                char **rval, char **buffer, size_t * buflen)
 {
   char **exploded_dn;
   char *rdnvalue = NULL;
@@ -300,27 +287,27 @@ do_getrdnvalue (const char *dn,
 
       exploded_rdn = ldap_explode_rdn (*exploded_dn, 0);
       if (exploded_rdn != NULL)
-	{
-	  for (p = exploded_rdn; *p != NULL; p++)
-	    {
-	      if (strncasecmp (*p, rdnava, rdnavalen) == 0)
-		{
-		  char *r = *p + rdnavalen;
+        {
+          for (p = exploded_rdn; *p != NULL; p++)
+            {
+              if (strncasecmp (*p, rdnava, rdnavalen) == 0)
+                {
+                  char *r = *p + rdnavalen;
 
-		  rdnlen = strlen (r);
-		  if (*buflen <= rdnlen)
-		    {
-		      ldap_value_free (exploded_rdn);
-		      ldap_value_free (exploded_dn);
-		      return NSS_TRYAGAIN;
-		    }
-		  rdnvalue = *buffer;
-		  strncpy (rdnvalue, r, rdnlen);
-		  break;
-		}
-	    }
-	  ldap_value_free (exploded_rdn);
-	}
+                  rdnlen = strlen (r);
+                  if (*buflen <= rdnlen)
+                    {
+                      ldap_value_free (exploded_rdn);
+                      ldap_value_free (exploded_dn);
+                      return NSS_TRYAGAIN;
+                    }
+                  rdnvalue = *buffer;
+                  strncpy (rdnvalue, r, rdnlen);
+                  break;
+                }
+            }
+          ldap_value_free (exploded_rdn);
+        }
 #else
       /*
        * we don't have Netscape's ldap_explode_rdn() API,
@@ -337,28 +324,28 @@ do_getrdnvalue (const char *dn,
 #else
       for (p = strtok_r (r, "+", &st);
 #endif
-	   p != NULL;
+           p != NULL;
 #ifndef HAVE_STRTOK_R
-	   p = strtok (NULL, "+"))
+           p = strtok (NULL, "+"))
 #else
-	   p = strtok_r (NULL, "+", &st))
+           p = strtok_r (NULL, "+", &st))
 #endif
       {
-	if (strncasecmp (p, rdnava, rdnavalen) == 0)
-	  {
-	    p += rdnavalen;
-	    rdnlen = strlen (p);
-	    if (*buflen <= rdnlen)
-	      {
-		ldap_value_free (exploded_dn);
-		return NSS_TRYAGAIN;
-	      }
-	    rdnvalue = *buffer;
-	    strncpy (rdnvalue, p, rdnlen);
-	    break;
-	  }
-	if (r != NULL)
-	  r = NULL;
+        if (strncasecmp (p, rdnava, rdnavalen) == 0)
+          {
+            p += rdnavalen;
+            rdnlen = strlen (p);
+            if (*buflen <= rdnlen)
+              {
+                ldap_value_free (exploded_dn);
+                return NSS_TRYAGAIN;
+              }
+            rdnvalue = *buffer;
+            strncpy (rdnvalue, p, rdnlen);
+            break;
+          }
+        if (r != NULL)
+          r = NULL;
       }
 #endif /* HAVE_LDAP_EXPLODE_RDN */
     }
@@ -382,7 +369,7 @@ do_getrdnvalue (const char *dn,
 
 static enum nss_status
 do_parse_map_statement (ldap_config_t * cfg,
-			const char *statement, ldap_map_type_t type)
+                        const char *statement, ldap_map_type_t type)
 {
   char *key, *val;
   ldap_map_selector_t sel = LM_NONE;
@@ -401,9 +388,9 @@ do_parse_map_statement (ldap_config_t * cfg,
 
     if (p != NULL)
       {
-	*p = '\0';
-	sel = _nss_ldap_str2selector (key);
-	key = ++p;
+        *p = '\0';
+        sel = _nss_ldap_str2selector (key);
+        key = ++p;
       }
   }
 
@@ -413,7 +400,7 @@ do_parse_map_statement (ldap_config_t * cfg,
 /* parse a comma-separated list */
 static enum nss_status
 do_parse_list (char *values, char ***valptr,
-	       char **pbuffer, size_t *pbuflen)
+               char **pbuffer, size_t *pbuflen)
 {
   char *s, **p;
 #ifdef HAVE_STRTOK_R
@@ -428,7 +415,7 @@ do_parse_list (char *values, char ***valptr,
   for (valcount = 1, s = values; *s != '\0'; s++)
     {
       if (*s == ',')
-	valcount++;
+        valcount++;
     }
 
   if (bytesleft (buffer, buflen, char *) < (valcount + 1) * sizeof (char *))
@@ -455,8 +442,8 @@ do_parse_list (char *values, char ***valptr,
       vallen = strlen (s);
       if (buflen < (size_t) (vallen + 1))
         {
-	  return NSS_UNAVAIL;
-	}
+          return NSS_UNAVAIL;
+        }
 
       /* copy this value into the next block of buffer space */
       elt = buffer;
@@ -516,8 +503,8 @@ _nss_ldap_str2selector (const char *key)
 
 static enum nss_status
 do_searchdescriptorconfig (const char *key, const char *value, size_t len,
-			   ldap_service_search_descriptor_t ** result,
-			   char **buffer, size_t * buflen)
+                           ldap_service_search_descriptor_t ** result,
+                           char **buffer, size_t * buflen)
 {
   ldap_service_search_descriptor_t **t, *cur;
   char *base;
@@ -530,7 +517,7 @@ do_searchdescriptorconfig (const char *key, const char *value, size_t len,
   scope = -1;
 
   if (strncasecmp (key, NSS_LDAP_KEY_NSS_BASE_PREFIX,
-		   NSS_LDAP_KEY_NSS_BASE_PREFIX_LEN) != 0)
+                   NSS_LDAP_KEY_NSS_BASE_PREFIX_LEN) != 0)
     return NSS_SUCCESS;
 
   sel = _nss_ldap_str2selector (&key[NSS_LDAP_KEY_NSS_BASE_PREFIX_LEN]);
@@ -555,17 +542,17 @@ do_searchdescriptorconfig (const char *key, const char *value, size_t len,
       *s = '\0';
       s++;
       if (!strcasecmp (s, "sub"))
-	scope = LDAP_SCOPE_SUBTREE;
+        scope = LDAP_SCOPE_SUBTREE;
       else if (!strcasecmp (s, "one"))
-	scope = LDAP_SCOPE_ONELEVEL;
+        scope = LDAP_SCOPE_ONELEVEL;
       else if (!strcasecmp (s, "base"))
-	scope = LDAP_SCOPE_BASE;
+        scope = LDAP_SCOPE_BASE;
       filter = strchr (s, '?');
       if (filter != NULL)
-	{
-	  *filter = '\0';
-	  filter++;
-	}
+        {
+          *filter = '\0';
+          filter++;
+        }
     }
 
   if (bytesleft (*buffer, *buflen, ldap_service_search_descriptor_t) <
@@ -659,11 +646,11 @@ enum nss_status _nss_ldap_init_config (ldap_config_t * result)
   for (i = 0; i <= LM_NONE; i++)
     {
       for (j = 0; j <= MAP_MAX; j++)
-	{
-	  result->ldc_maps[i][j] = _nss_ldap_db_open ();
-	  if (result->ldc_maps[i][j] == NULL)
-	    return NSS_UNAVAIL;
-	}
+        {
+          result->ldc_maps[i][j] = _nss_ldap_db_open ();
+          if (result->ldc_maps[i][j] == NULL)
+            return NSS_UNAVAIL;
+        }
     }
 
   return NSS_SUCCESS;
@@ -671,7 +658,7 @@ enum nss_status _nss_ldap_init_config (ldap_config_t * result)
 
 enum nss_status
 _nss_ldap_add_uri (ldap_config_t *result, const char *uri,
-		   char **buffer, size_t *buflen)
+                   char **buffer, size_t *buflen)
 {
   /* add a single URI to the list of URIs in the configuration */
   int i;
@@ -710,7 +697,7 @@ _nss_ldap_add_uri (ldap_config_t *result, const char *uri,
 
 static enum nss_status
 do_add_uris (ldap_config_t *result, char *uris,
-	     char **buffer, size_t *buflen)
+             char **buffer, size_t *buflen)
 {
   /* Add a space separated list of URIs */
   char *p;
@@ -720,14 +707,14 @@ do_add_uris (ldap_config_t *result, char *uris,
     {
       char *q = strchr (p, ' ');
       if (q != NULL)
-	*q = '\0';
+        *q = '\0';
 
       stat = _nss_ldap_add_uri (result, p, buffer, buflen);
 
       p = (q != NULL) ? ++q : NULL;
 
       if (stat != NSS_SUCCESS)
-	break;
+        break;
     }
 
   return stat;
@@ -735,7 +722,7 @@ do_add_uris (ldap_config_t *result, char *uris,
 
 static enum nss_status
 do_add_hosts (ldap_config_t *result, char *hosts,
-	      char **buffer, size_t *buflen)
+              char **buffer, size_t *buflen)
 {
   /* Add a space separated list of hosts */
   char *p;
@@ -747,7 +734,7 @@ do_add_hosts (ldap_config_t *result, char *hosts,
       char *q = strchr (p, ' ');
 
       if (q != NULL)
-	*q = '\0';
+        *q = '\0';
 
       snprintf (b, sizeof(b), "ldap://%s", p);
 
@@ -756,7 +743,7 @@ do_add_hosts (ldap_config_t *result, char *hosts,
       p = (q != NULL) ? ++q : NULL;
 
       if (stat != NSS_SUCCESS)
-	break;
+        break;
     }
 
   return stat;
@@ -804,17 +791,17 @@ _nss_ldap_readconfig (ldap_config_t ** presult, char **buffer, size_t *buflen)
       char **t = NULL;
 
       if (*b == '\n' || *b == '\r' || *b == '#')
-	continue;
+        continue;
 
       k = b;
       v = k;
 
       /* skip past all characters in keyword */
       while (*v != '\0' && *v != ' ' && *v != '\t')
-	v++;
+        v++;
 
       if (*v == '\0')
-	continue;
+        continue;
 
       /* terminate keyword */
       *(v++) = '\0';
@@ -822,12 +809,12 @@ _nss_ldap_readconfig (ldap_config_t ** presult, char **buffer, size_t *buflen)
       /* skip empty lines with more than 3 spaces at the start of the line */
       /* rds.oliver@samera.com.py 01-set-2004                              */
       if (*v == '\n')
-	continue;
+        continue;
 
       /* skip all whitespaces between keyword and value */
       /* Lars Oergel <lars.oergel@innominate.de>, 05.10.2000 */
       while (*v == ' ' || *v == '\t')
-	v++;
+        v++;
 
       /* kick off all whitespaces and newline at the end of value */
       /* Bob Guo <bob@mail.ied.ac.cn>, 08.10.2001 */
@@ -838,339 +825,339 @@ _nss_ldap_readconfig (ldap_config_t ** presult, char **buffer, size_t *buflen)
 
       len = strlen (v) - 1;
       while (v[len] == ' ' || v[len] == '\t' || v[len] == '\n' || v[len] == '\r')
-	--len;
+        --len;
       v[++len] = '\0';
 
       if (*buflen < (size_t) (len + 1))
-	{
-	  stat = NSS_TRYAGAIN;
-	  break;
-	}
+        {
+          stat = NSS_TRYAGAIN;
+          break;
+        }
 
       if (!strcasecmp (k, NSS_LDAP_KEY_HOST))
-	{
-	  stat = do_add_hosts (result, v, buffer, buflen);
-	  if (stat != NSS_SUCCESS)
-	    break;
-	}
+        {
+          stat = do_add_hosts (result, v, buffer, buflen);
+          if (stat != NSS_SUCCESS)
+            break;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_URI))
-	{
-	  stat = do_add_uris (result, v, buffer, buflen);
-	  if (stat != NSS_SUCCESS)
-	    break;
-	}
+        {
+          stat = do_add_uris (result, v, buffer, buflen);
+          if (stat != NSS_SUCCESS)
+            break;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_BASE))
-	{
-	  t = &result->ldc_base;
-	}
+        {
+          t = &result->ldc_base;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_BINDDN))
-	{
-	  t = &result->ldc_binddn;
-	}
+        {
+          t = &result->ldc_binddn;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_BINDPW))
-	{
-	  t = &result->ldc_bindpw;
-	}
+        {
+          t = &result->ldc_bindpw;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_USESASL))
-	{
-	  result->ldc_usesasl = (!strcasecmp (v, "on")
-				 || !strcasecmp (v, "yes")
-				 || !strcasecmp (v, "true"));
-	}
+        {
+          result->ldc_usesasl = (!strcasecmp (v, "on")
+                                 || !strcasecmp (v, "yes")
+                                 || !strcasecmp (v, "true"));
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_SASLID))
-	{
-	  t = &result->ldc_saslid;
-	}
+        {
+          t = &result->ldc_saslid;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_ROOTBINDDN))
-	{
-	  t = &result->ldc_rootbinddn;
-	}
+        {
+          t = &result->ldc_rootbinddn;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_ROOTUSESASL))
-	{
-	  result->ldc_rootusesasl = (!strcasecmp (v, "on")
-				     || !strcasecmp (v, "yes")
-				     || !strcasecmp (v, "true"));
-	}
+        {
+          result->ldc_rootusesasl = (!strcasecmp (v, "on")
+                                     || !strcasecmp (v, "yes")
+                                     || !strcasecmp (v, "true"));
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_ROOTSASLID))
-	{
-	  t = &result->ldc_rootsaslid;
-	}
+        {
+          t = &result->ldc_rootsaslid;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_SSLPATH))
-	{
-	  t = &result->ldc_sslpath;
-	}
+        {
+          t = &result->ldc_sslpath;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_SCOPE))
-	{
-	  if (!strcasecmp (v, "sub"))
-	    {
-	      result->ldc_scope = LDAP_SCOPE_SUBTREE;
-	    }
-	  else if (!strcasecmp (v, "one"))
-	    {
-	      result->ldc_scope = LDAP_SCOPE_ONELEVEL;
-	    }
-	  else if (!strcasecmp (v, "base"))
-	    {
-	      result->ldc_scope = LDAP_SCOPE_BASE;
-	    }
-	}
+        {
+          if (!strcasecmp (v, "sub"))
+            {
+              result->ldc_scope = LDAP_SCOPE_SUBTREE;
+            }
+          else if (!strcasecmp (v, "one"))
+            {
+              result->ldc_scope = LDAP_SCOPE_ONELEVEL;
+            }
+          else if (!strcasecmp (v, "base"))
+            {
+              result->ldc_scope = LDAP_SCOPE_BASE;
+            }
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_DEREF))
-	{
-	  if (!strcasecmp (v, "never"))
-	    {
-	      result->ldc_deref = LDAP_DEREF_NEVER;
-	    }
-	  else if (!strcasecmp (v, "searching"))
-	    {
-	      result->ldc_deref = LDAP_DEREF_SEARCHING;
-	    }
-	  else if (!strcasecmp (v, "finding"))
-	    {
-	      result->ldc_deref = LDAP_DEREF_FINDING;
-	    }
-	  else if (!strcasecmp (v, "always"))
-	    {
-	      result->ldc_deref = LDAP_DEREF_ALWAYS;
-	    }
-	}
+        {
+          if (!strcasecmp (v, "never"))
+            {
+              result->ldc_deref = LDAP_DEREF_NEVER;
+            }
+          else if (!strcasecmp (v, "searching"))
+            {
+              result->ldc_deref = LDAP_DEREF_SEARCHING;
+            }
+          else if (!strcasecmp (v, "finding"))
+            {
+              result->ldc_deref = LDAP_DEREF_FINDING;
+            }
+          else if (!strcasecmp (v, "always"))
+            {
+              result->ldc_deref = LDAP_DEREF_ALWAYS;
+            }
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_PORT))
-	{
-	  result->ldc_port = atoi (v);
-	}
+        {
+          result->ldc_port = atoi (v);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_SSL))
-	{
-	  if (!strcasecmp (v, "on") || !strcasecmp (v, "yes")
-	      || !strcasecmp (v, "true"))
-	    {
-	      result->ldc_ssl_on = SSL_LDAPS;
-	    }
-	  else if (!strcasecmp (v, "start_tls"))
-	    {
-	      result->ldc_ssl_on = SSL_START_TLS;
-	    }
-	}
+        {
+          if (!strcasecmp (v, "on") || !strcasecmp (v, "yes")
+              || !strcasecmp (v, "true"))
+            {
+              result->ldc_ssl_on = SSL_LDAPS;
+            }
+          else if (!strcasecmp (v, "start_tls"))
+            {
+              result->ldc_ssl_on = SSL_START_TLS;
+            }
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_REFERRALS))
-	{
-	  result->ldc_referrals = (!strcasecmp (v, "on")
-				   || !strcasecmp (v, "yes")
-				   || !strcasecmp (v, "true"));
-	}
+        {
+          result->ldc_referrals = (!strcasecmp (v, "on")
+                                   || !strcasecmp (v, "yes")
+                                   || !strcasecmp (v, "true"));
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_RESTART))
-	{
-	  result->ldc_restart = (!strcasecmp (v, "on")
-				 || !strcasecmp (v, "yes")
-				 || !strcasecmp (v, "true"));
-	}
+        {
+          result->ldc_restart = (!strcasecmp (v, "on")
+                                 || !strcasecmp (v, "yes")
+                                 || !strcasecmp (v, "true"));
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_LDAP_VERSION))
-	{
-	  result->ldc_version = atoi (v);
-	}
+        {
+          result->ldc_version = atoi (v);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_TIMELIMIT))
-	{
-	  result->ldc_timelimit = atoi (v);
-	}
+        {
+          result->ldc_timelimit = atoi (v);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_BIND_TIMELIMIT))
-	{
-	  result->ldc_bind_timelimit = atoi (v);
-	}
+        {
+          result->ldc_bind_timelimit = atoi (v);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_IDLE_TIMELIMIT))
-	{
-	  result->ldc_idle_timelimit = atoi (v);
-	}
+        {
+          result->ldc_idle_timelimit = atoi (v);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_RECONNECT_POLICY))
-	{
-	  if (!strcasecmp (v, "hard") ||
-	      !strcasecmp (v, "hard_open"))
-	    {
-	      result->ldc_reconnect_pol = LP_RECONNECT_HARD_OPEN;
-	    }
-	  else if (!strcasecmp (v, "hard_init"))
-	    {
-	      result->ldc_reconnect_pol = LP_RECONNECT_HARD_INIT;
-	    }
-	  else if (!strcasecmp (v, "soft"))
-	    {
-	      result->ldc_reconnect_pol = LP_RECONNECT_SOFT;
-	    }
-	}
+        {
+          if (!strcasecmp (v, "hard") ||
+              !strcasecmp (v, "hard_open"))
+            {
+              result->ldc_reconnect_pol = LP_RECONNECT_HARD_OPEN;
+            }
+          else if (!strcasecmp (v, "hard_init"))
+            {
+              result->ldc_reconnect_pol = LP_RECONNECT_HARD_INIT;
+            }
+          else if (!strcasecmp (v, "soft"))
+            {
+              result->ldc_reconnect_pol = LP_RECONNECT_SOFT;
+            }
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_RECONNECT_TRIES))
-	{
-	  result->ldc_reconnect_tries = atoi (v);
-	}
+        {
+          result->ldc_reconnect_tries = atoi (v);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_RECONNECT_SLEEPTIME))
-	{
-	  result->ldc_reconnect_sleeptime = atoi (v);
-	}
+        {
+          result->ldc_reconnect_sleeptime = atoi (v);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_RECONNECT_MAXSLEEPTIME))
-	{
-	  result->ldc_reconnect_maxsleeptime = atoi (v);
-	}
+        {
+          result->ldc_reconnect_maxsleeptime = atoi (v);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_RECONNECT_MAXCONNTRIES))
-	{
-	  result->ldc_reconnect_maxconntries = atoi (v);
-	}
+        {
+          result->ldc_reconnect_maxconntries = atoi (v);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_SASL_SECPROPS))
-	{
-	  t = &result->ldc_sasl_secprops;
-	}
+        {
+          t = &result->ldc_sasl_secprops;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_LOGDIR))
-	{
-	  t = &result->ldc_logdir;
-	}
+        {
+          t = &result->ldc_logdir;
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_DEBUG))
-	{
-	  result->ldc_debug = atoi (v);
-	}
+        {
+          result->ldc_debug = atoi (v);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_PAGESIZE))
-	{
-	  result->ldc_pagesize = atoi (v);
-	}
+        {
+          result->ldc_pagesize = atoi (v);
+        }
 #ifdef CONFIGURE_KRB5_CCNAME
       else if (!strcasecmp (k, NSS_LDAP_KEY_KRB5_CCNAME))
-	{
-	  t = &result->ldc_krb5_ccname;
-	}
+        {
+          t = &result->ldc_krb5_ccname;
+        }
 #endif /* CONFIGURE_KRB5_CCNAME */
       else if (!strcasecmp (k, "tls_checkpeer"))
-	{
-	  if (!strcasecmp (v, "on") || !strcasecmp (v, "yes")
-	      || !strcasecmp (v, "true"))
-	    {
-	      result->ldc_tls_checkpeer = 1;
-	    }
-	  else if (!strcasecmp (v, "off") || !strcasecmp (v, "no")
-		   || !strcasecmp (v, "false"))
-	    {
-	      result->ldc_tls_checkpeer = 0;
-	    }
-	}
+        {
+          if (!strcasecmp (v, "on") || !strcasecmp (v, "yes")
+              || !strcasecmp (v, "true"))
+            {
+              result->ldc_tls_checkpeer = 1;
+            }
+          else if (!strcasecmp (v, "off") || !strcasecmp (v, "no")
+                   || !strcasecmp (v, "false"))
+            {
+              result->ldc_tls_checkpeer = 0;
+            }
+        }
       else if (!strcasecmp (k, "tls_cacertfile"))
-	{
-	  t = &result->ldc_tls_cacertfile;
-	}
+        {
+          t = &result->ldc_tls_cacertfile;
+        }
       else if (!strcasecmp (k, "tls_cacertdir"))
-	{
-	  t = &result->ldc_tls_cacertdir;
-	}
+        {
+          t = &result->ldc_tls_cacertdir;
+        }
       else if (!strcasecmp (k, "tls_ciphers"))
-	{
-	  t = &result->ldc_tls_ciphers;
-	}
+        {
+          t = &result->ldc_tls_ciphers;
+        }
       else if (!strcasecmp (k, "tls_cert"))
-	{
-	  t = &result->ldc_tls_cert;
-	}
+        {
+          t = &result->ldc_tls_cert;
+        }
       else if (!strcasecmp (k, "tls_key"))
-	{
-	  t = &result->ldc_tls_key;
-	}
+        {
+          t = &result->ldc_tls_key;
+        }
       else if (!strcasecmp (k, "tls_randfile"))
-	{
-	  t = &result->ldc_tls_randfile;
-	}
+        {
+          t = &result->ldc_tls_randfile;
+        }
       else if (!strncasecmp (k, NSS_LDAP_KEY_MAP_ATTRIBUTE,
-			     strlen (NSS_LDAP_KEY_MAP_ATTRIBUTE)))
-	{
-	  do_parse_map_statement (result, v, MAP_ATTRIBUTE);
-	}
+                             strlen (NSS_LDAP_KEY_MAP_ATTRIBUTE)))
+        {
+          do_parse_map_statement (result, v, MAP_ATTRIBUTE);
+        }
       else if (!strncasecmp (k, NSS_LDAP_KEY_MAP_OBJECTCLASS,
-			     strlen (NSS_LDAP_KEY_MAP_OBJECTCLASS)))
-	{
-	  do_parse_map_statement (result, v, MAP_OBJECTCLASS);
-	}
+                             strlen (NSS_LDAP_KEY_MAP_OBJECTCLASS)))
+        {
+          do_parse_map_statement (result, v, MAP_OBJECTCLASS);
+        }
       else if (!strncasecmp (k, NSS_LDAP_KEY_SET_OVERRIDE,
-			     strlen (NSS_LDAP_KEY_SET_OVERRIDE)))
-	{
-	  do_parse_map_statement (result, v, MAP_OVERRIDE);
-	}
+                             strlen (NSS_LDAP_KEY_SET_OVERRIDE)))
+        {
+          do_parse_map_statement (result, v, MAP_OVERRIDE);
+        }
       else if (!strncasecmp (k, NSS_LDAP_KEY_SET_DEFAULT,
-			     strlen (NSS_LDAP_KEY_SET_DEFAULT)))
-	{
-	  do_parse_map_statement (result, v, MAP_DEFAULT);
-	}
+                             strlen (NSS_LDAP_KEY_SET_DEFAULT)))
+        {
+          do_parse_map_statement (result, v, MAP_DEFAULT);
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_INITGROUPS))
-	{
-	  if (!strcasecmp (v, "backlink"))
-	    {
-	      result->ldc_flags |= NSS_LDAP_FLAGS_INITGROUPS_BACKLINK;
-	    }
-	  else
-	    {
-	      result->ldc_flags &= ~(NSS_LDAP_FLAGS_INITGROUPS_BACKLINK);
-	    }
-	}
+        {
+          if (!strcasecmp (v, "backlink"))
+            {
+              result->ldc_flags |= NSS_LDAP_FLAGS_INITGROUPS_BACKLINK;
+            }
+          else
+            {
+              result->ldc_flags &= ~(NSS_LDAP_FLAGS_INITGROUPS_BACKLINK);
+            }
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_SCHEMA))
-	{
-	  if (!strcasecmp (v, "rfc2307bis"))
-	    {
-	      result->ldc_flags |= NSS_LDAP_FLAGS_RFC2307BIS;
-	    }
-	  else if (!strcasecmp (v, "rfc2307"))
-	    {
-	      result->ldc_flags &= ~(NSS_LDAP_FLAGS_RFC2307BIS);
-	    }
-	}
+        {
+          if (!strcasecmp (v, "rfc2307bis"))
+            {
+              result->ldc_flags |= NSS_LDAP_FLAGS_RFC2307BIS;
+            }
+          else if (!strcasecmp (v, "rfc2307"))
+            {
+              result->ldc_flags &= ~(NSS_LDAP_FLAGS_RFC2307BIS);
+            }
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_PAGED_RESULTS))
-	{
-	  if (!strcasecmp (v, "on")
-	      || !strcasecmp (v, "yes")
-	      || !strcasecmp (v, "true"))
-	    {
-	      result->ldc_flags |= NSS_LDAP_FLAGS_PAGED_RESULTS;
-	    }
-	  else
-	    {
-	      result->ldc_flags &= ~(NSS_LDAP_FLAGS_PAGED_RESULTS);
-	    }
-	}
+        {
+          if (!strcasecmp (v, "on")
+              || !strcasecmp (v, "yes")
+              || !strcasecmp (v, "true"))
+            {
+              result->ldc_flags |= NSS_LDAP_FLAGS_PAGED_RESULTS;
+            }
+          else
+            {
+              result->ldc_flags &= ~(NSS_LDAP_FLAGS_PAGED_RESULTS);
+            }
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_INITGROUPS_IGNOREUSERS))
-	{
-	  stat = do_parse_list (v, &result->ldc_initgroups_ignoreusers,
-				buffer, buflen);
-	  if (stat == NSS_UNAVAIL)
-	    {
-	      break;
-	    }
-	}
+        {
+          stat = do_parse_list (v, &result->ldc_initgroups_ignoreusers,
+                                buffer, buflen);
+          if (stat == NSS_UNAVAIL)
+            {
+              break;
+            }
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_CONNECT_POLICY))
         {
-	  if (!strcasecmp (v, "oneshot"))
-	    {
-	      result->ldc_flags |= NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT;
-	    }
-	  else if (!strcasecmp (v, "persist"))
-	    {
-	      result->ldc_flags &= ~(NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT);
-	    }
-	}
+          if (!strcasecmp (v, "oneshot"))
+            {
+              result->ldc_flags |= NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT;
+            }
+          else if (!strcasecmp (v, "persist"))
+            {
+              result->ldc_flags &= ~(NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT);
+            }
+        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_SRV_DOMAIN))
-	{
-	  t = &result->ldc_srv_domain;
-	}
+        {
+          t = &result->ldc_srv_domain;
+        }
       else
-	{
-	  /*
-	   * check whether the key is a naming context key
-	   * if yes, parse; otherwise just return NSS_SUCCESS
-	   * so we can ignore keys we don't understand.
-	   */
-	  stat =
-	    do_searchdescriptorconfig (k, v, len, result->ldc_sds,
-				       buffer, buflen);
-	  if (stat == NSS_UNAVAIL)
-	    {
-	      break;
-	    }
-	}
+        {
+          /*
+           * check whether the key is a naming context key
+           * if yes, parse; otherwise just return NSS_SUCCESS
+           * so we can ignore keys we don't understand.
+           */
+          stat =
+            do_searchdescriptorconfig (k, v, len, result->ldc_sds,
+                                       buffer, buflen);
+          if (stat == NSS_UNAVAIL)
+            {
+              break;
+            }
+        }
 
       if (t != NULL)
-	{
-	  strncpy (*buffer, v, len);
-	  (*buffer)[len] = '\0';
-	  *t = *buffer;
-	  *buffer += len + 1;
-	  *buflen -= len + 1;
-	}
+        {
+          strncpy (*buffer, v, len);
+          (*buffer)[len] = '\0';
+          *t = *buffer;
+          *buffer += len + 1;
+          *buflen -= len + 1;
+        }
     }
 
   fclose (fp);
@@ -1184,45 +1171,45 @@ _nss_ldap_readconfig (ldap_config_t ** presult, char **buffer, size_t *buflen)
     {
       fp = fopen (NSS_LDAP_PATH_ROOTPASSWD, "r");
       if (fp)
-	{
-	  if (fgets (b, sizeof (b), fp) != NULL)
-	    {
-	      int len;
+        {
+          if (fgets (b, sizeof (b), fp) != NULL)
+            {
+              int len;
 
-	      len = strlen (b);
-	      /* BUG#138: check for newline before removing */
-	      if (len > 0 && b[len - 1] == '\n')
-		len--;
+              len = strlen (b);
+              /* BUG#138: check for newline before removing */
+              if (len > 0 && b[len - 1] == '\n')
+                len--;
 
-	      if (*buflen < (size_t) (len + 1))
-		{
-		  return NSS_UNAVAIL;
-		}
+              if (*buflen < (size_t) (len + 1))
+                {
+                  return NSS_UNAVAIL;
+                }
 
-	      strncpy (*buffer, b, len);
-	      (*buffer)[len] = '\0';
-	      result->ldc_rootbindpw = *buffer;
-	      *buffer += len + 1;
-	      *buflen -= len + 1;
-	    }
-	  fclose (fp);
-	}
+              strncpy (*buffer, b, len);
+              (*buffer)[len] = '\0';
+              result->ldc_rootbindpw = *buffer;
+              *buffer += len + 1;
+              *buflen -= len + 1;
+            }
+          fclose (fp);
+        }
       else if (!result->ldc_rootusesasl)
-	{
-	  result->ldc_rootbinddn = NULL;
-	}
+        {
+          result->ldc_rootbinddn = NULL;
+        }
     }
 
   if (result->ldc_port == 0)
     {
       if (result->ldc_ssl_on == SSL_LDAPS)
-	{
-	  result->ldc_port = LDAPS_PORT;
-	}
+        {
+          result->ldc_port = LDAPS_PORT;
+        }
       else
-	{
-	  result->ldc_port = LDAP_PORT;
-	}
+        {
+          result->ldc_port = LDAP_PORT;
+        }
     }
 
   if (result->ldc_uris[0] == NULL)
@@ -1244,27 +1231,27 @@ _nss_ldap_escape_string (const char *str, char *buf, size_t buflen)
   while (p < limit && *s)
     {
       switch (*s)
-	{
-	case '*':
-	  strcpy (p, "\\2a");
-	  p += 3;
-	  break;
-	case '(':
-	  strcpy (p, "\\28");
-	  p += 3;
-	  break;
-	case ')':
-	  strcpy (p, "\\29");
-	  p += 3;
-	  break;
-	case '\\':
-	  strcpy (p, "\\5c");
-	  p += 3;
-	  break;
-	default:
-	  *p++ = *s;
-	  break;
-	}
+        {
+        case '*':
+          strcpy (p, "\\2a");
+          p += 3;
+          break;
+        case '(':
+          strcpy (p, "\\28");
+          p += 3;
+          break;
+        case ')':
+          strcpy (p, "\\29");
+          p += 3;
+          break;
+        case '\\':
+          strcpy (p, "\\5c");
+          p += 3;
+          break;
+        default:
+          *p++ = *s;
+          break;
+        }
       s++;
     }
 
@@ -1372,9 +1359,9 @@ _nss_ldap_db_close (void *db)
 
 enum nss_status
 _nss_ldap_db_get (void *db,
-		  unsigned flags,
-		  const ldap_datum_t * key,
-		  ldap_datum_t * value)
+                  unsigned flags,
+                  const ldap_datum_t * key,
+                  ldap_datum_t * value)
 {
   struct ldap_dictionary *dict = (struct ldap_dictionary *) db;
   struct ldap_dictionary *p;
@@ -1384,20 +1371,20 @@ _nss_ldap_db_get (void *db,
       int cmp;
 
       if (p->key.size != key->size)
-	continue;
+        continue;
 
       if (flags & NSS_LDAP_DB_NORMALIZE_CASE)
-	cmp = strncasecmp ((char *)p->key.data, (char *)key->data, key->size);
+        cmp = strncasecmp ((char *)p->key.data, (char *)key->data, key->size);
       else
-	cmp = memcmp (p->key.data, key->data, key->size);
+        cmp = memcmp (p->key.data, key->data, key->size);
 
       if (cmp == 0)
-	{
-	  value->data = p->value.data;
-	  value->size = p->value.size;
+        {
+          value->data = p->value.data;
+          value->size = p->value.size;
 
-	  return NSS_SUCCESS;
-	}
+          return NSS_SUCCESS;
+        }
     }
 
   return NSS_NOTFOUND;
@@ -1405,9 +1392,9 @@ _nss_ldap_db_get (void *db,
 
 enum nss_status
 _nss_ldap_db_put (void *db,
-		  unsigned flags,
-		  const ldap_datum_t * key,
-		  const ldap_datum_t * value)
+                  unsigned flags,
+                  const ldap_datum_t * key,
+                  const ldap_datum_t * value)
 {
   struct ldap_dictionary *dict = (struct ldap_dictionary *) db;
   struct ldap_dictionary *p, *q;
@@ -1428,7 +1415,7 @@ _nss_ldap_db_put (void *db,
       assert (p->next == NULL);
       q = do_alloc_dictionary ();
       if (q == NULL)
-	return NSS_TRYAGAIN;
+        return NSS_TRYAGAIN;
     }
 
   if (do_dup_datum (flags, &q->key, key) != NSS_SUCCESS)
@@ -1520,7 +1507,7 @@ _nss_ldap_namelist_destroy (struct name_list **head)
       next = p->next;
 
       if (p->name != NULL)
-	free (p->name);
+        free (p->name);
       free (p);
     }
 
@@ -1544,10 +1531,10 @@ _nss_ldap_namelist_find (struct name_list *head, const char *netgroup)
   for (p = head; p != NULL; p = p->next)
     {
       if (strcasecmp (p->name, netgroup) == 0)
-	{
-	  found++;
-	  break;
-	}
+        {
+          found++;
+          break;
+        }
     }
 
   debug ("<== _nss_ldap_namelist_find");

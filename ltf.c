@@ -27,7 +27,7 @@
 #include <port_before.h>
 #endif
 
-#if defined(HAVE_THREAD_H) && !defined(_AIX)
+#if defined(HAVE_THREAD_H)
 #include <thread.h>
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
@@ -52,12 +52,12 @@ static void *ltf_mutex_alloc (void);
 static void ltf_mutex_free (void *m);
 static enum nss_status ltf_tsd_setup (void);
 static void ltf_set_ld_error (int err, char *matched, char *errmsg,
-			      void *dummy);
+                              void *dummy);
 static int ltf_get_ld_error (char **matched, char **errmsg, void *dummy);
 static void ltf_set_errno (int err);
 static int ltf_get_errno (void);
 
-#ifndef HAVE_THREAD_H		/* thus, pthreads */
+#ifndef HAVE_THREAD_H           /* thus, pthreads */
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 
  * The contents of this file are subject to the Netscape Public License

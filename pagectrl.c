@@ -46,7 +46,7 @@
    Create and encode the Paged Results control.
 
    ld        (IN)  An LDAP session handle, as obtained from a call to
-				   ldap_init().
+                                   ldap_init().
    
    pagesize  (IN)  The number of entries to return in each page
 
@@ -58,24 +58,24 @@
    iscritical (IN) Is this control critical to the search?
    
    ctrlp     (OUT) A result parameter that will be assigned the address
-				   of an LDAPControl structure that contains the 
-				   PagedResult control created by this function.
-				   The memory occupied by the LDAPControl structure
-				   SHOULD be freed when it is no longer in use by
-				   calling ldap_control_free().
-					  
+                                   of an LDAPControl structure that contains the 
+                                   PagedResult control created by this function.
+                                   The memory occupied by the LDAPControl structure
+                                   SHOULD be freed when it is no longer in use by
+                                   calling ldap_control_free().
+                                          
    
    Ber encoding
    
    PageResult ::= SEQUENCE {
-		pageSize     INTEGER
-		cookie       OCTET STRING }
-	  
+                pageSize     INTEGER
+                cookie       OCTET STRING }
+          
    
    Note:  The first time the Page control is created, the cookie
-		  should be set to a zero-length string. The cookie obtained
-		  from calling ldap_parse_page_control() should be used as
-		  the cookie in the next ldap_create_page_control call.
+                  should be set to a zero-length string. The cookie obtained
+                  from calling ldap_parse_page_control() should be used as
+                  the cookie in the next ldap_create_page_control call.
 
  ---*/
 
@@ -84,9 +84,9 @@
 #else
 int
 ldap_create_page_control (LDAP * ld,
-			  unsigned long pagesize,
-			  struct berval *cookiep,
-			  int iscritical, LDAPControl ** ctrlp)
+                          unsigned long pagesize,
+                          struct berval *cookiep,
+                          int iscritical, LDAPControl ** ctrlp)
 {
   ber_tag_t tag;
   BerElement *ber;
@@ -139,19 +139,19 @@ exit:
    ld           (IN)   An LDAP session handle.
    
    ctrls        (IN)   The address of a NULL-terminated array of 
-					   LDAPControl structures, typically obtained 
-					   by a call to ldap_parse_result().
+                                           LDAPControl structures, typically obtained 
+                                           by a call to ldap_parse_result().
    
    list_countp  (OUT)  This result parameter is filled in with the number
-					   of entries returned in this page
+                                           of entries returned in this page
    
    cookiep      (OUT)  This result parameter is filled in with the address
-					   of a struct berval that contains the server-
-					   generated cookie.
-					   The returned cookie SHOULD be used in the next call
-					   to create a Page sort control.  The struct berval
-					   returned SHOULD be disposed of by calling ber_bvfree()
-					   when it is no longer needed.
+                                           of a struct berval that contains the server-
+                                           generated cookie.
+                                           The returned cookie SHOULD be used in the next call
+                                           to create a Page sort control.  The struct berval
+                                           returned SHOULD be disposed of by calling ber_bvfree()
+                                           when it is no longer needed.
    
 ---*/
 
@@ -160,8 +160,8 @@ exit:
 #else
 int
 ldap_parse_page_control (LDAP * ld,
-			 LDAPControl ** ctrls,
-			 unsigned long *list_countp, struct berval **cookiep)
+                         LDAPControl ** ctrls,
+                         unsigned long *list_countp, struct berval **cookiep)
 {
   BerElement *ber;
   LDAPControl *pControl;
@@ -171,7 +171,7 @@ ldap_parse_page_control (LDAP * ld,
 
   if (cookiep)
     {
-      *cookiep = NULL;		/* Make sure we return a NULL if error occurs. */
+      *cookiep = NULL;          /* Make sure we return a NULL if error occurs. */
     }
 
   if (ld == NULL)
@@ -189,7 +189,7 @@ ldap_parse_page_control (LDAP * ld,
     {
       pControl = ctrls[i];
       if (!strcmp (LDAP_CONTROL_PAGE_OID, pControl->ldctl_oid))
-	goto foundPageControl;
+        goto foundPageControl;
     }
 
   /* No page control was found. */
