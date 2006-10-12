@@ -52,8 +52,6 @@
 
 #include "resolve.h"
 
-static char rcsId[] = "$Id$";
-
 #if defined(HAVE_RES_SEARCH) && defined(HAVE_DN_EXPAND)
 
 #define DECL(X) {#X, T_##X}

@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
    (The author maintains a non-exclusive licence to distribute this file
@@ -18,7 +19,9 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
- */
+   
+   $Id$
+*/
 
 #ifndef _LDAP_NSS_LDAP_PAGECTRL_H
 #define _LDAP_NSS_LDAP_PAGECTRL_H

@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -18,11 +19,7 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
-
-
-static char rcsId[] =
-  "$Id$";
+*/
 
 #include "config.h"
 
@@ -53,17 +50,16 @@ static char rcsId[] =
 #include <port_after.h>
 #endif
 
-#ifdef HAVE_NSS_H
 static ent_context_t *alias_context = NULL;
 
-static NSS_STATUS
+static enum nss_status
 _nss_ldap_parse_alias (LDAPMessage * e,
 		       ldap_state_t * pvt,
 		       void *result, char *buffer, size_t buflen)
 {
 
   struct aliasent *alias = (struct aliasent *) result;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   stat =
     _nss_ldap_getrdnvalue (e, ATM (LM_ALIASES, cn), &alias->alias_name,
@@ -81,7 +77,7 @@ _nss_ldap_parse_alias (LDAPMessage * e,
   return stat;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_getaliasbyname_r (const char *name, struct aliasent * result,
 			    char *buffer, size_t buflen, int *errnop)
 {
@@ -90,17 +86,17 @@ _nss_ldap_getaliasbyname_r (const char *name, struct aliasent * result,
 	       _nss_ldap_parse_alias, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-NSS_STATUS _nss_ldap_setaliasent (void)
+enum nss_status _nss_ldap_setaliasent (void)
 {
   LOOKUP_SETENT (alias_context);
 }
 
-NSS_STATUS _nss_ldap_endaliasent (void)
+enum nss_status _nss_ldap_endaliasent (void)
 {
   LOOKUP_ENDENT (alias_context);
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_getaliasent_r (struct aliasent *result, char *buffer, size_t buflen,
 			 int *errnop)
 {
@@ -109,5 +105,4 @@ _nss_ldap_getaliasent_r (struct aliasent *result, char *buffer, size_t buflen,
 		 _nss_ldap_parse_alias, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-#endif /* HAVE_NSS_H */
 #endif /* HAVE_ALIASES_H */

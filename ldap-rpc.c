@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -18,17 +19,13 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
+*/
 
 /*
    Determine the canonical name of the RPC with _nss_ldap_getrdnvalue(),
    and assign any values of "cn" which do NOT match this canonical name
    as aliases.
  */
-
-
-static char rcsId[] =
-  "$Id$";
 
 #include "config.h"
 
@@ -67,13 +64,9 @@ static char rcsId[] =
 #include <port_after.h>
 #endif
 
-#if defined(HAVE_NSSWITCH_H) || defined(HAVE_NSS_H)
-
-#ifdef HAVE_NSS_H
 static ent_context_t *rpc_context = NULL;
-#endif
 
-static NSS_STATUS
+static enum nss_status
 _nss_ldap_parse_rpc (LDAPMessage * e,
 		     ldap_state_t * pvt,
 		     void *result, char *buffer, size_t buflen)
@@ -81,7 +74,7 @@ _nss_ldap_parse_rpc (LDAPMessage * e,
 
   struct rpcent *rpc = (struct rpcent *) result;
   char *number;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   stat =
     _nss_ldap_getrdnvalue (e, ATM (LM_RPC, cn), &rpc->r_name, &buffer,
@@ -106,15 +99,7 @@ _nss_ldap_parse_rpc (LDAPMessage * e,
   return NSS_SUCCESS;
 }
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_getrpcbyname_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_NAME (args, _nss_ldap_filt_getrpcbyname, LM_RPC,
-	       _nss_ldap_parse_rpc, LDAP_NSS_BUFLEN_DEFAULT);
-}
-#elif defined(HAVE_NSS_H)
-NSS_STATUS
+enum nss_status
 _nss_ldap_getrpcbyname_r (const char *name, struct rpcent *result,
 			  char *buffer, size_t buflen, int *errnop)
 {
@@ -122,17 +107,8 @@ _nss_ldap_getrpcbyname_r (const char *name, struct rpcent *result,
 	       _nss_ldap_filt_getrpcbyname, LM_RPC, _nss_ldap_parse_rpc,
 	       LDAP_NSS_BUFLEN_DEFAULT);
 }
-#endif
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_getrpcbynumber_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_NUMBER (args, key.number, _nss_ldap_filt_getrpcbynumber, LM_RPC,
-		 _nss_ldap_parse_rpc, LDAP_NSS_BUFLEN_DEFAULT);
-}
-#elif defined(HAVE_NSS_H)
-NSS_STATUS
+enum nss_status
 _nss_ldap_getrpcbynumber_r (int number, struct rpcent *result,
 			    char *buffer, size_t buflen, int *errnop)
 {
@@ -140,41 +116,18 @@ _nss_ldap_getrpcbynumber_r (int number, struct rpcent *result,
 		 _nss_ldap_filt_getrpcbynumber, LM_RPC, _nss_ldap_parse_rpc,
 	 	 LDAP_NSS_BUFLEN_DEFAULT);
 }
-#endif
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_setrpcent_r (nss_backend_t * rpc_context, void *args)
-#elif defined(HAVE_NSS_H)
-     NSS_STATUS _nss_ldap_setrpcent (void)
-#endif
-#if defined(HAVE_NSSWITCH_H) || defined(HAVE_NSS_H)
+     enum nss_status _nss_ldap_setrpcent (void)
 {
   LOOKUP_SETENT (rpc_context);
 }
-#endif
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_endrpcent_r (nss_backend_t * rpc_context, void *args)
-#elif defined(HAVE_NSS_H)
-     NSS_STATUS _nss_ldap_endrpcent (void)
-#endif
-#if defined(HAVE_NSSWITCH_H) || defined(HAVE_NSS_H)
+     enum nss_status _nss_ldap_endrpcent (void)
 {
   LOOKUP_ENDENT (rpc_context);
 }
-#endif
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_getrpcent_r (nss_backend_t * rpc_context, void *args)
-{
-  LOOKUP_GETENT (args, rpc_context, _nss_ldap_filt_getrpcent, LM_RPC,
-		 _nss_ldap_parse_rpc, LDAP_NSS_BUFLEN_DEFAULT);
-}
-#elif defined(HAVE_NSS_H)
-NSS_STATUS
+enum nss_status
 _nss_ldap_getrpcent_r (struct rpcent *result, char *buffer, size_t buflen,
 		       int *errnop)
 {
@@ -182,41 +135,3 @@ _nss_ldap_getrpcent_r (struct rpcent *result, char *buffer, size_t buflen,
 		 _nss_ldap_filt_getrpcent, LM_RPC, _nss_ldap_parse_rpc,
 		 LDAP_NSS_BUFLEN_DEFAULT);
 }
-#endif
-
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_rpc_destr (nss_backend_t * rpc_context, void *args)
-{
-  return _nss_ldap_default_destr (rpc_context, args);
-}
-
-static nss_backend_op_t rpc_ops[] = {
-  _nss_ldap_rpc_destr,
-  _nss_ldap_endrpcent_r,
-  _nss_ldap_setrpcent_r,
-  _nss_ldap_getrpcent_r,
-  _nss_ldap_getrpcbyname_r,
-  _nss_ldap_getrpcbynumber_r
-};
-
-nss_backend_t *
-_nss_ldap_rpc_constr (const char *db_name,
-		      const char *src_name, const char *cfg_args)
-{
-  nss_ldap_backend_t *be;
-
-  if (!(be = (nss_ldap_backend_t *) malloc (sizeof (*be))))
-    return NULL;
-
-  be->ops = rpc_ops;
-  be->n_ops = sizeof (rpc_ops) / sizeof (nss_backend_op_t);
-
-  if (_nss_ldap_default_constr (be) != NSS_SUCCESS)
-    return NULL;
-
-  return (nss_backend_t *) be;
-}
-#endif /* HAVE_NSSWITCH_H */
-
-#endif /* !HAVE_IRS_H */

@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Hvgskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -37,8 +35,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-/* $Id$ */
 
 /* THIS IS NOT (yet) A PUBLIC INTERFACE */
 

@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -18,10 +19,7 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
-
-
-static char rcsId[] = "$Id$";
+*/
 
 #include "config.h"
 
@@ -58,79 +56,3 @@ static char rcsId[] = "$Id$";
 #include <port_after.h>
 #endif
 
-#if defined(HAVE_NSSWITCH_H) || defined(HAVE_NSS_H)
-
-#ifdef HAVE_NSS_H
-static ent_context_t *bp_context = NULL;
-#endif
-
-static NSS_STATUS
-_nss_ldap_parse_bp (LDAPMessage * e,
-		    ldap_state_t * pvt,
-		    void *result, char *buffer, size_t buflen)
-{
-  struct bootparams *bp = (struct bootparams *) result;
-  NSS_STATUS stat;
-
-  stat =
-    _nss_ldap_assign_attrval (e, ATM (LM_BOOTPARAMS, cn), &bp->bp_name,
-                              &buffer, &buflen);
-  if (stat != NSS_SUCCESS)
-    return stat;
-
-  stat =
-    _nss_ldap_assign_attrvals (e, AT (bootParameter), NULL,
-			       &bp->bp_params, &buffer, &buflen, NULL);
-  if (stat != NSS_SUCCESS)
-    return stat;
-
-  return NSS_SUCCESS;
-}
-
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_getbootparamsbyname_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_NAME (args, _nss_ldap_filt_getbootparamsbyname, LM_BOOTPARAMS,
-	       _nss_ldap_parse_bp, LDAP_NSS_BUFLEN_DEFAULT);
-}
-#endif
-
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_bootparams_destr (nss_backend_t * bp_context, void *args)
-{
-  return _nss_ldap_default_destr (bp_context, args);
-}
-
-static nss_backend_op_t bp_ops[] = {
-  _nss_ldap_bootparams_destr,
-  _nss_ldap_getbootparamsbyname_r
-};
-
-nss_backend_t *
-_nss_ldap_bootparams_constr (const char *db_name,
-			     const char *src_name, const char *cfg_args)
-{
-  nss_ldap_backend_t *be;
-
-/*
-   if (!(be = (nss_ldap_backend_t *)malloc(sizeof(*be))))
-   return NULL;
-
-   be->ops = bp_ops;
-   be->n_ops = sizeof(bp_ops) / sizeof(nss_backend_op_t);
-
-   if (_nss_ldap_default_constr(be) != NSS_SUCCESS)
-   return NULL;
-
-   return (nss_backend_t *)be;
- */
-
-  /* this is a noop until we figure it out properly */
-  return NULL;
-}
-
-#endif /* HAVE_NSSWITCH_H */
-
-#endif /* !HAVE_IRS_H */

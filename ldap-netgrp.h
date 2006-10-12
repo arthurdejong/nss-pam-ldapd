@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -18,28 +19,14 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
+*/
 
 #ifndef _LDAP_NSS_LDAP_LDAP_NETGRP_H
 #define _LDAP_NSS_LDAP_LDAP_NETGRP_H
 
 
-static NSS_STATUS _nss_ldap_parse_netgr (void *result,
+static enum nss_status _nss_ldap_parse_netgr (void *result,
 					 char *buffer, size_t buflen);
 
-#ifdef HAVE_NSSWITCH_H
-#if 0
-static NSS_STATUS _nss_ldap_setnetgrent_r (nss_backend_t * be,
-					   void *fakeargs);
-static NSS_STATUS _nss_ldap_endnetgrent_r (nss_backend_t * be,
-					   void *fakeargs);
-static NSS_STATUS _nss_ldap_getnetgrent_r (nss_backend_t * be,
-					   void *fakeargs);
-
-nss_backend_t *_nss_ldap_netgroup_constr (const char *db_name,
-					  const char *src_name,
-					  const char *cfg_args);
-#endif
-#endif /* !HAVE_NSS_H */
 
 #endif /* _LDAP_NSS_LDAP_LDAP_NETGRP_H */

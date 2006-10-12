@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 2000.
 
@@ -18,10 +19,7 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
-
-static char rcsId[] =
-  "$Id$";
+*/
 
 #include "config.h"
 
@@ -49,9 +47,6 @@ static char rcsId[] =
 #include <ldap.h>
 #endif
 
-#ifndef HAVE_SNPRINTF
-#include "snprintf.h"
-#endif /* HAVE_SNPRINTF */
 #include "ldap-nss.h"
 #include "ldap-schema.h"
 #include "util.h"

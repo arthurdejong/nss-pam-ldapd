@@ -1,8 +1,7 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
-   (The author maintains a non-exclusive licence to distribute this file
-   under their own conditions.)
 
    The nss_ldap library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public License as
@@ -18,7 +17,9 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
- */
+
+   $Id$
+*/
 
 /*
  * Support DNS SRV records. I look up the SRV record for
@@ -26,9 +27,6 @@
  * and build the DN DC=gnu,DC=org.
  * Thanks to Assar & co for resolve.[ch].
  */
-
-static char rcsId[] =
-  "$Id$";
 
 #include "config.h"
 
@@ -50,10 +48,6 @@ static char rcsId[] =
 #include <ldap.h>
 #endif
 
-#ifndef HAVE_SNPRINTF
-#include "snprintf.h"
-#endif
-
 #include "ldap-nss.h"
 #include "util.h"
 #include "resolve.h"
@@ -61,7 +55,7 @@ static char rcsId[] =
 
 
 /* map gnu.org into DC=gnu,DC=org */
-NSS_STATUS
+enum nss_status
 _nss_ldap_getdnsdn (char *src_domain,
 		    char **rval, char **buffer, size_t * buflen)
 {
@@ -130,11 +124,11 @@ _nss_ldap_getdnsdn (char *src_domain,
   return NSS_SUCCESS;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_mergeconfigfromdns (ldap_config_t * result,
 			      char **buffer, size_t *buflen)
 {
-  NSS_STATUS stat = NSS_SUCCESS;
+  enum nss_status stat = NSS_SUCCESS;
   struct dns_reply *r;
   struct resource_record *rr;
   char domain[MAXHOSTNAMELEN + 1];

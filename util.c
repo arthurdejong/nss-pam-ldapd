@@ -1,8 +1,7 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
-   (The author maintains a non-exclusive licence to distribute this file
-   under their own conditions.)
 
    The nss_ldap library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public License as
@@ -18,7 +17,9 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
- */
+
+   $Id$
+*/
 
 #include "config.h"
 
@@ -51,26 +52,20 @@
 #include <ldap.h>
 #endif
 
-#ifndef HAVE_SNPRINTF
-#include "snprintf.h"
-#endif
-
 #include "ldap-nss.h"
 #include "util.h"
 
-static char rcsId[] = "$Id$";
-
-static NSS_STATUS do_getrdnvalue (const char *dn,
+static enum nss_status do_getrdnvalue (const char *dn,
 				  const char *rdntype,
 				  char **rval, char **buffer,
 				  size_t * buflen);
 
 
-static NSS_STATUS do_parse_map_statement (ldap_config_t * cfg,
+static enum nss_status do_parse_map_statement (ldap_config_t * cfg,
 					  const char *statement,
 					  ldap_map_type_t type);
 
-static NSS_STATUS do_searchdescriptorconfig (const char *key,
+static enum nss_status do_searchdescriptorconfig (const char *key,
 					     const char *value,
 					     size_t valueLength,
 					     ldap_service_search_descriptor_t
@@ -85,10 +80,10 @@ NSS_LDAP_DEFINE_LOCK (__cache_lock);
 #define cache_lock()     NSS_LDAP_LOCK(__cache_lock)
 #define cache_unlock()   NSS_LDAP_UNLOCK(__cache_lock)
 
-static NSS_STATUS
+static enum nss_status
 dn2uid_cache_put (const char *dn, const char *uid)
 {
-  NSS_STATUS stat;
+  enum nss_status stat;
   ldap_datum_t key, val;
 
   cache_lock ();
@@ -115,11 +110,11 @@ dn2uid_cache_put (const char *dn, const char *uid)
   return stat;
 }
 
-static NSS_STATUS
+static enum nss_status
 dn2uid_cache_get (const char *dn, char **uid, char **buffer, size_t * buflen)
 {
   ldap_datum_t key, val;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   cache_lock ();
 
@@ -159,11 +154,11 @@ dn2uid_cache_get (const char *dn, char **uid, char **buffer, size_t * buflen)
 static int lock_inited = 0;
 #endif
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_dn2uid (const char *dn, char **uid, char **buffer, size_t * buflen,
 		  int *pIsNestedGroup, LDAPMessage ** pRes)
 {
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   debug ("==> _nss_ldap_dn2uid");
 
@@ -217,13 +212,13 @@ _nss_ldap_dn2uid (const char *dn, char **uid, char **buffer, size_t * buflen,
   return stat;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_getrdnvalue (LDAPMessage * entry,
 		       const char *rdntype,
 		       char **rval, char **buffer, size_t * buflen)
 {
   char *dn;
-  NSS_STATUS status;
+  enum nss_status status;
 
   dn = _nss_ldap_get_dn (entry);
   if (dn == NULL)
@@ -273,7 +268,7 @@ _nss_ldap_getrdnvalue (LDAPMessage * entry,
   return status;
 }
 
-static NSS_STATUS
+static enum nss_status
 do_getrdnvalue (const char *dn,
 		const char *rdntype,
 		char **rval, char **buffer, size_t * buflen)
@@ -385,7 +380,7 @@ do_getrdnvalue (const char *dn,
   return NSS_NOTFOUND;
 }
 
-static NSS_STATUS
+static enum nss_status
 do_parse_map_statement (ldap_config_t * cfg,
 			const char *statement, ldap_map_type_t type)
 {
@@ -416,7 +411,7 @@ do_parse_map_statement (ldap_config_t * cfg,
 }
 
 /* parse a comma-separated list */
-static NSS_STATUS
+static enum nss_status
 do_parse_list (char *values, char ***valptr,
 	       char **pbuffer, size_t *pbuflen)
 {
@@ -519,7 +514,7 @@ _nss_ldap_str2selector (const char *key)
   return sel;
 }
 
-static NSS_STATUS
+static enum nss_status
 do_searchdescriptorconfig (const char *key, const char *value, size_t len,
 			   ldap_service_search_descriptor_t ** result,
 			   char **buffer, size_t * buflen)
@@ -603,7 +598,7 @@ do_searchdescriptorconfig (const char *key, const char *value, size_t len,
   return NSS_SUCCESS;
 }
 
-NSS_STATUS _nss_ldap_init_config (ldap_config_t * result)
+enum nss_status _nss_ldap_init_config (ldap_config_t * result)
 {
   int i, j;
 
@@ -674,7 +669,7 @@ NSS_STATUS _nss_ldap_init_config (ldap_config_t * result)
   return NSS_SUCCESS;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_add_uri (ldap_config_t *result, const char *uri,
 		   char **buffer, size_t *buflen)
 {
@@ -713,13 +708,13 @@ _nss_ldap_add_uri (ldap_config_t *result, const char *uri,
   return NSS_SUCCESS;
 }
 
-static NSS_STATUS
+static enum nss_status
 do_add_uris (ldap_config_t *result, char *uris,
 	     char **buffer, size_t *buflen)
 {
   /* Add a space separated list of URIs */
   char *p;
-  NSS_STATUS stat = NSS_SUCCESS;
+  enum nss_status stat = NSS_SUCCESS;
 
   for (p = uris; p != NULL; )
     {
@@ -738,13 +733,13 @@ do_add_uris (ldap_config_t *result, char *uris,
   return stat;
 }
 
-static NSS_STATUS
+static enum nss_status
 do_add_hosts (ldap_config_t *result, char *hosts,
 	      char **buffer, size_t *buflen)
 {
   /* Add a space separated list of hosts */
   char *p;
-  NSS_STATUS stat = NSS_SUCCESS;
+  enum nss_status stat = NSS_SUCCESS;
 
   for (p = hosts; p != NULL; )
     {
@@ -767,12 +762,12 @@ do_add_hosts (ldap_config_t *result, char *hosts,
   return stat;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_readconfig (ldap_config_t ** presult, char **buffer, size_t *buflen)
 {
   FILE *fp;
   char b[NSS_LDAP_CONFIG_BUFSIZ];
-  NSS_STATUS stat = NSS_SUCCESS;
+  enum nss_status stat = NSS_SUCCESS;
   ldap_config_t *result;
   struct stat statbuf;
 
@@ -1238,7 +1233,7 @@ _nss_ldap_readconfig (ldap_config_t ** presult, char **buffer, size_t *buflen)
   return stat;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_escape_string (const char *str, char *buf, size_t buflen)
 {
   int ret = NSS_TRYAGAIN;
@@ -1339,7 +1334,7 @@ do_free_dictionary (struct ldap_dictionary *dict)
   free (dict);
 }
 
-static NSS_STATUS
+static enum nss_status
 do_dup_datum (unsigned flags, ldap_datum_t * dst, const ldap_datum_t * src)
 {
   dst->data = malloc (src->size);
@@ -1375,7 +1370,7 @@ _nss_ldap_db_close (void *db)
     }
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_db_get (void *db,
 		  unsigned flags,
 		  const ldap_datum_t * key,
@@ -1408,7 +1403,7 @@ _nss_ldap_db_get (void *db,
   return NSS_NOTFOUND;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_db_put (void *db,
 		  unsigned flags,
 		  const ldap_datum_t * key,
@@ -1457,7 +1452,7 @@ _nss_ldap_db_put (void *db,
 /*
  * Add a nested netgroup or group to the namelist
  */
-NSS_STATUS
+enum nss_status
 _nss_ldap_namelist_push (struct name_list **head, const char *name)
 {
   struct name_list *nl;
@@ -1560,7 +1555,7 @@ _nss_ldap_namelist_find (struct name_list *head, const char *netgroup)
   return found;
 }
 
-NSS_STATUS _nss_ldap_validateconfig (ldap_config_t *config)
+enum nss_status _nss_ldap_validateconfig (ldap_config_t *config)
 {
   struct stat statbuf;
 

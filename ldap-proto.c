@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -18,17 +19,13 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
+*/
 
 /*
    Determine the canonical name of the RPC with _nss_ldap_getrdnvalue(),
    and assign any values of "cn" which do NOT match this canonical name
    as aliases.
  */
-
-
-static char rcsId[] =
-  "$Id$";
 
 #include "config.h"
 
@@ -62,11 +59,9 @@ static char rcsId[] =
 #include <port_after.h>
 #endif
 
-#ifdef HAVE_NSS_H
 static ent_context_t *proto_context = NULL;
-#endif
 
-static NSS_STATUS
+static enum nss_status
 _nss_ldap_parse_proto (LDAPMessage * e,
 		       ldap_state_t * pvt,
 		       void *result, char *buffer, size_t buflen)
@@ -74,7 +69,7 @@ _nss_ldap_parse_proto (LDAPMessage * e,
 
   struct protoent *proto = (struct protoent *) result;
   char *number;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   stat =
     _nss_ldap_getrdnvalue (e, ATM (LM_PROTOCOLS, cn), &proto->p_name,
@@ -99,15 +94,7 @@ _nss_ldap_parse_proto (LDAPMessage * e,
   return NSS_SUCCESS;
 }
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_getprotobyname_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_NAME (args, _nss_ldap_filt_getprotobyname, LM_PROTOCOLS,
-	       _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
-}
-#elif defined(HAVE_NSS_H)
-NSS_STATUS
+enum nss_status
 _nss_ldap_getprotobyname_r (const char *name, struct protoent *result,
 			    char *buffer, size_t buflen, int *errnop)
 {
@@ -115,17 +102,8 @@ _nss_ldap_getprotobyname_r (const char *name, struct protoent *result,
 	       _nss_ldap_filt_getprotobyname, LM_PROTOCOLS,
 	       _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
 }
-#endif
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_getprotobynumber_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_NUMBER (args, key.number, _nss_ldap_filt_getprotobynumber,
-		 LM_PROTOCOLS, _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
-}
-#elif defined(HAVE_NSS_H)
-NSS_STATUS
+enum nss_status
 _nss_ldap_getprotobynumber_r (int number, struct protoent *result,
 			      char *buffer, size_t buflen, int *errnop)
 {
@@ -133,41 +111,18 @@ _nss_ldap_getprotobynumber_r (int number, struct protoent *result,
 		 _nss_ldap_filt_getprotobynumber, LM_PROTOCOLS,
 		 _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
 }
-#endif
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_setprotoent_r (nss_backend_t * proto_context, void *fakeargs)
-#elif defined(HAVE_NSS_H)
-     NSS_STATUS _nss_ldap_setprotoent (void)
-#endif
-#if defined(HAVE_NSS_H) || defined(HAVE_NSSWITCH_H)
+     enum nss_status _nss_ldap_setprotoent (void)
 {
   LOOKUP_SETENT (proto_context);
 }
-#endif
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_endprotoent_r (nss_backend_t * proto_context, void *fakeargs)
-#elif defined(HAVE_NSS_H)
-     NSS_STATUS _nss_ldap_endprotoent (void)
-#endif
-#if defined(HAVE_NSS_H) || defined(HAVE_NSSWITCH_H)
+     enum nss_status _nss_ldap_endprotoent (void)
 {
   LOOKUP_ENDENT (proto_context);
 }
-#endif
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_getprotoent_r (nss_backend_t * proto_context, void *args)
-{
-  LOOKUP_GETENT (args, proto_context, _nss_ldap_filt_getprotoent,
-		 LM_PROTOCOLS, _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
-}
-#elif defined(HAVE_NSS_H)
-NSS_STATUS
+enum nss_status
 _nss_ldap_getprotoent_r (struct protoent *result, char *buffer, size_t buflen,
 			 int *errnop)
 {
@@ -175,44 +130,3 @@ _nss_ldap_getprotoent_r (struct protoent *result, char *buffer, size_t buflen,
 		 _nss_ldap_filt_getprotoent, LM_PROTOCOLS,
 		 _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
 }
-#endif
-
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_protocols_destr (nss_backend_t * proto_context, void *args)
-{
-  return _nss_ldap_default_destr (proto_context, args);
-}
-
-static nss_backend_op_t proto_ops[] = {
-  _nss_ldap_protocols_destr,
-  _nss_ldap_endprotoent_r,
-  _nss_ldap_setprotoent_r,
-  _nss_ldap_getprotoent_r,
-  _nss_ldap_getprotobyname_r,
-  _nss_ldap_getprotobynumber_r
-};
-
-nss_backend_t *
-_nss_ldap_protocols_constr (const char *db_name,
-			    const char *src_name, const char *cfg_args)
-{
-  nss_ldap_backend_t *be;
-
-  if (!(be = (nss_ldap_backend_t *) malloc (sizeof (*be))))
-    return NULL;
-
-  be->ops = proto_ops;
-  be->n_ops = sizeof (proto_ops) / sizeof (nss_backend_op_t);
-
-  if (_nss_ldap_default_constr (be) != NSS_SUCCESS)
-    return NULL;
-
-  return (nss_backend_t *) be;
-}
-
-#endif /* !HAVE_NSS_H */
-
-#ifdef HAVE_IRS_H
-#include "irs-proto.c"
-#endif

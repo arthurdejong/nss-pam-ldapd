@@ -1,4 +1,5 @@
-/* Copyright (C) 2005 Luke Howard.
+/* 
+   Copyright (C) 2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 2005.
 
@@ -18,7 +19,7 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
+*/
 
 #ifndef _LDAP_NSS_LDAP_LDAP_AUTOMOUNT_H
 #define _LDAP_NSS_LDAP_LDAP_AUTOMOUNT_H
@@ -37,18 +38,15 @@ struct ldap_automount_context {
 
 typedef struct ldap_automount_context ldap_automount_context_t;
 
-NSS_STATUS _nss_ldap_am_context_alloc(ldap_automount_context_t **pContext);
+enum nss_status _nss_ldap_am_context_alloc(ldap_automount_context_t **pContext);
 void _nss_ldap_am_context_free(ldap_automount_context_t **pContext);
-NSS_STATUS _nss_ldap_am_context_init(const char *mapname, ldap_automount_context_t **pContext);
-
-#ifdef HAVE_NSS_H
-NSS_STATUS _nss_ldap_setautomntent(const char *mapname, void **context);
-NSS_STATUS _nss_ldap_getautomntent(void *context, const char **key, const char **value,
+enum nss_status _nss_ldap_am_context_init(const char *mapname, ldap_automount_context_t **pContext);
+enum nss_status _nss_ldap_setautomntent(const char *mapname, void **context);
+enum nss_status _nss_ldap_getautomntent(void *context, const char **key, const char **value,
 				   char *buffer, size_t buflen, int *errnop);
-NSS_STATUS _nss_ldap_endautomntent(void **context);
-NSS_STATUS _nss_ldap_getautomntbyname_r(void *private, const char *key,
+enum nss_status _nss_ldap_endautomntent(void **context);
+enum nss_status _nss_ldap_getautomntbyname_r(void *private, const char *key,
 					const char **canon_key, const char **value,
 					char *buffer, size_t buflen, int *errnop);
-#endif /* HAVE_NSS_H */
 
 #endif /* _LDAP_NSS_LDAP_LDAP_AUTOMOUNT_H */

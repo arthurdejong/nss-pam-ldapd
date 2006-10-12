@@ -1,4 +1,5 @@
-/* Copyright (C) 2002 Max Caines, All Rights Reserved.
+/* 
+   Copyright (C) 2002 Max Caines, All Rights Reserved.
    This file is part of the nss_ldap library.
    Contributed by Max Caines, <Max.Caines@wlv.ac.uk>, April 2002.
    This software is not subject to any license of the University
@@ -18,9 +19,9 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
- */
 
-static char rcsId[] = "$Id$";
+   $Id$
+*/
 
 #include "config.h"
 

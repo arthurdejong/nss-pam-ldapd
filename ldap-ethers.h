@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -18,7 +19,7 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
+*/
 
 #ifndef _LDAP_NSS_LDAP_LDAP_ETHERS_H
 #define _LDAP_NSS_LDAP_LDAP_ETHERS_H
@@ -42,32 +43,20 @@ struct ether
   struct ether_addr e_addr;
 };
 
-#if defined(HAVE_NSSWITCH_H) || defined(HAVE_NSS_H)
-static NSS_STATUS _nss_ldap_parse_ether (LDAPMessage * e,
+static enum nss_status _nss_ldap_parse_ether (LDAPMessage * e,
 					 ldap_state_t * pvt,
 					 void *result,
 					 char *buffer, size_t buflen);
-#endif
 
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS _nss_ldap_gethostton_r (nss_backend_t * be, void *fakeargs);
-static NSS_STATUS _nss_ldap_getntohost_r (nss_backend_t * be, void *fakeargs);
-
-nss_backend_t *_nss_ldap_ethers_constr (const char *db_name,
-					const char *src_name,
-					const char *cfg_args);
-
-#elif defined(HAVE_NSS_H)
 /* for the record */
-NSS_STATUS _nss_ldap_gethostton_r (const char *name, struct ether *eth,
+enum nss_status _nss_ldap_gethostton_r (const char *name, struct ether *eth,
 				   char *buffer, size_t buflen, int *errnop);
-NSS_STATUS _nss_ldap_getntohost_r (struct ether_addr *addr, struct ether *eth,
+enum nss_status _nss_ldap_getntohost_r (struct ether_addr *addr, struct ether *eth,
 				   char *buffer, size_t buflen, int *errnop);
-NSS_STATUS _nss_ldap_endetherent (void);
-NSS_STATUS _nss_ldap_setetherent (void);
-NSS_STATUS _nss_ldap_getetherent_r (struct ether *result, char *buffer,
+enum nss_status _nss_ldap_endetherent (void);
+enum nss_status _nss_ldap_setetherent (void);
+enum nss_status _nss_ldap_getetherent_r (struct ether *result, char *buffer,
 				    size_t buflen, int *errnop);
-#endif
 
 
 #endif /* _LDAP_NSS_LDAP_LDAP_ETHERS_H */

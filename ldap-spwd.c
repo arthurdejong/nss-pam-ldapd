@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -16,10 +17,9 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
- */
 
-static char rcsId[] =
-  "$Id$";
+   $Id$
+*/
 
 #include "config.h"
 
@@ -56,19 +56,16 @@ static char rcsId[] =
 #include <port_after.h>
 #endif
 
-#if defined(HAVE_NSSWITCH_H) || defined(HAVE_NSS_H)
 
-#ifdef HAVE_NSS_H
 static ent_context_t *sp_context = NULL;
-#endif
 
-static NSS_STATUS
+static enum nss_status
 _nss_ldap_parse_sp (LDAPMessage * e,
 		    ldap_state_t * pvt,
 		    void *result, char *buffer, size_t buflen)
 {
   struct spwd *sp = (struct spwd *) result;
-  NSS_STATUS stat;
+  enum nss_status stat;
   char *tmp = NULL;
 
   stat =
@@ -120,8 +117,7 @@ _nss_ldap_parse_sp (LDAPMessage * e,
   return NSS_SUCCESS;
 }
 
-#ifdef HAVE_NSS_H
-NSS_STATUS
+enum nss_status
 _nss_ldap_getspnam_r (const char *name,
 		      struct spwd * result,
 		      char *buffer, size_t buflen, int *errnop)
@@ -129,41 +125,18 @@ _nss_ldap_getspnam_r (const char *name,
   LOOKUP_NAME (name, result, buffer, buflen, errnop, _nss_ldap_filt_getspnam,
 	       LM_SHADOW, _nss_ldap_parse_sp, LDAP_NSS_BUFLEN_DEFAULT);
 }
-#elif defined(HAVE_NSSWITCH_H)
-static NSS_STATUS
-_nss_ldap_getspnam_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_NAME (args, _nss_ldap_filt_getspnam, LM_SHADOW, _nss_ldap_parse_sp,
-	       LDAP_NSS_BUFLEN_DEFAULT);
-}
-#endif /* HAVE_NSS_H */
 
-#if defined(HAVE_NSS_H)
-NSS_STATUS _nss_ldap_setspent (void)
-#else
-static NSS_STATUS
-_nss_ldap_setspent_r (nss_backend_t * sp_context, void *args)
-#endif
-#if defined(HAVE_NSS_H) || defined(HAVE_NSSWITCH_H)
+enum nss_status _nss_ldap_setspent (void)
 {
   LOOKUP_SETENT (sp_context);
 }
-#endif
 
-#if defined(HAVE_NSS_H)
-NSS_STATUS _nss_ldap_endspent (void)
-#else
-static NSS_STATUS
-_nss_ldap_endspent_r (nss_backend_t * sp_context, void *args)
-#endif
-#if defined(HAVE_NSS_H) || defined(HAVE_NSSWITCH_H)
+enum nss_status _nss_ldap_endspent (void)
 {
   LOOKUP_ENDENT (sp_context);
 }
-#endif
 
-#ifdef HAVE_NSS_H
-NSS_STATUS
+enum nss_status
 _nss_ldap_getspent_r (struct spwd *result,
 		      char *buffer, size_t buflen, int *errnop)
 {
@@ -171,50 +144,5 @@ _nss_ldap_getspent_r (struct spwd *result,
 		 _nss_ldap_filt_getspent, LM_SHADOW, _nss_ldap_parse_sp,
 		 LDAP_NSS_BUFLEN_DEFAULT);
 }
-#elif defined(HAVE_NSSWITCH_H)
-static NSS_STATUS
-_nss_ldap_getspent_r (nss_backend_t * sp_context, void *args)
-{
-  LOOKUP_GETENT (args, sp_context, _nss_ldap_filt_getspent, LM_SHADOW,
-		 _nss_ldap_parse_sp, LDAP_NSS_BUFLEN_DEFAULT);
-}
-#endif
-
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_shadow_destr (nss_backend_t * sp_context, void *args)
-{
-  return _nss_ldap_default_destr (sp_context, args);
-}
-
-static nss_backend_op_t shadow_ops[] = {
-  _nss_ldap_shadow_destr,
-  _nss_ldap_endspent_r,		/* NSS_DBOP_ENDENT */
-  _nss_ldap_setspent_r,		/* NSS_DBOP_SETENT */
-  _nss_ldap_getspent_r,		/* NSS_DBOP_GETENT */
-  _nss_ldap_getspnam_r		/* NSS_DBOP_SHADOW_BYNAME */
-};
-
-
-nss_backend_t *
-_nss_ldap_shadow_constr (const char *db_name,
-			 const char *src_name, const char *cfg_args)
-{
-  nss_ldap_backend_t *be;
-
-  if (!(be = (nss_ldap_backend_t *) malloc (sizeof (*be))))
-    return NULL;
-
-  be->ops = shadow_ops;
-  be->n_ops = sizeof (shadow_ops) / sizeof (nss_backend_op_t);
-
-  if (_nss_ldap_default_constr (be) != NSS_SUCCESS)
-    return NULL;
-
-  return (nss_backend_t *) be;
-}
-
-#endif /* !HAVE_NSS_H */
-#endif
 
 #endif /* HAVE_SHADOW_H */

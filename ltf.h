@@ -1,5 +1,6 @@
-/* Copyright (C) 1997-2005 Luke Howard.
-   Portions Copyright (C) 1997-2002 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
+   Portions Copyright (C) 1997-2002 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -17,13 +18,13 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
- */
+*/
 
 #ifndef _LDAP_NSS_LDAP_LTF_H
 #define _LDAP_NSS_LDAP_LTF_H
 
 #ifdef LDAP_OPT_THREAD_FN_PTRS
-NSS_STATUS _nss_ldap_ltf_thread_init (LDAP * ld);
+enum nss_status _nss_ldap_ltf_thread_init (LDAP * ld);
 #endif
 
 #endif /* _LDAP_NSS_LDAP_LTF_H */

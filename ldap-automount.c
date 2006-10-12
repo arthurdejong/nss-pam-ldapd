@@ -1,4 +1,5 @@
-/* Copyright (C) 2005 Luke Howard.
+/* 
+   Copyright (C) 2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 2005.
 
@@ -18,10 +19,7 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
-
-
-static char rcsId[] = "$Id$";
+*/
 
 #include "config.h"
 
@@ -59,12 +57,12 @@ static char rcsId[] = "$Id$";
 #include <port_after.h>
 #endif
 
-static NSS_STATUS
+static enum nss_status
 _nss_ldap_parse_automount (LDAPMessage * e,
 			   ldap_state_t * pvt,
 			   void *result, char *buffer, size_t buflen)
 {
-  NSS_STATUS stat;
+  enum nss_status stat;
   char ***keyval = result;
 
   stat = 
@@ -82,7 +80,7 @@ _nss_ldap_parse_automount (LDAPMessage * e,
   return NSS_SUCCESS;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_am_context_alloc(ldap_automount_context_t **pContext)
 {
   ldap_automount_context_t *context;
@@ -158,7 +156,7 @@ _nss_ldap_am_context_free(ldap_automount_context_t **pContext)
   return;
 }
 
-static NSS_STATUS
+static enum nss_status
 am_context_add_dn (LDAPMessage * e,
 		   ldap_state_t * pvt,
 		   void *result, char *buffer, size_t buflen)
@@ -197,10 +195,10 @@ am_context_add_dn (LDAPMessage * e,
   return NSS_SUCCESS;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_am_context_init(const char *mapname, ldap_automount_context_t **pContext)
 {
-  NSS_STATUS stat;
+  enum nss_status stat;
   ldap_automount_context_t *context = NULL;
   const char *no_attrs[] = { NULL };
   ldap_args_t a;
@@ -251,11 +249,10 @@ _nss_ldap_am_context_init(const char *mapname, ldap_automount_context_t **pConte
   return NSS_SUCCESS;
 }
 
-#ifdef HAVE_NSS_H
-NSS_STATUS _nss_ldap_setautomntent(const char *mapname, void **private)
+enum nss_status _nss_ldap_setautomntent(const char *mapname, void **private)
 {
   ldap_automount_context_t *context = NULL;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   debug ("==> _nss_ldap_setautomntent");
 
@@ -285,10 +282,10 @@ NSS_STATUS _nss_ldap_setautomntent(const char *mapname, void **private)
   return stat;
 }
 
-NSS_STATUS _nss_ldap_getautomntent_r(void *private, const char **key, const char **value,
+enum nss_status _nss_ldap_getautomntent_r(void *private, const char **key, const char **value,
 				     char *buffer, size_t buflen, int *errnop)
 {
-  NSS_STATUS stat;
+  enum nss_status stat;
   ldap_automount_context_t *context = (ldap_automount_context_t *)private;
   ldap_args_t a;
   char **keyval[2];
@@ -335,7 +332,7 @@ NSS_STATUS _nss_ldap_getautomntent_r(void *private, const char **key, const char
   return stat;
 }
 
-NSS_STATUS _nss_ldap_endautomntent(void **private)
+enum nss_status _nss_ldap_endautomntent(void **private)
 {
   ldap_automount_context_t **pContext = (ldap_automount_context_t **)private;
 
@@ -352,11 +349,11 @@ NSS_STATUS _nss_ldap_endautomntent(void **private)
   return NSS_SUCCESS;
 }
 
-NSS_STATUS _nss_ldap_getautomntbyname_r(void *private, const char *key,
+enum nss_status _nss_ldap_getautomntbyname_r(void *private, const char *key,
 					const char **canon_key, const char **value,
 					char *buffer, size_t buflen, int *errnop)
 {
-  NSS_STATUS stat = NSS_NOTFOUND;
+  enum nss_status stat = NSS_NOTFOUND;
   ldap_automount_context_t *context = (ldap_automount_context_t *)private;
   ldap_args_t a;
   char **keyval[2];
@@ -395,6 +392,3 @@ NSS_STATUS _nss_ldap_getautomntbyname_r(void *private, const char *key,
 
   return stat;
 }
-
-#endif /* HAVE_NSS_H */
-

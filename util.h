@@ -1,8 +1,7 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
-   (The author maintains a non-exclusive licence to distribute this file
-   under their own conditions.)
 
    The nss_ldap library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public License as
@@ -18,7 +17,9 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
- */
+
+   $Id$
+*/
 
 #ifndef _LDAP_NSS_LDAP_UTIL_H
 #define _LDAP_NSS_LDAP_UTIL_H
@@ -35,14 +36,14 @@
  * get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry)
  * would return lukeh.
  */
-NSS_STATUS _nss_ldap_getrdnvalue (LDAPMessage * entry,
+enum nss_status _nss_ldap_getrdnvalue (LDAPMessage * entry,
 				  const char *rdntype,
 				  char **rval, char **buf, size_t * len);
 
 /*
  * map a distinguished name to a login name, or group entry
  */
-NSS_STATUS _nss_ldap_dn2uid (const char *dn,
+enum nss_status _nss_ldap_dn2uid (const char *dn,
 			     char **uid, char **buf, size_t * len,
 			     int *pIsNestedGroup, LDAPMessage ** pRes);
 
@@ -124,15 +125,15 @@ NSS_STATUS _nss_ldap_dn2uid (const char *dn,
  * ** implemented
  */
 
-NSS_STATUS _nss_ldap_init_config (ldap_config_t *);
-NSS_STATUS _nss_ldap_readconfig (ldap_config_t ** result, char **buffer, size_t *buflen);
-NSS_STATUS _nss_ldap_validateconfig (ldap_config_t *config);
+enum nss_status _nss_ldap_init_config (ldap_config_t *);
+enum nss_status _nss_ldap_readconfig (ldap_config_t ** result, char **buffer, size_t *buflen);
+enum nss_status _nss_ldap_validateconfig (ldap_config_t *config);
 
 /*
  * Escape '*' in a string for use as a filter
  */
 
-NSS_STATUS _nss_ldap_escape_string (const char *str,
+enum nss_status _nss_ldap_escape_string (const char *str,
 				    char *buf, size_t buflen);
 
 #define MAP_H_ERRNO(nss_status, herr)   do { \
@@ -190,23 +191,23 @@ typedef struct ldap_datum ldap_datum_t;
 
 void *_nss_ldap_db_open (void);
 void _nss_ldap_db_close (void *db);
-NSS_STATUS _nss_ldap_db_put (void *db,
+enum nss_status _nss_ldap_db_put (void *db,
 			     unsigned flags,
 			     const ldap_datum_t * key,
 			     const ldap_datum_t * value);
-NSS_STATUS _nss_ldap_db_get (void *db,
+enum nss_status _nss_ldap_db_get (void *db,
 			     unsigned flags,
 			     const ldap_datum_t * key,
 			     ldap_datum_t * value);
 
 /* Routines for managing namelists */
 
-NSS_STATUS _nss_ldap_namelist_push (struct name_list **head, const char *name);
+enum nss_status _nss_ldap_namelist_push (struct name_list **head, const char *name);
 void _nss_ldap_namelist_pop (struct name_list **head);
 int _nss_ldap_namelist_find (struct name_list *head, const char *netgroup);
 void _nss_ldap_namelist_destroy (struct name_list **head);
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_add_uri (ldap_config_t *result, const char *uri,
 		   char **buffer, size_t *buflen);
 

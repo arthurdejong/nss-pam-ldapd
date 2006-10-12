@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1999.
 
@@ -18,7 +19,7 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
+*/
 
 #ifndef _LDAP_NSS_LDAP_LDAP_SCHEMA_H
 #define _LDAP_NSS_LDAP_LDAP_SCHEMA_H

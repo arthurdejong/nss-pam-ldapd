@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -16,10 +17,7 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
- */
-
-static char rcsId[] =
-  "$Id$";
+*/
 
 #include "config.h"
 
@@ -54,15 +52,13 @@ static char rcsId[] =
 #include <port_after.h>
 #endif
 
-#ifdef HAVE_NSS_H
 static ent_context_t *pw_context = NULL;
-#endif
 
-static INLINE NSS_STATUS _nss_ldap_assign_emptystring (char **valptr,
+static INLINE enum nss_status _nss_ldap_assign_emptystring (char **valptr,
 						       char **buffer,
 						       size_t * buflen);
 
-static INLINE NSS_STATUS
+static INLINE enum nss_status
 _nss_ldap_assign_emptystring (char **valptr, char **buffer, size_t * buflen)
 {
   if (*buflen < 2)
@@ -78,14 +74,14 @@ _nss_ldap_assign_emptystring (char **valptr, char **buffer, size_t * buflen)
   return NSS_SUCCESS;
 }
 
-static NSS_STATUS
+static enum nss_status
 _nss_ldap_parse_pw (LDAPMessage * e,
 		    ldap_state_t * pvt,
 		    void *result, char *buffer, size_t buflen)
 {
   struct passwd *pw = (struct passwd *) result;
   char *uid, *gid;
-  NSS_STATUS stat;
+  enum nss_status stat;
   char tmpbuf[ sizeof( uid_t ) * 8 / 3 + 2 ];
   size_t tmplen;
   char *tmp;
@@ -160,20 +156,6 @@ _nss_ldap_parse_pw (LDAPMessage * e,
   if (stat != NSS_SUCCESS)
     (void) _nss_ldap_assign_emptystring (&pw->pw_shell, &buffer, &buflen);
 
-#ifdef HAVE_NSSWITCH_H
-  stat =
-    _nss_ldap_assign_attrval (e, ATM (LM_PASSWD, description),
-                              &pw->pw_comment, &buffer, &buflen);
-  if (stat != NSS_SUCCESS)
-    {
-      /* 
-       * Fix for recall #233
-       */
-      pw->pw_comment = pw->pw_gecos;
-    }
-  (void) _nss_ldap_assign_emptystring (&pw->pw_age, &buffer, &buflen);
-#endif /* HAVE_NSSWITCH_H */
-
 #ifdef HAVE_PASSWD_PW_CHANGE
  tmp = NULL;
   stat =
@@ -203,8 +185,7 @@ _nss_ldap_parse_pw (LDAPMessage * e,
   return NSS_SUCCESS;
 }
 
-#ifdef HAVE_NSS_H
-NSS_STATUS
+enum nss_status
 _nss_ldap_getpwnam_r (const char *name,
 		      struct passwd * result,
 		      char *buffer, size_t buflen, int *errnop)
@@ -212,17 +193,8 @@ _nss_ldap_getpwnam_r (const char *name,
   LOOKUP_NAME (name, result, buffer, buflen, errnop, _nss_ldap_filt_getpwnam,
 	       LM_PASSWD, _nss_ldap_parse_pw, LDAP_NSS_BUFLEN_DEFAULT);
 }
-#elif defined(HAVE_NSSWITCH_H)
-static NSS_STATUS
-_nss_ldap_getpwnam_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_NAME (args, _nss_ldap_filt_getpwnam, LM_PASSWD, _nss_ldap_parse_pw,
-	       LDAP_NSS_BUFLEN_DEFAULT);
-}
-#endif /* HAVE_NSS_H */
 
-#ifdef HAVE_NSS_H
-NSS_STATUS
+enum nss_status
 _nss_ldap_getpwuid_r (uid_t uid,
 		      struct passwd *result,
 		      char *buffer, size_t buflen, int *errnop)
@@ -230,45 +202,20 @@ _nss_ldap_getpwuid_r (uid_t uid,
   LOOKUP_NUMBER (uid, result, buffer, buflen, errnop, _nss_ldap_filt_getpwuid,
 		 LM_PASSWD, _nss_ldap_parse_pw, LDAP_NSS_BUFLEN_DEFAULT);
 }
-#elif defined(HAVE_NSSWITCH_H)
-static NSS_STATUS
-_nss_ldap_getpwuid_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_NUMBER (args, key.uid, _nss_ldap_filt_getpwuid, LM_PASSWD,
-		 _nss_ldap_parse_pw, LDAP_NSS_BUFLEN_DEFAULT);
-}
-#endif
 
-#if defined(HAVE_NSS_H)
-NSS_STATUS
+enum nss_status
 _nss_ldap_setpwent (void)
 {
   LOOKUP_SETENT (pw_context);
 }
-#elif defined(HAVE_NSSWITCH_H)
-static NSS_STATUS
-_nss_ldap_setpwent_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_SETENT (be);
-}
-#endif
 
-#if defined(HAVE_NSS_H)
-NSS_STATUS
+enum nss_status
 _nss_ldap_endpwent (void)
 {
   LOOKUP_ENDENT (pw_context);
 }
-#elif defined(HAVE_NSSWITCH_H)
-static NSS_STATUS
-_nss_ldap_endpwent_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_ENDENT (be);
-}
-#endif
 
-#ifdef HAVE_NSS_H
-NSS_STATUS
+enum nss_status
 _nss_ldap_getpwent_r (struct passwd *result,
 		      char *buffer, size_t buflen, int *errnop)
 {
@@ -276,52 +223,3 @@ _nss_ldap_getpwent_r (struct passwd *result,
 		 _nss_ldap_filt_getpwent, LM_PASSWD, _nss_ldap_parse_pw,
 		 LDAP_NSS_BUFLEN_DEFAULT);
 }
-#elif defined(HAVE_NSSWITCH_H)
-static NSS_STATUS
-_nss_ldap_getpwent_r (nss_backend_t * be, void *args)
-{
-  LOOKUP_GETENT (args, be, _nss_ldap_filt_getpwent, LM_PASSWD,
-		 _nss_ldap_parse_pw, LDAP_NSS_BUFLEN_DEFAULT);
-}
-#endif
-
-#ifdef HAVE_NSSWITCH_H
-static NSS_STATUS
-_nss_ldap_passwd_destr (nss_backend_t * pw_context, void *args)
-{
-  return _nss_ldap_default_destr (pw_context, args);
-}
-
-static nss_backend_op_t passwd_ops[] = {
-  _nss_ldap_passwd_destr,
-  _nss_ldap_endpwent_r,		/* NSS_DBOP_ENDENT */
-  _nss_ldap_setpwent_r,		/* NSS_DBOP_SETENT */
-  _nss_ldap_getpwent_r,		/* NSS_DBOP_GETENT */
-  _nss_ldap_getpwnam_r,		/* NSS_DBOP_PASSWD_BYNAME */
-  _nss_ldap_getpwuid_r		/* NSS_DBOP_PASSWD_BYUID */
-};
-
-nss_backend_t *
-_nss_ldap_passwd_constr (const char *db_name,
-			 const char *src_name, const char *cfg_args)
-{
-  nss_ldap_backend_t *be;
-
-  if (!(be = (nss_ldap_backend_t *) malloc (sizeof (*be))))
-    return NULL;
-
-  be->ops = passwd_ops;
-  be->n_ops = sizeof (passwd_ops) / sizeof (nss_backend_op_t);
-
-  if (_nss_ldap_default_constr (be) != NSS_SUCCESS)
-    return NULL;
-
-  return (nss_backend_t *) be;
-}
-
-
-#endif /* !HAVE_NSS_H */
-
-#ifdef HAVE_IRS_H
-#include "irs-pwd.c"
-#endif /* HAVE_IRS_H */

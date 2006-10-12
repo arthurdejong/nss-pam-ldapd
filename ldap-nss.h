@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -18,7 +19,7 @@
    Boston, MA 02111-1307, USA.
 
    $Id$
- */
+*/
 
 #ifndef _LDAP_NSS_LDAP_LDAP_NSS_H
 #define _LDAP_NSS_LDAP_LDAP_NSS_H
@@ -54,15 +55,7 @@
 #include <netinet/in.h>
 #include <syslog.h>
 
-#ifdef HAVE_NSSWITCH_H
-#include <nss_common.h>
-#include <nss_dbdefs.h>
-#include <nsswitch.h>
-#elif defined(HAVE_NSS_H)
 #include <nss.h>
-#elif defined(HAVE_IRS_H)
-#include "irs-nss.h"
-#endif
 
 #include "ldap-schema.h"
 
@@ -78,7 +71,6 @@
 #define NSS_BUFLEN_PASSWD       NSS_BUFSIZ
 #endif
 
-#ifndef HAVE_NSSWITCH_H
 #define NSS_BUFLEN_HOSTS        (NSS_BUFSIZ + (MAXALIASES + MAXALIASES + 2) * sizeof (char *))
 #define NSS_BUFLEN_NETGROUP     (MAXHOSTNAMELEN * 2 + LOGNAME_MAX + 3)
 #define NSS_BUFLEN_NETWORKS     NSS_BUFSIZ
@@ -88,7 +80,6 @@
 #define NSS_BUFLEN_SHADOW       NSS_BUFSIZ
 #define NSS_BUFLEN_ETHERS       NSS_BUFSIZ
 #define NSS_BUFLEN_BOOTPARAMS   NSS_BUFSIZ
-#endif /* HAVE_NSSWITCH_H */
 
 /*
  * Timeouts for reconnecting code. Similar to rebind
@@ -100,10 +91,6 @@
 #define LDAP_NSS_SLEEPTIME       4	/* seconds to sleep; doubled until max */
 #define LDAP_NSS_MAXSLEEPTIME    64	/* maximum seconds to sleep */
 #define LDAP_NSS_MAXCONNTRIES    2	/* reconnect attempts before sleeping */
-
-#if defined(HAVE_NSSWITCH_H) || defined(HAVE_IRS_H)
-#define LDAP_NSS_MAXNETGR_DEPTH  16	/* maximum depth of netgroup nesting for innetgr() */
-#endif /* HAVE_NSSWITCH_H */
 
 #define LDAP_NSS_MAXGR_DEPTH     16     /* maximum depth of group nesting for getgrent()/initgroups() */
 
@@ -139,11 +126,7 @@
 
 #ifdef DEBUG
 #ifdef DEBUG_SYSLOG
-#ifdef HAVE_NSSWITCH_H
-#define debug(fmt, args...) syslog(LOG_AUTHPRIV | LOG_DEBUG, "nss_ldap: %s:%d thread %u - " fmt, __FILE__, __LINE__, thr_self() , ## args)
-#else
 #define debug(fmt, args...) syslog(LOG_AUTHPRIV | LOG_DEBUG, "nss_ldap: %s:%d thread %u - " fmt, __FILE__, __LINE__, pthread_self() , ## args)
-#endif /* HAVE_NSSWITCH_H */
 #else
 #ifndef __GNUC__
 #include <stdarg.h>
@@ -439,10 +422,8 @@ struct ldap_session
 
 typedef struct ldap_session ldap_session_t;
 
-#ifndef HAVE_NSSWITCH_H
 #ifndef UID_NOBODY
 #define UID_NOBODY      (-2)
-#endif
 #endif
 
 #ifndef GID_NOBODY
@@ -572,84 +553,22 @@ struct name_list
   struct name_list *next;
 };
 
-#ifdef HAVE_NSSWITCH_H
-
-struct nss_ldap_backend
-{
-  nss_backend_op_t *ops;
-  int n_ops;
-  ent_context_t *state;
-};
-
-typedef struct nss_ldap_backend nss_ldap_backend_t;
-
-struct nss_ldap_netgr_backend
-{
-  nss_backend_op_t *ops;
-  int n_ops;
-  ent_context_t *state;
-  struct name_list *known_groups; /* netgroups seen, for loop detection */
-  struct name_list *needed_groups; /* nested netgroups to chase */
-};
-
-typedef struct nss_ldap_netgr_backend nss_ldap_netgr_backend_t;
-
-typedef nss_status_t NSS_STATUS;
-
-#define NSS_RETURN		NSS_UNAVAIL
-
-#elif defined(HAVE_IRS_H)
-
-typedef enum
-{
-  NSS_TRYAGAIN = -2,
-  NSS_UNAVAIL,
-  NSS_NOTFOUND,
-  NSS_SUCCESS,
-  NSS_RETURN
-}
-NSS_STATUS;
-
-struct nss_ldap_netgr_backend
-{
-  char buffer[NSS_BUFLEN_NETGROUP];
-  ent_context_t *state;
-  struct name_list *known_groups; /* netgroups seen, for loop detection */
-  struct name_list *needed_groups; /* nested netgroups to chase */
-};
-
-typedef struct nss_ldap_netgr_backend nss_ldap_netgr_backend_t;
-#elif defined(HAVE_NSS_H)
-
-typedef enum nss_status NSS_STATUS;
-
 #define NSS_SUCCESS		NSS_STATUS_SUCCESS
 #define NSS_NOTFOUND	NSS_STATUS_NOTFOUND
 #define NSS_UNAVAIL		NSS_STATUS_UNAVAIL
 #define NSS_TRYAGAIN	NSS_STATUS_TRYAGAIN
 #define NSS_RETURN		NSS_STATUS_RETURN
 
-/* to let us index a lookup table on NSS_STATUSes */
+/* to let us index a lookup table on enum nss_statuses */
 
 #define _NSS_LOOKUP_OFFSET      NSS_STATUS_TRYAGAIN
-
-#endif /* HAVE_NSSWITCH_H */
 
 #ifndef _NSS_LOOKUP_OFFSET
 #define _NSS_LOOKUP_OFFSET      (0)
 #endif
 
-typedef NSS_STATUS (*parser_t) (LDAPMessage *, ldap_state_t *, void *,
+typedef enum nss_status (*parser_t) (LDAPMessage *, ldap_state_t *, void *,
 				char *, size_t);
-
-#ifdef HPUX
-extern int __thread_mutex_lock(pthread_mutex_t *);
-extern int __thread_mutex_unlock(pthread_mutex_t *);
-#endif /* HPUX */
-
-#ifdef _AIX
-extern int __multi_threaded;
-#endif /* _AIX */
 
 /*
  * Portable locking macro.
@@ -720,17 +639,6 @@ typedef struct ldap_error ldap_error_t;
 
 #endif /* LDAP_OPT_THREAD_FN_PTRS */
 
-#ifdef HAVE_NSSWITCH_H
-NSS_STATUS _nss_ldap_default_destr (nss_backend_t *, void *);
-#endif
-
-/*
- * context management routines.
- * _nss_ldap_default_constr() is called once in the constructor
- */
-#ifdef HAVE_NSSWITCH_H
-NSS_STATUS _nss_ldap_default_constr (nss_ldap_backend_t * be);
-#endif
 
 /* 
  * _nss_ldap_ent_context_init() is called for each getXXent() call
@@ -765,7 +673,7 @@ const char **_nss_ldap_get_attributes (ldap_map_selector_t sel);
 /*
  * Synchronous search cover (caller acquires lock).
  */
-NSS_STATUS _nss_ldap_search_s (const ldap_args_t * args,	/* IN */
+enum nss_status _nss_ldap_search_s (const ldap_args_t * args,	/* IN */
 			       const char *filterprot,	/* IN */
 			       ldap_map_selector_t sel,	/* IN */
 			       const char **user_attrs, /* IN */
@@ -775,7 +683,7 @@ NSS_STATUS _nss_ldap_search_s (const ldap_args_t * args,	/* IN */
 /*
  * Asynchronous search cover (caller acquires lock).
  */
-NSS_STATUS _nss_ldap_search (const ldap_args_t * args,	/* IN */
+enum nss_status _nss_ldap_search (const ldap_args_t * args,	/* IN */
 			     const char *filterprot,	/* IN */
 			     ldap_map_selector_t sel,	/* IN */
 			     const char **user_attrs, /* IN */
@@ -786,7 +694,7 @@ NSS_STATUS _nss_ldap_search (const ldap_args_t * args,	/* IN */
 /*
  * Emulate X.500 read operation.
  */
-NSS_STATUS _nss_ldap_read (const char *dn,	/* IN */
+enum nss_status _nss_ldap_read (const char *dn,	/* IN */
 			   const char **attributes,	/* IN */
 			   LDAPMessage ** pRes /* OUT */ );
 
@@ -794,7 +702,7 @@ NSS_STATUS _nss_ldap_read (const char *dn,	/* IN */
  * extended enumeration routine; uses asynchronous API.
  * Caller must have acquired the global mutex
  */
-NSS_STATUS _nss_ldap_getent_ex (ldap_args_t * args, /* IN */
+enum nss_status _nss_ldap_getent_ex (ldap_args_t * args, /* IN */
 				ent_context_t ** key,	/* IN/OUT */
 				void *result,	/* IN/OUT */
 				char *buffer,	/* IN */
@@ -809,7 +717,7 @@ NSS_STATUS _nss_ldap_getent_ex (ldap_args_t * args, /* IN */
  * common enumeration routine; uses asynchronous API.
  * Acquires the global mutex
  */
-NSS_STATUS _nss_ldap_getent (ent_context_t ** key,	/* IN/OUT */
+enum nss_status _nss_ldap_getent (ent_context_t ** key,	/* IN/OUT */
 			     void *result,	/* IN/OUT */
 			     char *buffer,	/* IN */
 			     size_t buflen,	/* IN */
@@ -821,7 +729,7 @@ NSS_STATUS _nss_ldap_getent (ent_context_t ** key,	/* IN/OUT */
 /*
  * common lookup routine; uses synchronous API.
  */
-NSS_STATUS _nss_ldap_getbyname (ldap_args_t * args,	/* IN/OUT */
+enum nss_status _nss_ldap_getbyname (ldap_args_t * args,	/* IN/OUT */
 				void *result,	/* IN/OUT */
 				char *buffer,	/* IN */
 				size_t buflen,	/* IN */
@@ -831,7 +739,7 @@ NSS_STATUS _nss_ldap_getbyname (ldap_args_t * args,	/* IN/OUT */
 				parser_t parser /* IN */ );
 
 /* parsing utility functions */
-NSS_STATUS _nss_ldap_assign_attrvals (LDAPMessage * e,	/* IN */
+enum nss_status _nss_ldap_assign_attrvals (LDAPMessage * e,	/* IN */
 				      const char *attr,	/* IN */
 				      const char *omitvalue,	/* IN */
 				      char ***valptr,	/* OUT */
@@ -839,7 +747,7 @@ NSS_STATUS _nss_ldap_assign_attrvals (LDAPMessage * e,	/* IN */
 				      size_t * buflen,	/* IN/OUT */
 				      size_t * pvalcount /* OUT */ );
 
-NSS_STATUS _nss_ldap_assign_attrval (LDAPMessage * e,	/* IN */
+enum nss_status _nss_ldap_assign_attrval (LDAPMessage * e,	/* IN */
 				     const char *attr,	/* IN */
 				     char **valptr,	/* OUT */
 				     char **buffer,	/* IN/OUT */
@@ -848,13 +756,13 @@ NSS_STATUS _nss_ldap_assign_attrval (LDAPMessage * e,	/* IN */
 
 const char *_nss_ldap_locate_userpassword (char **vals);
 
-NSS_STATUS _nss_ldap_assign_userpassword (LDAPMessage * e,	/* IN */
+enum nss_status _nss_ldap_assign_userpassword (LDAPMessage * e,	/* IN */
 					  const char *attr,	/* IN */
 					  char **valptr,	/* OUT */
 					  char **buffer,	/* IN/OUT */
 					  size_t * buflen);	/* IN/OUT */
 
-NSS_STATUS _nss_ldap_oc_check (LDAPMessage * e, const char *oc);
+enum nss_status _nss_ldap_oc_check (LDAPMessage * e, const char *oc);
 
 #if defined(HAVE_SHADOW_H)
 int _nss_ldap_shadow_date(const char *val);
@@ -864,12 +772,12 @@ void _nss_ldap_shadow_handle_flag(struct spwd *sp);
 #define _nss_ldap_shadow_handle_flag(_sp)	do { /* nothing */ } while (0)
 #endif /* HAVE_SHADOW_H */
 
-NSS_STATUS _nss_ldap_map_put (ldap_config_t * config,
+enum nss_status _nss_ldap_map_put (ldap_config_t * config,
                               ldap_map_selector_t sel,
                               ldap_map_type_t map,
 			      const char *key, const char *value);
 
-NSS_STATUS _nss_ldap_map_get (ldap_config_t * config,
+enum nss_status _nss_ldap_map_get (ldap_config_t * config,
                               ldap_map_selector_t sel,
                               ldap_map_type_t map,
 			      const char *key, const char **value);
@@ -894,9 +802,9 @@ struct ldap_proxy_bind_args
 
 typedef struct ldap_proxy_bind_args ldap_proxy_bind_args_t;
 
-NSS_STATUS _nss_ldap_proxy_bind (const char *user, const char *password);
+enum nss_status _nss_ldap_proxy_bind (const char *user, const char *password);
 
-NSS_STATUS _nss_ldap_init (void);
+enum nss_status _nss_ldap_init (void);
 void _nss_ldap_close (void);
 
 int _nss_ldap_test_config_flag (unsigned int flag);

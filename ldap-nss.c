@@ -1,6 +1,9 @@
-/* Copyright (C) 1997-2006 Luke Howard.
+/* 
+   ldap-nss.c - main file for NSS interface
    This file is part of the nss_ldap library.
-   Contributed by Luke Howard, <lukeh@padl.com>, 1997.
+
+   Copyright (C) 1997-2006 Luke Howard
+   Copyright (C) 2006 Arthur de Jong
 
    The nss_ldap library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public License as
@@ -16,10 +19,9 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
- */
-
-static char rcsId[] =
-  "$Id$";
+   
+   $Id$
+*/
 
 #include "config.h"
 
@@ -75,9 +77,6 @@ static char rcsId[] =
 #include <sasl.h>
 #endif
 
-#ifndef HAVE_SNPRINTF
-#include "snprintf.h"
-#endif
 #ifdef HAVE_GSSAPI_H
 #include <gssapi.h>
 #elif defined(HAVE_GSSAPI_GSSAPI_KRB5_H)
@@ -207,12 +206,12 @@ static int do_start_tls (ldap_session_t * session);
 /*
  * Read configuration file and initialize schema
  */
-static NSS_STATUS do_init (void);
+static enum nss_status do_init (void);
 
 /*
  * Open the global session
  */
-static NSS_STATUS do_open (void);
+static enum nss_status do_open (void);
 
 /*
  * Perform an asynchronous search.
@@ -231,12 +230,12 @@ static int do_search_s (const char *base, int scope,
 /*
  * Fetch an LDAP result.
  */
-static NSS_STATUS do_result (ent_context_t * ctx, int all);
+static enum nss_status do_result (ent_context_t * ctx, int all);
 
 /*
  * Format a filter given a prototype.
  */
-static NSS_STATUS do_filter (const ldap_args_t * args, const char *filterprot,
+static enum nss_status do_filter (const ldap_args_t * args, const char *filterprot,
 			     ldap_service_search_descriptor_t * sd,
 			     char *filter, size_t filterlen,
 			     char **dynamicFilter, const char **retFilter);
@@ -245,14 +244,14 @@ static NSS_STATUS do_filter (const ldap_args_t * args, const char *filterprot,
  * Parse a result, fetching new results until a successful parse
  * or exceptional condition.
  */
-static NSS_STATUS do_parse (ent_context_t * ctx, void *result, char *buffer,
+static enum nss_status do_parse (ent_context_t * ctx, void *result, char *buffer,
 			    size_t buflen, int *errnop, parser_t parser);
 
 /*
  * Parse a result, fetching results from the result chain 
  * rather than the server.
  */
-static NSS_STATUS do_parse_s (ent_context_t * ctx, void *result, char *buffer,
+static enum nss_status do_parse_s (ent_context_t * ctx, void *result, char *buffer,
 			      size_t buflen, int *errnop, parser_t parser);
 
 /*
@@ -266,7 +265,7 @@ typedef int (*search_func_t) (const char *, int, const char *,
 /*
  * Do a search with a reconnect harness.
  */
-static NSS_STATUS
+static enum nss_status
 do_with_reconnect (const char *base, int scope,
 		   const char *filter, const char **attrs, int sizelimit,
 		   void *private, search_func_t func);
@@ -274,7 +273,7 @@ do_with_reconnect (const char *base, int scope,
 /*
  * Map error from LDAP status code to NSS status code
  */
-static NSS_STATUS do_map_error (int rc);
+static enum nss_status do_map_error (int rc);
 
 /*
  * Do a bind with a defined timeout
@@ -296,10 +295,10 @@ do_dupfd(int oldfd, int newfd);
 static void
 do_drop_connection(int sd, int closeSd);
 
-static NSS_STATUS
+static enum nss_status
 do_map_error (int rc)
 {
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   switch (rc)
     {
@@ -462,55 +461,6 @@ do_rebind (LDAP * ld, char **whop, char **credp, int *methodp, int freeit)
   return LDAP_SUCCESS;
 }
 #endif
-
-#ifdef HAVE_NSSWITCH_H
-/*
- * Default destructor.
- * The entry point for this function is the destructor in the dispatch
- * table for the switch. Thus, it's safe to grab the mutex from this
- * function.
- */
-NSS_STATUS
-_nss_ldap_default_destr (nss_backend_t * be, void *args)
-{
-  debug ("==> _nss_ldap_default_destr");
-
-  if ((((nss_ldap_backend_t *) be)->state) != NULL)
-    {
-      _nss_ldap_enter ();
-      _nss_ldap_ent_context_release ((((nss_ldap_backend_t *) be)->state));
-      free ((((nss_ldap_backend_t *) be)->state));
-      ((nss_ldap_backend_t *) be)->state = NULL;
-      _nss_ldap_leave ();
-    }
-
-  /* Ditch the backend. */
-  free (be);
-
-  debug ("<== _nss_ldap_default_destr");
-
-  return NSS_SUCCESS;
-}
-
-/*
- * This is the default "constructor" which gets called from each 
- * constructor, in the NSS dispatch table.
- */
-NSS_STATUS
-_nss_ldap_default_constr (nss_ldap_backend_t * be)
-{
-  debug ("==> _nss_ldap_default_constr");
-
-  be->state = NULL;
-#ifdef HPUX
-  __thread_mutex_init (&__lock, NULL);
-#endif
-
-  debug ("<== _nss_ldap_default_constr");
-
-  return NSS_SUCCESS;
-}
-#endif /* HAVE_NSSWITCH_H */
 
 #if defined(HAVE_PTHREAD_ATFORK) || defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
 static void
@@ -998,7 +948,7 @@ do_close_no_unbind (void)
 /*
  * A simple alias around do_init().
  */
-NSS_STATUS
+enum nss_status
 _nss_ldap_init (void)
 {
   return do_init ();
@@ -1013,14 +963,14 @@ _nss_ldap_close (void)
   do_close ();
 }
 
-static NSS_STATUS
+static enum nss_status
 do_init_session (LDAP ** ld, const char *uri, int defport)
 {
   int rc;
   int ldaps;
   char uribuf[NSS_BUFSIZ];
   char *p;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   ldaps = (strncasecmp (uri, "ldaps://", sizeof ("ldaps://") - 1) == 0);
   p = strchr (uri, ':');
@@ -1084,7 +1034,7 @@ do_init_session (LDAP ** ld, const char *uri, int defport)
 }
 
 
-static NSS_STATUS
+static enum nss_status
 do_init (void)
 {
   ldap_config_t *cfg;
@@ -1092,7 +1042,7 @@ do_init (void)
   pid_t pid;
 #endif
   uid_t euid;
-  NSS_STATUS stat;
+  enum nss_status stat;
   int sd=-1;
 
   debug ("==> do_init");
@@ -1415,13 +1365,13 @@ do_start_tls (ldap_session_t * session)
  * As with do_close(), this assumes ownership of sess.
  * It also wants to own __config: is there a potential deadlock here? XXX
  */
-static NSS_STATUS
+static enum nss_status
 do_open (void)
 {
   ldap_config_t *cfg;
   int usesasl;
   char *bindarg;
-  NSS_STATUS stat;
+  enum nss_status stat;
 #ifdef LDAP_OPT_NETWORK_TIMEOUT
   struct timeval tv;
 #endif
@@ -2032,118 +1982,15 @@ _nss_ldap_ent_context_release (ent_context_t * ctx)
   return;
 }
 
-#if defined(HAVE_NSSWITCH_H) || defined(HAVE_IRS_H)
-/*
- * Make all triple permutations
- */
-static NSS_STATUS
-do_triple_permutations (const char *machine, const char *user,
-			const char *domain, char *bufptr, size_t buflen)
-{
-  /*
-   * Map a triple
-   *
-   *      (M,U,D)
-   *
-   * to the filter
-   *
-   *      (|(nisNetgroupTriple=P1)...(nisNetgroupTriple=PN))
-   *
-   * where P1..PN are all permutations of triples that may match
-   * ie. including wildcards. Certainly this would be preferable
-   * to do server-side with an appropriate matching rule.
-   */
-  char escaped_machine[3 * (MAXHOSTNAMELEN + 1)];
-  char escaped_user[3 * (LOGNAME_MAX + 1)];
-  char escaped_domain[3 * (MAXHOSTNAMELEN + 1)];
-  const char *AT_NISNETGROUPTRIPLE = AT (nisNetgroupTriple);
-  NSS_STATUS stat;
-
-#define ESCAPE_TRIPLE_COMPONENT(component) do { \
-		if ((component) == NULL) \
-		{ \
-			(escaped_##component)[0] = '*'; \
-			(escaped_##component)[1] = '\0'; \
-		} \
-		else \
-		{ \
-			stat = _nss_ldap_escape_string((component), (escaped_##component), \
-				(sizeof((escaped_##component)))); \
-			if (stat != NSS_SUCCESS) \
-				return stat; \
-		} \
-	} while (0)
-
-  ESCAPE_TRIPLE_COMPONENT (machine);
-  ESCAPE_TRIPLE_COMPONENT (user);
-  ESCAPE_TRIPLE_COMPONENT (domain);
-
-#define _APPEND_STRING(_buffer, _buflen, _s, _len) do { \
-		if ((_buflen) < (size_t)((_len) + 1)) \
-		{ \
-			return NSS_TRYAGAIN; \
-		} \
-		memcpy((_buffer), (_s), (_len)); \
-		(_buffer)[(_len)] = '\0'; \
-		(_buffer) += (_len); \
-		(_buflen) -= (_len); \
-	} while (0)
-
-#define APPEND_STRING(_buffer, _buflen, _s) _APPEND_STRING(_buffer, _buflen, _s, strlen((_s)))
-#define APPEND_CONSTANT_STRING(_buffer, _buflen, _s) _APPEND_STRING(_buffer, _buflen, _s, (sizeof((_s)) - 1))
-
-#define APPEND_TRIPLE(_buffer, _buflen, _machine, _user, _domain) do { \
-		APPEND_CONSTANT_STRING((_buffer), (_buflen), "("); \
-		APPEND_STRING((_buffer), (_buflen), AT_NISNETGROUPTRIPLE); \
-		APPEND_CONSTANT_STRING((_buffer), (_buflen), "=\\("); \
-		if ((_machine) != NULL) \
-		{ \
-			APPEND_STRING((_buffer), (_buflen), (_machine)); \
-		} \
-		APPEND_CONSTANT_STRING((_buffer), (_buflen), ","); \
-		if ((_user) != NULL) \
-		{ \
-			APPEND_STRING((_buffer), (_buflen), (_user)); \
-		} \
-		APPEND_CONSTANT_STRING((_buffer), (_buflen), ","); \
-		if ((_domain) != NULL) \
-		{ \
-			APPEND_STRING((_buffer), (_buflen), (_domain)); \
-		} \
-		APPEND_CONSTANT_STRING((_buffer), (_buflen), "\\))"); \
-	} while (0)
-
-  APPEND_CONSTANT_STRING (bufptr, buflen, "(&(");
-  APPEND_STRING (bufptr, buflen, AT (objectClass));
-  APPEND_CONSTANT_STRING (bufptr, buflen, "=");
-  APPEND_STRING (bufptr, buflen, OC (nisNetgroup));
-  APPEND_CONSTANT_STRING (bufptr, buflen, ")(|");
-
-  APPEND_TRIPLE (bufptr, buflen, escaped_machine, escaped_user,
-		 escaped_domain);
-  APPEND_TRIPLE (bufptr, buflen, escaped_machine, escaped_user, NULL);
-  APPEND_TRIPLE (bufptr, buflen, escaped_machine, NULL, NULL);
-  APPEND_TRIPLE (bufptr, buflen, NULL, escaped_user, escaped_domain);
-  APPEND_TRIPLE (bufptr, buflen, NULL, escaped_user, NULL);
-  APPEND_TRIPLE (bufptr, buflen, escaped_machine, NULL, escaped_domain);
-  APPEND_TRIPLE (bufptr, buflen, NULL, NULL, escaped_domain);
-  APPEND_TRIPLE (bufptr, buflen, NULL, NULL, NULL);
-
-  APPEND_CONSTANT_STRING (bufptr, buflen, "))");
-
-  return NSS_SUCCESS;
-}
-#endif /* HAVE_NSSWITCH_H || HAVE_IRS_H */
-
 /*
  * AND or OR a set of filters.
  */
-static NSS_STATUS
+static enum nss_status
 do_aggregate_filter (const char **values,
 		     ldap_args_types_t type,
 		     const char *filterprot, char *bufptr, size_t buflen)
 {
-  NSS_STATUS stat;
+  enum nss_status stat;
   const char **valueP;
 
   assert (buflen > sizeof ("(|)"));
@@ -2190,7 +2037,7 @@ do_aggregate_filter (const char **values,
 /*
  * Do the necessary formatting to create a string filter.
  */
-static NSS_STATUS
+static enum nss_status
 do_filter (const ldap_args_t * args, const char *filterprot,
 	   ldap_service_search_descriptor_t * sd, char *userBuf,
 	   size_t userBufSiz, char **dynamicUserBuf, const char **retFilter)
@@ -2198,7 +2045,7 @@ do_filter (const ldap_args_t * args, const char *filterprot,
   char buf1[LDAP_FILT_MAXSIZ], buf2[LDAP_FILT_MAXSIZ];
   char *filterBufP, filterBuf[LDAP_FILT_MAXSIZ];
   size_t filterSiz;
-  NSS_STATUS stat = NSS_SUCCESS;
+  enum nss_status stat = NSS_SUCCESS;
 
   debug ("==> do_filter");
 
@@ -2255,26 +2102,6 @@ do_filter (const ldap_args_t * args, const char *filterprot,
 	  snprintf (filterBufP, filterSiz, filterprot,
 		    args->la_arg1.la_number, buf1);
 	  break;
-#if defined(HAVE_NSSWITCH_H) || defined(HAVE_IRS_H)
-	case LA_TYPE_TRIPLE:
-	  do
-	    {
-	      stat = do_triple_permutations (args->la_arg1.la_triple.host,
-					     args->la_arg1.la_triple.user,
-					     args->la_arg1.la_triple.domain,
-					     filterBufP, filterSiz);
-	      if (stat == NSS_TRYAGAIN)
-		{
-		  filterBufP = *dynamicUserBuf = realloc (*dynamicUserBuf,
-							  2 * filterSiz);
-		  if (filterBufP == NULL)
-		    return NSS_UNAVAIL;
-		  filterSiz *= 2;
-		}
-	    }
-	  while (stat == NSS_TRYAGAIN);
-	  break;
-#endif /* HAVE_NSSWITCH_H || HAVE_IRS_H */
 	case LA_TYPE_STRING_LIST_OR:
 	case LA_TYPE_STRING_LIST_AND:
 	  do
@@ -2368,11 +2195,11 @@ do_filter (const ldap_args_t * args, const char *filterprot,
  * Wrapper around ldap_result() to skip over search references
  * and deal transparently with the last entry.
  */
-static NSS_STATUS
+static enum nss_status
 do_result (ent_context_t * ctx, int all)
 {
   int rc = LDAP_UNAVAILABLE;
-  NSS_STATUS stat = NSS_TRYAGAIN;
+  enum nss_status stat = NSS_TRYAGAIN;
   struct timeval tv, *tvp;
 
   debug ("==> do_result");
@@ -2489,14 +2316,14 @@ do_result (ent_context_t * ctx, int all)
  * Function to call either do_search() or do_search_s() with
  * reconnection logic.
  */
-static NSS_STATUS
+static enum nss_status
 do_with_reconnect (const char *base, int scope,
 		   const char *filter, const char **attrs, int sizelimit,
 		   void *private, search_func_t search_func)
 {
   int rc = LDAP_UNAVAILABLE, tries = 0, backoff = 0;
   int hard = 1, start_uri = 0, log = 0;
-  NSS_STATUS stat = NSS_UNAVAIL;
+  enum nss_status stat = NSS_UNAVAIL;
   int maxtries;
 
   debug ("==> do_with_reconnect");
@@ -2737,26 +2564,16 @@ do_search (const char *base, int scope,
 }
 
 static void
-do_map_errno (NSS_STATUS status, int *errnop)
+do_map_errno (enum nss_status status, int *errnop)
 {
   switch (status)
     {
     case NSS_TRYAGAIN:
-#ifdef HAVE_NSSWITCH_H
-      errno = ERANGE;
-      *errnop = 1;		/* this is really
-				   erange */
-#else
       *errnop = ERANGE;
-#endif /* HAVE_NSSWITCH_H */
       break;
-
-#ifndef HAVE_NSSWITCH_H
     case NSS_NOTFOUND:
       *errnop = ENOENT;
       break;
-#endif /* !HAVE_NSSWITCH_H */
-
     case NSS_SUCCESS:
     default:
       *errnop = 0;
@@ -2768,11 +2585,11 @@ do_map_errno (NSS_STATUS status, int *errnop)
  * to retrieve them from the LDAP server until one parses
  * correctly or there is an exceptional condition.
  */
-static NSS_STATUS
+static enum nss_status
 do_parse (ent_context_t * ctx, void *result, char
 	  *buffer, size_t buflen, int *errnop, parser_t parser)
 {
-  NSS_STATUS parseStat = NSS_NOTFOUND;
+  enum nss_status parseStat = NSS_NOTFOUND;
 
   debug ("==> do_parse");
 
@@ -2785,7 +2602,7 @@ do_parse (ent_context_t * ctx, void *result, char
    */
   do
     {
-      NSS_STATUS resultStat = NSS_SUCCESS;
+      enum nss_status resultStat = NSS_SUCCESS;
 
       if (ctx->ec_state.ls_retry == 0 &&
 	  (ctx->ec_state.ls_type == LS_TYPE_KEY
@@ -2838,11 +2655,11 @@ do_parse (ent_context_t * ctx, void *result, char
 /*
  * Parse, fetching reuslts from chain instead of server.
  */
-static NSS_STATUS
+static enum nss_status
 do_parse_s (ent_context_t * ctx, void *result, char
 	    *buffer, size_t buflen, int *errnop, parser_t parser)
 {
-  NSS_STATUS parseStat = NSS_NOTFOUND;
+  enum nss_status parseStat = NSS_NOTFOUND;
   LDAPMessage *e = NULL;
 
   debug ("==> do_parse_s");
@@ -2901,7 +2718,7 @@ do_parse_s (ent_context_t * ctx, void *result, char
  * for functions that need to retrieve attributes from a DN,
  * such as the RFC2307bis group expansion function.
  */
-NSS_STATUS
+enum nss_status
 _nss_ldap_read (const char *dn, const char **attributes, LDAPMessage ** res)
 {
   return do_with_reconnect (dn, LDAP_SCOPE_BASE, "(objectclass=*)",
@@ -3001,7 +2818,7 @@ _nss_ldap_next_attribute (LDAPMessage * entry, BerElement * ber)
  * The generic synchronous lookup cover function.
  * Assumes caller holds lock.
  */
-NSS_STATUS
+enum nss_status
 _nss_ldap_search_s (const ldap_args_t * args,
 		    const char *filterprot, ldap_map_selector_t sel, const
 		    char **user_attrs, int sizelimit, LDAPMessage ** res)
@@ -3011,7 +2828,7 @@ _nss_ldap_search_s (const ldap_args_t * args,
   char filterBuf[LDAP_FILT_MAXSIZ], *dynamicFilterBuf = NULL;
   const char **attrs, *filter;
   int scope;
-  NSS_STATUS stat;
+  enum nss_status stat;
   ldap_service_search_descriptor_t *sd = NULL;
 
   debug ("==> _nss_ldap_search_s");
@@ -3099,7 +2916,7 @@ _nss_ldap_search_s (const ldap_args_t * args,
  * The generic lookup cover function (asynchronous).
  * Assumes caller holds lock.
  */
-NSS_STATUS
+enum nss_status
 _nss_ldap_search (const ldap_args_t * args,
 		  const char *filterprot, ldap_map_selector_t sel,
 		  const char **user_attrs, int sizelimit, int *msgid,
@@ -3110,7 +2927,7 @@ _nss_ldap_search (const ldap_args_t * args,
   char filterBuf[LDAP_FILT_MAXSIZ], *dynamicFilterBuf = NULL;
   const char **attrs, *filter;
   int scope;
-  NSS_STATUS stat;
+  enum nss_status stat;
   ldap_service_search_descriptor_t *sd = NULL;
 
   debug ("==> _nss_ldap_search");
@@ -3196,7 +3013,7 @@ _nss_ldap_search (const ldap_args_t * args,
 }
 
 #ifdef HAVE_LDAP_SEARCH_EXT
-static NSS_STATUS
+static enum nss_status
 do_next_page (const ldap_args_t * args,
 	      const char *filterprot, ldap_map_selector_t sel, int
 	      sizelimit, int *msgid, struct berval *pCookie)
@@ -3206,7 +3023,7 @@ do_next_page (const ldap_args_t * args,
   char filterBuf[LDAP_FILT_MAXSIZ], *dynamicFilterBuf = NULL;
   const char **attrs, *filter;
   int scope;
-  NSS_STATUS stat;
+  enum nss_status stat;
   ldap_service_search_descriptor_t *sd = NULL;
   LDAPControl *serverctrls[2] = {
     NULL, NULL
@@ -3289,13 +3106,13 @@ do_next_page (const ldap_args_t * args,
  * enumeration is not completed.
  * Locks mutex.
  */
-NSS_STATUS
+enum nss_status
 _nss_ldap_getent (ent_context_t ** ctx,
 		  void *result, char *buffer, size_t buflen,
 		  int *errnop, const char *filterprot,
 		  ldap_map_selector_t sel, parser_t parser)
 {
-  NSS_STATUS status;
+  enum nss_status status;
 
   /*
    * we need to lock here as the context may not be thread-specific
@@ -3316,7 +3133,7 @@ _nss_ldap_getent (ent_context_t ** ctx,
  * Internal entry point for enumeration routines.
  * Caller holds global mutex
  */
-NSS_STATUS
+enum nss_status
 _nss_ldap_getent_ex (ldap_args_t * args,
 		     ent_context_t ** ctx, void *result,
 		     char *buffer, size_t buflen, int *errnop,
@@ -3324,7 +3141,7 @@ _nss_ldap_getent_ex (ldap_args_t * args,
 		     ldap_map_selector_t sel,
 		     const char **user_attrs, parser_t parser)
 {
-  NSS_STATUS stat = NSS_SUCCESS;
+  enum nss_status stat = NSS_SUCCESS;
 
   debug ("==> _nss_ldap_getent_ex");
 
@@ -3399,13 +3216,13 @@ next:
  * General match function.
  * Locks mutex. 
  */
-NSS_STATUS
+enum nss_status
 _nss_ldap_getbyname (ldap_args_t * args,
 		     void *result, char *buffer, size_t buflen, int
 		     *errnop, const char *filterprot,
 		     ldap_map_selector_t sel, parser_t parser)
 {
-  NSS_STATUS stat = NSS_NOTFOUND;
+  enum nss_status stat = NSS_NOTFOUND;
   ent_context_t ctx;
 
   _nss_ldap_enter ();
@@ -3453,7 +3270,7 @@ _nss_ldap_getbyname (ldap_args_t * args,
 /*
  * Assign all values, bar omitvalue (if not NULL), to *valptr.
  */
-NSS_STATUS
+enum nss_status
 _nss_ldap_assign_attrvals (LDAPMessage * e,
 			   const char *attr, const char *omitvalue,
 			   char ***valptr, char **pbuffer, size_t *
@@ -3547,7 +3364,7 @@ _nss_ldap_assign_attrvals (LDAPMessage * e,
 }
 
 /* Assign a single value to *valptr. */
-NSS_STATUS
+enum nss_status
 _nss_ldap_assign_attrval (LDAPMessage * e,
 			  const char *attr, char **valptr, char **buffer,
 			  size_t * buflen)
@@ -3679,7 +3496,7 @@ _nss_ldap_locate_userpassword (char **vals)
  * Assign a single value to *valptr, after examining userPassword for
  * a syntactically suitable value.
  */
-NSS_STATUS
+enum nss_status
 _nss_ldap_assign_userpassword (LDAPMessage * e,
 			       const char *attr, char **valptr,
 			       char **buffer, size_t * buflen)
@@ -3728,11 +3545,11 @@ _nss_ldap_assign_userpassword (LDAPMessage * e,
   return NSS_SUCCESS;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_oc_check (LDAPMessage * e, const char *oc)
 {
   char **vals, **valiter;
-  NSS_STATUS ret = NSS_NOTFOUND;
+  enum nss_status ret = NSS_NOTFOUND;
 
   if (__session.ls_conn == NULL)
     {
@@ -3795,7 +3612,7 @@ const char *
 _nss_ldap_map_at (ldap_map_selector_t sel, const char *attribute)
 {
   const char *mapped = NULL;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   stat = _nss_ldap_map_get (__config, sel, MAP_ATTRIBUTE, attribute, &mapped);
 
@@ -3806,7 +3623,7 @@ const char *
 _nss_ldap_unmap_at (ldap_map_selector_t sel, const char *attribute)
 {
   const char *mapped = NULL;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   stat = _nss_ldap_map_get (__config, sel, MAP_ATTRIBUTE_REVERSE, attribute, &mapped);
 
@@ -3817,7 +3634,7 @@ const char *
 _nss_ldap_map_oc (ldap_map_selector_t sel, const char *objectclass)
 {
   const char *mapped = NULL;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   stat = _nss_ldap_map_get (__config, sel, MAP_OBJECTCLASS, objectclass, &mapped);
 
@@ -3828,7 +3645,7 @@ const char *
 _nss_ldap_unmap_oc (ldap_map_selector_t sel, const char *objectclass)
 {
   const char *mapped = NULL;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   stat = _nss_ldap_map_get (__config, sel, MAP_OBJECTCLASS_REVERSE, objectclass, &mapped);
 
@@ -3855,7 +3672,7 @@ _nss_ldap_map_df (const char *attribute)
   return value;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_map_put (ldap_config_t * config,
 		   ldap_map_selector_t sel,
 		   ldap_map_type_t type,
@@ -3864,7 +3681,7 @@ _nss_ldap_map_put (ldap_config_t * config,
 {
   ldap_datum_t key, val;
   void **map;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   switch (type)
     {
@@ -3924,7 +3741,7 @@ _nss_ldap_map_put (ldap_config_t * config,
   return stat;
 }
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_map_get (ldap_config_t * config,
 		   ldap_map_selector_t sel,
 		   ldap_map_type_t type,
@@ -3932,7 +3749,7 @@ _nss_ldap_map_get (ldap_config_t * config,
 {
   ldap_datum_t key, val;
   void *map;
-  NSS_STATUS stat;
+  enum nss_status stat;
 
   if (config == NULL || sel > LM_NONE || type > MAP_MAX)
     {
@@ -4028,12 +3845,12 @@ do_proxy_rebind (LDAP * ld, char **whop, char **credp, int *methodp,
 }
 #endif
 
-NSS_STATUS
+enum nss_status
 _nss_ldap_proxy_bind (const char *user, const char *password)
 {
   ldap_args_t args;
   LDAPMessage *res, *e;
-  NSS_STATUS stat;
+  enum nss_status stat;
   int rc;
 #if LDAP_SET_REBIND_PROC_ARGS == 3
   ldap_proxy_bind_args_t proxy_args_buf;

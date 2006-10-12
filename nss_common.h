@@ -28,6 +28,9 @@
 #include <pthread.h>
 #endif
  
+
+#error "not used"
+
 typedef enum {
         NSS_SUCCESS,
         NSS_NOTFOUND,
@@ -36,7 +39,8 @@ typedef enum {
 } nss_status_t;
  
 struct nss_backend;
- 
+
+
 typedef nss_status_t (*nss_backend_op_t)(struct nss_backend *, void *args);
  
 struct nss_backend {

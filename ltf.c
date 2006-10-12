@@ -1,4 +1,5 @@
-/* Copyright (C) 1997-2005 Luke Howard.
+/* 
+   Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
 
@@ -16,9 +17,9 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
- */
 
-static char rcsId[] = "$Id$";
+   $Id$
+*/
 
 #include "config.h"
 
@@ -49,7 +50,7 @@ static char rcsId[] = "$Id$";
 
 static void *ltf_mutex_alloc (void);
 static void ltf_mutex_free (void *m);
-static NSS_STATUS ltf_tsd_setup (void);
+static enum nss_status ltf_tsd_setup (void);
 static void ltf_set_ld_error (int err, char *matched, char *errmsg,
 			      void *dummy);
 static int ltf_get_ld_error (char **matched, char **errmsg, void *dummy);
@@ -80,7 +81,7 @@ static int ltf_mutex_unlock (void *);
 
 static pthread_key_t key;
 
-NSS_STATUS _nss_ldap_ltf_thread_init (LDAP * ld)
+enum nss_status _nss_ldap_ltf_thread_init (LDAP * ld)
 {
   struct ldap_thread_fns tfns;
 
@@ -128,13 +129,7 @@ ltf_mutex_lock (void *mutexp)
 {
 #if defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
   return __libc_lock_lock (*(pthread_mutex_t *) mutexp);
-#elif defined(HPUX)
-  return __thread_mutex_lock ((pthread_mutex_t *) mutexp);
 #else
-# ifdef _AIX
-  if (__multi_threaded == 0)
-    return 0;
-# endif
   return pthread_mutex_lock ((pthread_mutex_t *) mutexp);
 #endif /* HAVE_LIBC_LOCK_H || HAVE_BITS_LIBC_LOCK_H */
 }
@@ -144,18 +139,12 @@ ltf_mutex_unlock (void *mutexp)
 {
 #if defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
   return __libc_lock_unlock (*(pthread_mutex_t *) mutexp);
-#elif defined(HPUX)
-  return __thread_mutex_unlock ((pthread_mutex_t *) mutexp);
 #else
-# ifdef _AIX
-  if (__multi_threaded == 0)
-    return 0;
-# endif
   return pthread_mutex_unlock ((pthread_mutex_t *) mutexp);
 #endif /* HAVE_LIBC_LOCK_H || HAVE_BITS_LIBC_LOCK_H */
 }
 
-static NSS_STATUS
+static enum nss_status
 ltf_tsd_setup (void)
 {
   void *tsd;
@@ -270,7 +259,7 @@ ltf_destr (void *tsd)
   free (tsd);
 }
 
-static NSS_STATUS
+static enum nss_status
 ltf_tsd_setup (void)
 {
   void *tsd;
@@ -331,7 +320,7 @@ ltf_get_errno (void)
   return errno;
 }
 
-NSS_STATUS _nss_ldap_ltf_thread_init (LDAP * ld)
+enum nss_status _nss_ldap_ltf_thread_init (LDAP * ld)
 {
   struct ldap_thread_fns tfns;
 
