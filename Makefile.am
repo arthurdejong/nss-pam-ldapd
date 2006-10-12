@@ -1,5 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 # Copyright (C) 2006 Luke Howard
+# Copyright (C) 2006 West consulting
 # Copyright (C) 2006 Arthur de Jong
 #
 # This program is free software; you can redistribute it and/or modify

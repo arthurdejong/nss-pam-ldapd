@@ -1,5 +1,6 @@
 # configure.ac - process this file with autoconf to produce configure
 # Copyright (C) 2006 Luke Howard
+# Copyright (C) 2006 West Consulting
 # Copyright (C) 2006 Arthur de Jong
 #
 # This program is free software; you can redistribute it and/or modify
@@ -19,6 +20,7 @@
 AC_PREREQ(2.59)
 AC_COPYRIGHT(
 [Copyright (C) 2006 Luke Howard
+Copyright (C) 2006 West Consulting
 Copyright (C) 2006 Arthur de Jong
 
 This configure script is derived from configure.ac which is free software;
