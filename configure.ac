@@ -55,16 +55,16 @@ dnl then RFC2307bis support will be enabled by default. However
 dnl it can now always be enabled at runtime with the nss_schema
 dnl keyword. See nss_ldap(5) for more information.
 dnl
-AC_ARG_ENABLE(rfc2307bis, [  --enable-rfc2307bis       use RFC2307bis schema by default ], [AC_DEFINE(RFC2307BIS)])
+AC_ARG_ENABLE(rfc2307bis, [  --enable-rfc2307bis       use RFC2307bis schema by default ], [AC_DEFINE(RFC2307BIS, 1, [Define to set RFC2307BIS support.])])
 
 dnl
 dnl --enable-schema-mapping is no longer necessary as schema
 dnl mapping is enabled by default
 dnl
-dnl AC_ARG_ENABLE(schema-mapping, [  --enable-schema-mapping   enable attribute/objectclass mapping ], [AC_DEFINE(AT_OC_MAP)])
+dnl AC_ARG_ENABLE(schema-mapping, [  --enable-schema-mapping   enable attribute/objectclass mapping ], [AC_DEFINE(AT_OC_MAP, 1, [Define to enable attribute/objectclass mapping.])])
 dnl
 
-AC_ARG_ENABLE(debugging, [  --enable-debugging        enable debug code ], [AC_DEFINE(DEBUG)])
+AC_ARG_ENABLE(debugging, [  --enable-debugging        enable debug code ], [AC_DEFINE(DEBUG, 1, [Define to enable debug code.])])
 
 dnl
 dnl --enable-paged-results is now deprecated; if this option is set,
@@ -73,13 +73,13 @@ dnl now always be enabled at runtime (as long as the underlying LDAP
 dnl library supports ldap_search_ext()) with the nss_paged_results
 dnl keyword. See nss_ldap(5) for more information
 dnl
-AC_ARG_ENABLE(paged-results, [  --enable-paged-results    use paged results control by default ], [AC_DEFINE(PAGE_RESULTS)])
+AC_ARG_ENABLE(paged-results, [  --enable-paged-results    use paged results control by default ], [AC_DEFINE(PAGE_RESULTS, 1, [Define to enable paged results control.])])
 
 dnl
 dnl XXX TODO make configurable-krb5-ccname-* configurable at runtime
 dnl
-AC_ARG_ENABLE(configurable-krb5-ccname-env, [  --enable-configurable-krb5-ccname-env   enable configurable Kerberos V credentials cache name (putenv method)], [AC_DEFINE(CONFIGURE_KRB5_CCNAME) AC_DEFINE(CONFIGURE_KRB5_CCNAME_ENV)])
-AC_ARG_ENABLE(configurable-krb5-ccname-gssapi, [  --enable-configurable-krb5-ccname-gssapi   enable configurable Kerberos V credentials cache name (gssapi method)], [AC_DEFINE(CONFIGURE_KRB5_CCNAME) AC_DEFINE(CONFIGURE_KRB5_CCNAME_GSSAPI)])
+AC_ARG_ENABLE(configurable-krb5-ccname-env, [  --enable-configurable-krb5-ccname-env   enable configurable Kerberos V credentials cache name (putenv method)], [AC_DEFINE(CONFIGURE_KRB5_CCNAME, 1, [Define to enable configurable Kerberos credentials cache.]) AC_DEFINE(CONFIGURE_KRB5_CCNAME_ENV, 1, [Define to enable configurable Kerberos credentials cache (putenv method).])])
+AC_ARG_ENABLE(configurable-krb5-ccname-gssapi, [  --enable-configurable-krb5-ccname-gssapi   enable configurable Kerberos V credentials cache name (gssapi method)], [AC_DEFINE(CONFIGURE_KRB5_CCNAME) AC_DEFINE(CONFIGURE_KRB5_CCNAME_GSSAPI, 1, [Define to enable configurable Kerberos credentials cache (gssapi method).])])
 
 AC_ARG_WITH(ldap-lib, [  --with-ldap-lib=type      select ldap library [auto|netscape5|netscape4|netscape3|umich|openldap]])
 AC_ARG_WITH(ldap-dir, [  --with-ldap-dir=DIR       base directory of LDAP SDK])
@@ -90,10 +90,12 @@ AC_ARG_WITH(ldap-secret-file, [  --with-ldap-secret-file   path to LDAP root sec
 	    [ NSS_LDAP_PATH_ROOTPASSWD="$with_ldap_secret_file" ],
 	    [ NSS_LDAP_PATH_ROOTPASSWD="/etc/ldap.secret" ])
 AC_ARG_WITH(gssapi-dir, [  --with-gssapi-dir=DIR     base directory of gssapi SDK])
-AC_ARG_WITH(ngroups, [  --with-ngroups=num        average group size hint, experts only], [AC_DEFINE_UNQUOTED(LDAP_NSS_NGROUPS, $with_ngroups)])
+ldap_nss_ngroups=64
+AC_ARG_WITH(ngroups, [  --with-ngroups=num        average group size hint, experts only], [ldap_nss_ngroups=$with_ngroups])
+AC_DEFINE_UNQUOTED(LDAP_NSS_NGROUPS, $ldap_nss_ngroups, [Maximum number of group members in static buffer.])
 
-AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_CONF, "$NSS_LDAP_PATH_CONF")
-AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_ROOTPASSWD, "$NSS_LDAP_PATH_ROOTPASSWD")
+AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_CONF, "$NSS_LDAP_PATH_CONF", [Path to LDAP configuration file.])
+AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_ROOTPASSWD, "$NSS_LDAP_PATH_ROOTPASSWD", [Path to LDAP root secret file.])
 AC_SUBST(NSS_LDAP_PATH_CONF)
 AC_SUBST(NSS_LDAP_PATH_ROOTPASSWD)
 
@@ -243,25 +245,25 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 	#include <netinet/in.h>
 	#include <netinet/if_ether.h>]], [[struct ether_addr x;]])],[
 		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_STRUCT_ETHER_ADDR, 1)
+		AC_DEFINE(HAVE_STRUCT_ETHER_ADDR, 1, [Define to enable struct ether_addr definition.])
 	],[AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING(for socklen_t)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 	#include <sys/socket.h>]], [[socklen_t len;]])],[
 		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_SOCKLEN_T, 1)
+		AC_DEFINE(HAVE_SOCKLEN_T, 1, [Define to enable socklen_t definition.])
 	],[AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING(for pw_change in struct passwd)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <pwd.h>]], [[struct passwd pwd; time_t t = pwd.pw_change]])],[
 		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_PASSWD_PW_CHANGE, 1)
+		AC_DEFINE(HAVE_PASSWD_PW_CHANGE, 1, [Define if struct passwd has a pw_change member.])
 	],[AC_MSG_RESULT(no)])
 AC_MSG_CHECKING(for pw_expire in struct passwd)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <pwd.h>]], [[struct passwd pwd; time_t t = pwd.pw_expire]])],[
 		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_PASSWD_PW_EXPIRE, 1)
+		AC_DEFINE(HAVE_PASSWD_PW_EXPIRE, 1, [Define if struct passwd has a pw_expire member.])
 	],[AC_MSG_RESULT(no)])
 
 dnl check which ldap library we have
@@ -334,7 +336,7 @@ if test "$ac_cv_func_gethostbyname_r" = "yes"; then
 AC_CACHE_CHECK(whether gethostbyname_r takes 6 arguments, nss_ldap_cv_gethostbyname_r_args, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <netdb.h>]], [[gethostbyname_r(0, 0, 0, 0, 0, 0);]])],[nss_ldap_cv_gethostbyname_r_args=6],[nss_ldap_cv_gethostbyname_r_args=5]) ])
-AC_DEFINE_UNQUOTED(GETHOSTBYNAME_R_ARGS, $nss_ldap_cv_gethostbyname_r_args)
+AC_DEFINE_UNQUOTED(GETHOSTBYNAME_R_ARGS, $nss_ldap_cv_gethostbyname_r_args, [Define to the number of args to gethostbyname_r.])
 fi
 
 AC_CHECK_FUNCS(ldap_set_rebind_proc)
@@ -342,7 +344,7 @@ AC_CACHE_CHECK(whether ldap_set_rebind_proc takes 3 arguments, nss_ldap_cv_ldap_
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <lber.h>
 #include <ldap.h>]], [[ldap_set_rebind_proc(0, 0, 0);]])],[nss_ldap_cv_ldap_set_rebind_proc=3],[nss_ldap_cv_ldap_set_rebind_proc=2]) ])
-AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS, $nss_ldap_cv_ldap_set_rebind_proc)
+AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS, $nss_ldap_cv_ldap_set_rebind_proc,[Define to the number of arguments to ldap_set_rebindproc.])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
