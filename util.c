@@ -58,7 +58,7 @@
 #include "ldap-nss.h"
 #include "util.h"
 
-static char rcsId[] = "$Id: util.c,v 2.132 2006/01/25 20:30:27 lukeh Exp $";
+static char rcsId[] = "$Id$";
 
 static NSS_STATUS do_getrdnvalue (const char *dn,
 				  const char *rdntype,

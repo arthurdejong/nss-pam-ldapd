@@ -17,7 +17,7 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 
-   $Id: ldap-service.h,v 2.17 2005/05/20 05:30:42 lukeh Exp $
+   $Id$
  */
 
 #ifndef _LDAP_NSS_LDAP_LDAP_SERVICE_H

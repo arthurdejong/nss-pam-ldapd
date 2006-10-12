@@ -1,4 +1,4 @@
-#ident $Id: exports.solaris,v 2.6 2006/01/12 10:19:20 lukeh Exp $
+#ident $Id$
 nss_ldap.so.1 {
 	global:
 		# Published NSS service module interfaces

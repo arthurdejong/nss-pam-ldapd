@@ -1,4 +1,4 @@
-static char rcsId[] = "$Id: snprintf.c,v 2.9 2001/08/17 05:30:14 lukeh Exp $";
+static char rcsId[] = "$Id$";
 
 #include "config.h"
 

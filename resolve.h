@@ -38,7 +38,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: resolve.h,v 2.5 2001/08/17 05:30:13 lukeh Exp $ */
+/* $Id$ */
 
 /* THIS IS NOT (yet) A PUBLIC INTERFACE */
 

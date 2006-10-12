@@ -1,5 +1,5 @@
 #!/bin/sh
-#ident $Id: certutil,v 2.2 2001/05/27 12:16:31 lukeh Exp $
+#ident $Id$
 #
 # certutil -- manage trusted X.509 certificates
 # inspired by Netscape PKCS #11 toolkit

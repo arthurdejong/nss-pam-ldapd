@@ -1,4 +1,4 @@
-#ident $Id: exports.linux,v 2.8 2005/05/25 00:05:08 lukeh Exp $
+#ident $Id$
 EXPORTED {
 	global:
 		# Published NSS service module interfaces

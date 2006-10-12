@@ -8,7 +8,7 @@
 #include "irs-nss.h"
 
 static const char *testhost = "davinci.eng.sun.com";
-static char rcsid[] = "$Id: testpw4.c,v 1.2 2001/01/09 00:21:22 lukeh Exp $";
+static char rcsid[] = "$Id$";
 
 void
 main (void)

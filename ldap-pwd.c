@@ -19,7 +19,7 @@
  */
 
 static char rcsId[] =
-  "$Id: ldap-pwd.c,v 2.46 2006/01/11 18:03:49 lukeh Exp $";
+  "$Id$";
 
 #include "config.h"
 

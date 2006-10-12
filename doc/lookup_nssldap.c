@@ -1,4 +1,4 @@
-#ident "$Id: lookup_nssldap.c,v 1.3 2005/08/08 23:28:37 lukeh Exp $"
+#ident "$Id$"
 /* ----------------------------------------------------------------------- *
  *
  *  lookup_nss.c - module for Linux automountd to access a NSS

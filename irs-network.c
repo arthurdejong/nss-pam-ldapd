@@ -23,7 +23,7 @@
 #include <errno.h>
 #include "irs-nss.h"
 
-/* $Id: irs-network.c,v 2.25 2005/05/20 05:30:39 lukeh Exp $ */
+/* $Id$ */
 
 #ifdef HAVE_USERSEC_H
 void *nw_pvtinit (void);

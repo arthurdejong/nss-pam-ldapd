@@ -1,4 +1,4 @@
-#ident $Id: nsswitch.test,v 1.2 2001/01/09 00:21:22 lukeh Exp $
+#ident $Id$
 #
 # An example file that could be copied over to /etc/nsswitch.conf; it
 # uses LDAP conjunction with files.

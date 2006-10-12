@@ -17,7 +17,7 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 
-   $Id: ldap-parse.h,v 2.21 2005/05/20 05:30:41 lukeh Exp $
+   $Id$
  */
 
 

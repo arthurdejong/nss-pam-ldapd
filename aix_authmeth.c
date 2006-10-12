@@ -25,7 +25,7 @@
 #include "config.h"
 
 static char rcsId[] =
-  "$Id: aix_authmeth.c,v 2.31 2006/02/24 01:28:59 lukeh Exp $";
+  "$Id$";
 
 #ifdef HAVE_USERSEC_H
 

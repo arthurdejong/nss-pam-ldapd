@@ -19,7 +19,7 @@
  */
 
 static char rcsId[] =
-  "$Id: ldap-nss.c,v 2.282 2006/05/15 08:13:44 lukeh Exp $";
+  "$Id$";
 
 #include "config.h"
 

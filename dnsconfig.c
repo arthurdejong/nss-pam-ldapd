@@ -28,7 +28,7 @@
  */
 
 static char rcsId[] =
-  "$Id: dnsconfig.c,v 2.43 2006/01/13 10:24:58 lukeh Exp $";
+  "$Id$";
 
 #include "config.h"
 

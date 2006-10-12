@@ -52,7 +52,7 @@
 
 #include "resolve.h"
 
-static char rcsId[] = "$Id: resolve.c,v 2.10 2004/06/29 16:09:57 lukeh Exp $";
+static char rcsId[] = "$Id$";
 
 #if defined(HAVE_RES_SEARCH) && defined(HAVE_DN_EXPAND)
 

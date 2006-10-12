@@ -23,7 +23,7 @@
 #include <errno.h>
 #include "irs-nss.h"
 
-/* $Id: irs-proto.c,v 2.23 2005/05/20 05:30:40 lukeh Exp $ */
+/* $Id$ */
 
 #ifdef HAVE_USERSEC_H
 void *pr_pvtinit (void);

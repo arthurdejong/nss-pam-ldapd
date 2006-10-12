@@ -17,7 +17,7 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 
-   $Id: ldap-netgrp.h,v 2.18 2005/05/20 05:30:41 lukeh Exp $
+   $Id$
  */
 
 #ifndef _LDAP_NSS_LDAP_LDAP_NETGRP_H

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: irs.h,v 2.3 2004/09/10 11:49:09 lukeh Exp $
+ * $Id$
  */
 
 #ifndef _IRS_H_INCLUDED

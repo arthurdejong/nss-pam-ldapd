@@ -20,7 +20,7 @@
    Boston, MA 02111-1307, USA.
  */
 
-static char rcsId[] = "$Id: pagectrl.c,v 2.4 2006/01/13 10:24:59 lukeh Exp $";
+static char rcsId[] = "$Id$";
 
 #include "config.h"
 

@@ -17,12 +17,12 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 
-   $Id: ldap-sldap.c,v 2.12 2006/01/13 10:35:16 lukeh Exp $
+   $Id$
  */
 
 
 static char rcsId[] =
-  "$Id: ldap-sldap.c,v 2.12 2006/01/13 10:35:16 lukeh Exp $";
+  "$Id$";
 
 #include "config.h"
 

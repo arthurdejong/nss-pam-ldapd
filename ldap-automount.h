@@ -17,7 +17,7 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 
-   $Id: ldap-automount.h,v 1.5 2006/01/12 10:19:20 lukeh Exp $
+   $Id$
  */
 
 #ifndef _LDAP_NSS_LDAP_LDAP_AUTOMOUNT_H

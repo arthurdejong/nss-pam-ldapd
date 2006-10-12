@@ -1,5 +1,5 @@
 # Created and modified by checkpoint; do not edit
-# $Id: CVSVersionInfo.txt,v 2.293 2006/06/22 02:39:11 lukeh Exp $
+# $Id$
 # $Name: nss_ldap-251 $
 ProjectName: nss_ldap
 ProjectVersion: 251

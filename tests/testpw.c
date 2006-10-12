@@ -1,5 +1,5 @@
 
-/* $Id: testpw.c,v 1.2 2001/01/09 00:21:22 lukeh Exp $ */
+/* $Id$ */
 
 /* This program just tests getpwent/getpwnam. You want to have nss_ldap
  * plugged in, so to speak, to test anything useful.

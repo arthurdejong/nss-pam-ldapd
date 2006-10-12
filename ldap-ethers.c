@@ -17,12 +17,12 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 
-   $Id: ldap-ethers.c,v 2.36 2006/01/11 18:03:48 lukeh Exp $
+   $Id$
  */
 
 
 static char rcsId[] =
-  "$Id: ldap-ethers.c,v 2.36 2006/01/11 18:03:48 lukeh Exp $";
+  "$Id$";
 
 #include "config.h"
 

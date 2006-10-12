@@ -18,7 +18,7 @@
    Boston, MA 02111-1307, USA.
  */
 
-static char rcsId[] = "$Id: irs-nss.c,v 2.16 2005/05/20 05:30:39 lukeh Exp $";
+static char rcsId[] = "$Id$";
 
 #include "config.h"
 

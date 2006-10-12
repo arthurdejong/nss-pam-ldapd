@@ -17,11 +17,11 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 
-   $Id: ldap-automount.c,v 2.9 2006/01/13 16:15:33 lukeh Exp $
+   $Id$
  */
 
 
-static char rcsId[] = "$Id: ldap-automount.c,v 2.9 2006/01/13 16:15:33 lukeh Exp $";
+static char rcsId[] = "$Id$";
 
 #include "config.h"
 
