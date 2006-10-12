@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
@@ -85,7 +85,7 @@ _nss_ldap_parse_pw (LDAPMessage * e,
   char tmpbuf[ sizeof( uid_t ) * 8 / 3 + 2 ];
   size_t tmplen;
   char *tmp;
-  
+
   tmpbuf[ sizeof(tmpbuf) - 1 ] = '\0';
 
   if (_nss_ldap_oc_check (e, "shadowAccount") == NSS_SUCCESS)

@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
@@ -95,7 +95,7 @@
 #define LDAP_NSS_MAXGR_DEPTH     16     /* maximum depth of group nesting for getgrent()/initgroups() */
 
 #if LDAP_NSS_NGROUPS > 64
-#define LDAP_NSS_BUFLEN_GROUP   (NSS_BUFSIZ + (LDAP_NSS_NGROUPS * (sizeof (char *) + LOGNAME_MAX))) 
+#define LDAP_NSS_BUFLEN_GROUP   (NSS_BUFSIZ + (LDAP_NSS_NGROUPS * (sizeof (char *) + LOGNAME_MAX)))
 #else
 #define LDAP_NSS_BUFLEN_GROUP   NSS_BUFSIZ
 #endif /* LDAP_NSS_NGROUPS > 64 */
@@ -353,7 +353,7 @@ struct ldap_config
   void *ldc_maps[LM_NONE + 1][6]; /* must match MAP_MAX */
 
   /*
-   * is userPassword "userPassword" or not? 
+   * is userPassword "userPassword" or not?
    * ie. do we need {crypt} to be stripped
    */
   ldap_userpassword_selector_t ldc_password_type;
@@ -362,7 +362,7 @@ struct ldap_config
    */
   ldap_shadow_selector_t ldc_shadow_type;
 
-  /* 
+  /*
    * attribute table for ldap search requensts
    */
   const char **ldc_attrtab[LM_NONE + 1];
@@ -609,7 +609,7 @@ void _nss_ldap_leave (void);
 #ifdef LDAP_OPT_THREAD_FN_PTRS
 /*
  * Netscape's libldap is threadsafe, but we use a
- * lock before it is initialized 
+ * lock before it is initialized
  */
 
 struct ldap_error
@@ -624,7 +624,7 @@ typedef struct ldap_error ldap_error_t;
 #endif /* LDAP_OPT_THREAD_FN_PTRS */
 
 
-/* 
+/*
  * _nss_ldap_ent_context_init() is called for each getXXent() call
  * This will acquire the global mutex.
  */
@@ -639,7 +639,7 @@ ent_context_t *_nss_ldap_ent_context_init (ent_context_t **);
 ent_context_t *_nss_ldap_ent_context_init_locked (ent_context_t **);
 
 /*
- * _nss_ldap_ent_context_release() is used to manually free a context 
+ * _nss_ldap_ent_context_release() is used to manually free a context
  */
 void _nss_ldap_ent_context_release (ent_context_t *);
 

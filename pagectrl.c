@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2002 Max Caines, All Rights Reserved.
    This file is part of the nss_ldap library.
    Contributed by Max Caines, <Max.Caines@wlv.ac.uk>, April 2002.
@@ -42,36 +42,36 @@
 #ifndef HAVE_LDAP_CREATE_PAGE_CONTROL
 /*---
    ldap_create_page_control
-   
+
    Create and encode the Paged Results control.
 
    ld        (IN)  An LDAP session handle, as obtained from a call to
                                    ldap_init().
-   
+
    pagesize  (IN)  The number of entries to return in each page
 
    cookiep   (IN)  Pointer to a berVal structure that the server uses to
                                    determine the current location in the
                                    result set (opaque). Set to NULL the
                                    first time.
-                                 
+
    iscritical (IN) Is this control critical to the search?
-   
+
    ctrlp     (OUT) A result parameter that will be assigned the address
-                                   of an LDAPControl structure that contains the 
+                                   of an LDAPControl structure that contains the
                                    PagedResult control created by this function.
                                    The memory occupied by the LDAPControl structure
                                    SHOULD be freed when it is no longer in use by
                                    calling ldap_control_free().
-                                          
-   
+
+
    Ber encoding
-   
+
    PageResult ::= SEQUENCE {
                 pageSize     INTEGER
                 cookie       OCTET STRING }
-          
-   
+
+
    Note:  The first time the Page control is created, the cookie
                   should be set to a zero-length string. The cookie obtained
                   from calling ldap_parse_page_control() should be used as
@@ -133,18 +133,18 @@ exit:
 #ifndef HAVE_LDAP_PARSE_PAGE_CONTROL
 /*---
    ldap_parse_page_control
-   
+
    Decode the Virtual List View control return information.
 
    ld           (IN)   An LDAP session handle.
-   
-   ctrls        (IN)   The address of a NULL-terminated array of 
-                                           LDAPControl structures, typically obtained 
+
+   ctrls        (IN)   The address of a NULL-terminated array of
+                                           LDAPControl structures, typically obtained
                                            by a call to ldap_parse_result().
-   
+
    list_countp  (OUT)  This result parameter is filled in with the number
                                            of entries returned in this page
-   
+
    cookiep      (OUT)  This result parameter is filled in with the address
                                            of a struct berval that contains the server-
                                            generated cookie.
@@ -152,7 +152,7 @@ exit:
                                            to create a Page sort control.  The struct berval
                                            returned SHOULD be disposed of by calling ber_bvfree()
                                            when it is no longer needed.
-   
+
 ---*/
 
 #ifndef HAVE_LDAP_CREATE_CONTROL

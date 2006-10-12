@@ -151,16 +151,16 @@ AM_CONDITIONAL(USE_NATIVE_LINKER, test -n "$nss_ldap_so_LD")
 if test -n "$with_ldap_dir"; then
   CPPFLAGS="$CPPFLAGS -I$with_ldap_dir/include"
   LDFLAGS="$LDFLAGS -L$with_ldap_dir/lib"
-  case "$target_os" in 
+  case "$target_os" in
   aix*) LDFLAGS="$LDFLAGS -Wl,-blibpath:$with_ldap_dir/lib"
     nss_ldap_so_LDFLAGS="$nss_ldap_so_LDFLAGS -L$with_ldap_dir/lib -blibpath:$with_ldap_dir/lib"
     NSS_LDAP_LDFLAGS="$NSS_LDAP_LDFLAGS -L$with_ldap_dir/lib -blibpath:$with_ldap_dir/lib" ;;
   hpux*) LDFLAGS="$LDFLAGS -Wl,+b$with_ldap_dir/lib"
     nss_ldap_so_LDFLAGS="$nss_ldap_so_LDFLAGS -L$with_ldap_dir/lib +b$with_ldap_dir/lib" ;;
-  solaris*) LDFLAGS="$LDFLAGS -R$with_ldap_dir/lib" 
+  solaris*) LDFLAGS="$LDFLAGS -R$with_ldap_dir/lib"
     nss_ldap_so_LDFLAGS="$nss_ldap_so_LDFLAGS -L$with_ldap_dir/lib -R$with_ldap_dir/lib" ;;
   *) LDFLAGS="$LDFLAGS -Wl,-rpath,$with_ldap_dir/lib" ;;
-  esac  
+  esac
 fi
 if test -n "$with_gssapi_dir"; then
   CPPFLAGS="$CPPFLAGS -I$with_gssapi_dir/include"
@@ -178,7 +178,7 @@ AC_CHECK_HEADERS(ldap_ssl.h)
 dnl AC_MSG_CHECKING(for ldap_ssl.h)
 dnl AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 dnl     #include <ldap.h>
-dnl     #include <ldap_ssl.h>]], [[]])],[dnl    
+dnl     #include <ldap_ssl.h>]], [[]])],[dnl
 dnl             AC_MSG_RESULT(yes),
 dnl             AC_DEFINE(HAVE_LDAP_SSL_H, 1)
 dnl     ],[dnl  AC_MSG_RESULT(no)])

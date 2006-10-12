@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 1997-2006 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
@@ -258,7 +258,7 @@ do_construct_range_attribute (const char *attribute,
   return NSS_SUCCESS;
 }
 
-/* 
+/*
  * Expand group members, including nested groups
  */
 static enum nss_status
@@ -748,7 +748,7 @@ do_parse_initgroups_nested (LDAPMessage * e,
           lia->depth--;
 
           ldap_value_free (values);
- 
+
           return stat;
         }
     }

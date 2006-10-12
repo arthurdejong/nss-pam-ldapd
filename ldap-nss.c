@@ -1,4 +1,4 @@
-/* 
+/*
    ldap-nss.c - main file for NSS interface
    This file is part of the nss_ldap library.
 
@@ -19,7 +19,7 @@
    License along with the nss_ldap library; see the file COPYING.LIB.  If not,
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
-   
+
    $Id$
 */
 
@@ -147,7 +147,7 @@ static FILE *__debugfile;
 #endif /* LBER_OPT_LOG_PRINT_FILE */
 
 #ifndef HAVE_PTHREAD_ATFORK
-/* 
+/*
  * Process ID that opened the session.
  */
 static pid_t __pid = -1;
@@ -248,7 +248,7 @@ static enum nss_status do_parse (ent_context_t * ctx, void *result, char *buffer
                             size_t buflen, int *errnop, parser_t parser);
 
 /*
- * Parse a result, fetching results from the result chain 
+ * Parse a result, fetching results from the result chain
  * rather than the server.
  */
 static enum nss_status do_parse_s (ent_context_t * ctx, void *result, char *buffer,
@@ -525,7 +525,7 @@ _nss_ldap_block_sigpipe (void)
   /*
    * Patch for Debian Bug 130006:
    * ignore SIGPIPE for all LDAP operations.
-   * 
+   *
    * The following bug was reintroduced in nss_ldap-213 and is fixed here:
    * http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=84344
    *
@@ -883,7 +883,7 @@ do_drop_connection(int sd, int closeSd)
 #else
     (void) ldap_ld_free (__session.ls_conn, 0);
 #endif /* OPENLDAP 2.x */
-    
+
 #else
 
 #if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_DESC)
@@ -896,7 +896,7 @@ do_drop_connection(int sd, int closeSd)
     ldap_unbind (__session.ls_conn);
 
 #endif /* HAVE_LDAP_LD_FREE */
-    
+
   }
 #endif /* HAVE_LDAPSSL_CLIENT_INIT */
   __session.ls_conn = NULL;
@@ -1064,9 +1064,9 @@ do_init (void)
    * not. If it is NULL, then we're not linked with the
    * threading library, and we need to compare the current
    * process ID against the saved one to figure out
-   * whether we've forked. 
-   * 
-   * Once we know whether we have forked or not, 
+   * whether we've forked.
+   *
+   * Once we know whether we have forked or not,
    * courtesy of pthread_atfork() or us checking
    * ourselves, we can close the socket to the LDAP
    * server to avoid leaking a socket, and reopen
@@ -1143,7 +1143,7 @@ do_init (void)
        * LDAP session.
        *
        * Patch from Steven Barrus <sbarrus@eng.utah.edu> to
-       * close the session after an idle timeout. 
+       * close the session after an idle timeout.
        */
 
       assert (__session.ls_conn != NULL);
@@ -1252,7 +1252,7 @@ do_init (void)
 
 #ifdef HAVE_LDAPSSL_CLIENT_INIT
   /*
-   * Initialize the SSL library. 
+   * Initialize the SSL library.
    */
   if (cfg->ldc_ssl_on == SSL_LDAPS)
     {
@@ -1722,7 +1722,7 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
   debug("==> do_bind");
 
   /*
-   * set timelimit in ld for select() call in ldap_pvt_connect() 
+   * set timelimit in ld for select() call in ldap_pvt_connect()
    * function implemented in libldap2's os-ip.c
    */
   tv.tv_sec = timelimit;
@@ -1829,7 +1829,7 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
       rc = ldap_sasl_interactive_bind_s (ld, dn, "GSSAPI", NULL, NULL,
                                          LDAP_SASL_QUIET,
                                          do_sasl_interact, (void *) pw);
-      
+
 # ifdef CONFIGURE_KRB5_CCNAME
       /* Restore default Kerberos ticket cache. */
       if (oldccname != NULL)
@@ -2691,7 +2691,7 @@ do_parse_s (ent_context_t * ctx, void *result, char
         }
 
       /*
-       * We have an entry; now, try to parse it. 
+       * We have an entry; now, try to parse it.
        *
        * If we do not parse the entry because of a schema
        * violation, the parser should return NSS_NOTFOUND.
@@ -3101,7 +3101,7 @@ do_next_page (const ldap_args_t * args,
 
 /*
  * General entry point for enumeration routines.
- * This should really use the asynchronous LDAP search API to avoid 
+ * This should really use the asynchronous LDAP search API to avoid
  * pulling down all the entries at once, particularly if the
  * enumeration is not completed.
  * Locks mutex.
@@ -3214,7 +3214,7 @@ next:
 
 /*
  * General match function.
- * Locks mutex. 
+ * Locks mutex.
  */
 enum nss_status
 _nss_ldap_getbyname (ldap_args_t * args,
@@ -3783,7 +3783,7 @@ _nss_ldap_map_get (ldap_config_t * config,
 
 /*
  * Proxy bind support for AIX. Very simple, but should do
- * the job. 
+ * the job.
  */
 
 #if LDAP_SET_REBIND_PROC_ARGS < 3

@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 1997-2005 Luke Howard
    Portions Copyright (C) 1997-2002 Luke Howard
    This file is part of the nss_ldap library.

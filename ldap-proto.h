@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
@@ -26,7 +26,7 @@
 
 /*
    Determine the canonical name of the protocol with _nss_ldap_getrdnvalue(),
-   and assign any values of "cn" which do NOT match this canonical name 
+   and assign any values of "cn" which do NOT match this canonical name
    as aliases.
  */
 

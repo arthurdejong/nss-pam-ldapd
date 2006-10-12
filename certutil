@@ -43,7 +43,7 @@
 #
 #    $ certutil -r -n "My Cert" [-d certdir]
 #
-#    This command removes the certificate named "My Cert". certdir is 
+#    This command removes the certificate named "My Cert". certdir is
 #    optional, see 2.
 #
 # 4. List sertificates
@@ -113,7 +113,7 @@ check_path() {
 # Add certificates
 add_cert() {
         check_path
-        if [ ! -e $FILE ]; then 
+        if [ ! -e $FILE ]; then
                 echo "$0: cannot find $FILE"
                 exit 1
         fi

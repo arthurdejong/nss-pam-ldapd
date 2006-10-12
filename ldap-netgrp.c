@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2002-2005 Luke Howard
    This file is part of the nss_ldap library.
    Linux support contributed by Larry Lile, <llile@dreamworks.com>, 2002.
@@ -68,8 +68,8 @@ static ent_context_t *_ngbe = NULL;
  * I pulled the following macro (EXPAND), functions (strip_whitespace and
  * _nss_netgroup_parseline) and structures (name_list and __netgrent) from
  * glibc-2.2.x.  _nss_netgroup_parseline became _nss_ldap_parse_netgr after
- * some modification. 
- * 
+ * some modification.
+ *
  * The rest of the code is modeled on various other _nss_ldap functions.
  */
 

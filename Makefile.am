@@ -27,7 +27,7 @@ endif
 
 EXTRA_DIST = CVSVersionInfo.txt ChangeLog \
              AUTHORS ANNOUNCE NEWS INSTALL README LICENSE.OpenLDAP COPYING\
-             ldap.conf nss_ldap.spec nsswitch.ldap 
+             ldap.conf nss_ldap.spec nsswitch.ldap
 
 man_MANS = nss_ldap.5
 
@@ -55,7 +55,7 @@ NSS_LDAP_NSS_VERSIONED = libnss_ldap.so.$(NSS_VERS)
 endif
 
 if USE_NATIVE_LINKER
-NATIVE_LINK = $(nss_ldap_so_LD) $(AM_LDFLAGS) -o $@ 
+NATIVE_LINK = $(nss_ldap_so_LD) $(AM_LDFLAGS) -o $@
 else
 GNU_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 endif
@@ -92,7 +92,7 @@ install-data-local:
 	  $(mkinstalldirs) $(DESTDIR)$(dir $(NSS_LDAP_PATH_CONF)); \
 	  $(INSTALL_DATA) -o $(INST_UID) -g $(INST_GID) $(srcdir)/ldap.conf $(DESTDIR)$(NSS_LDAP_PATH_CONF); \
 	fi
-	$(INSTALL_DATA) -o $(INST_UID) -g $(INST_GID) $(srcdir)/nsswitch.ldap $(DESTDIR)$(sysconfdir)/nsswitch.ldap; 
+	$(INSTALL_DATA) -o $(INST_UID) -g $(INST_GID) $(srcdir)/nsswitch.ldap $(DESTDIR)$(sysconfdir)/nsswitch.ldap;
 
 uninstall-local:
 	@$(NORMAL_UNINSTALL)

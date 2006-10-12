@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1999.
@@ -156,7 +156,7 @@ extern char _nss_ldap_filt_getautomntbyname[];
 
 /*
  * ( nisSchema.2.1 NAME 'shadowAccount' SUP top AUXILIARY
- *   DESC 'Additional attributes for shadow passwords'            
+ *   DESC 'Additional attributes for shadow passwords'
  *   MUST uid
  *   MAY ( userPassword $ shadowLastChange $ shadowMin
  *         shadowMax $ shadowWarning $ shadowInactive $
@@ -172,7 +172,7 @@ extern char _nss_ldap_filt_getautomntbyname[];
 #define AT_shadowFlag             "shadowFlag"
 
 /*
- * ( nisSchema.2.2 NAME 'posixGroup' SUP top STRUCTURAL            
+ * ( nisSchema.2.2 NAME 'posixGroup' SUP top STRUCTURAL
  *   DESC 'Abstraction of a group of accounts'
  *   MUST ( cn $ gidNumber )
  *   MAY ( userPassword $ uidMember $ description ) )
@@ -227,7 +227,7 @@ extern char _nss_ldap_filt_getautomntbyname[];
  *         value of the cn attribute denotes the host's canonical
  *         name. Device SHOULD be used as a structural class'
  *   MUST ( cn $ ipHostNumber )
- *   MAY ( l $ description $ manager ) ) 
+ *   MAY ( l $ description $ manager ) )
  */
 #define OC_ipHost                 "ipHost"
 #define AT_ipHostNumber           "ipHostNumber"

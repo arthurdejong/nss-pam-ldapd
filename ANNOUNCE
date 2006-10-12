@@ -17,7 +17,7 @@ nss_ldap nominally supports the following operating system libraries:
         o the Nameservice Switch in the GNU C Library 2.1 (as
           in libc.so.6 under Linux)
         o the Nameservice Switch in FreeBSD 5.x
-        o the Information Retrieval Service (IRS) in BIND 
+        o the Information Retrieval Service (IRS) in BIND
         o the Information Retrieval Service (IRS) and proprietary
           authentication and identity interface in AIX 4.3.3
 

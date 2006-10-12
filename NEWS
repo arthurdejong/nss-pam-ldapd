@@ -11,7 +11,7 @@ BUGZILLA BUGS:
 BUGS 18, 19, 20, 34 would be good to fix soon.
 
 [BUG#12]
-- we should probably put the session, under Solaris, in the backend. 
+- we should probably put the session, under Solaris, in the backend.
   We need to do so in a way that remains compatible with the GNU NSS,
   where I expect we need to open a connection for every lookup.
   In nscd, where the backends are cached, it doesn't make sense to keep
@@ -22,7 +22,7 @@ BUGS 18, 19, 20, 34 would be good to fix soon.
 
 [BUG#12]
 - ditto for IRS: the private data should contain the session and be long
-  lived. 
+  lived.
 
 [BUG#13]
 - we could clean up the text segment a bit by generating filters on the

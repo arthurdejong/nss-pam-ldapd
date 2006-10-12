@@ -368,7 +368,7 @@ $Id$
 	* incorporated patches from (see below) Geert Jansen
 	* add the "sasl_secprops" option to configure SASL
 	  security layers (usage as for OpenLDAP ldap.conf)
-	* add the "krb5_ccname" option to specify the 
+	* add the "krb5_ccname" option to specify the
 	  location of the Kerberos ticket cache
 	  (requires --enable-configurable-krb5-ccname for
 	  now as it is a fairly coarse solution to a lack
@@ -439,7 +439,7 @@ $Id$
 	  because nss_ldap in SRV mode trusts DNS we do
 	  not believe this to be exploitable to elevate
 	  privilege in the default configuration)
-	* do not malloc() configuration structure; use 
+	* do not malloc() configuration structure; use
 	  buffer
 
 197	Luke Howard <lukeh@padl.com>
@@ -542,7 +542,7 @@ $Id$
 
 180	Luke Howard <lukeh@padl.com>
 
-	* pull in libpthreads on AIX 
+	* pull in libpthreads on AIX
 
 179	Luke Howard <lukeh@padl.com>
 
@@ -623,7 +623,7 @@ $Id$
 	  a big thanks to Stephan for these!
 	* use LDAP_OPT_NETWORK_TIMEOUT if available for
 	  network connect timeout
-	* removed hard-coded schema mapping for 
+	* removed hard-coded schema mapping for
 	  authPassword, NDS and MSSFU
 
 167	Luke Howard <lukeh@padl.com>
@@ -634,7 +634,7 @@ $Id$
 
 166	Luke Howard <lukeh@padl.com>
 
-	* corrected small typos 
+	* corrected small typos
 
 165	Luke Howard <lukeh@padl.com>
 
@@ -676,7 +676,7 @@ $Id$
 158	Luke Howard <lukeh@padl.com>
 
 	* in the distinguished name to login cache (dn2uid)
-	  make sure we use the AT(uid) macro for the uid 
+	  make sure we use the AT(uid) macro for the uid
 	  attribute rather than the hard-coded value of "uid"
 	  This should enable the cache for MSSFU support.
 
@@ -689,7 +689,7 @@ $Id$
 
 156	Luke Howard <lukeh@padl.com>
 
-	* logic was around the wrong way in do_search(), 
+	* logic was around the wrong way in do_search(),
 	  all searches were broken!
 	* --disable-ssl option for configure
 	* removed "Obsoletes: pam_ldap" from spec file
@@ -729,7 +729,7 @@ $Id$
 
 	* fixed compile on Solaris, broken in 145 by
 	  malformed Linux patch
-	 
+	
 148	Luke Howard <lukeh@padl.com>
 
 	* check for HAVE_LDAP_SET_OPTION always
@@ -746,7 +746,7 @@ $Id$
 	* patch from Simon Wilkinson <sxw@sxw.org.uk>
 	  for compatibility with old initgroups entry
 	  point
-	* request authPassword attribute if 
+	* request authPassword attribute if
 	  --enable-authpassword
 	* authPassword support in ldap-spwd.c (shadow)
 
@@ -765,7 +765,7 @@ $Id$
 
 143	Luke Howard <lukeh@padl.com>
 
-	* patch from nalin@redhat.com to avoid 
+	* patch from nalin@redhat.com to avoid
 	  corrupting the heap when the configuration
 	  file exists but has no host and base values.
 	  _nss_ldap_readconfigfromdns() will write to
@@ -791,7 +791,7 @@ $Id$
 
 139	Luke Howard <lukeh@padl.com>
 
-	* updated INSTALL file with boilerplate 
+	* updated INSTALL file with boilerplate
 	* fixed pointer error in ldap-nss.c
 
 138	Luke Howard <lukeh@padl.com>
@@ -802,7 +802,7 @@ $Id$
 	  ldap.conf would cause the configuration file to
 	  not be parsed at all, if they were the last
 	  entries in the config file.
-	  
+	
 137.1	Luke Howard <lukeh@padl.com>
 
 	* patch from nalin@redhat.com; return { NULL } not
@@ -812,7 +812,7 @@ $Id$
 	* use __libc_atfork() or pthread_atfork() to
 	  close off connection on fork, rather than
 	  checking PIDs; this is expensive and breaks
-	  on Linux where each thread may have a 
+	  on Linux where each thread may have a
 	  different PID.
 
 137	Gabor Gombas <gombasg@inf.elte.hu>
@@ -885,7 +885,7 @@ $Id$
 	* parity with pam_ldap; "ssl" directive in
 	  ldap.conf can now specify "yes" or
 	  "start_tls" for Start TLS
-	* hopefully fixed Berkeley DB include 
+	* hopefully fixed Berkeley DB include
 	  mess in util.c
 	* fixed potential buffer overflow in util.c
 	* default to LDAP protocol version 3
@@ -1015,7 +1015,7 @@ $Id$
 102	Luke Howard <lukeh@padl.com>
 
 	* added defines for LDAP_MSG_ONE et al if not in ldap.h
-	* removed LDAP_MORE_RESULTS_TO_RETURN test 
+	* removed LDAP_MORE_RESULTS_TO_RETURN test
 
 101	Luke Howard <lukeh@padl.com>
 
@@ -1076,7 +1076,7 @@ $Id$
 92	Luke Howard <lukeh@padl.com>
 
 	* signal handling fix: don't restore handler
-	  unnecessarily. 
+	  unnecessarily.
 	* don't open nss_ldap.secret unless a root pw
 	  is specified in ldap.conf
 
@@ -1177,11 +1177,11 @@ $Id$
 2.70	Luke Howard <lukeh@padl.com>
 
 	* put /usr/ucblib back into linker search path for
-	  Solaris. 
+	  Solaris.
 
 2.69	Luke Howard <lukeh@padl.com>
 
-	* added timeout, unavailable, and server busy 
+	* added timeout, unavailable, and server busy
 	  conditions to rebind logic
 	* indent -gnu all source files
 
@@ -1283,7 +1283,7 @@ $Id$
 
 2.39	Luke Howard <lukeh@xedoc.com>
 
-	* fixed warning in ldap-ethers.c (removed const from 
+	* fixed warning in ldap-ethers.c (removed const from
 	  struct ether)
 	* added ldap_version keyword to ldap.conf for parity with
 	  pam_ldap
@@ -1293,13 +1293,13 @@ $Id$
 	* debugged ldap_explode_rdn() code
 	* added support for Mozilla LDAP client library; see
 	  Makefile.linux.mozilla and ltf.c for more information.
-	  Thanks to Netscape for making their library 
+	  Thanks to Netscape for making their library
 	  available.
 
 2.37	Luke Howard <lukeh@xedoc.com>
 
 	* moved to CVS repository and Linux as development
-	  environment 
+	  environment
 	* incorporated ldap-service.c fix from Greg
 
 2.36	Luke Howard <lukeh@xedoc.com>
@@ -1312,7 +1312,7 @@ $Id$
 
 2.34	Luke Howard <lukeh@xedoc.com>
 
-	* fixed #endif in testpw.c 
+	* fixed #endif in testpw.c
 	* fixed another DN freeing leak in util.c
 	* added RFC 2307 to distribution (fixed the two
 	  typos in it:
@@ -1336,7 +1336,7 @@ $Id$
 	* cleaned up testpw.c to use pthreads and protos
 	* fixed prototype for gethostbyaddr_r on GNU_NSS
 	* braced conditional in getservbyname_r
-	* merged in Makefile.linux and README.LINUX diffs 
+	* merged in Makefile.linux and README.LINUX diffs
 	* added htons(port) in getservbyport_r
 	* added nsswitch.test
 	* added ldaptest.pl
@@ -1500,9 +1500,9 @@ $Id$
 
 2.15	Luke Howard <lukeh@xedoc.com>
 
-	* dnsconfig.c: got DNS SRV support working under NEXTSTEP 
+	* dnsconfig.c: got DNS SRV support working under NEXTSTEP
 	* util.c: (_nss_ldap_getdomainname) made host and network DN parsing
-          compliant with current draft 
+          compliant with current draft
 
 2.2 - 2.14	Luke Howard <lukeh@xedoc.com>
 

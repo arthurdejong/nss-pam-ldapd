@@ -16,7 +16,7 @@ group:      files nis ldap
 or something similar in /etc/nsswitch.conf.
 
 The source code is distributed under the GNU General Library Public Licence
-(see COPYING.LIB). 
+(see COPYING.LIB).
 
 Platforms this has been built under:
 
@@ -92,7 +92,7 @@ Netscape LDAP client library (maybe it's required for OpenLDAP?).
 
 Scott M. Stone <sstone@foo3.com> writes:
 Your openldap libs *and* your SSL/RSAREF libs must be DYNAMIC LIBRARIES
-or neither nss_ldap nor pam_ldap will work.  
+or neither nss_ldap nor pam_ldap will work.
 
 3. glibc 2.0 compatibility
 --------------------------
@@ -145,7 +145,7 @@ of the secret.
 ----------------
 
 To discuss nss_ldap and related technologies, you may
-subscribe to the following mailing lists:    
+subscribe to the following mailing lists:
 
         <URL:mailto:nssldap-request@padl.com>
 and
@@ -158,7 +158,7 @@ message body to join the list.
 ---------------------
 
 Note that PADL now offer commercial support on a
-per-incident basis.      
+per-incident basis.
 
 To request a support incident, send email to: nssldap-support@padl.com
 

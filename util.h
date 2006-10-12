@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.
@@ -97,7 +97,7 @@ enum nss_status _nss_ldap_dn2uid (const char *dn,
 #define NSS_LDAP_KEY_CONNECT_POLICY     "nss_connect_policy"
 
 /*
- * support separate naming contexts for each map 
+ * support separate naming contexts for each map
  * eventually this will support the syntax defined in
  * the DUAConfigProfile searchDescriptor attribute
  */

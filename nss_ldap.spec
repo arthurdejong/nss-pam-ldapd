@@ -26,13 +26,13 @@ Install nss_ldap if you need LDAP access clients.
 
 
 %build
-./configure 
-make 
+./configure
+make
 
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/{etc,lib,usr/lib}
-make DESTDIR=$RPM_BUILD_ROOT install 
+make DESTDIR=$RPM_BUILD_ROOT install
 
 install -m 644 %{SOURCE1} $RPM_BUILD_ROOT/etc/ldap.conf
 

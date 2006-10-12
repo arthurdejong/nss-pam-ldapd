@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 2005.
@@ -65,13 +65,13 @@ _nss_ldap_parse_automount (LDAPMessage * e,
   enum nss_status stat;
   char ***keyval = result;
 
-  stat = 
+  stat =
     _nss_ldap_assign_attrval (e, AT (automountKey), keyval[0],
                               &buffer, &buflen);
   if (stat != NSS_SUCCESS)
     return stat;
 
-  stat = 
+  stat =
     _nss_ldap_assign_attrval (e, AT (automountInformation), keyval[1],
                               &buffer, &buflen);
   if (stat != NSS_SUCCESS)
