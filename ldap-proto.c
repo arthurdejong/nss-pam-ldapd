@@ -52,7 +52,6 @@
 #endif
 
 #include "ldap-nss.h"
-#include "ldap-proto.h"
 #include "util.h"
 
 #ifdef HAVE_PORT_AFTER_H

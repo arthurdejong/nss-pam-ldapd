@@ -50,12 +50,26 @@
 #endif
 
 #include "ldap-nss.h"
-#include "ldap-automount.h"
 #include "util.h"
 
 #ifdef HAVE_PORT_AFTER_H
 #include <port_after.h>
 #endif
+
+/* Linux only for now */
+struct ldap_automount_context {
+  /* Enumeration state */
+  ent_context_t *lac_state;
+
+  /* DNs of containers representing automount map */
+  char **lac_dn_list;
+  size_t lac_dn_size;
+  size_t lac_dn_count;
+  size_t lac_dn_index;
+};
+
+typedef struct ldap_automount_context ldap_automount_context_t;
+
 
 static enum nss_status
 _nss_ldap_parse_automount (LDAPMessage * e,

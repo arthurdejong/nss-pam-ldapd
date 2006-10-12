@@ -62,7 +62,6 @@
 #endif
 
 #include "ldap-nss.h"
-#include "ldap-ethers.h"
 #include "util.h"
 
 #ifdef HAVE_PORT_AFTER_H
@@ -73,6 +72,19 @@
 /* for HP-UX */
 #define NSS_BUFLEN_ETHERS 1024
 #endif /* NSS_BUFLEN_ETHERS */
+
+#ifndef HAVE_STRUCT_ETHER_ADDR
+struct ether_addr {
+  u_char ether_addr_octet[6];
+};
+#endif
+
+
+struct ether
+{
+  char *e_name;
+  struct ether_addr e_addr;
+};
 
 
 static ent_context_t *ether_context = NULL;

@@ -59,7 +59,6 @@
 #endif
 
 #include "ldap-nss.h"
-#include "ldap-hosts.h"
 #include "util.h"
 
 #ifdef HAVE_PORT_AFTER_H
@@ -67,26 +66,6 @@
 #endif
 
 static ent_context_t *hosts_context = NULL;
-
-static enum nss_status
-_nss_ldap_parse_hostv4 (LDAPMessage * e,
-                        ldap_state_t * pvt,
-                        void *result, char *buffer, size_t buflen)
-{
-  return _nss_ldap_parse_host (e, pvt, result, buffer, buflen,
-                               AF_INET);
-}
-
-#ifdef INET6
-static enum nss_status
-_nss_ldap_parse_hostv6 (LDAPMessage * e,
-                        ldap_state_t * pvt,
-                        void *result, char *buffer, size_t buflen)
-{
-  return _nss_ldap_parse_host (e, pvt, result, buffer, buflen,
-                               AF_INET6);
-}
-#endif
 
 static enum nss_status
 _nss_ldap_parse_host (LDAPMessage * e,
@@ -230,6 +209,26 @@ _nss_ldap_parse_host (LDAPMessage * e,
 
   return NSS_SUCCESS;
 }
+
+static enum nss_status
+_nss_ldap_parse_hostv4 (LDAPMessage * e,
+                        ldap_state_t * pvt,
+                        void *result, char *buffer, size_t buflen)
+{
+  return _nss_ldap_parse_host (e, pvt, result, buffer, buflen,
+                               AF_INET);
+}
+
+#ifdef INET6
+static enum nss_status
+_nss_ldap_parse_hostv6 (LDAPMessage * e,
+                        ldap_state_t * pvt,
+                        void *result, char *buffer, size_t buflen)
+{
+  return _nss_ldap_parse_host (e, pvt, result, buffer, buflen,
+                               AF_INET6);
+}
+#endif
 
 enum nss_status
 _nss_ldap_gethostbyname2_r (const char *name, int af, struct hostent * result,

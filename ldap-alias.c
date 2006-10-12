@@ -43,7 +43,6 @@
 #include <aliases.h>
 
 #include "ldap-nss.h"
-#include "ldap-alias.h"
 #include "util.h"
 
 #ifdef HAVE_PORT_AFTER_H

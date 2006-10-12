@@ -53,7 +53,6 @@
 #endif
 
 #include "ldap-nss.h"
-#include "ldap-network.h"
 #include "util.h"
 
 #if defined(HAVE_USERSEC_H)
