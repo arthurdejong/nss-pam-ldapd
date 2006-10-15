@@ -101,6 +101,13 @@ AC_SUBST(NSS_LDAP_PATH_ROOTPASSWD)
 
 if test "$ac_cv_c_compiler_gnu" = "yes"; then CFLAGS="$CFLAGS -Wall -fPIC"; fi
 
+# Check for extra compiler warnings
+AC_ARG_ENABLE(warnings,
+              AS_HELP_STRING([--enable-warnings],
+                             [enable extra compiler warnings (gcc)]),
+              [if test "x$enableval" != "no" ; then CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations" ; fi])
+
+
 dnl This is needed for the native Solaris LDAP SDK and
 dnl OpenLDAP 2.2, respectively
 CPPFLAGS="$CPPFLAGS -DLDAP_REFERRALS -DLDAP_DEPRECATED"
