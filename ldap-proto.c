@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
+#include <errno.h>
 
 #ifdef HAVE_LBER_H
 #include <lber.h>
@@ -58,11 +59,11 @@
 #include <port_after.h>
 #endif
 
-static ent_context_t *proto_context = NULL;
+static struct ent_context *proto_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_proto (LDAPMessage * e,
-                       ldap_state_t * pvt,
+                       struct ldap_state * pvt,
                        void *result, char *buffer, size_t buflen)
 {
 
@@ -73,13 +74,13 @@ _nss_ldap_parse_proto (LDAPMessage * e,
   stat =
     _nss_ldap_getrdnvalue (e, ATM (LM_PROTOCOLS, cn), &proto->p_name,
                            &buffer, &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
     _nss_ldap_assign_attrval (e, AT (ipProtocolNumber), &number, &buffer,
                               &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   proto->p_proto = atoi (number);
@@ -87,10 +88,10 @@ _nss_ldap_parse_proto (LDAPMessage * e,
   stat =
     _nss_ldap_assign_attrvals (e, ATM (LM_PROTOCOLS, cn), proto->p_name,
                                &proto->p_aliases, &buffer, &buflen, NULL);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status

@@ -44,6 +44,7 @@
 #include <string.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <errno.h>
 
 #ifdef HAVE_SYS_BYTEORDER_H
 #include <sys/byteorder.h>
@@ -63,16 +64,16 @@
 #include <port_after.h>
 #endif
 
-static ent_context_t *serv_context = NULL;
+static struct ent_context *serv_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_serv (LDAPMessage * e,
-                      ldap_state_t * state,
+                      struct ldap_state * state,
                       void *result, char *buffer, size_t buflen)
 {
   struct servent *service = (struct servent *) result;
   char *port;
-  enum nss_status stat = NSS_SUCCESS;
+  enum nss_status stat = NSS_STATUS_SUCCESS;
 
   /* this is complicated and ugly, because some git (me) specified that service
    * entries should expand to two entities (or more) if they have multi-valued
@@ -87,7 +88,7 @@ _nss_ldap_parse_serv (LDAPMessage * e,
           stat =
             _nss_ldap_assign_attrval (e, AT (ipServiceProtocol),
                                       &service->s_proto, &buffer, &buflen);
-          if (stat != NSS_SUCCESS)
+          if (stat != NSS_STATUS_SUCCESS)
             {
               return stat;
             }
@@ -98,7 +99,7 @@ _nss_ldap_parse_serv (LDAPMessage * e,
           len = strlen (state->ls_info.ls_key);
           if (buflen < (size_t) (len + 1))
             {
-              return NSS_TRYAGAIN;
+              return NSS_STATUS_TRYAGAIN;
             }
           strncpy (buffer, state->ls_info.ls_key, len);
           buffer[len] = '\0';
@@ -114,16 +115,16 @@ _nss_ldap_parse_serv (LDAPMessage * e,
       if (vals == NULL)
         {
           state->ls_info.ls_index = -1;
-          return NSS_NOTFOUND;
+          return NSS_STATUS_NOTFOUND;
         }
 
       switch (state->ls_info.ls_index)
         {
         case 0:
-          /* last time. decrementing ls_index to -1 AND returning !NSS_SUCCESS
+          /* last time. decrementing ls_index to -1 AND returning !NSS_STATUS_SUCCESS
              will force this entry to be discarded.
            */
-          stat = NSS_NOTFOUND;
+          stat = NSS_STATUS_NOTFOUND;
           break;
         case -1:
           /* first time */
@@ -133,21 +134,21 @@ _nss_ldap_parse_serv (LDAPMessage * e,
           len = strlen (vals[state->ls_info.ls_index - 1]);
           if (buflen < (size_t) (len + 1))
             {
-              return NSS_TRYAGAIN;
+              return NSS_STATUS_TRYAGAIN;
             }
           strncpy (buffer, vals[state->ls_info.ls_index - 1], len);
           buffer[len] = '\0';
           service->s_proto = buffer;
           buffer += len + 1;
           buflen -= len + 1;
-          stat = NSS_SUCCESS;
+          stat = NSS_STATUS_SUCCESS;
         }
 
       ldap_value_free (vals);
       state->ls_info.ls_index--;
     }
 
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     {
       return stat;
     }
@@ -155,7 +156,7 @@ _nss_ldap_parse_serv (LDAPMessage * e,
   stat =
     _nss_ldap_getrdnvalue (e, ATM (LM_SERVICES, cn), &service->s_name,
                            &buffer, &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     {
       return stat;
     }
@@ -163,7 +164,7 @@ _nss_ldap_parse_serv (LDAPMessage * e,
   stat =
     _nss_ldap_assign_attrvals (e, ATM (LM_SERVICES, cn), service->s_name,
                                &service->s_aliases, &buffer, &buflen, NULL);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     {
       return stat;
     }
@@ -171,14 +172,14 @@ _nss_ldap_parse_serv (LDAPMessage * e,
   stat =
     _nss_ldap_assign_attrval (e, AT (ipServicePort), &port, &buffer,
                               &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     {
       return stat;
     }
 
   service->s_port = htons (atoi (port));
 
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status
@@ -187,7 +188,7 @@ _nss_ldap_getservbyname_r (const char *name,
                            struct servent * result,
                            char *buffer, size_t buflen, int *errnop)
 {
-  ldap_args_t a;
+  struct ldap_args a;
 
   LA_INIT (a);
   LA_STRING (a) = name;
@@ -206,7 +207,7 @@ _nss_ldap_getservbyport_r (int port,
                            struct servent * result,
                            char *buffer, size_t buflen, int *errnop)
 {
-  ldap_args_t a;
+  struct ldap_args a;
 
   LA_INIT (a);
   LA_NUMBER (a) = htons (port);

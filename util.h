@@ -125,9 +125,9 @@ enum nss_status _nss_ldap_dn2uid (const char *dn,
  * ** implemented
  */
 
-enum nss_status _nss_ldap_init_config (ldap_config_t *);
-enum nss_status _nss_ldap_readconfig (ldap_config_t ** result, char **buffer, size_t *buflen);
-enum nss_status _nss_ldap_validateconfig (ldap_config_t *config);
+enum nss_status _nss_ldap_init_config (struct ldap_config *);
+enum nss_status _nss_ldap_readconfig (struct ldap_config ** result, char **buffer, size_t *buflen);
+enum nss_status _nss_ldap_validateconfig (struct ldap_config *config);
 
 /*
  * Escape '*' in a string for use as a filter
@@ -138,16 +138,16 @@ enum nss_status _nss_ldap_escape_string (const char *str,
 
 #define MAP_H_ERRNO(nss_status, herr)   do {    \
                 switch ((nss_status)) {         \
-                case NSS_SUCCESS:               \
+                case NSS_STATUS_SUCCESS:               \
                         (herr) = 0;             \
                         break;                  \
-                case NSS_TRYAGAIN:              \
+                case NSS_STATUS_TRYAGAIN:              \
                         (herr) = TRY_AGAIN;     \
                         break;                  \
-                case NSS_NOTFOUND:              \
+                case NSS_STATUS_NOTFOUND:              \
                         (herr) = HOST_NOT_FOUND;\
                         break;                  \
-                case NSS_UNAVAIL:               \
+                case NSS_STATUS_UNAVAIL:               \
                 default:                        \
                         (herr) = NO_RECOVERY;   \
                         break;                  \
@@ -157,16 +157,16 @@ enum nss_status _nss_ldap_escape_string (const char *str,
 #ifdef HAVE_IRS_H
 #define MAP_ERRNO(nss_status, err)   do {       \
                 switch ((nss_status)) {         \
-                case NSS_SUCCESS:               \
+                case NSS_STATUS_SUCCESS:               \
                         (err) = 0;              \
                         break;                  \
-                case NSS_TRYAGAIN:              \
+                case NSS_STATUS_TRYAGAIN:              \
                         (err) = ERANGE;         \
                         break;                  \
-                case NSS_NOTFOUND:              \
+                case NSS_STATUS_NOTFOUND:              \
                         (err) = ENOENT;         \
                         break;                  \
-                case NSS_UNAVAIL:               \
+                case NSS_STATUS_UNAVAIL:               \
                 default:                        \
                         (err) = EPERM;          \
                         break;                  \
@@ -180,8 +180,6 @@ struct ldap_datum
   size_t size;
 };
 
-typedef struct ldap_datum ldap_datum_t;
-
 #define NSS_LDAP_DATUM_ZERO(d)  do { \
                 (d)->data = NULL; \
                 (d)->size = 0; \
@@ -193,12 +191,12 @@ void *_nss_ldap_db_open (void);
 void _nss_ldap_db_close (void *db);
 enum nss_status _nss_ldap_db_put (void *db,
                              unsigned flags,
-                             const ldap_datum_t * key,
-                             const ldap_datum_t * value);
+                             const struct ldap_datum * key,
+                             const struct ldap_datum * value);
 enum nss_status _nss_ldap_db_get (void *db,
                              unsigned flags,
-                             const ldap_datum_t * key,
-                             ldap_datum_t * value);
+                             const struct ldap_datum * key,
+                             struct ldap_datum * value);
 
 /* Routines for managing namelists */
 
@@ -208,10 +206,10 @@ int _nss_ldap_namelist_find (struct name_list *head, const char *netgroup);
 void _nss_ldap_namelist_destroy (struct name_list **head);
 
 enum nss_status
-_nss_ldap_add_uri (ldap_config_t *result, const char *uri,
+_nss_ldap_add_uri (struct ldap_config *result, const char *uri,
                    char **buffer, size_t *buflen);
 
-ldap_map_selector_t
+enum ldap_map_selector
 _nss_ldap_str2selector (const char *key);
 
 #endif /* _LDAP_NSS_LDAP_UTIL_H */

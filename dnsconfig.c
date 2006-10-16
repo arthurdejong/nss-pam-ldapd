@@ -73,7 +73,7 @@ _nss_ldap_getdnsdn (char *src_domain,
   domain_copy = strdup (src_domain);
   if (domain_copy == NULL)
     {
-      return NSS_TRYAGAIN;
+      return NSS_STATUS_TRYAGAIN;
     }
 
   domain = domain_copy;
@@ -92,7 +92,7 @@ _nss_ldap_getdnsdn (char *src_domain,
       if (*buflen < (size_t) (len + DC_ATTR_AVA_LEN + 1 /* D C = [,|\0] */ ))
         {
           free (domain_copy);
-          return NSS_TRYAGAIN;
+          return NSS_STATUS_TRYAGAIN;
         }
 
       if (domain == NULL)
@@ -121,14 +121,14 @@ _nss_ldap_getdnsdn (char *src_domain,
 
   free (domain_copy);
 
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status
-_nss_ldap_mergeconfigfromdns (ldap_config_t * result,
+_nss_ldap_mergeconfigfromdns (struct ldap_config * result,
                               char **buffer, size_t *buflen)
 {
-  enum nss_status stat = NSS_SUCCESS;
+  enum nss_status stat = NSS_STATUS_SUCCESS;
   struct dns_reply *r;
   struct resource_record *rr;
   char domain[MAXHOSTNAMELEN + 1];
@@ -137,7 +137,7 @@ _nss_ldap_mergeconfigfromdns (ldap_config_t * result,
 
   if ((_res.options & RES_INIT) == 0 && res_init () == -1)
     {
-      return NSS_UNAVAIL;
+      return NSS_STATUS_UNAVAIL;
     }
 
   if (result->ldc_srv_domain != NULL)
@@ -151,7 +151,7 @@ _nss_ldap_mergeconfigfromdns (ldap_config_t * result,
   r = dns_lookup (pDomain, "srv");
   if (r == NULL)
     {
-      return NSS_NOTFOUND;
+      return NSS_STATUS_NOTFOUND;
     }
 
   /* XXX sort by priority */
@@ -165,7 +165,7 @@ _nss_ldap_mergeconfigfromdns (ldap_config_t * result,
             rr->u.srv->port);
 
           stat = _nss_ldap_add_uri (result, uribuf, buffer, buflen);
-          if (stat != NSS_SUCCESS)
+          if (stat != NSS_STATUS_SUCCESS)
             {
               break;
             }
@@ -173,7 +173,7 @@ _nss_ldap_mergeconfigfromdns (ldap_config_t * result,
     }
 
   dns_free_data (r);
-  stat = NSS_SUCCESS;
+  stat = NSS_STATUS_SUCCESS;
 
   if (result->ldc_base == NULL)
     {

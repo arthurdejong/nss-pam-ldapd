@@ -38,6 +38,7 @@
 #include <string.h>
 #include <lber.h>
 #include <ldap.h>
+#include <errno.h>
 
 #ifdef HAVE_ALIASES_H
 #include <aliases.h>
@@ -49,11 +50,11 @@
 #include <port_after.h>
 #endif
 
-static ent_context_t *alias_context = NULL;
+static struct ent_context *alias_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_alias (LDAPMessage * e,
-                       ldap_state_t * pvt,
+                       struct ldap_state * pvt,
                        void *result, char *buffer, size_t buflen)
 {
 
@@ -63,7 +64,7 @@ _nss_ldap_parse_alias (LDAPMessage * e,
   stat =
     _nss_ldap_getrdnvalue (e, ATM (LM_ALIASES, cn), &alias->alias_name,
                            &buffer, &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =

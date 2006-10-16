@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
+#include <errno.h>
 
 #ifdef HAVE_LBER_H
 #include <lber.h>
@@ -87,11 +88,11 @@ struct ether
 };
 
 
-static ent_context_t *ether_context = NULL;
+static struct ent_context *ether_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_ether (LDAPMessage * e,
-                       ldap_state_t * pvt,
+                       struct ldap_state * pvt,
                        void *result, char *buffer, size_t buflen)
 {
   struct ether *ether = (struct ether *) result;
@@ -101,18 +102,18 @@ _nss_ldap_parse_ether (LDAPMessage * e,
 
   stat = _nss_ldap_assign_attrval (e, ATM (LM_ETHERS, cn),
                                    &ether->e_name, &buffer, &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat = _nss_ldap_assign_attrval (e, AT (macAddress), &saddr,
                                    &buffer, &buflen);
 
-  if (stat != NSS_SUCCESS || ((addr = ether_aton (saddr)) == NULL))
-    return NSS_NOTFOUND;
+  if (stat != NSS_STATUS_SUCCESS || ((addr = ether_aton (saddr)) == NULL))
+    return NSS_STATUS_NOTFOUND;
 
   memcpy (&ether->e_addr, addr, sizeof (*addr));
 
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status

@@ -42,6 +42,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #ifdef HAVE_RPC_RPCENT_H
 #include <rpc/rpcent.h>
@@ -63,11 +64,11 @@
 #include <port_after.h>
 #endif
 
-static ent_context_t *rpc_context = NULL;
+static struct ent_context *rpc_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_rpc (LDAPMessage * e,
-                     ldap_state_t * pvt,
+                     struct ldap_state * pvt,
                      void *result, char *buffer, size_t buflen)
 {
 
@@ -78,13 +79,13 @@ _nss_ldap_parse_rpc (LDAPMessage * e,
   stat =
     _nss_ldap_getrdnvalue (e, ATM (LM_RPC, cn), &rpc->r_name, &buffer,
                            &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
     _nss_ldap_assign_attrval (e, AT (oncRpcNumber), &number, &buffer,
                               &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   rpc->r_number = atol (number);
@@ -92,10 +93,10 @@ _nss_ldap_parse_rpc (LDAPMessage * e,
   stat =
     _nss_ldap_assign_attrvals (e, ATM (LM_RPC, cn), rpc->r_name,
                                &rpc->r_aliases, &buffer, &buflen, NULL);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status

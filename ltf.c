@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 #ifdef HAVE_LBER_H
 #include <lber.h>
@@ -99,7 +100,7 @@ enum nss_status _nss_ldap_ltf_thread_init (LDAP * ld)
   /* set ld_errno pointers */
   if (ldap_set_option (ld, LDAP_OPT_THREAD_FN_PTRS, (void *) &tfns) != 0)
     {
-      return NSS_UNAVAIL;
+      return NSS_STATUS_UNAVAIL;
     }
 
   return ltf_tsd_setup ();
@@ -152,14 +153,14 @@ ltf_tsd_setup (void)
 #if defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
   if (__libc_key_create (&key, free) != 0)
     {
-      return NSS_UNAVAIL;
+      return NSS_STATUS_UNAVAIL;
     }
   tsd = (void *) calloc (1, sizeof (struct ldap_error));
   __libc_setspecific (key, tsd);
 #else
   if (pthread_key_create (&key, free) != 0)
     {
-      return NSS_UNAVAIL;
+      return NSS_STATUS_UNAVAIL;
     }
   tsd = pthread_getspecific (key);
   if (tsd != NULL)
@@ -170,7 +171,7 @@ ltf_tsd_setup (void)
   pthread_setspecific (key, tsd);
 #endif /* HAVE_LIBC_LOCK_H || HAVE_BITS_LIBC_LOCK_H */
 
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 static void
@@ -265,15 +266,15 @@ ltf_tsd_setup (void)
   void *tsd;
 
   (void) thr_keycreate (&ltf_key, ltf_destr);
-  tsd = (void *) calloc (1, sizeof (ldap_error_t));
+  tsd = (void *) calloc (1, sizeof (struct ldap_error));
   thr_setspecific (ltf_key, tsd);
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 static void
 ltf_set_ld_error (int err, char *matched, char *errmsg, void *dummy)
 {
-  ldap_error_t *le;
+  struct ldap_error *le;
 
   (void) thr_getspecific (ltf_key, (void **) &le);
   if (le == NULL)
@@ -293,7 +294,7 @@ ltf_set_ld_error (int err, char *matched, char *errmsg, void *dummy)
 static int
 ltf_get_ld_error (char **matched, char **errmsg, void *dummy)
 {
-  ldap_error_t *le = NULL;
+  struct ldap_error *le = NULL;
 
   (void) thr_getspecific (ltf_key, (void **) &le);
   if (le == NULL)
@@ -336,7 +337,7 @@ enum nss_status _nss_ldap_ltf_thread_init (LDAP * ld)
   tfns.ltf_lderrno_arg = NULL;
 
   if (ldap_set_option (ld, LDAP_OPT_THREAD_FN_PTRS, (void *) &tfns) != 0)
-    return NSS_UNAVAIL;
+    return NSS_STATUS_UNAVAIL;
 
   return ltf_tsd_setup ();
 }

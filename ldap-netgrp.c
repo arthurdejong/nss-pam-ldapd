@@ -58,7 +58,7 @@
 #include <port_after.h>
 #endif
 
-static ent_context_t *_ngbe = NULL;
+static struct ent_context *_ngbe = NULL;
 
 
 
@@ -82,7 +82,7 @@ static ent_context_t *_ngbe = NULL;
                                                                               \
       if (result->data == NULL)                                               \
         {                                                                     \
-          stat = NSS_UNAVAIL;                                                 \
+          stat = NSS_STATUS_UNAVAIL;                                                 \
           goto out;                                                           \
         }                                                                     \
                                                                               \
@@ -154,7 +154,7 @@ _nss_ldap_parse_netgr (void *vresultp, char *buffer, size_t buflen)
 
   /* The netgroup either doesn't exist or is empty. */
   if (cp == NULL)
-    return NSS_RETURN;
+    return NSS_STATUS_RETURN;
 
   /* First skip leading spaces. */
   while (isspace ((int) *cp))
@@ -181,34 +181,34 @@ _nss_ldap_parse_netgr (void *vresultp, char *buffer, size_t buflen)
           result->cursor = cp;
           result->first = 0;
 
-          return NSS_SUCCESS;
+          return NSS_STATUS_SUCCESS;
         }
-      return result->first ? NSS_NOTFOUND : NSS_RETURN;
+      return result->first ? NSS_STATUS_NOTFOUND : NSS_STATUS_RETURN;
     }
 
   /* Match host name. */
   host = ++cp;
   while (*cp != ',')
     if (*cp++ == '\0')
-      return result->first ? NSS_NOTFOUND : NSS_RETURN;
+      return result->first ? NSS_STATUS_NOTFOUND : NSS_STATUS_RETURN;
 
   /* Match user name. */
   user = ++cp;
   while (*cp != ',')
     if (*cp++ == '\0')
-      return result->first ? NSS_NOTFOUND : NSS_RETURN;
+      return result->first ? NSS_STATUS_NOTFOUND : NSS_STATUS_RETURN;
 
   /* Match domain name. */
   domain = ++cp;
   while (*cp != ')')
     if (*cp++ == '\0')
-      return result->first ? NSS_NOTFOUND : NSS_RETURN;
+      return result->first ? NSS_STATUS_NOTFOUND : NSS_STATUS_RETURN;
   ++cp;
 
   /* When we got here we have found an entry.  Before we can copy it
      to the private buffer we have to make sure it is big enough.  */
   if (cp - host > buflen)
-    return NSS_TRYAGAIN;
+    return NSS_STATUS_TRYAGAIN;
 
   strncpy (buffer, host, cp - host);
   result->type = triple_val;
@@ -226,12 +226,12 @@ _nss_ldap_parse_netgr (void *vresultp, char *buffer, size_t buflen)
   result->cursor = cp;
   result->first = 0;
 
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 static enum nss_status
 _nss_ldap_load_netgr (LDAPMessage * e,
-                      ldap_state_t * pvt,
+                      struct ldap_state * pvt,
                       void *vresultp, char *buffer, size_t buflen)
 {
   int attr;
@@ -240,7 +240,7 @@ _nss_ldap_load_netgr (LDAPMessage * e,
   char **vals;
   char **valiter;
   struct __netgrent *result = vresultp;
-  enum nss_status stat = NSS_SUCCESS;
+  enum nss_status stat = NSS_STATUS_SUCCESS;
 
   for (attr = 0; attr < 2; attr++)
     {
@@ -316,11 +316,11 @@ _nss_ldap_setnetgrent (char *group, struct __netgrent *result)
 {
   int errnop = 0, buflen = 0;
   char *buffer = (char *) NULL;
-  ldap_args_t a;
-  enum nss_status stat = NSS_SUCCESS;
+  struct ldap_args a;
+  enum nss_status stat = NSS_STATUS_SUCCESS;
 
   if (group[0] == '\0')
-    return NSS_UNAVAIL;
+    return NSS_STATUS_UNAVAIL;
 
   if (result->data != NULL)
     free (result->data);

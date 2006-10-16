@@ -64,11 +64,11 @@
 #include <port_after.h>
 #endif
 
-static ent_context_t *net_context = NULL;
+static struct ent_context *net_context = NULL;
 
 static enum nss_status
 _nss_ldap_parse_net (LDAPMessage * e,
-                     ldap_state_t * pvt,
+                     struct ldap_state * pvt,
                      void *result, char *buffer, size_t buflen)
 {
 
@@ -81,13 +81,13 @@ _nss_ldap_parse_net (LDAPMessage * e,
 
   stat = _nss_ldap_assign_attrval (e, ATM (LM_NETWORKS, cn), &network->n_name,
                                    &buffer, &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
     _nss_ldap_assign_attrval (e, AT (ipNetworkNumber), &tmp, &buffer,
                               &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   network->n_net = inet_network (tmp);
@@ -95,10 +95,10 @@ _nss_ldap_parse_net (LDAPMessage * e,
   stat =
     _nss_ldap_assign_attrvals (e, ATM (LM_NETWORKS, cn), network->n_name,
                                &network->n_aliases, &buffer, &buflen, NULL);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status
@@ -107,7 +107,7 @@ _nss_ldap_getnetbyname_r (const char *name, struct netent * result,
                           int *herrnop)
 {
   enum nss_status status;
-  ldap_args_t a;
+  struct ldap_args a;
 
   LA_INIT (a);
   LA_STRING (a) = name;
@@ -134,8 +134,8 @@ _nss_ldap_getnetbyaddr_r (unsigned long addr, int type,
   struct in_addr in;
   char buf[256];
   int blen;
-  ldap_args_t a;
-  enum nss_status retval = NSS_NOTFOUND;
+  struct ldap_args a;
+  enum nss_status retval = NSS_STATUS_NOTFOUND;
 
   LA_INIT (a);
   LA_TYPE (a) = LA_TYPE_STRING;
@@ -151,9 +151,9 @@ _nss_ldap_getnetbyaddr_r (unsigned long addr, int type,
                                     _nss_ldap_filt_getnetbyaddr,
                                     LM_NETWORKS, _nss_ldap_parse_net);
 
-      if (retval != NSS_SUCCESS)
+      if (retval != NSS_STATUS_SUCCESS)
         {
-          if (retval == NSS_NOTFOUND)
+          if (retval == NSS_STATUS_NOTFOUND)
             {
               if (buf[blen - 2] == '.' && buf[blen - 1] == '\0')
                 {
@@ -164,7 +164,7 @@ _nss_ldap_getnetbyaddr_r (unsigned long addr, int type,
               else
                 {
                   MAP_H_ERRNO (retval, *herrnop);
-                  return NSS_NOTFOUND;
+                  return NSS_STATUS_NOTFOUND;
                 }
             }
           else
@@ -175,12 +175,12 @@ _nss_ldap_getnetbyaddr_r (unsigned long addr, int type,
         }
       else
         {
-          /* retval == NSS_SUCCESS */
+          /* retval == NSS_STATUS_SUCCESS */
           break;
         }
     }
 
-  MAP_H_ERRNO (NSS_SUCCESS, *herrnop);
+  MAP_H_ERRNO (NSS_STATUS_SUCCESS, *herrnop);
 
   return retval;
 }

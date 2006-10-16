@@ -29,6 +29,6 @@
 enum nss_status _nss_ldap_getdnsdn (char *domain,
                                char **rval, char **buffer, size_t * buflen);
 
-enum nss_status _nss_ldap_mergeconfigfromdns (ldap_config_t * result, char **buffer, size_t *buflen);
+enum nss_status _nss_ldap_mergeconfigfromdns (struct ldap_config * result, char **buffer, size_t *buflen);
 
 #endif /* _LDAP_NSS_LDAP_DNSCONFIG_H */

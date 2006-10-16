@@ -26,8 +26,8 @@ INST_GID=root
 endif
 
 EXTRA_DIST = CVSVersionInfo.txt ChangeLog \
-             AUTHORS ANNOUNCE NEWS INSTALL README LICENSE.OpenLDAP COPYING\
-             ldap.conf nss_ldap.spec nsswitch.ldap
+             AUTHORS ANNOUNCE NEWS INSTALL README COPYING \
+             ldap.conf nsswitch.ldap
 
 man_MANS = nss_ldap.5
 
@@ -49,7 +49,6 @@ DEFS = @DEFS@
 if GLIBC
 LIBC_VERS = `ls /lib/libc-*.so | tail -n 1 |sed -e 's/\/lib\/libc-\(.*\)\.so/\1/'`
 NSS_LDAP_LIBC_VERSIONED = libnss_ldap-$(LIBC_VERS).so
-
 NSS_VERS = $(shell ls /lib/libnss_files.so.? | tail -n 1 | sed -e 's/\/lib\/libnss_files\.so\.\(.*\)/\1/')
 NSS_LDAP_NSS_VERSIONED = libnss_ldap.so.$(NSS_VERS)
 endif
@@ -64,11 +63,6 @@ endif
 # recent versions of automake. Any better ideas, let me know.
 LINK = $(NATIVE_LINK) $(GNU_LINK)
 
-if AIX
-else
-
-# Linux, Solaris, other platform install instructions
-
 install-exec-local: nss_ldap.so
 	@$(NORMAL_INSTALL)
 if GLIBC
@@ -82,8 +76,6 @@ else
 	$(mkinstalldirs) $(DESTDIR)$(libdir)
 	$(INSTALL_PROGRAM) -o $(INST_UID) -g $(INST_GID) nss_ldap.so $(DESTDIR)$(libdir)/nss_ldap.so.1
 	(cd $(DESTDIR)$(libdir); rm -f nss_ldap.so; ln -s nss_ldap.so.1 nss_ldap.so)
-endif
-
 endif
 
 install-data-local:

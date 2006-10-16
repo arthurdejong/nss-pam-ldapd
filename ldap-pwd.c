@@ -36,6 +36,7 @@
 #include <sys/param.h>
 #include <string.h>
 #include <pwd.h>
+#include <errno.h>
 
 #ifdef HAVE_LBER_H
 #include <lber.h>
@@ -51,17 +52,13 @@
 #include <port_after.h>
 #endif
 
-static ent_context_t *pw_context = NULL;
+static struct ent_context *pw_context = NULL;
 
-static INLINE enum nss_status _nss_ldap_assign_emptystring (char **valptr,
-                                                       char **buffer,
-                                                       size_t * buflen);
-
-static INLINE enum nss_status
+static inline enum nss_status
 _nss_ldap_assign_emptystring (char **valptr, char **buffer, size_t * buflen)
 {
   if (*buflen < 2)
-    return NSS_TRYAGAIN;
+    return NSS_STATUS_TRYAGAIN;
 
   *valptr = *buffer;
 
@@ -70,12 +67,12 @@ _nss_ldap_assign_emptystring (char **valptr, char **buffer, size_t * buflen)
   (*buffer)++;
   (*buflen)--;
 
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 static enum nss_status
 _nss_ldap_parse_pw (LDAPMessage * e,
-                    ldap_state_t * pvt,
+                    struct ldap_state * pvt,
                     void *result, char *buffer, size_t buflen)
 {
   struct passwd *pw = (struct passwd *) result;
@@ -87,11 +84,11 @@ _nss_ldap_parse_pw (LDAPMessage * e,
 
   tmpbuf[ sizeof(tmpbuf) - 1 ] = '\0';
 
-  if (_nss_ldap_oc_check (e, "shadowAccount") == NSS_SUCCESS)
+  if (_nss_ldap_oc_check (e, "shadowAccount") == NSS_STATUS_SUCCESS)
     {
       /* don't include password for shadowAccount */
       if (buflen < 3)
-        return NSS_TRYAGAIN;
+        return NSS_STATUS_TRYAGAIN;
 
       pw->pw_passwd = buffer;
       strcpy (buffer, "x");
@@ -103,21 +100,21 @@ _nss_ldap_parse_pw (LDAPMessage * e,
       stat =
         _nss_ldap_assign_userpassword (e, ATM (LM_PASSWD, userPassword),
                                        &pw->pw_passwd, &buffer, &buflen);
-      if (stat != NSS_SUCCESS)
+      if (stat != NSS_STATUS_SUCCESS)
         return stat;
     }
 
   stat =
     _nss_ldap_assign_attrval (e, ATM (LM_PASSWD, uid), &pw->pw_name, &buffer,
                               &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   tmp = tmpbuf;
   tmplen = sizeof (tmpbuf) - 1;
   stat =
     _nss_ldap_assign_attrval (e, AT (uidNumber), &uid, &tmp, &tmplen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
   pw->pw_uid = (*uid == '\0') ? UID_NOBODY : (uid_t) atol (uid);
 
@@ -126,40 +123,40 @@ _nss_ldap_parse_pw (LDAPMessage * e,
   stat =
     _nss_ldap_assign_attrval (e, ATM (LM_PASSWD, gidNumber), &gid, &tmp,
                               &tmplen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     return stat;
   pw->pw_gid = (*gid == '\0') ? GID_NOBODY : (gid_t) atol (gid);
 
   stat =
     _nss_ldap_assign_attrval (e, AT (gecos), &pw->pw_gecos, &buffer,
                               &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     {
       pw->pw_gecos = NULL;
       stat =
         _nss_ldap_assign_attrval (e, ATM (LM_PASSWD, cn), &pw->pw_gecos,
                                   &buffer, &buflen);
-      if (stat != NSS_SUCCESS)
+      if (stat != NSS_STATUS_SUCCESS)
         return stat;
     }
 
   stat =
     _nss_ldap_assign_attrval (e, AT (homeDirectory), &pw->pw_dir, &buffer,
                               &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     (void) _nss_ldap_assign_emptystring (&pw->pw_dir, &buffer, &buflen);
 
   stat =
     _nss_ldap_assign_attrval (e, AT (loginShell), &pw->pw_shell, &buffer,
                               &buflen);
-  if (stat != NSS_SUCCESS)
+  if (stat != NSS_STATUS_SUCCESS)
     (void) _nss_ldap_assign_emptystring (&pw->pw_shell, &buffer, &buflen);
 
 #ifdef HAVE_PASSWD_PW_CHANGE
  tmp = NULL;
   stat =
     _nss_ldap_assign_attrval (e, AT (shadowMax), &tmp, &buffer, &buflen);
-  pw->pw_change = (stat == NSS_SUCCESS) ? atol(tmp) * (24*60*60) : 0;
+  pw->pw_change = (stat == NSS_STATUS_SUCCESS) ? atol(tmp) * (24*60*60) : 0;
 
   if (pw->pw_change > 0)
     {
@@ -167,7 +164,7 @@ _nss_ldap_parse_pw (LDAPMessage * e,
       stat =
         _nss_ldap_assign_attrval (e, AT (shadowLastChange), &tmp, &buffer,
                                   &buflen);
-      if (stat == NSS_SUCCESS)
+      if (stat == NSS_STATUS_SUCCESS)
         pw->pw_change += atol(tmp);
       else
         pw->pw_change = 0;
@@ -178,10 +175,10 @@ _nss_ldap_parse_pw (LDAPMessage * e,
   tmp = NULL;
   stat =
     _nss_ldap_assign_attrval (e, AT (shadowExpire), &tmp, &buffer, &buflen);
-  pw->pw_expire = (stat == NSS_SUCCESS) ? atol(tmp) * (24*60*60) : 0;
+  pw->pw_expire = (stat == NSS_STATUS_SUCCESS) ? atol(tmp) * (24*60*60) : 0;
 #endif /* HAVE_PASSWD_PW_EXPIRE */
 
-  return NSS_SUCCESS;
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status
