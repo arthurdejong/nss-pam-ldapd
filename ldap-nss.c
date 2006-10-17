@@ -25,16 +25,6 @@
 
 #include "config.h"
 
-#ifdef HAVE_PORT_BEFORE_H
-#include <port_before.h>
-#endif
-
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -72,14 +62,17 @@
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
-
+#if defined(HAVE_THREAD_H)
+#include <thread.h>
+#elif defined(HAVE_PTHREAD_H)
+#include <pthread.h>
+#endif
 /* Try to handle systems with both SASL libraries installed */
 #if defined(HAVE_SASL_SASL_H) && defined(HAVE_SASL_AUXPROP_REQUEST)
 #include <sasl/sasl.h>
 #elif defined(HAVE_SASL_H)
 #include <sasl.h>
 #endif
-
 #ifdef HAVE_GSSAPI_H
 #include <gssapi.h>
 #elif defined(HAVE_GSSAPI_GSSAPI_KRB5_H)
@@ -88,7 +81,6 @@
 #endif
 
 #include "ldap-nss.h"
-#include "ltf.h"
 #include "util.h"
 #include "dnsconfig.h"
 #include "pagectrl.h"
@@ -1511,15 +1503,6 @@ do_open (void)
     }
 
   cfg = __session.ls_config;
-
-#ifdef LDAP_OPT_THREAD_FN_PTRS
-  if (_nss_ldap_ltf_thread_init (__session.ls_conn) != NSS_STATUS_SUCCESS)
-    {
-      do_close ();
-      debug ("<== do_open (thread initialization failed)");
-      return NSS_STATUS_UNAVAIL;
-    }
-#endif /* LDAP_OPT_THREAD_FN_PTRS */
 
 #if LDAP_SET_REBIND_PROC_ARGS == 3
   ldap_set_rebind_proc (__session.ls_conn, do_rebind, NULL);

@@ -23,16 +23,6 @@
 
 #include "config.h"
 
-#ifdef HAVE_PORT_BEFORE_H
-#include <port_before.h>
-#endif
-
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-
 #include <sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,27 +32,26 @@
 #include <arpa/inet.h>
 #include <arpa/nameser.h>
 #include <resolv.h>
-
 #ifdef HAVE_LBER_H
 #include <lber.h>
 #endif
 #ifdef HAVE_LDAP_H
 #include <ldap.h>
 #endif
-
+#if defined(HAVE_THREAD_H)
+#include <thread.h>
+#elif defined(HAVE_PTHREAD_H)
+#include <pthread.h>
+#endif
 #ifdef INET6
 #include <resolv/mapv4v6addr.h>
-#endif
-
-#ifndef MAXALIASES
-#define MAXALIASES 35
 #endif
 
 #include "ldap-nss.h"
 #include "util.h"
 
-#ifdef HAVE_PORT_AFTER_H
-#include <port_after.h>
+#ifndef MAXALIASES
+#define MAXALIASES 35
 #endif
 
 static struct ent_context *hosts_context = NULL;

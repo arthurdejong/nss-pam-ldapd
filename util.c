@@ -23,33 +23,29 @@
 
 #include "config.h"
 
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-
 #include <stdio.h>
 #include <string.h>
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
 #endif
 #include <stdlib.h>
-
 #include <sys/param.h>
 #include <sys/stat.h>
-
 #include <netdb.h>
 #include <syslog.h>
 #include <string.h>
 #include <fcntl.h>
 #include <assert.h>
-
 #ifdef HAVE_LBER_H
 #include <lber.h>
 #endif
 #ifdef HAVE_LDAP_H
 #include <ldap.h>
+#endif
+#if defined(HAVE_THREAD_H)
+#include <thread.h>
+#elif defined(HAVE_PTHREAD_H)
+#include <pthread.h>
 #endif
 
 #include "ldap-nss.h"
@@ -59,7 +55,6 @@ static enum nss_status do_getrdnvalue (const char *dn,
                                   const char *rdntype,
                                   char **rval, char **buffer,
                                   size_t * buflen);
-
 
 static enum nss_status do_parse_map_statement (struct ldap_config * cfg,
                                           const char *statement,
@@ -72,7 +67,6 @@ static enum nss_status do_searchdescriptorconfig (const char *key,
                                              ** result, char **buffer,
                                              size_t * buflen);
 
-#include <fcntl.h>
 static void *__cache = NULL;
 
 NSS_LDAP_DEFINE_LOCK (__cache_lock);
@@ -216,9 +210,9 @@ _nss_ldap_getrdnvalue (LDAPMessage * entry,
   status = do_getrdnvalue (dn, rdntype, rval, buffer, buflen);
 #ifdef HAVE_LDAP_MEMFREE
   ldap_memfree (dn);
-#else
+#else /* HAVE_LDAP_MEMFREE */
   free (dn);
-#endif /* HAVE_LDAP_MEMFREE */
+#endif /* not HAVE_LDAP_MEMFREE */
 
   /*
    * If examining the DN failed, then pick the nominal first
@@ -308,7 +302,7 @@ do_getrdnvalue (const char *dn,
             }
           ldap_value_free (exploded_rdn);
         }
-#else
+#else /* HAVE_LDAP_EXPLODE_RDN */
       /*
        * we don't have Netscape's ldap_explode_rdn() API,
        * so we fudge it with strtok(). Note that this will
@@ -317,19 +311,19 @@ do_getrdnvalue (const char *dn,
       char *p, *r = *exploded_dn;
 #ifdef HAVE_STRTOK_R
       char *st = NULL;
-#endif
+#endif /* HAVE_STRTOK_R */
 
 #ifndef HAVE_STRTOK_R
       for (p = strtok (r, "+");
-#else
+#else /* HAVE_STRTOK_R */
       for (p = strtok_r (r, "+", &st);
-#endif
+#endif /* not HAVE_STRTOK_R */
            p != NULL;
 #ifndef HAVE_STRTOK_R
            p = strtok (NULL, "+"))
-#else
+#else /* HAVE_STRTOK_R */
            p = strtok_r (NULL, "+", &st))
-#endif
+#endif /* not HAVE_STRTOK_R */
       {
         if (strncasecmp (p, rdnava, rdnavalen) == 0)
           {
@@ -347,7 +341,7 @@ do_getrdnvalue (const char *dn,
         if (r != NULL)
           r = NULL;
       }
-#endif /* HAVE_LDAP_EXPLODE_RDN */
+#endif /* not HAVE_LDAP_EXPLODE_RDN */
     }
 
   if (exploded_dn != NULL)
@@ -405,7 +399,7 @@ do_parse_list (char *values, char ***valptr,
   char *s, **p;
 #ifdef HAVE_STRTOK_R
   char *tok_r;
-#endif
+#endif /* HAVE_STRTOK_R */
   int valcount;
 
   int buflen = *pbuflen;
@@ -432,9 +426,9 @@ do_parse_list (char *values, char ***valptr,
 #ifdef HAVE_STRTOK_R
   for (s = strtok_r(values, ",", &tok_r); s != NULL;
        s = strtok_r(NULL, ",", &tok_r))
-#else
+#else /* HAVE_STRTOK_R */
   for (s = strtok(values, ","); s != NULL; s = strtok(NULL, ","))
-#endif
+#endif /* not HAVE_STRTOK_R */
     {
       int vallen;
       char *elt = NULL;
@@ -604,9 +598,9 @@ enum nss_status _nss_ldap_init_config (struct ldap_config * result)
   result->ldc_rootusesasl = 0;
 #ifdef LDAP_VERSION3
   result->ldc_version = LDAP_VERSION3;
-#else
+#else /* LDAP_VERSION3 */
   result->ldc_version = LDAP_VERSION2;
-#endif /* LDAP_VERSION3 */
+#endif /* not LDAP_VERSION3 */
   result->ldc_timelimit = LDAP_NO_LIMIT;
   result->ldc_bind_timelimit = 30;
   result->ldc_ssl_on = SSL_OFF;
@@ -633,10 +627,10 @@ enum nss_status _nss_ldap_init_config (struct ldap_config * result)
   result->ldc_flags = 0;
 #ifdef RFC2307BIS
   result->ldc_flags |= NSS_LDAP_FLAGS_RFC2307BIS;
-#endif
+#endif /* RFC2307BIS */
 #ifdef PAGE_RESULTS
   result->ldc_flags |= NSS_LDAP_FLAGS_PAGED_RESULTS;
-#endif
+#endif /* PAGE_RESULTS */
   result->ldc_reconnect_tries = LDAP_NSS_TRIES;
   result->ldc_reconnect_sleeptime = LDAP_NSS_SLEEPTIME;
   result->ldc_reconnect_maxsleeptime = LDAP_NSS_MAXSLEEPTIME;

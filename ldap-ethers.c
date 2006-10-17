@@ -23,41 +23,32 @@
 
 #include "config.h"
 
-#ifdef HAVE_PORT_BEFORE_H
-#include <port_before.h>
-#endif
-
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
 #include <errno.h>
-
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <netinet/in.h>
 #ifdef HAVE_LBER_H
 #include <lber.h>
 #endif
 #ifdef HAVE_LDAP_H
 #include <ldap.h>
 #endif
-
-#include <sys/types.h>
-#include <sys/socket.h>
+#if defined(HAVE_THREAD_H)
+#include <thread.h>
+#elif defined(HAVE_PTHREAD_H)
+#include <pthread.h>
+#endif
 #ifdef HAVE_NET_ROUTE_H
 #include <net/route.h>
 #endif
-#include <net/if.h>
-#include <netinet/in.h>
-
 #ifdef HAVE_NETINET_IF_ETHER_H
 #include <netinet/if_ether.h>
 #endif
-
 #ifdef HAVE_NETINET_ETHER_H
 #include <netinet/ether.h>
 #endif
@@ -65,12 +56,8 @@
 #include "ldap-nss.h"
 #include "util.h"
 
-#ifdef HAVE_PORT_AFTER_H
-#include <port_after.h>
-#endif
-
-#ifndef NSS_BUFLEN_ETHERS
 /* for HP-UX */
+#ifndef NSS_BUFLEN_ETHERS
 #define NSS_BUFLEN_ETHERS 1024
 #endif /* NSS_BUFLEN_ETHERS */
 
@@ -80,13 +67,11 @@ struct ether_addr {
 };
 #endif
 
-
 struct ether
 {
   char *e_name;
   struct ether_addr e_addr;
 };
-
 
 static struct ent_context *ether_context = NULL;
 

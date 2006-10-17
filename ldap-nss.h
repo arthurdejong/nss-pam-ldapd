@@ -532,22 +532,6 @@ void _nss_ldap_enter (void);
  */
 void _nss_ldap_leave (void);
 
-#ifdef LDAP_OPT_THREAD_FN_PTRS
-/*
- * Netscape's libldap is threadsafe, but we use a
- * lock before it is initialized
- */
-
-struct ldap_error
-{
-  int le_errno;
-  char *le_matched;
-  char *le_errmsg;
-};
-
-#endif /* LDAP_OPT_THREAD_FN_PTRS */
-
-
 /*
  * _nss_ldap_ent_context_init() is called for each getXXent() call
  * This will acquire the global mutex.

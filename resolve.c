@@ -47,7 +47,6 @@
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
 #endif
-
 #include <resolv.h>
 
 #include "resolve.h"
@@ -79,18 +78,6 @@ string_to_type (const char *name)
       return p->type;
   return -1;
 }
-
-#if 0
-static char *
-type_to_string (int type)
-{
-  struct stot *p = stot;
-  for (p = stot; p->name; p++)
-    if (type == p->type)
-      return p->name;
-  return NULL;
-}
-#endif
 
 void
 dns_free_data (struct dns_reply *r)
@@ -269,8 +256,6 @@ parse_reply (unsigned char *data, int len)
   return r;
 }
 
-
-
 struct dns_reply *
 dns_lookup (const char *domain, const char *type_name)
 {
@@ -312,7 +297,7 @@ dns_free_data (struct dns_reply *r)
 {
 }
 
-#endif
+#endif /* not ( defined(HAVE_RES_SEARCH) && defined(HAVE_DN_EXPAND) ) */
 
 #ifdef TEST
 
@@ -364,4 +349,4 @@ main (int argc, char **argv)
 
   return 0;
 }
-#endif
+#endif /* TEST */

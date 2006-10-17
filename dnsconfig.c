@@ -40,7 +40,6 @@
 #include <arpa/nameser.h>
 #include <resolv.h>
 #include <string.h>
-
 #ifdef HAVE_LBER_H
 #include <lber.h>
 #endif

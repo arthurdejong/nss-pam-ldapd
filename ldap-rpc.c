@@ -29,40 +29,29 @@
 
 #include "config.h"
 
-#ifdef HAVE_PORT_BEFORE_H
-#include <port_before.h>
-#endif
-
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-
 #ifdef HAVE_RPC_RPCENT_H
 #include <rpc/rpcent.h>
 #else
 #include <netdb.h>
 #endif
-
 #ifdef HAVE_LBER_H
 #include <lber.h>
 #endif
 #ifdef HAVE_LDAP_H
 #include <ldap.h>
 #endif
+#if defined(HAVE_THREAD_H)
+#include <thread.h>
+#elif defined(HAVE_PTHREAD_H)
+#include <pthread.h>
+#endif
 
 #include "ldap-nss.h"
 #include "util.h"
-
-#ifdef HAVE_PORT_AFTER_H
-#include <port_after.h>
-#endif
 
 static struct ent_context *rpc_context = NULL;
 

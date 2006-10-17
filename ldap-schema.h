@@ -299,7 +299,6 @@ extern char _nss_ldap_filt_getautomntbyname[];
 /*
  * Map names
  */
-
 #define MP_passwd                 "passwd"
 #define MP_shadow                 "shadow"
 #define MP_group                  "group"

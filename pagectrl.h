@@ -1,4 +1,6 @@
 /*
+   pagectrl.h - provide a replacement ldap_create_page_control() function.
+
    Copyright (C) 1997-2005 Luke Howard
    This file is part of the nss_ldap library.
    Contributed by Luke Howard, <lukeh@padl.com>, 1997.

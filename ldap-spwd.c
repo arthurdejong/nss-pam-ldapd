@@ -25,37 +25,26 @@
 
 #ifdef HAVE_SHADOW_H
 
-#ifdef HAVE_PORT_BEFORE_H
-#include <port_before.h>
-#endif
-
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-
 #include <stdlib.h>
 #include <string.h>
+#include <shadow.h>
+#include <errno.h>
 #ifdef HAVE_PROT_H
 #define _PROT_INCLUDED
 #endif
-#include <shadow.h>
-#include <errno.h>
-
 #ifdef HAVE_LBER_H
 #include <lber.h>
 #endif
 #ifdef HAVE_LDAP_H
 #include <ldap.h>
 #endif
-
-#include "ldap-nss.h"
-
-#ifdef HAVE_PORT_AFTER_H
-#include <port_after.h>
+#if defined(HAVE_THREAD_H)
+#include <thread.h>
+#elif defined(HAVE_PTHREAD_H)
+#include <pthread.h>
 #endif
 
+#include "ldap-nss.h"
 
 static struct ent_context *sp_context = NULL;
 

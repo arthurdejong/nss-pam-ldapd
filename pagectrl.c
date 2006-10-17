@@ -1,4 +1,6 @@
 /*
+   pagectrl.c - provide a replacement ldap_create_page_control() function.
+
    Copyright (C) 2002 Max Caines, All Rights Reserved.
    This file is part of the nss_ldap library.
    Contributed by Max Caines, <Max.Caines@wlv.ac.uk>, April 2002.
@@ -23,13 +25,15 @@
    $Id$
 */
 
+/* TODO: move this to compat/ and add it only when needed */
+/* Note: this is only used in ldap-nss.c */
+
 #include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
 #include <lber.h>
 #include <ldap.h>
 
@@ -37,6 +41,10 @@
 
 #ifndef LDAP_CONTROL_PAGE_OID
 #define LDAP_CONTROL_PAGE_OID           "1.2.840.113556.1.4.319"
+#endif
+
+#ifndef HAVE_LDAP_CREATE_CONTROL
+#error LDAP client library does not support ldap_create_control()
 #endif
 
 #ifndef HAVE_LDAP_CREATE_PAGE_CONTROL
@@ -79,9 +87,6 @@
 
  ---*/
 
-#ifndef HAVE_LDAP_CREATE_CONTROL
-#error LDAP client library does not support ldap_create_control()
-#else
 int
 ldap_create_page_control (LDAP * ld,
                           unsigned long pagesize,
@@ -127,7 +132,6 @@ exit:
   ber_free (ber, 1);
   return (LDAP_ENCODING_ERROR);
 }
-#endif /* HAVE_LDAP_CREATE_CONTROL */
 #endif /* HAVE_LDAP_CREATE_PAGE_CONTROL */
 
 #ifndef HAVE_LDAP_PARSE_PAGE_CONTROL
@@ -154,10 +158,6 @@ exit:
                                            when it is no longer needed.
 
 ---*/
-
-#ifndef HAVE_LDAP_CREATE_CONTROL
-#error LDAP client library does not support ldap_create_control()
-#else
 int
 ldap_parse_page_control (LDAP * ld,
                          LDAPControl ** ctrls,
@@ -223,5 +223,4 @@ foundPageControl:
 
   return (LDAP_SUCCESS);
 }
-#endif /* HAVE_LDAP_CREATE_CONTROL */
 #endif /* HAVE_LDAP_PARSE_PAGE_CONTROL */

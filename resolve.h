@@ -97,7 +97,6 @@ struct resource_record
   struct resource_record *next;
 };
 
-
 #ifndef HAVE_ARPA_NAMESER_H     /* XXX */
 typedef int HEADER;             /* will never be used */
 #endif

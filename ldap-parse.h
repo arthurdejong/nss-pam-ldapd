@@ -35,6 +35,7 @@
         LA_STRING(a) = name; \
         LA_TYPE(a) = LA_TYPE_STRING; \
         return _nss_ldap_getbyname(&a, result, buffer, buflen, errnop, filter, selector, parser);
+
 #define LOOKUP_NUMBER(number, result, buffer, buflen, errnop, filter, selector, parser, req_buflen) \
         struct ldap_args a; \
         if (buflen < req_buflen) { \
@@ -45,6 +46,7 @@
         LA_NUMBER(a) = number; \
         LA_TYPE(a) = LA_TYPE_NUMBER; \
         return _nss_ldap_getbyname(&a, result, buffer, buflen, errnop, filter, selector, parser)
+
 #define LOOKUP_GETENT(key, result, buffer, buflen, errnop, filter, selector, parser, req_buflen) \
         if (buflen < req_buflen) { \
                 *errnop = ERANGE; \
@@ -56,6 +58,7 @@
         if (_nss_ldap_ent_context_init(&key) == NULL) \
                 return NSS_STATUS_UNAVAIL; \
         return NSS_STATUS_SUCCESS
+
 #define LOOKUP_ENDENT(key) \
         _nss_ldap_enter(); \
         _nss_ldap_ent_context_release(key); \

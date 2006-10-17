@@ -23,16 +23,6 @@
 
 #include "config.h"
 
-#ifdef HAVE_PORT_BEFORE_H
-#include <port_before.h>
-#endif
-
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,20 +31,20 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-
 #ifdef HAVE_LBER_H
 #include <lber.h>
 #endif
 #ifdef HAVE_LDAP_H
 #include <ldap.h>
 #endif
+#if defined(HAVE_THREAD_H)
+#include <thread.h>
+#elif defined(HAVE_PTHREAD_H)
+#include <pthread.h>
+#endif
 
 #include "ldap-nss.h"
 #include "util.h"
-
-#ifdef HAVE_PORT_AFTER_H
-#include <port_after.h>
-#endif
 
 /* Linux only for now */
 struct ldap_automount_context {
@@ -67,9 +57,6 @@ struct ldap_automount_context {
   size_t lac_dn_count;
   size_t lac_dn_index;
 };
-
-typedef struct ldap_automount_context ldap_automount_context_t;
-
 
 static enum nss_status
 _nss_ldap_parse_automount (LDAPMessage * e,
@@ -95,11 +82,11 @@ _nss_ldap_parse_automount (LDAPMessage * e,
 }
 
 enum nss_status
-_nss_ldap_am_context_alloc(ldap_automount_context_t **pContext)
+_nss_ldap_am_context_alloc(struct ldap_automount_context **pContext)
 {
-  ldap_automount_context_t *context;
+  struct ldap_automount_context *context;
 
-  context = (ldap_automount_context_t *)malloc (sizeof(*context));
+  context = (struct ldap_automount_context *)malloc (sizeof(*context));
   if (context == NULL)
     {
       return NSS_STATUS_TRYAGAIN;
@@ -133,9 +120,9 @@ _nss_ldap_am_context_alloc(ldap_automount_context_t **pContext)
 }
 
 void
-_nss_ldap_am_context_free(ldap_automount_context_t **pContext)
+_nss_ldap_am_context_free(struct ldap_automount_context **pContext)
 {
-  ldap_automount_context_t *context;
+  struct ldap_automount_context *context;
   size_t i;
 
   context = *pContext;
@@ -175,7 +162,7 @@ am_context_add_dn (LDAPMessage * e,
                    struct ldap_state * pvt,
                    void *result, char *buffer, size_t buflen)
 {
-  ldap_automount_context_t *context = (ldap_automount_context_t *) result;
+  struct ldap_automount_context *context = (struct ldap_automount_context *) result;
   char *dn;
 
   dn = _nss_ldap_get_dn (e);
@@ -210,10 +197,10 @@ am_context_add_dn (LDAPMessage * e,
 }
 
 enum nss_status
-_nss_ldap_am_context_init(const char *mapname, ldap_automount_context_t **pContext)
+_nss_ldap_am_context_init(const char *mapname, struct ldap_automount_context **pContext)
 {
   enum nss_status stat;
-  ldap_automount_context_t *context = NULL;
+  struct ldap_automount_context *context = NULL;
   const char *no_attrs[] = { NULL };
   struct ldap_args a;
   struct ent_context *key = NULL;
@@ -265,7 +252,7 @@ _nss_ldap_am_context_init(const char *mapname, ldap_automount_context_t **pConte
 
 enum nss_status _nss_ldap_setautomntent(const char *mapname, void **private)
 {
-  ldap_automount_context_t *context = NULL;
+  struct ldap_automount_context *context = NULL;
   enum nss_status stat;
 
   debug ("==> _nss_ldap_setautomntent");
@@ -300,7 +287,7 @@ enum nss_status _nss_ldap_getautomntent_r(void *private, const char **key, const
                                      char *buffer, size_t buflen, int *errnop)
 {
   enum nss_status stat;
-  ldap_automount_context_t *context = (ldap_automount_context_t *)private;
+  struct ldap_automount_context *context = (struct ldap_automount_context *)private;
   struct ldap_args a;
   char **keyval[2];
 
@@ -348,7 +335,7 @@ enum nss_status _nss_ldap_getautomntent_r(void *private, const char **key, const
 
 enum nss_status _nss_ldap_endautomntent(void **private)
 {
-  ldap_automount_context_t **pContext = (ldap_automount_context_t **)private;
+  struct ldap_automount_context **pContext = (struct ldap_automount_context **)private;
 
   debug ("==> _nss_ldap_endautomntent");
 
@@ -368,7 +355,7 @@ enum nss_status _nss_ldap_getautomntbyname_r(void *private, const char *key,
                                         char *buffer, size_t buflen, int *errnop)
 {
   enum nss_status stat = NSS_STATUS_NOTFOUND;
-  ldap_automount_context_t *context = (ldap_automount_context_t *)private;
+  struct ldap_automount_context *context = (struct ldap_automount_context *)private;
   struct ldap_args a;
   char **keyval[2];
   size_t i;
