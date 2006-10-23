@@ -476,10 +476,10 @@ struct ldap_state
 struct ent_context
 {
   struct ldap_state ec_state;        /* eg. for services */
-  int ec_msgid;                 /* message ID */
-  LDAPMessage *ec_res;          /* result chain */
-  struct ldap_service_search_descriptor *ec_sd;      /* current sd */
-  struct berval *ec_cookie;     /* cookie for paged searches */
+  int ec_msgid;                      /* message ID */
+  LDAPMessage *ec_res;               /* result chain */
+  struct ldap_service_search_descriptor *ec_sd;  /* current sd */
+  struct berval *ec_cookie;          /* cookie for paged searches */
 };
 
 struct name_list
