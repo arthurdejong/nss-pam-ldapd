@@ -1,23 +1,25 @@
 # Makefile.am - use automake to generate Makefile.in
+#
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West consulting
 # Copyright (C) 2006 Arthur de Jong
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public
+# License as published by the Free Software Foundation; either
+# version 2 of the License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful,
+# This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Library General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+# You should have received a copy of the GNU Library General Public
+# License along with this library; if not, write to the Free
+# Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+# MA 02110-1301 USA
 
-noinst_PROGRAMS = nss_ldap.so
+noinst_PROGRAMS = nss_ldap.so nslcd ndlscdcl
 INST_UID=root
 if AIX
 INST_GID=system
@@ -38,6 +40,16 @@ nss_ldap_so_SOURCES = ldap-nss.c ldap-pwd.c ldap-grp.c ldap-netgrp.c ldap-rpc.c 
         dnsconfig.c pagectrl.c
 
 nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
+
+nslcd_SOURCES = nslcd.c nslcd.h \
+        nslcd-server.c nslcd-server.h \
+        log.c log.h \
+        xmalloc.c xmalloc.h \
+        ldap-nss.c ldap-schema.c util.c resolve.c \
+        dnsconfig.c pagectrl.c \
+        ldap-pwd.c
+
+ndlscdcl_SOURCES = nslcd-client.c nslcd-client.h nslcd.h
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
 NSS_LDAP_PATH_ROOTPASSWD = @NSS_LDAP_PATH_ROOTPASSWD@
