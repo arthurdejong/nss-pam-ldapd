@@ -47,17 +47,17 @@
         LA_TYPE(a) = LA_TYPE_NUMBER; \
         return _nss_ldap_getbyname(&a, result, buffer, buflen, errnop, filter, selector, parser)
 
+#define LOOKUP_SETENT(key) \
+        if (_nss_ldap_ent_context_init(&key) == NULL) \
+                return NSS_STATUS_UNAVAIL; \
+        return NSS_STATUS_SUCCESS
+
 #define LOOKUP_GETENT(key, result, buffer, buflen, errnop, filter, selector, parser, req_buflen) \
         if (buflen < req_buflen) { \
                 *errnop = ERANGE; \
                 return NSS_STATUS_TRYAGAIN; \
         } \
         return _nss_ldap_getent(&key, result, buffer, buflen, errnop, filter, selector, parser)
-
-#define LOOKUP_SETENT(key) \
-        if (_nss_ldap_ent_context_init(&key) == NULL) \
-                return NSS_STATUS_UNAVAIL; \
-        return NSS_STATUS_SUCCESS
 
 #define LOOKUP_ENDENT(key) \
         _nss_ldap_enter(); \

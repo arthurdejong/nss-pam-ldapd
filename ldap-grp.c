@@ -45,6 +45,7 @@
 #include "ldap-nss.h"
 #include "util.h"
 
+/* the context to use for {set,get,end}grent() calls */
 static struct ent_context *gr_context = NULL;
 
 #ifdef HAVE_USERSEC_H
@@ -1099,11 +1100,6 @@ enum nss_status _nss_ldap_setgrent (void)
   LOOKUP_SETENT (gr_context);
 }
 
-enum nss_status _nss_ldap_endgrent (void)
-{
-  LOOKUP_ENDENT (gr_context);
-}
-
 enum nss_status
 _nss_ldap_getgrent_r (struct group *result,
                       char *buffer, size_t buflen, int *errnop)
@@ -1111,4 +1107,9 @@ _nss_ldap_getgrent_r (struct group *result,
   LOOKUP_GETENT (gr_context, result, buffer, buflen, errnop,
                  _nss_ldap_filt_getgrent, LM_GROUP, _nss_ldap_parse_gr,
                  LDAP_NSS_BUFLEN_GROUP);
+}
+
+enum nss_status _nss_ldap_endgrent (void)
+{
+  LOOKUP_ENDENT (gr_context);
 }
