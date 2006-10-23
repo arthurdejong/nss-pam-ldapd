@@ -60,7 +60,7 @@ _nss_ldap_assign_emptystring (char **valptr, char **buffer, size_t * buflen)
   return NSS_STATUS_SUCCESS;
 }
 
-static enum nss_status
+enum nss_status
 _nss_ldap_parse_pw (LDAPMessage * e,
                     struct ldap_state * pvt,
                     void *result, char *buffer, size_t buflen)
@@ -209,3 +209,4 @@ _nss_ldap_getpwent_r (struct passwd *result,
                  _nss_ldap_filt_getpwent, LM_PASSWD, _nss_ldap_parse_pw,
                  LDAP_NSS_BUFLEN_DEFAULT);
 }
+
