@@ -50,6 +50,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
+AC_PROG_RANLIB
 
 dnl
 dnl --enable-rfc2307bis is now deprecated; if this option is set,
@@ -356,5 +357,5 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <ldap.h>]], [[ldap_set_rebind_proc(0, 0, 0);]])],[nss_ldap_cv_ldap_set_rebind_proc=3],[nss_ldap_cv_ldap_set_rebind_proc=2]) ])
 AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS, $nss_ldap_cv_ldap_set_rebind_proc,[Define to the number of arguments to ldap_set_rebindproc.])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile nss/Makefile])
 AC_OUTPUT
