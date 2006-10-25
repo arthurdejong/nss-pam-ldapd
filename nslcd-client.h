@@ -27,14 +27,21 @@
 
 #include "nslcd.h"
 
+/* Extra request results. */
+#define NSLCD_RS_SMALLBUF 100 /* buffer too small */
+
 /* returns a socket to the server or NULL on error (see errno),
    socket should be closed with fclose() */
 FILE *nslcd_client_open(void);
 
 /* write a request message, returns <0 in case of errors */
-int nslcd_client_writerequest(FILE *sock,int type,char *name,size_t count);
+int nslcd_client_writerequest(FILE *sock,int type,const char *name,size_t count);
 
-/* read a response message */
-int nslcd_client_readresponse(FILE *sock,void *buf,size_t bufsize);
+/* read a response message, returns NSLCD_RS_* */
+int nslcd_client_readresponse(FILE *sock,int type);
+
+/* read a response parameter, returns NSLCD_RS_*, which can include
+   the extra client status values */
+int nslcd_client_readdate(FILE *sock,int type,void *buf,size_t bufsize);
 
 #endif /* not _NSLCD_CLIENT_H */

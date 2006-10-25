@@ -19,26 +19,21 @@
 # Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
 # MA 02110-1301 USA
 
-noinst_PROGRAMS = nss_ldap.so nslcd ndlscdcl
-INST_UID=root
-if AIX
-INST_GID=system
-else
-INST_GID=root
-endif
+SUBDIRS = nss
+
+noinst_PROGRAMS = nss_ldap.so nslcd testnss testnslcd
+
+man_MANS = nss_ldap.5
 
 EXTRA_DIST = CVSVersionInfo.txt ChangeLog \
              AUTHORS ANNOUNCE NEWS INSTALL README COPYING \
              ldap.conf nsswitch.ldap
-
-man_MANS = nss_ldap.5
 
 nss_ldap_so_SOURCES = ldap-nss.c ldap-pwd.c ldap-grp.c ldap-netgrp.c ldap-rpc.c \
         ldap-hosts.c ldap-network.c ldap-proto.c ldap-spwd.c \
         ldap-alias.c ldap-service.c ldap-schema.c ldap-ethers.c \
         ldap-automount.c util.c resolve.c \
         dnsconfig.c pagectrl.c
-
 nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
 
 nslcd_SOURCES = nslcd.c nslcd.h \
@@ -49,7 +44,10 @@ nslcd_SOURCES = nslcd.c nslcd.h \
         dnsconfig.c pagectrl.c \
         ldap-pwd.c
 
-ndlscdcl_SOURCES = nslcd-client.c nslcd-client.h nslcd.h
+testnslcd_SOURCES = testnslcd.c nslcd-client.c nslcd-client.h nslcd.h
+
+testnss_SOURCES = testnss.c
+testnss_LDADD = nss/libnss.a
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
 NSS_LDAP_PATH_ROOTPASSWD = @NSS_LDAP_PATH_ROOTPASSWD@
@@ -65,15 +63,21 @@ NSS_VERS = $(shell ls /lib/libnss_files.so.? | tail -n 1 | sed -e 's/\/lib\/libn
 NSS_LDAP_NSS_VERSIONED = libnss_ldap.so.$(NSS_VERS)
 endif
 
-if USE_NATIVE_LINKER
-NATIVE_LINK = $(nss_ldap_so_LD) $(AM_LDFLAGS) -o $@
-else
-GNU_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-endif
+##if USE_NATIVE_LINKER
+##NATIVE_LINK = $(nss_ldap_so_LD) $(AM_LDFLAGS) -o $@
+##else
+##GNU_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+##endif
+### This is horrible but appears to be the only way to work with
+### recent versions of automake. Any better ideas, let me know.
+##LINK = $(NATIVE_LINK) $(GNU_LINK)
 
-# This is horrible but appears to be the only way to work with
-# recent versions of automake. Any better ideas, let me know.
-LINK = $(NATIVE_LINK) $(GNU_LINK)
+INST_UID=root
+if AIX
+INST_GID=system
+else
+INST_GID=root
+endif
 
 install-exec-local: nss_ldap.so
 	@$(NORMAL_INSTALL)

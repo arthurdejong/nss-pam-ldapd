@@ -76,7 +76,7 @@ FILE *nslcd_client_open()
 
 
 /* write a request message, returns <0 in case of errors */
-int nslcd_client_writerequest(FILE *sock,int type,char *name,size_t count)
+int nslcd_client_writerequest(FILE *sock,int type,const char *name,size_t count)
 {
   int32_t tmpint32;
   /* see nslcd.h for protocol definition */
@@ -92,41 +92,13 @@ int nslcd_client_writerequest(FILE *sock,int type,char *name,size_t count)
 
 
 /* read a response message */
-int nslcd_client_readresponse(FILE *sock,void *buf,size_t bufsize)
+int nslcd_client_readresponse(FILE *sock,int type)
 {
+
+
+
+
   /* see nslcd.h for protocol definition */
   /* TODO: validate */
   return -1; /* not implemented */
-}
-
-
-/* the main program... , for now just for testing */
-int main(int argc,char *argv[])
-{
-  FILE *sock;
-  char buf[1024];
-  /* open socket */
-  if ((sock=nslcd_client_open())==NULL)
-  {
-    fprintf(stderr,"test: socket unavailable: %s\n", strerror(errno));
-    return 1;
-  }
-  /* write request */
-  if (nslcd_client_writerequest(sock,NSLCD_RT_GETPWBYNAME,"aart",6)<0)
-  {
-    fprintf(stderr,"test: write failed: %s\n", strerror(errno));
-    return 1;
-  }
-  /* read response */
-  if (nslcd_client_readresponse(sock,buf,1024)<0)
-  {
-    fprintf(stderr,"test: read failed: %s\n", strerror(errno));
-    return 1;
-  }
-  /* print results */
- 
-  
-  /* close */
-  fclose(sock);
-  return 0;
 }

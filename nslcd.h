@@ -35,9 +35,99 @@
    A response looks like:
      int32 NSLCD_VERSION
      int32 NSLCD_RT_* (the original request type)
+     int32 NSLCD_RS_* (response code)
+   Followed by the data for the response (if call was sucessful)
+     int32 NSLCD_DT_BUF (data type)
      int32 length(result)
      ... result
-     int32 NSLCD_MAGIC
+*/
+
+/*
+  These are the data types that can be transferred in the protocol.
+  They are defined as macros so they can be expanded to code
+  later on.
+
+  LDF_STRING:
+    int32 length
+    ...   length bytes
+  LDF_TYPE:
+    sizeof(type)  value
+  LDF_LOOP:
+    int32 number
+      number times the containing thing(s)
+*/
+
+#define LDF_ALIAS \
+  LDF_STRING(ALIAS_NAME) \
+  LDF_LOOP( \
+    LDF_STRING(ALIAS_RCPT) \
+  )
+
+/* AUTOMOUNT - TBD */
+
+#define LDF_ETHER \
+  LDF_TYPE(ETHER_ADDR,"123456")
+
+#define LDF_GROUP \
+  LDF_STRING(GROUP_NAME) \
+  LDF_STRING(GROUP_PASSWD) \
+  LDF_TYPE(GROUP_GIF,gid_t) \
+  LDF_LOOP( \
+    LDF_STRING(GROUP_MEMBER) \
+  )
+
+/* HOSTS - TBD - gethostbyname - struct hostent - gethostbyaddr - struct in_addr */
+
+/* NETGROUP - TBD */
+
+/* NETWORKS - TBD - struct netent */
+
+#define LDF_PASSWD \
+  LDF_STRING(PASSWD_NAME) \
+  LDF_STRING(PASSWD_PASSWD) \
+  LDF_TYPE(PASSWD_UID,uid_t) \
+  LDF_TYPE(PASSWD_GID,gid_t) \
+  LDF_STRING(PASSWD_GECOS) \
+  LDF_STRING(PASSWD_DIR) \
+  LDF_STRING(PASSWD_SHELL)
+
+/* PROTOCOLS - TBD - getprotobyname - struct protoent */
+
+#define LDF_RPC \
+  LDF_STRING(RPC_NAME) \
+  LDF_LOOP( \
+    LDF_STRING(RPC_ALIAS) \
+  ) \
+  LDF_TYPE(RPC_NUMBER,int32_t)
+
+/* SERVICES - TBD - getservbyname - struct servent */
+
+/* SHADOW - TBD - getspnam - struct spwd */
+/*
+   Data units:
+
+functions for
+read_str(FILE *fp, buf, ptr, &result, size):
+  - read string length from stream
+  - check if there is enough room in buffer:
+    - no: fail (maybe do some rollback)
+  - read string in buffer
+  - increment prt with string size
+  - store pointer in &result or NULL on error
+read_int(FILE *fp, int*i)
+  - read int32
+  - store in &i
+
+code like:
+
+  strcut foobar
+  foobar.field=0
+  return read_str(fp..,&foobar.field,...) ||
+         read_int(...)
+
+return NSLCD_RS_*
+
+
 */
 
 /* TODO: generate this file from a .in file */
@@ -56,21 +146,21 @@
 #define NSLCD_MAGIC 0x8642
 
 /* Request types. */
-#define NSLCD_RT_GETPWBYNAME  	    	1
-#define NSLCD_RT_GETPWBYUID		2
-#define NSLCD_RT_GETGRBYNAME		3
-#define NSLCD_RT_GETGRBYGID		4
-#define NSLCD_RT_GETHOSTBYNAME		5
-#define NSLCD_RT_GETHOSTBYNAMEv6	7
-#define NSLCD_RT_GETHOSTBYADDR		8
-#define NSLCD_RT_GETHOSTBYADDRv6	9
-#define NSLCD_RT_LASTDBREQ           	NSLCD_RT_GETHOSTBYADDRv6
+#define NSLCD_RT_GETPWBYNAME            1001
+#define NSLCD_RT_GETPWBYUID             1002
+#define NSLCD_RT_GETGRBYNAME            2003
+#define NSLCD_RT_GETGRBYGID             2004
+#define NSLCD_RT_GETHOSTBYNAME          3005
+#define NSLCD_RT_GETHOSTBYADDR          3008
+
+/* Response data types */
+#define NSLCD_DT_BUF                    1000 /* any data, blob */
+#define NSLCD_DT_HEADER                 2001 /* initial response header */
+#define NSLCD_DT_PASSWD                 3001 /* struct passwd */
 
 /* Request result. */
-#define NSLCD_RS_TRYAGAIN               1
-#define NSLCD_RS_UNAVAIL                2
-#define NSLCD_RS_NOTFOUND               3
-#define NSLCD_RS_SUCCESS                0
-#define NSLCD_RS_RETURN                 4
+#define NSLCD_RS_UNAVAIL                2 /* sevice unavailable */
+#define NSLCD_RS_NOTFOUND               3 /* key was not found */
+#define NSLCD_RS_SUCCESS                0 /* everything ok */
 
 #endif /* not _NSLCD_H */
