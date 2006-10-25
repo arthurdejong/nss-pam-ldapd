@@ -48,10 +48,9 @@
 
 static struct ent_context *sp_context = NULL;
 
-static enum nss_status
-_nss_ldap_parse_sp (LDAPMessage * e,
-                    struct ldap_state * pvt,
-                    void *result, char *buffer, size_t buflen)
+static enum nss_status _nss_ldap_parse_sp(LDAPMessage *e,
+                    struct ldap_state *pvt,
+                    void *result,char *buffer,size_t buflen)
 {
   struct spwd *sp = (struct spwd *) result;
   enum nss_status stat;
@@ -106,32 +105,30 @@ _nss_ldap_parse_sp (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
-_nss_ldap_getspnam_r (const char *name,
-                      struct spwd * result,
-                      char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_ldap_getspnam_r(const char *name,
+                      struct spwd *result,
+                      char *buffer,size_t buflen,int *errnop)
 {
-  LOOKUP_NAME (name, result, buffer, buflen, errnop, _nss_ldap_filt_getspnam,
-               LM_SHADOW, _nss_ldap_parse_sp, LDAP_NSS_BUFLEN_DEFAULT);
+  LOOKUP_NAME(name, result, buffer, buflen, errnop, _nss_ldap_filt_getspnam,
+              LM_SHADOW, _nss_ldap_parse_sp, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-enum nss_status _nss_ldap_setspent (void)
+enum nss_status _nss_ldap_setspent(void)
 {
-  LOOKUP_SETENT (sp_context);
+  LOOKUP_SETENT(sp_context);
 }
 
-enum nss_status _nss_ldap_endspent (void)
+enum nss_status _nss_ldap_getspent_r(struct spwd *result,
+                      char *buffer,size_t buflen,int *errnop)
 {
-  LOOKUP_ENDENT (sp_context);
+  LOOKUP_GETENT(sp_context, result, buffer, buflen, errnop,
+                _nss_ldap_filt_getspent, LM_SHADOW, _nss_ldap_parse_sp,
+                LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-enum nss_status
-_nss_ldap_getspent_r (struct spwd *result,
-                      char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_ldap_endspent(void)
 {
-  LOOKUP_GETENT (sp_context, result, buffer, buflen, errnop,
-                 _nss_ldap_filt_getspent, LM_SHADOW, _nss_ldap_parse_sp,
-                 LDAP_NSS_BUFLEN_DEFAULT);
+  LOOKUP_ENDENT(sp_context);
 }
 
 #endif /* HAVE_SHADOW_H */

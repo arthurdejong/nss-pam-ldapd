@@ -55,8 +55,7 @@
 
 static struct ent_context *rpc_context = NULL;
 
-static enum nss_status
-_nss_ldap_parse_rpc (LDAPMessage * e,
+static enum nss_status _nss_ldap_parse_rpc (LDAPMessage * e,
                      struct ldap_state * pvt,
                      void *result, char *buffer, size_t buflen)
 {
@@ -88,39 +87,36 @@ _nss_ldap_parse_rpc (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
-_nss_ldap_getrpcbyname_r (const char *name, struct rpcent *result,
-                          char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_ldap_getrpcbyname_r(const char *name,struct rpcent *result,
+                          char *buffer,size_t buflen,int *errnop)
 {
-  LOOKUP_NAME (name, result, buffer, buflen, errnop,
-               _nss_ldap_filt_getrpcbyname, LM_RPC, _nss_ldap_parse_rpc,
-               LDAP_NSS_BUFLEN_DEFAULT);
+  LOOKUP_NAME(name, result, buffer, buflen, errnop,
+              _nss_ldap_filt_getrpcbyname, LM_RPC, _nss_ldap_parse_rpc,
+              LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-enum nss_status
-_nss_ldap_getrpcbynumber_r (int number, struct rpcent *result,
-                            char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_ldap_getrpcbynumber_r(int number,struct rpcent *result,
+                            char *buffer,size_t buflen,int *errnop)
 {
-  LOOKUP_NUMBER (number, result, buffer, buflen, errnop,
-                 _nss_ldap_filt_getrpcbynumber, LM_RPC, _nss_ldap_parse_rpc,
-                 LDAP_NSS_BUFLEN_DEFAULT);
+  LOOKUP_NUMBER(number, result, buffer, buflen, errnop,
+                _nss_ldap_filt_getrpcbynumber, LM_RPC, _nss_ldap_parse_rpc,
+                LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-     enum nss_status _nss_ldap_setrpcent (void)
+enum nss_status _nss_ldap_setrpcent(void)
 {
-  LOOKUP_SETENT (rpc_context);
+  LOOKUP_SETENT(rpc_context);
 }
 
-     enum nss_status _nss_ldap_endrpcent (void)
-{
-  LOOKUP_ENDENT (rpc_context);
-}
-
-enum nss_status
-_nss_ldap_getrpcent_r (struct rpcent *result, char *buffer, size_t buflen,
+enum nss_status _nss_ldap_getrpcent_r(struct rpcent *result,char *buffer,size_t buflen,
                        int *errnop)
 {
-  LOOKUP_GETENT (rpc_context, result, buffer, buflen, errnop,
-                 _nss_ldap_filt_getrpcent, LM_RPC, _nss_ldap_parse_rpc,
-                 LDAP_NSS_BUFLEN_DEFAULT);
+  LOOKUP_GETENT(rpc_context,result,buffer,buflen,errnop,
+                _nss_ldap_filt_getrpcent,LM_RPC,_nss_ldap_parse_rpc,
+                LDAP_NSS_BUFLEN_DEFAULT);
+}
+
+enum nss_status _nss_ldap_endrpcent(void)
+{
+  LOOKUP_ENDENT(rpc_context);
 }

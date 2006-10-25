@@ -81,7 +81,7 @@ _nss_ldap_parse_automount (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
+static enum nss_status
 _nss_ldap_am_context_alloc(struct ldap_automount_context **pContext)
 {
   struct ldap_automount_context *context;
@@ -119,7 +119,7 @@ _nss_ldap_am_context_alloc(struct ldap_automount_context **pContext)
   return NSS_STATUS_SUCCESS;
 }
 
-void
+static void
 _nss_ldap_am_context_free(struct ldap_automount_context **pContext)
 {
   struct ldap_automount_context *context;
@@ -196,7 +196,7 @@ am_context_add_dn (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
+static enum nss_status
 _nss_ldap_am_context_init(const char *mapname, struct ldap_automount_context **pContext)
 {
   enum nss_status stat;

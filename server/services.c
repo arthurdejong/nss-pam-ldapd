@@ -55,12 +55,11 @@
 
 static struct ent_context *serv_context = NULL;
 
-static enum nss_status
-_nss_ldap_parse_serv (LDAPMessage * e,
-                      struct ldap_state * state,
-                      void *result, char *buffer, size_t buflen)
+static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
+                      struct ldap_state *state,
+                      void *result,char *buffer,size_t buflen)
 {
-  struct servent *service = (struct servent *) result;
+  struct servent *service = (struct servent *)result;
   char *port;
   enum nss_status stat = NSS_STATUS_SUCCESS;
 
@@ -171,11 +170,10 @@ _nss_ldap_parse_serv (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
-_nss_ldap_getservbyname_r (const char *name,
+enum nss_status _nss_ldap_getservbyname_r(const char *name,
                            const char *proto,
-                           struct servent * result,
-                           char *buffer, size_t buflen, int *errnop)
+                           struct servent *result,
+                           char *buffer,size_t buflen,int *errnop)
 {
   struct ldap_args a;
 
@@ -190,11 +188,10 @@ _nss_ldap_getservbyname_r (const char *name,
                               LM_SERVICES, _nss_ldap_parse_serv);
 }
 
-enum nss_status
-_nss_ldap_getservbyport_r (int port,
+enum nss_status _nss_ldap_getservbyport_r(int port,
                            const char *proto,
-                           struct servent * result,
-                           char *buffer, size_t buflen, int *errnop)
+                           struct servent *result,
+                           char *buffer,size_t buflen,int *errnop)
 {
   struct ldap_args a;
 
@@ -209,21 +206,20 @@ _nss_ldap_getservbyport_r (int port,
                               LM_SERVICES, _nss_ldap_parse_serv);
 }
 
-     enum nss_status _nss_ldap_setservent (void)
+enum nss_status _nss_ldap_setservent(void)
 {
-  LOOKUP_SETENT (serv_context);
+  LOOKUP_SETENT(serv_context);
 }
 
-     enum nss_status _nss_ldap_endservent (void)
-{
-  LOOKUP_ENDENT (serv_context);
-}
-
-enum nss_status
-_nss_ldap_getservent_r (struct servent *result, char *buffer, size_t buflen,
+enum nss_status _nss_ldap_getservent_r(struct servent *result,char *buffer,size_t buflen,
                         int *errnop)
 {
-  LOOKUP_GETENT (serv_context, result, buffer, buflen, errnop,
-                 _nss_ldap_filt_getservent, LM_SERVICES,
-                 _nss_ldap_parse_serv, LDAP_NSS_BUFLEN_DEFAULT);
+  LOOKUP_GETENT(serv_context, result, buffer, buflen, errnop,
+                _nss_ldap_filt_getservent, LM_SERVICES,
+                _nss_ldap_parse_serv, LDAP_NSS_BUFLEN_DEFAULT);
+}
+
+enum nss_status _nss_ldap_endservent(void)
+{
+  LOOKUP_ENDENT(serv_context);
 }

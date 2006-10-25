@@ -68,7 +68,7 @@ static struct ent_context *_ngbe = NULL;
                                                                               \
       if (result->data == NULL)                                               \
         {                                                                     \
-          stat = NSS_STATUS_UNAVAIL;                                                 \
+          stat = NSS_STATUS_UNAVAIL;                                          \
           goto out;                                                           \
         }                                                                     \
                                                                               \
@@ -282,8 +282,7 @@ out:
   return stat;
 }
 
-enum nss_status
-_nss_ldap_endnetgrent (struct __netgrent * result)
+enum nss_status _nss_ldap_endnetgrent(struct __netgrent *result)
 {
   if (result->data != NULL)
     {
@@ -296,8 +295,7 @@ _nss_ldap_endnetgrent (struct __netgrent * result)
   LOOKUP_ENDENT (_ngbe);
 }
 
-enum nss_status
-_nss_ldap_setnetgrent (char *group, struct __netgrent *result)
+enum nss_status _nss_ldap_setnetgrent(char *group,struct __netgrent *result)
 {
   int errnop = 0, buflen = 0;
   char *buffer = (char *) NULL;
@@ -324,9 +322,8 @@ _nss_ldap_setnetgrent (char *group, struct __netgrent *result)
   LOOKUP_SETENT (_ngbe);
 }
 
-enum nss_status
-_nss_ldap_getnetgrent_r (struct __netgrent *result,
-                         char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,
+                         char *buffer,size_t buflen,int *errnop)
 {
   return _nss_ldap_parse_netgr (result, buffer, buflen);
 }

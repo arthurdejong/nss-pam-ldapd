@@ -122,12 +122,12 @@ _nss_ldap_getntohost_r (struct ether_addr * addr, struct ether * result,
                _nss_ldap_parse_ether, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-     enum nss_status _nss_ldap_setetherent (void)
+enum nss_status _nss_ldap_setetherent (void)
 {
   LOOKUP_SETENT (ether_context);
 }
 
-     enum nss_status _nss_ldap_endetherent (void)
+enum nss_status _nss_ldap_endetherent (void)
 {
   LOOKUP_ENDENT (ether_context);
 }

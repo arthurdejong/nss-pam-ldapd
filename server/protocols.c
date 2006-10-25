@@ -51,9 +51,8 @@
 
 static struct ent_context *proto_context = NULL;
 
-static enum nss_status
-_nss_ldap_parse_proto (LDAPMessage * e,
-                       struct ldap_state * pvt,
+static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
+                       struct ldap_state *pvt,
                        void *result, char *buffer, size_t buflen)
 {
 
@@ -84,39 +83,36 @@ _nss_ldap_parse_proto (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
-_nss_ldap_getprotobyname_r (const char *name, struct protoent *result,
-                            char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_ldap_getprotobyname_r(const char *name,struct protoent *result,
+                            char *buffer,size_t buflen,int *errnop)
 {
   LOOKUP_NAME (name, result, buffer, buflen, errnop,
                _nss_ldap_filt_getprotobyname, LM_PROTOCOLS,
                _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-enum nss_status
-_nss_ldap_getprotobynumber_r (int number, struct protoent *result,
-                              char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_ldap_getprotobynumber_r(int number,struct protoent *result,
+                              char *buffer,size_t buflen,int *errnop)
 {
   LOOKUP_NUMBER (number, result, buffer, buflen, errnop,
                  _nss_ldap_filt_getprotobynumber, LM_PROTOCOLS,
                  _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-     enum nss_status _nss_ldap_setprotoent (void)
+enum nss_status _nss_ldap_setprotoent(void)
 {
   LOOKUP_SETENT (proto_context);
 }
 
-     enum nss_status _nss_ldap_endprotoent (void)
-{
-  LOOKUP_ENDENT (proto_context);
-}
-
-enum nss_status
-_nss_ldap_getprotoent_r (struct protoent *result, char *buffer, size_t buflen,
-                         int *errnop)
+enum nss_status _nss_ldap_getprotoent_r(struct protoent *result,char *buffer,size_t buflen,
+                        int *errnop)
 {
   LOOKUP_GETENT (proto_context, result, buffer, buflen, errnop,
                  _nss_ldap_filt_getprotoent, LM_PROTOCOLS,
                  _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
+}
+
+enum nss_status _nss_ldap_endprotoent(void)
+{
+  LOOKUP_ENDENT (proto_context);
 }

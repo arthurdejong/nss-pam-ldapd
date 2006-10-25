@@ -893,24 +893,10 @@ ng_chase_backlink (const char ** membersOf, ldap_initgroups_args_t * lia)
   return stat;
 }
 
-enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group,
-                                     long int *start, long int *size,
-                                     gid_t ** groupsp, long int limit,
-                                     int *errnop);
-
-enum nss_status
-_nss_ldap_initgroups (const char *user, gid_t group, long int *start,
-                      long int *size, gid_t * groups, long int limit,
-                      int *errnop)
-{
-  return (_nss_ldap_initgroups_dyn (user, group, start, size, &groups, limit,
-                                    errnop));
-}
 
 #define NSS_LDAP_INITGROUPS_FUNCTION    "_nss_ldap_initgroups_dyn"
 
-  enum nss_status
-_nss_ldap_initgroups_dyn (const char *user, gid_t group, long int *start,
+enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long int *start,
                           long int *size, gid_t ** groupsp, long int limit,
                           int *errnop)
 {
@@ -1077,8 +1063,15 @@ _nss_ldap_initgroups_dyn (const char *user, gid_t group, long int *start,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
-_nss_ldap_getgrnam_r (const char *name,
+enum nss_status _nss_ldap_initgroups (const char *user, gid_t group, long int *start,
+                      long int *size, gid_t * groups, long int limit,
+                      int *errnop)
+{
+  return (_nss_ldap_initgroups_dyn (user, group, start, size, &groups, limit,
+                                    errnop));
+}
+
+enum nss_status _nss_ldap_getgrnam_r (const char *name,
                       struct group * result,
                       char *buffer, size_t buflen, int *errnop)
 {
@@ -1086,8 +1079,7 @@ _nss_ldap_getgrnam_r (const char *name,
                LM_GROUP, _nss_ldap_parse_gr, LDAP_NSS_BUFLEN_GROUP);
 }
 
-enum nss_status
-_nss_ldap_getgrgid_r (gid_t gid,
+enum nss_status _nss_ldap_getgrgid_r (gid_t gid,
                       struct group *result,
                       char *buffer, size_t buflen, int *errnop)
 {
@@ -1100,8 +1092,7 @@ enum nss_status _nss_ldap_setgrent (void)
   LOOKUP_SETENT (gr_context);
 }
 
-enum nss_status
-_nss_ldap_getgrent_r (struct group *result,
+enum nss_status _nss_ldap_getgrent_r (struct group *result,
                       char *buffer, size_t buflen, int *errnop)
 {
   LOOKUP_GETENT (gr_context, result, buffer, buflen, errnop,

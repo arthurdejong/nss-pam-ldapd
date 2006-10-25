@@ -219,8 +219,7 @@ _nss_ldap_parse_hostv6 (LDAPMessage * e,
 }
 #endif
 
-enum nss_status
-_nss_ldap_gethostbyname2_r (const char *name, int af, struct hostent * result,
+enum nss_status _nss_ldap_gethostbyname2_r (const char *name, int af, struct hostent * result,
                             char *buffer, size_t buflen, int *errnop,
                             int *h_errnop)
 {
@@ -249,8 +248,7 @@ _nss_ldap_gethostbyname2_r (const char *name, int af, struct hostent * result,
   return status;
 }
 
-enum nss_status
-_nss_ldap_gethostbyname_r (const char *name, struct hostent * result,
+enum nss_status _nss_ldap_gethostbyname_r (const char *name, struct hostent * result,
                            char *buffer, size_t buflen, int *errnop,
                            int *h_errnop)
 {
@@ -263,8 +261,7 @@ _nss_ldap_gethostbyname_r (const char *name, struct hostent * result,
                                      errnop, h_errnop);
 }
 
-enum nss_status
-_nss_ldap_gethostbyaddr_r (struct in_addr * addr, int len, int type,
+enum nss_status _nss_ldap_gethostbyaddr_r (struct in_addr * addr, int len, int type,
                            struct hostent * result, char *buffer,
                            size_t buflen, int *errnop, int *h_errnop)
 {
@@ -298,18 +295,17 @@ _nss_ldap_gethostbyaddr_r (struct in_addr * addr, int len, int type,
   return status;
 }
 
-     enum nss_status _nss_ldap_sethostent (void)
+enum nss_status _nss_ldap_sethostent (void)
 {
   LOOKUP_SETENT (hosts_context);
 }
 
-     enum nss_status _nss_ldap_endhostent (void)
+enum nss_status _nss_ldap_endhostent (void)
 {
   LOOKUP_ENDENT (hosts_context);
 }
 
-enum nss_status
-_nss_ldap_gethostent_r (struct hostent * result, char *buffer, size_t buflen,
+enum nss_status _nss_ldap_gethostent_r (struct hostent * result, char *buffer, size_t buflen,
                         int *errnop, int *h_errnop)
 {
   enum nss_status status;

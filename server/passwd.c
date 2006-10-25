@@ -44,8 +44,8 @@
 
 static struct ent_context *pw_context = NULL;
 
-static inline enum nss_status
-_nss_ldap_assign_emptystring (char **valptr, char **buffer, size_t * buflen)
+static inline enum nss_status _nss_ldap_assign_emptystring(
+               char **valptr, char **buffer, size_t * buflen)
 {
   if (*buflen < 2)
     return NSS_STATUS_TRYAGAIN;
@@ -60,8 +60,8 @@ _nss_ldap_assign_emptystring (char **valptr, char **buffer, size_t * buflen)
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
-_nss_ldap_parse_pw (LDAPMessage * e,
+/* FIXME: make this non-static for now for testing purposes */
+enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
                     struct ldap_state * pvt,
                     void *result, char *buffer, size_t buflen)
 {
@@ -171,42 +171,36 @@ _nss_ldap_parse_pw (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
-_nss_ldap_getpwnam_r (const char *name,
-                      struct passwd * result,
-                      char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_ldap_getpwnam_r(const char *name,
+                      struct passwd *result,
+                      char *buffer,size_t buflen,int *errnop)
 {
   LOOKUP_NAME (name, result, buffer, buflen, errnop, _nss_ldap_filt_getpwnam,
                LM_PASSWD, _nss_ldap_parse_pw, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-enum nss_status
-_nss_ldap_getpwuid_r (uid_t uid,
+enum nss_status _nss_ldap_getpwuid_r(uid_t uid,
                       struct passwd *result,
-                      char *buffer, size_t buflen, int *errnop)
+                      char *buffer,size_t buflen,int *errnop)
 {
   LOOKUP_NUMBER (uid, result, buffer, buflen, errnop, _nss_ldap_filt_getpwuid,
                  LM_PASSWD, _nss_ldap_parse_pw, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-enum nss_status
-_nss_ldap_setpwent (void)
+enum nss_status _nss_ldap_setpwent(void)
 {
   LOOKUP_SETENT (pw_context);
 }
 
-enum nss_status
-_nss_ldap_endpwent (void)
-{
-  LOOKUP_ENDENT (pw_context);
-}
-
-enum nss_status
-_nss_ldap_getpwent_r (struct passwd *result,
-                      char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_ldap_getpwent_r(struct passwd *result,
+                      char *buffer,size_t buflen,int *errnop)
 {
   LOOKUP_GETENT (pw_context, result, buffer, buflen, errnop,
                  _nss_ldap_filt_getpwent, LM_PASSWD, _nss_ldap_parse_pw,
                  LDAP_NSS_BUFLEN_DEFAULT);
 }
 
+enum nss_status _nss_ldap_endpwent(void)
+{
+  LOOKUP_ENDENT (pw_context);
+}

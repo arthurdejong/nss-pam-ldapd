@@ -91,9 +91,8 @@ _nss_ldap_parse_net (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
-_nss_ldap_getnetbyname_r (const char *name, struct netent * result,
-                          char *buffer, size_t buflen, int *errnop,
+enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,
+                          char *buffer,size_t buflen,int *errnop,
                           int *herrnop)
 {
   enum nss_status status;
@@ -116,10 +115,9 @@ _nss_ldap_getnetbyname_r (const char *name, struct netent * result,
   return status;
 }
 
-enum nss_status
-_nss_ldap_getnetbyaddr_r (unsigned long addr, int type,
-                          struct netent * result, char *buffer, size_t buflen,
-                          int *errnop, int *herrnop)
+enum nss_status _nss_ldap_getnetbyaddr_r(unsigned long addr,int type,
+                          struct netent *result,char *buffer,size_t buflen,
+                          int *errnop,int *herrnop)
 {
   struct in_addr in;
   char buf[256];
@@ -175,22 +173,15 @@ _nss_ldap_getnetbyaddr_r (unsigned long addr, int type,
   return retval;
 }
 
-     enum nss_status _nss_ldap_setnetent (void)
+enum nss_status _nss_ldap_setnetent(void)
 {
   LOOKUP_SETENT (net_context);
 }
 
-     enum nss_status _nss_ldap_endnetent (void)
-{
-  LOOKUP_ENDENT (net_context);
-}
-
-enum nss_status
-_nss_ldap_getnetent_r (struct netent * result, char *buffer, size_t buflen,
-                       int *errnop, int *herrnop)
+enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t buflen,
+                       int *errnop,int *herrnop)
 {
   enum nss_status status;
-
   status = _nss_ldap_getent (&net_context,
                              result,
                              buffer,
@@ -200,6 +191,10 @@ _nss_ldap_getnetent_r (struct netent * result, char *buffer, size_t buflen,
                              LM_NETWORKS, _nss_ldap_parse_net);
 
   MAP_H_ERRNO (status, *herrnop);
-
   return status;
+}
+
+enum nss_status _nss_ldap_endnetent(void)
+{
+  LOOKUP_ENDENT (net_context);
 }
