@@ -1,22 +1,24 @@
 /*
+   passwd.c - password entry lookup routines
+
    Copyright (C) 1997-2005 Luke Howard
-   This file is part of the nss_ldap library.
-   Contributed by Luke Howard, <lukeh@padl.com>, 1997.
+   Copyright (C) 2006 West Consulting
+   Copyright (C) 2006 Arthur de Jong
 
-   The nss_ldap library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Library General Public License as
-   published by the Free Software Foundation; either version 2 of the
-   License, or (at your option) any later version.
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
 
-   The nss_ldap library is distributed in the hope that it will be useful,
+   This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Library General Public License for more details.
 
    You should have received a copy of the GNU Library General Public
-   License along with the nss_ldap library; see the file COPYING.LIB.  If not,
-   write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+   MA 02110-1301 USA
 */
 
 #include "config.h"
@@ -41,6 +43,8 @@
 
 #include "ldap-nss.h"
 #include "util.h"
+#include "nslcd-server.h"
+#include "common.h"
 
 static struct ent_context *pw_context = NULL;
 
@@ -60,8 +64,7 @@ static inline enum nss_status _nss_ldap_assign_emptystring(
   return NSS_STATUS_SUCCESS;
 }
 
-/* FIXME: make this non-static for now for testing purposes */
-enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
+static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
                     struct ldap_state * pvt,
                     void *result, char *buffer, size_t buflen)
 {
@@ -171,12 +174,48 @@ enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
+#define PASSWD_NAME   result.pw_name
+#define PASSWD_PASSWD result.pw_passwd
+#define PASSWD_UID    result.pw_uid
+#define PASSWD_GID    result.pw_gid
+#define PASSWD_GECOS  result.pw_gecos
+#define PASSWD_DIR    result.pw_dir
+#define PASSWD_SHELL  result.pw_shell
+
+#define LDF_STRING(field) \
+  WRITE_STRING(fp,field)
+
+#define LDF_TYPE(field,type) \
+  WRITE(fp,&(field),sizeof(type))
+
 enum nss_status _nss_ldap_getpwnam_r(const char *name,
                       struct passwd *result,
                       char *buffer,size_t buflen,int *errnop)
 {
   LOOKUP_NAME (name, result, buffer, buflen, errnop, _nss_ldap_filt_getpwnam,
                LM_PASSWD, _nss_ldap_parse_pw, LDAP_NSS_BUFLEN_DEFAULT);
+}
+
+/* the caller should take care of opening and closing the stream */
+int nslcd_getpwnam(FILE *fp,const char *name)
+{
+  int32_t tmpint32;
+  /* these are here for now until we rewrite the LDAP code */
+  struct passwd result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* do the LDAP request */
+  retv=nss2nslcd(_nss_ldap_getpwnam_r(name,&result,buffer,1024,&errnop));
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_RT_GETPWBYNAME);
+  WRITE_INT32(fp,retv);
+  /* write the record */
+  LDF_PASSWD;
+  fflush(fp);
+  /* we're done */
+  return 0;
 }
 
 enum nss_status _nss_ldap_getpwuid_r(uid_t uid,
