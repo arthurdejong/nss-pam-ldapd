@@ -19,14 +19,6 @@
 # MA 02110-1301 USA
 
 noinst_LIBRARIES = libnss.a
-noinst_PROGRAMS = libnss_ldap.so
 
 libnss_a_SOURCES = common.c common.h exports.h ../nslcd-client.h \
                    passwd.c aliases.c
-libnss_a_LIBADD = ../nslcd-client.o
-
-libnss_ldap_so_SOURCES = 
-libnss_ldap_so_LDADD = libnss.a
-libnss_ldap_so_LDFLAGS = -shared -Wl,-soname,libnss_ldap.so.2
-
-#      gcc -shared -o libnss_NAME.so.2 -Wl,-soname,libnss_NAME.so.2 OBJECTS
