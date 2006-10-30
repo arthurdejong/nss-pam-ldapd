@@ -30,11 +30,6 @@
 #include <errno.h>
 #include <fcntl.h>
 
-/* temp added for ldap requests */
-#include <pwd.h>
-#include <ldap.h>
-#include "ldap-nss.h"
-
 #include "nslcd-server.h"
 #include "log.h"
 
@@ -121,98 +116,53 @@ int nslcd_server_open(void)
   return sock;
 }
 
-/* FIXME: the following write can fail with EINTR */
-
-/* helper marco for writes, bails out on any write problems */
-#define WRITE(sock, buf, count) \
-  if (write(sock, buf, count) < (count)) \
-    { close(sock); return -1; }
-
-/* helper macro for writing 32-bit integer values, uses tmpint32 as
-   temporary value (should be defined by caller) */
-#define WRITE_INT32(sock, i) \
-  tmpint32 = (int32_t)(i); \
-  WRITE(sock, &tmpint32, sizeof(int32_t))
-
-/* FIXME: the following read can fail with EINTR */
-
-#define READ(sock, buf, count) \
-  if (read(sock, buf, count) < (count)) \
-    { close(sock); return -1; }
-
-/* helper macro for writing 32-bit integer values, uses tmpint32 as
-   temporary value (should be defined by caller) */
-#define READ_INT32(sock, i) \
-  READ(sock, &tmpint32, sizeof(int32_t)); \
-  i = tmpint32;
-  
- 
-/* temp decl here */
-enum nss_status
-_nss_ldap_parse_pw (LDAPMessage * e,
-                    struct ldap_state * pvt,
-                    void *result, char *buffer, size_t buflen);
- 
- 
- 
-/* handle a connection */
-static int nslcd_server_handlerequest(int type, char *key)
+/* read a request message, returns <0 in case of errors,
+   this function closes the socket */
+int nslcd_server_handlerequest(int sock)
 {
-  struct passwd result;
-  enum nss_status s;
-  char buffer[1024];
-  int errnop;
-  struct ldap_args args;
-
-  printf("request id=%d key=%s\n", (int)type, key);  
-
+  int32_t tmpint32, tmp2, type;
+  size_t sz;
+  char *key;
+  FILE *fp;
+  /* create a stream object */
+  if ((fp=fdopen(sock,"w+"))==NULL)
+  {
+    close(sock);
+    return -1;
+  }
+  /* read the protocol version */
+  READ_INT32(fp,tmp2);
+  if (tmp2 != NSLCD_VERSION)
+  {
+    fclose(fp);
+    log_log(LOG_DEBUG,"wrong nslcd version id (%d)", tmp2);
+    return -1;
+  }
+  /* read the request type */
+  READ_INT32(fp,type);
+  /* read the request key */
+  /* TODO: probably move this to the request specific function */
+  READ_INT32(fp,sz);
+  key=(char *)malloc(sz+1);
+  if (key==NULL)
+    return -1; /* FIXME: report memory allocation errors */
+  READ(fp,key,sz);
+  key[sz]=0;
+  /* log request */
+  log_log(LOG_DEBUG,"request id=%d key=%s",(int)type,key);  
+  /* handle request */
   switch (type)
   {
     case NSLCD_RT_GETPWBYNAME:
-      LA_INIT(args);
-      LA_STRING(args) = key;
-      LA_TYPE(args) = LA_TYPE_STRING;
-      s=_nss_ldap_getbyname(&args,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwnam,LM_PASSWD,_nss_ldap_parse_pw);
-      /* TODO: print s, result and buffer */
+      log_log(LOG_DEBUG,"GETPWBYNAME(%s)",key);
+      nslcd_getpwnam(fp,key);
       break;
     default:
       return -1;
   }
   
+  fclose(fp);  
+  
   return 0; /* success */
+
 }
-
-/* read a request message, returns <0 in case of errors,
-   on errors, socket is closed by callee */
-int nslcd_server_readrequest(int sock)
-{
-  int32_t tmpint32, tmp2, type;
-  size_t count;
-  char *key;
-  READ_INT32(sock, tmp2);
-  if (tmp2 != NSLCD_VERSION)
-    return -1; /* FIXME: report protocol error */
-  READ_INT32(sock, type);
-  READ_INT32(sock, count);
-  key = (char *)malloc(count+1);
-  if (key == NULL)
-    return -1; /* FIXME: report memory allocation errors */
-  READ(sock, key, count);
-  key[count]=0;
-  READ_INT32(sock, tmp2);
-  if (tmp2 != NSLCD_MAGIC)
-    return -1; /* FIXME: report protocol error */  
-
-  /* pass the request to the request handler */
-  return nslcd_server_handlerequest(type, key);
-}
-
-/* read a response message */
-int nslcd_client_writeresponse(int sock, void *buf)
-{
-  /* TODO: validate */
-  return -1; /* not implemented */
-}
-
-
-/* probably use fwrite and fiends */

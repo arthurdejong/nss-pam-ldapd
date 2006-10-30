@@ -21,7 +21,7 @@
 
 SUBDIRS = nss server
 
-noinst_PROGRAMS = nss_ldap.so nslcd testnss testnslcd
+noinst_PROGRAMS = nss_ldap.so nslcd testnss
 
 man_MANS = nss_ldap.5
 
@@ -29,11 +29,8 @@ EXTRA_DIST = CVSVersionInfo.txt ChangeLog \
              AUTHORS ANNOUNCE NEWS INSTALL README COPYING \
              ldap.conf nsswitch.ldap
 
-nss_ldap_so_SOURCES = ldap-nss.c ldap-pwd.c ldap-grp.c ldap-netgrp.c ldap-rpc.c \
-        ldap-hosts.c ldap-network.c ldap-proto.c ldap-spwd.c \
-        ldap-alias.c ldap-service.c ldap-schema.c ldap-ethers.c \
-        ldap-automount.c util.c resolve.c \
-        dnsconfig.c pagectrl.c
+nss_ldap_so_SOURCES = nslcd-client.c nslcd-client.h nslcd.h
+nss_ldap_so_LDADD = nss/libnss.a
 nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
 
 nslcd_SOURCES = nslcd.c nslcd.h \
@@ -41,12 +38,10 @@ nslcd_SOURCES = nslcd.c nslcd.h \
         log.c log.h \
         xmalloc.c xmalloc.h \
         ldap-nss.c ldap-schema.c util.c resolve.c \
-        dnsconfig.c pagectrl.c \
-        ldap-pwd.c
+        dnsconfig.c pagectrl.c
+nslcd_LDADD = server/libserver.a
 
-testnslcd_SOURCES = testnslcd.c nslcd-client.c nslcd-client.h nslcd.h
-
-testnss_SOURCES = testnss.c
+testnss_SOURCES = testnss.c nslcd-client.c nslcd-client.h nslcd.h
 testnss_LDADD = nss/libnss.a
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@

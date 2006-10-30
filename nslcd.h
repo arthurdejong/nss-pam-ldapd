@@ -29,7 +29,6 @@
      int32 NSLCD_RT_*
      int32 length(name)
      ...   name
-     int32 NSLCD_MAGIC
    (any messages not fitting this should be ignored
     closing the connection)
    A response looks like:
@@ -140,10 +139,6 @@ return NSLCD_RS_*
 
 /* The current version of the protocol. */
 #define NSLCD_VERSION 1
-
-/* The magic number passed back and forth. This is to reducte the change of
-   handling non-valid requests (e.g. some random data). */
-#define NSLCD_MAGIC 0x8642
 
 /* Request types. */
 #define NSLCD_RT_GETPWBYNAME            1001

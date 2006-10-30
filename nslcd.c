@@ -75,17 +75,13 @@ static volatile int nslcd_exitsignal=0;
 /* the server socket used for communication */
 static int nslcd_serversocket=-1;
 
-/* the number of seconds to sleep when no more
-   connections can be listened for */
-#define SLEEPSECS 5
-
 
 /* display version information */
 static void display_version(FILE *fp)
 {
   fprintf(fp,"%s\n",PACKAGE_STRING);
   fprintf(fp,"Written by Luke Howard and Arthur de Jong.\n\n");
-  fprintf(fp,"Copyright (C) 1997-2006 Luke Howard and Arthur de Jong\n"
+  fprintf(fp,"Copyright (C) 1997-2006 Luke Howard, Arthur de Jong and West Consulting\n"
              "This is free software; see the source for copying conditions.  There is NO\n"
              "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
@@ -249,9 +245,9 @@ static void handleconnection(int csock)
   log_log(LOG_INFO,"connection from pid=%d uid=%d gid=%d",
                    (int)client.pid,(int)client.uid,(int)client.gid);
 
-  /* FIXME: implement handling of connection */
+  /* FIXME: pass credentials along? */
 
-  nslcd_server_readrequest(csock);
+  nslcd_server_handlerequest(csock);
   
 }
 
@@ -352,6 +348,19 @@ int main(int argc,char *argv[])
   /* clear the environment */
   /* TODO:implement */
 
+
+
+  /* prevent hostname lookups through recursive calls to nslcd */
+  /* Overwrite service selection for database DBNAME using specification
+   in STRING.
+   This function should only be used by system programs which have to
+   work around non-existing services (e.e., while booting).
+   Attention: Using this function repeatedly will slowly eat up the
+   whole memory since previous selection data cannot be freed.  */
+/*extern int __nss_configure_lookup (__const char *__dbname,
+                                   __const char *__string) __THROW;*/
+
+
   /* check if we are already running */
   /* FIXME: implement */
 
@@ -450,11 +459,8 @@ int main(int argc,char *argv[])
   install_sighandler(SIGHUP, sigexit_handler);
   install_sighandler(SIGINT, sigexit_handler);
   install_sighandler(SIGQUIT,sigexit_handler);
-  install_sighandler(SIGILL, sigexit_handler);
   install_sighandler(SIGABRT,sigexit_handler);
-  install_sighandler(SIGSEGV,sigexit_handler);
   install_sighandler(SIGPIPE,sigexit_handler);
-  install_sighandler(SIGALRM,sigexit_handler);
   install_sighandler(SIGTERM,sigexit_handler);
   install_sighandler(SIGUSR1,sigexit_handler);
   install_sighandler(SIGUSR2,sigexit_handler);

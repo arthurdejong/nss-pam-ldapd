@@ -35,13 +35,9 @@
 FILE *nslcd_client_open(void);
 
 /* write a request message, returns <0 in case of errors */
-int nslcd_client_writerequest(FILE *sock,int type,const char *name,size_t count);
+int nslcd_client_writerequest(FILE *fp,int type,const char *name,size_t count);
 
-/* read a response message, returns NSLCD_RS_* */
-int nslcd_client_readresponse(FILE *sock,int type);
-
-/* read a response parameter, returns NSLCD_RS_*, which can include
-   the extra client status values */
-int nslcd_client_readdate(FILE *sock,int type,void *buf,size_t bufsize);
+/* read a response message, return a NSLCD_RS_* status */
+int nslcd_client_readresponse(FILE *fp,int type);
 
 #endif /* not _NSLCD_CLIENT_H */
