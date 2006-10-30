@@ -42,21 +42,16 @@ enum nss_status _nss_ldap_getpwnam_r(const char *name,struct passwd *result,char
   FILE *fp;
   size_t bufptr=0;
   int32_t sz;
-
   /* open socket */
   OPEN_SOCK(fp);
-
   /* write request to nslcd */
   if (nslcd_client_writerequest(fp,NSLCD_RT_GETPWBYNAME,name,strlen(name)))
     ERROR_OUT(fp,NSS_STATUS_UNAVAIL,ENOENT);
-  
   /* read response header */
   if ((sz=nslcd_client_readresponse(fp,NSLCD_RT_GETPWBYNAME))!=NSLCD_RS_SUCCESS)
     ERROR_OUT(fp,nslcd2nss(sz),ENOENT);
-  
   /* read struct passwd */
   LDF_PASSWD;
-  
   /* close socket and we're done */
   fclose(fp);
   return NSS_STATUS_SUCCESS;
