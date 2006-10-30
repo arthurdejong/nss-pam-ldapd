@@ -29,31 +29,30 @@
 #include "common.h"
 
 /* Macros for expanding the LDF_PASSWD macro. */
-#define PASSWD_NAME   res.pw_name
-#define PASSWD_PASSWD res.pw_passwd
-#define PASSWD_UID    res.pw_uid
-#define PASSWD_GID    res.pw_gid
-#define PASSWD_GECOS  res.pw_gecos
-#define PASSWD_DIR    res.pw_dir
-#define PASSWD_SHELL  res.pw_shell
+#define PASSWD_NAME   result->pw_name
+#define PASSWD_PASSWD result->pw_passwd
+#define PASSWD_UID    result->pw_uid
+#define PASSWD_GID    result->pw_gid
+#define PASSWD_GECOS  result->pw_gecos
+#define PASSWD_DIR    result->pw_dir
+#define PASSWD_SHELL  result->pw_shell
 
 enum nss_status _nss_ldap_getpwnam_r(const char *name,struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
   FILE *fp;
   size_t bufptr=0;
-  struct passwd res;
   int32_t sz;
 
   /* open socket */
-  OPEN_SOCK
+  OPEN_SOCK(fp);
 
   /* write request to nslcd */
   if (nslcd_client_writerequest(fp,NSLCD_RT_GETPWBYNAME,name,strlen(name)))
-    ERROR_OUT(NSS_STATUS_UNAVAIL,ENOENT);
+    ERROR_OUT(fp,NSS_STATUS_UNAVAIL,ENOENT);
   
   /* read response header */
   if ((sz=nslcd_client_readresponse(fp,NSLCD_RT_GETPWBYNAME))!=NSLCD_RS_SUCCESS)
-    ERROR_OUT(nslcd2nss(sz),ENOENT)
+    ERROR_OUT(fp,nslcd2nss(sz),ENOENT);
   
   /* read struct passwd */
   LDF_PASSWD;
