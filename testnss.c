@@ -18,7 +18,7 @@ static char *nssstatus(enum nss_status retv)
   }
 }
 
-void printpasswd(struct passwd *pw)
+static void printpasswd(struct passwd *pw)
 {
   printf("struct passwd {\n"
          "  pw_name=\"%s\",\n"
@@ -41,19 +41,36 @@ int main(int argc,char *argv[])
   enum nss_status res;
   int errnocp;
 
-  
-
-
-
-  res=_nss_ldap_getpwnam_r("aart",&result,buffer,1024,&errnocp);
-
+  /* test getpwnam() */
+  printf("TEST getpwnam()\n");
+  res=_nss_ldap_getpwnam_r("arthur",&result,buffer,1024,&errnocp);
   printf("errno=%d:%s\n",(int)errno,strerror(errno));
   printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
   printf("status=%s\n",nssstatus(res));
   printpasswd(&result);
-  
-  /* TODO: check response */
 
+  /* test getpwuid() */
+  printf("TEST getpwuid()\n");
+  res=_nss_ldap_getpwuid_r(180,&result,buffer,1024,&errnocp);
+  printf("errno=%d:%s\n",(int)errno,strerror(errno));
+  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  printf("status=%s\n",nssstatus(res));
+  printpasswd(&result);
+
+  /* test {set,get,end}pwent() */
+  printf("TEST {set,get,end}pwent()\n");
+  _nss_ldap_setpwent();
+  while ((res=_nss_ldap_getpwent_r(&result,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
+  {
+    printf("errno=%d:%s\n",(int)errno,strerror(errno));
+    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+    printf("status=%s\n",nssstatus(res));
+    printpasswd(&result);
+  }
+  printf("errno=%d:%s\n",(int)errno,strerror(errno));
+  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  printf("status=%s\n",nssstatus(res));
+  _nss_ldap_endpwent();
 
   return 0;
 }

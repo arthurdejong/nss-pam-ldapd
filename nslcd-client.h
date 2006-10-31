@@ -26,18 +26,32 @@
 #include <stdio.h>
 
 #include "nslcd.h"
-
-/* Extra request results. */
-#define NSLCD_RS_SMALLBUF 100 /* buffer too small */
+#include "nslcd-common.h"
 
 /* returns a socket to the server or NULL on error (see errno),
    socket should be closed with fclose() */
 FILE *nslcd_client_open(void);
 
-/* write a request message, returns <0 in case of errors */
-int nslcd_client_writerequest(FILE *fp,int type,const char *name,size_t count);
+/* open a client socket */
+#define OPEN_SOCK(fp) \
+  if ((fp=nslcd_client_open())==NULL) \
+    { ERROR_OUT_OPENERROR }
 
-/* read a response message, return a NSLCD_RS_* status */
-int nslcd_client_readresponse(FILE *fp,int type);
+#define WRITE_REQUEST(fp,req) \
+  WRITE_INT32(fp,NSLCD_VERSION) \
+  WRITE_INT32(fp,req)
+
+#define READ_RESPONSEHEADER(fp,req) \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  if (tmpint32!=NSLCD_VERSION) \
+    { ERROR_OUT_READERROR(fp) } \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  if (tmpint32!=(req)) \
+    { ERROR_OUT_READERROR(fp) }
+
+#define READ_RESPONSE(fp) \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  if (tmpint32!=NSLCD_RS_SUCCESS) \
+    { ERROR_OUT_NOSUCCESS(fp,tmpint32) }
 
 #endif /* not _NSLCD_CLIENT_H */

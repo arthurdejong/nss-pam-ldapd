@@ -24,10 +24,26 @@
 #define _SERVER_COMMON_H 1
 
 #include <nss.h>
+#include "nslcd-common.h"
 
 /* translates a nss code (as defined in nss.h) to a
    nslcd return code (as defined in nslcd.h) */
 /* FIXME: this is a temporary hack, get rid of it */
 int nss2nslcd(enum nss_status code);
+
+
+/* macros for basic read and write operations, the following
+   ERROR_OUT* marcos define the action taken on errors */ 
+
+#define ERROR_OUT_WRITEERROR(fp) \
+  fclose(fp); \
+  return -1;
+  
+#define ERROR_OUT_READERROR(fp) \
+  fclose(fp); \
+  return -1;
+
+#define ERROR_OUT_ALLOCERROR(fp) \
+  ERROR_OUT_READERROR(fp)
 
 #endif /* not _SERVER_COMMON_H */

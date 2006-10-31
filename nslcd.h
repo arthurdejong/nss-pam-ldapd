@@ -125,7 +125,7 @@
 /* Request types. */
 #define NSLCD_RT_GETPWBYNAME            1001
 #define NSLCD_RT_GETPWBYUID             1002
-#define NSLCD_RT_GETPWDALL              1004
+#define NSLCD_RT_GETPWALL               1004
 #define NSLCD_RT_GETGRBYNAME            2003
 #define NSLCD_RT_GETGRBYGID             2004
 #define NSLCD_RT_GETHOSTBYNAME          3005

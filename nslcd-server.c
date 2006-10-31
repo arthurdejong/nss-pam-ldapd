@@ -116,53 +116,46 @@ int nslcd_server_open(void)
   return sock;
 }
 
+/* redifine the ERROR_OUT mechanism */
+#undef ERROR_OUT_READERROR
+#define ERROR_OUT_READERROR(fp) \
+  fclose(fp); \
+  log_log(LOG_DEBUG,"error reading from stream: %s",strerror(errno)); \
+  return;
+  
 /* read a request message, returns <0 in case of errors,
    this function closes the socket */
-int nslcd_server_handlerequest(int sock)
+void nslcd_server_handlerequest(int sock)
 {
-  int32_t tmpint32, tmp2, type;
-  size_t sz;
-  char *key;
+  int32_t tmpint32;
   FILE *fp;
   /* create a stream object */
   if ((fp=fdopen(sock,"w+"))==NULL)
   {
     close(sock);
-    return -1;
+    return;
   }
   /* read the protocol version */
-  READ_INT32(fp,tmp2);
-  if (tmp2 != NSLCD_VERSION)
+  READ_TYPE(fp,tmpint32,int32_t);
+  if (tmpint32 != NSLCD_VERSION)
   {
     fclose(fp);
-    log_log(LOG_DEBUG,"wrong nslcd version id (%d)", tmp2);
-    return -1;
+    log_log(LOG_DEBUG,"wrong nslcd version id (%d)",(int)tmpint32);
+    return;
   }
   /* read the request type */
-  READ_INT32(fp,type);
-  /* read the request key */
-  /* TODO: probably move this to the request specific function */
-  READ_INT32(fp,sz);
-  key=(char *)malloc(sz+1);
-  if (key==NULL)
-    return -1; /* FIXME: report memory allocation errors */
-  READ(fp,key,sz);
-  key[sz]=0;
-  /* log request */
-  log_log(LOG_DEBUG,"request id=%d key=%s",(int)type,key);  
+  READ_TYPE(fp,tmpint32,int32_t);
   /* handle request */
-  switch (type)
+  switch (tmpint32)
   {
-    case NSLCD_RT_GETPWBYNAME:
-      log_log(LOG_DEBUG,"GETPWBYNAME(%s)",key);
-      nslcd_getpwnam(fp,key);
-      break;
+    case NSLCD_RT_GETPWBYNAME: nslcd_getpwnam(fp); break;
+    case NSLCD_RT_GETPWBYUID:  nslcd_getpwuid(fp); break;
+    case NSLCD_RT_GETPWALL:    nslcd_getpwall(fp); break;
     default:
-      return -1;
+      log_log(LOG_DEBUG,"invalid request id (%d)",(int)tmpint32);
+      break;
   }
-  
+  /* we're done with the request */
   fclose(fp);  
-  
-  return 0; /* success */
-
+  return;
 }

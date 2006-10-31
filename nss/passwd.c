@@ -29,6 +29,8 @@
 #include "common.h"
 
 /* Macros for expanding the LDF_PASSWD macro. */
+#define LDF_STRING(field)    READ_STRING_BUF(fp,field)
+#define LDF_TYPE(field,type) READ_TYPE(fp,field,type)
 #define PASSWD_NAME   result->pw_name
 #define PASSWD_PASSWD result->pw_passwd
 #define PASSWD_UID    result->pw_uid
@@ -41,16 +43,16 @@ enum nss_status _nss_ldap_getpwnam_r(const char *name,struct passwd *result,char
 {
   FILE *fp;
   size_t bufptr=0;
-  int32_t sz;
-  /* open socket */
+  int32_t tmpint32;
+  /* open socket and write request */
   OPEN_SOCK(fp);
-  /* write request to nslcd */
-  if (nslcd_client_writerequest(fp,NSLCD_RT_GETPWBYNAME,name,strlen(name)))
-    ERROR_OUT(fp,NSS_STATUS_UNAVAIL,ENOENT);
+  WRITE_REQUEST(fp,NSLCD_RT_GETPWBYNAME);
+  WRITE_STRING(fp,name);
+  WRITE_FLUSH(fp);
   /* read response header */
-  if ((sz=nslcd_client_readresponse(fp,NSLCD_RT_GETPWBYNAME))!=NSLCD_RS_SUCCESS)
-    ERROR_OUT(fp,nslcd2nss(sz),ENOENT);
-  /* read struct passwd */
+  READ_RESPONSEHEADER(fp,NSLCD_RT_GETPWBYNAME);
+  /* read response */
+  READ_RESPONSE(fp);
   LDF_PASSWD;
   /* close socket and we're done */
   fclose(fp);
@@ -59,8 +61,22 @@ enum nss_status _nss_ldap_getpwnam_r(const char *name,struct passwd *result,char
 
 enum nss_status _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  *errnop=ENOENT;
-  return NSS_STATUS_UNAVAIL;
+  FILE *fp;
+  size_t bufptr=0;
+  int32_t tmpint32;
+  /* open socket and write request */
+  OPEN_SOCK(fp);
+  WRITE_REQUEST(fp,NSLCD_RT_GETPWBYUID);
+  WRITE_TYPE(fp,uid,uid_t);
+  WRITE_FLUSH(fp);
+  /* read response header */
+  READ_RESPONSEHEADER(fp,NSLCD_RT_GETPWBYUID);
+  /* read response */
+  READ_RESPONSE(fp);
+  LDF_PASSWD;
+  /* close socket and we're done */
+  fclose(fp);
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status _nss_ldap_setpwent(void)
