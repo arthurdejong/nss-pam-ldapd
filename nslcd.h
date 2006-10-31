@@ -24,38 +24,44 @@
 #define _NSLCD_H 1
 
 /*
-   A request messages basically looks like:
+   The protocol used between the nslcd client and server
+   is a simple binary protocol. It is request/response based
+   where the client initiates a connection, does a single request
+   and closes the connection again. Any mangled messages will be
+   silently ignored by the server.
+
+   A request looks like:
      int32 NSLCD_VERSION
      int32 NSLCD_RT_*
-     int32 length(name)
-     ...   name
-   (any messages not fitting this should be ignored
-    closing the connection)
+     [request parameters if any]
    A response looks like:
      int32 NSLCD_VERSION
      int32 NSLCD_RT_* (the original request type)
      int32 NSLCD_RS_* (response code)
-   Followed by the data for the response (if call was sucessful)
-     int32 NSLCD_DT_BUF (data type)
-     int32 length(result)
-     ... result
+     [result value(s)]
+   If a response would return multiple values (e.g. for the
+   NSLCD_RT_GETPWDALL function) each return value will be preceded
+   by a NSLCD_RS_* value.
+
+   These are the available data types:
+     INT32  - 32-bit integer value
+     TYPE   - a typed field that is transferred using sizeof()
+     STRING - a string length (32bit) followed by the string value
+              (not null-terminted)
+     LOOP   - a 32-bit number noting the number of entries followed
+              by the entries one at a time
+
+   Compound datatypes (such as PASSWD) are defined below as a
+   combination of the above types. They are defined as macros so
+   they can be expanded to code later on.
+   
+   The protocol is described in this generic fashion (instead of just
+   transferring the allocated memory) because pointers will not
+   be valid between transfers and this also makes the server
+   independant of the NSS implementation.
 */
 
-/*
-  These are the data types that can be transferred in the protocol.
-  They are defined as macros so they can be expanded to code
-  later on.
-
-  LDF_STRING:
-    int32 length
-    ...   length bytes
-  LDF_TYPE:
-    sizeof(type)  value
-  LDF_LOOP:
-    int32 number
-      number times the containing thing(s)
-*/
-
+/* used for transferring struct alias information */
 #define LDF_ALIAS \
   LDF_STRING(ALIAS_NAME) \
   LDF_LOOP( \
@@ -64,9 +70,11 @@
 
 /* AUTOMOUNT - TBD */
 
+/* used for transferring mac addresses */
 #define LDF_ETHER \
-  LDF_TYPE(ETHER_ADDR,"123456")
+  LDF_TYPE(ETHER_ADDR,u_int8_t[6])
 
+/* a group entry from /etc/group (struct group) */
 #define LDF_GROUP \
   LDF_STRING(GROUP_NAME) \
   LDF_STRING(GROUP_PASSWD) \
@@ -81,6 +89,7 @@
 
 /* NETWORKS - TBD - struct netent */
 
+/* used for transferring struct passwd information */
 #define LDF_PASSWD \
   LDF_STRING(PASSWD_NAME) \
   LDF_STRING(PASSWD_PASSWD) \
@@ -92,6 +101,7 @@
 
 /* PROTOCOLS - TBD - getprotobyname - struct protoent */
 
+/* for transferring struct rpcent structs */
 #define LDF_RPC \
   LDF_STRING(RPC_NAME) \
   LDF_LOOP( \
@@ -102,34 +112,6 @@
 /* SERVICES - TBD - getservbyname - struct servent */
 
 /* SHADOW - TBD - getspnam - struct spwd */
-/*
-   Data units:
-
-functions for
-read_str(FILE *fp, buf, ptr, &result, size):
-  - read string length from stream
-  - check if there is enough room in buffer:
-    - no: fail (maybe do some rollback)
-  - read string in buffer
-  - increment prt with string size
-  - store pointer in &result or NULL on error
-read_int(FILE *fp, int*i)
-  - read int32
-  - store in &i
-
-code like:
-
-  strcut foobar
-  foobar.field=0
-  return read_str(fp..,&foobar.field,...) ||
-         read_int(...)
-
-return NSLCD_RS_*
-
-
-*/
-
-/* TODO: generate this file from a .in file */
 
 /* The location of the socket used for communicating. */
 #define NSLCD_SOCKET "/tmp/nslcd.socket"
@@ -143,6 +125,7 @@ return NSLCD_RS_*
 /* Request types. */
 #define NSLCD_RT_GETPWBYNAME            1001
 #define NSLCD_RT_GETPWBYUID             1002
+#define NSLCD_RT_GETPWDALL              1004
 #define NSLCD_RT_GETGRBYNAME            2003
 #define NSLCD_RT_GETGRBYGID             2004
 #define NSLCD_RT_GETHOSTBYNAME          3005
