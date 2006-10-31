@@ -46,4 +46,6 @@ int nslcd_getpwuid(FILE *fp);
 /* the caller should take care of opening and closing the stream */
 int nslcd_getpwall(FILE *fp);
 
+int nslcd_aliases_byname(FILE *fp);
+
 #endif /* not _NSLCD_SERVER_H */

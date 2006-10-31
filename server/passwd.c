@@ -175,6 +175,9 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
+/* macros for expanding the LDF_PASSWD macro */
+#define LDF_STRING(field)    WRITE_STRING(fp,field)
+#define LDF_TYPE(field,type) WRITE_TYPE(fp,field,type)
 #define PASSWD_NAME   result.pw_name
 #define PASSWD_PASSWD result.pw_passwd
 #define PASSWD_UID    result.pw_uid
@@ -182,12 +185,6 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
 #define PASSWD_GECOS  result.pw_gecos
 #define PASSWD_DIR    result.pw_dir
 #define PASSWD_SHELL  result.pw_shell
-
-#define LDF_STRING(field) \
-  WRITE_STRING(fp,field)
-
-#define LDF_TYPE(field,type) \
-  WRITE(fp,&(field),sizeof(type))
 
 static enum nss_status _nss_ldap_getpwnam_r(const char *name,
                       struct passwd *result,
@@ -240,6 +237,8 @@ int nslcd_getpwnam(FILE *fp)
   log_log(LOG_DEBUG,"nslcd_getpwnam(%s)",name);
   /* do the LDAP request */
   retv=nss2nslcd(_nss_ldap_getpwnam_r(name,&result,buffer,1024,&errnop));
+  /* no more need for this */
+  free(name);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_RT_GETPWBYNAME);

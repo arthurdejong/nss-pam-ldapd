@@ -123,6 +123,7 @@
 #define NSLCD_VERSION 1
 
 /* Request types. */
+#define NSLCD_RT_ALIAS_BYNAME           4001
 #define NSLCD_RT_GETPWBYNAME            1001
 #define NSLCD_RT_GETPWBYUID             1002
 #define NSLCD_RT_GETPWALL               1004

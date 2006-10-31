@@ -151,6 +151,7 @@ void nslcd_server_handlerequest(int sock)
     case NSLCD_RT_GETPWBYNAME: nslcd_getpwnam(fp); break;
     case NSLCD_RT_GETPWBYUID:  nslcd_getpwuid(fp); break;
     case NSLCD_RT_GETPWALL:    nslcd_getpwall(fp); break;
+    case NSLCD_RT_ALIAS_BYNAME: nslcd_aliases_byname(fp); break;
     default:
       log_log(LOG_DEBUG,"invalid request id (%d)",(int)tmpint32);
       break;

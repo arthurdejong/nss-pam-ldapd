@@ -65,7 +65,7 @@
   buffer[bufptr+tmpint32]='\0'; \
   /* prepare result */ \
   (field)=buffer+bufptr; \
-  bufptr+=tmpint32+1;
+  bufptr+=(size_t)tmpint32+1;
 
 /* read a string from the stream dynamically allocating memory
    for the string (don't forget to call free() later on) */
