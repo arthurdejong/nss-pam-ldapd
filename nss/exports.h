@@ -1,4 +1,24 @@
-/* nss.h -all functions exported by the library */
+/*
+   exports.h - all functions exported by the NSS library
+
+   Copyright (C) 2006 West Consulting
+   Copyright (C) 2006 Arthur de Jong
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+
+   You should have received a copy of the GNU Library General Public
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+   MA 02110-1301 USA
+*/
 
 #ifndef _NSS_EXPORTS_H
 #define _NSS_EXPORTS_H 1
@@ -13,12 +33,11 @@
 #include <shadow.h>
 
 /*
-   These are prototypes for functions exported from the ldap nss module.
+   These are prototypes for functions exported from the ldap NSS module.
    For more complete definitions of these functions check the GLIBC
    documentation.
-   
+
    Other services than those mentioned here are currently not implemented.
-   Contributions are welcome.
 */
 
 /* aliases - mail aliases */

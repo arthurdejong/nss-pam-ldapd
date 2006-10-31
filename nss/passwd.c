@@ -1,5 +1,5 @@
 /*
-   passwd.c - NSS lookup functions for passwd database 
+   passwd.c - NSS lookup functions for passwd database
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006 Arthur de Jong
@@ -19,6 +19,8 @@
    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
    MA 02110-1301 USA
 */
+
+#include "config.h"
 
 #include <string.h>
 #include <nss.h>
