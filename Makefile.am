@@ -36,9 +36,7 @@ nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
 nslcd_SOURCES = nslcd.c nslcd.h \
         nslcd-server.c nslcd-server.h \
         log.c log.h \
-        xmalloc.c xmalloc.h \
-        ldap-nss.c ldap-schema.c util.c resolve.c \
-        dnsconfig.c pagectrl.c
+        xmalloc.c xmalloc.h
 nslcd_LDADD = server/libserver.a
 
 testnss_SOURCES = testnss.c nslcd-client.c nslcd-client.h nslcd.h
@@ -57,15 +55,6 @@ NSS_LDAP_LIBC_VERSIONED = libnss_ldap-$(LIBC_VERS).so
 NSS_VERS = $(shell ls /lib/libnss_files.so.? | tail -n 1 | sed -e 's/\/lib\/libnss_files\.so\.\(.*\)/\1/')
 NSS_LDAP_NSS_VERSIONED = libnss_ldap.so.$(NSS_VERS)
 endif
-
-##if USE_NATIVE_LINKER
-##NATIVE_LINK = $(nss_ldap_so_LD) $(AM_LDFLAGS) -o $@
-##else
-##GNU_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-##endif
-### This is horrible but appears to be the only way to work with
-### recent versions of automake. Any better ideas, let me know.
-##LINK = $(NATIVE_LINK) $(GNU_LINK)
 
 INST_UID=root
 if AIX

@@ -22,4 +22,7 @@ noinst_LIBRARIES = libserver.a
 
 libserver_a_SOURCES = common.c common.h \
                       aliases.c automount.c ethers.c group.c hosts.c netgroup.c \
-                      networks.c passwd.c protocols.c rpc.c services.c shadow.c
+                      networks.c passwd.c protocols.c rpc.c services.c shadow.c \
+                      dnsconfig.c dnsconfig.h ldap-nss.c ldap-nss.h ldap-parse.h \
+                      ldap-schema.c ldap-schema.h pagectrl.c pagectrl.h \
+                      resolve.c resolve.h util.c util.h

@@ -28,17 +28,6 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <stdio.h>
-#ifdef HAVE_LBER_H
-#include <lber.h>
-#endif /* HAVE_LBER_H */
-#ifdef HAVE_LDAP_H
-#include <ldap.h>
-#endif /* HAVE_LDAP_H */
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif /* HAVE_GETOPT_H */
@@ -47,13 +36,12 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
 #ifdef HAVE_GRP_H
 #include <grp.h>
 #endif /* HAVE_GRP_H */
-#include <sys/stat.h>
 
-#include "ldap-nss.h"
-#include "util.h"
 #include "nslcd.h"
 #include "nslcd-server.h"
 #include "xmalloc.h"
