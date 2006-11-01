@@ -25,7 +25,7 @@ noinst_PROGRAMS = nss_ldap.so nslcd testnss
 
 man_MANS = nss_ldap.5
 
-EXTRA_DIST = CVSVersionInfo.txt ChangeLog \
+EXTRA_DIST = ChangeLog \
              AUTHORS ANNOUNCE NEWS INSTALL README COPYING \
              ldap.conf nsswitch.ldap \
              certutil debian doc exports.linux nss_ldap.5 tests
