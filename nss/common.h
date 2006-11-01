@@ -33,7 +33,7 @@ enum nss_status nslcd2nss(int code);
    NSS specific due to the return codes */
 
 #define ERROR_OUT_OPENERROR \
-  *errnop=errno; \
+  *errnop=ENOENT; \
   return NSS_STATUS_UNAVAIL;
 
 #define ERROR_OUT_READERROR(fp) \

@@ -82,6 +82,7 @@ enum nss_status _nss_ldap_setaliasent(void)
 
 enum nss_status _nss_ldap_getaliasent_r(struct aliasent *result,char *buffer,size_t buflen,int *errnop)
 {
+  *errnop=ENOENT;
   return NSS_STATUS_UNAVAIL;
 }
 

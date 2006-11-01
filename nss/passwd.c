@@ -112,7 +112,10 @@ enum nss_status _nss_ldap_getpwent_r(struct passwd *result,char *buffer,size_t b
   size_t bufptr=0;
   /* check that we have a valid file descriptor */
   if (fp==NULL)
+  {
+    *errnop=ENOENT;
     return NSS_STATUS_UNAVAIL;
+  }
   /* read a response */
   READ_RESPONSE(fp);
   LDF_PASSWD;
