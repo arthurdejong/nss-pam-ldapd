@@ -81,18 +81,49 @@ enum nss_status _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffe
   return NSS_STATUS_SUCCESS;
 }
 
+/* thread-local file pointer to an ongoing request */
+static __thread FILE *pwentfp;
+#define fp pwentfp
+
+/* open a connection to the nslcd and write the request */
 enum nss_status _nss_ldap_setpwent(void)
 {
-  return NSS_STATUS_UNAVAIL;
+  int32_t tmpint32;
+  /* this is to satisfy our macros */
+  int errnocp;
+  int *errnop;
+  errnop=&errnocp;
+  /* close the existing stream if it is still open */
+  if (fp!=NULL)
+    _nss_ldap_endpwent();
+  /* open a new stream and write the request */
+  OPEN_SOCK(fp);
+  WRITE_REQUEST(fp,NSLCD_RT_GETPWALL);
+  WRITE_FLUSH(fp);
+  /* read response header */
+  READ_RESPONSEHEADER(fp,NSLCD_RT_GETPWALL);
+  return NSS_STATUS_SUCCESS;
 }
 
+/* read password data from an opened stream */
 enum nss_status _nss_ldap_getpwent_r(struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  *errnop=ENOENT;
-  return NSS_STATUS_UNAVAIL;
+  int32_t tmpint32;
+  size_t bufptr=0;
+  /* check that we have a valid file descriptor */
+  if (fp==NULL)
+    return NSS_STATUS_UNAVAIL;
+  /* read a response */
+  READ_RESPONSE(fp);
+  LDF_PASSWD;
+  return NSS_STATUS_SUCCESS;
 }
 
+/* close the stream opened with setpwent() above */
 enum nss_status _nss_ldap_endpwent(void)
 {
-  return NSS_STATUS_UNAVAIL;
+  if (fp==NULL)
+    return NSS_STATUS_SUCCESS;
+  fclose(fp);
+  return NSS_STATUS_SUCCESS;
 }
