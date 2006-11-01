@@ -33,17 +33,20 @@ int nss2nslcd(enum nss_status code);
 
 
 /* macros for basic read and write operations, the following
-   ERROR_OUT* marcos define the action taken on errors */ 
+   ERROR_OUT* marcos define the action taken on errors
+   the stream is not closed because the caller closes the
+   stream */
 
 #define ERROR_OUT_WRITEERROR(fp) \
-  fclose(fp); \
+  log_log(LOG_WARNING,"error writing to client"); \
   return -1;
-  
+
 #define ERROR_OUT_READERROR(fp) \
-  fclose(fp); \
+  log_log(LOG_WARNING,"error reading from client"); \
   return -1;
 
 #define ERROR_OUT_ALLOCERROR(fp) \
-  ERROR_OUT_READERROR(fp)
+  log_log(LOG_ERR,"error allocating memory"); \
+  return -1;
 
 #endif /* not _SERVER_COMMON_H */
