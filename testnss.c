@@ -47,21 +47,37 @@ static void printalias(struct aliasent *alias)
          "}\n",(int)alias->alias_local);
 }
 
+static void printgroup(struct group *group)
+{
+  int i;
+  printf("struct group {\n"
+         "  gr_name=\"%s\",\n"
+         "  gr_passwd=\"%s\",\n"
+         "  gr_gid=%d,\n",
+         group->gr_name,group->gr_passwd,(int)group->gr_gid);
+  for (i=0;group->gr_mem[i]!=NULL;i++)
+    printf("  gr_mem[%d]=\"%s\",\n",
+           i,group->gr_mem[i]);
+  printf("  gr_mem[%d]=NULL\n"
+         "}\n",i);
+}
+
 /* the main program... */
 int main(int argc,char *argv[])
 {
-  struct passwd result;
+  struct passwd passwdresult;
   struct aliasent aliasresult;
+  struct group groupresult;
   char buffer[1024];
   enum nss_status res;
   int errnocp;
 
   /* test getpwnam() */
   printf("\nTEST getpwnam()\n");
-  res=_nss_ldap_getpwnam_r("arthur",&result,buffer,1024,&errnocp);
+  res=_nss_ldap_getpwnam_r("arthur",&passwdresult,buffer,1024,&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
-    printpasswd(&result);
+    printpasswd(&passwdresult);
   else
   {
     printf("errno=%d:%s\n",(int)errno,strerror(errno));
@@ -70,10 +86,10 @@ int main(int argc,char *argv[])
 
   /* test getpwnam() with non-existing user */
   printf("\nTEST getpwnam()\n");
-  res=_nss_ldap_getpwnam_r("arthurs",&result,buffer,1024,&errnocp);
+  res=_nss_ldap_getpwnam_r("arthurs",&passwdresult,buffer,1024,&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
-    printpasswd(&result);
+    printpasswd(&passwdresult);
   else
   {
     printf("errno=%d:%s\n",(int)errno,strerror(errno));
@@ -82,10 +98,10 @@ int main(int argc,char *argv[])
 
   /* test getpwuid() */
   printf("\nTEST getpwuid()\n");
-  res=_nss_ldap_getpwuid_r(180,&result,buffer,1024,&errnocp);
+  res=_nss_ldap_getpwuid_r(180,&passwdresult,buffer,1024,&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
-    printpasswd(&result);
+    printpasswd(&passwdresult);
   else
   {
     printf("errno=%d:%s\n",(int)errno,strerror(errno));
@@ -96,10 +112,10 @@ int main(int argc,char *argv[])
   printf("\nTEST {set,get,end}pwent()\n");
   res=_nss_ldap_setpwent();
   printf("status=%s\n",nssstatus(res));
-  while ((res=_nss_ldap_getpwent_r(&result,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
+  while ((res=_nss_ldap_getpwent_r(&passwdresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
   {
     printf("status=%s\n",nssstatus(res));
-    printpasswd(&result);
+    printpasswd(&passwdresult);
   }
   printf("status=%s\n",nssstatus(res));
   printf("errno=%d:%s\n",(int)errno,strerror(errno));
@@ -118,6 +134,45 @@ int main(int argc,char *argv[])
     printf("errno=%d:%s\n",(int)errno,strerror(errno));
     printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
   }
+
+  /* test getgrnam() */
+  printf("\nTEST getgrnam()\n");
+  res=_nss_ldap_getgrnam_r("audio",&groupresult,buffer,1024,&errnocp);
+  printf("status=%s\n",nssstatus(res));
+  if (res==NSS_STATUS_SUCCESS)
+    printgroup(&groupresult);
+  else
+  {
+    printf("errno=%d:%s\n",(int)errno,strerror(errno));
+    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  }
+
+  /* test getgrgid() */
+  printf("\nTEST getgrgid()\n");
+  res=_nss_ldap_getgrgid_r(24,&groupresult,buffer,1024,&errnocp);
+  printf("status=%s\n",nssstatus(res));
+  if (res==NSS_STATUS_SUCCESS)
+    printgroup(&groupresult);
+  else
+  {
+    printf("errno=%d:%s\n",(int)errno,strerror(errno));
+    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  }
+
+  /* test {set,get,end}grent() */
+  printf("\nTEST {set,get,end}grent()\n");
+  res=_nss_ldap_setgrent();
+  printf("status=%s\n",nssstatus(res));
+  while ((res=_nss_ldap_getgrent_r(&groupresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
+  {
+    printf("status=%s\n",nssstatus(res));
+    printpasswd(&groupresult);
+  }
+  printf("status=%s\n",nssstatus(res));
+  printf("errno=%d:%s\n",(int)errno,strerror(errno));
+  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  res=_nss_ldap_endgrent();
+  printf("status=%s\n",nssstatus(res));
 
   return 0;
 }

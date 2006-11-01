@@ -78,7 +78,7 @@
 #define LDF_GROUP \
   LDF_STRING(GROUP_NAME) \
   LDF_STRING(GROUP_PASSWD) \
-  LDF_TYPE(GROUP_GIF,gid_t) \
+  LDF_TYPE(GROUP_GID,gid_t) \
   LDF_LOOP( \
     LDF_STRING(GROUP_MEMBER) \
   )
@@ -131,11 +131,9 @@
 #define NSLCD_RT_GETGRBYGID             2004
 #define NSLCD_RT_GETHOSTBYNAME          3005
 #define NSLCD_RT_GETHOSTBYADDR          3008
-
-/* Response data types */
-#define NSLCD_DT_BUF                    1000 /* any data, blob */
-#define NSLCD_DT_HEADER                 2001 /* initial response header */
-#define NSLCD_DT_PASSWD                 3001 /* struct passwd */
+#define NSLCD_ACTION_GROUP_BYNAME       5001
+#define NSLCD_ACTION_GROUP_BYGID        5002
+#define NSLCD_ACTION_GROUP_ALL          5003
 
 /* Request result. */
 #define NSLCD_RS_UNAVAIL                2 /* sevice unavailable */
