@@ -27,7 +27,8 @@ man_MANS = nss_ldap.5
 
 EXTRA_DIST = CVSVersionInfo.txt ChangeLog \
              AUTHORS ANNOUNCE NEWS INSTALL README COPYING \
-             ldap.conf nsswitch.ldap
+             ldap.conf nsswitch.ldap \
+             certutil debian doc exports.linux nss_ldap.5 tests
 
 nss_ldap_so_SOURCES = nslcd-client.c nslcd-client.h nslcd.h
 nss_ldap_so_LDADD = nss/libnss.a
