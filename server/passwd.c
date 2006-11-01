@@ -304,9 +304,8 @@ int nslcd_getpwall(FILE *fp)
     /* write the password entry */
     LDF_PASSWD;
     fflush(fp);
-    /* STRUCT PASSWD */
   }
-  /* write the result code */
+  /* write the final result code */
   WRITE_INT32(fp,retv);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_endpwent();

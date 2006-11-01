@@ -52,7 +52,7 @@ int nslcd_server_open(void)
   /* create socket address structure */
   addr.sun_family=AF_UNIX;
   strcpy(addr.sun_path,NSLCD_SOCKET);
-  
+
   /* unlink to socket */
   if (unlink(NSLCD_SOCKET)<0)
   {
@@ -122,7 +122,7 @@ int nslcd_server_open(void)
   fclose(fp); \
   log_log(LOG_DEBUG,"error reading from stream: %s",strerror(errno)); \
   return;
-  
+
 /* read a request message, returns <0 in case of errors,
    this function closes the socket */
 void nslcd_server_handlerequest(int sock)
@@ -157,6 +157,6 @@ void nslcd_server_handlerequest(int sock)
       break;
   }
   /* we're done with the request */
-  fclose(fp);  
+  fclose(fp);
   return;
 }

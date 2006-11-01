@@ -1,5 +1,5 @@
 /*
-   nslcd.h - file describing client/server protocol 
+   nslcd.h - file describing client/server protocol
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006 Arthur de Jong
@@ -54,7 +54,7 @@
    Compound datatypes (such as PASSWD) are defined below as a
    combination of the above types. They are defined as macros so
    they can be expanded to code later on.
-   
+
    The protocol is described in this generic fashion (instead of just
    transferring the allocated memory) because pointers will not
    be valid between transfers and this also makes the server

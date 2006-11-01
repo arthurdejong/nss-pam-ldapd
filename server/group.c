@@ -749,7 +749,7 @@ do_parse_initgroups_nested (LDAPMessage * e,
       groupdn = _nss_ldap_get_dn (e);
       if (groupdn != NULL)
         {
-          /* Note: there was a problem here with stat in the orriginal code */ 
+          /* Note: there was a problem here with stat in the orriginal code */
           lia->depth++;
           status = ng_chase (groupdn, lia);
           lia->depth--;

@@ -20,7 +20,7 @@
    MA 02110-1301 USA
 */
 
-#include "nslcd.h" 
+#include "nslcd.h"
 #include "common.h"
 
 /* translates a nslcd return code (as defined in nslcd.h) to
