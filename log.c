@@ -144,7 +144,7 @@ void log_log(int pri,const char *format, ...)
   {
     /* if logging is not yet defined, log to stderr */
     if (pri<=prelogging_loglevel)
-      fprintf(stderr,"%s: %s\n",PACKAGE,buffer);
+      fprintf(stderr,"%s: %s%s\n",PACKAGE,pri==LOG_DEBUG?"DEBUG: ":"",buffer);
   }
   else
   {
