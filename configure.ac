@@ -33,9 +33,9 @@ configure.ac file for more details.])
 
 # initialize and set version and bugreport address
 AC_INIT([libnss-ldapd],[0.1.0],[arthur@ch.tudelft.nl])
-RELEASE_MONTH="Oct 2006"
+RELEASE_MONTH="Nov 2006"
 AC_SUBST(RELEASE_MONTH)
-AC_CONFIG_SRCDIR([ldap-nss.c])
+AC_CONFIG_SRCDIR([nslcd.c])
 
 AC_CANONICAL_TARGET
 AC_PREFIX_DEFAULT()
@@ -67,7 +67,11 @@ dnl
 dnl AC_ARG_ENABLE(schema-mapping, [  --enable-schema-mapping   enable attribute/objectclass mapping ], [AC_DEFINE(AT_OC_MAP, 1, [Define to enable attribute/objectclass mapping.])])
 dnl
 
-AC_ARG_ENABLE(debugging, [  --enable-debugging        enable debug code ], [AC_DEFINE(DEBUG, 1, [Define to enable debug code.])])
+# Check for debugging options
+AC_ARG_ENABLE(debug,
+              AS_HELP_STRING([--enable-debug],
+                             [enable extensive debugging and logging]),
+              [if test "x$enableval" != "xno" ; then CFLAGS="-g -DDEBUG $CFLAGS" ; fi])
 
 dnl
 dnl --enable-paged-results is now deprecated; if this option is set,
@@ -248,6 +252,16 @@ AC_CHECK_FUNCS(ether_ntoa)
 AC_CHECK_FUNCS(setgroups)
 
 AC_TYPE_SIGNAL
+
+# Check for support for the __thread keyword.
+AC_CACHE_CHECK([whether $CC supports '__thread'], [mn_cv_c___thread_supported],
+               [AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[static __thread i;]], []),
+                       [mn_cv_c___thread_supported=yes],
+                       [mn_cv_c___thread_supported=no])])
+ 	if test $mn_cv_c___thread_supported != yes
+ 	then
+       	      AC_MSG_ERROR([$CC does not support '__thread' keyword])
+ 	fi
 
 AC_MSG_CHECKING(for struct ether_addr)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
