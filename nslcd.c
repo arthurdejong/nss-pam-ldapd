@@ -41,6 +41,7 @@
 #ifdef HAVE_GRP_H
 #include <grp.h>
 #endif /* HAVE_GRP_H */
+#include <nss.h>
 
 #include "nslcd.h"
 #include "nslcd-server.h"
@@ -335,18 +336,10 @@ int main(int argc,char *argv[])
   /* clear the environment */
   /* TODO:implement */
 
-
-
-  /* prevent hostname lookups through recursive calls to nslcd */
-  /* Overwrite service selection for database DBNAME using specification
-   in STRING.
-   This function should only be used by system programs which have to
-   work around non-existing services (e.e., while booting).
-   Attention: Using this function repeatedly will slowly eat up the
-   whole memory since previous selection data cannot be freed.  */
-/*extern int __nss_configure_lookup (__const char *__dbname,
-                                   __const char *__string) __THROW;*/
-
+  /* disable ldap lookups of host names to avoid lookup loop
+     and fall back to files dns (a sensible default) */
+  if (__nss_configure_lookup("hosts","files dns"))
+    log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
 
   /* check if we are already running */
   /* FIXME: implement */
