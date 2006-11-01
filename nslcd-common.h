@@ -11,22 +11,34 @@
    int32_t tmpint32; - temporary variable
    */
 
+#ifdef DEBUG_PROT
+#define DEBUG_PRINT(args...) fprintf(stderr, ## args)
+#else /* DEBUG_PROT */
+#define DEBUG_PRINT(args...)
+#endif /* not DEBUG_PROT */
+
 #define WRITE(fp,ptr,size) \
+  DEBUG_PRINT("WRITE()\n"); \
   if (fwrite(ptr,size,1,fp)<1) \
     { ERROR_OUT_WRITEERROR(fp) }
 
 #define WRITE_TYPE(fp,field,type) \
+  DEBUG_PRINT("WRITE_TYPE()\n"); \
   WRITE(fp,&(field),sizeof(type))
 
 #define WRITE_INT32(fp,i) \
+  DEBUG_PRINT("WRITE_INT32(%d)\n",(int)i); \
   tmpint32=(int32_t)(i); \
   WRITE_TYPE(fp,tmpint32,int32_t)
 
 #define WRITE_STRING(fp,str) \
+  DEBUG_PRINT("WRITE_STRING(\"%s\"=%d)\n",str,strlen(str)); \
   WRITE_INT32(fp,strlen(str)); \
-  WRITE(fp,str,strlen(str));
+  if (tmpint32>0) \
+    { WRITE(fp,str,tmpint32); }
 
 #define WRITE_FLUSH(fp) \
+  DEBUG_PRINT("WRITE_FLUSH()\n"); \
   if (fflush(fp)<0) \
     { ERROR_OUT_WRITEERROR(fp) }
 
@@ -42,14 +54,17 @@
 
 #define READ(fp,ptr,size) \
   if (fread(ptr,size,1,fp)<1) \
-    { ERROR_OUT_READERROR(fp) }
+    { ERROR_OUT_READERROR(fp) } \
+  DEBUG_PRINT("READ()\n");
 
 #define READ_TYPE(fp,field,type) \
-  READ(fp,&(field),sizeof(type))
+  READ(fp,&(field),sizeof(type)) \
+  DEBUG_PRINT("READ_TYPE()\n");
 
 #define READ_INT32(fp,i) \
   READ_TYPE(fp,tmpint32,int32_t); \
-  i=tmpint32;
+  i=tmpint32; \
+  DEBUG_PRINT("READ_INT32(%d)\n",(int)i);
 
 /* read string in the buffer (using buffer, buflen and bufptr)
    and store the actual location of the string in field */
@@ -60,9 +75,11 @@
   if ((bufptr+(size_t)tmpint32+1)>buflen) \
     { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
   /* read string from the stream */ \
-  READ(fp,buffer+bufptr,(size_t)tmpint32); \
+  if (tmpint32>0) \
+    { READ(fp,buffer+bufptr,(size_t)tmpint32); } \
   /* null-terminate string in buffer */ \
   buffer[bufptr+tmpint32]='\0'; \
+  DEBUG_PRINT("READ_STRING_BUF(\"%s\"=%d)\n",buffer+bufptr,strlen(buffer+bufptr)); \
   /* prepare result */ \
   (field)=buffer+bufptr; \
   bufptr+=(size_t)tmpint32+1;
@@ -77,8 +94,10 @@
   if ((field)==NULL) \
     { ERROR_OUT_ALLOCERROR(fp) } /* problem allocating */ \
   /* read string from the stream */ \
-  READ(fp,name,(size_t)tmpint32); \
+  if (tmpint32>0) \
+    { READ(fp,name,(size_t)tmpint32); } \
   /* null-terminate string in buffer */ \
-  (name)[tmpint32]='\0';
+  (name)[tmpint32]='\0'; \
+  DEBUG_PRINT("READ_STRING(\"%s\"=%d)\n",(name),strlen(name));
 
 #endif /* not _NSLCD_COMMON_H */
