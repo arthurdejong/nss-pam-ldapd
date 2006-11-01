@@ -38,19 +38,22 @@ enum nss_status nslcd2nss(int code);
 
 #define ERROR_OUT_READERROR(fp) \
   fclose(fp); \
+  fp=NULL; \
   *errnop=ENOENT; \
-  return NSS_STATUS_UNAVAIL; \
+  return NSS_STATUS_UNAVAIL;
 
 #define ERROR_OUT_BUFERROR(fp) \
   fclose(fp); \
+  fp=NULL; \
   *errnop=ERANGE; \
-  return NSS_STATUS_TRYAGAIN; \
+  return NSS_STATUS_TRYAGAIN;
 
 #define ERROR_OUT_WRITEERROR(fp) \
   ERROR_OUT_READERROR(fp)
 
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
   fclose(fp); \
+  fp=NULL; \
   *errnop=ENOENT; \
   return nslcd2nss(retv);
 
