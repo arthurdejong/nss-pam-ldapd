@@ -200,7 +200,6 @@ static RETSIGTYPE sigexit_handler(int signum)
   nslcd_exitsignal=signum;
 }
 
-
 /* do some cleaning up before terminating */
 static void exithandler(void)
 {
@@ -236,7 +235,7 @@ static void handleconnection(int csock)
   /* FIXME: pass credentials along? */
 
   nslcd_server_handlerequest(csock);
-  
+
 }
 
 
@@ -247,7 +246,7 @@ static void acceptconnection(void)
   int j;
   struct sockaddr_storage addr;
   socklen_t alen;
-  
+
   /* accept a new connection */
   alen=(socklen_t)sizeof(struct sockaddr_storage);
   csock=accept(nslcd_serversocket,(struct sockaddr *)&addr,&alen);
@@ -261,7 +260,7 @@ static void acceptconnection(void)
     log_log(LOG_ERR,"accept() failed: %s",strerror(errno));
     return;
   }
-  
+
   /* make sure O_NONBLOCK is not inherited */
   if ((j=fcntl(csock,F_GETFL,0))<0)
   {
@@ -448,7 +447,7 @@ int main(int argc,char *argv[])
   install_sighandler(SIGINT, sigexit_handler);
   install_sighandler(SIGQUIT,sigexit_handler);
   install_sighandler(SIGABRT,sigexit_handler);
-  install_sighandler(SIGPIPE,sigexit_handler);
+  install_sighandler(SIGPIPE,SIG_IGN);
   install_sighandler(SIGTERM,sigexit_handler);
   install_sighandler(SIGUSR1,sigexit_handler);
   install_sighandler(SIGUSR2,sigexit_handler);
