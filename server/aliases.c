@@ -23,8 +23,6 @@
 
 #include "config.h"
 
-#ifdef HAVE_ALIASES_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -132,7 +130,6 @@ int nslcd_alias_byname(FILE *fp)
   int retv;
   /* read request parameters */
   READ_STRING_ALLOC(fp,name);
-  /* FIXME: free() this buffer somewhere */
   /* log call */
   log_log(LOG_DEBUG,"nslcd_alias_byname(%s)",name);
   /* do the LDAP request */
@@ -151,7 +148,4 @@ int nslcd_alias_byname(FILE *fp)
   log_log(LOG_DEBUG,"nslcd_alias_byname DONE");
   /* we're done */
   return 0;
-
 }
-
-#endif /* HAVE_ALIASES_H */

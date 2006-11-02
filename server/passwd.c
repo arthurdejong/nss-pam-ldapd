@@ -40,6 +40,7 @@
 #elif defined(HAVE_PTHREAD_H)
 #include <pthread.h>
 #endif
+#include <stdio.h>
 
 #include "ldap-nss.h"
 #include "util.h"
