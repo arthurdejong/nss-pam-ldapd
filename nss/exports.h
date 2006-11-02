@@ -65,7 +65,6 @@ enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer
 enum nss_status _nss_ldap_setgrent(void);
 enum nss_status _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_endgrent(void);
-enum nss_status _nss_ldap_initgroups(const char *user,gid_t group,long int *start,long int *size,gid_t *groups,long int limit,int *errnop);
 enum nss_status _nss_ldap_initgroups_dyn(const char *user,gid_t group,long int *start,long int *size,gid_t **groupsp,long int limit,int *errnop);
 
 /* hosts - host names and numbers */
