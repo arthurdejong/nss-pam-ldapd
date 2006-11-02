@@ -221,7 +221,7 @@ static enum nss_status _nss_ldap_endpwent(void)
 }
 
 /* the caller should take care of opening and closing the stream */
-int nslcd_getpwnam(FILE *fp)
+int nslcd_passwd_byname(FILE *fp)
 {
   int32_t tmpint32;
   char *name;
@@ -234,26 +234,26 @@ int nslcd_getpwnam(FILE *fp)
   READ_STRING_ALLOC(fp,name);
   /* FIXME: free() this buffer somewhere */
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_getpwnam(%s)",name);
+  log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);
   /* do the LDAP request */
   retv=nss2nslcd(_nss_ldap_getpwnam_r(name,&result,buffer,1024,&errnop));
   /* no more need for this */
   free(name);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_RT_GETPWBYNAME);
+  WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYNAME);
   WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RS_SUCCESS)
+  if (retv==NSLCD_RESULT_SUCCESS)
   {
     LDF_PASSWD;
   }
   WRITE_FLUSH(fp);
-  log_log(LOG_DEBUG,"nslcd_getpwnam DONE");
+  log_log(LOG_DEBUG,"nslcd_passwd_byname DONE");
   /* we're done */
   return 0;
 }
 
-int nslcd_getpwuid(FILE *fp)
+int nslcd_passwd_byuid(FILE *fp)
 {
   int32_t tmpint32;
   uid_t uid;
@@ -265,24 +265,24 @@ int nslcd_getpwuid(FILE *fp)
   /* read request parameters */
   READ_TYPE(fp,uid,uid_t);
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_getpwuid(%d)",(int)uid);
+  log_log(LOG_DEBUG,"nslcd_passwd_byuid(%d)",(int)uid);
   /* do the LDAP request */
   retv=nss2nslcd(_nss_ldap_getpwuid_r(uid,&result,buffer,1024,&errnop));
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_RT_GETPWBYUID);
+  WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);
   WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RS_SUCCESS)
+  if (retv==NSLCD_RESULT_SUCCESS)
   {
     LDF_PASSWD;
   }
   WRITE_FLUSH(fp);
-  log_log(LOG_DEBUG,"nslcd_getpwuid DONE");
+  log_log(LOG_DEBUG,"nslcd_passwd_byuid DONE");
   /* we're done */
   return 0;
 }
 
-int nslcd_getpwall(FILE *fp)
+int nslcd_passwd_all(FILE *fp)
 {
   int32_t tmpint32;
   /* these are here for now until we rewrite the LDAP code */
@@ -291,13 +291,13 @@ int nslcd_getpwall(FILE *fp)
   int errnop;
   int retv;
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_getpwall");
+  log_log(LOG_DEBUG,"nslcd_passwd_all");
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_RT_GETPWALL);
+  WRITE_INT32(fp,NSLCD_ACTION_PASSWD_ALL);
   /* loop over all results */
   _nss_ldap_setpwent();
-  while ((retv=nss2nslcd(_nss_ldap_getpwent_r(&result,buffer,1024,&errnop)))==NSLCD_RS_SUCCESS)
+  while ((retv=nss2nslcd(_nss_ldap_getpwent_r(&result,buffer,1024,&errnop)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);
@@ -309,7 +309,7 @@ int nslcd_getpwall(FILE *fp)
   WRITE_INT32(fp,retv);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_endpwent();
-  log_log(LOG_DEBUG,"nslcd_getpwall DONE");
+  log_log(LOG_DEBUG,"nslcd_passwd_all DONE");
   /* we're done */
   return 0;
 }

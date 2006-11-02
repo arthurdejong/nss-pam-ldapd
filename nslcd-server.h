@@ -38,14 +38,14 @@ void nslcd_server_handlerequest(int sock);
 /* TODO: these definitions should probably be moved */
 
 /* the caller should take care of opening and closing the stream */
-int nslcd_getpwnam(FILE *fp);
+int nslcd_passwd_byname(FILE *fp);
 
 /* the caller should take care of opening and closing the stream */
-int nslcd_getpwuid(FILE *fp);
+int nslcd_passwd_byuid(FILE *fp);
 
 /* the caller should take care of opening and closing the stream */
-int nslcd_getpwall(FILE *fp);
+int nslcd_passwd_all(FILE *fp);
 
-int nslcd_aliases_byname(FILE *fp);
+int nslcd_alias_byname(FILE *fp);
 
 #endif /* not _NSLCD_SERVER_H */

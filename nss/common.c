@@ -33,9 +33,9 @@ enum nss_status nslcd2nss(int code)
 {
   switch (code)
   {
-    case NSLCD_RS_UNAVAIL:  return NSS_STATUS_UNAVAIL;
-    case NSLCD_RS_NOTFOUND: return NSS_STATUS_NOTFOUND;
-    case NSLCD_RS_SUCCESS:  return NSS_STATUS_SUCCESS;
+    case NSLCD_RESULT_UNAVAIL:  return NSS_STATUS_UNAVAIL;
+    case NSLCD_RESULT_NOTFOUND: return NSS_STATUS_NOTFOUND;
+    case NSLCD_RESULT_SUCCESS:  return NSS_STATUS_SUCCESS;
     default:                return NSS_STATUS_UNAVAIL;
   }
 }

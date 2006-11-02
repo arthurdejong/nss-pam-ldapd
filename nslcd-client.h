@@ -51,7 +51,7 @@ FILE *nslcd_client_open(void);
 
 #define READ_RESPONSE_CODE(fp) \
   READ_TYPE(fp,tmpint32,int32_t); \
-  if (tmpint32!=NSLCD_RS_SUCCESS) \
+  if (tmpint32!=NSLCD_RESULT_SUCCESS) \
     { ERROR_OUT_NOSUCCESS(fp,tmpint32) }
 
 #endif /* not _NSLCD_CLIENT_H */

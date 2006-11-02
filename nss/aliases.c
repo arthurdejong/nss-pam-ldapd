@@ -60,11 +60,11 @@ enum nss_status _nss_ldap_getaliasbyname_r(
   int32_t tmpint32,tmp2int32;
   /* open socket and write request */
   OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_RT_ALIAS_BYNAME);
+  WRITE_REQUEST(fp,NSLCD_ACTION_ALIAS_BYNAME);
   WRITE_STRING(fp,name);
   WRITE_FLUSH(fp);
   /* read response header */
-  READ_RESPONSEHEADER(fp,NSLCD_RT_ALIAS_BYNAME);
+  READ_RESPONSEHEADER(fp,NSLCD_ACTION_ALIAS_BYNAME);
   /* read response */
   READ_RESPONSE_CODE(fp);
   LDF_ALIAS;

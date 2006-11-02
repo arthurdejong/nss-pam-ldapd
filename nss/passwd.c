@@ -48,11 +48,11 @@ enum nss_status _nss_ldap_getpwnam_r(const char *name,struct passwd *result,char
   int32_t tmpint32;
   /* open socket and write request */
   OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_RT_GETPWBYNAME);
+  WRITE_REQUEST(fp,NSLCD_ACTION_PASSWD_BYNAME);
   WRITE_STRING(fp,name);
   WRITE_FLUSH(fp);
   /* read response header */
-  READ_RESPONSEHEADER(fp,NSLCD_RT_GETPWBYNAME);
+  READ_RESPONSEHEADER(fp,NSLCD_ACTION_PASSWD_BYNAME);
   /* read response */
   READ_RESPONSE_CODE(fp);
   LDF_PASSWD;
@@ -68,11 +68,11 @@ enum nss_status _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffe
   int32_t tmpint32;
   /* open socket and write request */
   OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_RT_GETPWBYUID);
+  WRITE_REQUEST(fp,NSLCD_ACTION_PASSWD_BYUID);
   WRITE_TYPE(fp,uid,uid_t);
   WRITE_FLUSH(fp);
   /* read response header */
-  READ_RESPONSEHEADER(fp,NSLCD_RT_GETPWBYUID);
+  READ_RESPONSEHEADER(fp,NSLCD_ACTION_PASSWD_BYUID);
   /* read response */
   READ_RESPONSE_CODE(fp);
   LDF_PASSWD;
@@ -98,10 +98,10 @@ enum nss_status _nss_ldap_setpwent(void)
     _nss_ldap_endpwent();
   /* open a new stream and write the request */
   OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_RT_GETPWALL);
+  WRITE_REQUEST(fp,NSLCD_ACTION_PASSWD_ALL);
   WRITE_FLUSH(fp);
   /* read response header */
-  READ_RESPONSEHEADER(fp,NSLCD_RT_GETPWALL);
+  READ_RESPONSEHEADER(fp,NSLCD_ACTION_PASSWD_ALL);
   return NSS_STATUS_SUCCESS;
 }
 

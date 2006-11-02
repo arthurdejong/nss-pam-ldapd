@@ -121,7 +121,7 @@ _nss_ldap_getaliasent_r (struct aliasent *result, char *buffer, size_t buflen,
 #define ALIAS_NAME    result.alias_name
 #define ALIAS_RCPT    result.alias_members[tmp2int32]
 
-int nslcd_aliases_byname(FILE *fp)
+int nslcd_alias_byname(FILE *fp)
 {
   int32_t tmpint32,tmp2int32;
   char *name;
@@ -134,21 +134,21 @@ int nslcd_aliases_byname(FILE *fp)
   READ_STRING_ALLOC(fp,name);
   /* FIXME: free() this buffer somewhere */
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_aliases_byname(%s)",name);
+  log_log(LOG_DEBUG,"nslcd_alias_byname(%s)",name);
   /* do the LDAP request */
   retv=nss2nslcd(_nss_ldap_getaliasbyname_r(name,&result,buffer,1024,&errnop));
   /* no more need for this */
   free(name);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_RT_ALIAS_BYNAME);
+  WRITE_INT32(fp,NSLCD_ACTION_ALIAS_BYNAME);
   WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RS_SUCCESS)
+  if (retv==NSLCD_RESULT_SUCCESS)
   {
     LDF_ALIAS;
   }
   WRITE_FLUSH(fp);
-  log_log(LOG_DEBUG,"nslcd_aliases_byname DONE");
+  log_log(LOG_DEBUG,"nslcd_alias_byname DONE");
   /* we're done */
   return 0;
 

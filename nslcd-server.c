@@ -148,10 +148,10 @@ void nslcd_server_handlerequest(int sock)
   /* handle request */
   switch (tmpint32)
   {
-    case NSLCD_RT_GETPWBYNAME: nslcd_getpwnam(fp); break;
-    case NSLCD_RT_GETPWBYUID:  nslcd_getpwuid(fp); break;
-    case NSLCD_RT_GETPWALL:    nslcd_getpwall(fp); break;
-    case NSLCD_RT_ALIAS_BYNAME: nslcd_aliases_byname(fp); break;
+    case NSLCD_ACTION_ALIAS_BYNAME:  nslcd_alias_byname(fp); break;
+    case NSLCD_ACTION_PASSWD_BYNAME: nslcd_passwd_byname(fp); break;
+    case NSLCD_ACTION_PASSWD_BYUID:  nslcd_passwd_byuid(fp); break;
+    case NSLCD_ACTION_PASSWD_ALL:    nslcd_passwd_all(fp); break;
     default:
       log_log(LOG_DEBUG,"invalid request id (%d)",(int)tmpint32);
       break;
