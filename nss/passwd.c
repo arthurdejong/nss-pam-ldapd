@@ -54,7 +54,7 @@ enum nss_status _nss_ldap_getpwnam_r(const char *name,struct passwd *result,char
   /* read response header */
   READ_RESPONSEHEADER(fp,NSLCD_RT_GETPWBYNAME);
   /* read response */
-  READ_RESPONSE(fp);
+  READ_RESPONSE_CODE(fp);
   LDF_PASSWD;
   /* close socket and we're done */
   fclose(fp);
@@ -74,7 +74,7 @@ enum nss_status _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffe
   /* read response header */
   READ_RESPONSEHEADER(fp,NSLCD_RT_GETPWBYUID);
   /* read response */
-  READ_RESPONSE(fp);
+  READ_RESPONSE_CODE(fp);
   LDF_PASSWD;
   /* close socket and we're done */
   fclose(fp);
@@ -117,7 +117,7 @@ enum nss_status _nss_ldap_getpwent_r(struct passwd *result,char *buffer,size_t b
     return NSS_STATUS_UNAVAIL;
   }
   /* read a response */
-  READ_RESPONSE(fp);
+  READ_RESPONSE_CODE(fp);
   LDF_PASSWD;
   return NSS_STATUS_SUCCESS;
 }

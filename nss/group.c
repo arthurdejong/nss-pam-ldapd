@@ -69,7 +69,7 @@ enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char 
   WRITE_FLUSH(fp);
   /* read response */
   READ_RESPONSEHEADER(fp,NSLCD_ACTION_GROUP_BYNAME);
-  READ_RESPONSE(fp);
+  READ_RESPONSE_CODE(fp);
   LDF_GROUP;
   /* close socket and we're done */
   fclose(fp);
@@ -88,7 +88,7 @@ enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer
   WRITE_FLUSH(fp);
   /* read response */
   READ_RESPONSEHEADER(fp,NSLCD_ACTION_GROUP_BYGID);
-  READ_RESPONSE(fp);
+  READ_RESPONSE_CODE(fp);
   LDF_GROUP;
   /* close socket and we're done */
   fclose(fp);
@@ -132,7 +132,7 @@ enum nss_status _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t bu
     return NSS_STATUS_UNAVAIL;
   }
   /* read a response */
-  READ_RESPONSE(fp);
+  READ_RESPONSE_CODE(fp);
   LDF_GROUP;
   return NSS_STATUS_SUCCESS;
 }

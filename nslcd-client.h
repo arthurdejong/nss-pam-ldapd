@@ -49,7 +49,7 @@ FILE *nslcd_client_open(void);
   if (tmpint32!=(req)) \
     { ERROR_OUT_READERROR(fp) }
 
-#define READ_RESPONSE(fp) \
+#define READ_RESPONSE_CODE(fp) \
   READ_TYPE(fp,tmpint32,int32_t); \
   if (tmpint32!=NSLCD_RS_SUCCESS) \
     { ERROR_OUT_NOSUCCESS(fp,tmpint32) }

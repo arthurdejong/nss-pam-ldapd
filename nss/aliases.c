@@ -66,7 +66,7 @@ enum nss_status _nss_ldap_getaliasbyname_r(
   /* read response header */
   READ_RESPONSEHEADER(fp,NSLCD_RT_ALIAS_BYNAME);
   /* read response */
-  READ_RESPONSE(fp);
+  READ_RESPONSE_CODE(fp);
   LDF_ALIAS;
   /* fill in remaining gaps in struct */
   result->alias_local=0;
