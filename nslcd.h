@@ -36,10 +36,10 @@
    A response looks like:
      int32 NSLCD_VERSION
      int32 NSLCD_ACTION_* (the original request type)
-     int32 NSLCD_RS_* (response code)
+     int32 NSLCD_RESULT_* (response code)
      [result value(s)]
    If a response would return multiple values (e.g. for NSLCD_ACTION_*_ALL
-   functions) each return value will be preceded by a NSLCD_RS_* value.
+   functions) each return value will be preceded by a NSLCD_RESULT_* value.
 
    These are the available data types:
      INT32  - 32-bit integer value
