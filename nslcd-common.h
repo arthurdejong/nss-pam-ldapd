@@ -87,23 +87,35 @@
   i=tmpint32; \
   DEBUG_PRINT("READ_INT32(%d)\n",(int)i);
 
+/* current position in the buffer */
+#define BUF_CUR \
+  (buffer+bufptr)
+
+/* check that the buffer has sz bytes left in it */
+#define BUF_CHECK(fp,sz) \
+  if ((bufptr+(size_t)(sz))>buflen) \
+    { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
+
+/* move the buffer pointer */
+#define BUF_SKIP(sz) \
+  bufptr+=(size_t)tmpint32+1;
+
 /* read string in the buffer (using buffer, buflen and bufptr)
    and store the actual location of the string in field */
 #define READ_STRING_BUF(fp,field) \
   /* read the size of the string */ \
   READ_TYPE(fp,tmpint32,int32_t); \
   /* check if read would fit */ \
-  if ((bufptr+(size_t)tmpint32+1)>buflen) \
-    { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
+  BUF_CHECK(fp,tmpint32+1); \
   /* read string from the stream */ \
   if (tmpint32>0) \
-    { READ(fp,buffer+bufptr,(size_t)tmpint32); } \
+    { READ(fp,BUF_CUR,(size_t)tmpint32); } \
   /* null-terminate string in buffer */ \
-  buffer[bufptr+tmpint32]='\0'; \
-  DEBUG_PRINT("READ_STRING_BUF(\"%s\"=%d)\n",buffer+bufptr,strlen(buffer+bufptr)); \
+  BUF_CUR[tmpint32]='\0'; \
+  DEBUG_PRINT("READ_STRING_BUF(\"%s\"=%d)\n",BUF_CUR,strlen(BUF_CUR)); \
   /* prepare result */ \
-  (field)=buffer+bufptr; \
-  bufptr+=(size_t)tmpint32+1;
+  (field)=BUF_CUR; \
+  BUF_SKIP(tmpint32+1);
 
 /* read a string from the stream dynamically allocating memory
    for the string (don't forget to call free() later on) */
@@ -117,7 +129,7 @@
   /* read string from the stream */ \
   if (tmpint32>0) \
     { READ(fp,name,(size_t)tmpint32); } \
-  /* null-terminate string in buffer */ \
+  /* null-terminate string */ \
   (name)[tmpint32]='\0'; \
   DEBUG_PRINT("READ_STRING(\"%s\"=%d)\n",(name),strlen(name));
 
@@ -128,10 +140,9 @@
   (num)=tmpint32; \
   /* allocate room for *char[num] */ \
   tmpint32*=sizeof(char *); \
-  if ((bufptr+(size_t)tmpint32)>buflen) \
-    { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
-  (arr)=(char **)(buffer+bufptr); \
-  bufptr+=(size_t)tmpint32; \
+  BUF_CHECK(fp,tmpint32); \
+  (arr)=(char **)BUF_CUR; \
+  BUF_SKIP(tmpint32); \
   for (tmp2int32=0;tmp2int32<(num);tmp2int32++) \
   { \
     READ_STRING_BUF(fp,(arr)[tmp2int32]); \
@@ -143,9 +154,9 @@
   READ_TYPE(fp,tmpint32,int32_t); \
   /* allocate room for *char[num+1] */ \
   tmp2int32=(tmpint32+1)*sizeof(char *); \
-  if ((bufptr+(size_t)tmp2int32)>buflen) \
-    { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
-  (arr)=(char **)(buffer+bufptr); \
+  BUF_CHECK(fp,tmp2int32); \
+  (arr)=(char **)BUF_CUR; \
+  BUF_SKIP(tmpint32); \
   /* read all entries */ \
   bufptr+=(size_t)tmpint32; \
   for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
