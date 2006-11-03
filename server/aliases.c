@@ -97,27 +97,11 @@ _nss_ldap_getaliasent_r (struct aliasent *result, char *buffer, size_t buflen,
                  _nss_ldap_parse_alias, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
-#define PASSWD_NAME   result.pw_name
-#define PASSWD_PASSWD result.pw_passwd
-#define PASSWD_UID    result.pw_uid
-#define PASSWD_GID    result.pw_gid
-#define PASSWD_GECOS  result.pw_gecos
-#define PASSWD_DIR    result.pw_dir
-#define PASSWD_SHELL  result.pw_shell
-
-/* generic macros in development here */
-#define WRITE_LOOP(fp,num,opr) \
-  WRITE_INT32(fp,num); \
-  for (tmp2int32=0;tmp2int32<(num);tmp2int32++) \
-  { \
-    opr \
-  }
-
 /* macros for expanding the LDF_ALIAS macro */
-#define LDF_STRING(field)    WRITE_STRING(fp,field)
-#define LDF_LOOP(field)      WRITE_LOOP(fp,result.alias_members_len,field)
-#define ALIAS_NAME    result.alias_name
-#define ALIAS_RCPT    result.alias_members[tmp2int32]
+#define LDF_STRING(field)     WRITE_STRING(fp,field)
+#define LDF_STRINGLIST(field) WRITE_STRINGLIST_NUM(fp,field,result.alias_members_len)
+#define ALIAS_NAME            result.alias_name
+#define ALIAS_RCPTS           result.alias_members
 
 int nslcd_alias_byname(FILE *fp)
 {

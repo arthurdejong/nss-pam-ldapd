@@ -31,10 +31,10 @@
 #include "common.h"
 
 /* macros for expanding the LDF_ALIAS macro */
-#define LDF_STRING(field)    READ_STRING_BUF(fp,field)
-#define LDF_LOOP(field)      READ_LOOP_NUM(fp,result->alias_members_len,result->alias_members,field)
-#define ALIAS_NAME    result->alias_name
-#define ALIAS_RCPT    result->alias_members[tmp2int32]
+#define LDF_STRING(field)     READ_STRING_BUF(fp,field)
+#define LDF_STRINGLIST(field) READ_STRINGLIST_NUM(fp,field,result->alias_members_len)
+#define ALIAS_NAME            result->alias_name
+#define ALIAS_RCPTS           result->alias_members
 
 enum nss_status _nss_ldap_getaliasbyname_r(
         const char *name,struct aliasent *result,

@@ -46,8 +46,8 @@
      TYPE   - a typed field that is transferred using sizeof()
      STRING - a string length (32bit) followed by the string value (not
               null-terminted)
-     LOOP   - a 32-bit number noting the number of entries followed by the
-              entries one at a time
+     STRINGLIST - a 32-bit number noting the number of strings followed by the
+                  strings one at a time
 
    Compound datatypes (such as PASSWD) are defined below as a combination of
    the above types. They are defined as macros so they can be expanded to code
@@ -62,9 +62,7 @@
 /* used for transferring alias information */
 #define LDF_ALIAS \
   LDF_STRING(ALIAS_NAME) \
-  LDF_LOOP( \
-    LDF_STRING(ALIAS_RCPT) \
-  )
+  LDF_STRINGLIST(ALIAS_RCPTS)
 
 /* AUTOMOUNT - TBD */
 
@@ -77,9 +75,7 @@
   LDF_STRING(GROUP_NAME) \
   LDF_STRING(GROUP_PASSWD) \
   LDF_TYPE(GROUP_GID,gid_t) \
-  LDF_LOOP( \
-    LDF_STRING(GROUP_MEMBER) \
-  )
+  LDF_STRINGLIST(GROUP_MEMBERS)
 
 /* HOSTS - TBD - gethostbyname - struct hostent - gethostbyaddr - struct in_addr */
 
@@ -102,9 +98,7 @@
 /* for transferring struct rpcent structs */
 #define LDF_RPC \
   LDF_STRING(RPC_NAME) \
-  LDF_LOOP( \
-    LDF_STRING(RPC_ALIAS) \
-  ) \
+  LDF_STRINGLIST(RPC_ALIASES) \
   LDF_TYPE(RPC_NUMBER,int32_t)
 
 /* SERVICES - TBD - getservbyname - struct servent */

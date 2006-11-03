@@ -31,13 +31,13 @@
 #include "common.h"
 
 /* macros for expanding the LDF_GROUP macro */
-#define LDF_STRING(field)    READ_STRING_BUF(fp,field)
-#define LDF_TYPE(field,type) READ_TYPE(fp,field,type)
-#define LDF_LOOP(field)      READ_LOOP_NULLTERM(fp,result->gr_mem,field)
-#define GROUP_NAME   result->gr_name
-#define GROUP_PASSWD result->gr_passwd
-#define GROUP_GID    result->gr_gid
-#define GROUP_MEMBER result->gr_mem[tmp2int32]
+#define LDF_STRING(field)     READ_STRING_BUF(fp,field)
+#define LDF_TYPE(field,type)  READ_TYPE(fp,field,type)
+#define LDF_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
+#define GROUP_NAME            result->gr_name
+#define GROUP_PASSWD          result->gr_passwd
+#define GROUP_GID             result->gr_gid
+#define GROUP_MEMBERS         result->gr_mem
 
 enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop)
 {
@@ -122,7 +122,7 @@ enum nss_status _nss_ldap_initgroups_dyn(
     /* read gid */
     READ_TYPE(fp,gid,gid_t);
     /* skip members */
-    SKIP_LOOP(fp);
+    SKIP_STRINGLIST(fp);
     /* check if entry would fit and we have not returned too many */
     if ( ((*start)>=(*size)) || (num>=limit) )
       { ERROR_OUT_BUFERROR(fp); }

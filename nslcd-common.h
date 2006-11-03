@@ -42,6 +42,27 @@
   if (fflush(fp)<0) \
     { ERROR_OUT_WRITEERROR(fp) }
 
+#define WRITE_STRINGLIST_NUM(fp,arr,num) \
+  /* write number of strings */ \
+  WRITE_INT32(fp,num); \
+  /* write strings */ \
+  for (tmp2int32=0;tmp2int32<(num);tmp2int32++) \
+  { \
+    WRITE_STRING(fp,(arr)[tmp2int32]); \
+  }
+
+#define WRITE_STRINGLIST_NULLTERM(fp,arr) \
+  /* first determin length of array */ \
+  for (tmpint32=0;(arr)[tmpint32]!=NULL;tmpint32++) \
+    /*noting*/ ; \
+  /* write number of strings */ \
+  WRITE_TYPE(fp,tmpint32,int32_t); \
+  /* write strings */ \
+  for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
+  { \
+    WRITE_STRING(fp,(arr)[tmp2int32]); \
+  }
+
 /* READ macros, used for reading data, on read error they will
    call the ERROR_OUT_READERROR or ERROR_OUT_BUFERROR macro
    these macros may require the availability of the following
@@ -102,7 +123,7 @@
 
 /* read an array from a stram and store the length of the
    array in num (size for the array is allocated) */
-#define READ_LOOP_NUM(fp,num,arr,opr) \
+#define READ_STRINGLIST_NUM(fp,arr,num) \
   READ_TYPE(fp,tmpint32,int32_t); \
   (num)=tmpint32; \
   /* allocate room for *char[num] */ \
@@ -113,12 +134,12 @@
   bufptr+=(size_t)tmpint32; \
   for (tmp2int32=0;tmp2int32<(num);tmp2int32++) \
   { \
-    opr \
+    READ_STRING_BUF(fp,(arr)[tmp2int32]); \
   }
 
 /* read an array from a stram and store it as a null-terminated
    array list (size for the array is allocated) */
-#define READ_LOOP_NULLTERM(fp,arr,opr) \
+#define READ_STRINGLIST_NULLTERM(fp,arr) \
   READ_TYPE(fp,tmpint32,int32_t); \
   /* allocate room for *char[num+1] */ \
   tmp2int32=(tmpint32+1)*sizeof(char *); \
@@ -129,7 +150,7 @@
   bufptr+=(size_t)tmpint32; \
   for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
   { \
-    opr \
+    READ_STRING_BUF(fp,(arr)[tmp2int32]); \
   } \
   /* set last entry to NULL */ \
   (arr)[tmp2int32]=NULL;
@@ -143,7 +164,7 @@
   DEBUG_PRINT("SKIP_STRING()\n");
 
 /* skip a loop of strings */
-#define SKIP_LOOP(fp) \
+#define SKIP_STRINGLIST(fp) \
   READ_TYPE(fp,tmpint32,int32_t); \
   /* read all entries */ \
   for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
