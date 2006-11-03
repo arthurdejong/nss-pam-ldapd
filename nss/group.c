@@ -43,7 +43,7 @@ enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char 
 {
   FILE *fp;
   size_t bufptr=0;
-  int32_t tmpint32,tmp2int32;
+  int32_t tmpint32,tmp2int32,tmp3int32;
   /* open socket and write request */
   OPEN_SOCK(fp);
   WRITE_REQUEST(fp,NSLCD_ACTION_GROUP_BYNAME);
@@ -62,7 +62,7 @@ enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer
 {
   FILE *fp;
   size_t bufptr=0;
-  int32_t tmpint32,tmp2int32;
+  int32_t tmpint32,tmp2int32,tmp3int32;
   /* open socket and write request */
   OPEN_SOCK(fp);
   WRITE_REQUEST(fp,NSLCD_ACTION_GROUP_BYGID);
@@ -98,9 +98,8 @@ enum nss_status _nss_ldap_initgroups_dyn(
         long int *size,gid_t **groupsp,long int limit,int *errnop)
 {
   FILE *fp;
-  size_t bufptr=0;
   int32_t cd;
-  int32_t tmpint32,tmp2int32;
+  int32_t tmpint32,tmp2int32,tmp3int32;
   gid_t gid;
   int num=0;
   /* open socket and write the request */
@@ -148,7 +147,7 @@ enum nss_status _nss_ldap_setgrent(void)
 
 enum nss_status _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop)
 {
-  int32_t tmp2int32;
+  int32_t tmp2int32,tmp3int32;
   NSS_GETENT(LDF_GROUP);
 }
 

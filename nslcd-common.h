@@ -136,8 +136,8 @@
 /* read an array from a stram and store the length of the
    array in num (size for the array is allocated) */
 #define READ_STRINGLIST_NUM(fp,arr,num) \
-  READ_TYPE(fp,tmpint32,int32_t); \
-  (num)=tmpint32; \
+  /* read the number of entries */ \
+  READ_INT32(fp,(num)); \
   /* allocate room for *char[num] */ \
   tmpint32*=sizeof(char *); \
   BUF_CHECK(fp,tmpint32); \
@@ -151,15 +151,15 @@
 /* read an array from a stram and store it as a null-terminated
    array list (size for the array is allocated) */
 #define READ_STRINGLIST_NULLTERM(fp,arr) \
-  READ_TYPE(fp,tmpint32,int32_t); \
+  /* read the number of entries */ \
+  READ_TYPE(fp,tmp3int32,int32_t); \
   /* allocate room for *char[num+1] */ \
-  tmp2int32=(tmpint32+1)*sizeof(char *); \
+  tmp2int32=(tmp3int32+1)*sizeof(char *); \
   BUF_CHECK(fp,tmp2int32); \
   (arr)=(char **)BUF_CUR; \
-  BUF_SKIP(tmpint32); \
+  BUF_SKIP(tmp2int32); \
   /* read all entries */ \
-  bufptr+=(size_t)tmpint32; \
-  for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
+  for (tmp2int32=0;tmp2int32<tmp3int32;tmp2int32++) \
   { \
     READ_STRING_BUF(fp,(arr)[tmp2int32]); \
   } \
@@ -176,9 +176,10 @@
 
 /* skip a loop of strings */
 #define SKIP_STRINGLIST(fp) \
-  READ_TYPE(fp,tmpint32,int32_t); \
+  /* read the number of entries */ \
+  READ_TYPE(fp,tmp3int32,int32_t); \
   /* read all entries */ \
-  for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
+  for (tmp2int32=0;tmp2int32<tmp3int32;tmp2int32++) \
   { \
     SKIP_STRING(fp); \
   }
