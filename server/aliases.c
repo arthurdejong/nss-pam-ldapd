@@ -149,3 +149,35 @@ int nslcd_alias_byname(FILE *fp)
   /* we're done */
   return 0;
 }
+
+int nslcd_alias_all(FILE *fp)
+{
+  int32_t tmpint32,tmp2int32;
+  /* these are here for now until we rewrite the LDAP code */
+  struct aliasent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_alias_all");
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_ALIAS_ALL);
+  /* loop over all results */
+  _nss_ldap_setaliasent();
+  while ((retv=nss2nslcd(_nss_ldap_getaliasent_r(&result,buffer,1024,&errnop)))==NSLCD_RESULT_SUCCESS)
+  {
+    /* write the result code */
+    WRITE_INT32(fp,retv);
+    /* write the password entry */
+    LDF_ALIAS;
+    fflush(fp);
+  }
+  /* write the final result code */
+  WRITE_INT32(fp,retv);
+  /* FIXME: if a previous call returns what happens to the context? */
+  _nss_ldap_endaliasent();
+  log_log(LOG_DEBUG,"nslcd_alias_all DONE");
+  /* we're done */
+  return 0;
+}

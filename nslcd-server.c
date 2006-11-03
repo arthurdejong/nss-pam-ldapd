@@ -149,6 +149,7 @@ void nslcd_server_handlerequest(int sock)
   switch (tmpint32)
   {
     case NSLCD_ACTION_ALIAS_BYNAME:  nslcd_alias_byname(fp); break;
+    case NSLCD_ACTION_ALIAS_ALL:     nslcd_alias_all(fp); break;
     case NSLCD_ACTION_PASSWD_BYNAME: nslcd_passwd_byname(fp); break;
     case NSLCD_ACTION_PASSWD_BYUID:  nslcd_passwd_byuid(fp); break;
     case NSLCD_ACTION_PASSWD_ALL:    nslcd_passwd_all(fp); break;
