@@ -125,13 +125,30 @@
   if ((bufptr+(size_t)tmp2int32)>buflen) \
     { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
   (arr)=(char **)(buffer+bufptr); \
-  /* set last entry to NULL */ \
-  (arr)[tmpint32]=NULL; \
   /* read all entries */ \
   bufptr+=(size_t)tmpint32; \
   for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
   { \
     opr \
+  } \
+  /* set last entry to NULL */ \
+  (arr)[tmp2int32]=NULL;
+
+/* read a string from the stream but don't do anything with the result */
+#define SKIP_STRING(fp) \
+  /* read the size of the string */ \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  /* seek in the stream past the string contents */ \
+  fseek(fp,(long)tmpint32,SEEK_CUR); \
+  DEBUG_PRINT("SKIP_STRING()\n");
+
+/* skip a loop of strings */
+#define SKIP_LOOP(fp) \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  /* read all entries */ \
+  for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
+  { \
+    SKIP_STRING(fp); \
   }
 
 #endif /* not _NSLCD_COMMON_H */
