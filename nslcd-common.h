@@ -100,4 +100,38 @@
   (name)[tmpint32]='\0'; \
   DEBUG_PRINT("READ_STRING(\"%s\"=%d)\n",(name),strlen(name));
 
+/* read an array from a stram and store the length of the
+   array in num (size for the array is allocated) */
+#define READ_LOOP_NUM(fp,num,arr,opr) \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  (num)=tmpint32; \
+  /* allocate room for *char[num] */ \
+  tmpint32*=sizeof(char *); \
+  if ((bufptr+(size_t)tmpint32)>buflen) \
+    { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
+  (arr)=(char **)(buffer+bufptr); \
+  bufptr+=(size_t)tmpint32; \
+  for (tmp2int32=0;tmp2int32<(num);tmp2int32++) \
+  { \
+    opr \
+  }
+
+/* read an array from a stram and store it as a null-terminated
+   array list (size for the array is allocated) */
+#define READ_LOOP_NULLTERM(fp,arr,opr) \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  /* allocate room for *char[num+1] */ \
+  tmp2int32=(tmpint32+1)*sizeof(char *); \
+  if ((bufptr+(size_t)tmp2int32)>buflen) \
+    { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
+  (arr)=(char **)(buffer+bufptr); \
+  /* set last entry to NULL */ \
+  (arr)[tmpint32]=NULL; \
+  /* read all entries */ \
+  bufptr+=(size_t)tmpint32; \
+  for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
+  { \
+    opr \
+  }
+
 #endif /* not _NSLCD_COMMON_H */

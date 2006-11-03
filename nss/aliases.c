@@ -30,24 +30,9 @@
 #include "nslcd-client.h"
 #include "common.h"
 
-/* generic macros in development here */
-#define READ_LOOP(fp,num,arr,opr) \
-  READ_TYPE(fp,tmpint32,int32_t); \
-  (num)=tmpint32; \
-  /* allocate room for *char[num] */ \
-  tmpint32*=sizeof(char *); \
-  if ((bufptr+(size_t)tmpint32)>buflen) \
-    { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
-  (arr)=(char **)(buffer+bufptr); \
-  bufptr+=(size_t)tmpint32; \
-  for (tmp2int32=0;tmp2int32<(num);tmp2int32++) \
-  { \
-    opr \
-  }
-
 /* macros for expanding the LDF_ALIAS macro */
 #define LDF_STRING(field)    READ_STRING_BUF(fp,field)
-#define LDF_LOOP(field)      READ_LOOP(fp,result->alias_members_len,result->alias_members,field)
+#define LDF_LOOP(field)      READ_LOOP_NUM(fp,result->alias_members_len,result->alias_members,field)
 #define ALIAS_NAME    result->alias_name
 #define ALIAS_RCPT    result->alias_members[tmp2int32]
 
@@ -75,18 +60,22 @@ enum nss_status _nss_ldap_getaliasbyname_r(
   return NSS_STATUS_SUCCESS;
 }
 
+/* thread-local file pointer to an ongoing request */
+static __thread FILE *pwentfp;
+#define fp pwentfp
+
 enum nss_status _nss_ldap_setaliasent(void)
 {
-  return NSS_STATUS_UNAVAIL;
+  NSS_SETENT(NSLCD_ACTION_ALIAS_ALL);
 }
 
 enum nss_status _nss_ldap_getaliasent_r(struct aliasent *result,char *buffer,size_t buflen,int *errnop)
 {
-  *errnop=ENOENT;
-  return NSS_STATUS_UNAVAIL;
+  int32_t tmp2int32;
+  NSS_GETENT(LDF_ALIAS);
 }
 
 enum nss_status _nss_ldap_endaliasent(void)
 {
-  return NSS_STATUS_UNAVAIL;
+  NSS_ENDENT();
 }

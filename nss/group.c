@@ -30,24 +30,6 @@
 #include "nslcd-client.h"
 #include "common.h"
 
-
-/* generic macros in development here */
-#define READ_LOOP_NULLTERM(fp,arr,opr) \
-  READ_TYPE(fp,tmpint32,int32_t); \
-  /* allocate room for *char[num+1] */ \
-  tmp2int32=(tmpint32+1)*sizeof(char *); \
-  if ((bufptr+(size_t)tmp2int32)>buflen) \
-    { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
-  (arr)=(char **)(buffer+bufptr); \
-  /* set last entry to NULL */ \
-  (arr)[tmpint32]=NULL; \
-  /* read all entries */ \
-  bufptr+=(size_t)tmpint32; \
-  for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
-  { \
-    opr \
-  }
-
 /* macros for expanding the LDF_GROUP macro */
 #define LDF_STRING(field)    READ_STRING_BUF(fp,field)
 #define LDF_TYPE(field,type) READ_TYPE(fp,field,type)
@@ -95,8 +77,14 @@ enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_initgroups(const char *user,gid_t group,long int *start,long int *size,gid_t *groups,long int limit,int *errnop);
-enum nss_status _nss_ldap_initgroups_dyn(const char *user,gid_t group,long int *start,long int *size,gid_t **groupsp,long int limit,int *errnop);
+/* this function returns a list of groups */ 
+enum nss_status _nss_ldap_initgroups_dyn(
+        const char *user,gid_t group,long int *start,
+        long int *size,gid_t **groupsp,long int limit,int *errnop)
+{
+  return NSS_STATUS_UNAVAIL;
+  /* TODO: implement skipping of entries as we're only interested in gids */
+}
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *pwentfp;
@@ -104,42 +92,16 @@ static __thread FILE *pwentfp;
 
 enum nss_status _nss_ldap_setgrent(void)
 {
-  int32_t tmpint32;
-  /* this is to satisfy our macros */
-  int errnocp;
-  int *errnop;
-  errnop=&errnocp;
-  /* close the existing stream if it is still open */
-  if (fp!=NULL)
-    _nss_ldap_endpwent();
-  /* open a new stream and write the request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_GROUP_ALL);
-  WRITE_FLUSH(fp);
-  /* read response header */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_GROUP_ALL);
-  return NSS_STATUS_SUCCESS;
+  NSS_SETENT(NSLCD_ACTION_GROUP_ALL);
 }
 
 enum nss_status _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop)
 {
-  int32_t tmpint32,tmp2int32;
-  size_t bufptr=0;
-  /* check that we have a valid file descriptor */
-  if (fp==NULL)
-  {
-    *errnop=ENOENT;
-    return NSS_STATUS_UNAVAIL;
-  }
-  /* read a response */
-  READ_RESPONSE_CODE(fp);
-  LDF_GROUP;
-  return NSS_STATUS_SUCCESS;
+  int32_t tmp2int32;
+  NSS_GETENT(LDF_GROUP);
 }
 
 enum nss_status _nss_ldap_endgrent(void)
 {
-  if (fp!=NULL)
-    fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_ENDENT();
 }

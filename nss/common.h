@@ -57,4 +57,41 @@ enum nss_status nslcd2nss(int code);
   *errnop=ENOENT; \
   return nslcd2nss(retv);
 
+/* helper macros available to easily generate {set,get,end}ent functions */
+
+#define NSS_SETENT(action) \
+  int32_t tmpint32; \
+  int errnocp; \
+  int *errnop; \
+  errnop=&errnocp; \
+  /* close the existing stream if it is still open */ \
+  if (fp!=NULL) \
+    _nss_ldap_endpwent(); \
+  /* open a new stream and write the request */ \
+  OPEN_SOCK(fp); \
+  WRITE_REQUEST(fp,action); \
+  WRITE_FLUSH(fp); \
+  /* read response header */ \
+  READ_RESPONSEHEADER(fp,action); \
+  return NSS_STATUS_SUCCESS;
+
+#define NSS_GETENT(type) \
+  int32_t tmpint32; \
+  size_t bufptr=0; \
+  /* check that we have a valid file descriptor */ \
+  if (fp==NULL) \
+  { \
+    *errnop=ENOENT; \
+    return NSS_STATUS_UNAVAIL; \
+  } \
+  /* read a response */ \
+  READ_RESPONSE_CODE(fp); \
+  type; \
+  return NSS_STATUS_SUCCESS;
+
+#define NSS_ENDENT() \
+  if (fp!=NULL) \
+    fclose(fp); \
+  return NSS_STATUS_SUCCESS;
+
 #endif /* not _NSS_COMMON_H */
