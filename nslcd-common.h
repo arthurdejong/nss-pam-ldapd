@@ -166,12 +166,17 @@
   /* set last entry to NULL */ \
   (arr)[tmp2int32]=NULL;
 
+/* skip a number of bytes foreward */
+#define SKIP(fp,sz) \
+  if (fseek(fp,(long)sz,SEEK_CUR)) \
+    { ERROR_OUT_READERROR(fp) }
+
 /* read a string from the stream but don't do anything with the result */
 #define SKIP_STRING(fp) \
   /* read the size of the string */ \
   READ_TYPE(fp,tmpint32,int32_t); \
   /* seek in the stream past the string contents */ \
-  fseek(fp,(long)tmpint32,SEEK_CUR); \
+  SKIP(fp,tmpint32); \
   DEBUG_PRINT("SKIP_STRING()\n");
 
 /* skip a loop of strings */
