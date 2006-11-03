@@ -48,4 +48,6 @@ int nslcd_passwd_all(FILE *fp);
 
 int nslcd_alias_byname(FILE *fp);
 
+int nslcd_alias_all(FILE *fp);
+
 #endif /* not _NSLCD_SERVER_H */
