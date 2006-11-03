@@ -77,7 +77,19 @@
   LDF_TYPE(GROUP_GID,gid_t) \
   LDF_STRINGLIST(GROUP_MEMBERS)
 
-/* HOSTS - TBD - gethostbyname - struct hostent - gethostbyaddr - struct in_addr */
+/* used for storing address information for the host database */
+/* Note: this marcos is not expanded to code, check manually */
+#define LDF_ADDRESS \
+  LDF_INT32(ADDRESS_TYPE) /* type of address: e.g. AF_INET or AF_INET6 */ \
+  LDF_INT32(ADDRESS_LEN)  /* length of the address to follow */ \
+  LDF_BUF(ADDRESS_ADDR)   /* the address itself in network byte order */  
+
+/* used for transferring host (/etc/hosts) information */
+/* Note: this marcos is not expanded to code, check manually */
+#define LDF_HOST \
+  LDF_STRING(HOST_NAME) \
+  LDF_STRINGLIST(HOST_ALIASES) \
+  LDF_ADDRESSLIST(HOST_ADDRS)
 
 /* NETGROUP - TBD */
 
@@ -121,6 +133,9 @@
 #define NSLCD_ACTION_GROUP_BYGID        5002
 #define NSLCD_ACTION_GROUP_BYMEMBER     5003
 #define NSLCD_ACTION_GROUP_ALL          5004
+#define NSLCD_ACTION_HOST_BYNAME        6001
+#define NSLCD_ACTION_HOST_BYADDR        6002
+#define NSLCD_ACTION_HOST_ALL           6005
 #define NSLCD_ACTION_PASSWD_BYNAME      1001
 #define NSLCD_ACTION_PASSWD_BYUID       1002
 #define NSLCD_ACTION_PASSWD_ALL         1004
