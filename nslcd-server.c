@@ -50,6 +50,7 @@ int nslcd_server_open(void)
   }
 
   /* create socket address structure */
+  memset(&addr,0,sizeof(struct sockaddr_un));
   addr.sun_family=AF_UNIX;
   strcpy(addr.sun_path,NSLCD_SOCKET);
 
