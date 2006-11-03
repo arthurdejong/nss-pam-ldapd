@@ -924,15 +924,6 @@ enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long in
     return NSS_STATUS_NOTFOUND;
 #endif
 
-#ifdef HAVE_USERSEC_H
-  lia.grplist = NULL;
-  lia.listlen = 0;
-  lia.group = group;
-  lia.start = start;
-  lia.size = size;
-  lia.groups = groupsp;
-  lia.limit = limit;
-#endif /* HAVE_USERSEC_H */
   lia.depth = 0;
   lia.known_groups = NULL;
 
@@ -944,11 +935,7 @@ enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long in
     {
       debug ("<== " NSS_LDAP_INITGROUPS_FUNCTION " (init failed)");
       _nss_ldap_leave ();
-#ifdef HAVE_USERSEC_H
-      return NULL;
-#else
       return stat;
-#endif /* !HAVE_USERSEC_H */
     }
 
   if (_nss_ldap_test_initgroups_ignoreuser (LA_STRING (a)))
@@ -1013,11 +1000,7 @@ enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long in
     {
       debug ("<== " NSS_LDAP_INITGROUPS_FUNCTION " (ent_context_init failed)");
       _nss_ldap_leave ();
-#ifdef HAVE_USERSEC_H
-      return NULL;
-#else
       return NSS_STATUS_UNAVAIL;
-#endif /* HAVE_USERSEC_H */
     }
 
   stat = _nss_ldap_getent_ex (&a, &ctx, (void *) &lia, NULL, 0,
@@ -1028,13 +1011,7 @@ enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long in
                               do_parse_initgroups_nested);
 
   if (userdn != NULL)
-    {
-#ifdef HAVE_LDAP_MEMFREE
-      ldap_memfree (userdn);
-#else
-      free (userdn);
-#endif /* HAVE_LDAP_MEMFREE */
-    }
+    ldap_memfree (userdn);
 
   _nss_ldap_namelist_destroy (&lia.known_groups);
   _nss_ldap_ent_context_release (ctx);
@@ -1051,11 +1028,7 @@ enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long in
       debug ("<== " NSS_LDAP_INITGROUPS_FUNCTION " (not found)");
       if (erange)
         errno = ERANGE;
-#ifndef HAVE_USERSEC_H
       return stat;
-#else
-      return NULL;
-#endif /* HAVE_USERSEC_H */
     }
 
   debug ("<== " NSS_LDAP_INITGROUPS_FUNCTION " (success)");
