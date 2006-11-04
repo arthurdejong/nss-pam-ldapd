@@ -27,8 +27,8 @@ man_MANS = nss_ldap.5
 
 EXTRA_DIST = ChangeLog \
              AUTHORS ANNOUNCE NEWS INSTALL README COPYING \
-             ldap.conf nsswitch.ldap \
-             certutil debian doc exports.linux nss_ldap.5 tests
+             ldap.conf \
+             debian doc exports.linux nss_ldap.5 tests
 
 nss_ldap_so_SOURCES = nslcd-client.c nslcd-client.h nslcd.h
 nss_ldap_so_LDADD = nss/libnss.a
@@ -85,7 +85,6 @@ install-data-local:
 	  $(mkinstalldirs) $(DESTDIR)$(dir $(NSS_LDAP_PATH_CONF)); \
 	  $(INSTALL_DATA) -o $(INST_UID) -g $(INST_GID) $(srcdir)/ldap.conf $(DESTDIR)$(NSS_LDAP_PATH_CONF); \
 	fi
-	$(INSTALL_DATA) -o $(INST_UID) -g $(INST_GID) $(srcdir)/nsswitch.ldap $(DESTDIR)$(sysconfdir)/nsswitch.ldap;
 
 uninstall-local:
 	@$(NORMAL_UNINSTALL)
