@@ -11,34 +11,33 @@
    int32_t tmpint32; - temporary variable
    */
 
+#define DEBUG_PRINT_OLD(...) fprintf(stderr, ## args)
 #ifdef DEBUG_PROT
-#define DEBUG_PRINT(args...) fprintf(stderr, ## args)
+#define DEBUG_PRINT(fmt,arg) fprintf(stderr,fmt,arg)
 #else /* DEBUG_PROT */
-#define DEBUG_PRINT(args...)
+#define DEBUG_PRINT(fmt,arg)
 #endif /* not DEBUG_PROT */
 
 #define WRITE(fp,ptr,size) \
-  DEBUG_PRINT("WRITE()\n"); \
+  DEBUG_PRINT("WRITE: %d bytes\n",(int)size); \
   if (fwrite(ptr,size,1,fp)<1) \
     { ERROR_OUT_WRITEERROR(fp) }
 
 #define WRITE_TYPE(fp,field,type) \
-  DEBUG_PRINT("WRITE_TYPE()\n"); \
   WRITE(fp,&(field),sizeof(type))
 
 #define WRITE_INT32(fp,i) \
-  DEBUG_PRINT("WRITE_INT32(%d)\n",(int)i); \
+  DEBUG_PRINT("WRITE: int32=%d\n",(int)i); \
   tmpint32=(int32_t)(i); \
   WRITE_TYPE(fp,tmpint32,int32_t)
 
 #define WRITE_STRING(fp,str) \
-  DEBUG_PRINT("WRITE_STRING(\"%s\"=%d)\n",str,strlen(str)); \
+  DEBUG_PRINT("WRITE: string=\"%s\"\n",str); \
   WRITE_INT32(fp,strlen(str)); \
   if (tmpint32>0) \
     { WRITE(fp,str,tmpint32); }
 
 #define WRITE_FLUSH(fp) \
-  DEBUG_PRINT("WRITE_FLUSH()\n"); \
   if (fflush(fp)<0) \
     { ERROR_OUT_WRITEERROR(fp) }
 
@@ -53,12 +52,12 @@
 
 #define WRITE_STRINGLIST_NULLTERM(fp,arr) \
   /* first determin length of array */ \
-  for (tmpint32=0;(arr)[tmpint32]!=NULL;tmpint32++) \
+  for (tmp3int32=0;(arr)[tmp3int32]!=NULL;tmp3int32++) \
     /*noting*/ ; \
   /* write number of strings */ \
-  WRITE_TYPE(fp,tmpint32,int32_t); \
+  WRITE_TYPE(fp,tmp3int32,int32_t); \
   /* write strings */ \
-  for (tmp2int32=0;tmp2int32<tmpint32;tmp2int32++) \
+  for (tmp2int32=0;tmp2int32<tmp3int32;tmp2int32++) \
   { \
     WRITE_STRING(fp,(arr)[tmp2int32]); \
   }
@@ -76,16 +75,15 @@
 #define READ(fp,ptr,size) \
   if (fread(ptr,size,1,fp)<1) \
     { ERROR_OUT_READERROR(fp) } \
-  DEBUG_PRINT("READ()\n");
+  DEBUG_PRINT("READ: %d bytes\n",(int)size);
 
 #define READ_TYPE(fp,field,type) \
-  READ(fp,&(field),sizeof(type)) \
-  DEBUG_PRINT("READ_TYPE()\n");
+  READ(fp,&(field),sizeof(type))
 
 #define READ_INT32(fp,i) \
   READ_TYPE(fp,tmpint32,int32_t); \
   i=tmpint32; \
-  DEBUG_PRINT("READ_INT32(%d)\n",(int)i);
+  DEBUG_PRINT("READ: int32=%d\n",(int)i);
 
 /* current position in the buffer */
 #define BUF_CUR \
@@ -98,7 +96,7 @@
 
 /* move the buffer pointer */
 #define BUF_SKIP(sz) \
-  bufptr+=(size_t)tmpint32+1;
+  bufptr+=(size_t)(sz);
 
 /* read string in the buffer (using buffer, buflen and bufptr)
    and store the actual location of the string in field */
@@ -112,7 +110,7 @@
     { READ(fp,BUF_CUR,(size_t)tmpint32); } \
   /* null-terminate string in buffer */ \
   BUF_CUR[tmpint32]='\0'; \
-  DEBUG_PRINT("READ_STRING_BUF(\"%s\"=%d)\n",BUF_CUR,strlen(BUF_CUR)); \
+  DEBUG_PRINT("READ: string=\"%s\"\n",BUF_CUR); \
   /* prepare result */ \
   (field)=BUF_CUR; \
   BUF_SKIP(tmpint32+1);
@@ -131,7 +129,7 @@
     { READ(fp,name,(size_t)tmpint32); } \
   /* null-terminate string */ \
   (name)[tmpint32]='\0'; \
-  DEBUG_PRINT("READ_STRING(\"%s\"=%d)\n",(name),strlen(name));
+  DEBUG_PRINT("READ: string=\"%s\"\n",(name));
 
 /* read an array from a stram and store the length of the
    array in num (size for the array is allocated) */
@@ -177,7 +175,7 @@
   READ_TYPE(fp,tmpint32,int32_t); \
   /* seek in the stream past the string contents */ \
   SKIP(fp,tmpint32); \
-  DEBUG_PRINT("SKIP_STRING()\n");
+  DEBUG_PRINT("READ: skip %d bytes\n",(int)tmpint32);
 
 /* skip a loop of strings */
 #define SKIP_STRINGLIST(fp) \
