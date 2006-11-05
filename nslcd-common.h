@@ -11,7 +11,6 @@
    int32_t tmpint32; - temporary variable
    */
 
-#define DEBUG_PRINT_OLD(...) fprintf(stderr, ## args)
 #ifdef DEBUG_PROT
 #define DEBUG_PRINT(fmt,arg) fprintf(stderr,fmt,arg)
 #else /* DEBUG_PROT */
