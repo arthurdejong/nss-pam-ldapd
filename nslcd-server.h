@@ -37,17 +37,14 @@ void nslcd_server_handlerequest(int sock);
 /* LDAP methods */
 /* TODO: these definitions should probably be moved */
 
-/* the caller should take care of opening and closing the stream */
-int nslcd_passwd_byname(FILE *fp);
-
-/* the caller should take care of opening and closing the stream */
-int nslcd_passwd_byuid(FILE *fp);
-
-/* the caller should take care of opening and closing the stream */
-int nslcd_passwd_all(FILE *fp);
-
 int nslcd_alias_byname(FILE *fp);
-
 int nslcd_alias_all(FILE *fp);
+int nslcd_group_byname(FILE *fp);
+int nslcd_group_bygid(FILE *fp);
+int nslcd_group_bymember(FILE *fp);
+int nslcd_group_all(FILE *fp);
+int nslcd_passwd_byname(FILE *fp);
+int nslcd_passwd_byuid(FILE *fp);
+int nslcd_passwd_all(FILE *fp);
 
 #endif /* not _NSLCD_SERVER_H */

@@ -71,6 +71,8 @@ int main(int argc,char *argv[])
   char buffer[1024];
   enum nss_status res;
   int errnocp;
+  long int start,size=40;
+  gid_t *gidlist=(gid_t)buffer;
 
   /* test getpwnam() */
   printf("\nTEST getpwnam()\n");
@@ -85,8 +87,8 @@ int main(int argc,char *argv[])
   }
 
   /* test getpwnam() with non-existing user */
-  printf("\nTEST getpwnam()\n");
-  res=_nss_ldap_getpwnam_r("arthurs",&passwdresult,buffer,1024,&errnocp);
+  printf("\nTEST getpwnam() with non-existing user\n");
+  res=_nss_ldap_getpwnam_r("nonexist",&passwdresult,buffer,1024,&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printpasswd(&passwdresult);
@@ -135,9 +137,24 @@ int main(int argc,char *argv[])
     printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
   }
 
+  /* test {set,get,end}aliasent() */
+  printf("\nTEST {set,get,end}aliasent()\n");
+  res=_nss_ldap_setaliasent();
+  printf("status=%s\n",nssstatus(res));
+  while ((res=_nss_ldap_getaliasent_r(&aliasresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
+  {
+    printf("status=%s\n",nssstatus(res));
+    printalias(&aliasresult);
+  }
+  printf("status=%s\n",nssstatus(res));
+  printf("errno=%d:%s\n",(int)errno,strerror(errno));
+  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  res=_nss_ldap_endaliasent();
+  printf("status=%s\n",nssstatus(res));
+
   /* test getgrnam() */
   printf("\nTEST getgrnam()\n");
-  res=_nss_ldap_getgrnam_r("audio",&groupresult,buffer,1024,&errnocp);
+  res=_nss_ldap_getgrnam_r("testgroup",&groupresult,buffer,1024,&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printgroup(&groupresult);
@@ -149,10 +166,27 @@ int main(int argc,char *argv[])
 
   /* test getgrgid() */
   printf("\nTEST getgrgid()\n");
-  res=_nss_ldap_getgrgid_r(24,&groupresult,buffer,1024,&errnocp);
+  res=_nss_ldap_getgrgid_r(100,&groupresult,buffer,1024,&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printgroup(&groupresult);
+  else
+  {
+    printf("errno=%d:%s\n",(int)errno,strerror(errno));
+    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  }
+
+  /* test initgroups() */
+  printf("\nTEST initgroups()\n");
+  res=_nss_ldap_initgroups_dyn("arthur",10,&start,&size,&gidlist,size,&errnocp);
+  printf("status=%s\n",nssstatus(res));
+  if (res==NSS_STATUS_SUCCESS)
+  {
+    for (size=0;size<start;size++)
+    {
+      printf("gidlist[%d]=%d\n",(int)size,(int)gidlist[size]);
+    }
+  }
   else
   {
     printf("errno=%d:%s\n",(int)errno,strerror(errno));
@@ -166,7 +200,7 @@ int main(int argc,char *argv[])
   while ((res=_nss_ldap_getgrent_r(&groupresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
   {
     printf("status=%s\n",nssstatus(res));
-    printpasswd(&groupresult);
+    printgroup(&groupresult);
   }
   printf("status=%s\n",nssstatus(res));
   printf("errno=%d:%s\n",(int)errno,strerror(errno));

@@ -149,11 +149,15 @@ void nslcd_server_handlerequest(int sock)
   /* handle request */
   switch (tmpint32)
   {
-    case NSLCD_ACTION_ALIAS_BYNAME:  nslcd_alias_byname(fp); break;
-    case NSLCD_ACTION_ALIAS_ALL:     nslcd_alias_all(fp); break;
-    case NSLCD_ACTION_PASSWD_BYNAME: nslcd_passwd_byname(fp); break;
-    case NSLCD_ACTION_PASSWD_BYUID:  nslcd_passwd_byuid(fp); break;
-    case NSLCD_ACTION_PASSWD_ALL:    nslcd_passwd_all(fp); break;
+    case NSLCD_ACTION_ALIAS_BYNAME:   nslcd_alias_byname(fp); break;
+    case NSLCD_ACTION_ALIAS_ALL:      nslcd_alias_all(fp); break;
+    case NSLCD_ACTION_GROUP_BYNAME:   nslcd_group_byname(fp); break;
+    case NSLCD_ACTION_GROUP_BYGID:    nslcd_group_bygid(fp); break;
+    case NSLCD_ACTION_GROUP_BYMEMBER: nslcd_group_bymember(fp); break;
+    case NSLCD_ACTION_GROUP_ALL:      nslcd_group_all(fp); break;
+    case NSLCD_ACTION_PASSWD_BYNAME:  nslcd_passwd_byname(fp); break;
+    case NSLCD_ACTION_PASSWD_BYUID:   nslcd_passwd_byuid(fp); break;
+    case NSLCD_ACTION_PASSWD_ALL:     nslcd_passwd_all(fp); break;
     default:
       log_log(LOG_DEBUG,"invalid request id (%d)",(int)tmpint32);
       break;

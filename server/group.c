@@ -1,24 +1,24 @@
 /*
+   group.c - group entry lookup routines
+
    Copyright (C) 1997-2006 Luke Howard
-   This file is part of the nss_ldap library.
-   Contributed by Luke Howard, <lukeh@padl.com>, 1997.
+   Copyright (C) 2006 West Consulting
+   Copyright (C) 2006 Arthur de Jong
 
-   The nss_ldap library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Library General Public License as
-   published by the Free Software Foundation; either version 2 of the
-   License, or (at your option) any later version.
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
 
-   The nss_ldap library is distributed in the hope that it will be useful,
+   This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Library General Public License for more details.
 
    You should have received a copy of the GNU Library General Public
-   License along with the nss_ldap library; see the file COPYING.LIB.  If not,
-   write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.
-
-   $Id$
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+   MA 02110-1301 USA
 */
 
 #include "config.h"
@@ -44,6 +44,9 @@
 
 #include "ldap-nss.h"
 #include "util.h"
+#include "nslcd-server.h"
+#include "common.h"
+#include "log.h"
 
 /* the context to use for {set,get,end}grent() calls */
 static struct ent_context *gr_context = NULL;
@@ -764,8 +767,7 @@ do_parse_initgroups_nested (LDAPMessage * e,
   return status;
 }
 
-static enum nss_status
-ng_chase (const char *dn, ldap_initgroups_args_t * lia)
+static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
 {
   struct ldap_args a;
   enum nss_status stat;
@@ -807,8 +809,7 @@ ng_chase (const char *dn, ldap_initgroups_args_t * lia)
   return stat;
 }
 
-static enum nss_status
-ng_chase_backlink (const char ** membersOf, ldap_initgroups_args_t * lia)
+static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroups_args_t * lia)
 {
   struct ldap_args a;
   enum nss_status stat;
@@ -894,10 +895,8 @@ ng_chase_backlink (const char ** membersOf, ldap_initgroups_args_t * lia)
 }
 
 
-#define NSS_LDAP_INITGROUPS_FUNCTION    "_nss_ldap_initgroups_dyn"
-
-enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long int *start,
-                          long int *size, gid_t ** groupsp, long int limit,
+static enum nss_status group_bymember(const char *user, long int *start,
+                          long int *size, long int limit,
                           int *errnop)
 {
   ldap_initgroups_args_t lia;
@@ -916,13 +915,7 @@ enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long in
   LA_STRING (a) = user;
   LA_TYPE (a) = LA_TYPE_STRING;
 
-  debug ("==> " NSS_LDAP_INITGROUPS_FUNCTION " (user=%s)", LA_STRING (a) );
-
-#ifdef INITGROUPS_ROOT_ONLY
-  /* XXX performance hack for old versions of KDE only */
-  if ((getuid() != 0) && (geteuid() != 0))
-    return NSS_STATUS_NOTFOUND;
-#endif
+  debug ("==> group_bymember (user=%s)", LA_STRING (a) );
 
   lia.depth = 0;
   lia.known_groups = NULL;
@@ -933,14 +926,14 @@ enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long in
   stat = _nss_ldap_init ();
   if (stat != NSS_STATUS_SUCCESS)
     {
-      debug ("<== " NSS_LDAP_INITGROUPS_FUNCTION " (init failed)");
+      debug ("<== group_bymember (init failed)");
       _nss_ldap_leave ();
       return stat;
     }
 
   if (_nss_ldap_test_initgroups_ignoreuser (LA_STRING (a)))
     {
-      debug ("<== " NSS_LDAP_INITGROUPS_FUNCTION " (user ignored)");
+      debug ("<== group_bymember (user ignored)");
       _nss_ldap_leave ();
       return NSS_STATUS_NOTFOUND;
     }
@@ -998,7 +991,7 @@ enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long in
 
   if (_nss_ldap_ent_context_init_locked (&ctx) == NULL)
     {
-      debug ("<== " NSS_LDAP_INITGROUPS_FUNCTION " (ent_context_init failed)");
+      debug ("<== group_bymember (ent_context_init failed)");
       _nss_ldap_leave ();
       return NSS_STATUS_UNAVAIL;
     }
@@ -1025,26 +1018,18 @@ enum nss_status _nss_ldap_initgroups_dyn (const char *user, gid_t group, long in
    */
   if (stat != NSS_STATUS_SUCCESS && stat != NSS_STATUS_NOTFOUND)
     {
-      debug ("<== " NSS_LDAP_INITGROUPS_FUNCTION " (not found)");
+      debug ("<== group_bymember (not found)");
       if (erange)
         errno = ERANGE;
       return stat;
     }
 
-  debug ("<== " NSS_LDAP_INITGROUPS_FUNCTION " (success)");
+  debug ("<== group_bymember (success)");
 
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_initgroups (const char *user, gid_t group, long int *start,
-                      long int *size, gid_t * groups, long int limit,
-                      int *errnop)
-{
-  return (_nss_ldap_initgroups_dyn (user, group, start, size, &groups, limit,
-                                    errnop));
-}
-
-enum nss_status _nss_ldap_getgrnam_r (const char *name,
+static enum nss_status _nss_ldap_getgrnam_r (const char *name,
                       struct group * result,
                       char *buffer, size_t buflen, int *errnop)
 {
@@ -1052,7 +1037,7 @@ enum nss_status _nss_ldap_getgrnam_r (const char *name,
                LM_GROUP, _nss_ldap_parse_gr, LDAP_NSS_BUFLEN_GROUP);
 }
 
-enum nss_status _nss_ldap_getgrgid_r (gid_t gid,
+static enum nss_status _nss_ldap_getgrgid_r (gid_t gid,
                       struct group *result,
                       char *buffer, size_t buflen, int *errnop)
 {
@@ -1060,12 +1045,12 @@ enum nss_status _nss_ldap_getgrgid_r (gid_t gid,
                  LM_GROUP, _nss_ldap_parse_gr, LDAP_NSS_BUFLEN_GROUP);
 }
 
-enum nss_status _nss_ldap_setgrent (void)
+static enum nss_status _nss_ldap_setgrent (void)
 {
   LOOKUP_SETENT (gr_context);
 }
 
-enum nss_status _nss_ldap_getgrent_r (struct group *result,
+static enum nss_status _nss_ldap_getgrent_r (struct group *result,
                       char *buffer, size_t buflen, int *errnop)
 {
   LOOKUP_GETENT (gr_context, result, buffer, buflen, errnop,
@@ -1073,7 +1058,170 @@ enum nss_status _nss_ldap_getgrent_r (struct group *result,
                  LDAP_NSS_BUFLEN_GROUP);
 }
 
-enum nss_status _nss_ldap_endgrent (void)
+static enum nss_status _nss_ldap_endgrent (void)
 {
   LOOKUP_ENDENT (gr_context);
+}
+
+/* macros for expanding the LDF_GROUP macro */
+#define LDF_STRING(field)     WRITE_STRING(fp,field)
+#define LDF_TYPE(field,type)  WRITE_TYPE(fp,field,type)
+#define LDF_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define GROUP_NAME            result.gr_name
+#define GROUP_PASSWD          result.gr_passwd
+#define GROUP_GID             result.gr_gid
+#define GROUP_MEMBERS         result.gr_mem
+
+int nslcd_group_byname(FILE *fp)
+{
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  char *name;
+  /* these are here for now until we rewrite the LDAP code */
+  struct group result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* read request parameters */
+  READ_STRING_ALLOC(fp,name);
+  /* FIXME: free() this buffer somewhere */
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_group_byname(%s)",name);
+  /* do the LDAP request */
+  retv=nss2nslcd(_nss_ldap_getgrnam_r(name,&result,buffer,1024,&errnop));
+  /* no more need for this */
+  free(name);
+  /* write the response */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYNAME);
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+  {
+    LDF_GROUP;
+  }
+  WRITE_FLUSH(fp);
+  log_log(LOG_DEBUG,"nslcd_group_byname DONE");
+  /* we're done */
+  return 0;
+}
+
+int nslcd_group_bygid(FILE *fp)
+{
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  gid_t gid;
+  /* these are here for now until we rewrite the LDAP code */
+  struct group result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* read request parameters */
+  READ_TYPE(fp,gid,gid_t);
+  /* FIXME: free() this buffer somewhere */
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_group_bygid(%d)",(int)gid);
+  /* do the LDAP request */
+  retv=nss2nslcd(_nss_ldap_getgrgid_r(gid,&result,buffer,1024,&errnop));
+  /* write the response */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYGID);
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+  {
+    LDF_GROUP;
+  }
+  WRITE_FLUSH(fp);
+  log_log(LOG_DEBUG,"nslcd_group_bygid DONE");
+  /* we're done */
+  return 0;
+}
+
+int nslcd_group_bymember(FILE *fp)
+{
+  int32_t tmpint32;
+  char *name;
+  /* these are here for now until we rewrite the LDAP code */
+  int errnop;
+  int retv;
+  long int start=0,size=1024;
+  long int i;
+  gid_t groupsp[1024];
+  /* read request parameters */
+  READ_STRING_ALLOC(fp,name);
+  /* FIXME: free() this buffer somewhere */
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_group_byname(%s)",name);
+  /* do the LDAP request */
+  retv=NSLCD_RESULT_NOTFOUND;
+  /*
+  retv=nss2nslcd(group_bymember(name,&start,&size,size,&errnop));
+  */
+  /* Note: we write some garbadge here to ensure protocol error as this
+           function currently returns incorrect data */
+  /* Note: what to do with group ids that are not listed as supplemental
+           groups but are the user's primary group id? */
+  WRITE_INT32(fp,1234);
+  start=0;
+  /* TODO: fix this to actually work */
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYNAME);
+  if (retv==NSLCD_RESULT_SUCCESS)
+  {
+    /* loop over the returned gids */
+    for (i=0;i<start;i++)
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      /* Note: we will write a fake record here for now. This is because
+               we want to keep the protocol but currently the only
+               client application available discards non-gid information */
+      WRITE_STRING(fp,""); /* group name */
+      WRITE_STRING(fp,"*"); /* group passwd */
+      WRITE_TYPE(fp,groupsp[i],gid_t); /* gid */
+      WRITE_INT32(fp,1); /* number of members */
+      WRITE_STRING(fp,name); /* member=user requested */
+    }
+    WRITE_INT32(fp,NSLCD_RESULT_NOTFOUND);
+  }
+  else
+  {
+    /* some error occurred */
+    WRITE_INT32(fp,retv);
+  }
+  WRITE_FLUSH(fp);
+  /* no more need for this */
+  free(name);
+  log_log(LOG_DEBUG,"nslcd_group_byname DONE");
+  /* we're done */
+  return 0;
+}
+
+int nslcd_group_all(FILE *fp)
+{
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  /* these are here for now until we rewrite the LDAP code */
+  struct group result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_group_all");
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_GROUP_ALL);
+  /* loop over all results */
+  _nss_ldap_setgrent();
+  while ((retv=nss2nslcd(_nss_ldap_getgrent_r(&result,buffer,1024,&errnop)))==NSLCD_RESULT_SUCCESS)
+  {
+    /* write the result code */
+    WRITE_INT32(fp,retv);
+    /* write the group entry */
+    LDF_GROUP;
+    fflush(fp);
+  }
+  /* write the final result code */
+  WRITE_INT32(fp,retv);
+  /* FIXME: if a previous call returns what happens to the context? */
+  _nss_ldap_endgrent();
+  log_log(LOG_DEBUG,"nslcd_group_all DONE");
+  /* we're done */
+  return 0;
 }
