@@ -44,57 +44,21 @@
 
 static struct ent_context *alias_context = NULL;
 
-static enum nss_status
-_nss_ldap_parse_alias (LDAPMessage * e,
-                       struct ldap_state * pvt,
-                       void *result, char *buffer, size_t buflen)
+static enum nss_status _nss_ldap_parse_alias(
+        LDAPMessage *e,struct ldap_state *pvt,void *result,
+        char *buffer,size_t buflen)
 {
 
-  struct aliasent *alias = (struct aliasent *) result;
+  struct aliasent *alias=(struct aliasent *)result;
   enum nss_status stat;
 
-  stat =
-    _nss_ldap_getrdnvalue (e, ATM (LM_ALIASES, cn), &alias->alias_name,
-                           &buffer, &buflen);
+  stat=_nss_ldap_getrdnvalue(e,ATM(LM_ALIASES,cn),&alias->alias_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat =
-    _nss_ldap_assign_attrvals (e, AT (rfc822MailMember), NULL,
-                               &alias->alias_members, &buffer, &buflen,
-                               &alias->alias_members_len);
-
-  alias->alias_local = 0;
+  stat=_nss_ldap_assign_attrvals(e,AT(rfc822MailMember),NULL,&alias->alias_members,&buffer,&buflen,&alias->alias_members_len);
 
   return stat;
-}
-
-static enum nss_status
-_nss_ldap_getaliasbyname_r (const char *name, struct aliasent * result,
-                            char *buffer, size_t buflen, int *errnop)
-{
-  LOOKUP_NAME (name, result, buffer, buflen, errnop,
-               _nss_ldap_filt_getaliasbyname, LM_ALIASES,
-               _nss_ldap_parse_alias, LDAP_NSS_BUFLEN_DEFAULT);
-}
-
-static enum nss_status _nss_ldap_setaliasent (void)
-{
-  LOOKUP_SETENT (alias_context);
-}
-
-static enum nss_status _nss_ldap_endaliasent (void)
-{
-  LOOKUP_ENDENT (alias_context);
-}
-
-static enum nss_status
-_nss_ldap_getaliasent_r (struct aliasent *result, char *buffer, size_t buflen,
-                         int *errnop)
-{
-  LOOKUP_GETENT (alias_context, result, buffer, buflen, errnop,
-                 _nss_ldap_filt_getaliasent, LM_ALIASES,
-                 _nss_ldap_parse_alias, LDAP_NSS_BUFLEN_DEFAULT);
 }
 
 /* macros for expanding the LDF_ALIAS macro */
@@ -112,12 +76,16 @@ int nslcd_alias_byname(FILE *fp)
   char buffer[1024];
   int errnop;
   int retv;
+  struct ldap_args a;
   /* read request parameters */
   READ_STRING_ALLOC(fp,name);
   /* log call */
   log_log(LOG_DEBUG,"nslcd_alias_byname(%s)",name);
   /* do the LDAP request */
-  retv=nss2nslcd(_nss_ldap_getaliasbyname_r(name,&result,buffer,1024,&errnop));
+  LA_INIT(a);
+  LA_STRING(a)=name;
+  LA_TYPE(a)=LA_TYPE_STRING;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getaliasbyname,LM_ALIASES,_nss_ldap_parse_alias));
   /* no more need for this */
   free(name);
   /* write the response */
@@ -147,9 +115,11 @@ int nslcd_alias_all(FILE *fp)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_ALIAS_ALL);
+  /* initialize context */
+  if (_nss_ldap_ent_context_init(&alias_context)==NULL)
+    return -1;
   /* loop over all results */
-  _nss_ldap_setaliasent();
-  while ((retv=nss2nslcd(_nss_ldap_getaliasent_r(&result,buffer,1024,&errnop)))==NSLCD_RESULT_SUCCESS)
+  while ((retv=nss2nslcd(_nss_ldap_getent(&alias_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getaliasent,LM_ALIASES,_nss_ldap_parse_alias)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);
@@ -160,7 +130,9 @@ int nslcd_alias_all(FILE *fp)
   /* write the final result code */
   WRITE_INT32(fp,retv);
   /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_endaliasent();
+  _nss_ldap_enter();
+  _nss_ldap_ent_context_release(alias_context);
+  _nss_ldap_leave();
   log_log(LOG_DEBUG,"nslcd_alias_all DONE");
   /* we're done */
   return 0;
