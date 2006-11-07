@@ -187,40 +187,6 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
 #define PASSWD_DIR    result.pw_dir
 #define PASSWD_SHELL  result.pw_shell
 
-static enum nss_status _nss_ldap_getpwnam_r(const char *name,
-                      struct passwd *result,
-                      char *buffer,size_t buflen,int *errnop)
-{
-  LOOKUP_NAME (name, result, buffer, buflen, errnop, _nss_ldap_filt_getpwnam,
-               LM_PASSWD, _nss_ldap_parse_pw, LDAP_NSS_BUFLEN_DEFAULT);
-}
-
-static enum nss_status _nss_ldap_getpwuid_r(uid_t uid,
-                      struct passwd *result,
-                      char *buffer,size_t buflen,int *errnop)
-{
-  LOOKUP_NUMBER (uid, result, buffer, buflen, errnop, _nss_ldap_filt_getpwuid,
-                 LM_PASSWD, _nss_ldap_parse_pw, LDAP_NSS_BUFLEN_DEFAULT);
-}
-
-static enum nss_status _nss_ldap_setpwent(void)
-{
-  LOOKUP_SETENT (pw_context);
-}
-
-static enum nss_status _nss_ldap_getpwent_r(struct passwd *result,
-                      char *buffer,size_t buflen,int *errnop)
-{
-  LOOKUP_GETENT (pw_context, result, buffer, buflen, errnop,
-                 _nss_ldap_filt_getpwent, LM_PASSWD, _nss_ldap_parse_pw,
-                 LDAP_NSS_BUFLEN_DEFAULT);
-}
-
-static enum nss_status _nss_ldap_endpwent(void)
-{
-  LOOKUP_ENDENT (pw_context);
-}
-
 /* the caller should take care of opening and closing the stream */
 int nslcd_passwd_byname(FILE *fp)
 {
@@ -231,14 +197,18 @@ int nslcd_passwd_byname(FILE *fp)
   char buffer[1024];
   int errnop;
   int retv;
+  struct ldap_args a;
   /* read request parameters */
   READ_STRING_ALLOC(fp,name);
   /* FIXME: free() this buffer somewhere */
   /* log call */
   log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);
   /* do the LDAP request */
-  retv=nss2nslcd(_nss_ldap_getpwnam_r(name,&result,buffer,1024,&errnop));
-  /* no more need for this */
+  LA_INIT(a);
+  LA_STRING(a)=name;
+  LA_TYPE(a)=LA_TYPE_STRING;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwnam,LM_PASSWD,_nss_ldap_parse_pw));
+  /* no more need for this string */
   free(name);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
@@ -263,12 +233,16 @@ int nslcd_passwd_byuid(FILE *fp)
   char buffer[1024];
   int errnop;
   int retv;
+  struct ldap_args a;
   /* read request parameters */
   READ_TYPE(fp,uid,uid_t);
   /* log call */
   log_log(LOG_DEBUG,"nslcd_passwd_byuid(%d)",(int)uid);
   /* do the LDAP request */
-  retv=nss2nslcd(_nss_ldap_getpwuid_r(uid,&result,buffer,1024,&errnop));
+  LA_INIT(a);
+  LA_NUMBER(a)=uid;
+  LA_TYPE(a)=LA_TYPE_NUMBER;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwuid,LM_PASSWD,_nss_ldap_parse_pw));
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);
@@ -296,9 +270,11 @@ int nslcd_passwd_all(FILE *fp)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_ALL);
-  /* loop over all results */
-  _nss_ldap_setpwent();
-  while ((retv=nss2nslcd(_nss_ldap_getpwent_r(&result,buffer,1024,&errnop)))==NSLCD_RESULT_SUCCESS)
+  /* initialize context */
+  if (_nss_ldap_ent_context_init(&pw_context)==NULL)
+    return -1;
+  /* go over results */
+  while ((retv=nss2nslcd(_nss_ldap_getent(&pw_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwent,LM_PASSWD,_nss_ldap_parse_pw)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);
@@ -308,8 +284,10 @@ int nslcd_passwd_all(FILE *fp)
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
-  /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_endpwent();
+  /* FIXME: if some statement returns what happens to the context? */
+  _nss_ldap_enter(); \
+  _nss_ldap_ent_context_release(pw_context); \
+  _nss_ldap_leave(); \
   log_log(LOG_DEBUG,"nslcd_passwd_all DONE");
   /* we're done */
   return 0;
