@@ -68,6 +68,7 @@
 
 /* used for transferring mac addresses */
 #define LDF_ETHER \
+  LDF_STRING(ETHER_NAME) \
   LDF_TYPE(ETHER_ADDR,u_int8_t[6])
 
 /* used for transferring group and membership information */
@@ -129,6 +130,9 @@
 /* Request types. */
 #define NSLCD_ACTION_ALIAS_BYNAME       4001
 #define NSLCD_ACTION_ALIAS_ALL          4002
+#define NSLCD_ACTION_ETHER_BYNAME       3001
+#define NSLCD_ACTION_ETHER_BYETHER      3002
+#define NSLCD_ACTION_ETHER_ALL          3005
 #define NSLCD_ACTION_GROUP_BYNAME       5001
 #define NSLCD_ACTION_GROUP_BYGID        5002
 #define NSLCD_ACTION_GROUP_BYMEMBER     5003

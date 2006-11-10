@@ -124,6 +124,15 @@ static void printhost(struct hostent *host)
   printf("  h_addr_list[%d]=NULL\n",i);
 }
 
+static void printether(struct etherent *ether)
+{
+  printf("struct etherent {\n"
+         "  e_name=\"%s\",\n"
+         "  e_addr=%s\n"
+         "}\n",
+         ether->e_name,ether_ntoa(&(ether->e_addr)));
+}
+
 /* the main program... */
 int main(int argc,char *argv[])
 {
@@ -131,6 +140,7 @@ int main(int argc,char *argv[])
   struct aliasent aliasresult;
   struct group groupresult;
   struct hostent hostresult;
+  struct etherent etherresult;
   char buffer[1024];
   enum nss_status res;
   int errnocp,h_errnocp;
@@ -347,6 +357,47 @@ int main(int argc,char *argv[])
   printf("h_errno=%d:%s\n",(int)h_errno,hstrerror(h_errno));
   printf("h_errnocp=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
   res=_nss_ldap_endhostent();
+  printf("status=%s\n",nssstatus(res));
+
+  /* test ether_hostton() */
+  printf("\nTEST ether_hostton()\n");
+  res=_nss_ldap_gethostton_r("appelscha",&etherresult,buffer,1024,&errnocp);
+  printf("status=%s\n",nssstatus(res));
+  if (res==NSS_STATUS_SUCCESS)
+    printether(&etherresult);
+  else
+  {
+    printf("errno=%d:%s\n",(int)errno,strerror(errno));
+    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  }
+
+  /* test ether_ntohost() */
+  printf("\nTEST ether_ntohost()\n");
+  res=_nss_ldap_getntohost_r(ether_aton("0:13:72:a4:39:c7"),
+                             &etherresult,buffer,1024,&errnocp);
+  printf("status=%s\n",nssstatus(res));
+  if (res==NSS_STATUS_SUCCESS)
+    printether(&etherresult);
+  else
+  {
+    printf("errno=%d:%s\n",(int)errno,strerror(errno));
+    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  }
+
+
+  /* test {set,get,end}etherent() */
+  printf("\nTEST {set,get,end}etherent()\n");
+  res=_nss_ldap_setetherent(1);
+  printf("status=%s\n",nssstatus(res));
+  while ((res=_nss_ldap_getetherent_r(&etherresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
+  {
+    printf("status=%s\n",nssstatus(res));
+    printether(&etherresult);
+  }
+  printf("status=%s\n",nssstatus(res));
+  printf("errno=%d:%s\n",(int)errno,strerror(errno));
+  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  res=_nss_ldap_endetherent();
   printf("status=%s\n",nssstatus(res));
 
   return 0;

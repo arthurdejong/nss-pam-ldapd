@@ -22,4 +22,4 @@ noinst_LIBRARIES = libnss.a
 
 libnss_a_SOURCES = common.c common.h exports.h ../nslcd-client.h \
                    ../nslcd.h ../nslcd-common.h \
-                   aliases.c group.c hosts.c passwd.c
+                   aliases.c ethers.c group.c hosts.c passwd.c

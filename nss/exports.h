@@ -32,6 +32,16 @@
 #include <pwd.h>
 #include <shadow.h>
 
+/* We define struct etherent here because it does not seem to
+   be defined in any publicly available header file exposed
+   by glibc. This is taken from include/netinet/ether.h
+   of the glibc source. */
+struct etherent
+{
+  const char *e_name;
+  struct ether_addr e_addr;
+};   
+
 /*
    These are prototypes for functions exported from the ldap NSS module.
    For more complete definitions of these functions check the GLIBC
@@ -53,10 +63,10 @@ enum nss_status _nss_ldap_getautomntent_r(void *private,const char **key,const c
 enum nss_status _nss_ldap_endautomntent(void **private);
 
 /* ethers - ethernet numbers */
-enum nss_status _nss_ldap_gethostton_r(const char *name,struct ether_addr *result,char *buffer,size_t buflen,int *errnop);
-enum nss_status _nss_ldap_getntohost_r(struct ether_addr *addr,struct ether_addr *result,char *buffer,size_t buflen,int *errnop);
-enum nss_status _nss_ldap_setetherent(void);
-enum nss_status _nss_ldap_getetherent_r(struct ether_addr *result,char *buffer,size_t buflen,int *errnop);
+enum nss_status _nss_ldap_gethostton_r(const char *name,struct etherent *resut,char *buffer,size_t buflen,int *errnop);
+enum nss_status _nss_ldap_getntohost_r(const struct ether_addr *addr,struct etherent *eth,char *buffer,size_t buflen,int *errnop);
+enum nss_status _nss_ldap_setetherent(int stayopen);
+enum nss_status _nss_ldap_getetherent_r(struct etherent *result,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_endetherent(void);
 
 /* group - groups of users */
