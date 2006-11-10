@@ -151,7 +151,7 @@ enum nss_status _nss_ldap_gethostbyname_r(
    buffer,buflen   - OUT - buffer to store allocated stuff on
    errnop,h_errnop - OUT - for reporting errors */
 enum nss_status _nss_ldap_gethostbyaddr_r(
-        struct in_addr *addr,int len,int af,struct hostent *result,
+        const struct in_addr *addr,int len,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   FILE *fp;

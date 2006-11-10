@@ -70,7 +70,7 @@ enum nss_status _nss_ldap_initgroups_dyn(const char *user,gid_t group,long int *
 /* hosts - host names and numbers */
 enum nss_status _nss_ldap_gethostbyname_r(const char *name,struct hostent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop);
 enum nss_status _nss_ldap_gethostbyname2_r(const char *name,int af,struct hostent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop);
-enum nss_status _nss_ldap_gethostbyaddr_r(struct in_addr *addr,int len,int type,struct hostent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop);
+enum nss_status _nss_ldap_gethostbyaddr_r(const struct in_addr *addr,int len,int type,struct hostent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop);
 enum nss_status _nss_ldap_sethostent(void);
 enum nss_status _nss_ldap_gethostent_r(struct hostent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop);
 enum nss_status _nss_ldap_endhostent(void);
