@@ -112,11 +112,21 @@
 #define LDF_RPC \
   LDF_STRING(RPC_NAME) \
   LDF_STRINGLIST(RPC_ALIASES) \
-  LDF_TYPE(RPC_NUMBER,int32_t)
+  LDF_INT32(RPC_NUMBER)
 
 /* SERVICES - TBD - getservbyname - struct servent */
 
 /* SHADOW - TBD - getspnam - struct spwd */
+#define LDF_SHADOW \
+  LDF_STRING(SHADOW_NAME) \
+  LDF_STRING(SHADOW_PASSWD) \
+  LDF_INT32(SHADOW_LASTCHANGE) \
+  LDF_INT32(SHADOW_MINDAYS) \
+  LDF_INT32(SHADOW_MAXDAYS) \
+  LDF_INT32(SHADOW_WARN) \
+  LDF_INT32(SHADOW_INACT) \
+  LDF_INT32(SHADOW_EXPIRE) \
+  LDF_INT32(SHADOW_FLAG)
 
 /* The location of the socket used for communicating. */
 #define NSLCD_SOCKET "/tmp/nslcd.socket"
@@ -143,6 +153,8 @@
 #define NSLCD_ACTION_PASSWD_BYNAME      1001
 #define NSLCD_ACTION_PASSWD_BYUID       1002
 #define NSLCD_ACTION_PASSWD_ALL         1004
+#define NSLCD_ACTION_SHADOW_BYNAME      2001
+#define NSLCD_ACTION_SHADOW_ALL         2005
 
 /* Request result codes. */
 #define NSLCD_RESULT_NOTFOUND              3 /* key was not found */

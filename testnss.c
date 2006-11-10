@@ -133,6 +133,24 @@ static void printether(struct etherent *ether)
          ether->e_name,ether_ntoa(&(ether->e_addr)));
 }
 
+static void printshadow(struct spwd *shadow)
+{
+  printf("struct passwd {\n"
+         "  sp_namp=\"%s\",\n"
+         "  sp_pwdp=\"%s\",\n"
+         "  sp_lstchg=%ld,\n"
+         "  sp_min=%ld,\n"
+         "  sp_max=%ld,\n"
+         "  sp_warn=%ld,\n"
+         "  sp_inact=%ld,\n"
+         "  sp_expire=%ld,\n"
+         "  sp_flag=%lu\n"
+         "}\n",
+         shadow->sp_namp,shadow->sp_pwdp,shadow->sp_lstchg,
+         shadow->sp_min,shadow->sp_max,shadow->sp_warn,
+         shadow->sp_inact,shadow->sp_expire,shadow->sp_flag);
+}
+
 /* the main program... */
 int main(int argc,char *argv[])
 {
@@ -141,6 +159,7 @@ int main(int argc,char *argv[])
   struct group groupresult;
   struct hostent hostresult;
   struct etherent etherresult;
+  struct spwd shadowresult;
   char buffer[1024];
   enum nss_status res;
   int errnocp,h_errnocp;
@@ -384,7 +403,6 @@ int main(int argc,char *argv[])
     printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
   }
 
-
   /* test {set,get,end}etherent() */
   printf("\nTEST {set,get,end}etherent()\n");
   res=_nss_ldap_setetherent(1);
@@ -398,6 +416,33 @@ int main(int argc,char *argv[])
   printf("errno=%d:%s\n",(int)errno,strerror(errno));
   printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
   res=_nss_ldap_endetherent();
+  printf("status=%s\n",nssstatus(res));
+
+  /* test getspnam() */
+  printf("\nTEST getspnam()\n");
+  res=_nss_ldap_getspnam_r("arthur",&shadowresult,buffer,1024,&errnocp);
+  printf("status=%s\n",nssstatus(res));
+  if (res==NSS_STATUS_SUCCESS)
+    printshadow(&shadowresult);
+  else
+  {
+    printf("errno=%d:%s\n",(int)errno,strerror(errno));
+    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  }
+
+  /* test {set,get,end}spent() */
+  printf("\nTEST {set,get,end}spent()\n");
+  res=_nss_ldap_setspent();
+  printf("status=%s\n",nssstatus(res));
+  while ((res=_nss_ldap_getspent_r(&shadowresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
+  {
+    printf("status=%s\n",nssstatus(res));
+    printshadow(&shadowresult);
+  }
+  printf("status=%s\n",nssstatus(res));
+  printf("errno=%d:%s\n",(int)errno,strerror(errno));
+  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  res=_nss_ldap_endspent();
   printf("status=%s\n",nssstatus(res));
 
   return 0;
