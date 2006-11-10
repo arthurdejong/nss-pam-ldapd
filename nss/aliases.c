@@ -61,8 +61,8 @@ enum nss_status _nss_ldap_getaliasbyname_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *pwentfp;
-#define fp pwentfp
+static __thread FILE *aliasentfp;
+#define fp aliasentfp
 
 enum nss_status _nss_ldap_setaliasent(void)
 {

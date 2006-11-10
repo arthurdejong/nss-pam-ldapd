@@ -137,8 +137,8 @@ enum nss_status _nss_ldap_initgroups_dyn(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *pwentfp;
-#define fp pwentfp
+static __thread FILE *grentfp;
+#define fp grentfp
 
 enum nss_status _nss_ldap_setgrent(void)
 {

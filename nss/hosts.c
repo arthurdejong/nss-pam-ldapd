@@ -179,8 +179,8 @@ enum nss_status _nss_ldap_gethostbyaddr_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *pwentfp;
-#define fp pwentfp
+static __thread FILE *hostentfp;
+#define fp hostentfp
 
 enum nss_status _nss_ldap_sethostent(void)
 {
