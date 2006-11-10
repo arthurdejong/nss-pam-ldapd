@@ -86,7 +86,7 @@ static __thread FILE *pwentfp;
 #define fp pwentfp
 
 /* open a connection to the nslcd and write the request */
-enum nss_status _nss_ldap_setpwent(void)
+enum nss_status _nss_ldap_setpwent(int stayopen)
 {
   NSS_SETENT(NSLCD_ACTION_PASSWD_ALL);
 }

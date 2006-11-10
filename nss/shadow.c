@@ -67,7 +67,7 @@ enum nss_status _nss_ldap_getspnam_r(const char *name,struct spwd *result,char *
 static __thread FILE *spentfp;
 #define fp spentfp
 
-enum nss_status _nss_ldap_setspent(void)
+enum nss_status _nss_ldap_setspent(int stayopen)
 {
   NSS_SETENT(NSLCD_ACTION_SHADOW_ALL);
 }

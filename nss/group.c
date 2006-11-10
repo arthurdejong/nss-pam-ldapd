@@ -140,7 +140,7 @@ enum nss_status _nss_ldap_initgroups_dyn(
 static __thread FILE *grentfp;
 #define fp grentfp
 
-enum nss_status _nss_ldap_setgrent(void)
+enum nss_status _nss_ldap_setgrent(int stayopen)
 {
   NSS_SETENT(NSLCD_ACTION_GROUP_ALL);
 }
