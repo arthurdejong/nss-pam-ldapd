@@ -116,7 +116,7 @@
 
 /* SERVICES - TBD - getservbyname - struct servent */
 
-/* SHADOW - TBD - getspnam - struct spwd */
+/* used for transferring account (/etc/shadow) information */
 #define LDF_SHADOW \
   LDF_STRING(SHADOW_NAME) \
   LDF_STRING(SHADOW_PASSWD) \

@@ -1,5 +1,5 @@
 /*
-   exports.h - all functions exported by the NSS library
+   prototypes.h - all functions exported by the NSS library
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006 Arthur de Jong

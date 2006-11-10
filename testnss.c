@@ -27,7 +27,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include "nss/exports.h"
+#include "nss/prototypes.h"
 
 static char *nssstatus(enum nss_status retv)
 {
@@ -205,7 +205,7 @@ int main(int argc,char *argv[])
 
   /* test {set,get,end}pwent() */
   printf("\nTEST {set,get,end}pwent()\n");
-  res=_nss_ldap_setpwent();
+  res=_nss_ldap_setpwent(1);
   printf("status=%s\n",nssstatus(res));
   while ((res=_nss_ldap_getpwent_r(&passwdresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
   {
@@ -288,7 +288,7 @@ int main(int argc,char *argv[])
 
   /* test {set,get,end}grent() */
   printf("\nTEST {set,get,end}grent()\n");
-  res=_nss_ldap_setgrent();
+  res=_nss_ldap_setgrent(1);
   printf("status=%s\n",nssstatus(res));
   while ((res=_nss_ldap_getgrent_r(&groupresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
   {
@@ -363,7 +363,7 @@ int main(int argc,char *argv[])
 
   /* test {set,get,end}hostent() */
   printf("\nTEST {set,get,end}hostent()\n");
-  res=_nss_ldap_sethostent();
+  res=_nss_ldap_sethostent(1);
   printf("status=%s\n",nssstatus(res));
   while ((res=_nss_ldap_gethostent_r(&hostresult,buffer,1024,&errnocp,&h_errnocp))==NSS_STATUS_SUCCESS)
   {
@@ -432,7 +432,7 @@ int main(int argc,char *argv[])
 
   /* test {set,get,end}spent() */
   printf("\nTEST {set,get,end}spent()\n");
-  res=_nss_ldap_setspent();
+  res=_nss_ldap_setspent(1);
   printf("status=%s\n",nssstatus(res));
   while ((res=_nss_ldap_getspent_r(&shadowresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
   {

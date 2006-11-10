@@ -26,7 +26,7 @@
 #include <nss.h>
 #include <errno.h>
 
-#include "exports.h"
+#include "prototypes.h"
 #include "nslcd-client.h"
 #include "common.h"
 
