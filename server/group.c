@@ -50,9 +50,6 @@
 #include "common.h"
 #include "log.h"
 
-/* the context to use for {set,get,end}grent() calls */
-static struct ent_context *gr_context = NULL;
-
 #ifdef HAVE_USERSEC_H
 typedef struct ldap_initgroups_args
 {
@@ -1031,40 +1028,6 @@ static enum nss_status group_bymember(const char *user, long int *start,
   return NSS_STATUS_SUCCESS;
 }
 
-static enum nss_status _nss_ldap_getgrnam_r (const char *name,
-                      struct group * result,
-                      char *buffer, size_t buflen, int *errnop)
-{
-  LOOKUP_NAME (name, result, buffer, buflen, errnop, _nss_ldap_filt_getgrnam,
-               LM_GROUP, _nss_ldap_parse_gr, LDAP_NSS_BUFLEN_GROUP);
-}
-
-static enum nss_status _nss_ldap_getgrgid_r (gid_t gid,
-                      struct group *result,
-                      char *buffer, size_t buflen, int *errnop)
-{
-  LOOKUP_NUMBER (gid, result, buffer, buflen, errnop, _nss_ldap_filt_getgrgid,
-                 LM_GROUP, _nss_ldap_parse_gr, LDAP_NSS_BUFLEN_GROUP);
-}
-
-static enum nss_status _nss_ldap_setgrent (void)
-{
-  LOOKUP_SETENT (gr_context);
-}
-
-static enum nss_status _nss_ldap_getgrent_r (struct group *result,
-                      char *buffer, size_t buflen, int *errnop)
-{
-  LOOKUP_GETENT (gr_context, result, buffer, buflen, errnop,
-                 _nss_ldap_filt_getgrent, LM_GROUP, _nss_ldap_parse_gr,
-                 LDAP_NSS_BUFLEN_GROUP);
-}
-
-static enum nss_status _nss_ldap_endgrent (void)
-{
-  LOOKUP_ENDENT (gr_context);
-}
-
 /* macros for expanding the LDF_GROUP macro */
 #define LDF_STRING(field)     WRITE_STRING(fp,field)
 #define LDF_TYPE(field,type)  WRITE_TYPE(fp,field,type)
@@ -1078,6 +1041,7 @@ int nslcd_group_byname(FILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   char *name;
+  struct ldap_args a;
   /* these are here for now until we rewrite the LDAP code */
   struct group result;
   char buffer[1024];
@@ -1088,8 +1052,17 @@ int nslcd_group_byname(FILE *fp)
   /* FIXME: free() this buffer somewhere */
   /* log call */
   log_log(LOG_DEBUG,"nslcd_group_byname(%s)",name);
+  /* static buffer size check */
+  if (1024<LDAP_NSS_BUFLEN_GROUP)
+  {
+    log_log(LOG_CRIT,"allocated buffer in nslcd_group_byname() too small");
+    exit(1);
+  }
   /* do the LDAP request */
-  retv=nss2nslcd(_nss_ldap_getgrnam_r(name,&result,buffer,1024,&errnop));
+  LA_INIT(a);
+  LA_STRING(a)=name;
+  LA_TYPE(a)=LA_TYPE_STRING;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrnam,LM_GROUP,_nss_ldap_parse_gr));
   /* no more need for this */
   free(name);
   /* write the response */
@@ -1110,6 +1083,7 @@ int nslcd_group_bygid(FILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   gid_t gid;
+  struct ldap_args a;
   /* these are here for now until we rewrite the LDAP code */
   struct group result;
   char buffer[1024];
@@ -1120,8 +1094,17 @@ int nslcd_group_bygid(FILE *fp)
   /* FIXME: free() this buffer somewhere */
   /* log call */
   log_log(LOG_DEBUG,"nslcd_group_bygid(%d)",(int)gid);
+  /* static buffer size check */
+  if (1024<LDAP_NSS_BUFLEN_GROUP)
+  {
+    log_log(LOG_CRIT,"allocated buffer in nslcd_group_byname() too small");
+    exit(1);
+  }
   /* do the LDAP request */
-  retv=nss2nslcd(_nss_ldap_getgrgid_r(gid,&result,buffer,1024,&errnop));
+  LA_INIT(a);
+  LA_NUMBER(a)=gid;
+  LA_TYPE(a)=LA_TYPE_NUMBER;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrgid,LM_GROUP,_nss_ldap_parse_gr))
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYGID);
@@ -1199,6 +1182,7 @@ int nslcd_group_bymember(FILE *fp)
 int nslcd_group_all(FILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
+  struct ent_context *gr_context=NULL;
   /* these are here for now until we rewrite the LDAP code */
   struct group result;
   char buffer[1024];
@@ -1209,9 +1193,11 @@ int nslcd_group_all(FILE *fp)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_ALL);
+  /* initialize context */
+  if (_nss_ldap_ent_context_init(&gr_context)==NULL)
+    return -1;
   /* loop over all results */
-  _nss_ldap_setgrent();
-  while ((retv=nss2nslcd(_nss_ldap_getgrent_r(&result,buffer,1024,&errnop)))==NSLCD_RESULT_SUCCESS)
+  while ((retv=nss2nslcd(_nss_ldap_getent(&gr_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrent,LM_GROUP,_nss_ldap_parse_gr)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);
@@ -1222,7 +1208,9 @@ int nslcd_group_all(FILE *fp)
   /* write the final result code */
   WRITE_INT32(fp,retv);
   /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_endgrent();
+  _nss_ldap_enter();
+  _nss_ldap_ent_context_release(gr_context);
+  _nss_ldap_leave();
   log_log(LOG_DEBUG,"nslcd_group_all DONE");
   /* we're done */
   return 0;
