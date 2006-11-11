@@ -1,5 +1,6 @@
 /*
    common.h - common server code routines
+   This file is part of the nss-ldapd library.
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006 Arthur de Jong

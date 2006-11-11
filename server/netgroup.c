@@ -1,25 +1,26 @@
 /*
-   Copyright (C) 2002-2005 Luke Howard
-   This file is part of the nss_ldap library.
-   Linux support contributed by Larry Lile, <llile@dreamworks.com>, 2002.
-   Solaris support contributed by Luke Howard, <lukeh@padl.com>, 2004.
+   netgroup.c - netgroup lookup routines
+   This file was part of the nss-ldap library (as ldap-netgrp.c)
+   which has been forked into the nss-ldapd library.
 
-   The nss_ldap library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Library General Public License as
-   published by the Free Software Foundation; either version 2 of the
-   License, or (at your option) any later version.
+   Copyright (C) 1997-2005 Luke Howard
+   Copyright (C) 2006 West Consulting
+   Copyright (C) 2006 Arthur de Jong
 
-   The nss_ldap library is distributed in the hope that it will be useful,
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Library General Public License for more details.
 
    You should have received a copy of the GNU Library General Public
-   License along with the nss_ldap library; see the file COPYING.LIB.  If not,
-   write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.
-
-   $Id$
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+   MA 02110-1301 USA
 */
 
 #include "config.h"
@@ -50,10 +51,10 @@
 static struct ent_context *_ngbe = NULL;
 
 /*
- * I pulled the following macro (EXPAND), functions (strip_whitespace and
- * _nss_netgroup_parseline) and structures (name_list and __netgrent) from
- * glibc-2.2.x.  _nss_netgroup_parseline became _nss_ldap_parse_netgr after
- * some modification.
+ * I (Luke Howard) pulled the following macro (EXPAND), functions
+ * (strip_whitespace and _nss_netgroup_parseline) and structures
+ * (name_list and __netgrent) from glibc-2.2.x.  _nss_netgroup_parseline
+ * became _nss_ldap_parse_netgr after some modification.
  *
  * The rest of the code is modeled on various other _nss_ldap functions.
  */

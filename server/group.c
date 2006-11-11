@@ -1,5 +1,7 @@
 /*
    group.c - group entry lookup routines
+   This file was part of the nss-ldap library (as ldap-grp.c) which
+   has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
