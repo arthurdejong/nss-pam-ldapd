@@ -121,7 +121,6 @@ static void
 debug (char *fmt, ...)
 {
   va_list ap;
-
   va_start (ap, fmt);
   fprintf (stderr, "nss_ldap: ");
   vfprintf (stderr, fmt, ap);
@@ -129,16 +128,16 @@ debug (char *fmt, ...)
   fprintf (stderr, "\n");
 }
 #endif /* __GNUC__ */
-#else
+#else /* DEBUG */
 #ifdef __GNUC__
 #define debug(fmt, args...)
-#else
+#else /* __GNUC__ */
 static void
 debug (char *fmt, ...)
 {
 }
-#endif /* __GNUC__ */
-#endif /* DEBUG */
+#endif /* not __GNUC__ */
+#endif /* not DEBUG */
 
 #ifdef __GNUC__
 #define alignof(ptr) __alignof__(ptr)
@@ -148,16 +147,17 @@ debug (char *fmt, ...)
 #define alignof(ptr) (sizeof(char *))
 #endif /* __GNUC__ */
 
-#define align(ptr, blen, TYPE)              do { \
-                                        char *qtr = ptr; \
-                                        ptr += alignof(TYPE) - 1; \
-                                        ptr -= ((ptr - (char *)NULL) % alignof(TYPE)); \
-                                        blen -= (ptr - qtr); \
-                                } while (0)
+#define align(ptr, blen, TYPE)\
+  { \
+      char *qtr = ptr; \
+      ptr += alignof(TYPE) - 1; \
+      ptr -= ((ptr - (char *)NULL) % alignof(TYPE)); \
+      blen -= (ptr - qtr); \
+  }
 
 /* worst case */
-#define bytesleft(ptr, blen, TYPE)    ( (blen < alignof(TYPE)) ? \
-                                            0 : (blen - alignof(TYPE) + 1))
+#define bytesleft(ptr, blen, TYPE) \
+  ( (blen < alignof(TYPE)) ? 0 : (blen - alignof(TYPE) + 1))
 
 /* selectors for different maps */
 enum ldap_map_selector
