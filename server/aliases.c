@@ -42,8 +42,6 @@
 #include "common.h"
 #include "log.h"
 
-static struct ent_context *alias_context = NULL;
-
 static enum nss_status _nss_ldap_parse_alias(
         LDAPMessage *e,struct ldap_state *pvt,void *result,
         char *buffer,size_t buflen)
@@ -61,6 +59,19 @@ static enum nss_status _nss_ldap_parse_alias(
   return stat;
 }
 
+static int write_alias(LDAPMessage *e,struct ldap_state *pvt,FILE *fp)
+{
+  int stat;
+  log_log(LOG_DEBUG,"write_alias: _nss_ldap_write_rndvalue");
+  if ((stat=_nss_ldap_write_rndvalue(fp,e,ATM(LM_ALIASES,cn)))!=NSLCD_RESULT_SUCCESS)
+    return stat;
+  log_log(LOG_DEBUG,"write_alias: _nss_ldap_write_attrvals");
+  if ((stat=_nss_ldap_write_attrvals(fp,e,AT(rfc822MailMember)))!=NSLCD_RESULT_SUCCESS)
+    return stat;
+  return NSLCD_RESULT_SUCCESS;
+}
+
+
 /* macros for expanding the LDF_ALIAS macro */
 #define LDF_STRING(field)     WRITE_STRING(fp,field)
 #define LDF_STRINGLIST(field) WRITE_STRINGLIST_NUM(fp,field,result.alias_members_len)
@@ -69,33 +80,23 @@ static enum nss_status _nss_ldap_parse_alias(
 
 int nslcd_alias_byname(FILE *fp)
 {
-  int32_t tmpint32,tmp2int32;
+  int32_t tmpint32;
   char *name;
-  /* these are here for now until we rewrite the LDAP code */
-  struct aliasent result;
-  char buffer[1024];
-  int errnop;
-  int retv;
   struct ldap_args a;
   /* read request parameters */
   READ_STRING_ALLOC(fp,name);
   /* log call */
   log_log(LOG_DEBUG,"nslcd_alias_byname(%s)",name);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_ALIAS_BYNAME);
   /* do the LDAP request */
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getaliasbyname,LM_ALIASES,_nss_ldap_parse_alias));
+  _nss_ldap_searchbyname(&a,_nss_ldap_filt_getaliasbyname,LM_ALIASES,fp,write_alias);
   /* no more need for this */
   free(name);
-  /* write the response */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_ALIAS_BYNAME);
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    LDF_ALIAS;
-  }
   WRITE_FLUSH(fp);
   log_log(LOG_DEBUG,"nslcd_alias_byname DONE");
   /* we're done */
@@ -105,6 +106,7 @@ int nslcd_alias_byname(FILE *fp)
 int nslcd_alias_all(FILE *fp)
 {
   int32_t tmpint32,tmp2int32;
+  static struct ent_context *alias_context;
   /* these are here for now until we rewrite the LDAP code */
   struct aliasent result;
   char buffer[1024];
@@ -123,7 +125,7 @@ int nslcd_alias_all(FILE *fp)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);
-    /* write the password entry */
+    /* write the alias entry */
     LDF_ALIAS;
     fflush(fp);
   }

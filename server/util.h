@@ -36,9 +36,11 @@
  * get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry)
  * would return lukeh.
  */
-enum nss_status _nss_ldap_getrdnvalue (LDAPMessage * entry,
+enum nss_status _nss_ldap_getrdnvalue(LDAPMessage *entry,
                                   const char *rdntype,
                                   char **rval, char **buf, size_t * len);
+
+int _nss_ldap_write_rndvalue(FILE *fp,LDAPMessage *entry,const char *rdntype);
 
 /*
  * map a distinguished name to a login name, or group entry

@@ -499,6 +499,10 @@ struct name_list
 typedef enum nss_status (*parser_t) (LDAPMessage *, struct ldap_state *, void *,
                                 char *, size_t);
 
+
+typedef int (*NEWparser_t)(LDAPMessage *e,struct ldap_state *pvt,FILE *fp);
+
+
 /*
  * Portable locking macro.
  */
@@ -619,6 +623,12 @@ enum nss_status _nss_ldap_getbyname (struct ldap_args * args,        /* IN/OUT *
                                 enum ldap_map_selector sel,        /* IN */
                                 parser_t parser /* IN */ );
 
+int _nss_ldap_searchbyname(struct ldap_args *args,        /* IN/OUT */
+                           const char *filterprot, /* IN */
+                           enum ldap_map_selector sel,        /* IN */
+                           FILE *fp,NEWparser_t parser /* IN */ );
+
+
 /* parsing utility functions */
 enum nss_status _nss_ldap_assign_attrvals (LDAPMessage * e,     /* IN */
                                       const char *attr, /* IN */
@@ -627,6 +637,8 @@ enum nss_status _nss_ldap_assign_attrvals (LDAPMessage * e,     /* IN */
                                       char **buffer,    /* IN/OUT */
                                       size_t * buflen,  /* IN/OUT */
                                       size_t * pvalcount /* OUT */ );
+
+int _nss_ldap_write_attrvals(FILE *fp,LDAPMessage *e,const char *attr);
 
 enum nss_status _nss_ldap_assign_attrval (LDAPMessage * e,      /* IN */
                                      const char *attr,  /* IN */

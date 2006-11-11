@@ -84,6 +84,9 @@
 #include "util.h"
 #include "dnsconfig.h"
 #include "pagectrl.h"
+#include "nslcd-server.h"
+#include "common.h"
+#include "log.h"
 
 #if defined(HAVE_THREAD_H)
 #ifdef HAVE_PTHREAD_ATFORK
@@ -3207,6 +3210,94 @@ _nss_ldap_getbyname (struct ldap_args * args,
   return stat;
 }
 
+static int NEW_do_parse_s(struct ent_context *ctx,FILE *fp,NEWparser_t parser)
+{
+  int parseStat=NSLCD_RESULT_NOTFOUND;
+  LDAPMessage *e=NULL;
+  /*
+   * if ec_state.ls_info.ls_index is non-zero, then we don't collect another
+   * entry off the LDAP chain, and instead refeed the existing result to
+   * the parser. Once the parser has finished with it, it will return
+   * NSS_STATUS_NOTFOUND and reset the index to -1, at which point we'll retrieve
+   * another entry.
+   */
+  do
+  {
+    if (ctx->ec_state.ls_retry == 0 &&
+        (ctx->ec_state.ls_type == LS_TYPE_KEY
+         || ctx->ec_state.ls_info.ls_index == -1))
+    {
+      if (e == NULL)
+        e = ldap_first_entry (__session.ls_conn, ctx->ec_res);
+      else
+        e = ldap_next_entry (__session.ls_conn, e);
+    }
+    if (e == NULL)
+    {
+      /* Could not get a result; bail */
+      parseStat=NSLCD_RESULT_NOTFOUND;
+      break;
+    }
+    /*
+     * We have an entry; now, try to parse it.
+     *
+     * If we do not parse the entry because of a schema
+     * violation, the parser should return NSS_STATUS_NOTFOUND.
+     * We'll keep on trying subsequent entries until we
+     * find one which is parseable, or exhaust avialable
+     * entries, whichever is first.
+     */
+    parseStat=parser(e,&ctx->ec_state,fp);
+    /* hold onto the state if we're out of memory XXX */
+    ctx->ec_state.ls_retry=0;
+  }
+  while (parseStat==NSLCD_RESULT_NOTFOUND);
+  return parseStat;
+}
+
+
+int _nss_ldap_searchbyname(
+        struct ldap_args *args,const char *filterprot,
+        enum ldap_map_selector sel,FILE *fp,NEWparser_t parser)
+{
+  int stat;
+  struct ent_context ctx;
+  int32_t tmpint32;
+
+  _nss_ldap_enter();
+
+  ctx.ec_msgid=-1;
+  ctx.ec_cookie=NULL;
+
+  stat=nss2nslcd(_nss_ldap_search_s(args,filterprot,sel,NULL,1,&ctx.ec_res));
+  /* write the result code */
+  WRITE_INT32(fp,stat);
+  /* bail on nothing found */
+  if (stat!=NSLCD_RESULT_SUCCESS)
+  {
+    _nss_ldap_leave();
+    return 1;
+  }
+  /*
+   * we pass this along for the benefit of the services parser,
+   * which uses it to figure out which protocol we really wanted.
+   * we only pass the second argument along, as that's what we need
+   * in services.
+   */
+  LS_INIT(ctx.ec_state);
+  ctx.ec_state.ls_type=LS_TYPE_KEY;
+  ctx.ec_state.ls_info.ls_key=args->la_arg2.la_string;
+  /* call the parser for the result */
+  stat=NEW_do_parse_s(&ctx,fp,parser);
+
+  _nss_ldap_ent_context_release(&ctx);
+
+  /* moved unlock here to avoid race condition bug #49 */
+  _nss_ldap_leave();
+
+  return stat;
+}
+
 /*
  * These functions are called from within the parser, where it is assumed
  * to be safe to use the connection and the respective message.
@@ -3306,6 +3397,32 @@ _nss_ldap_assign_attrvals (LDAPMessage * e,
 
   ldap_value_free (vals);
   return NSS_STATUS_SUCCESS;
+}
+
+int _nss_ldap_write_attrvals(FILE *fp,LDAPMessage *e,const char *attr)
+{
+  char **vals;
+  int valcount;
+  int i;
+  int32_t tmpint32;
+  /* log */
+  log_log(LOG_DEBUG,"_nss_ldap_write_attrvals(%s)",attr);
+  /* check if we have a connection */
+  if (__session.ls_conn==NULL)
+    return NSLCD_RESULT_UNAVAIL;
+  /* get the values and the number of values */
+  vals=ldap_get_values(__session.ls_conn,e,(char *)attr);
+  valcount=(vals==NULL)?0:ldap_count_values(vals);
+  /* write number of entries */
+  WRITE_INT32(fp,valcount);
+  /* write the entries themselves */
+  for (i=0;i<valcount;i++)
+  {
+    WRITE_STRING(fp,vals[i]);
+  }
+  if (vals!=NULL)
+    ldap_value_free(vals);
+  return NSLCD_RESULT_SUCCESS;
 }
 
 /* Assign a single value to *valptr. */
