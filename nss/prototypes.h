@@ -57,9 +57,9 @@ enum nss_status _nss_ldap_getaliasent_r(struct aliasent *result,char *buffer,siz
 enum nss_status _nss_ldap_endaliasent(void);
 
 /* automount - automounter maps */
-enum nss_status _nss_ldap_getautomntbyname_r(void *private,const char *key,const char **canon_key,const char **value,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_setautomntent(const char *mapname,void **private);
-enum nss_status _nss_ldap_getautomntent_r(void *private,const char **key,const char **value,char *buffer,size_t buflen,int *errnop);
+enum nss_status _nss_ldap_getautomntbyname_r(void *private,const char *key,const char **canon_key,const char **value,char *buffer,size_t buflen,int *errnop);
+enum nss_status _nss_ldap_getautomntent_r(void *private,const char **canon_key,const char **value,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_endautomntent(void **private);
 
 /* ethers - ethernet numbers */
