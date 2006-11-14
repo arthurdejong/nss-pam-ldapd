@@ -66,7 +66,7 @@ enum nss_status nslcd2nss(int code);
   errnop=&errnocp; \
   /* close the existing stream if it is still open */ \
   if (fp!=NULL) \
-    _nss_ldap_endpwent(); \
+    fclose(fp); \
   /* open a new stream and write the request */ \
   OPEN_SOCK(fp); \
   WRITE_REQUEST(fp,action); \
