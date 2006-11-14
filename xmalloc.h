@@ -19,20 +19,18 @@
    MA 02110-1301 USA
 */
 
-
 #ifndef _XMALLOC_H
 #define _XMALLOC_H 1
 
-
 #include <stdlib.h>
-
 
 /* malloc wrapper */
 void *xmalloc(size_t size);
 
+/* allocate size for a specific type */
+#define xxmalloc(type,count) (type *)xmalloc(sizeof(type)*(count))
 
 /* strdup wrapper */
 char *xstrdup(const char *s);
-
 
 #endif /* not _XMALLOC_H */
