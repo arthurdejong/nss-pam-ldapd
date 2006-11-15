@@ -93,10 +93,10 @@ enum nss_status _nss_ldap_endnetgrent(struct __netgrent *result);
 */
 
 /* networks - network names and numbers */
-enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,char *buffer,size_t buflen,int *errnop,int *herrnop);
-enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int type,struct netent *result,char *buffer,size_t buflen,int *errnop,int *herrnop);
+enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop);
+enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int af,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop);
 enum nss_status _nss_ldap_setnetent(int stayopen);
-enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t buflen,int *errnop,int *herrnop);
+enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop);
 enum nss_status _nss_ldap_endnetent(void);
 
 /* passwd - user database and passwords */

@@ -89,7 +89,7 @@
   LDF_BUF(ADDRESS_ADDR)   /* the address itself in network byte order */  
 
 /* used for transferring host (/etc/hosts) information */
-/* Note: this marcos is not expanded to code, check manually */
+/* Note: this marco is not expanded to code, check manually */
 #define LDF_HOST \
   LDF_STRING(HOST_NAME) \
   LDF_STRINGLIST(HOST_ALIASES) \
@@ -98,6 +98,13 @@
 /* NETGROUP - TBD */
 
 /* NETWORKS - TBD - struct netent */
+
+/* user for transferring network (/etc/networks) information */
+/* Note: this marco is not expanded to code, check manually */
+#define LDF_NETWORK \
+  LDF_STRING(NETWORK_NAME) \
+  LDF_STRINGLIST(NETWORK_ALIASES) \
+  LDF_ADDRESSLIST(NETWORK_ADDRS)
 
 /* used for transferring user (/etc/passwd) information */
 #define LDF_PASSWD \
@@ -155,6 +162,9 @@
 #define NSLCD_ACTION_HOST_BYNAME        6001
 #define NSLCD_ACTION_HOST_BYADDR        6002
 #define NSLCD_ACTION_HOST_ALL           6005
+#define NSLCD_ACTION_NETWORK_BYNAME     8001
+#define NSLCD_ACTION_NETWORK_BYADDR     8002
+#define NSLCD_ACTION_NETWORK_ALL        8005
 #define NSLCD_ACTION_PASSWD_BYNAME      1001
 #define NSLCD_ACTION_PASSWD_BYUID       1002
 #define NSLCD_ACTION_PASSWD_ALL         1004
