@@ -49,7 +49,9 @@
   return nslcd2nss(retv);
 
 /* read a single host entry from the stream, filtering on the
-   specified address family, result is stored in result */
+   specified address family, result is stored in result 
+   it will return NSS_STATUS_NOTFOUND if an empty entry was read
+   (no addresses in the address family) */
 static enum nss_status host_readhostent(
         FILE *fp,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
@@ -94,6 +96,9 @@ static enum nss_status host_readhostent(
   }
   /* null-terminate address list */
   result->h_addr_list[i]=NULL;
+  /* check read result */
+  if (result->h_addr_list[0]==NULL)
+    return NSS_STATUS_NOTFOUND;
   return NSS_STATUS_SUCCESS;
 }
 
@@ -122,11 +127,15 @@ enum nss_status _nss_ldap_gethostbyname2_r(
   READ_RESPONSEHEADER(fp,NSLCD_ACTION_HOST_BYNAME);
   READ_RESPONSE_CODE(fp);
   retv=host_readhostent(fp,af,result,buffer,buflen,errnop,h_errnop);
-  if (retv!=NSS_STATUS_SUCCESS)
+  /* check read result */
+  if (retv==NSS_STATUS_NOTFOUND)
+  {
+    *h_errnop=NO_ADDRESS;
+    fclose(fp);
+    return NSS_STATUS_NOTFOUND;
+  }
+  else if (retv!=NSS_STATUS_SUCCESS)
     return retv;
-  /* determin h_errno value */
-  if (result->h_addr_list[0]==NULL)
-    *h_errnop=NO_ADDRESS;  
   /* close socket and we're done */
   fclose(fp);
   return NSS_STATUS_SUCCESS;
@@ -171,7 +180,14 @@ enum nss_status _nss_ldap_gethostbyaddr_r(
   READ_RESPONSEHEADER(fp,NSLCD_ACTION_HOST_BYADDR);
   READ_RESPONSE_CODE(fp);
   retv=host_readhostent(fp,af,result,buffer,buflen,errnop,h_errnop);
-  if (retv!=NSS_STATUS_SUCCESS)
+  /* check read result */
+  if (retv==NSS_STATUS_NOTFOUND)
+  {
+    *h_errnop=NO_ADDRESS;
+    fclose(fp);
+    return NSS_STATUS_NOTFOUND;
+  }
+  else if (retv!=NSS_STATUS_SUCCESS)
     return retv;
   /* close socket and we're done */
   fclose(fp);
@@ -193,15 +209,23 @@ enum nss_status _nss_ldap_gethostent_r(
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   int32_t tmpint32;
+  enum nss_status retv=NSS_STATUS_NOTFOUND;
   /* check that we have a valid file descriptor */
   if (fp==NULL)
   {
     *errnop=ENOENT;
     return NSS_STATUS_UNAVAIL;
   }
-  /* read a response */
-  READ_RESPONSE_CODE(fp);
-  return host_readhostent(fp,AF_INET,result,buffer,buflen,errnop,h_errnop); \
+  /* check until we read an non-empty entry */
+  do
+  {
+    /* read a response */
+    READ_RESPONSE_CODE(fp);
+    retv=host_readhostent(fp,AF_INET,result,buffer,buflen,errnop,h_errnop);
+    /* do another loop run if we read an ok address or */
+  }
+  while ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_NOTFOUND));
+  return retv;
 }
 
 enum nss_status _nss_ldap_endhostent(void)
