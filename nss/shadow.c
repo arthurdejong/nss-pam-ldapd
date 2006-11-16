@@ -43,24 +43,19 @@
 #define SHADOW_EXPIRE        result->sp_expire
 #define SHADOW_FLAG          result->sp_flag
 
+static enum nss_status read_spwd(
+        FILE *fp,struct spwd *result,
+        char *buffer,size_t buflen,int *errnop)
+{
+  int32_t tmpint32;
+  size_t bufptr=0;
+  LDF_SHADOW;
+  return NSS_STATUS_SUCCESS;
+}
+
 enum nss_status _nss_ldap_getspnam_r(const char *name,struct spwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  FILE *fp;
-  size_t bufptr=0;
-  int32_t tmpint32;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_SHADOW_BYNAME);
-  WRITE_STRING(fp,name);
-  WRITE_FLUSH(fp);
-  /* read response header */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_SHADOW_BYNAME);
-  /* read response */
-  READ_RESPONSE_CODE(fp);
-  LDF_SHADOW;
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,name,read_spwd);
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -74,7 +69,7 @@ enum nss_status _nss_ldap_setspent(int stayopen)
 
 enum nss_status _nss_ldap_getspent_r(struct spwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(LDF_SHADOW);
+  NSS_GETENT(read_spwd);
 }
 
 enum nss_status _nss_ldap_endspent(void)

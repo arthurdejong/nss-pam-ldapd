@@ -36,26 +36,24 @@
 #define ETHER_NAME            result->e_name
 #define ETHER_ADDR            result->e_addr
 
+static enum nss_status read_etherent(
+        FILE *fp,struct etherent *result,
+        char *buffer,size_t buflen,int *errnop)
+{
+  int32_t tmpint32;
+  size_t bufptr=0;
+  /* auto-genereted read code */
+  LDF_ETHER;
+  /* we're done */
+  return NSS_STATUS_SUCCESS;
+}
+
 /* map a hostname to the corresponding ethernet address */
 enum nss_status _nss_ldap_gethostton_r(
         const char *name,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  FILE *fp;
-  int32_t tmpint32;
-  size_t bufptr=0;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_ETHER_BYNAME);
-  WRITE_STRING(fp,name);
-  WRITE_FLUSH(fp);
-  /* read response */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_ETHER_BYNAME);
-  READ_RESPONSE_CODE(fp);
-  LDF_ETHER;
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,name,read_etherent);
 }
 
 /* map an ethernet address to the corresponding hostname */
@@ -63,21 +61,7 @@ enum nss_status _nss_ldap_getntohost_r(
         const struct ether_addr *addr,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  FILE *fp;
-  int32_t tmpint32;
-  size_t bufptr=0;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_ETHER_BYNAME);
-  WRITE_TYPE(fp,addr,u_int8_t[6]);
-  WRITE_FLUSH(fp);
-  /* read response */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_ETHER_BYNAME);
-  READ_RESPONSE_CODE(fp);
-  LDF_ETHER;
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,addr,u_int8_t[6],read_etherent);
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -93,19 +77,7 @@ enum nss_status _nss_ldap_getetherent_r(
         struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  int32_t tmpint32;
-  size_t bufptr=0;
-  /* check that we have a valid file descriptor */
-  if (fp==NULL)
-  {
-    *errnop=ENOENT;
-    return NSS_STATUS_UNAVAIL;
-  }
-  /* read a response */
-  READ_RESPONSE_CODE(fp);
-  LDF_ETHER;
-  /* return result code */
-  return NSS_STATUS_SUCCESS;
+  NSS_GETENT(read_etherent);
 }
 
 enum nss_status _nss_ldap_endetherent(void)

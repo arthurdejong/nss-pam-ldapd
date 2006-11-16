@@ -52,7 +52,7 @@
    specified address family, result is stored in result 
    it will return NSS_STATUS_NOTFOUND if an empty entry was read
    (no addresses in the address family) */
-static enum nss_status host_readhostent(
+static enum nss_status read_hostent(
         FILE *fp,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
@@ -126,7 +126,7 @@ enum nss_status _nss_ldap_gethostbyname2_r(
   /* read response */
   READ_RESPONSEHEADER(fp,NSLCD_ACTION_HOST_BYNAME);
   READ_RESPONSE_CODE(fp);
-  retv=host_readhostent(fp,af,result,buffer,buflen,errnop,h_errnop);
+  retv=read_hostent(fp,af,result,buffer,buflen,errnop,h_errnop);
   /* check read result */
   if (retv==NSS_STATUS_NOTFOUND)
   {
@@ -179,7 +179,7 @@ enum nss_status _nss_ldap_gethostbyaddr_r(
   /* read response */
   READ_RESPONSEHEADER(fp,NSLCD_ACTION_HOST_BYADDR);
   READ_RESPONSE_CODE(fp);
-  retv=host_readhostent(fp,af,result,buffer,buflen,errnop,h_errnop);
+  retv=read_hostent(fp,af,result,buffer,buflen,errnop,h_errnop);
   /* check read result */
   if (retv==NSS_STATUS_NOTFOUND)
   {
@@ -221,7 +221,7 @@ enum nss_status _nss_ldap_gethostent_r(
   {
     /* read a response */
     READ_RESPONSE_CODE(fp);
-    retv=host_readhostent(fp,AF_INET,result,buffer,buflen,errnop,h_errnop);
+    retv=read_hostent(fp,AF_INET,result,buffer,buflen,errnop,h_errnop);
     /* do another loop run if we read an ok address or */
   }
   while ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_NOTFOUND));

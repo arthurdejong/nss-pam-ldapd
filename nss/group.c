@@ -39,42 +39,26 @@
 #define GROUP_GID             result->gr_gid
 #define GROUP_MEMBERS         result->gr_mem
 
+static enum nss_status read_group(
+        FILE *fp,struct group *result,
+        char *buffer,size_t buflen,int *errnop)
+{
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  size_t bufptr=0;
+  /* auto-genereted read code */
+  LDF_GROUP;
+  /* we're done */
+  return NSS_STATUS_SUCCESS;
+}
+
 enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop)
 {
-  FILE *fp;
-  size_t bufptr=0;
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_GROUP_BYNAME);
-  WRITE_STRING(fp,name);
-  WRITE_FLUSH(fp);
-  /* read response */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_GROUP_BYNAME);
-  READ_RESPONSE_CODE(fp);
-  LDF_GROUP;
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,name,read_group);
 }
 
 enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer,size_t buflen,int *errnop)
 {
-  FILE *fp;
-  size_t bufptr=0;
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_GROUP_BYGID);
-  WRITE_TYPE(fp,gid,gid_t);
-  WRITE_FLUSH(fp);
-  /* read response */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_GROUP_BYGID);
-  READ_RESPONSE_CODE(fp);
-  LDF_GROUP;
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,gid,gid_t,read_group);
 }
 
 /* this function returns a list of groups, documentation for the
@@ -147,8 +131,7 @@ enum nss_status _nss_ldap_setgrent(int stayopen)
 
 enum nss_status _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop)
 {
-  int32_t tmp2int32,tmp3int32;
-  NSS_GETENT(LDF_GROUP);
+  NSS_GETENT(read_group);
 }
 
 enum nss_status _nss_ldap_endgrent(void)

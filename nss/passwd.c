@@ -41,44 +41,25 @@
 #define PASSWD_DIR    result->pw_dir
 #define PASSWD_SHELL  result->pw_shell
 
+
+static enum nss_status read_passwd(
+        FILE *fp,struct passwd *result,
+        char *buffer,size_t buflen,int *errnop)
+{
+  int32_t tmpint32;
+  size_t bufptr=0;
+  LDF_PASSWD;
+  return NSS_STATUS_SUCCESS;
+}
+
 enum nss_status _nss_ldap_getpwnam_r(const char *name,struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  FILE *fp;
-  size_t bufptr=0;
-  int32_t tmpint32;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_PASSWD_BYNAME);
-  WRITE_STRING(fp,name);
-  WRITE_FLUSH(fp);
-  /* read response header */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_PASSWD_BYNAME);
-  /* read response */
-  READ_RESPONSE_CODE(fp);
-  LDF_PASSWD;
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYNAME(NSLCD_ACTION_PASSWD_BYNAME,name,read_passwd);
 }
 
 enum nss_status _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  FILE *fp;
-  size_t bufptr=0;
-  int32_t tmpint32;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_PASSWD_BYUID);
-  WRITE_TYPE(fp,uid,uid_t);
-  WRITE_FLUSH(fp);
-  /* read response header */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_PASSWD_BYUID);
-  /* read response */
-  READ_RESPONSE_CODE(fp);
-  LDF_PASSWD;
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYTYPE(NSLCD_ACTION_PASSWD_BYUID,uid,uid_t,read_passwd);
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -94,7 +75,7 @@ enum nss_status _nss_ldap_setpwent(int stayopen)
 /* read password data from an opened stream */
 enum nss_status _nss_ldap_getpwent_r(struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(LDF_PASSWD);
+  NSS_GETENT(read_passwd);
 }
 
 /* close the stream opened with setpwent() above */

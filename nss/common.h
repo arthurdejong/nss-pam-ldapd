@@ -59,6 +59,37 @@ enum nss_status nslcd2nss(int code);
 
 /* helper macros available to easily generate {set,get,end}ent functions */
 
+#define NSS_BYGEN(action,param,readfn) \
+  FILE *fp; \
+  int32_t tmpint32; \
+  enum nss_status retv; \
+  /* open socket and write request */ \
+  OPEN_SOCK(fp); \
+  WRITE_REQUEST(fp,action); \
+  param; \
+  WRITE_FLUSH(fp); \
+  /* read response header */ \
+  READ_RESPONSEHEADER(fp,action); \
+  /* read response */ \
+  READ_RESPONSE_CODE(fp); \
+  readfn(fp,result,buffer,buflen,errnop); \
+  retv=readfn(fp,result,buffer,buflen,errnop); \
+  /* check read result */ \
+  if (retv!=NSS_STATUS_SUCCESS) \
+    return retv; \
+  /* close socket and we're done */ \
+  fclose(fp); \
+  return NSS_STATUS_SUCCESS;
+
+#define NSS_BYNAME(action,name,readfn) \
+  NSS_BYGEN(action,WRITE_STRING(fp,name),readfn)
+
+#define NSS_BYTYPE(action,val,type,readfn) \
+  NSS_BYGEN(action,WRITE_TYPE(fp,val,type),readfn)
+
+#define NSS_BYINT32(action,val,readfn) \
+  NSS_BYGEN(action,WRITE_INT32(fp,val),readfn)
+
 #define NSS_SETENT(action) \
   int32_t tmpint32; \
   int errnocp; \
@@ -75,9 +106,9 @@ enum nss_status nslcd2nss(int code);
   READ_RESPONSEHEADER(fp,action); \
   return NSS_STATUS_SUCCESS;
 
-#define NSS_GETENT(type) \
+#define NSS_GETENT(readfn) \
   int32_t tmpint32; \
-  size_t bufptr=0; \
+  enum nss_status retv; \
   /* check that we have a valid file descriptor */ \
   if (fp==NULL) \
   { \
@@ -86,7 +117,10 @@ enum nss_status nslcd2nss(int code);
   } \
   /* read a response */ \
   READ_RESPONSE_CODE(fp); \
-  type; \
+  retv=readfn(fp,result,buffer,buflen,errnop); \
+  /* check read result */ \
+  if (retv!=NSS_STATUS_SUCCESS) \
+    return retv; \
   return NSS_STATUS_SUCCESS;
 
 #define NSS_ENDENT() \

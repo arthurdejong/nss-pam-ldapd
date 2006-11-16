@@ -36,28 +36,25 @@
 #define ALIAS_NAME            result->alias_name
 #define ALIAS_RCPTS           result->alias_members
 
+static enum nss_status read_aliasent(
+        FILE *fp,struct aliasent *result,
+        char *buffer,size_t buflen,int *errnop)
+{
+  int32_t tmpint32,tmp2int32;
+  size_t bufptr=0;
+  /* auto-genereted read code */
+  LDF_ALIAS;
+  /* fill in remaining gaps in struct */
+  result->alias_local=0;
+  /* we're done */
+  return NSS_STATUS_SUCCESS;
+}
+
 enum nss_status _nss_ldap_getaliasbyname_r(
         const char *name,struct aliasent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  FILE *fp;
-  size_t bufptr=0;
-  int32_t tmpint32,tmp2int32;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_ALIAS_BYNAME);
-  WRITE_STRING(fp,name);
-  WRITE_FLUSH(fp);
-  /* read response header */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_ALIAS_BYNAME);
-  /* read response */
-  READ_RESPONSE_CODE(fp);
-  LDF_ALIAS;
-  /* fill in remaining gaps in struct */
-  result->alias_local=0;
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYNAME(NSLCD_ACTION_ALIAS_BYNAME,name,read_aliasent);
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -71,8 +68,7 @@ enum nss_status _nss_ldap_setaliasent(void)
 
 enum nss_status _nss_ldap_getaliasent_r(struct aliasent *result,char *buffer,size_t buflen,int *errnop)
 {
-  int32_t tmp2int32;
-  NSS_GETENT(LDF_ALIAS);
+  NSS_GETENT(read_aliasent);
 }
 
 enum nss_status _nss_ldap_endaliasent(void)

@@ -152,8 +152,8 @@ enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int af,struct netent *res
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *hostentfp;
-#define fp hostentfp
+static __thread FILE *netentfp;
+#define fp netentfp
 
 enum nss_status _nss_ldap_setnetent(int stayopen)
 {
