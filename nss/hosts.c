@@ -49,7 +49,7 @@
   return nslcd2nss(retv);
 
 /* read a single host entry from the stream, filtering on the
-   specified address family, result is stored in result 
+   specified address family, result is stored in result
    it will return NSS_STATUS_NOTFOUND if an empty entry was read
    (no addresses in the address family) */
 static enum nss_status read_hostent(
@@ -70,7 +70,7 @@ static enum nss_status read_hostent(
   /* allocate memory for array */
   /* Note: this may allocate too much memory (e.g. also for
            address records of other address families) but
-           this is an easy way to do it */ 
+           this is an easy way to do it */
   BUF_CHECK(fp,(numaddr+1)*sizeof(char *));
   result->h_addr_list=(char **)BUF_CUR;
   /* go through the address list and filter on af */
@@ -104,8 +104,8 @@ static enum nss_status read_hostent(
 
 /* this function looks up a single host entry and returns all the addresses
    associated with the host in a single address familiy
-   name            - IN  - hostname to lookup 
-   af              - IN  - address familty to present results for 
+   name            - IN  - hostname to lookup
+   af              - IN  - address familty to present results for
    result          - OUT - entry found
    buffer,buflen   - OUT - buffer to store allocated stuff on
    errnop,h_errnop - OUT - for reporting errors */
@@ -196,11 +196,10 @@ enum nss_status _nss_ldap_gethostbyaddr_r(
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *hostentfp;
-#define fp hostentfp
 
 enum nss_status _nss_ldap_sethostent(int stayopen)
 {
-  NSS_SETENT(NSLCD_ACTION_HOST_ALL);
+  NSS_SETENT(hostentfp,NSLCD_ACTION_HOST_ALL);
 }
 
 /* this function only returns addresses of the AF_INET address family */
@@ -211,7 +210,7 @@ enum nss_status _nss_ldap_gethostent_r(
   int32_t tmpint32;
   enum nss_status retv=NSS_STATUS_NOTFOUND;
   /* check that we have a valid file descriptor */
-  if (fp==NULL)
+  if (hostentfp==NULL)
   {
     *errnop=ENOENT;
     return NSS_STATUS_UNAVAIL;
@@ -220,8 +219,8 @@ enum nss_status _nss_ldap_gethostent_r(
   do
   {
     /* read a response */
-    READ_RESPONSE_CODE(fp);
-    retv=read_hostent(fp,AF_INET,result,buffer,buflen,errnop,h_errnop);
+    READ_RESPONSE_CODE(hostentfp);
+    retv=read_hostent(hostentfp,AF_INET,result,buffer,buflen,errnop,h_errnop);
     /* do another loop run if we read an ok address or */
   }
   while ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_NOTFOUND));
@@ -230,5 +229,5 @@ enum nss_status _nss_ldap_gethostent_r(
 
 enum nss_status _nss_ldap_endhostent(void)
 {
-  NSS_ENDENT();
+  NSS_ENDENT(hostentfp);
 }

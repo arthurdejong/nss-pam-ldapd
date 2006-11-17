@@ -113,7 +113,7 @@ enum nss_status _nss_ldap_initgroups_dyn(
     (*groupsp)[*start++]=gid;
     num++;
     /* read next response code */
-    READ_TYPE(fp,cd,int32_t);  
+    READ_TYPE(fp,cd,int32_t);
   }
   /* close socket and we're done */
   fclose(fp);
@@ -122,19 +122,18 @@ enum nss_status _nss_ldap_initgroups_dyn(
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *grentfp;
-#define fp grentfp
 
 enum nss_status _nss_ldap_setgrent(int stayopen)
 {
-  NSS_SETENT(NSLCD_ACTION_GROUP_ALL);
+  NSS_SETENT(grentfp,NSLCD_ACTION_GROUP_ALL);
 }
 
 enum nss_status _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(read_group);
+  NSS_GETENT(grentfp,read_group);
 }
 
 enum nss_status _nss_ldap_endgrent(void)
 {
-  NSS_ENDENT();
+  NSS_ENDENT(grentfp);
 }

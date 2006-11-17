@@ -63,19 +63,18 @@ enum nss_status _nss_ldap_getservbyport_r(int port,const char *protocol,struct s
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *protoentfp;
-#define fp protoentfp
 
 enum nss_status _nss_ldap_setservent(int stayopen)
 {
-  NSS_SETENT(NSLCD_ACTION_SERVICE_ALL);
+  NSS_SETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL);
 }
 
 enum nss_status _nss_ldap_getservent_r(struct servent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(read_servent);
+  NSS_GETENT(protoentfp,read_servent);
 }
 
 enum nss_status _nss_ldap_endservent(void)
 {
-  NSS_ENDENT();
+  NSS_ENDENT(protoentfp);
 }

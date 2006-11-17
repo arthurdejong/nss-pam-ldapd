@@ -45,6 +45,18 @@ struct automount_context
   int32_t magic;  /* for sanity checks */
 };
 
+static enum nss_status read_automount(
+        FILE *fp,const char **canon_key,const char **value,
+        char *buffer,size_t buflen,int *errnop)
+{
+  int32_t tmpint32;
+  size_t bufptr=0;
+  /* auto-genereted read code */
+  LDF_AUTOMOUNT;
+  /* we're done */
+  return NSS_STATUS_SUCCESS;
+}
+
 /* this function initiates a structure for doing queries
    using getautomountbyname() and getautomountent() */
 enum nss_status _nss_ldap_setautomntent(
@@ -78,8 +90,8 @@ enum nss_status _nss_ldap_getautomntbyname_r(
 {
   struct automount_context *context;
   FILE *fp;
-  size_t bufptr=0;
   int32_t tmpint32;
+  enum nss_status retv;
   /* check context */
   context=(struct automount_context *)private;
   if ((context==NULL)||(context->magic!=AUTOMOUNT_CONTEXT_MAGIC))
@@ -94,13 +106,13 @@ enum nss_status _nss_ldap_getautomntbyname_r(
   READ_RESPONSEHEADER(fp,NSLCD_ACTION_AUTOMOUNT_BYNAME);
   /* read response */
   READ_RESPONSE_CODE(fp);
-  LDF_AUTOMOUNT;
+  retv=read_automount(fp,canon_key,value,buffer,buflen,errnop);
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
   /* close socket and we're done */
   fclose(fp);
   return NSS_STATUS_SUCCESS;
 }
-
-#define fp (context->fp)
 
 enum nss_status _nss_ldap_getautomntent_r(
         void *private,const char **canon_key,const char **value,
@@ -108,28 +120,32 @@ enum nss_status _nss_ldap_getautomntent_r(
 {
   struct automount_context *context;
   int32_t tmpint32;
-  size_t bufptr=0;
+  enum nss_status retv;
   /* check context */
   context=(struct automount_context *)private;
   if ((context==NULL)||(context->magic!=AUTOMOUNT_CONTEXT_MAGIC))
     return NSS_STATUS_UNAVAIL;
   /* if we don't have a file descriptor, begin a request now */
-  if (fp==NULL)
+  if (context->fp==NULL)
   {
     /* open a new stream and write the request */
-    OPEN_SOCK(fp);
-    WRITE_REQUEST(fp,NSLCD_ACTION_AUTOMOUNT_ALL);
-    WRITE_FLUSH(fp);
+    OPEN_SOCK(context->fp);
+    WRITE_REQUEST(context->fp,NSLCD_ACTION_AUTOMOUNT_ALL);
+    WRITE_FLUSH(context->fp);
     /* read response header */
-    READ_RESPONSEHEADER(fp,NSLCD_ACTION_AUTOMOUNT_ALL);
+    READ_RESPONSEHEADER(context->fp,NSLCD_ACTION_AUTOMOUNT_ALL);
   }
   /* read a response */
-  READ_RESPONSE_CODE(fp);
-  LDF_AUTOMOUNT;
+  READ_RESPONSE_CODE(context->fp);
+  retv=read_automount(context->fp,canon_key,value,buffer,buflen,errnop);
+  if (retv!=NSS_STATUS_SUCCESS)
+  {
+    /* remove reference to fp from context */
+    context->fp=NULL;
+    return retv;
+  }
   return NSS_STATUS_SUCCESS;
 }
-
-#undef fp
 
 enum nss_status _nss_ldap_endautomntent(void **private)
 {

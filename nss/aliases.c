@@ -59,19 +59,18 @@ enum nss_status _nss_ldap_getaliasbyname_r(
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *aliasentfp;
-#define fp aliasentfp
 
 enum nss_status _nss_ldap_setaliasent(void)
 {
-  NSS_SETENT(NSLCD_ACTION_ALIAS_ALL);
+  NSS_SETENT(aliasentfp,NSLCD_ACTION_ALIAS_ALL);
 }
 
 enum nss_status _nss_ldap_getaliasent_r(struct aliasent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(read_aliasent);
+  NSS_GETENT(aliasentfp,read_aliasent);
 }
 
 enum nss_status _nss_ldap_endaliasent(void)
 {
-  NSS_ENDENT();
+  NSS_ENDENT(aliasentfp);
 }

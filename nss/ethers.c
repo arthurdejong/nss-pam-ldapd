@@ -66,21 +66,20 @@ enum nss_status _nss_ldap_getntohost_r(
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *etherentfp;
-#define fp etherentfp
 
 enum nss_status _nss_ldap_setetherent(int stayopen)
 {
-  NSS_SETENT(NSLCD_ACTION_ETHER_ALL);
+  NSS_SETENT(etherentfp,NSLCD_ACTION_ETHER_ALL);
 }
 
 enum nss_status _nss_ldap_getetherent_r(
         struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(read_etherent);
+  NSS_GETENT(etherentfp,read_etherent);
 }
 
 enum nss_status _nss_ldap_endetherent(void)
 {
-  NSS_ENDENT();
+  NSS_ENDENT(etherentfp);
 }

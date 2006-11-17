@@ -60,19 +60,18 @@ enum nss_status _nss_ldap_getspnam_r(const char *name,struct spwd *result,char *
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *spentfp;
-#define fp spentfp
 
 enum nss_status _nss_ldap_setspent(int stayopen)
 {
-  NSS_SETENT(NSLCD_ACTION_SHADOW_ALL);
+  NSS_SETENT(spentfp,NSLCD_ACTION_SHADOW_ALL);
 }
 
 enum nss_status _nss_ldap_getspent_r(struct spwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(read_spwd);
+  NSS_GETENT(spentfp,read_spwd);
 }
 
 enum nss_status _nss_ldap_endspent(void)
 {
-  NSS_ENDENT();
+  NSS_ENDENT(spentfp);
 }

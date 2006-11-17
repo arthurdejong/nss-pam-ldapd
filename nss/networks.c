@@ -153,11 +153,10 @@ enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int af,struct netent *res
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *netentfp;
-#define fp netentfp
 
 enum nss_status _nss_ldap_setnetent(int stayopen)
 {
-  NSS_SETENT(NSLCD_ACTION_NETWORK_ALL);
+  NSS_SETENT(netentfp,NSLCD_ACTION_NETWORK_ALL);
 }
 
 enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
@@ -165,7 +164,7 @@ enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t 
   int32_t tmpint32;
   enum nss_status retv=NSS_STATUS_NOTFOUND;
   /* check that we have a valid file descriptor */
-  if (fp==NULL)
+  if (netentfp==NULL)
   {
     *errnop=ENOENT;
     return NSS_STATUS_UNAVAIL;
@@ -174,8 +173,8 @@ enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t 
   do
   {
     /* read a response */
-    READ_RESPONSE_CODE(fp);
-    retv=read_netent(fp,result,buffer,buflen,errnop,h_errnop);
+    READ_RESPONSE_CODE(netentfp);
+    retv=read_netent(netentfp,result,buffer,buflen,errnop,h_errnop);
     /* do another loop run if we read an empty address list */
   }
   while ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_NOTFOUND));
@@ -184,5 +183,5 @@ enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t 
 
 enum nss_status _nss_ldap_endnetent(void)
 {
-  NSS_ENDENT();
+  NSS_ENDENT(netentfp);
 }

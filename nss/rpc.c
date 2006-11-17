@@ -62,19 +62,18 @@ enum nss_status _nss_ldap_getrpcbynumber_r(int number,struct rpcent *result,char
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *protoentfp;
-#define fp protoentfp
 
 enum nss_status _nss_ldap_setrpcent(int stayopen)
 {
-  NSS_SETENT(NSLCD_ACTION_RPC_ALL);
+  NSS_SETENT(protoentfp,NSLCD_ACTION_RPC_ALL);
 }
 
 enum nss_status _nss_ldap_getrpcent_r(struct rpcent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(read_rpcent);
+  NSS_GETENT(protoentfp,read_rpcent);
 }
 
 enum nss_status _nss_ldap_endrpcent(void)
 {
-  NSS_ENDENT();
+  NSS_ENDENT(protoentfp);
 }

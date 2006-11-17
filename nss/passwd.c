@@ -64,22 +64,21 @@ enum nss_status _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffe
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *pwentfp;
-#define fp pwentfp
 
 /* open a connection to the nslcd and write the request */
 enum nss_status _nss_ldap_setpwent(int stayopen)
 {
-  NSS_SETENT(NSLCD_ACTION_PASSWD_ALL);
+  NSS_SETENT(pwentfp,NSLCD_ACTION_PASSWD_ALL);
 }
 
 /* read password data from an opened stream */
 enum nss_status _nss_ldap_getpwent_r(struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(read_passwd);
+  NSS_GETENT(pwentfp,read_passwd);
 }
 
 /* close the stream opened with setpwent() above */
 enum nss_status _nss_ldap_endpwent(void)
 {
-  NSS_ENDENT();
+  NSS_ENDENT(pwentfp);
 }
