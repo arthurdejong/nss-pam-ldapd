@@ -35,12 +35,45 @@
 /* We define struct etherent here because it does not seem to
    be defined in any publicly available header file exposed
    by glibc. This is taken from include/netinet/ether.h
-   of the glibc source. */
+   of the glibc (2.3.6) source tarball. */
 struct etherent
 {
   const char *e_name;
   struct ether_addr e_addr;
-};   
+};
+
+/* We also define struct __netgrent because it's definition is
+   not publically available. This is taken from inet/netgroup.h
+   of the glibc (2.3.6) source tarball.
+   This definition changes the definition of the data field
+   to pass our file pointer for ongoing requests and the
+   definition of the nip field to not drag in extra unneeded
+   types. */ 
+struct __netgrent
+{
+  enum { triple_val, group_val } type;
+  union
+  {
+    struct
+    {
+      const char *host;
+      const char *user;
+      const char *domain;
+    } triple;
+    const char *group;
+  } val;
+  FILE *data; /* was `char *data' */
+  size_t data_size;
+  union
+  {
+    char *cursor;
+    unsigned long int position;
+  } insertedname;
+  int first;
+  struct name_list *known_groups;
+  struct name_list *needed_groups;
+  void *nip; /* changed from `service_user *nip' */
+};
 
 /*
    These are prototypes for functions exported from the ldap NSS module.
@@ -86,11 +119,10 @@ enum nss_status _nss_ldap_gethostent_r(struct hostent *result,char *buffer,size_
 enum nss_status _nss_ldap_endhostent(void);
 
 /* netgroup - list of host and users */
-/* DISABLED FOR NOW
 enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *result);
 enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_endnetgrent(struct __netgrent *result);
-*/
+/* TODO: should there be a innetgr() equivalent? */
 
 /* networks - network names and numbers */
 enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop);
