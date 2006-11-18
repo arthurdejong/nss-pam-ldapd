@@ -95,9 +95,11 @@
   LDF_STRINGLIST(HOST_ALIASES) \
   LDF_ADDRESSLIST(HOST_ADDRS)
 
-/* NETGROUP - TBD */
-
-/* NETWORKS - TBD - struct netent */
+/* used for transferring netgroup entries one at a time */
+#define LDF_NETGROUP \
+  LDF_STRING(NETGROUP_HOST) \
+  LDF_STRING(NETGROUP_USER) \
+  LDF_STRING(NETGROUP_DOMAIN)
 
 /* user for transferring network (/etc/networks) information */
 /* Note: this marco is not expanded to code, check manually */
@@ -116,7 +118,11 @@
   LDF_STRING(PASSWD_DIR) \
   LDF_STRING(PASSWD_SHELL)
 
-/* PROTOCOLS - TBD - getprotobyname - struct protoent */
+/* used for transferring protocol information */
+#define LDF_PROTOCOL \
+  LDF_STRING(PROTOCOL_NAME) \
+  LDF_STRINGLIST(PROTOCOL_ALIASES) \
+  LDF_INT32(PROTOCOL_NUMBER)
 
 /* for transferring struct rpcent structs */
 #define LDF_RPC \
@@ -124,7 +130,12 @@
   LDF_STRINGLIST(RPC_ALIASES) \
   LDF_INT32(RPC_NUMBER)
 
-/* SERVICES - TBD - getservbyname - struct servent */
+/* for transferring struct servent informatio */
+#define LDF_SERVICE \
+  LDF_STRING(SERVICE_NAME) \
+  LDF_STRINGLIST(SERVICE_ALIASES) \
+  LDF_INT32(SERVICE_NUMBER) \
+  LDF_STRING(SERVICE_PROTOCOL)
 
 /* used for transferring account (/etc/shadow) information */
 #define LDF_SHADOW \
@@ -162,12 +173,22 @@
 #define NSLCD_ACTION_HOST_BYNAME        6001
 #define NSLCD_ACTION_HOST_BYADDR        6002
 #define NSLCD_ACTION_HOST_ALL           6005
+#define NSLCD_NETGROUP_BYNAME          12001
 #define NSLCD_ACTION_NETWORK_BYNAME     8001
 #define NSLCD_ACTION_NETWORK_BYADDR     8002
 #define NSLCD_ACTION_NETWORK_ALL        8005
 #define NSLCD_ACTION_PASSWD_BYNAME      1001
 #define NSLCD_ACTION_PASSWD_BYUID       1002
 #define NSLCD_ACTION_PASSWD_ALL         1004
+#define NSLCD_ACTION_PROTOCOL_BYNAME    9001
+#define NSLCD_ACTION_PROTOCOL_BYNUMBER  9002
+#define NSLCD_ACTION_PROTOCOL_ALL       9003
+#define NSLCD_ACTION_RPC_BYNAME        10001
+#define NSLCD_ACTION_RPC_BYNUMBER      10002
+#define NSLCD_ACTION_RPC_ALL           10003
+#define NSLCD_ACTION_SERVICE_BYNAME    11001
+#define NSLCD_ACTION_SERVICE_BYNUMBER  11002
+#define NSLCD_ACTION_SERVICE_ALL       11005
 #define NSLCD_ACTION_SHADOW_BYNAME      2001
 #define NSLCD_ACTION_SHADOW_ALL         2005
 
