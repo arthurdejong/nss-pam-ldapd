@@ -50,33 +50,6 @@
 
 static struct ent_context *_ngbe = NULL;
 
-/*
- * I (Luke Howard) pulled the following macro (EXPAND), functions
- * (strip_whitespace and _nss_netgroup_parseline) and structures
- * (name_list and __netgrent) from glibc-2.2.x.  _nss_netgroup_parseline
- * became _nss_ldap_parse_netgr after some modification.
- *
- * The rest of the code is modeled on various other _nss_ldap functions.
- */
-
-#define EXPAND(needed)                                                        \
-  do                                                                          \
-    {                                                                         \
-      size_t old_cursor = result->cursor - result->data;                      \
-                                                                              \
-      result->data_size += 512 > 2 * needed ? 512 : 2 * needed;               \
-      result->data = realloc (result->data, result->data_size);               \
-                                                                              \
-      if (result->data == NULL)                                               \
-        {                                                                     \
-          stat = NSS_STATUS_UNAVAIL;                                          \
-          goto out;                                                           \
-        }                                                                     \
-                                                                              \
-      result->cursor = result->data + old_cursor;                             \
-    }                                                                         \
-  while (0)
-
 /* A netgroup can consist of names of other netgroups.  We have to
    track which netgroups were read and which still have to be read.  */
 
@@ -111,6 +84,33 @@ struct __netgrent
   struct name_list *known_groups;
   struct name_list *needed_groups;
 };
+
+/*
+ * I (Luke Howard) pulled the following macro (EXPAND), functions
+ * (strip_whitespace and _nss_netgroup_parseline) and structures
+ * (name_list and __netgrent) from glibc-2.2.x.  _nss_netgroup_parseline
+ * became _nss_ldap_parse_netgr after some modification.
+ *
+ * The rest of the code is modeled on various other _nss_ldap functions.
+ */
+
+#define EXPAND(needed)                                                        \
+  do                                                                          \
+    {                                                                         \
+      size_t old_cursor = result->cursor - result->data;                      \
+                                                                              \
+      result->data_size += 512 > 2 * needed ? 512 : 2 * needed;               \
+      result->data = realloc (result->data, result->data_size);               \
+                                                                              \
+      if (result->data == NULL)                                               \
+        {                                                                     \
+          stat = NSS_STATUS_UNAVAIL;                                          \
+          goto out;                                                           \
+        }                                                                     \
+                                                                              \
+      result->cursor = result->data + old_cursor;                             \
+    }                                                                         \
+  while (0)
 
 static char *
 strip_whitespace (char *str)
@@ -283,19 +283,6 @@ out:
   return stat;
 }
 
-enum nss_status _nss_ldap_endnetgrent(struct __netgrent *result)
-{
-  if (result->data != NULL)
-    {
-      free (result->data);
-      result->data = NULL;
-      result->data_size = 0;
-      result->cursor = NULL;
-    }
-
-  LOOKUP_ENDENT (_ngbe);
-}
-
 enum nss_status _nss_ldap_setnetgrent(char *group,struct __netgrent *result)
 {
   int errnop = 0, buflen = 0;
@@ -327,4 +314,17 @@ enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,
                          char *buffer,size_t buflen,int *errnop)
 {
   return _nss_ldap_parse_netgr (result, buffer, buflen);
+}
+
+enum nss_status _nss_ldap_endnetgrent(struct __netgrent *result)
+{
+  if (result->data != NULL)
+    {
+      free (result->data);
+      result->data = NULL;
+      result->data_size = 0;
+      result->cursor = NULL;
+    }
+
+  LOOKUP_ENDENT (_ngbe);
 }

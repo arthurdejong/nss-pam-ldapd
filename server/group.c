@@ -770,7 +770,7 @@ static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
 {
   struct ldap_args a;
   enum nss_status stat;
-  struct ent_context *ctx = NULL;
+  struct ent_context *ctx=NULL;
   const char *gidnumber_attrs[2];
   int erange;
 
@@ -812,7 +812,7 @@ static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroup
 {
   struct ldap_args a;
   enum nss_status stat;
-  struct ent_context *ctx = NULL;
+  struct ent_context *ctx=NULL;
   const char *gidnumber_attrs[3];
   const char **memberP;
   const char **filteredMembersOf; /* remove already traversed groups */
@@ -906,7 +906,7 @@ static enum nss_status group_bymember(const char *user, long int *start,
   const char *filter;
   struct ldap_args a;
   enum nss_status stat;
-  struct ent_context *ctx = NULL;
+  struct ent_context *ctx=NULL;
   const char *gidnumber_attrs[3];
   enum ldap_map_selector map = LM_GROUP;
 
@@ -988,7 +988,7 @@ static enum nss_status group_bymember(const char *user, long int *start,
       gidnumber_attrs[1] = NULL;
     }
 
-  if (_nss_ldap_ent_context_init_locked (&ctx) == NULL)
+  if (_nss_ldap_ent_context_init_locked(&ctx)==NULL)
     {
       debug ("<== group_bymember (ent_context_init failed)");
       _nss_ldap_leave ();
