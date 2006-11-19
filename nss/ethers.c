@@ -61,7 +61,7 @@ enum nss_status _nss_ldap_getntohost_r(
         const struct ether_addr *addr,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,addr,u_int8_t[6],read_etherent);
+  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,*addr,u_int8_t[6],read_etherent);
 }
 
 /* thread-local file pointer to an ongoing request */
