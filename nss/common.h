@@ -96,7 +96,6 @@ enum nss_status nslcd2nss(int code);
   READ_RESPONSEHEADER(fp,action); \
   /* read response */ \
   READ_RESPONSE_CODE(fp); \
-  readfn(fp,result,buffer,buflen,errnop); \
   retv=readfn(fp,result,buffer,buflen,errnop); \
   /* close socket and we're done */ \
   if (retv==NSS_STATUS_SUCCESS) \
