@@ -45,7 +45,7 @@
      INT32  - 32-bit integer value
      TYPE   - a typed field that is transferred using sizeof()
      STRING - a string length (32bit) followed by the string value (not
-              null-terminted)
+              null-terminted) the string itself is assumed to be UTF-8
      STRINGLIST - a 32-bit number noting the number of strings followed by the
                   strings one at a time
 
