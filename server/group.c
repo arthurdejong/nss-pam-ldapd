@@ -1104,7 +1104,7 @@ int nslcd_group_bygid(FILE *fp)
   LA_INIT(a);
   LA_NUMBER(a)=gid;
   LA_TYPE(a)=LA_TYPE_NUMBER;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrgid,LM_GROUP,_nss_ldap_parse_gr))
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrgid,LM_GROUP,_nss_ldap_parse_gr));
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYGID);
