@@ -32,33 +32,44 @@
    */
 
 #ifdef DEBUG_PROT
-#define DEBUG_PRINT(fmt,arg) fprintf(stderr,fmt,arg)
+/* define a debugging macro to output logging */
+#include <string.h>
+#include <errno.h>
+#define DEBUG_PRINT(fmt,arg) \
+  fprintf(stderr,"%s:%d:%s: " fmt"\n",__FILE__,__LINE__,__PRETTY_FUNCTION__,arg);
 #else /* DEBUG_PROT */
+/* define an empty debug macro to disable logging */
 #define DEBUG_PRINT(fmt,arg)
 #endif /* not DEBUG_PROT */
 
 #define WRITE(fp,ptr,size) \
-  DEBUG_PRINT("WRITE: %d bytes\n",(int)size); \
+  DEBUG_PRINT("WRITE: var="__STRING(ptr)" size=%d",(int)size); \
   if (fwrite(ptr,size,1,fp)<1) \
-    { ERROR_OUT_WRITEERROR(fp) }
+  { \
+    DEBUG_PRINT("WRITE: var="__STRING(ptr)" error: %s",strerror(errno)); \
+    ERROR_OUT_WRITEERROR(fp); \
+  }
 
 #define WRITE_TYPE(fp,field,type) \
   WRITE(fp,&(field),sizeof(type))
 
 #define WRITE_INT32(fp,i) \
-  DEBUG_PRINT("WRITE: int32=%d\n",(int)i); \
+  DEBUG_PRINT("WRITE: var="__STRING(i)" int32=%d",(int)i); \
   tmpint32=(int32_t)(i); \
   WRITE_TYPE(fp,tmpint32,int32_t)
 
 #define WRITE_STRING(fp,str) \
-  DEBUG_PRINT("WRITE: string=\"%s\"\n",str); \
+  DEBUG_PRINT("WRITE: var="__STRING(str)" string=\"%s\"",str); \
   WRITE_INT32(fp,strlen(str)); \
   if (tmpint32>0) \
     { WRITE(fp,str,tmpint32); }
 
 #define WRITE_FLUSH(fp) \
   if (fflush(fp)<0) \
-    { ERROR_OUT_WRITEERROR(fp) }
+  { \
+    DEBUG_PRINT("WRITE: error: %s",strerror(errno)); \
+    ERROR_OUT_WRITEERROR(fp); \
+  }
 
 #define WRITE_STRINGLIST_NUM(fp,arr,num) \
   /* write number of strings */ \
@@ -93,8 +104,11 @@
 
 #define READ(fp,ptr,size) \
   if (fread(ptr,size,1,fp)<1) \
-    { ERROR_OUT_READERROR(fp) } \
-  DEBUG_PRINT("READ: %d bytes\n",(int)size);
+  { \
+    DEBUG_PRINT("READ: var="__STRING(ptr)" error: %s",strerror(errno)); \
+    ERROR_OUT_READERROR(fp); \
+  } \
+  DEBUG_PRINT("READ: var="__STRING(ptr)" size=%d",(int)size);
 
 #define READ_TYPE(fp,field,type) \
   READ(fp,&(field),sizeof(type))
@@ -102,7 +116,7 @@
 #define READ_INT32(fp,i) \
   READ_TYPE(fp,tmpint32,int32_t); \
   i=tmpint32; \
-  DEBUG_PRINT("READ: int32=%d\n",(int)i);
+  DEBUG_PRINT("READ: var="__STRING(i)" int32=%d",(int)i);
 
 /* current position in the buffer */
 #define BUF_CUR \
@@ -111,7 +125,10 @@
 /* check that the buffer has sz bytes left in it */
 #define BUF_CHECK(fp,sz) \
   if ((bufptr+(size_t)(sz))>buflen) \
-    { ERROR_OUT_BUFERROR(fp) } /* will not fit */ \
+  { \
+    DEBUG_PRINT("READ: buffer error: %d bytes missing",((sz)-(buflen))); \
+    ERROR_OUT_BUFERROR(fp); \
+  } /* will not fit */
 
 /* move the buffer pointer */
 #define BUF_SKIP(sz) \
@@ -122,6 +139,7 @@
 #define READ_STRING_BUF(fp,field) \
   /* read the size of the string */ \
   READ_TYPE(fp,tmpint32,int32_t); \
+  DEBUG_PRINT("READ: var="__STRING(field)" strlen=%d",tmpint32); \
   /* check if read would fit */ \
   BUF_CHECK(fp,tmpint32+1); \
   /* read string from the stream */ \
@@ -129,7 +147,7 @@
     { READ(fp,BUF_CUR,(size_t)tmpint32); } \
   /* null-terminate string in buffer */ \
   BUF_CUR[tmpint32]='\0'; \
-  DEBUG_PRINT("READ: string=\"%s\"\n",BUF_CUR); \
+  DEBUG_PRINT("READ: var="__STRING(field)" string=\"%s\"",BUF_CUR); \
   /* prepare result */ \
   (field)=BUF_CUR; \
   BUF_SKIP(tmpint32+1);
@@ -142,13 +160,16 @@
   /* allocate memory */ \
   (field)=(char *)malloc((size_t)(tmpint32+1)); \
   if ((field)==NULL) \
-    { ERROR_OUT_ALLOCERROR(fp) } /* problem allocating */ \
+  { \
+    DEBUG_PRINT("READ: var="__STRING(field)" malloc() error: %s",strerror(errno)); \
+    ERROR_OUT_ALLOCERROR(fp); \
+  } /* problem allocating */ \
   /* read string from the stream */ \
   if (tmpint32>0) \
     { READ(fp,name,(size_t)tmpint32); } \
   /* null-terminate string */ \
   (name)[tmpint32]='\0'; \
-  DEBUG_PRINT("READ: string=\"%s\"\n",(name));
+  DEBUG_PRINT("READ: var="__STRING(field)" string=\"%s\"",(name));
 
 /* read an array from a stram and store the length of the
    array in num (size for the array is allocated) */
@@ -186,7 +207,10 @@
 /* skip a number of bytes foreward */
 #define SKIP(fp,sz) \
   if (fseek(fp,(long)sz,SEEK_CUR)) \
-    { ERROR_OUT_READERROR(fp) }
+  { \
+    DEBUG_PRINT("READ: (skip) error: %s",strerror(errno)); \
+    ERROR_OUT_READERROR(fp); \
+  }
 
 /* read a string from the stream but don't do anything with the result */
 #define SKIP_STRING(fp) \
@@ -194,7 +218,7 @@
   READ_TYPE(fp,tmpint32,int32_t); \
   /* seek in the stream past the string contents */ \
   SKIP(fp,tmpint32); \
-  DEBUG_PRINT("READ: skip %d bytes\n",(int)tmpint32);
+  DEBUG_PRINT("READ: skip %d bytes",(int)tmpint32);
 
 /* skip a loop of strings */
 #define SKIP_STRINGLIST(fp) \
