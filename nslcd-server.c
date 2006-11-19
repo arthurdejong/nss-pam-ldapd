@@ -149,15 +149,44 @@ void nslcd_server_handlerequest(int sock)
   /* handle request */
   switch (tmpint32)
   {
-    case NSLCD_ACTION_ALIAS_BYNAME:   nslcd_alias_byname(fp); break;
-    case NSLCD_ACTION_ALIAS_ALL:      nslcd_alias_all(fp); break;
-    case NSLCD_ACTION_GROUP_BYNAME:   nslcd_group_byname(fp); break;
-    case NSLCD_ACTION_GROUP_BYGID:    nslcd_group_bygid(fp); break;
-    case NSLCD_ACTION_GROUP_BYMEMBER: nslcd_group_bymember(fp); break;
-    case NSLCD_ACTION_GROUP_ALL:      nslcd_group_all(fp); break;
-    case NSLCD_ACTION_PASSWD_BYNAME:  nslcd_passwd_byname(fp); break;
-    case NSLCD_ACTION_PASSWD_BYUID:   nslcd_passwd_byuid(fp); break;
-    case NSLCD_ACTION_PASSWD_ALL:     nslcd_passwd_all(fp); break;
+    case NSLCD_ACTION_ALIAS_BYNAME:     nslcd_alias_byname(fp); break;
+    case NSLCD_ACTION_ALIAS_ALL:        nslcd_alias_all(fp); break;
+/*
+    case NSLCD_ACTION_AUTOMOUNT_BYNAME: nslcd_automount_byname(fp); break;
+    case NSLCD_ACTION_AUTOMOUNT_ALL:    nslcd_automount_all(fp); break;
+    case NSLCD_ACTION_ETHER_BYNAME:     nslcd_ether_byname(fp); break;
+    case NSLCD_ACTION_ETHER_BYETHER:    nslcd_ether_byether(fp); break;
+    case NSLCD_ACTION_ETHER_ALL:        nslcd_ether_all(fp); break;
+*/
+    case NSLCD_ACTION_GROUP_BYNAME:     nslcd_group_byname(fp); break;
+    case NSLCD_ACTION_GROUP_BYGID:      nslcd_group_bygid(fp); break;
+    case NSLCD_ACTION_GROUP_BYMEMBER:   nslcd_group_bymember(fp); break;
+    case NSLCD_ACTION_GROUP_ALL:        nslcd_group_all(fp); break;
+/*
+    case NSLCD_ACTION_HOST_BYNAME:      nslcd_host_byname(fp); break;
+    case NSLCD_ACTION_HOST_BYADDR:      nslcd_host_byaddr(fp); break;
+    case NSLCD_ACTION_HOST_ALL:         nslcd_host_all(fp); break;
+    case NSLCD_NETGROUP_BYNAME:         nslcd_netgroup_byname(fp); break;
+    case NSLCD_ACTION_NETWORK_BYNAME:   nslcd_network_byname(fp); break;
+    case NSLCD_ACTION_NETWORK_BYADDR:   nslcd_network_byaddr(fp); break;
+    case NSLCD_ACTION_NETWORK_ALL:      nslcd_network_all(fp); break;
+*/
+    case NSLCD_ACTION_PASSWD_BYNAME:    nslcd_passwd_byname(fp); break;
+    case NSLCD_ACTION_PASSWD_BYUID:     nslcd_passwd_byuid(fp); break;
+    case NSLCD_ACTION_PASSWD_ALL:       nslcd_passwd_all(fp); break;
+/*
+    case NSLCD_ACTION_PROTOCOL_BYNAME:  nslcd_protocol_byname(fp); break;
+    case NSLCD_ACTION_PROTOCOL_BYNUMBER:nslcd_protocol_bynumber(fp); break;
+    case NSLCD_ACTION_PROTOCOL_ALL:     nslcd_protocol_all(fp); break;
+    case NSLCD_ACTION_RPC_BYNAME:       nslcd_rpc_byname(fp); break;
+    case NSLCD_ACTION_RPC_BYNUMBER:     nslcd_rpc_bynumber(fp); break;
+    case NSLCD_ACTION_RPC_ALL:          nslcd_rpc_all(fp); break;
+    case NSLCD_ACTION_SERVICE_BYNAME:   nslcd_service_byname(fp); break;
+    case NSLCD_ACTION_SERVICE_BYNUMBER: nslcd_service_bynumber(fp); break;
+    case NSLCD_ACTION_SERVICE_ALL:      nslcd_service_all(fp); break;
+    case NSLCD_ACTION_SHADOW_BYNAME:    nslcd_shadow_byname(fp); break;
+    case NSLCD_ACTION_SHADOW_ALL:       nslcd_shadow_all(fp); break;
+*/
     default:
       log_log(LOG_DEBUG,"invalid request id (%d)",(int)tmpint32);
       break;

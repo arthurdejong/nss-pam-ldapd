@@ -30,8 +30,9 @@
    return <0 on error */
 int nslcd_server_open(void);
 
-/* read a request message, returns <0 in case of errors,
-   this function closes the socket */
+/* create a strem from the client socket, read a request message
+   and pass the stream to one of the functions below.
+   returns <0 in case of errors, this function closes the socket */
 void nslcd_server_handlerequest(int sock);
 
 /* LDAP methods */
@@ -39,12 +40,35 @@ void nslcd_server_handlerequest(int sock);
 
 int nslcd_alias_byname(FILE *fp);
 int nslcd_alias_all(FILE *fp);
+int nslcd_automount_byname(FILE *fp);
+int nslcd_automount_all(FILE *fp);
+int nslcd_ether_byname(FILE *fp);
+int nslcd_ether_byether(FILE *fp);
+int nslcd_ether_all(FILE *fp);
 int nslcd_group_byname(FILE *fp);
 int nslcd_group_bygid(FILE *fp);
 int nslcd_group_bymember(FILE *fp);
 int nslcd_group_all(FILE *fp);
+int nslcd_host_byname(FILE *fp);
+int nslcd_host_byaddr(FILE *fp);
+int nslcd_host_all(FILE *fp);
+int nslcd_netgroup_byname(FILE *fp);
+int nslcd_network_byname(FILE *fp);
+int nslcd_network_byaddr(FILE *fp);
+int nslcd_network_all(FILE *fp);
 int nslcd_passwd_byname(FILE *fp);
 int nslcd_passwd_byuid(FILE *fp);
 int nslcd_passwd_all(FILE *fp);
+int nslcd_protocol_byname(FILE *fp);
+int nslcd_protocol_bynumber(FILE *fp);
+int nslcd_protocol_all(FILE *fp);
+int nslcd_rpc_byname(FILE *fp);
+int nslcd_rpc_bynumber(FILE *fp);
+int nslcd_rpc_all(FILE *fp);
+int nslcd_service_byname(FILE *fp);
+int nslcd_service_bynumber(FILE *fp);
+int nslcd_service_all(FILE *fp);
+int nslcd_shadow_byname(FILE *fp);
+int nslcd_shadow_all(FILE *fp);
 
 #endif /* not _NSLCD_SERVER_H */
