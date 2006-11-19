@@ -154,10 +154,10 @@ void nslcd_server_handlerequest(int sock)
 /*
     case NSLCD_ACTION_AUTOMOUNT_BYNAME: nslcd_automount_byname(fp); break;
     case NSLCD_ACTION_AUTOMOUNT_ALL:    nslcd_automount_all(fp); break;
+*/
     case NSLCD_ACTION_ETHER_BYNAME:     nslcd_ether_byname(fp); break;
     case NSLCD_ACTION_ETHER_BYETHER:    nslcd_ether_byether(fp); break;
     case NSLCD_ACTION_ETHER_ALL:        nslcd_ether_all(fp); break;
-*/
     case NSLCD_ACTION_GROUP_BYNAME:     nslcd_group_byname(fp); break;
     case NSLCD_ACTION_GROUP_BYGID:      nslcd_group_bygid(fp); break;
     case NSLCD_ACTION_GROUP_BYMEMBER:   nslcd_group_bymember(fp); break;

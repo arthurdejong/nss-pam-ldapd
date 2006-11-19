@@ -57,6 +57,9 @@
 
 #include "ldap-nss.h"
 #include "util.h"
+#include "nslcd-server.h"
+#include "common.h"
+#include "log.h"
 
 /* for HP-UX */
 #ifndef NSS_BUFLEN_ETHERS
@@ -65,7 +68,7 @@
 
 #ifndef HAVE_STRUCT_ETHER_ADDR
 struct ether_addr {
-  u_char ether_addr_octet[6];
+  u_int8_t ether_addr_octet[6];
 };
 #endif
 
@@ -75,7 +78,26 @@ struct ether
   struct ether_addr e_addr;
 };
 
-static struct ent_context *ether_context = NULL;
+#ifdef NEW
+static int write_ether(LDAPMessage *e,struct ldap_state *pvt,FILE *fp)
+{
+  int stat;
+  char buffer[1024];
+  /* write LDF_STRING(ETHER_NAME) */
+  stat=_nss_ldap_write_attrval(fp,e,ATM(LM_ETHERS,cn));
+  if (stat!=NSLCD_RESULT_SUCCESS)
+    return stat;
+  /* write LDF_TYPE(ETHER_ADDR,u_int8_t[6]) */
+  stat=_nss_ldap_write_attrval_ether(fp,e,AT(macAddress));
+
+  stat = _nss_ldap_assign_attrval (e, AT (macAddress), &saddr,
+                                   &buffer, &buflen);
+  if (stat != NSS_STATUS_SUCCESS || ((addr = ether_aton (saddr)) == NULL))
+    return NSS_STATUS_NOTFOUND;
+  memcpy (&ether->e_addr, addr, sizeof (*addr));
+  return NSLCD_RESULT_SUCCESS;
+}
+#endif /* NEW */
 
 static enum nss_status
 _nss_ldap_parse_ether (LDAPMessage * e,
@@ -103,42 +125,114 @@ _nss_ldap_parse_ether (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
-_nss_ldap_gethostton_r (const char *name, struct ether * result,
-                        char *buffer, size_t buflen, int *errnop)
+/* macros for expanding the LDF_ETHER macro */
+#define LDF_STRING(field)     WRITE_STRING(fp,field)
+#define LDF_TYPE(field,type)  WRITE_TYPE(fp,field,type)
+#define ETHER_NAME            result.e_name
+#define ETHER_ADDR            result.e_addr
+
+int nslcd_ether_byname(FILE *fp)
 {
-  LOOKUP_NAME (name, result, buffer, buflen, errnop,
-               _nss_ldap_filt_gethostton, LM_ETHERS, _nss_ldap_parse_ether,
-               LDAP_NSS_BUFLEN_DEFAULT);
+  int32_t tmpint32;
+  char *name;
+  struct ldap_args a;
+  /* these are here for now until we rewrite the LDAP code */
+  struct ether result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* read request parameters */
+  READ_STRING_ALLOC(fp,name);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_ether_byname(%s)",name);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_ETHER_BYNAME);
+  /* do the LDAP request */
+  LA_INIT(a);
+  LA_STRING(a)=name;
+  LA_TYPE(a)=LA_TYPE_STRING;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostton,LM_ETHERS,_nss_ldap_parse_ether));
+  /* no more need for this string */
+  free(name);
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+  {
+    LDF_ETHER;
+  }
+  WRITE_FLUSH(fp);
+  /* we're done */
+  return 0;
 }
 
-enum nss_status
-_nss_ldap_getntohost_r (struct ether_addr * addr, struct ether * result,
-                        char *buffer, size_t buflen, int *errnop)
+int nslcd_ether_byether(FILE *fp)
 {
-/* The correct ether_ntoa call would have a struct ether instead of whatever
-   result->e_addr is */
-
-  LOOKUP_NAME (ether_ntoa ((struct ether_addr *) (&result->e_addr)), result,
-               buffer, buflen, errnop, _nss_ldap_filt_getntohost, LM_ETHERS,
-               _nss_ldap_parse_ether, LDAP_NSS_BUFLEN_DEFAULT);
+  int32_t tmpint32;
+  struct ether_addr addr;
+  struct ldap_args a;
+  /* these are here for now until we rewrite the LDAP code */
+  struct ether result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* read request parameters */
+  READ_TYPE(fp,addr,u_int8_t[6]);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_ether_byether(%s)",ether_ntoa(&addr));
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_ETHER_BYETHER);
+  /* do the LDAP request */
+  LA_INIT(a);
+  /* FIXME: this has a bug when the directory has 01:00:0e:...
+            and we're looking for 1:0:e:... (leading zeros) */
+  LA_STRING(a)=ether_ntoa(&addr);
+  LA_TYPE(a)=LA_TYPE_STRING;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getntohost,LM_ETHERS,_nss_ldap_parse_ether));
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+  {
+    LDF_ETHER;
+  }
+  WRITE_FLUSH(fp);
+  /* we're done */
+  return 0;
 }
 
-enum nss_status _nss_ldap_setetherent (void)
+int nslcd_ether_all(FILE *fp)
 {
-  LOOKUP_SETENT (ether_context);
-}
-
-enum nss_status _nss_ldap_endetherent (void)
-{
-  LOOKUP_ENDENT (ether_context);
-}
-
-enum nss_status
-_nss_ldap_getetherent_r (struct ether * result, char *buffer, size_t buflen,
-                         int *errnop)
-{
-  LOOKUP_GETENT (ether_context, result, buffer, buflen, errnop,
-                 _nss_ldap_filt_getetherent, LM_ETHERS,
-                 _nss_ldap_parse_ether, LDAP_NSS_BUFLEN_DEFAULT);
+  int32_t tmpint32;
+  static struct ent_context *ether_context;
+  /* these are here for now until we rewrite the LDAP code */
+  struct ether result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_ether_all()");
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_ETHER_ALL);
+  /* initialize context */
+  if (_nss_ldap_ent_context_init(&ether_context)==NULL)
+    return -1;
+  /* loop over all results */
+  while ((retv=nss2nslcd(_nss_ldap_getent(&ether_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getetherent,LM_ETHERS,_nss_ldap_parse_ether)))==NSLCD_RESULT_SUCCESS)
+  {
+    /* write the result code */
+    WRITE_INT32(fp,retv);
+    /* write the ether entry */
+    LDF_ETHER;
+    fflush(fp);
+  }
+  /* write the final result code */
+  WRITE_INT32(fp,retv);
+  /* FIXME: if a previous call returns what happens to the context? */
+  _nss_ldap_enter();
+  _nss_ldap_ent_context_release(ether_context);
+  _nss_ldap_leave();
+  /* we're done */
+  return 0;
 }
