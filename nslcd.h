@@ -64,7 +64,7 @@
   LDF_STRING(ALIAS_NAME) \
   LDF_STRINGLIST(ALIAS_RCPTS)
 
-/* AUTOMOUNT - TBD */
+/* used for transferring automount information */
 #define LDF_AUTOMOUNT \
   LDF_STRING(AUTOMOUNT_KEY) \
   LDF_STRING(AUTOMOUNT_INFO)
@@ -96,7 +96,17 @@
   LDF_ADDRESSLIST(HOST_ADDRS)
 
 /* used for transferring netgroup entries one at a time */
-#define LDF_NETGROUP \
+/* Note: this marcos is not expanded to code, check manually */
+/* netgroup messages are split into two parts, first a part
+   determining the type */
+#define NETGROUP_TYPE_NETGROUP 123
+#define NETGROUP_TYPE_TRIPLE   456
+#define LDF_NETGROUP_TYPE \
+  LDF_INT32(NETGROUP_TYPE) /* one of the above values */
+/* followed by one of these message parts */
+#define LDF_NETGROUP_NETGROUP \
+  LDF_STRING(NETGROUP_NETGROUP)
+#define LDF_NETGROUP_TRIPLE \
   LDF_STRING(NETGROUP_HOST) \
   LDF_STRING(NETGROUP_USER) \
   LDF_STRING(NETGROUP_DOMAIN)
@@ -173,7 +183,7 @@
 #define NSLCD_ACTION_HOST_BYNAME        6001
 #define NSLCD_ACTION_HOST_BYADDR        6002
 #define NSLCD_ACTION_HOST_ALL           6005
-#define NSLCD_NETGROUP_BYNAME          12001
+#define NSLCD_ACTION_NETGROUP_BYNAME   12001
 #define NSLCD_ACTION_NETWORK_BYNAME     8001
 #define NSLCD_ACTION_NETWORK_BYADDR     8002
 #define NSLCD_ACTION_NETWORK_ALL        8005

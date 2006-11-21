@@ -166,7 +166,9 @@ void nslcd_server_handlerequest(int sock)
     case NSLCD_ACTION_HOST_BYNAME:      nslcd_host_byname(fp); break;
     case NSLCD_ACTION_HOST_BYADDR:      nslcd_host_byaddr(fp); break;
     case NSLCD_ACTION_HOST_ALL:         nslcd_host_all(fp); break;
-    case NSLCD_NETGROUP_BYNAME:         nslcd_netgroup_byname(fp); break;
+*/
+    case NSLCD_ACTION_NETGROUP_BYNAME:  nslcd_netgroup_byname(fp); break;
+/*
     case NSLCD_ACTION_NETWORK_BYNAME:   nslcd_network_byname(fp); break;
     case NSLCD_ACTION_NETWORK_BYADDR:   nslcd_network_byaddr(fp); break;
     case NSLCD_ACTION_NETWORK_ALL:      nslcd_network_all(fp); break;

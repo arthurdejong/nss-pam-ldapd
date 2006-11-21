@@ -151,6 +151,35 @@ static void printshadow(struct spwd *shadow)
          shadow->sp_inact,shadow->sp_expire,shadow->sp_flag);
 }
 
+static void printnetgroup(struct __netgrent *netgroup)
+{
+  printf("struct __netgrent {\n");
+  if (netgroup->type==triple_val)
+  {
+    printf("  type=triple_val,\n");
+    if (netgroup->val.triple.host==NULL)
+      printf("  val.triple.host=NULL,\n");
+    else
+      printf("  val.triple.host=\"%s\",\n",netgroup->val.triple.host);
+    if (netgroup->val.triple.user==NULL)
+      printf("  val.triple.user=NULL,\n");
+    else
+      printf("  val.triple.user=\"%s\",\n",netgroup->val.triple.user);
+    if (netgroup->val.triple.domain==NULL)
+      printf("  val.triple.domain=NULL,\n");
+    else
+      printf("  val.triple.domain=\"%s\",\n",netgroup->val.triple.domain);
+  }
+  else
+  {
+    printf("  type=triple_val,\n"
+           "  val.group=\"%s\",\n",
+           netgroup->val.group);
+  }
+  printf("  ...\n"
+         "}\n");
+}
+
 /* the main program... */
 int main(int argc,char *argv[])
 {
@@ -160,6 +189,7 @@ int main(int argc,char *argv[])
   struct hostent hostresult;
   struct etherent etherresult;
   struct spwd shadowresult;
+  struct __netgrent netgroupresult;
   char buffer[1024];
   enum nss_status res;
   int errnocp,h_errnocp;
@@ -443,6 +473,21 @@ int main(int argc,char *argv[])
   printf("errno=%d:%s\n",(int)errno,strerror(errno));
   printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
   res=_nss_ldap_endspent();
+  printf("status=%s\n",nssstatus(res));
+
+  /* test {set,get,end}netgrent() */
+  printf("\nTEST {set,get,end}netgrent()\n");
+  res=_nss_ldap_setnetgrent("westcomp",&netgroupresult);
+  printf("status=%s\n",nssstatus(res));
+  while ((_nss_ldap_getnetgrent_r(&netgroupresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
+  {
+    printf("status=%s\n",nssstatus(res));
+    printnetgroup(&netgroupresult);
+  }
+  printf("status=%s\n",nssstatus(res));
+  printf("errno=%d:%s\n",(int)errno,strerror(errno));
+  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  res=_nss_ldap_endnetgrent(&netgroupresult);
   printf("status=%s\n",nssstatus(res));
 
   return 0;

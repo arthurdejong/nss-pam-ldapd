@@ -47,8 +47,9 @@
 
 #include "ldap-nss.h"
 #include "util.h"
-
-static struct ent_context *_ngbe = NULL;
+#include "nslcd-server.h"
+#include "common.h"
+#include "log.h"
 
 /* A netgroup can consist of names of other netgroups.  We have to
    track which netgroups were read and which still have to be read.  */
@@ -283,48 +284,69 @@ out:
   return stat;
 }
 
-enum nss_status _nss_ldap_setnetgrent(char *group,struct __netgrent *result)
+int nslcd_netgroup_byname(FILE *fp)
 {
-  int errnop = 0, buflen = 0;
-  char *buffer = (char *) NULL;
+
+  int32_t tmpint32;
+  static struct ent_context *netgroup_context=NULL;
+  char *name;
+  /* these are here for now until we rewrite the LDAP code */
+  struct __netgrent result;
+  char buffer[1024];
+  int errnop;
   struct ldap_args a;
-  enum nss_status stat = NSS_STATUS_SUCCESS;
-
-  if (group[0] == '\0')
-    return NSS_STATUS_UNAVAIL;
-
-  if (result->data != NULL)
-    free (result->data);
-  result->data = result->cursor = NULL;
-  result->data_size = 0;
-
-  LA_INIT (a);
-  LA_STRING (a) = group;
-  LA_TYPE (a) = LA_TYPE_STRING;
-
-  stat =
-    _nss_ldap_getbyname (&a, result, buffer, buflen, &errnop,
-                         _nss_ldap_filt_getnetgrent, LM_NETGROUP,
-                         _nss_ldap_load_netgr);
-
-  LOOKUP_SETENT (_ngbe);
-}
-
-enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,
-                         char *buffer,size_t buflen,int *errnop)
-{
-  return _nss_ldap_parse_netgr (result, buffer, buflen);
-}
-
-enum nss_status _nss_ldap_endnetgrent(struct __netgrent *result)
-{
-  if (result->data != NULL)
+  enum nss_status stat=NSS_STATUS_SUCCESS;
+  /* read request parameters */
+  READ_STRING_ALLOC(fp,name);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_netgroup_byname(%s)",name);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_NETGROUP_BYNAME);
+  /* initialize structure */
+  result.data=result.cursor=NULL;
+  result.data_size = 0;
+  /* do initial ldap request */
+  LA_INIT(a);
+  LA_STRING(a)=name;
+  LA_TYPE(a)=LA_TYPE_STRING;
+  stat=_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getnetgrent,LM_NETGROUP,_nss_ldap_load_netgr);
+  if (_nss_ldap_ent_context_init(&netgroup_context)==NULL)
+     return -1;
+  /* loop over all results */
+  while ((stat=_nss_ldap_parse_netgr(&result,buffer,1024))==NSS_STATUS_SUCCESS)
+  {
+    if (result.type==triple_val)
     {
-      free (result->data);
-      result->data = NULL;
-      result->data_size = 0;
-      result->cursor = NULL;
+      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_INT32(fp,NETGROUP_TYPE_TRIPLE);
+      if (result.val.triple.host==NULL)
+        { WRITE_STRING(fp,""); }
+      else
+        { WRITE_STRING(fp,result.val.triple.host); }
+      if (result.val.triple.user==NULL)
+        {  WRITE_STRING(fp,""); }
+      else
+        { WRITE_STRING(fp,result.val.triple.user); }
+      if (result.val.triple.domain==NULL)
+        { WRITE_STRING(fp,""); }
+      else
+        { WRITE_STRING(fp,result.val.triple.domain); }
     }
-
-  LOOKUP_ENDENT (_ngbe);
+    else if (result.type==group_val)
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_INT32(fp,NETGROUP_TYPE_NETGROUP);
+      WRITE_STRING(fp,result.val.group);
+    }
+  }
+  /* free data */
+  if (result.data!=NULL)
+    free(result.data);
+  /* we're done */
+  _nss_ldap_enter();
+  _nss_ldap_ent_context_release(netgroup_context);
+  _nss_ldap_leave();
+  return 0;
 }
+

@@ -31,23 +31,50 @@
 #include "nslcd-client.h"
 #include "common.h"
 
-/* macros for expanding the LDF_AUTOMOUNT macro */
-#define LDF_STRING(field)     READ_STRING_BUF(fp,field)
-#define NETGROUP_HOST         result->val.triple.host
-#define NETGROUP_USER         result->val.triple.user
-#define NETGROUP_DOMAIN       result->val.triple.domain
-
 static enum nss_status read_netgrent(
         FILE *fp,struct __netgrent *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32;
+  int type;
   size_t bufptr=0;
-  /* auto-genereted read code */
-  LDF_NETGROUP;
-  /* fix other fields */
-  result->type=triple_val;
-  /* FIXME: detect NULL or match-any values */
+  /* read netgroup type */
+  READ_INT32(fp,type);
+  if (type==NETGROUP_TYPE_NETGROUP)
+  {
+    /* the response is a reference to another netgroup */
+    result->type=group_val;
+    READ_STRING_BUF(fp,result->val.group);
+  
+  }
+  else if (type==NETGROUP_TYPE_TRIPLE)
+  {
+    /* the response is a host/user/domain triple */
+    result->type=triple_val;
+    /* read host and revert to NULL on empty string */
+    READ_STRING_BUF(fp,result->val.triple.host);
+    if (result->val.triple.host[0]=='\0')
+    {
+      result->val.triple.host=NULL;
+      bufptr--; /* free unused space */
+    }
+    /* read user and revert to NULL on empty string */
+    READ_STRING_BUF(fp,result->val.triple.user);
+    if (result->val.triple.user[0]=='\0')
+    {
+      result->val.triple.user=NULL;
+      bufptr--; /* free unused space */
+    }
+    /* read domain and revert to NULL on empty string */
+    READ_STRING_BUF(fp,result->val.triple.domain);
+    if (result->val.triple.domain[0]=='\0')
+    {
+      result->val.triple.domain=NULL;
+      bufptr--; /* free unused space */
+    }
+  }
+  else
+    return NSS_STATUS_UNAVAIL;
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }
@@ -58,16 +85,16 @@ enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *resul
   int errnocp;
   int *errnop;
   errnop=&errnocp;
-  /* close the existing stream if it is still open */
-  if (result->data!=NULL)
-    fclose(result->data);
+  /* check parameter */
+  if ((group==NULL)||(group[0]=='\0'))
+    return NSS_STATUS_UNAVAIL;
   /* open a new stream and write the request */
   OPEN_SOCK(result->data);
-  WRITE_REQUEST(result->data,NSLCD_NETGROUP_BYNAME);
+  WRITE_REQUEST(result->data,NSLCD_ACTION_NETGROUP_BYNAME);
   WRITE_STRING(result->data,group);
   WRITE_FLUSH(result->data);
   /* read response header */
-  READ_RESPONSEHEADER(result->data,NSLCD_NETGROUP_BYNAME);
+  READ_RESPONSEHEADER(result->data,NSLCD_ACTION_NETGROUP_BYNAME);
   return NSS_STATUS_SUCCESS;
 /* fixme: this should probably also set result->known_groups */  
 }
