@@ -2,7 +2,10 @@
    netgroup.c - netgroup lookup routines
    This file was part of the nss-ldap library (as ldap-netgrp.c)
    which has been forked into the nss-ldapd library.
+   This file also contains code that is taken from the GNU C
+   Library (nss/nss_files/files-netgrp.c).
 
+   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006 Arthur de Jong
