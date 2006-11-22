@@ -64,10 +64,8 @@ static enum nss_status _nss_ldap_parse_alias(
 static int write_alias(LDAPMessage *e,struct ldap_state *pvt,FILE *fp)
 {
   int stat;
-  log_log(LOG_DEBUG,"write_alias: _nss_ldap_write_rndvalue");
   if ((stat=_nss_ldap_write_rndvalue(fp,e,ATM(LM_ALIASES,cn)))!=NSLCD_RESULT_SUCCESS)
     return stat;
-  log_log(LOG_DEBUG,"write_alias: _nss_ldap_write_attrvals");
   if ((stat=_nss_ldap_write_attrvals(fp,e,AT(rfc822MailMember)))!=NSLCD_RESULT_SUCCESS)
     return stat;
   return NSLCD_RESULT_SUCCESS;
@@ -100,7 +98,6 @@ int nslcd_alias_byname(FILE *fp)
   /* no more need for this */
   free(name);
   WRITE_FLUSH(fp);
-  log_log(LOG_DEBUG,"nslcd_alias_byname DONE");
   /* we're done */
   return 0;
 }
@@ -115,7 +112,7 @@ int nslcd_alias_all(FILE *fp)
   int errnop;
   int retv;
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_alias_all");
+  log_log(LOG_DEBUG,"nslcd_alias_all()");
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_ALIAS_ALL);
@@ -137,7 +134,6 @@ int nslcd_alias_all(FILE *fp)
   _nss_ldap_enter();
   _nss_ldap_ent_context_release(alias_context);
   _nss_ldap_leave();
-  log_log(LOG_DEBUG,"nslcd_alias_all DONE");
   /* we're done */
   return 0;
 }

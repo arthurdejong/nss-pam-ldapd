@@ -221,7 +221,6 @@ int nslcd_passwd_byname(FILE *fp)
     LDF_PASSWD;
   }
   WRITE_FLUSH(fp);
-  log_log(LOG_DEBUG,"nslcd_passwd_byname DONE");
   /* we're done */
   return 0;
 }
@@ -254,7 +253,6 @@ int nslcd_passwd_byuid(FILE *fp)
     LDF_PASSWD;
   }
   WRITE_FLUSH(fp);
-  log_log(LOG_DEBUG,"nslcd_passwd_byuid DONE");
   /* we're done */
   return 0;
 }
