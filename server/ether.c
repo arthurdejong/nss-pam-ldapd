@@ -221,14 +221,13 @@ int nslcd_ether_all(FILE *fp)
   /* loop over all results */
   while ((retv=nss2nslcd(_nss_ldap_getent(&ether_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getetherent,LM_ETHERS,_nss_ldap_parse_ether)))==NSLCD_RESULT_SUCCESS)
   {
-    /* write the result code */
+    /* write the result */
     WRITE_INT32(fp,retv);
-    /* write the ether entry */
     LDF_ETHER;
-    fflush(fp);
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
+  WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_enter();
   _nss_ldap_ent_context_release(ether_context);

@@ -1074,7 +1074,6 @@ int nslcd_group_byname(FILE *fp)
     LDF_GROUP;
   }
   WRITE_FLUSH(fp);
-  log_log(LOG_DEBUG,"nslcd_group_byname DONE");
   /* we're done */
   return 0;
 }
@@ -1114,7 +1113,6 @@ int nslcd_group_bygid(FILE *fp)
     LDF_GROUP;
   }
   WRITE_FLUSH(fp);
-  log_log(LOG_DEBUG,"nslcd_group_bygid DONE");
   /* we're done */
   return 0;
 }
@@ -1133,7 +1131,7 @@ int nslcd_group_bymember(FILE *fp)
   READ_STRING_ALLOC(fp,name);
   /* FIXME: free() this buffer somewhere */
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_group_byname(%s)",name);
+  log_log(LOG_DEBUG,"nslcd_group_bymember(%s)",name);
   /* do the LDAP request */
   retv=NSLCD_RESULT_NOTFOUND;
   /*
@@ -1174,7 +1172,6 @@ int nslcd_group_bymember(FILE *fp)
   WRITE_FLUSH(fp);
   /* no more need for this */
   free(name);
-  log_log(LOG_DEBUG,"nslcd_group_byname DONE");
   /* we're done */
   return 0;
 }
@@ -1189,7 +1186,7 @@ int nslcd_group_all(FILE *fp)
   int errnop;
   int retv;
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_group_all");
+  log_log(LOG_DEBUG,"nslcd_group_all()");
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_ALL);
@@ -1199,19 +1196,17 @@ int nslcd_group_all(FILE *fp)
   /* loop over all results */
   while ((retv=nss2nslcd(_nss_ldap_getent(&gr_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrent,LM_GROUP,_nss_ldap_parse_gr)))==NSLCD_RESULT_SUCCESS)
   {
-    /* write the result code */
+    /* write the result */
     WRITE_INT32(fp,retv);
-    /* write the group entry */
     LDF_GROUP;
-    fflush(fp);
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
+  WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_enter();
   _nss_ldap_ent_context_release(gr_context);
   _nss_ldap_leave();
-  log_log(LOG_DEBUG,"nslcd_group_all DONE");
   /* we're done */
   return 0;
 }

@@ -266,7 +266,7 @@ int nslcd_passwd_all(FILE *fp)
   int errnop;
   int retv;
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_passwd_all");
+  log_log(LOG_DEBUG,"nslcd_passwd_all()");
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_ALL);
@@ -276,19 +276,17 @@ int nslcd_passwd_all(FILE *fp)
   /* go over results */
   while ((retv=nss2nslcd(_nss_ldap_getent(&pw_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwent,LM_PASSWD,_nss_ldap_parse_pw)))==NSLCD_RESULT_SUCCESS)
   {
-    /* write the result code */
+    /* write the result */
     WRITE_INT32(fp,retv);
-    /* write the password entry */
     LDF_PASSWD;
-    fflush(fp);
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
+  WRITE_FLUSH(fp);
   /* FIXME: if some statement returns what happens to the context? */
   _nss_ldap_enter(); \
   _nss_ldap_ent_context_release(pw_context); \
   _nss_ldap_leave(); \
-  log_log(LOG_DEBUG,"nslcd_passwd_all DONE");
   /* we're done */
   return 0;
 }

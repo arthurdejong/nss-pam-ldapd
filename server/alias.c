@@ -122,14 +122,13 @@ int nslcd_alias_all(FILE *fp)
   /* loop over all results */
   while ((retv=nss2nslcd(_nss_ldap_getent(&alias_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getaliasent,LM_ALIASES,_nss_ldap_parse_alias)))==NSLCD_RESULT_SUCCESS)
   {
-    /* write the result code */
+    /* write the result */
     WRITE_INT32(fp,retv);
-    /* write the alias entry */
     LDF_ALIAS;
-    fflush(fp);
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
+  WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_enter();
   _nss_ldap_ent_context_release(alias_context);
