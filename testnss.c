@@ -135,7 +135,7 @@ static void printether(struct etherent *ether)
 
 static void printshadow(struct spwd *shadow)
 {
-  printf("struct passwd {\n"
+  printf("struct spwd {\n"
          "  sp_namp=\"%s\",\n"
          "  sp_pwdp=\"%s\",\n"
          "  sp_lstchg=%ld,\n"

@@ -186,9 +186,9 @@ void nslcd_server_handlerequest(int sock)
     case NSLCD_ACTION_SERVICE_BYNAME:   nslcd_service_byname(fp); break;
     case NSLCD_ACTION_SERVICE_BYNUMBER: nslcd_service_bynumber(fp); break;
     case NSLCD_ACTION_SERVICE_ALL:      nslcd_service_all(fp); break;
+*/
     case NSLCD_ACTION_SHADOW_BYNAME:    nslcd_shadow_byname(fp); break;
     case NSLCD_ACTION_SHADOW_ALL:       nslcd_shadow_all(fp); break;
-*/
     default:
       log_log(LOG_DEBUG,"invalid request id (%d)",(int)tmpint32);
       break;
