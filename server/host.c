@@ -51,12 +51,36 @@
 
 #include "ldap-nss.h"
 #include "util.h"
+#include "nslcd-server.h"
+#include "common.h"
+#include "log.h"
 
 #ifndef MAXALIASES
 #define MAXALIASES 35
 #endif
 
-static struct ent_context *hosts_context = NULL;
+/* write a single host entry to the stream */
+static int write_hostent(FILE *fp,struct hostent *result)
+{
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  int numaddr,i;
+  /* write the host entry */
+  WRITE_STRING(fp,result->h_name);
+  /* write the alias list */
+  WRITE_STRINGLIST_NULLTERM(fp,result->h_aliases);
+  /* write the number of addresses */
+  for (numaddr=0;result->h_addr_list[numaddr]!=NULL;numaddr++)
+    /*noting*/ ;
+  WRITE_INT32(fp,numaddr);
+  /* write the addresses */
+  for (i=0;i<numaddr;i++)
+  {
+    WRITE_INT32(fp,result->h_addrtype);
+    WRITE_INT32(fp,result->h_length);
+    WRITE(fp,result->h_addr_list[i],result->h_length);
+  }
+  return 0;
+}
 
 static enum nss_status
 _nss_ldap_parse_host (LDAPMessage * e,
@@ -221,110 +245,138 @@ _nss_ldap_parse_hostv6 (LDAPMessage * e,
 }
 #endif
 
-enum nss_status _nss_ldap_gethostbyname2_r (const char *name, int af, struct hostent * result,
-                            char *buffer, size_t buflen, int *errnop,
-                            int *h_errnop)
+int nslcd_host_byname(FILE *fp)
 {
-  enum nss_status status;
+  int32_t tmpint32;
+  char *name;
   struct ldap_args a;
-
-  LA_INIT (a);
-  LA_STRING (a) = name;
-  LA_TYPE (a) = LA_TYPE_STRING;
-
-  status = _nss_ldap_getbyname (&a,
-                                result,
-                                buffer,
-                                buflen,
-                                errnop,
-                                _nss_ldap_filt_gethostbyname,
-                                LM_HOSTS,
+  int retv;
+  struct hostent result;
+  char buffer[1024];
+  int errnop;
+  /* read request parameters */
+  READ_STRING_ALLOC(fp,name);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_host_byname(%s)",name);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_HOST_BYNAME);
+  /* do the LDAP request */
+  LA_INIT(a);
+  LA_STRING(a)=name;
+  LA_TYPE(a)=LA_TYPE_STRING;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostbyname,LM_HOSTS,
 #ifdef INET6
-                                (af == AF_INET6) ?
-                                _nss_ldap_parse_hostv6 :
+                     (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4));
+#else
+                     _nss_ldap_parse_hostv4));
 #endif
-                                _nss_ldap_parse_hostv4);
-
-  MAP_H_ERRNO (status, *h_errnop);
-
-  return status;
+  /* no more need for this string */
+  free(name);
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+    write_hostent(fp,&result);
+  WRITE_FLUSH(fp);
+  /* we're done */
+  return 0;
 }
 
-enum nss_status _nss_ldap_gethostbyname_r (const char *name, struct hostent * result,
-                           char *buffer, size_t buflen, int *errnop,
-                           int *h_errnop)
+int nslcd_host_byaddr(FILE *fp)
 {
-  return _nss_ldap_gethostbyname2_r (name,
-#ifdef INET6
-                                     (_res.options & RES_USE_INET6) ?
-                                     AF_INET6 :
-#endif
-                                     AF_INET, result, buffer, buflen,
-                                     errnop, h_errnop);
-}
-
-enum nss_status _nss_ldap_gethostbyaddr_r (struct in_addr * addr, int len, int type,
-                           struct hostent * result, char *buffer,
-                           size_t buflen, int *errnop, int *h_errnop)
-{
-  enum nss_status status;
+  int32_t tmpint32;
+  int af;
+  int len;
+  char addr[64],name[1024];
   struct ldap_args a;
-
-  /* if querying by IPv6 address, make sure the address is "normalized" --
-   * it should contain no leading zeros and all components of the address.
-   * still we can't fit an IPv6 address in an int, so who cares for now.
-   */
-
-  LA_INIT (a);
-  LA_STRING (a) = inet_ntoa (*addr);
-  LA_TYPE (a) = LA_TYPE_STRING;
-
-  status = _nss_ldap_getbyname (&a,
-                                result,
-                                buffer,
-                                buflen,
-                                errnop,
-                                _nss_ldap_filt_gethostbyaddr,
-                                LM_HOSTS,
+  int retv;
+  struct hostent result;
+  char buffer[1024];
+  int errnop;
+  /* read address family */
+  READ_INT32(fp,af);
+  if ((af!=AF_INET)&&(af!=AF_INET6))
+  {
+    log_log(LOG_WARNING,"incorrect address family specified: %d",af);
+    return -1;
+  }
+  /* read address length */
+  READ_INT32(fp,len);
+  if ((len>64)||(len<=0))
+  {
+    log_log(LOG_WARNING,"address length incorrect: %d",len);
+    return -1;
+  }
+  /* read address */
+  READ(fp,addr,len);
+  /* translate the address to a string */
+  if (inet_ntop(af,addr,name,1024)==NULL)
+  {
+    log_log(LOG_WARNING,"unable to convert address to string");
+    return -1;
+  }
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_host_byaddr(%s)",name);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_HOST_BYADDR);
+  /* do the LDAP request */
+  LA_INIT(a);
+  LA_STRING(a)=name;
+  LA_TYPE(a)=LA_TYPE_STRING;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostbyaddr,LM_HOSTS,
 #ifdef INET6
-                                (type == AF_INET6) ?
-                                _nss_ldap_parse_hostv6 :
+                     (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4));
+#else
+                     _nss_ldap_parse_hostv4));
 #endif
-                                _nss_ldap_parse_hostv4);
-
-  MAP_H_ERRNO (status, *h_errnop);
-
-  return status;
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+    write_hostent(fp,&result);
+  WRITE_FLUSH(fp);
+  /* we're done */
+  return 0;
 }
 
-enum nss_status _nss_ldap_sethostent (void)
+int nslcd_host_all(FILE *fp)
 {
-  LOOKUP_SETENT (hosts_context);
-}
-
-enum nss_status _nss_ldap_endhostent (void)
-{
-  LOOKUP_ENDENT (hosts_context);
-}
-
-enum nss_status _nss_ldap_gethostent_r (struct hostent * result, char *buffer, size_t buflen,
-                        int *errnop, int *h_errnop)
-{
-  enum nss_status status;
-
-  status = _nss_ldap_getent (&hosts_context,
-                             result,
-                             buffer,
-                             buflen,
-                             errnop,
-                             _nss_ldap_filt_gethostent, LM_HOSTS,
+  int32_t tmpint32;
+  static struct ent_context *host_context;
+  /* these are here for now until we rewrite the LDAP code */
+  struct hostent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_shadow_all()");
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_HOST_ALL);
+  /* initialize context */
+  if (_nss_ldap_ent_context_init(&host_context)==NULL)
+    return -1;
+  /* loop over all results */
+  while ((retv=nss2nslcd(_nss_ldap_getent(&host_context,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostent,LM_HOSTS,
 #ifdef INET6
-                             (_res.options & RES_USE_INET6) ?
-                             _nss_ldap_parse_hostv6 :
+                             (_res.options&RES_USE_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4
+#else
+                             _nss_ldap_parse_hostv4
 #endif
-                             _nss_ldap_parse_hostv4);
-
-  MAP_H_ERRNO (status, *h_errnop);
-
-  return status;
+                             )))==NSLCD_RESULT_SUCCESS)
+  {
+    /* write the result */
+    WRITE_INT32(fp,retv);
+    if (retv==NSLCD_RESULT_SUCCESS)
+      write_hostent(fp,&result);
+  }
+  /* write the final result code */
+  WRITE_INT32(fp,retv);
+  WRITE_FLUSH(fp);
+  /* FIXME: if a previous call returns what happens to the context? */
+  _nss_ldap_enter();
+  _nss_ldap_ent_context_release(host_context);
+  _nss_ldap_leave();
+  /* we're done */
+  return 0;
 }

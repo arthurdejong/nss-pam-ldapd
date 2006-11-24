@@ -162,11 +162,9 @@ void nslcd_server_handlerequest(int sock)
     case NSLCD_ACTION_GROUP_BYGID:      nslcd_group_bygid(fp); break;
     case NSLCD_ACTION_GROUP_BYMEMBER:   nslcd_group_bymember(fp); break;
     case NSLCD_ACTION_GROUP_ALL:        nslcd_group_all(fp); break;
-/*
     case NSLCD_ACTION_HOST_BYNAME:      nslcd_host_byname(fp); break;
     case NSLCD_ACTION_HOST_BYADDR:      nslcd_host_byaddr(fp); break;
     case NSLCD_ACTION_HOST_ALL:         nslcd_host_all(fp); break;
-*/
     case NSLCD_ACTION_NETGROUP_BYNAME:  nslcd_netgroup_byname(fp); break;
 /*
     case NSLCD_ACTION_NETWORK_BYNAME:   nslcd_network_byname(fp); break;

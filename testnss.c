@@ -90,7 +90,6 @@ static void printhost(struct hostent *host)
 {
   int i,j;
   char buffer[1024];
-  const char *res;
   printf("struct hostent {\n"
          "  h_name=\"%s\",\n",
          host->h_name);
@@ -107,9 +106,8 @@ static void printhost(struct hostent *host)
   printf("  h_length=%d,\n",host->h_length);
   for (i=0;host->h_addr_list[i]!=NULL;i++)
   {
-    res=inet_ntop(host->h_addrtype,host->h_addr_list[i],
-                  buffer,host->h_length);
-    if (res!=NULL)
+    if (inet_ntop(host->h_addrtype,host->h_addr_list[i],
+                  buffer,1024)!=NULL)
     {
       printf("  h_addr_list[%d]=%s,\n",i,buffer);
     }
@@ -117,11 +115,12 @@ static void printhost(struct hostent *host)
     {
       printf("  h_addr_list[%d]=",i);
       for (j=0;j<host->h_length;j++)
-        printf("%02x",(int)host->h_addr_list[i][j]);
+        printf("%02x",(int)((const uint8_t*)host->h_addr_list[i])[j]);
       printf(",\n");
     }
   }
-  printf("  h_addr_list[%d]=NULL\n",i);
+  printf("  h_addr_list[%d]=NULL\n"
+         "}\n",i);
 }
 
 static void printether(struct etherent *ether)
@@ -204,10 +203,7 @@ int main(int argc,char *argv[])
   if (res==NSS_STATUS_SUCCESS)
     printpasswd(&passwdresult);
   else
-  {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  }
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
   /* test getpwnam() with non-existing user */
   printf("\nTEST getpwnam() with non-existing user\n");
@@ -216,10 +212,7 @@ int main(int argc,char *argv[])
   if (res==NSS_STATUS_SUCCESS)
     printpasswd(&passwdresult);
   else
-  {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  }
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
   /* test getpwuid() */
   printf("\nTEST getpwuid()\n");
@@ -228,10 +221,7 @@ int main(int argc,char *argv[])
   if (res==NSS_STATUS_SUCCESS)
     printpasswd(&passwdresult);
   else
-  {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  }
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
   /* test {set,get,end}pwent() */
   printf("\nTEST {set,get,end}pwent()\n");
@@ -243,8 +233,7 @@ int main(int argc,char *argv[])
     printpasswd(&passwdresult);
   }
   printf("status=%s\n",nssstatus(res));
-  printf("errno=%d:%s\n",(int)errno,strerror(errno));
-  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
   res=_nss_ldap_endpwent();
   printf("status=%s\n",nssstatus(res));
 
@@ -255,10 +244,7 @@ int main(int argc,char *argv[])
   if (res==NSS_STATUS_SUCCESS)
     printalias(&aliasresult);
   else
-  {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  }
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
   /* test {set,get,end}aliasent() */
   printf("\nTEST {set,get,end}aliasent()\n");
@@ -270,8 +256,7 @@ int main(int argc,char *argv[])
     printalias(&aliasresult);
   }
   printf("status=%s\n",nssstatus(res));
-  printf("errno=%d:%s\n",(int)errno,strerror(errno));
-  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
   res=_nss_ldap_endaliasent();
   printf("status=%s\n",nssstatus(res));
 
@@ -282,10 +267,7 @@ int main(int argc,char *argv[])
   if (res==NSS_STATUS_SUCCESS)
     printgroup(&groupresult);
   else
-  {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  }
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
   /* test getgrgid() */
   printf("\nTEST getgrgid()\n");
@@ -294,10 +276,7 @@ int main(int argc,char *argv[])
   if (res==NSS_STATUS_SUCCESS)
     printgroup(&groupresult);
   else
-  {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  }
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
   /* test initgroups() */
   printf("\nTEST initgroups()\n");
@@ -311,10 +290,7 @@ int main(int argc,char *argv[])
     }
   }
   else
-  {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  }
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
   /* test {set,get,end}grent() */
   printf("\nTEST {set,get,end}grent()\n");
@@ -326,8 +302,7 @@ int main(int argc,char *argv[])
     printgroup(&groupresult);
   }
   printf("status=%s\n",nssstatus(res));
-  printf("errno=%d:%s\n",(int)errno,strerror(errno));
-  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
   res=_nss_ldap_endgrent();
   printf("status=%s\n",nssstatus(res));
 
@@ -339,57 +314,53 @@ int main(int argc,char *argv[])
     printhost(&hostresult);
   else
   {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-    printf("h_errno=%d:%s\n",(int)h_errno,hstrerror(h_errno));
-    printf("h_errnocp=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+    printf("h_errno=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
   }
 
   /* test gethostbyname2(AF_INET6) */
+/* this is currently unsupported
   printf("\nTEST gethostbyname2(AF_INET6)\n");
-  res=_nss_ldap_gethostbyname2_r("oostc",AF_INET6,&hostresult,buffer,1024,&errnocp,&h_errnocp);
+  res=_nss_ldap_gethostbyname2_r("appelscha",AF_INET6,&hostresult,buffer,1024,&errnocp,&h_errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printhost(&hostresult);
   else
   {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-    printf("h_errno=%d:%s\n",(int)h_errno,hstrerror(h_errno));
-    printf("h_errnocp=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+    printf("h_errno=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
   }
+*/
 
   /* test gethostbyaddr(AF_INET) */
   printf("\nTEST gethostbyaddr(AF_INET)\n");
   inet_pton(AF_INET,"192.43.210.81",address);
-  res=_nss_ldap_gethostbyaddr_r((void *)address,sizeof(struct in_addr),AF_INET,
+  res=_nss_ldap_gethostbyaddr_r(address,sizeof(struct in_addr),AF_INET,
                                 &hostresult,buffer,1024,&errnocp,&h_errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printhost(&hostresult);
   else
   {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-    printf("h_errno=%d:%s\n",(int)h_errno,hstrerror(h_errno));
-    printf("h_errnocp=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+    printf("h_errno=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
   }
 
   /* test gethostbyaddr(AF_INET6) */
+/* this is currently unsupported
   printf("\nTEST gethostbyaddr(AF_INET6)\n");
   inet_pton(AF_INET6,"2001:200:0:8002:203:47ff:fea5:3085",address);
-  res=_nss_ldap_gethostbyaddr_r((void *)address,sizeof(struct in6_addr),AF_INET6,
+  res=_nss_ldap_gethostbyaddr_r(address,sizeof(struct in6_addr),AF_INET6,
                                 &hostresult,buffer,1024,&errnocp,&h_errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printhost(&hostresult);
   else
   {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-    printf("h_errno=%d:%s\n",(int)h_errno,hstrerror(h_errno));
-    printf("h_errnocp=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+    printf("h_errno=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
   }
+*/
 
   /* test {set,get,end}hostent() */
   printf("\nTEST {set,get,end}hostent()\n");
@@ -401,10 +372,8 @@ int main(int argc,char *argv[])
     printhost(&hostresult);
   }
   printf("status=%s\n",nssstatus(res));
-  printf("errno=%d:%s\n",(int)errno,strerror(errno));
-  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  printf("h_errno=%d:%s\n",(int)h_errno,hstrerror(h_errno));
-  printf("h_errnocp=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
+  printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+  printf("h_errno=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
   res=_nss_ldap_endhostent();
   printf("status=%s\n",nssstatus(res));
 
@@ -415,10 +384,7 @@ int main(int argc,char *argv[])
   if (res==NSS_STATUS_SUCCESS)
     printether(&etherresult);
   else
-  {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  }
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
   /* test ether_ntohost() */
   printf("\nTEST ether_ntohost()\n");
@@ -428,10 +394,7 @@ int main(int argc,char *argv[])
   if (res==NSS_STATUS_SUCCESS)
     printether(&etherresult);
   else
-  {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  }
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
   /* test {set,get,end}etherent() */
   printf("\nTEST {set,get,end}etherent()\n");
@@ -443,8 +406,7 @@ int main(int argc,char *argv[])
     printether(&etherresult);
   }
   printf("status=%s\n",nssstatus(res));
-  printf("errno=%d:%s\n",(int)errno,strerror(errno));
-  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
   res=_nss_ldap_endetherent();
   printf("status=%s\n",nssstatus(res));
 
@@ -455,10 +417,7 @@ int main(int argc,char *argv[])
   if (res==NSS_STATUS_SUCCESS)
     printshadow(&shadowresult);
   else
-  {
-    printf("errno=%d:%s\n",(int)errno,strerror(errno));
-    printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
-  }
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
   /* test {set,get,end}spent() */
   printf("\nTEST {set,get,end}spent()\n");
@@ -470,8 +429,7 @@ int main(int argc,char *argv[])
     printshadow(&shadowresult);
   }
   printf("status=%s\n",nssstatus(res));
-  printf("errno=%d:%s\n",(int)errno,strerror(errno));
-  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
   res=_nss_ldap_endspent();
   printf("status=%s\n",nssstatus(res));
 
@@ -485,8 +443,7 @@ int main(int argc,char *argv[])
     printnetgroup(&netgroupresult);
   }
   printf("status=%s\n",nssstatus(res));
-  printf("errno=%d:%s\n",(int)errno,strerror(errno));
-  printf("errnocp=%d:%s\n",(int)errnocp,strerror(errnocp));
+  printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
   res=_nss_ldap_endnetgrent(&netgroupresult);
   printf("status=%s\n",nssstatus(res));
 
