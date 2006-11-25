@@ -193,6 +193,20 @@ static void printnetgroup(struct __netgrent *netgroup)
          "}\n");
 }
 
+static void printrpc(struct rpcent *rpc)
+{
+  int i;
+  printf("struct rpcent {\n"
+         "  r_name=\"%s\",\n",
+         rpc->r_name);
+  for (i=0;rpc->r_aliases[i]!=NULL;i++)
+    printf("  r_aliases[%d]=\"%s\",\n",
+           i,rpc->r_aliases[i]);
+  printf("  r_aliases[%d]=NULL,\n"
+         "  r_number=%d\n"
+         "}\n",i,(int)(rpc->r_number));
+}
+
 /* the main program... */
 int main(int argc,char *argv[])
 {
@@ -204,6 +218,7 @@ int main(int argc,char *argv[])
   struct spwd shadowresult;
   struct __netgrent netgroupresult;
   struct protoent protoresult;
+  struct rpcent rpcresult;
   char buffer[1024];
   enum nss_status res;
   int errnocp,h_errnocp;
@@ -231,7 +246,7 @@ int main(int argc,char *argv[])
 
   /* test getpwuid() */
   printf("\nTEST getpwuid()\n");
-  res=_nss_ldap_getpwuid_r(180,&passwdresult,buffer,1024,&errnocp);
+  res=_nss_ldap_getpwuid_r(1004,&passwdresult,buffer,1024,&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printpasswd(&passwdresult);
@@ -254,7 +269,7 @@ int main(int argc,char *argv[])
 
   /* test getaliasbyname() */
   printf("\nTEST getaliasbyname()\n");
-  res=_nss_ldap_getaliasbyname_r("techstaff",&aliasresult,buffer,1024,&errnocp);
+  res=_nss_ldap_getaliasbyname_r("wij@arthurenhella.demon.nl",&aliasresult,buffer,1024,&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printalias(&aliasresult);
@@ -394,7 +409,7 @@ int main(int argc,char *argv[])
 
   /* test ether_hostton() */
   printf("\nTEST ether_hostton()\n");
-  res=_nss_ldap_gethostton_r("appelscha",&etherresult,buffer,1024,&errnocp);
+  res=_nss_ldap_gethostton_r("spiritus",&etherresult,buffer,1024,&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printether(&etherresult);
@@ -403,7 +418,7 @@ int main(int argc,char *argv[])
 
   /* test ether_ntohost() */
   printf("\nTEST ether_ntohost()\n");
-  res=_nss_ldap_getntohost_r(ether_aton("0:13:72:a4:39:c7"),
+  res=_nss_ldap_getntohost_r(ether_aton("00:E0:4C:39:D3:6A"),
                              &etherresult,buffer,1024,&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
@@ -492,6 +507,38 @@ int main(int argc,char *argv[])
   printf("status=%s\n",nssstatus(res));
   printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
   res=_nss_ldap_endprotoent();
+  printf("status=%s\n",nssstatus(res));
+
+  /* test getrpcbyname() */
+  printf("\nTEST getrpcbyname()\n");
+  res=_nss_ldap_getrpcbyname_r("rpcfoo",&rpcresult,buffer,1024,&errnocp);
+  printf("status=%s\n",nssstatus(res));
+  if (res==NSS_STATUS_SUCCESS)
+    printrpc(&rpcresult);
+  else
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+
+  /* test getrpcbynumber() */
+  printf("\nTEST getrpcbynumber()\n");
+  res=_nss_ldap_getrpcbynumber_r(7899,&rpcresult,buffer,1024,&errnocp);
+  printf("status=%s\n",nssstatus(res));
+  if (res==NSS_STATUS_SUCCESS)
+    printrpc(&rpcresult);
+  else
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+
+  /* test {set,get,end}rpcent() */
+  printf("\nTEST {set,get,end}rpcent()\n");
+  res=_nss_ldap_setrpcent(1);
+  printf("status=%s\n",nssstatus(res));
+  while ((res=_nss_ldap_getrpcent_r(&rpcresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
+  {
+    printf("status=%s\n",nssstatus(res));
+    printrpc(&rpcresult);
+  }
+  printf("status=%s\n",nssstatus(res));
+  printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+  res=_nss_ldap_endrpcent();
   printf("status=%s\n",nssstatus(res));
 
   return 0;

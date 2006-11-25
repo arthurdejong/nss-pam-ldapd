@@ -54,8 +54,25 @@
 
 #include "ldap-nss.h"
 #include "util.h"
+#include "nslcd-server.h"
+#include "common.h"
+#include "log.h"
 
-static struct ent_context *rpc_context = NULL;
+/* macros for expanding the LDF_RPC macro */
+#define LDF_STRING(field)     WRITE_STRING(fp,field)
+#define LDF_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define LDF_INT32(field)      WRITE_INT32(fp,field)
+#define RPC_NAME              result->r_name
+#define RPC_ALIASES           result->r_aliases
+#define RPC_NUMBER            result->r_number
+
+/* write a single host entry to the stream */
+static int write_rpcent(FILE *fp,struct rpcent *result)
+{
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  LDF_RPC;
+  return 0;
+}
 
 static enum nss_status _nss_ldap_parse_rpc (LDAPMessage * e,
                      struct ldap_state * pvt,
@@ -89,36 +106,102 @@ static enum nss_status _nss_ldap_parse_rpc (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getrpcbyname_r(const char *name,struct rpcent *result,
-                          char *buffer,size_t buflen,int *errnop)
+int nslcd_rpc_byname(FILE *fp)
 {
-  LOOKUP_NAME(name, result, buffer, buflen, errnop,
-              _nss_ldap_filt_getrpcbyname, LM_RPC, _nss_ldap_parse_rpc,
-              LDAP_NSS_BUFLEN_DEFAULT);
+  int32_t tmpint32;
+  char *name;
+  struct ldap_args a;
+  /* these are here for now until we rewrite the LDAP code */
+  struct rpcent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* read request parameters */
+  READ_STRING_ALLOC(fp,name);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_rpc_byname(%s)",name);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_RPC_BYNAME);
+  /* do the LDAP request */
+  LA_INIT(a);
+  LA_STRING(a)=name;
+  LA_TYPE(a)=LA_TYPE_STRING;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcbyname,LM_RPC,_nss_ldap_parse_rpc));
+  /* no more need for this string */
+  free(name);
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+    write_rpcent(fp,&result);
+  WRITE_FLUSH(fp);
+  /* we're done */
+  return 0;
 }
 
-enum nss_status _nss_ldap_getrpcbynumber_r(int number,struct rpcent *result,
-                            char *buffer,size_t buflen,int *errnop)
+int nslcd_rpc_bynumber(FILE *fp)
 {
-  LOOKUP_NUMBER(number, result, buffer, buflen, errnop,
-                _nss_ldap_filt_getrpcbynumber, LM_RPC, _nss_ldap_parse_rpc,
-                LDAP_NSS_BUFLEN_DEFAULT);
+  int32_t tmpint32;
+  int number;
+  struct ldap_args a;
+  /* these are here for now until we rewrite the LDAP code */
+  struct rpcent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* read request parameters */
+  READ_INT32(fp,number);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_rpc_bynumber(%d)",number);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_RPC_BYNUMBER);
+  /* do the LDAP request */
+  LA_INIT(a);
+  LA_NUMBER(a)=number;
+  LA_TYPE(a)=LA_TYPE_NUMBER;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcbynumber,LM_RPC,_nss_ldap_parse_rpc));
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+    write_rpcent(fp,&result);
+  WRITE_FLUSH(fp);
+  /* we're done */
+  return 0;
 }
 
-enum nss_status _nss_ldap_setrpcent(void)
+int nslcd_rpc_all(FILE *fp)
 {
-  LOOKUP_SETENT(rpc_context);
-}
-
-enum nss_status _nss_ldap_getrpcent_r(struct rpcent *result,char *buffer,size_t buflen,
-                       int *errnop)
-{
-  LOOKUP_GETENT(rpc_context,result,buffer,buflen,errnop,
-                _nss_ldap_filt_getrpcent,LM_RPC,_nss_ldap_parse_rpc,
-                LDAP_NSS_BUFLEN_DEFAULT);
-}
-
-enum nss_status _nss_ldap_endrpcent(void)
-{
-  LOOKUP_ENDENT(rpc_context);
+  int32_t tmpint32;
+  static struct ent_context *rpc_context;
+  /* these are here for now until we rewrite the LDAP code */
+  struct rpcent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_rpccol_all()");
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_RPC_ALL);
+  /* initialize context */
+  if (_nss_ldap_ent_context_init(&rpc_context)==NULL)
+    return -1;
+  /* loop over all results */
+  while ((retv=nss2nslcd(_nss_ldap_getent(&rpc_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcent,LM_RPC,_nss_ldap_parse_rpc)))==NSLCD_RESULT_SUCCESS)
+  {
+    /* write the result code */
+    WRITE_INT32(fp,retv);
+    /* write the entry */
+    write_rpcent(fp,&result);
+  }
+  /* write the final result code */
+  WRITE_INT32(fp,retv);
+  WRITE_FLUSH(fp);
+  /* FIXME: if a previous call returns what happens to the context? */
+  _nss_ldap_enter();
+  _nss_ldap_ent_context_release(rpc_context);
+  _nss_ldap_leave();
+  /* we're done */
+  return 0;
 }
