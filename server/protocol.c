@@ -50,8 +50,9 @@
 
 #include "ldap-nss.h"
 #include "util.h"
-
-static struct ent_context *proto_context = NULL;
+#include "nslcd-server.h"
+#include "common.h"
+#include "log.h"
 
 static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
                        struct ldap_state *pvt,
@@ -85,36 +86,114 @@ static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getprotobyname_r(const char *name,struct protoent *result,
-                            char *buffer,size_t buflen,int *errnop)
+/* macros for expanding the LDF_PROTOCOL macro */
+#define LDF_STRING(field)     WRITE_STRING(fp,field)
+#define LDF_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define LDF_INT32(field)      WRITE_INT32(fp,field)
+#define PROTOCOL_NAME         result.p_name
+#define PROTOCOL_ALIASES      result.p_aliases
+#define PROTOCOL_NUMBER       result.p_proto
+
+int nslcd_protocol_byname(FILE *fp)
 {
-  LOOKUP_NAME (name, result, buffer, buflen, errnop,
-               _nss_ldap_filt_getprotobyname, LM_PROTOCOLS,
-               _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  char *name;
+  struct ldap_args a;
+  /* these are here for now until we rewrite the LDAP code */
+  struct protoent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* read request parameters */
+  READ_STRING_ALLOC(fp,name);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_protocol_byname(%s)",name);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_BYNAME);
+  /* do the LDAP request */
+  LA_INIT(a);
+  LA_STRING(a)=name;
+  LA_TYPE(a)=LA_TYPE_STRING;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotobyname,LM_PROTOCOLS,_nss_ldap_parse_proto));
+  /* no more need for this string */
+  free(name);
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+  {
+    LDF_PROTOCOL;
+  }
+  WRITE_FLUSH(fp);
+  /* we're done */
+  return 0;
 }
 
-enum nss_status _nss_ldap_getprotobynumber_r(int number,struct protoent *result,
-                              char *buffer,size_t buflen,int *errnop)
+int nslcd_protocol_bynumber(FILE *fp)
 {
-  LOOKUP_NUMBER (number, result, buffer, buflen, errnop,
-                 _nss_ldap_filt_getprotobynumber, LM_PROTOCOLS,
-                 _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  int protocol;
+  struct ldap_args a;
+  /* these are here for now until we rewrite the LDAP code */
+  struct protoent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* read request parameters */
+  READ_INT32(fp,protocol);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_protocol_bynumber(%d)",protocol);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_BYNUMBER);
+  /* do the LDAP request */
+  LA_INIT(a);
+  LA_NUMBER(a)=protocol;
+  LA_TYPE(a)=LA_TYPE_NUMBER;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotobynumber,LM_PROTOCOLS,_nss_ldap_parse_proto));
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+  {
+    LDF_PROTOCOL;
+  }
+  WRITE_FLUSH(fp);
+  /* we're done */
+  return 0;
 }
 
-enum nss_status _nss_ldap_setprotoent(void)
+int nslcd_protocol_all(FILE *fp)
 {
-  LOOKUP_SETENT (proto_context);
-}
-
-enum nss_status _nss_ldap_getprotoent_r(struct protoent *result,char *buffer,size_t buflen,
-                        int *errnop)
-{
-  LOOKUP_GETENT (proto_context, result, buffer, buflen, errnop,
-                 _nss_ldap_filt_getprotoent, LM_PROTOCOLS,
-                 _nss_ldap_parse_proto, LDAP_NSS_BUFLEN_DEFAULT);
-}
-
-enum nss_status _nss_ldap_endprotoent(void)
-{
-  LOOKUP_ENDENT (proto_context);
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  static struct ent_context *protocol_context;
+  /* these are here for now until we rewrite the LDAP code */
+  struct protoent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_protocol_all()");
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_ALL);
+  /* initialize context */
+  if (_nss_ldap_ent_context_init(&protocol_context)==NULL)
+    return -1;
+  /* loop over all results */
+  while ((retv=nss2nslcd(_nss_ldap_getent(&protocol_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotoent,LM_PROTOCOLS,_nss_ldap_parse_proto)))==NSLCD_RESULT_SUCCESS)
+  {
+    /* write the result code */
+    WRITE_INT32(fp,retv);
+    /* write the entry */
+    LDF_PROTOCOL;
+    fflush(fp);
+  }
+  /* write the final result code */
+  WRITE_INT32(fp,retv);
+  /* FIXME: if a previous call returns what happens to the context? */
+  _nss_ldap_enter();
+  _nss_ldap_ent_context_release(protocol_context);
+  _nss_ldap_leave();
+  /* we're done */
+  return 0;
 }

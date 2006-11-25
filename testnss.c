@@ -132,6 +132,20 @@ static void printether(struct etherent *ether)
          ether->e_name,ether_ntoa(&(ether->e_addr)));
 }
 
+static void printproto(struct protoent *protocol)
+{
+  int i;
+  printf("struct protoent {\n"
+         "  p_name=\"%s\",\n",
+         protocol->p_name);
+  for (i=0;protocol->p_aliases[i]!=NULL;i++)
+    printf("  p_aliases[%d]=\"%s\",\n",
+           i,protocol->p_aliases[i]);
+  printf("  p_aliases[%d]=NULL,\n"
+         "  p_proto=%d\n"
+         "}\n",i,(int)(protocol->p_proto));
+}
+
 static void printshadow(struct spwd *shadow)
 {
   printf("struct spwd {\n"
@@ -189,6 +203,7 @@ int main(int argc,char *argv[])
   struct etherent etherresult;
   struct spwd shadowresult;
   struct __netgrent netgroupresult;
+  struct protoent protoresult;
   char buffer[1024];
   enum nss_status res;
   int errnocp,h_errnocp;
@@ -445,6 +460,38 @@ int main(int argc,char *argv[])
   printf("status=%s\n",nssstatus(res));
   printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
   res=_nss_ldap_endnetgrent(&netgroupresult);
+  printf("status=%s\n",nssstatus(res));
+
+  /* test getprotobyname() */
+  printf("\nTEST getprotobyname()\n");
+  res=_nss_ldap_getprotobyname_r("foo",&protoresult,buffer,1024,&errnocp);
+  printf("status=%s\n",nssstatus(res));
+  if (res==NSS_STATUS_SUCCESS)
+    printproto(&protoresult);
+  else
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+
+  /* test getprotobynumber() */
+  printf("\nTEST getprotobynumber()\n");
+  res=_nss_ldap_getprotobynumber_r(10,&protoresult,buffer,1024,&errnocp);
+  printf("status=%s\n",nssstatus(res));
+  if (res==NSS_STATUS_SUCCESS)
+    printproto(&protoresult);
+  else
+    printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+
+  /* test {set,get,end}protoent() */
+  printf("\nTEST {set,get,end}protoent()\n");
+  res=_nss_ldap_setprotoent(1);
+  printf("status=%s\n",nssstatus(res));
+  while ((res=_nss_ldap_getprotoent_r(&protoresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
+  {
+    printf("status=%s\n",nssstatus(res));
+    printproto(&protoresult);
+  }
+  printf("status=%s\n",nssstatus(res));
+  printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
+  res=_nss_ldap_endprotoent();
   printf("status=%s\n",nssstatus(res));
 
   return 0;
