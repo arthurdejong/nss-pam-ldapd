@@ -31,6 +31,8 @@
    int32_t tmpint32; - temporary variable
    */
 
+#include <stdio.h>
+
 #ifdef DEBUG_PROT
 /* define a debugging macro to output logging */
 #include <string.h>
