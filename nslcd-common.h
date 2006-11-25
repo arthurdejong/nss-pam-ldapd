@@ -170,10 +170,10 @@
   } /* problem allocating */ \
   /* read string from the stream */ \
   if (tmpint32>0) \
-    { READ(fp,name,(size_t)tmpint32); } \
+    { READ(fp,(field),(size_t)tmpint32); } \
   /* null-terminate string */ \
-  (name)[tmpint32]='\0'; \
-  DEBUG_PRINT("READ_STRING: var="__STRING(field)" string=\"%s\"",(name));
+  (field)[tmpint32]='\0'; \
+  DEBUG_PRINT("READ_STRING: var="__STRING(field)" string=\"%s\"",(field));
 
 /* read an array from a stram and store the length of the
    array in num (size for the array is allocated) */
