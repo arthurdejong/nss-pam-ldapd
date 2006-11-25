@@ -367,8 +367,7 @@ int nslcd_host_all(FILE *fp)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    if (retv==NSLCD_RESULT_SUCCESS)
-      write_hostent(fp,&result);
+    write_hostent(fp,&result);
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
