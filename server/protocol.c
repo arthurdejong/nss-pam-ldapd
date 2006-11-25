@@ -186,10 +186,10 @@ int nslcd_protocol_all(FILE *fp)
     WRITE_INT32(fp,retv);
     /* write the entry */
     LDF_PROTOCOL;
-    fflush(fp);
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
+  WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_enter();
   _nss_ldap_ent_context_release(protocol_context);
