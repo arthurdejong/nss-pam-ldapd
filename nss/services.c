@@ -36,7 +36,7 @@
 #define LDF_INT32(field)      READ_INT32(fp,field)
 #define SERVICE_NAME          result->s_name
 #define SERVICE_ALIASES       result->s_aliases
-#define SERVICE_NUMBER        result->s_port
+#define SERVICE_NUMBER        port
 #define SERVICE_PROTOCOL      result->s_proto
 
 static enum nss_status read_servent(
@@ -44,21 +44,68 @@ static enum nss_status read_servent(
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
+  int port;
   size_t bufptr=0;
   /* auto-genereted read code */
   LDF_SERVICE;
+  /* store number in network byte order */
+  result->s_port=ntohs(port);
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status _nss_ldap_getservbyname_r(const char *name,const char *protocol,struct servent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_SERVICE_BYNAME,name,read_servent);
+  FILE *fp;
+  int32_t tmpint32;
+  enum nss_status retv;
+  /* open socket and write request */
+  OPEN_SOCK(fp);
+  WRITE_REQUEST(fp,NSLCD_ACTION_SERVICE_BYNAME);
+  /* write the parameters */
+  WRITE_STRING(fp,name);
+  /* fall back to empty string in case of NULL */
+  if (protocol==NULL)
+    protocol="";
+  WRITE_STRING(fp,protocol);
+  WRITE_FLUSH(fp);
+  /* read response */
+  READ_RESPONSEHEADER(fp,NSLCD_ACTION_SERVICE_BYNAME);
+  READ_RESPONSE_CODE(fp);
+  retv=read_servent(fp,result,buffer,buflen,errnop);
+  /* check read result */
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* close socket and we're done */
+  fclose(fp);
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status _nss_ldap_getservbyport_r(int port,const char *protocol,struct servent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYINT32(NSLCD_ACTION_SERVICE_BYNUMBER,port,read_servent);
+  FILE *fp;
+  int32_t tmpint32;
+  enum nss_status retv;
+  /* open socket and write request */
+  OPEN_SOCK(fp);
+  WRITE_REQUEST(fp,NSLCD_ACTION_SERVICE_BYNUMBER);
+  /* write the parameters */
+  WRITE_INT32(fp,ntohs(port));
+  /* fall back to empty string in case of NULL */
+  if (protocol==NULL)
+    protocol="";
+  WRITE_STRING(fp,protocol);
+  WRITE_FLUSH(fp);
+  /* read response */
+  READ_RESPONSEHEADER(fp,NSLCD_ACTION_SERVICE_BYNUMBER);
+  READ_RESPONSE_CODE(fp);
+  retv=read_servent(fp,result,buffer,buflen,errnop);
+  /* check read result */
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* close socket and we're done */
+  fclose(fp);
+  return NSS_STATUS_SUCCESS;
 }
 
 /* thread-local file pointer to an ongoing request */

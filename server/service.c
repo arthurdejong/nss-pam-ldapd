@@ -54,8 +54,26 @@
 
 #include "ldap-nss.h"
 #include "util.h"
+#include "nslcd-server.h"
+#include "common.h"
+#include "log.h"
 
-static struct ent_context *serv_context = NULL;
+/* macros for expanding the LDF_SERVICE macro */
+#define LDF_STRING(field)     WRITE_STRING(fp,field)
+#define LDF_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define LDF_INT32(field)      WRITE_INT32(fp,field)
+#define SERVICE_NAME          result->s_name
+#define SERVICE_ALIASES       result->s_aliases
+#define SERVICE_NUMBER        htons(result->s_port)
+#define SERVICE_PROTOCOL      result->s_proto
+
+/* write a single host entry to the stream */
+static int write_servent(FILE *fp,struct servent *result)
+{
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  LDF_SERVICE;
+  return 0;
+}
 
 static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
                       struct ldap_state *state,
@@ -172,56 +190,114 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getservbyname_r(const char *name,
-                           const char *proto,
-                           struct servent *result,
-                           char *buffer,size_t buflen,int *errnop)
+int nslcd_service_byname(FILE *fp)
 {
+  int32_t tmpint32;
+  char *name,*protocol;
   struct ldap_args a;
-
-  LA_INIT (a);
-  LA_STRING (a) = name;
-  LA_TYPE (a) = (proto == NULL) ? LA_TYPE_STRING : LA_TYPE_STRING_AND_STRING;
-  LA_STRING2 (a) = proto;
-
-  return _nss_ldap_getbyname (&a, result, buffer, buflen, errnop,
-                              ((proto == NULL) ? _nss_ldap_filt_getservbyname
-                               : _nss_ldap_filt_getservbynameproto),
-                              LM_SERVICES, _nss_ldap_parse_serv);
+  /* these are here for now until we rewrite the LDAP code */
+  struct servent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* read request parameters */
+  READ_STRING_ALLOC(fp,name);
+  READ_STRING_ALLOC(fp,protocol);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_service_byname(%s,%s)",name,protocol);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_SERVICE_BYNAME);
+  /* do the LDAP request */
+  LA_INIT(a);
+  LA_STRING(a)=name;
+  LA_TYPE(a)=(strlen(protocol)==0)?LA_TYPE_STRING:LA_TYPE_STRING_AND_STRING;
+  LA_STRING2(a)=protocol;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,
+                 ((strlen(protocol)==0)?_nss_ldap_filt_getservbyname:_nss_ldap_filt_getservbynameproto),
+                 LM_SERVICES,_nss_ldap_parse_serv));
+  /* no more need for these strings */
+  free(name);
+  free(protocol);
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+    write_servent(fp,&result);
+  WRITE_FLUSH(fp);
+  /* we're done */
+  return 0;
 }
 
-enum nss_status _nss_ldap_getservbyport_r(int port,
-                           const char *proto,
-                           struct servent *result,
-                           char *buffer,size_t buflen,int *errnop)
+int nslcd_service_bynumber(FILE *fp)
 {
+  int32_t tmpint32;
+  int number;
+  char *protocol;
   struct ldap_args a;
-
-  LA_INIT (a);
-  LA_NUMBER (a) = htons (port);
-  LA_TYPE (a) = (proto == NULL) ? LA_TYPE_NUMBER : LA_TYPE_NUMBER_AND_STRING;
-  LA_STRING2 (a) = proto;
-  return _nss_ldap_getbyname (&a, result, buffer, buflen, errnop,
-                              (proto ==
-                               NULL) ? _nss_ldap_filt_getservbyport :
-                              _nss_ldap_filt_getservbyportproto,
-                              LM_SERVICES, _nss_ldap_parse_serv);
+  /* these are here for now until we rewrite the LDAP code */
+  struct servent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* read request parameters */
+  READ_INT32(fp,number);
+  READ_STRING_ALLOC(fp,protocol);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_service_bynumber(%d,%s)",number,protocol);
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_SERVICE_BYNUMBER);
+  /* do the LDAP request */
+  LA_INIT(a);
+  LA_NUMBER(a)=number;
+  LA_TYPE(a)=(strlen(protocol)==0)?LA_TYPE_NUMBER:LA_TYPE_NUMBER_AND_STRING;
+  LA_STRING2(a)=protocol;
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,
+                 ((strlen(protocol)==0)?_nss_ldap_filt_getservbyport:_nss_ldap_filt_getservbyportproto),
+                 LM_SERVICES,_nss_ldap_parse_serv));
+  /* no more need for this string */
+  free(protocol);
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+    write_servent(fp,&result);
+  WRITE_FLUSH(fp);
+  /* we're done */
+  return 0;
 }
 
-enum nss_status _nss_ldap_setservent(void)
+int nslcd_service_all(FILE *fp)
 {
-  LOOKUP_SETENT(serv_context);
-}
-
-enum nss_status _nss_ldap_getservent_r(struct servent *result,char *buffer,size_t buflen,
-                        int *errnop)
-{
-  LOOKUP_GETENT(serv_context, result, buffer, buflen, errnop,
-                _nss_ldap_filt_getservent, LM_SERVICES,
-                _nss_ldap_parse_serv, LDAP_NSS_BUFLEN_DEFAULT);
-}
-
-enum nss_status _nss_ldap_endservent(void)
-{
-  LOOKUP_ENDENT(serv_context);
+  int32_t tmpint32;
+  static struct ent_context *serv_context;
+  /* these are here for now until we rewrite the LDAP code */
+  struct servent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_service_all()");
+  /* write the response header */
+  WRITE_INT32(fp,NSLCD_VERSION);
+  WRITE_INT32(fp,NSLCD_ACTION_SERVICE_ALL);
+  /* initialize context */
+  if (_nss_ldap_ent_context_init(&serv_context)==NULL)
+    return -1;
+  /* loop over all results */
+  while ((retv=nss2nslcd(_nss_ldap_getent(&serv_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getservent,LM_SERVICES,_nss_ldap_parse_serv)))==NSLCD_RESULT_SUCCESS)
+  {
+    /* write the result code */
+    WRITE_INT32(fp,retv);
+    /* write the entry */
+    write_servent(fp,&result);
+  }
+  /* write the final result code */
+  WRITE_INT32(fp,retv);
+  WRITE_FLUSH(fp);
+  /* FIXME: if a previous call returns what happens to the context? */
+  _nss_ldap_enter();
+  _nss_ldap_ent_context_release(serv_context);
+  _nss_ldap_leave();
+  /* we're done */
+  return 0;
 }
