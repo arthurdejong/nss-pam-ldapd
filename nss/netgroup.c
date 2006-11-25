@@ -45,7 +45,7 @@ static enum nss_status read_netgrent(
     /* the response is a reference to another netgroup */
     result->type=group_val;
     READ_STRING_BUF(fp,result->val.group);
-  
+
   }
   else if (type==NETGROUP_TYPE_TRIPLE)
   {
@@ -96,7 +96,7 @@ enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *resul
   /* read response header */
   READ_RESPONSEHEADER(result->data,NSLCD_ACTION_NETGROUP_BYNAME);
   return NSS_STATUS_SUCCESS;
-/* fixme: this should probably also set result->known_groups */  
+/* fixme: this should probably also set result->known_groups */
 }
 
 enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop)

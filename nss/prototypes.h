@@ -48,7 +48,7 @@ struct etherent
    This definition changes the definition of the data field
    to pass our file pointer for ongoing requests and the
    definition of the nip field to not drag in extra unneeded
-   types. */ 
+   types. */
 struct __netgrent
 {
   enum { triple_val, group_val } type;

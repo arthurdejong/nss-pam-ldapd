@@ -86,7 +86,7 @@
 #define LDF_ADDRESS \
   LDF_INT32(ADDRESS_TYPE) /* type of address: e.g. AF_INET or AF_INET6 */ \
   LDF_INT32(ADDRESS_LEN)  /* length of the address to follow */ \
-  LDF_BUF(ADDRESS_ADDR)   /* the address itself in network byte order */  
+  LDF_BUF(ADDRESS_ADDR)   /* the address itself in network byte order */
 
 /* used for transferring host (/etc/hosts) information */
 /* Note: this marco is not expanded to code, check manually */
