@@ -435,6 +435,42 @@ do_getrdnvalue (const char *dn,
   return NSS_STATUS_NOTFOUND;
 }
 
+static enum ldap_map_selector
+_nss_ldap_str2selector (const char *key)
+{
+  enum ldap_map_selector sel;
+
+  if (!strcasecmp (key, MP_passwd))
+    sel = LM_PASSWD;
+  else if (!strcasecmp (key, MP_shadow))
+    sel = LM_SHADOW;
+  else if (!strcasecmp (key, MP_group))
+    sel = LM_GROUP;
+  else if (!strcasecmp (key, MP_hosts))
+    sel = LM_HOSTS;
+  else if (!strcasecmp (key, MP_services))
+    sel = LM_SERVICES;
+  else if (!strcasecmp (key, MP_networks))
+    sel = LM_NETWORKS;
+  else if (!strcasecmp (key, MP_protocols))
+    sel = LM_PROTOCOLS;
+  else if (!strcasecmp (key, MP_rpc))
+    sel = LM_RPC;
+  else if (!strcasecmp (key, MP_ethers))
+    sel = LM_ETHERS;
+  else if (!strcasecmp (key, MP_netmasks))
+    sel = LM_NETMASKS;
+  else if (!strcasecmp (key, MP_bootparams))
+    sel = LM_BOOTPARAMS;
+  else if (!strcasecmp (key, MP_aliases))
+    sel = LM_ALIASES;
+  else if (!strcasecmp (key, MP_netgroup))
+    sel = LM_NETGROUP;
+  else
+    sel = LM_NONE;
+  return sel;
+}
+
 static enum nss_status
 do_parse_map_statement (struct ldap_config * cfg,
                         const char *statement, enum ldap_map_type type)
@@ -528,45 +564,6 @@ do_parse_list (char *values, char ***valptr,
   *pbuflen = buflen;
 
   return NSS_STATUS_SUCCESS;
-}
-
-enum ldap_map_selector
-_nss_ldap_str2selector (const char *key)
-{
-  enum ldap_map_selector sel;
-
-  if (!strcasecmp (key, MP_passwd))
-    sel = LM_PASSWD;
-  else if (!strcasecmp (key, MP_shadow))
-    sel = LM_SHADOW;
-  else if (!strcasecmp (key, MP_group))
-    sel = LM_GROUP;
-  else if (!strcasecmp (key, MP_hosts))
-    sel = LM_HOSTS;
-  else if (!strcasecmp (key, MP_services))
-    sel = LM_SERVICES;
-  else if (!strcasecmp (key, MP_networks))
-    sel = LM_NETWORKS;
-  else if (!strcasecmp (key, MP_protocols))
-    sel = LM_PROTOCOLS;
-  else if (!strcasecmp (key, MP_rpc))
-    sel = LM_RPC;
-  else if (!strcasecmp (key, MP_ethers))
-    sel = LM_ETHERS;
-  else if (!strcasecmp (key, MP_netmasks))
-    sel = LM_NETMASKS;
-  else if (!strcasecmp (key, MP_bootparams))
-    sel = LM_BOOTPARAMS;
-  else if (!strcasecmp (key, MP_aliases))
-    sel = LM_ALIASES;
-  else if (!strcasecmp (key, MP_netgroup))
-    sel = LM_NETGROUP;
-  else if (!strcasecmp (key, MP_automount))
-    sel = LM_AUTOMOUNT;
-  else
-    sel = LM_NONE;
-
-  return sel;
 }
 
 static enum nss_status

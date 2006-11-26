@@ -64,11 +64,6 @@
   LDF_STRING(ALIAS_NAME) \
   LDF_STRINGLIST(ALIAS_RCPTS)
 
-/* used for transferring automount information */
-#define LDF_AUTOMOUNT \
-  LDF_STRING(AUTOMOUNT_KEY) \
-  LDF_STRING(AUTOMOUNT_INFO)
-
 /* used for transferring mac addresses */
 #define LDF_ETHER \
   LDF_STRING(ETHER_NAME) \
@@ -171,8 +166,6 @@
 /* Request types. */
 #define NSLCD_ACTION_ALIAS_BYNAME       4001
 #define NSLCD_ACTION_ALIAS_ALL          4002
-#define NSLCD_ACTION_AUTOMOUNT_BYNAME   7001
-#define NSLCD_ACTION_AUTOMOUNT_ALL      7005
 #define NSLCD_ACTION_ETHER_BYNAME       3001
 #define NSLCD_ACTION_ETHER_BYETHER      3002
 #define NSLCD_ACTION_ETHER_ALL          3005

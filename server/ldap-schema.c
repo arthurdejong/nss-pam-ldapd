@@ -112,11 +112,6 @@ char _nss_ldap_filt_getspent[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getnetgrent[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_innetgr[LDAP_FILT_MAXSIZ];
 
-/* automount */
-char _nss_ldap_filt_setautomntent[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getautomntent[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getautomntbyname[LDAP_FILT_MAXSIZ];
-
 /**
  * lookup filter initialization
  */
@@ -248,13 +243,6 @@ _nss_ldap_init_filters ()
   snprintf (_nss_ldap_filt_innetgr, LDAP_FILT_MAXSIZ,
             "(&(%s=%s)(%s=%s))", AT (objectClass), OC (nisNetgroup), AT (memberNisNetgroup), "%s");
 
-  /* automounts */
-  snprintf (_nss_ldap_filt_setautomntent, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", AT (objectClass), OC (automountMap), AT (automountMapName), "%s");
-  snprintf (_nss_ldap_filt_getautomntent, LDAP_FILT_MAXSIZ,
-            "(%s=%s)", AT (objectClass), OC (automount));
-  snprintf (_nss_ldap_filt_getautomntbyname, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", AT (objectClass), OC (automount), AT (automountKey), "%s");
 }
 
 static void init_pwd_attributes (const char ***pwd_attrs);
@@ -269,7 +257,6 @@ static void init_ethers_attributes (const char ***ethers_attrs);
 static void init_bp_attributes (const char ***bp_attrs);
 static void init_alias_attributes (const char ***alias_attrs);
 static void init_netgrp_attributes (const char ***netgrp_attrs);
-static void init_automount_attributes (const char ***automount_attrs);
 
 /**
  * attribute table initialization routines
@@ -290,7 +277,6 @@ _nss_ldap_init_attributes (const char ***attrtab)
   init_bp_attributes (&attrtab[LM_BOOTPARAMS]);
   init_alias_attributes (&attrtab[LM_ALIASES]);
   init_netgrp_attributes (&attrtab[LM_NETGROUP]);
-  init_automount_attributes (&attrtab[LM_AUTOMOUNT]);
 
   attrtab[LM_NONE] = NULL;
 }
@@ -469,17 +455,3 @@ init_netgrp_attributes (const char ***netgrp_attrs)
   (*netgrp_attrs)[2] = AT (memberNisNetgroup);
   (*netgrp_attrs)[3] = NULL;
 }
-
-static void
-init_automount_attributes (const char ***automount_attrs)
-{
-  static const char *__automount_attrs[ATTRTAB_SIZE + 1];
-
-  (*automount_attrs) = __automount_attrs;
-
-  (*automount_attrs)[0] = AT (automountKey);
-  (*automount_attrs)[1] = AT (automountInformation);
-  (*automount_attrs)[2] = ATM (LM_AUTOMOUNT, description);
-  (*automount_attrs)[3] = NULL;
-}
-

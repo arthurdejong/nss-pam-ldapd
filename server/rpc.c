@@ -66,7 +66,7 @@
 #define RPC_ALIASES           result->r_aliases
 #define RPC_NUMBER            result->r_number
 
-/* write a single host entry to the stream */
+/* write a single rpc entry to the stream */
 static int write_rpcent(FILE *fp,struct rpcent *result)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;

@@ -151,10 +151,6 @@ void nslcd_server_handlerequest(int sock)
   {
     case NSLCD_ACTION_ALIAS_BYNAME:     nslcd_alias_byname(fp); break;
     case NSLCD_ACTION_ALIAS_ALL:        nslcd_alias_all(fp); break;
-/*
-    case NSLCD_ACTION_AUTOMOUNT_BYNAME: nslcd_automount_byname(fp); break;
-    case NSLCD_ACTION_AUTOMOUNT_ALL:    nslcd_automount_all(fp); break;
-*/
     case NSLCD_ACTION_ETHER_BYNAME:     nslcd_ether_byname(fp); break;
     case NSLCD_ACTION_ETHER_BYETHER:    nslcd_ether_byether(fp); break;
     case NSLCD_ACTION_ETHER_ALL:        nslcd_ether_all(fp); break;
@@ -186,7 +182,7 @@ void nslcd_server_handlerequest(int sock)
     case NSLCD_ACTION_SHADOW_BYNAME:    nslcd_shadow_byname(fp); break;
     case NSLCD_ACTION_SHADOW_ALL:       nslcd_shadow_all(fp); break;
     default:
-      log_log(LOG_DEBUG,"invalid request id (%d)",(int)tmpint32);
+      log_log(LOG_WARNING,"invalid request id: %d",(int)tmpint32);
       break;
   }
   /* we're done with the request */

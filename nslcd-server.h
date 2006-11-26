@@ -40,8 +40,6 @@ void nslcd_server_handlerequest(int sock);
 
 int nslcd_alias_byname(FILE *fp);
 int nslcd_alias_all(FILE *fp);
-int nslcd_automount_byname(FILE *fp);
-int nslcd_automount_all(FILE *fp);
 int nslcd_ether_byname(FILE *fp);
 int nslcd_ether_byether(FILE *fp);
 int nslcd_ether_all(FILE *fp);

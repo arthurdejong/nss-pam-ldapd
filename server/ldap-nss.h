@@ -177,7 +177,6 @@ enum ldap_map_selector
   LM_BOOTPARAMS,
   LM_ALIASES,
   LM_NETGROUP,
-  LM_AUTOMOUNT,
   LM_NONE
 };
 

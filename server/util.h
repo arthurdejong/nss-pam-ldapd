@@ -213,7 +213,4 @@ enum nss_status
 _nss_ldap_add_uri (struct ldap_config *result, const char *uri,
                    char **buffer, size_t *buflen);
 
-enum ldap_map_selector
-_nss_ldap_str2selector (const char *key);
-
 #endif /* _LDAP_NSS_LDAP_UTIL_H */

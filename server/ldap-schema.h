@@ -100,11 +100,6 @@ extern char _nss_ldap_filt_getspent[];
 extern char _nss_ldap_filt_getnetgrent[];
 extern char _nss_ldap_filt_innetgr[];
 
-/* automounts */
-extern char _nss_ldap_filt_setautomntent[];
-extern char _nss_ldap_filt_getautomntent[];
-extern char _nss_ldap_filt_getautomntbyname[];
-
 /**
  * Initialize attribute vector table indexed by map
  * selector (eg. LM_PASSWD) relative to an "ldap_config"
@@ -291,13 +286,6 @@ extern char _nss_ldap_filt_getautomntbyname[];
 #define AT_bootFile               "bootFile"
 #define AT_bootParameter          "bootParameter"
 
-#define OC_automountMap           "automountMap"
-#define AT_automountMapName       "automountMapName"
-
-#define OC_automount              "automount"
-#define AT_automountKey           "automountKey"
-#define AT_automountInformation   "automountInformation"
-
 /*
  * Map names
  */
@@ -314,6 +302,5 @@ extern char _nss_ldap_filt_getautomntbyname[];
 #define MP_bootparams             "bootparams"
 #define MP_aliases                "aliases"
 #define MP_netgroup               "netgroup"
-#define MP_automount              "automount"
 
 #endif /* _LDAP_NSS_LDAP_LDAP_SCHEMA_H */
