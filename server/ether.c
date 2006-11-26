@@ -61,11 +61,6 @@
 #include "common.h"
 #include "log.h"
 
-/* for HP-UX */
-#ifndef NSS_BUFLEN_ETHERS
-#define NSS_BUFLEN_ETHERS 1024
-#endif /* NSS_BUFLEN_ETHERS */
-
 #ifndef HAVE_STRUCT_ETHER_ADDR
 struct ether_addr {
   u_int8_t ether_addr_octet[6];

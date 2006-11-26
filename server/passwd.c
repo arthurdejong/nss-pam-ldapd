@@ -50,6 +50,15 @@
 #include "common.h"
 #include "log.h"
 
+#ifndef UID_NOBODY
+#define UID_NOBODY      (-2)
+#endif
+
+#ifndef GID_NOBODY
+#define GID_NOBODY     UID_NOBODY
+#endif
+
+
 static struct ent_context *pw_context = NULL;
 
 static inline enum nss_status _nss_ldap_assign_emptystring(

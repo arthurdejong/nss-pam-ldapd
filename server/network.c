@@ -56,6 +56,36 @@
 #define MAXADDRSIZE 4
 #endif /* HAVE_USERSEC_H */
 
+#define MAP_H_ERRNO(nss_status, herr)   do {    \
+                switch ((nss_status)) {         \
+                case NSS_STATUS_SUCCESS:               \
+                        (herr) = 0;             \
+                        break;                  \
+                case NSS_STATUS_TRYAGAIN:              \
+                        (herr) = TRY_AGAIN;     \
+                        break;                  \
+                case NSS_STATUS_NOTFOUND:              \
+                        (herr) = HOST_NOT_FOUND;\
+                        break;                  \
+                case NSS_STATUS_UNAVAIL:               \
+                default:                        \
+                        (herr) = NO_RECOVERY;   \
+                        break;                  \
+                }                               \
+        } while (0)
+
+#define LOOKUP_SETENT(key) \
+        if (_nss_ldap_ent_context_init(&key) == NULL) \
+                return NSS_STATUS_UNAVAIL; \
+        return NSS_STATUS_SUCCESS
+
+
+#define LOOKUP_ENDENT(key) \
+        _nss_ldap_enter(); \
+        _nss_ldap_ent_context_release(key); \
+        _nss_ldap_leave(); \
+        return NSS_STATUS_SUCCESS
+
 static struct ent_context *net_context = NULL;
 
 static enum nss_status

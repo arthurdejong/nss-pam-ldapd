@@ -47,6 +47,9 @@
 #include "ldap-schema.h"
 #include "util.h"
 
+/* max number of attributes per object class */
+#define ATTRTAB_SIZE    15
+
 /**
  * declare filters formerly declared in ldap-*.h
  */

@@ -26,9 +26,6 @@
 #ifndef _LDAP_NSS_LDAP_LDAP_SCHEMA_H
 #define _LDAP_NSS_LDAP_LDAP_SCHEMA_H
 
-/* max number of attributes per object class */
-#define ATTRTAB_SIZE    15
-
 /**
  * function to initialize global lookup filters.
  */

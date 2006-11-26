@@ -56,62 +56,13 @@
 #define NSS_BUFLEN_GROUP        LDAP_NSS_BUFLEN_GROUP
 #endif
 
-#ifndef NSS_BUFLEN_PASSWD
-#define NSS_BUFLEN_PASSWD       NSS_BUFSIZ
-#endif
-
-#define NSS_BUFLEN_HOSTS        (NSS_BUFSIZ + (MAXALIASES + MAXALIASES + 2) * sizeof (char *))
-#define NSS_BUFLEN_NETGROUP     (MAXHOSTNAMELEN * 2 + LOGNAME_MAX + 3)
-#define NSS_BUFLEN_NETWORKS     NSS_BUFSIZ
-#define NSS_BUFLEN_PROTOCOLS    NSS_BUFSIZ
-#define NSS_BUFLEN_RPC          NSS_BUFSIZ
-#define NSS_BUFLEN_SERVICES     NSS_BUFSIZ
-#define NSS_BUFLEN_SHADOW       NSS_BUFSIZ
-#define NSS_BUFLEN_ETHERS       NSS_BUFSIZ
-#define NSS_BUFLEN_BOOTPARAMS   NSS_BUFSIZ
-
-/*
- * Timeouts for reconnecting code. Similar to rebind
- * logic in Darwin NetInfo. Some may find sleeping
- * unacceptable, in which case you may wish to adjust
- * the constants below.
- */
-#define LDAP_NSS_TRIES           5      /* number of sleeping reconnect attempts */
-#define LDAP_NSS_SLEEPTIME       4      /* seconds to sleep; doubled until max */
-#define LDAP_NSS_MAXSLEEPTIME    64     /* maximum seconds to sleep */
-#define LDAP_NSS_MAXCONNTRIES    2      /* reconnect attempts before sleeping */
-
-#define LDAP_NSS_MAXGR_DEPTH     16     /* maximum depth of group nesting for getgrent()/initgroups() */
-
-#if LDAP_NSS_NGROUPS > 64
-#define LDAP_NSS_BUFLEN_GROUP   (NSS_BUFSIZ + (LDAP_NSS_NGROUPS * (sizeof (char *) + LOGNAME_MAX)))
-#else
-#define LDAP_NSS_BUFLEN_GROUP   NSS_BUFSIZ
-#endif /* LDAP_NSS_NGROUPS > 64 */
-
-#define LDAP_NSS_BUFLEN_DEFAULT 0
-
-#ifdef HAVE_USERSEC_H
-#define LDAP_NSS_MAXUESS_ATTRS  8       /* maximum number of attributes in a getentry call */
-#endif /* HAVE_USERSEC_H */
-
-#define LDAP_PAGESIZE 1000
-
 #ifndef LDAP_FILT_MAXSIZ
 #define LDAP_FILT_MAXSIZ 1024
-#endif /* !LDAP_FILT_MAXSIZ */
+#endif /* not LDAP_FILT_MAXSIZ */
 
 #ifndef LDAPS_PORT
 #define LDAPS_PORT 636
-#endif /* !LDAPS_PORT */
-
-#ifndef LOGNAME_MAX
-#define LOGNAME_MAX 8
-#endif /* LOGNAME_MAX */
-
-#ifndef MAP_KEY_MAXSIZ
-#define MAP_KEY_MAXSIZ 64
-#endif
+#endif /* not LDAPS_PORT */
 
 #ifdef DEBUG
 #ifdef __XGNUC__
@@ -328,12 +279,6 @@ struct ldap_config
   char **ldc_initgroups_ignoreusers;
 };
 
-#ifdef HAVE_SOCKLEN_T
-typedef socklen_t NSS_LDAP_SOCKLEN_T;
-#else
-typedef int NSS_LDAP_SOCKLEN_T;
-#endif /* HAVE_SOCKLEN_T */
-
 #if defined(__GLIBC__) && __GLIBC_MINOR__ > 1
 #else
 #define ss_family sa_family
@@ -366,14 +311,6 @@ struct ldap_session
   /* index into ldc_uris: currently connected DSA */
   int ls_current_uri;
 };
-
-#ifndef UID_NOBODY
-#define UID_NOBODY      (-2)
-#endif
-
-#ifndef GID_NOBODY
-#define GID_NOBODY     UID_NOBODY
-#endif
 
 enum ldap_args_types
 {
@@ -436,8 +373,6 @@ struct ldap_args
 #define LA_STRING2(q)                           ((q).la_arg2.la_string)
 #define LA_BASE(q)                              ((q).la_base)
 
-#include "ldap-parse.h"
-
 /*
  * the state consists of the desired attribute value or an offset into a list of
  * values for the desired attribute. This is necessary to support services.
@@ -467,11 +402,6 @@ struct ldap_state
 };
 
 /*
- * LS_INIT only used for enumeration contexts
- */
-#define LS_INIT(state)  do { state.ls_type = LS_TYPE_INDEX; state.ls_retry = 0; state.ls_info.ls_index = -1; } while (0)
-
-/*
  * thread specific context: result chain, and state data
  */
 struct ent_context
@@ -489,20 +419,10 @@ struct name_list
   struct name_list *next;
 };
 
-/* to let us index a lookup table on enum nss_statuses */
-
-#define NSS_STATUS_TRYAGAIN      NSS_STATUS_TRYAGAIN
-
-#ifndef NSS_STATUS_TRYAGAIN
-#define NSS_STATUS_TRYAGAIN      (0)
-#endif
-
 typedef enum nss_status (*parser_t) (LDAPMessage *, struct ldap_state *, void *,
                                 char *, size_t);
 
-
 typedef int (*NEWparser_t)(LDAPMessage *e,struct ldap_state *pvt,FILE *fp);
-
 
 /*
  * Portable locking macro.
@@ -658,13 +578,8 @@ enum nss_status _nss_ldap_assign_userpassword (LDAPMessage * e, /* IN */
 
 enum nss_status _nss_ldap_oc_check (LDAPMessage * e, const char *oc);
 
-#if defined(HAVE_SHADOW_H)
 int _nss_ldap_shadow_date(const char *val);
 void _nss_ldap_shadow_handle_flag(struct spwd *sp);
-#else
-#define _nss_ldap_shadow_date(_v)               atol((_v))
-#define _nss_ldap_shadow_handle_flag(_sp)       do { /* nothing */ } while (0)
-#endif /* HAVE_SHADOW_H */
 
 enum nss_status _nss_ldap_map_put (struct ldap_config * config,
                               enum ldap_map_selector sel,

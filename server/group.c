@@ -75,6 +75,26 @@ typedef struct ldap_initgroups_args
 ldap_initgroups_args_t;
 #endif /* HAVE_USERSEC_H */
 
+#define LDAP_NSS_MAXGR_DEPTH     16     /* maximum depth of group nesting for getgrent()/initgroups() */
+
+#if LDAP_NSS_NGROUPS > 64
+#define LDAP_NSS_BUFLEN_GROUP   (NSS_BUFSIZ + (LDAP_NSS_NGROUPS * (sizeof (char *) + LOGNAME_MAX)))
+#else
+#define LDAP_NSS_BUFLEN_GROUP   NSS_BUFSIZ
+#endif /* LDAP_NSS_NGROUPS > 64 */
+
+#ifndef LOGNAME_MAX
+#define LOGNAME_MAX 8
+#endif /* LOGNAME_MAX */
+
+#ifndef UID_NOBODY
+#define UID_NOBODY      (-2)
+#endif
+
+#ifndef GID_NOBODY
+#define GID_NOBODY     UID_NOBODY
+#endif
+
 static enum nss_status
 ng_chase (const char *dn, ldap_initgroups_args_t * lia);
 

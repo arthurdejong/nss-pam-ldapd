@@ -117,6 +117,11 @@ extern int ldap_ld_free (LDAP * ld, int close);
 NSS_LDAP_DEFINE_LOCK (__lock);
 
 /*
+ * LS_INIT only used for enumeration contexts
+ */
+#define LS_INIT(state)  do { state.ls_type = LS_TYPE_INDEX; state.ls_retry = 0; state.ls_info.ls_index = -1; } while (0)
+
+/*
  * the configuration is read by the first call to do_open().
  * Pointers to elements of the list are passed around but should not
  * be freed.
@@ -712,8 +717,8 @@ do_set_sockopts (void)
 #endif /* LDAP_OPT_DESC */
     {
       int off = 0;
-      NSS_LDAP_SOCKLEN_T socknamelen = sizeof (struct sockaddr_storage);
-      NSS_LDAP_SOCKLEN_T peernamelen = sizeof (struct sockaddr_storage);
+      socklen_t socknamelen = sizeof (struct sockaddr_storage);
+      socklen_t peernamelen = sizeof (struct sockaddr_storage);
 
       (void) setsockopt (sd, SOL_SOCKET, SO_KEEPALIVE, (void *) &off,
                          sizeof (off));
@@ -778,9 +783,9 @@ do_close (void)
 
 static int
 do_sockaddr_isequal (struct sockaddr_storage *_s1,
-                     NSS_LDAP_SOCKLEN_T _slen1,
+                     socklen_t _slen1,
                      struct sockaddr_storage *_s2,
-                     NSS_LDAP_SOCKLEN_T _slen2)
+                     socklen_t _slen2)
 {
   int ret;
 
@@ -856,8 +861,8 @@ do_get_our_socket(int *sd)
     {
       struct sockaddr_storage sockname;
       struct sockaddr_storage peername;
-      NSS_LDAP_SOCKLEN_T socknamelen = sizeof (sockname);
-      NSS_LDAP_SOCKLEN_T peernamelen = sizeof (peername);
+      socklen_t socknamelen = sizeof (sockname);
+      socklen_t peernamelen = sizeof (peername);
 
       if (getsockname (*sd, (struct sockaddr *) &sockname, &socknamelen) != 0 ||
           getpeername (*sd, (struct sockaddr *) &peername, &peernamelen) != 0)

@@ -26,14 +26,6 @@
 #ifndef _LDAP_NSS_LDAP_UTIL_H
 #define _LDAP_NSS_LDAP_UTIL_H
 
-/* utility routines.  */
-
-#define CN_ATTR                 "CN"
-
-#define DC_ATTR                 "DC"
-#define DC_ATTR_AVA             DC_ATTR"="
-#define DC_ATTR_AVA_LEN         (sizeof(DC_ATTR_AVA) - 1)
-
 /*
  * get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry)
  * would return lukeh.
@@ -51,54 +43,8 @@ enum nss_status _nss_ldap_dn2uid (const char *dn,
                              char **uid, char **buf, size_t * len,
                              int *pIsNestedGroup, LDAPMessage ** pRes);
 
-#define NSS_LDAP_KEY_MAP_ATTRIBUTE      "nss_map_attribute"
-#define NSS_LDAP_KEY_MAP_OBJECTCLASS    "nss_map_objectclass"
-#define NSS_LDAP_KEY_SET_OVERRIDE       "nss_override_attribute_value"
-#define NSS_LDAP_KEY_SET_DEFAULT        "nss_default_attribute_value"
 
 #define NSS_LDAP_CONFIG_BUFSIZ          4096
-#define NSS_LDAP_KEY_HOST               "host"
-#define NSS_LDAP_KEY_SCOPE              "scope"
-#define NSS_LDAP_KEY_BASE               "base"
-#define NSS_LDAP_KEY_PORT               "port"
-#define NSS_LDAP_KEY_BINDDN             "binddn"
-#define NSS_LDAP_KEY_BINDPW             "bindpw"
-#define NSS_LDAP_KEY_USESASL            "use_sasl"
-#define NSS_LDAP_KEY_SASLID             "sasl_auth_id"
-#define NSS_LDAP_KEY_DEREF              "deref"
-#define NSS_LDAP_KEY_ROOTBINDDN         "rootbinddn"
-#define NSS_LDAP_KEY_ROOTUSESASL        "rootuse_sasl"
-#define NSS_LDAP_KEY_ROOTSASLID         "rootsasl_auth_id"
-#define NSS_LDAP_KEY_LDAP_VERSION       "ldap_version"
-#define NSS_LDAP_KEY_TIMELIMIT          "timelimit"
-#define NSS_LDAP_KEY_BIND_TIMELIMIT     "bind_timelimit"
-#define NSS_LDAP_KEY_SSL                "ssl"
-#define NSS_LDAP_KEY_SSLPATH            "sslpath"
-#define NSS_LDAP_KEY_REFERRALS          "referrals"
-#define NSS_LDAP_KEY_RESTART            "restart"
-#define NSS_LDAP_KEY_URI                "uri"
-#define NSS_LDAP_KEY_IDLE_TIMELIMIT     "idle_timelimit"
-#define NSS_LDAP_KEY_RECONNECT_POLICY   "bind_policy"
-#define NSS_LDAP_KEY_SASL_SECPROPS      "sasl_secprops"
-#ifdef CONFIGURE_KRB5_CCNAME
-#define NSS_LDAP_KEY_KRB5_CCNAME        "krb5_ccname"
-#endif /* CONFIGURE_KRB5_CCNAME */
-#define NSS_LDAP_KEY_LOGDIR             "logdir"
-#define NSS_LDAP_KEY_DEBUG              "debug"
-#define NSS_LDAP_KEY_PAGESIZE           "pagesize"
-#define NSS_LDAP_KEY_INITGROUPS         "nss_initgroups"
-#define NSS_LDAP_KEY_INITGROUPS_IGNOREUSERS     "nss_initgroups_ignoreusers"
-
-/* more reconnect policy fine-tuning */
-#define NSS_LDAP_KEY_RECONNECT_TRIES            "nss_reconnect_tries"
-#define NSS_LDAP_KEY_RECONNECT_SLEEPTIME        "nss_reconnect_sleeptime"
-#define NSS_LDAP_KEY_RECONNECT_MAXSLEEPTIME     "nss_reconnect_maxsleeptime"
-#define NSS_LDAP_KEY_RECONNECT_MAXCONNTRIES     "nss_reconnect_maxconntries"
-
-#define NSS_LDAP_KEY_PAGED_RESULTS      "nss_paged_results"
-#define NSS_LDAP_KEY_SCHEMA             "nss_schema"
-#define NSS_LDAP_KEY_SRV_DOMAIN         "nss_srv_domain"
-#define NSS_LDAP_KEY_CONNECT_POLICY     "nss_connect_policy"
 
 /*
  * support separate naming contexts for each map
@@ -129,7 +75,6 @@ enum nss_status _nss_ldap_dn2uid (const char *dn,
  * ** implemented
  */
 
-enum nss_status _nss_ldap_init_config (struct ldap_config *);
 enum nss_status _nss_ldap_readconfig (struct ldap_config ** result, char **buffer, size_t *buflen);
 enum nss_status _nss_ldap_validateconfig (struct ldap_config *config);
 
@@ -139,44 +84,6 @@ enum nss_status _nss_ldap_validateconfig (struct ldap_config *config);
 
 enum nss_status _nss_ldap_escape_string (const char *str,
                                     char *buf, size_t buflen);
-
-#define MAP_H_ERRNO(nss_status, herr)   do {    \
-                switch ((nss_status)) {         \
-                case NSS_STATUS_SUCCESS:               \
-                        (herr) = 0;             \
-                        break;                  \
-                case NSS_STATUS_TRYAGAIN:              \
-                        (herr) = TRY_AGAIN;     \
-                        break;                  \
-                case NSS_STATUS_NOTFOUND:              \
-                        (herr) = HOST_NOT_FOUND;\
-                        break;                  \
-                case NSS_STATUS_UNAVAIL:               \
-                default:                        \
-                        (herr) = NO_RECOVERY;   \
-                        break;                  \
-                }                               \
-        } while (0)
-
-#ifdef HAVE_IRS_H
-#define MAP_ERRNO(nss_status, err)   do {       \
-                switch ((nss_status)) {         \
-                case NSS_STATUS_SUCCESS:               \
-                        (err) = 0;              \
-                        break;                  \
-                case NSS_STATUS_TRYAGAIN:              \
-                        (err) = ERANGE;         \
-                        break;                  \
-                case NSS_STATUS_NOTFOUND:              \
-                        (err) = ENOENT;         \
-                        break;                  \
-                case NSS_STATUS_UNAVAIL:               \
-                default:                        \
-                        (err) = EPERM;          \
-                        break;                  \
-                }                               \
-        } while (0)
-#endif /* HAVE_IRS_H */
 
 struct ldap_datum
 {
@@ -191,8 +98,6 @@ struct ldap_datum
 
 #define NSS_LDAP_DB_NORMALIZE_CASE      0x1
 
-void *_nss_ldap_db_open (void);
-void _nss_ldap_db_close (void *db);
 enum nss_status _nss_ldap_db_put (void *db,
                              unsigned flags,
                              const struct ldap_datum * key,

@@ -52,9 +52,12 @@
 #include "resolve.h"
 #include "dnsconfig.h"
 
+#define DC_ATTR                 "DC"
+#define DC_ATTR_AVA             DC_ATTR"="
+#define DC_ATTR_AVA_LEN         (sizeof(DC_ATTR_AVA) - 1)
 
 /* map gnu.org into DC=gnu,DC=org */
-enum nss_status
+static enum nss_status
 _nss_ldap_getdnsdn (char *src_domain,
                     char **rval, char **buffer, size_t * buflen)
 {

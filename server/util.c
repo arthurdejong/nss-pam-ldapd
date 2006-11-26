@@ -56,6 +56,69 @@
 #include "common.h"
 #include "log.h"
 
+
+#define NSS_LDAP_KEY_MAP_ATTRIBUTE      "nss_map_attribute"
+#define NSS_LDAP_KEY_MAP_OBJECTCLASS    "nss_map_objectclass"
+#define NSS_LDAP_KEY_SET_OVERRIDE       "nss_override_attribute_value"
+#define NSS_LDAP_KEY_SET_DEFAULT        "nss_default_attribute_value"
+#define NSS_LDAP_KEY_HOST               "host"
+#define NSS_LDAP_KEY_SCOPE              "scope"
+#define NSS_LDAP_KEY_BASE               "base"
+#define NSS_LDAP_KEY_PORT               "port"
+#define NSS_LDAP_KEY_BINDDN             "binddn"
+#define NSS_LDAP_KEY_BINDPW             "bindpw"
+#define NSS_LDAP_KEY_USESASL            "use_sasl"
+#define NSS_LDAP_KEY_SASLID             "sasl_auth_id"
+#define NSS_LDAP_KEY_DEREF              "deref"
+#define NSS_LDAP_KEY_ROOTBINDDN         "rootbinddn"
+#define NSS_LDAP_KEY_ROOTUSESASL        "rootuse_sasl"
+#define NSS_LDAP_KEY_ROOTSASLID         "rootsasl_auth_id"
+#define NSS_LDAP_KEY_LDAP_VERSION       "ldap_version"
+#define NSS_LDAP_KEY_TIMELIMIT          "timelimit"
+#define NSS_LDAP_KEY_BIND_TIMELIMIT     "bind_timelimit"
+#define NSS_LDAP_KEY_SSL                "ssl"
+#define NSS_LDAP_KEY_SSLPATH            "sslpath"
+#define NSS_LDAP_KEY_REFERRALS          "referrals"
+#define NSS_LDAP_KEY_RESTART            "restart"
+#define NSS_LDAP_KEY_URI                "uri"
+#define NSS_LDAP_KEY_IDLE_TIMELIMIT     "idle_timelimit"
+#define NSS_LDAP_KEY_RECONNECT_POLICY   "bind_policy"
+#define NSS_LDAP_KEY_SASL_SECPROPS      "sasl_secprops"
+#ifdef CONFIGURE_KRB5_CCNAME
+#define NSS_LDAP_KEY_KRB5_CCNAME        "krb5_ccname"
+#endif /* CONFIGURE_KRB5_CCNAME */
+#define NSS_LDAP_KEY_LOGDIR             "logdir"
+#define NSS_LDAP_KEY_DEBUG              "debug"
+#define NSS_LDAP_KEY_PAGESIZE           "pagesize"
+#define NSS_LDAP_KEY_INITGROUPS         "nss_initgroups"
+#define NSS_LDAP_KEY_INITGROUPS_IGNOREUSERS     "nss_initgroups_ignoreusers"
+
+/* more reconnect policy fine-tuning */
+#define NSS_LDAP_KEY_RECONNECT_TRIES            "nss_reconnect_tries"
+#define NSS_LDAP_KEY_RECONNECT_SLEEPTIME        "nss_reconnect_sleeptime"
+#define NSS_LDAP_KEY_RECONNECT_MAXSLEEPTIME     "nss_reconnect_maxsleeptime"
+#define NSS_LDAP_KEY_RECONNECT_MAXCONNTRIES     "nss_reconnect_maxconntries"
+
+#define NSS_LDAP_KEY_PAGED_RESULTS      "nss_paged_results"
+#define NSS_LDAP_KEY_SCHEMA             "nss_schema"
+#define NSS_LDAP_KEY_SRV_DOMAIN         "nss_srv_domain"
+#define NSS_LDAP_KEY_CONNECT_POLICY     "nss_connect_policy"
+
+/*
+ * Timeouts for reconnecting code. Similar to rebind
+ * logic in Darwin NetInfo. Some may find sleeping
+ * unacceptable, in which case you may wish to adjust
+ * the constants below.
+ */
+#define LDAP_NSS_TRIES           5      /* number of sleeping reconnect attempts */
+#define LDAP_NSS_SLEEPTIME       4      /* seconds to sleep; doubled until max */
+#define LDAP_NSS_MAXSLEEPTIME    64     /* maximum seconds to sleep */
+#define LDAP_NSS_MAXCONNTRIES    2      /* reconnect attempts before sleeping */
+
+#define LDAP_PAGESIZE 1000
+
+
+static struct ldap_dictionary *do_alloc_dictionary(void);
 static enum nss_status do_getrdnvalue (const char *dn,
                                   const char *rdntype,
                                   char **rval, char **buffer,
@@ -89,7 +152,7 @@ dn2uid_cache_put (const char *dn, const char *uid)
 
   if (__cache == NULL)
     {
-      __cache = _nss_ldap_db_open ();
+      __cache = (void *)do_alloc_dictionary();
       if (__cache == NULL)
         {
           cache_unlock ();
@@ -650,7 +713,7 @@ do_searchdescriptorconfig (const char *key, const char *value, size_t len,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_init_config (struct ldap_config * result)
+static enum nss_status _nss_ldap_init_config (struct ldap_config * result)
 {
   int i, j;
 
@@ -712,7 +775,7 @@ enum nss_status _nss_ldap_init_config (struct ldap_config * result)
     {
       for (j = 0; j <= MAP_MAX; j++)
         {
-          result->ldc_maps[i][j] = _nss_ldap_db_open ();
+          result->ldc_maps[i][j] = (void *)do_alloc_dictionary();
           if (result->ldc_maps[i][j] == NULL)
             return NSS_STATUS_UNAVAIL;
         }
@@ -1339,8 +1402,7 @@ struct ldap_dictionary
   struct ldap_dictionary *next;
 };
 
-static struct ldap_dictionary *
-do_alloc_dictionary (void)
+static struct ldap_dictionary *do_alloc_dictionary(void)
 {
   struct ldap_dictionary *dict;
 
@@ -1399,29 +1461,6 @@ do_dup_datum (unsigned flags, struct ldap_datum * dst, const struct ldap_datum *
   return NSS_STATUS_SUCCESS;
 }
 
-void *
-_nss_ldap_db_open (void)
-{
-  return (void *) do_alloc_dictionary ();
-}
-
-void
-_nss_ldap_db_close (void *db)
-{
-  struct ldap_dictionary *dict;
-
-  dict = (struct ldap_dictionary *) db;
-
-  while (dict != NULL)
-    {
-      struct ldap_dictionary *next = dict->next;
-
-      do_free_dictionary (dict);
-
-      dict = next;
-    }
-}
-
 enum nss_status
 _nss_ldap_db_get (void *db,
                   unsigned flags,
@@ -1478,7 +1517,7 @@ _nss_ldap_db_put (void *db,
       p = do_find_last (dict);
       assert (p != NULL);
       assert (p->next == NULL);
-      q = do_alloc_dictionary ();
+      q = do_alloc_dictionary();
       if (q == NULL)
         return NSS_STATUS_TRYAGAIN;
     }
