@@ -180,7 +180,7 @@ int nslcd_rpc_all(FILE *fp)
   int errnop;
   int retv;
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_rpccol_all()");
+  log_log(LOG_DEBUG,"nslcd_rpc_all()");
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_RPC_ALL);

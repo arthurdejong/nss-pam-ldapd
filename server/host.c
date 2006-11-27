@@ -349,7 +349,7 @@ int nslcd_host_all(FILE *fp)
   int errnop;
   int retv;
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_shadow_all()");
+  log_log(LOG_DEBUG,"nslcd_host_all()");
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_HOST_ALL);
