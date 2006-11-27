@@ -28,7 +28,6 @@
 #include <errno.h>
 
 #include "prototypes.h"
-#include "nslcd-client.h"
 #include "common.h"
 
 static enum nss_status read_netgrent(

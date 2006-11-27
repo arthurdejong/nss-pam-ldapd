@@ -23,11 +23,50 @@
 #ifndef _NSS_COMMON_H
 #define _NSS_COMMON_H 1
 
+#include <stdio.h>
 #include <nss.h>
+
+#include "nslcd.h"
+#include "nslcd-common.h"
 
 /* This function maps an nslcd return code (as defined in nslcd.h)
    to an nss code (as defined in nss.h). */
 enum nss_status nslcd2nss(int code);
+
+/* returns a socket to the server or NULL on error (see errno),
+   socket should be closed with fclose() */
+FILE *nslcd_client_open(void);
+
+/* These are macors for performing common operations in the nslcd
+   request/response protocol, they are an extension for client
+   applications to the macros defined in nslcd-common.h. */
+
+/* Open a client socket. */
+#define OPEN_SOCK(fp) \
+  if ((fp=nslcd_client_open())==NULL) \
+    { ERROR_OUT_OPENERROR }
+
+/* Write a request header with a request code. */
+#define WRITE_REQUEST(fp,req) \
+  WRITE_INT32(fp,NSLCD_VERSION) \
+  WRITE_INT32(fp,req)
+
+/* Read a response header and check that the returned request
+   code equals the expected code. */
+#define READ_RESPONSEHEADER(fp,req) \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  if (tmpint32!=NSLCD_VERSION) \
+    { ERROR_OUT_READERROR(fp) } \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  if (tmpint32!=(req)) \
+    { ERROR_OUT_READERROR(fp) }
+
+/* Read the response code (the result code of the query) from
+   the stream. */ 
+#define READ_RESPONSE_CODE(fp) \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  if (tmpint32!=NSLCD_RESULT_SUCCESS) \
+    { ERROR_OUT_NOSUCCESS(fp,tmpint32) }
 
 /* These are macros for handling read and write problems, they are
    NSS specific due to the return code so are defined here. They

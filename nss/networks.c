@@ -27,7 +27,6 @@
 #include <errno.h>
 
 #include "prototypes.h"
-#include "nslcd-client.h"
 #include "common.h"
 
 /* Redifine some ERROR_OUT macros as we also want to set h_errnop. */

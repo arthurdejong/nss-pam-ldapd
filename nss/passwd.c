@@ -27,7 +27,6 @@
 #include <errno.h>
 
 #include "prototypes.h"
-#include "nslcd-client.h"
 #include "common.h"
 
 /* Macros for expanding the LDF_PASSWD macro. */

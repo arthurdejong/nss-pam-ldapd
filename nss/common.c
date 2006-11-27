@@ -22,6 +22,14 @@
 
 #include "config.h"
 
+#include <stdint.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
 #include <nss.h>
 
 #include "nslcd.h"
@@ -38,4 +46,33 @@ enum nss_status nslcd2nss(int code)
     case NSLCD_RESULT_SUCCESS:  return NSS_STATUS_SUCCESS;
     default:                return NSS_STATUS_UNAVAIL;
   }
+}
+
+/* returns a socket to the server or NULL on error (see errno),
+   socket should be closed with fclose() */
+FILE *nslcd_client_open()
+{
+  int sock;
+  struct sockaddr_un addr;
+  FILE *fp;
+  /* create a socket */
+  if ( (sock=socket(PF_UNIX,SOCK_STREAM,0))<0 )
+    return NULL;
+  /* create socket address structure */
+  addr.sun_family=AF_UNIX;
+  strcpy(addr.sun_path,NSLCD_SOCKET);
+  /* connect to the socket */
+  if (connect(sock,(struct sockaddr *)&addr,sizeof(struct sockaddr_un))<0)
+  {
+    close(sock);
+    return NULL;
+  }
+  /* create a stream object */
+  if ((fp=fdopen(sock,"w+"))==NULL)
+  {
+    close(sock);
+    return NULL;
+  }
+  /* return the stream */
+  return fp;
 }

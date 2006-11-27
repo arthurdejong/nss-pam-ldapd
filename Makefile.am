@@ -30,7 +30,7 @@ EXTRA_DIST = ChangeLog \
              ldap.conf \
              debian doc exports.linux nss_ldap.5 tests
 
-nss_ldap_so_SOURCES = nslcd-client.c nslcd-client.h nslcd.h
+nss_ldap_so_SOURCES = nslcd.h
 nss_ldap_so_LDADD = nss/libnss.a
 nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
 
@@ -40,7 +40,7 @@ nslcd_SOURCES = nslcd.c nslcd.h \
         xmalloc.c xmalloc.h
 nslcd_LDADD = server/libserver.a
 
-testnss_SOURCES = testnss.c nslcd-client.c nslcd-client.h nslcd.h
+testnss_SOURCES = testnss.c nslcd.h
 testnss_LDADD = nss/libnss.a
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
