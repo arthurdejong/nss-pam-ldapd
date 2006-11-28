@@ -29,10 +29,10 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* macros for expanding the LDF_GROUP macro */
-#define LDF_STRING(field)     READ_STRING_BUF(fp,field)
-#define LDF_TYPE(field,type)  READ_TYPE(fp,field,type)
-#define LDF_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
+/* macros for expanding the NSLCD_GROUP macro */
+#define NSLCD_STRING(field)     READ_STRING_BUF(fp,field)
+#define NSLCD_TYPE(field,type)  READ_TYPE(fp,field,type)
+#define NSLCD_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
 #define GROUP_NAME            result->gr_name
 #define GROUP_PASSWD          result->gr_passwd
 #define GROUP_GID             result->gr_gid
@@ -45,7 +45,7 @@ static enum nss_status read_group(
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
   /* auto-genereted read code */
-  LDF_GROUP;
+  NSLCD_GROUP;
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }

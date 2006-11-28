@@ -1048,10 +1048,10 @@ static enum nss_status group_bymember(const char *user, long int *start,
   return NSS_STATUS_SUCCESS;
 }
 
-/* macros for expanding the LDF_GROUP macro */
-#define LDF_STRING(field)     WRITE_STRING(fp,field)
-#define LDF_TYPE(field,type)  WRITE_TYPE(fp,field,type)
-#define LDF_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+/* macros for expanding the NSLCD_GROUP macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
 #define GROUP_NAME            result.gr_name
 #define GROUP_PASSWD          result.gr_passwd
 #define GROUP_GID             result.gr_gid
@@ -1091,7 +1091,7 @@ int nslcd_group_byname(FILE *fp)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
   {
-    LDF_GROUP;
+    NSLCD_GROUP;
   }
   WRITE_FLUSH(fp);
   /* we're done */
@@ -1130,7 +1130,7 @@ int nslcd_group_bygid(FILE *fp)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
   {
-    LDF_GROUP;
+    NSLCD_GROUP;
   }
   WRITE_FLUSH(fp);
   /* we're done */
@@ -1218,7 +1218,7 @@ int nslcd_group_all(FILE *fp)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    LDF_GROUP;
+    NSLCD_GROUP;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

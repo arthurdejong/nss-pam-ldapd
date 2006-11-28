@@ -86,10 +86,10 @@ static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
   return NSS_STATUS_SUCCESS;
 }
 
-/* macros for expanding the LDF_PROTOCOL macro */
-#define LDF_STRING(field)     WRITE_STRING(fp,field)
-#define LDF_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define LDF_INT32(field)      WRITE_INT32(fp,field)
+/* macros for expanding the NSLCD_PROTOCOL macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
 #define PROTOCOL_NAME         result.p_name
 #define PROTOCOL_ALIASES      result.p_aliases
 #define PROTOCOL_NUMBER       result.p_proto
@@ -122,7 +122,7 @@ int nslcd_protocol_byname(FILE *fp)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
   {
-    LDF_PROTOCOL;
+    NSLCD_PROTOCOL;
   }
   WRITE_FLUSH(fp);
   /* we're done */
@@ -155,7 +155,7 @@ int nslcd_protocol_bynumber(FILE *fp)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
   {
-    LDF_PROTOCOL;
+    NSLCD_PROTOCOL;
   }
   WRITE_FLUSH(fp);
   /* we're done */
@@ -185,7 +185,7 @@ int nslcd_protocol_all(FILE *fp)
     /* write the result code */
     WRITE_INT32(fp,retv);
     /* write the entry */
-    LDF_PROTOCOL;
+    NSLCD_PROTOCOL;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

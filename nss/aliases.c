@@ -29,9 +29,9 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* macros for expanding the LDF_ALIAS macro */
-#define LDF_STRING(field)     READ_STRING_BUF(fp,field)
-#define LDF_STRINGLIST(field) READ_STRINGLIST_NUM(fp,field,result->alias_members_len)
+/* macros for expanding the NSLCD_ALIAS macro */
+#define NSLCD_STRING(field)     READ_STRING_BUF(fp,field)
+#define NSLCD_STRINGLIST(field) READ_STRINGLIST_NUM(fp,field,result->alias_members_len)
 #define ALIAS_NAME            result->alias_name
 #define ALIAS_RCPTS           result->alias_members
 
@@ -42,7 +42,7 @@ static enum nss_status read_aliasent(
   int32_t tmpint32,tmp2int32;
   size_t bufptr=0;
   /* auto-genereted read code */
-  LDF_ALIAS;
+  NSLCD_ALIAS;
   /* fill in remaining gaps in struct */
   result->alias_local=0;
   /* we're done */

@@ -29,10 +29,10 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* macros for expanding the LDF_PROTOCOL macro */
-#define LDF_STRING(field)     READ_STRING_BUF(fp,field)
-#define LDF_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
-#define LDF_INT32(field)      READ_INT32(fp,field)
+/* macros for expanding the NSLCD_PROTOCOL macro */
+#define NSLCD_STRING(field)     READ_STRING_BUF(fp,field)
+#define NSLCD_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      READ_INT32(fp,field)
 #define PROTOCOL_NAME         result->p_name
 #define PROTOCOL_ALIASES      result->p_aliases
 #define PROTOCOL_NUMBER       result->p_proto
@@ -44,7 +44,7 @@ static enum nss_status read_protoent(
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
   /* auto-genereted read code */
-  LDF_PROTOCOL;
+  NSLCD_PROTOCOL;
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }

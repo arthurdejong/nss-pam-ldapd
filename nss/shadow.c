@@ -29,9 +29,9 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* Macros for expanding the LDF_SHADOW macro. */
-#define LDF_STRING(field)    READ_STRING_BUF(fp,field)
-#define LDF_INT32(field)     READ_INT32(fp,field)
+/* Macros for expanding the NSLCD_SHADOW macro. */
+#define NSLCD_STRING(field)    READ_STRING_BUF(fp,field)
+#define NSLCD_INT32(field)     READ_INT32(fp,field)
 #define SHADOW_NAME          result->sp_namp
 #define SHADOW_PASSWD        result->sp_pwdp
 #define SHADOW_LASTCHANGE    result->sp_lstchg
@@ -48,7 +48,7 @@ static enum nss_status read_spwd(
 {
   int32_t tmpint32;
   size_t bufptr=0;
-  LDF_SHADOW;
+  NSLCD_SHADOW;
   return NSS_STATUS_SUCCESS;
 }
 

@@ -29,10 +29,10 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* macros for expanding the LDF_SERVICE macro */
-#define LDF_STRING(field)     READ_STRING_BUF(fp,field)
-#define LDF_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
-#define LDF_INT32(field)      READ_INT32(fp,field)
+/* macros for expanding the NSLCD_SERVICE macro */
+#define NSLCD_STRING(field)     READ_STRING_BUF(fp,field)
+#define NSLCD_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      READ_INT32(fp,field)
 #define SERVICE_NAME          result->s_name
 #define SERVICE_ALIASES       result->s_aliases
 #define SERVICE_NUMBER        port
@@ -46,7 +46,7 @@ static enum nss_status read_servent(
   int port;
   size_t bufptr=0;
   /* auto-genereted read code */
-  LDF_SERVICE;
+  NSLCD_SERVICE;
   /* store number in network byte order */
   result->s_port=ntohs(port);
   /* we're done */

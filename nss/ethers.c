@@ -29,9 +29,9 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* macros for expanding the LDF_ETHER macro */
-#define LDF_STRING(field)     READ_STRING_BUF(fp,field)
-#define LDF_TYPE(field,type)  READ_TYPE(fp,field,type)
+/* macros for expanding the NSLCD_ETHER macro */
+#define NSLCD_STRING(field)     READ_STRING_BUF(fp,field)
+#define NSLCD_TYPE(field,type)  READ_TYPE(fp,field,type)
 #define ETHER_NAME            result->e_name
 #define ETHER_ADDR            result->e_addr
 
@@ -42,7 +42,7 @@ static enum nss_status read_etherent(
   int32_t tmpint32;
   size_t bufptr=0;
   /* auto-genereted read code */
-  LDF_ETHER;
+  NSLCD_ETHER;
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }

@@ -78,11 +78,11 @@ static int write_ether(LDAPMessage *e,struct ldap_state *pvt,FILE *fp)
 {
   int stat;
   char buffer[1024];
-  /* write LDF_STRING(ETHER_NAME) */
+  /* write NSLCD_STRING(ETHER_NAME) */
   stat=_nss_ldap_write_attrval(fp,e,ATM(LM_ETHERS,cn));
   if (stat!=NSLCD_RESULT_SUCCESS)
     return stat;
-  /* write LDF_TYPE(ETHER_ADDR,u_int8_t[6]) */
+  /* write NSLCD_TYPE(ETHER_ADDR,u_int8_t[6]) */
   stat=_nss_ldap_write_attrval_ether(fp,e,AT(macAddress));
 
   stat = _nss_ldap_assign_attrval (e, AT (macAddress), &saddr,
@@ -120,9 +120,9 @@ _nss_ldap_parse_ether (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-/* macros for expanding the LDF_ETHER macro */
-#define LDF_STRING(field)     WRITE_STRING(fp,field)
-#define LDF_TYPE(field,type)  WRITE_TYPE(fp,field,type)
+/* macros for expanding the NSLCD_ETHER macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
 #define ETHER_NAME            result.e_name
 #define ETHER_ADDR            result.e_addr
 
@@ -154,7 +154,7 @@ int nslcd_ether_byname(FILE *fp)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
   {
-    LDF_ETHER;
+    NSLCD_ETHER;
   }
   WRITE_FLUSH(fp);
   /* we're done */
@@ -189,7 +189,7 @@ int nslcd_ether_byether(FILE *fp)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
   {
-    LDF_ETHER;
+    NSLCD_ETHER;
   }
   WRITE_FLUSH(fp);
   /* we're done */
@@ -218,7 +218,7 @@ int nslcd_ether_all(FILE *fp)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    LDF_ETHER;
+    NSLCD_ETHER;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

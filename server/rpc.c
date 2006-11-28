@@ -58,10 +58,10 @@
 #include "common.h"
 #include "log.h"
 
-/* macros for expanding the LDF_RPC macro */
-#define LDF_STRING(field)     WRITE_STRING(fp,field)
-#define LDF_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define LDF_INT32(field)      WRITE_INT32(fp,field)
+/* macros for expanding the NSLCD_RPC macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
 #define RPC_NAME              result->r_name
 #define RPC_ALIASES           result->r_aliases
 #define RPC_NUMBER            result->r_number
@@ -70,7 +70,7 @@
 static int write_rpcent(FILE *fp,struct rpcent *result)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  LDF_RPC;
+  NSLCD_RPC;
   return 0;
 }
 

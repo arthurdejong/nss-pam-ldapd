@@ -58,10 +58,10 @@
 #include "common.h"
 #include "log.h"
 
-/* macros for expanding the LDF_SERVICE macro */
-#define LDF_STRING(field)     WRITE_STRING(fp,field)
-#define LDF_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define LDF_INT32(field)      WRITE_INT32(fp,field)
+/* macros for expanding the NSLCD_SERVICE macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
 #define SERVICE_NAME          result->s_name
 #define SERVICE_ALIASES       result->s_aliases
 #define SERVICE_NUMBER        htons(result->s_port)
@@ -71,7 +71,7 @@
 static int write_servent(FILE *fp,struct servent *result)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  LDF_SERVICE;
+  NSLCD_SERVICE;
   return 0;
 }
 

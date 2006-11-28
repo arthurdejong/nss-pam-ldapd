@@ -60,35 +60,35 @@
 */
 
 /* used for transferring alias information */
-#define LDF_ALIAS \
-  LDF_STRING(ALIAS_NAME) \
-  LDF_STRINGLIST(ALIAS_RCPTS)
+#define NSLCD_ALIAS \
+  NSLCD_STRING(ALIAS_NAME) \
+  NSLCD_STRINGLIST(ALIAS_RCPTS)
 
 /* used for transferring mac addresses */
-#define LDF_ETHER \
-  LDF_STRING(ETHER_NAME) \
-  LDF_TYPE(ETHER_ADDR,u_int8_t[6])
+#define NSLCD_ETHER \
+  NSLCD_STRING(ETHER_NAME) \
+  NSLCD_TYPE(ETHER_ADDR,u_int8_t[6])
 
 /* used for transferring group and membership information */
-#define LDF_GROUP \
-  LDF_STRING(GROUP_NAME) \
-  LDF_STRING(GROUP_PASSWD) \
-  LDF_TYPE(GROUP_GID,gid_t) \
-  LDF_STRINGLIST(GROUP_MEMBERS)
+#define NSLCD_GROUP \
+  NSLCD_STRING(GROUP_NAME) \
+  NSLCD_STRING(GROUP_PASSWD) \
+  NSLCD_TYPE(GROUP_GID,gid_t) \
+  NSLCD_STRINGLIST(GROUP_MEMBERS)
 
 /* used for storing address information for the host database */
 /* Note: this marcos is not expanded to code, check manually */
-#define LDF_ADDRESS \
-  LDF_INT32(ADDRESS_TYPE) /* type of address: e.g. AF_INET or AF_INET6 */ \
-  LDF_INT32(ADDRESS_LEN)  /* length of the address to follow */ \
-  LDF_BUF(ADDRESS_ADDR)   /* the address itself in network byte order */
+#define NSLCD_ADDRESS \
+  NSLCD_INT32(ADDRESS_TYPE) /* type of address: e.g. AF_INET or AF_INET6 */ \
+  NSLCD_INT32(ADDRESS_LEN)  /* length of the address to follow */ \
+  NSLCD_BUF(ADDRESS_ADDR)   /* the address itself in network byte order */
 
 /* used for transferring host (/etc/hosts) information */
 /* Note: this marco is not expanded to code, check manually */
-#define LDF_HOST \
-  LDF_STRING(HOST_NAME) \
-  LDF_STRINGLIST(HOST_ALIASES) \
-  LDF_ADDRESSLIST(HOST_ADDRS)
+#define NSLCD_HOST \
+  NSLCD_STRING(HOST_NAME) \
+  NSLCD_STRINGLIST(HOST_ALIASES) \
+  NSLCD_ADDRESSLIST(HOST_ADDRS)
 
 /* used for transferring netgroup entries one at a time */
 /* Note: this marcos is not expanded to code, check manually */
@@ -96,63 +96,63 @@
    determining the type */
 #define NETGROUP_TYPE_NETGROUP 123
 #define NETGROUP_TYPE_TRIPLE   456
-#define LDF_NETGROUP_TYPE \
-  LDF_INT32(NETGROUP_TYPE) /* one of the above values */
+#define NSLCD_NETGROUP_TYPE \
+  NSLCD_INT32(NETGROUP_TYPE) /* one of the above values */
 /* followed by one of these message parts */
-#define LDF_NETGROUP_NETGROUP \
-  LDF_STRING(NETGROUP_NETGROUP)
-#define LDF_NETGROUP_TRIPLE \
-  LDF_STRING(NETGROUP_HOST) \
-  LDF_STRING(NETGROUP_USER) \
-  LDF_STRING(NETGROUP_DOMAIN)
+#define NSLCD_NETGROUP_NETGROUP \
+  NSLCD_STRING(NETGROUP_NETGROUP)
+#define NSLCD_NETGROUP_TRIPLE \
+  NSLCD_STRING(NETGROUP_HOST) \
+  NSLCD_STRING(NETGROUP_USER) \
+  NSLCD_STRING(NETGROUP_DOMAIN)
 
 /* user for transferring network (/etc/networks) information */
 /* Note: this marco is not expanded to code, check manually */
-#define LDF_NETWORK \
-  LDF_STRING(NETWORK_NAME) \
-  LDF_STRINGLIST(NETWORK_ALIASES) \
-  LDF_ADDRESSLIST(NETWORK_ADDRS)
+#define NSLCD_NETWORK \
+  NSLCD_STRING(NETWORK_NAME) \
+  NSLCD_STRINGLIST(NETWORK_ALIASES) \
+  NSLCD_ADDRESSLIST(NETWORK_ADDRS)
 
 /* used for transferring user (/etc/passwd) information */
-#define LDF_PASSWD \
-  LDF_STRING(PASSWD_NAME) \
-  LDF_STRING(PASSWD_PASSWD) \
-  LDF_TYPE(PASSWD_UID,uid_t) \
-  LDF_TYPE(PASSWD_GID,gid_t) \
-  LDF_STRING(PASSWD_GECOS) \
-  LDF_STRING(PASSWD_DIR) \
-  LDF_STRING(PASSWD_SHELL)
+#define NSLCD_PASSWD \
+  NSLCD_STRING(PASSWD_NAME) \
+  NSLCD_STRING(PASSWD_PASSWD) \
+  NSLCD_TYPE(PASSWD_UID,uid_t) \
+  NSLCD_TYPE(PASSWD_GID,gid_t) \
+  NSLCD_STRING(PASSWD_GECOS) \
+  NSLCD_STRING(PASSWD_DIR) \
+  NSLCD_STRING(PASSWD_SHELL)
 
 /* used for transferring protocol information */
-#define LDF_PROTOCOL \
-  LDF_STRING(PROTOCOL_NAME) \
-  LDF_STRINGLIST(PROTOCOL_ALIASES) \
-  LDF_INT32(PROTOCOL_NUMBER)
+#define NSLCD_PROTOCOL \
+  NSLCD_STRING(PROTOCOL_NAME) \
+  NSLCD_STRINGLIST(PROTOCOL_ALIASES) \
+  NSLCD_INT32(PROTOCOL_NUMBER)
 
 /* for transferring struct rpcent structs */
-#define LDF_RPC \
-  LDF_STRING(RPC_NAME) \
-  LDF_STRINGLIST(RPC_ALIASES) \
-  LDF_INT32(RPC_NUMBER)
+#define NSLCD_RPC \
+  NSLCD_STRING(RPC_NAME) \
+  NSLCD_STRINGLIST(RPC_ALIASES) \
+  NSLCD_INT32(RPC_NUMBER)
 
 /* for transferring struct servent informatio */
-#define LDF_SERVICE \
-  LDF_STRING(SERVICE_NAME) \
-  LDF_STRINGLIST(SERVICE_ALIASES) \
-  LDF_INT32(SERVICE_NUMBER) \
-  LDF_STRING(SERVICE_PROTOCOL)
+#define NSLCD_SERVICE \
+  NSLCD_STRING(SERVICE_NAME) \
+  NSLCD_STRINGLIST(SERVICE_ALIASES) \
+  NSLCD_INT32(SERVICE_NUMBER) \
+  NSLCD_STRING(SERVICE_PROTOCOL)
 
 /* used for transferring account (/etc/shadow) information */
-#define LDF_SHADOW \
-  LDF_STRING(SHADOW_NAME) \
-  LDF_STRING(SHADOW_PASSWD) \
-  LDF_INT32(SHADOW_LASTCHANGE) \
-  LDF_INT32(SHADOW_MINDAYS) \
-  LDF_INT32(SHADOW_MAXDAYS) \
-  LDF_INT32(SHADOW_WARN) \
-  LDF_INT32(SHADOW_INACT) \
-  LDF_INT32(SHADOW_EXPIRE) \
-  LDF_INT32(SHADOW_FLAG)
+#define NSLCD_SHADOW \
+  NSLCD_STRING(SHADOW_NAME) \
+  NSLCD_STRING(SHADOW_PASSWD) \
+  NSLCD_INT32(SHADOW_LASTCHANGE) \
+  NSLCD_INT32(SHADOW_MINDAYS) \
+  NSLCD_INT32(SHADOW_MAXDAYS) \
+  NSLCD_INT32(SHADOW_WARN) \
+  NSLCD_INT32(SHADOW_INACT) \
+  NSLCD_INT32(SHADOW_EXPIRE) \
+  NSLCD_INT32(SHADOW_FLAG)
 
 /* The location of the socket used for communicating. */
 #define NSLCD_SOCKET "/tmp/nslcd.socket"

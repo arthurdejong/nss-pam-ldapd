@@ -107,9 +107,9 @@ static enum nss_status _nss_ldap_parse_sp(LDAPMessage *e,
   return NSS_STATUS_SUCCESS;
 }
 
-/* macros for expanding the LDF_SHADOW macro */
-#define LDF_STRING(field)     WRITE_STRING(fp,field)
-#define LDF_INT32(field)      WRITE_INT32(fp,field)
+/* macros for expanding the NSLCD_SHADOW macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
 #define SHADOW_NAME           result.sp_namp
 #define SHADOW_PASSWD         result.sp_pwdp
 #define SHADOW_LASTCHANGE     result.sp_lstchg
@@ -147,7 +147,7 @@ int nslcd_shadow_byname(FILE *fp)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
   {
-    LDF_SHADOW;
+    NSLCD_SHADOW;
   }
   WRITE_FLUSH(fp);
   /* we're done */
@@ -176,7 +176,7 @@ int nslcd_shadow_all(FILE *fp)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    LDF_SHADOW;
+    NSLCD_SHADOW;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

@@ -59,8 +59,6 @@
 #endif
 
 
-static struct ent_context *pw_context = NULL;
-
 static inline enum nss_status _nss_ldap_assign_emptystring(
                char **valptr, char **buffer, size_t * buflen)
 {
@@ -187,9 +185,9 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-/* macros for expanding the LDF_PASSWD macro */
-#define LDF_STRING(field)    WRITE_STRING(fp,field)
-#define LDF_TYPE(field,type) WRITE_TYPE(fp,field,type)
+/* macros for expanding the NSLCD_PASSWD macro */
+#define NSLCD_STRING(field)    WRITE_STRING(fp,field)
+#define NSLCD_TYPE(field,type) WRITE_TYPE(fp,field,type)
 #define PASSWD_NAME   result.pw_name
 #define PASSWD_PASSWD result.pw_passwd
 #define PASSWD_UID    result.pw_uid
@@ -227,7 +225,7 @@ int nslcd_passwd_byname(FILE *fp)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
   {
-    LDF_PASSWD;
+    NSLCD_PASSWD;
   }
   WRITE_FLUSH(fp);
   /* we're done */
@@ -259,7 +257,7 @@ int nslcd_passwd_byuid(FILE *fp)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
   {
-    LDF_PASSWD;
+    NSLCD_PASSWD;
   }
   WRITE_FLUSH(fp);
   /* we're done */
@@ -270,6 +268,7 @@ int nslcd_passwd_all(FILE *fp)
 {
   int32_t tmpint32;
   /* these are here for now until we rewrite the LDAP code */
+  struct ent_context *pw_context = NULL;
   struct passwd result;
   char buffer[1024];
   int errnop;
@@ -287,7 +286,7 @@ int nslcd_passwd_all(FILE *fp)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    LDF_PASSWD;
+    NSLCD_PASSWD;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

@@ -29,10 +29,10 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* macros for expanding the LDF_RPC macro */
-#define LDF_STRING(field)     READ_STRING_BUF(fp,field)
-#define LDF_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
-#define LDF_INT32(field)      READ_INT32(fp,field)
+/* macros for expanding the NSLCD_RPC macro */
+#define NSLCD_STRING(field)     READ_STRING_BUF(fp,field)
+#define NSLCD_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      READ_INT32(fp,field)
 #define RPC_NAME              result->r_name
 #define RPC_ALIASES           result->r_aliases
 #define RPC_NUMBER            result->r_number
@@ -44,7 +44,7 @@ static enum nss_status read_rpcent(
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
   /* auto-genereted read code */
-  LDF_RPC;
+  NSLCD_RPC;
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }

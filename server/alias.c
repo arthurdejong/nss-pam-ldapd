@@ -72,9 +72,9 @@ static int write_alias(LDAPMessage *e,struct ldap_state *pvt,FILE *fp)
 }
 
 
-/* macros for expanding the LDF_ALIAS macro */
-#define LDF_STRING(field)     WRITE_STRING(fp,field)
-#define LDF_STRINGLIST(field) WRITE_STRINGLIST_NUM(fp,field,result.alias_members_len)
+/* macros for expanding the NSLCD_ALIAS macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NUM(fp,field,result.alias_members_len)
 #define ALIAS_NAME            result.alias_name
 #define ALIAS_RCPTS           result.alias_members
 
@@ -124,7 +124,7 @@ int nslcd_alias_all(FILE *fp)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    LDF_ALIAS;
+    NSLCD_ALIAS;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

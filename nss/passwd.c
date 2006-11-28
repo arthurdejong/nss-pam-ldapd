@@ -29,9 +29,9 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* Macros for expanding the LDF_PASSWD macro. */
-#define LDF_STRING(field)    READ_STRING_BUF(fp,field)
-#define LDF_TYPE(field,type) READ_TYPE(fp,field,type)
+/* Macros for expanding the NSLCD_PASSWD macro. */
+#define NSLCD_STRING(field)    READ_STRING_BUF(fp,field)
+#define NSLCD_TYPE(field,type) READ_TYPE(fp,field,type)
 #define PASSWD_NAME   result->pw_name
 #define PASSWD_PASSWD result->pw_passwd
 #define PASSWD_UID    result->pw_uid
@@ -47,7 +47,7 @@ static enum nss_status read_passwd(
 {
   int32_t tmpint32;
   size_t bufptr=0;
-  LDF_PASSWD;
+  NSLCD_PASSWD;
   return NSS_STATUS_SUCCESS;
 }
 
