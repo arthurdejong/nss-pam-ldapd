@@ -73,13 +73,15 @@ static enum nss_status read_netent(
     READ_INT32(fp,tmp2int32);
     if ((readaf==AF_INET)&&(tmp2int32==4))
     {
-      /* read address */
-      READ_INT32(fp,result->n_net);
+      /* read address and translate to host byte order */
+      READ_TYPE(fp,tmpint32,int32_t);
+      result->n_net=ntohl(tmpint32);
       /* signal that we've read a proper entry */
       retv=NSS_STATUS_SUCCESS;
     }
     else
     {
+      /* skip unsupported address families */
       SKIP(fp,tmpint32);
     }
   }
@@ -130,6 +132,7 @@ enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int af,struct netent *res
   /* write the address */
   WRITE_INT32(fp,AF_INET);
   WRITE_INT32(fp,4);
+  addr=htonl(addr);
   WRITE_INT32(fp,addr);
   WRITE_FLUSH(fp);
   /* read response */
@@ -176,7 +179,7 @@ enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t 
     retv=read_netent(netentfp,result,buffer,buflen,errnop,h_errnop);
     /* do another loop run if we read an empty address list */
   }
-  while ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_NOTFOUND));
+  while (retv==NSS_STATUS_NOTFOUND);
   return retv;
 }
 
