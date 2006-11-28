@@ -21,6 +21,8 @@
    MA 02110-1301 USA
 */
 
+#include "config.h"
+
 #include "nslcd.h"
 #include "common.h"
 
