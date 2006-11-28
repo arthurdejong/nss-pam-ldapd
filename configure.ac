@@ -35,7 +35,7 @@ configure.ac file for more details.])
 AC_INIT([libnss-ldapd],[0.1.0],[arthur@ch.tudelft.nl])
 RELEASE_MONTH="Nov 2006"
 AC_SUBST(RELEASE_MONTH)
-AC_CONFIG_SRCDIR([nslcd.c])
+AC_CONFIG_SRCDIR([nslcd.h])
 
 AC_CANONICAL_TARGET
 AC_PREFIX_DEFAULT()
