@@ -24,6 +24,40 @@
 #ifndef _NSLCD_COMMON_H
 #define _NSLCD_COMMON_H 1
 
+#include <stdio.h>
+
+#undef DEBUG_PROT
+#undef DEBUG_PROT_DUMP
+
+#ifdef DEBUG_PROT
+/* define a debugging macro to output logging */
+#include <string.h>
+#include <errno.h>
+#define DEBUG_PRINT(fmt,arg) \
+  fprintf(stderr,"%s:%d:%s: " fmt "\n",__FILE__,__LINE__,__PRETTY_FUNCTION__,arg);
+#else /* DEBUG_PROT */
+/* define an empty debug macro to disable logging */
+#define DEBUG_PRINT(fmt,arg)
+#endif /* not DEBUG_PROT */
+
+#ifdef DEBUG_PROT_DUMP
+/* define a debugging macro to output detailed logging */
+#include <stdint.h>
+static void debug_dump(const void *ptr,size_t size)
+{
+  int i;
+  for (i=0;i<size;i++)
+    fprintf(stderr," %02x",((const uint8_t *)ptr)[i]);
+  fprintf(stderr,"\n");
+}
+#define DEBUG_DUMP(ptr,size) \
+  fprintf(stderr,"%s:%d:%s:",__FILE__,__LINE__,__PRETTY_FUNCTION__); \
+  debug_dump(ptr,size);
+#else /* DEBUG_PROT_DUMP */
+/* define an empty debug macro to disable logging */
+#define DEBUG_DUMP(ptr,size)
+#endif /* not DEBUG_PROT_DUMP */
+
 /* WRITE marcos, used for writing data, on write error they will
    call the ERROR_OUT_WRITEERROR macro
    these macros may require the availability of the following
@@ -31,21 +65,9 @@
    int32_t tmpint32; - temporary variable
    */
 
-#include <stdio.h>
-
-#ifdef DEBUG_PROT
-/* define a debugging macro to output logging */
-#include <string.h>
-#include <errno.h>
-#define DEBUG_PRINT(fmt,arg) \
-  fprintf(stderr,"%s:%d:%s: " fmt"\n",__FILE__,__LINE__,__PRETTY_FUNCTION__,arg);
-#else /* DEBUG_PROT */
-/* define an empty debug macro to disable logging */
-#define DEBUG_PRINT(fmt,arg)
-#endif /* not DEBUG_PROT */
-
 #define WRITE(fp,ptr,size) \
   DEBUG_PRINT("WRITE       : var="__STRING(ptr)" size=%d",(int)size); \
+  DEBUG_DUMP(ptr,size); \
   if (fwrite(ptr,size,1,fp)<1) \
   { \
     DEBUG_PRINT("WRITE       : var="__STRING(ptr)" error: %s",strerror(errno)); \
@@ -112,7 +134,8 @@
     DEBUG_PRINT("READ       : var="__STRING(ptr)" error: %s",strerror(errno)); \
     ERROR_OUT_READERROR(fp); \
   } \
-  DEBUG_PRINT("READ       : var="__STRING(ptr)" size=%d",(int)size);
+  DEBUG_PRINT("READ       : var="__STRING(ptr)" size=%d",(int)size); \
+  DEBUG_DUMP(ptr,size);
 
 #define READ_TYPE(fp,field,type) \
   READ(fp,&(field),sizeof(type))
