@@ -26,9 +26,6 @@
 
 #include <stdio.h>
 
-#undef DEBUG_PROT
-#undef DEBUG_PROT_DUMP
-
 #ifdef DEBUG_PROT
 /* define a debugging macro to output logging */
 #include <string.h>

@@ -19,9 +19,15 @@
 # MA 02110-1301 USA
 
 noinst_LIBRARIES = libnss.a
+noinst_PROGRAMS = nss_ldap.so
 
 libnss_a_SOURCES = common.c common.h prototypes.h \
                    ../nslcd.h ../nslcd-common.h \
                    aliases.c ethers.c group.c hosts.c netgroup.c \
                    networks.c passwd.c protocols.c rpc.c services.c \
                    shadow.c
+
+nss_ldap_so_SOURCES = ../nslcd.h
+nss_ldap_so_LDADD = libnss.a
+nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
+

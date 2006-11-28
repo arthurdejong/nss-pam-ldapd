@@ -19,29 +19,15 @@
 # Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
 # MA 02110-1301 USA
 
-SUBDIRS = nss server
-
-noinst_PROGRAMS = nss_ldap.so nslcd testnss
+SUBDIRS = nss server tests
 
 man_MANS = nss_ldap.5
 
 EXTRA_DIST = ChangeLog \
              AUTHORS ANNOUNCE NEWS INSTALL README COPYING \
              ldap.conf \
-             debian doc exports.linux nss_ldap.5 tests
-
-nss_ldap_so_SOURCES = nslcd.h
-nss_ldap_so_LDADD = nss/libnss.a
-nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
-
-nslcd_SOURCES = nslcd.c nslcd.h \
-        nslcd-server.c nslcd-server.h \
-        log.c log.h \
-        xmalloc.c xmalloc.h
-nslcd_LDADD = server/libserver.a
-
-testnss_SOURCES = testnss.c nslcd.h
-testnss_LDADD = nss/libnss.a
+             debian doc exports.linux nss_ldap.5 tests \
+             nslcd.h nslcd-common.h
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
 NSS_LDAP_PATH_ROOTPASSWD = @NSS_LDAP_PATH_ROOTPASSWD@

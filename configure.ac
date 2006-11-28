@@ -371,5 +371,5 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <ldap.h>]], [[ldap_set_rebind_proc(0, 0, 0);]])],[nss_ldap_cv_ldap_set_rebind_proc=3],[nss_ldap_cv_ldap_set_rebind_proc=2]) ])
 AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS, $nss_ldap_cv_ldap_set_rebind_proc,[Define to the number of arguments to ldap_set_rebindproc.])
 
-AC_CONFIG_FILES([Makefile nss/Makefile server/Makefile])
+AC_CONFIG_FILES([Makefile nss/Makefile server/Makefile tests/Makefile])
 AC_OUTPUT
