@@ -24,12 +24,14 @@
 #ifndef _SERVER_COMMON_H
 #define _SERVER_COMMON_H 1
 
-#include <nss.h>
+#include "nslcd.h"
 #include "nslcd-common.h"
+
 
 /* translates a nss code (as defined in nss.h) to a
    nslcd return code (as defined in nslcd.h) */
 /* FIXME: this is a temporary hack, get rid of it */
+#include <nss.h>
 int nss2nslcd(enum nss_status code);
 
 
@@ -49,5 +51,39 @@ int nss2nslcd(enum nss_status code);
 #define ERROR_OUT_ALLOCERROR(fp) \
   log_log(LOG_ERR,"error allocating memory"); \
   return -1;
+
+
+/* these are the different functions that handle the database
+   specific actions, see nslcd.h for the action descriptions */
+int nslcd_alias_byname(FILE *fp);
+int nslcd_alias_all(FILE *fp);
+int nslcd_ether_byname(FILE *fp);
+int nslcd_ether_byether(FILE *fp);
+int nslcd_ether_all(FILE *fp);
+int nslcd_group_byname(FILE *fp);
+int nslcd_group_bygid(FILE *fp);
+int nslcd_group_bymember(FILE *fp);
+int nslcd_group_all(FILE *fp);
+int nslcd_host_byname(FILE *fp);
+int nslcd_host_byaddr(FILE *fp);
+int nslcd_host_all(FILE *fp);
+int nslcd_netgroup_byname(FILE *fp);
+int nslcd_network_byname(FILE *fp);
+int nslcd_network_byaddr(FILE *fp);
+int nslcd_network_all(FILE *fp);
+int nslcd_passwd_byname(FILE *fp);
+int nslcd_passwd_byuid(FILE *fp);
+int nslcd_passwd_all(FILE *fp);
+int nslcd_protocol_byname(FILE *fp);
+int nslcd_protocol_bynumber(FILE *fp);
+int nslcd_protocol_all(FILE *fp);
+int nslcd_rpc_byname(FILE *fp);
+int nslcd_rpc_bynumber(FILE *fp);
+int nslcd_rpc_all(FILE *fp);
+int nslcd_service_byname(FILE *fp);
+int nslcd_service_bynumber(FILE *fp);
+int nslcd_service_all(FILE *fp);
+int nslcd_shadow_byname(FILE *fp);
+int nslcd_shadow_all(FILE *fp);
 
 #endif /* not _SERVER_COMMON_H */

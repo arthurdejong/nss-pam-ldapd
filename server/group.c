@@ -46,7 +46,6 @@
 
 #include "ldap-nss.h"
 #include "util.h"
-#include "nslcd-server.h"
 #include "common.h"
 #include "log.h"
 

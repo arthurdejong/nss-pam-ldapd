@@ -84,7 +84,6 @@
 #include "util.h"
 #include "dnsconfig.h"
 #include "pagectrl.h"
-#include "nslcd-server.h"
 #include "common.h"
 #include "log.h"
 

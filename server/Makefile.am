@@ -21,7 +21,6 @@
 noinst_PROGRAMS = nslcd
 
 nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
-        nslcd-server.c nslcd-server.h \
         log.c log.h \
         xmalloc.c xmalloc.h \
         common.c common.h \
@@ -30,3 +29,5 @@ nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
         dnsconfig.c dnsconfig.h ldap-nss.c ldap-nss.h \
         ldap-schema.c ldap-schema.h pagectrl.c pagectrl.h \
         resolve.c resolve.h util.c util.h
+
+nslcd_CFLAGS = -pthread

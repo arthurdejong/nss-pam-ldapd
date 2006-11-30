@@ -23,11 +23,12 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/wait.h>
-#include <string.h>
-#include <stdio.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif /* HAVE_GETOPT_H */
@@ -38,15 +39,16 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #ifdef HAVE_GRP_H
 #include <grp.h>
 #endif /* HAVE_GRP_H */
 #include <nss.h>
+#include <pthread.h>
 
 #include "nslcd.h"
-#include "nslcd-server.h"
-#include "xmalloc.h"
 #include "log.h"
+#include "common.h"
 
 
 /* the definition of the environment */
@@ -63,6 +65,11 @@ static volatile int nslcd_exitsignal=0;
 
 /* the server socket used for communication */
 static int nslcd_serversocket=-1;
+
+
+/* thread ids of all running threads */
+#define NUM_THREADS 5
+pthread_t nslcd_threads[NUM_THREADS];
 
 
 /* display version information */
@@ -198,7 +205,12 @@ static const char *signame(int signum)
 /* signal handler for closing down */
 static RETSIGTYPE sigexit_handler(int signum)
 {
+  int i;
   nslcd_exitsignal=signum;
+  /* cancel all running threads */
+  for (i=0;i<NUM_THREADS;i++)
+    pthread_cancel(nslcd_threads[i]);
+  
 }
 
 /* do some cleaning up before terminating */
@@ -213,18 +225,101 @@ static void exithandler(void)
 }
 
 
-/* handle a connection by doing fork() and stuff */
-static void handleconnection(int csock)
+/* returns a socket ready to answer requests from the client,
+   return <0 on error */
+static int open_socket(void)
 {
+  int sock;
+  struct sockaddr_un addr;
+
+  /* create a socket */
+  if ( (sock=socket(PF_UNIX,SOCK_STREAM,0))<0 )
+  {
+    log_log(LOG_ERR,"cannot create socket: %s",strerror(errno));
+    exit(1);
+  }
+
+  /* create socket address structure */
+  memset(&addr,0,sizeof(struct sockaddr_un));
+  addr.sun_family=AF_UNIX;
+  strcpy(addr.sun_path,NSLCD_SOCKET);
+
+  /* unlink to socket */
+  if (unlink(NSLCD_SOCKET)<0)
+  {
+    log_log(LOG_DEBUG,"unlink() of "NSLCD_SOCKET" failed (ignored): %s",
+            strerror(errno));
+  }
+
+  /* bind to the socket */
+  if (bind(sock,(struct sockaddr *)&addr,sizeof(struct sockaddr_un))<0)
+  {
+    log_log(LOG_ERR,"bind() to "NSLCD_SOCKET" failed: %s",
+            strerror(errno));
+    if (close(sock))
+      log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
+    exit(1);
+  }
+
+  /* close the file descriptor on exit */
+  if (fcntl(sock,F_SETFD,FD_CLOEXEC)<0)
+  {
+    log_log(LOG_ERR,"fctnl(F_SETFL,O_NONBLOCK) failed: %s",strerror(errno));
+    if (close(sock))
+      log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
+    exit(1);
+  }
+
+#ifdef DONT_FOR_NOW
+  /* Set permissions for the socket.  */
+  chmod (_PATH_NSCDSOCKET, DEFFILEMODE);
+#endif /* DONT_FOR_NOW */
+
+  /* start listening for connections */
+  if (listen(sock,SOMAXCONN)<0)
+  {
+    log_log(LOG_ERR,"listen() failed: %s",strerror(errno));
+    if (close(sock))
+      log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
+    exit(1);
+  }
+
+  /* we're done */
+  return sock;
+}
+
+/* read the version information and action from the stream
+   this function returns the read action in location pointer to by action */
+static int read_header(FILE *fp,int32_t *action)
+{
+  int32_t tmpint32;
+  /* read the protocol version */
+  READ_TYPE(fp,tmpint32,int32_t);
+  if (tmpint32 != NSLCD_VERSION)
+  {
+    log_log(LOG_DEBUG,"wrong nslcd version id (%d)",(int)tmpint32);
+    return -1;
+  }
+  /* read the request type */
+  READ(fp,action,sizeof(int32_t));
+  return 0;
+}
+
+/* read a request message, returns <0 in case of errors,
+   this function closes the socket */
+static void handleconnection(int sock)
+{
+  FILE *fp;
   socklen_t alen;
   struct ucred client;
+  int32_t action;
 
   /* look up process information from client */
   alen=sizeof(struct ucred);
-  if (getsockopt(csock,SOL_SOCKET,SO_PEERCRED,&client,&alen) < 0)
+  if (getsockopt(sock,SOL_SOCKET,SO_PEERCRED,&client,&alen) < 0)
   {
     log_log(LOG_ERR,"getsockopt(SO_PEERCRED) failed: %s", strerror(errno));
-    if (close(csock))
+    if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     return;
   }
@@ -233,12 +328,62 @@ static void handleconnection(int csock)
   log_log(LOG_INFO,"connection from pid=%d uid=%d gid=%d",
                    (int)client.pid,(int)client.uid,(int)client.gid);
 
-  /* FIXME: pass credentials along? */
+  /* create a stream object */
+  if ((fp=fdopen(sock,"w+"))==NULL)
+  {
+    close(sock);
+    return;
+  }
 
-  nslcd_server_handlerequest(csock);
+  /* read request */
+  if (read_header(fp,&action))
+  {
+    fclose(fp);
+    return;
+  }
 
+  /* handle request */
+  switch (action)
+  {
+    case NSLCD_ACTION_ALIAS_BYNAME:     nslcd_alias_byname(fp); break;
+    case NSLCD_ACTION_ALIAS_ALL:        nslcd_alias_all(fp); break;
+    case NSLCD_ACTION_ETHER_BYNAME:     nslcd_ether_byname(fp); break;
+    case NSLCD_ACTION_ETHER_BYETHER:    nslcd_ether_byether(fp); break;
+    case NSLCD_ACTION_ETHER_ALL:        nslcd_ether_all(fp); break;
+    case NSLCD_ACTION_GROUP_BYNAME:     nslcd_group_byname(fp); break;
+    case NSLCD_ACTION_GROUP_BYGID:      nslcd_group_bygid(fp); break;
+    case NSLCD_ACTION_GROUP_BYMEMBER:   nslcd_group_bymember(fp); break;
+    case NSLCD_ACTION_GROUP_ALL:        nslcd_group_all(fp); break;
+    case NSLCD_ACTION_HOST_BYNAME:      nslcd_host_byname(fp); break;
+    case NSLCD_ACTION_HOST_BYADDR:      nslcd_host_byaddr(fp); break;
+    case NSLCD_ACTION_HOST_ALL:         nslcd_host_all(fp); break;
+    case NSLCD_ACTION_NETGROUP_BYNAME:  nslcd_netgroup_byname(fp); break;
+    case NSLCD_ACTION_NETWORK_BYNAME:   nslcd_network_byname(fp); break;
+    case NSLCD_ACTION_NETWORK_BYADDR:   nslcd_network_byaddr(fp); break;
+    case NSLCD_ACTION_NETWORK_ALL:      nslcd_network_all(fp); break;
+    case NSLCD_ACTION_PASSWD_BYNAME:    nslcd_passwd_byname(fp); break;
+    case NSLCD_ACTION_PASSWD_BYUID:     nslcd_passwd_byuid(fp); break;
+    case NSLCD_ACTION_PASSWD_ALL:       nslcd_passwd_all(fp); break;
+    case NSLCD_ACTION_PROTOCOL_BYNAME:  nslcd_protocol_byname(fp); break;
+    case NSLCD_ACTION_PROTOCOL_BYNUMBER:nslcd_protocol_bynumber(fp); break;
+    case NSLCD_ACTION_PROTOCOL_ALL:     nslcd_protocol_all(fp); break;
+    case NSLCD_ACTION_RPC_BYNAME:       nslcd_rpc_byname(fp); break;
+    case NSLCD_ACTION_RPC_BYNUMBER:     nslcd_rpc_bynumber(fp); break;
+    case NSLCD_ACTION_RPC_ALL:          nslcd_rpc_all(fp); break;
+    case NSLCD_ACTION_SERVICE_BYNAME:   nslcd_service_byname(fp); break;
+    case NSLCD_ACTION_SERVICE_BYNUMBER: nslcd_service_bynumber(fp); break;
+    case NSLCD_ACTION_SERVICE_ALL:      nslcd_service_all(fp); break;
+    case NSLCD_ACTION_SHADOW_BYNAME:    nslcd_shadow_byname(fp); break;
+    case NSLCD_ACTION_SHADOW_ALL:       nslcd_shadow_all(fp); break;
+    default:
+      log_log(LOG_WARNING,"invalid request id: %d",(int)action);
+      break;
+  }
+
+  /* we're done with the request */
+  fclose(fp);
+  return;
 }
-
 
 /* accept a connection on the socket */
 static void acceptconnection(void)
@@ -323,12 +468,24 @@ static void install_sighandler(int signum,RETSIGTYPE (*handler) (int))
   }
 }
 
+static void *worker(void *arg)
+{
+  /* start waiting for incoming connections */
+  while (nslcd_exitsignal==0)
+  {
+    /* wait for a new connection */
+    acceptconnection();
+  }
+  return NULL;
+}
+
 
 /* the main program... */
 int main(int argc,char *argv[])
 {
   gid_t mygid=-1;
   uid_t myuid=-1;
+  int i;
 
   /* parse the command line */
   parse_cmdline(argc,argv);
@@ -336,13 +493,13 @@ int main(int argc,char *argv[])
   /* clear the environment */
   /* TODO:implement */
 
+  /* check if we are already running */
+  /* FIXME: implement (maybe pass along options or commands) */
+
   /* disable ldap lookups of host names to avoid lookup loop
      and fall back to files dns (a sensible default) */
   if (__nss_configure_lookup("hosts","files dns"))
     log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
-
-  /* check if we are already running */
-  /* FIXME: implement */
 
   /* daemonize */
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
@@ -366,7 +523,7 @@ int main(int argc,char *argv[])
   write_pidfile(NSLCD_PIDFILE);
 
   /* create socket */
-  nslcd_serversocket=nslcd_server_open();
+  nslcd_serversocket=open_socket();
 
 #ifdef HAVE_SETGROUPS
   /* drop all supplemental groups */
@@ -435,7 +592,7 @@ int main(int argc,char *argv[])
   cap_free(caps);
 #endif /* USE_CAPABILITIES */
 
-  /* install signalhandlers for some other signals */
+  /* install signalhandlers for some signals */
   install_sighandler(SIGHUP, sigexit_handler);
   install_sighandler(SIGINT, sigexit_handler);
   install_sighandler(SIGQUIT,sigexit_handler);
@@ -444,16 +601,28 @@ int main(int argc,char *argv[])
   install_sighandler(SIGTERM,sigexit_handler);
   install_sighandler(SIGUSR1,sigexit_handler);
   install_sighandler(SIGUSR2,sigexit_handler);
-
   /* TODO: install signal handlers for reloading configuration */
 
   log_log(LOG_INFO,"accepting connections");
-
-  /* start waiting for incoming connections */
-  while (nslcd_exitsignal==0)
+  
+  /* start worker threads */
+  for (i=0;i<NUM_THREADS;i++)
   {
-    /* wait for a new connection */
-    acceptconnection();
+    if (pthread_create(&nslcd_threads[i],NULL,worker,NULL))
+    {
+      log_log(LOG_ERR,"unable to start worker thread %d: %s",i,strerror(errno));
+      exit(1);
+    }
+  }
+  
+  /* wait for all threads to die */
+  for (i=0;i<NUM_THREADS;i++)
+  {
+    if (pthread_join(nslcd_threads[i],NULL))
+    {
+      log_log(LOG_ERR,"unable to wait for worker thread %d: %s",i,strerror(errno));
+      exit(1);
+    }
   }
 
   /* print something about received signals */
