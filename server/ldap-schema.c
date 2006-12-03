@@ -302,13 +302,6 @@ init_pwd_attributes (const char ***pwd_attrs)
   (*pwd_attrs)[i++] = AT (gecos);
   (*pwd_attrs)[i++] = ATM (LM_PASSWD, description);
   (*pwd_attrs)[i++] = AT (objectClass);
-#ifdef HAVE_PASSWD_PW_CHANGE
-  (*pwd_attrs)[i++] = AT (shadowLastChange);
-  (*pwd_attrs)[i++] = AT (shadowMax);
-#endif /* HAVE_PASSWD_PW_CHANGE */
-#ifdef HAVE_PASSWD_PW_EXPIRE
-  (*pwd_attrs)[i++] = AT (shadowExpire);
-#endif /* HAVE_PASSWD_PW_EXPIRE */
   (*pwd_attrs)[i] = NULL;
 }
 

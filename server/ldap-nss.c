@@ -325,15 +325,11 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
 
       if (msgid < 0)
         {
-#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_ERROR_NUMBER)
           if (ldap_get_option (ld, LDAP_OPT_ERROR_NUMBER, &rc) !=
               LDAP_SUCCESS)
             {
               rc = LDAP_UNAVAILABLE;
             }
-#else
-          rc = ld->ld_errno;
-#endif /* LDAP_OPT_ERROR_NUMBER */
           /* Notify if we failed. */
           syslog (LOG_AUTHPRIV | LOG_ERR, "nss_ldap: could not connect to any LDAP server as %s - %s",
                           dn, ldap_err2string (rc));
@@ -709,11 +705,7 @@ do_set_sockopts (void)
   int sd = -1;
 
   debug ("==> do_set_sockopts");
-#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_DESC)
   if (ldap_get_option (__session.ls_conn, LDAP_OPT_DESC, &sd) == 0)
-#else
-  if ((sd = __session.ls_conn->ld_sb.sb_sd) > 0)
-#endif /* LDAP_OPT_DESC */
     {
       int off = 0;
       socklen_t socknamelen = sizeof (struct sockaddr_storage);
@@ -852,11 +844,7 @@ do_get_our_socket(int *sd)
   int isOurSocket = 1;
 
 #ifndef HAVE_LDAPSSL_CLIENT_INIT
-#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_DESC)
   if (ldap_get_option (__session.ls_conn, LDAP_OPT_DESC, sd) == 0)
-#else
-  if ((*sd = __session.ls_conn->ld_sb.sb_sd) > 0)
-#endif /* LDAP_OPT_DESC */
     {
       struct sockaddr_storage sockname;
       struct sockaddr_storage peername;
@@ -1517,27 +1505,15 @@ do_open (void)
   ldap_set_rebind_proc (__session.ls_conn, do_rebind);
 #endif
 
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_PROTOCOL_VERSION)
   ldap_set_option (__session.ls_conn, LDAP_OPT_PROTOCOL_VERSION,
                    &cfg->ldc_version);
-#else
-  __session.ls_conn->ld_version = cfg->ldc_version;
-#endif /* LDAP_OPT_PROTOCOL_VERSION */
 
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_DEREF)
   ldap_set_option (__session.ls_conn, LDAP_OPT_DEREF, &cfg->ldc_deref);
-#else
-  __session.ls_conn->ld_deref = cfg->ldc_deref;
-#endif /* LDAP_OPT_DEREF */
 
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_TIMELIMIT)
   ldap_set_option (__session.ls_conn, LDAP_OPT_TIMELIMIT,
                    &cfg->ldc_timelimit);
-#else
-  __session.ls_conn->ld_timelimit = cfg->ldc_timelimit;
-#endif /* LDAP_OPT_TIMELIMIT */
 
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_X_OPT_CONNECT_TIMEOUT)
+#ifdef LDAP_X_OPT_CONNECT_TIMEOUT
   /*
    * This is a new option in the Netscape SDK which sets
    * the TCP connect timeout. For want of a better value,
@@ -1547,21 +1523,21 @@ do_open (void)
   ldap_set_option (__session.ls_conn, LDAP_X_OPT_CONNECT_TIMEOUT, &timeout);
 #endif /* LDAP_X_OPT_CONNECT_TIMEOUT */
 
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_NETWORK_TIMEOUT)
+#ifdef LDAP_OPT_NETWORK_TIMEOUT
   tv.tv_sec = cfg->ldc_bind_timelimit;
   tv.tv_usec = 0;
   ldap_set_option (__session.ls_conn, LDAP_OPT_NETWORK_TIMEOUT, &tv);
 #endif /* LDAP_OPT_NETWORK_TIMEOUT */
 
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_REFERRALS)
+#ifdef LDAP_OPT_REFERRALS
   ldap_set_option (__session.ls_conn, LDAP_OPT_REFERRALS,
                    cfg->ldc_referrals ? LDAP_OPT_ON : LDAP_OPT_OFF);
-#endif
+#endif /* LDAP_OPT_REFERRALS */
 
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_RESTART)
+#ifdef LDAP_OPT_RESTART
   ldap_set_option (__session.ls_conn, LDAP_OPT_RESTART,
                    cfg->ldc_restart ? LDAP_OPT_ON : LDAP_OPT_OFF);
-#endif
+#endif /* LDAP_OPT_RESTART */
 
 #if defined(HAVE_LDAP_START_TLS_S) || defined(HAVE_LDAP_START_TLS)
   if (cfg->ldc_ssl_on == SSL_START_TLS)
@@ -1608,7 +1584,7 @@ do_open (void)
      */
   if (cfg->ldc_ssl_on == SSL_LDAPS)
     {
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_X_TLS)
+#if defined(LDAP_OPT_X_TLS)
       int tls = LDAP_OPT_X_TLS_HARD;
       if (ldap_set_option (__session.ls_conn, LDAP_OPT_X_TLS, &tls) !=
           LDAP_SUCCESS)
@@ -1870,15 +1846,11 @@ do_result (struct ent_context * ctx, int all)
         {
         case -1:
         case 0:
-#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_ERROR_NUMBER)
           if (ldap_get_option
               (__session.ls_conn, LDAP_OPT_ERROR_NUMBER, &rc) != LDAP_SUCCESS)
             {
               rc = LDAP_UNAVAILABLE;
             }
-#else
-          rc = __session.ls_conn->ld_errno;
-#endif /* LDAP_OPT_ERROR_NUMBER */
           syslog (LOG_AUTHPRIV | LOG_ERR, "nss_ldap: could not get LDAP result - %s",
                   ldap_err2string (rc));
           stat = NSS_STATUS_UNAVAIL;
@@ -2414,12 +2386,8 @@ do_search_s (const char *base, int scope,
 
   debug ("==> do_search_s");
 
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_SIZELIMIT)
   ldap_set_option (__session.ls_conn, LDAP_OPT_SIZELIMIT,
                    (void *) &sizelimit);
-#else
-  __session.ls_conn->ld_sizelimit = sizelimit;
-#endif /* LDAP_OPT_SIZELIMIT */
 
   if (__session.ls_config->ldc_timelimit == LDAP_NO_LIMIT)
     {
@@ -2483,26 +2451,18 @@ do_search (const char *base, int scope,
     }
 
 #else
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_SIZELIMIT)
   ldap_set_option (__session.ls_conn, LDAP_OPT_SIZELIMIT,
                    (void *) &sizelimit);
-#else
-  __session.ls_conn->ld_sizelimit = sizelimit;
-#endif /* LDAP_OPT_SIZELIMIT */
 
   *msgid = ldap_search (__session.ls_conn, base, scope, filter,
                         (char **) attrs, 0);
   if (*msgid < 0)
     {
-#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_ERROR_NUMBER)
       if (ldap_get_option
           (__session.ls_conn, LDAP_OPT_ERROR_NUMBER, &rc) != LDAP_SUCCESS)
         {
           rc = LDAP_UNAVAILABLE;
         }
-#else
-      rc = __session.ls_conn->ld_errno;
-#endif /* LDAP_OPT_ERROR_NUMBER */
     }
   else
     {
@@ -4074,9 +4034,7 @@ _nss_ldap_test_initgroups_ignoreuser (const char *user)
 int
 _nss_ldap_get_ld_errno (char **m, char **s)
 {
-#ifdef HAVE_LDAP_GET_OPTION
   int rc;
-#endif
   int lderrno;
 
   if (__session.ls_conn == NULL)
@@ -4084,35 +4042,23 @@ _nss_ldap_get_ld_errno (char **m, char **s)
       return LDAP_UNAVAILABLE;
     }
 
-#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_ERROR_NUMBER)
   /* is this needed? */
   rc = ldap_get_option (__session.ls_conn, LDAP_OPT_ERROR_NUMBER, &lderrno);
   if (rc != LDAP_SUCCESS)
     return rc;
-#else
-  lderrno = ld->ld_errno;
-#endif
 
   if (s != NULL)
     {
-#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_ERROR_STRING)
       rc = ldap_get_option (__session.ls_conn, LDAP_OPT_ERROR_STRING, s);
       if (rc != LDAP_SUCCESS)
         return rc;
-#else
-      *s = ld->ld_error;
-#endif
     }
 
   if (m != NULL)
     {
-#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_MATCHED_DN)
       rc = ldap_get_option (__session.ls_conn, LDAP_OPT_MATCHED_DN, m);
       if (rc != LDAP_SUCCESS)
         return rc;
-#else
-      *m = ld->ld_matched;
-#endif
     }
 
   return lderrno;
