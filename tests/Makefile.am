@@ -22,16 +22,19 @@ noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                   test_netgroup test_networks test_passwd test_protocols \
                   test_rpc test_services test_shadow
 
-AM_CFLAGS=-DDEBUG_PROT -DDEBUG_PROT_DUMP
+# the following enables verbose protocol debugging information to be dumped
+#AM_CFLAGS=-DDEBUG_PROT -DDEBUG_PROT_DUMP
 
-test_aliases_SOURCES = test_aliases.c ../nss/aliases.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
-test_ethers_SOURCES = test_ethers.c ../nss/ethers.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
-test_group_SOURCES = test_group.c ../nss/group.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
-test_hosts_SOURCES = test_hosts.c ../nss/hosts.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
-test_netgroup_SOURCES = test_netgroup.c ../nss/netgroup.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
-test_networks_SOURCES = test_networks.c ../nss/networks.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
-test_passwd_SOURCES = test_passwd.c ../nss/passwd.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
-test_protocols_SOURCES = test_protocols.c ../nss/protocols.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
-test_rpc_SOURCES = test_rpc.c ../nss/rpc.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
-test_services_SOURCES = test_services.c ../nss/services.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
-test_shadow_SOURCES = test_shadow.c ../nss/shadow.c ../nss/common.c ../nslcd.h ../nss/prototypes.h
+common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h
+
+test_aliases_SOURCES = test_aliases.c ../nss/aliases.c $(common_SOURCES)
+test_ethers_SOURCES = test_ethers.c ../nss/ethers.c $(common_SOURCES)
+test_group_SOURCES = test_group.c ../nss/group.c $(common_SOURCES)
+test_hosts_SOURCES = test_hosts.c ../nss/hosts.c $(common_SOURCES)
+test_netgroup_SOURCES = test_netgroup.c ../nss/netgroup.c $(common_SOURCES)
+test_networks_SOURCES = test_networks.c ../nss/networks.c $(common_SOURCES)
+test_passwd_SOURCES = test_passwd.c ../nss/passwd.c $(common_SOURCES)
+test_protocols_SOURCES = test_protocols.c ../nss/protocols.c $(common_SOURCES)
+test_rpc_SOURCES = test_rpc.c ../nss/rpc.c $(common_SOURCES)
+test_services_SOURCES = test_services.c ../nss/services.c $(common_SOURCES)
+test_shadow_SOURCES = test_shadow.c ../nss/shadow.c $(common_SOURCES)
