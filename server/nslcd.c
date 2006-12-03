@@ -84,7 +84,7 @@ static void display_version(FILE *fp)
 
 
 /* display usage information to stdout and exit(status) */
-static void display_usage(FILE *fp, const char *program_name)
+static void display_usage(FILE *fp,const char *program_name)
 {
   fprintf(fp,"Usage: %s [OPTION]...\n",program_name);
   fprintf(fp,"Name Service LDAP connection daemon.\n");
@@ -270,11 +270,6 @@ static int open_socket(void)
     exit(1);
   }
 
-#ifdef DONT_FOR_NOW
-  /* Set permissions for the socket.  */
-  chmod (_PATH_NSCDSOCKET, DEFFILEMODE);
-#endif /* DONT_FOR_NOW */
-
   /* start listening for connections */
   if (listen(sock,SOMAXCONN)<0)
   {
@@ -318,19 +313,20 @@ static void handleconnection(int sock)
   alen=sizeof(struct ucred);
   if (getsockopt(sock,SOL_SOCKET,SO_PEERCRED,&client,&alen) < 0)
   {
-    log_log(LOG_ERR,"getsockopt(SO_PEERCRED) failed: %s", strerror(errno));
+    log_log(LOG_ERR,"getsockopt(SO_PEERCRED) failed: %s",strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     return;
   }
 
   /* log connection */
-  log_log(LOG_INFO,"connection from pid=%d uid=%d gid=%d",
-                   (int)client.pid,(int)client.uid,(int)client.gid);
+  log_log(LOG_DEBUG,"connection from pid=%d uid=%d gid=%d",
+                    (int)client.pid,(int)client.uid,(int)client.gid);
 
   /* create a stream object */
   if ((fp=fdopen(sock,"w+"))==NULL)
   {
+    log_log(LOG_WARNING,"cannot create stream for writing: %s",strerror(errno));
     close(sock);
     return;
   }
