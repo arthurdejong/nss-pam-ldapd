@@ -47,31 +47,27 @@ AM_INIT_AUTOMAKE(AC_PACKAGE_TARNAME,AC_PACKAGE_VERSION)
 # create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AC_CONFIG_HEADERS([config.h])
 
+# check for programs
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
-dnl
-dnl --enable-rfc2307bis is now deprecated; if this option is set,
-dnl then RFC2307bis support will be enabled by default. However
-dnl it can now always be enabled at runtime with the nss_schema
-dnl keyword. See nss_ldap(5) for more information.
-dnl
-AC_ARG_ENABLE(rfc2307bis, [  --enable-rfc2307bis       use RFC2307bis schema by default ], [AC_DEFINE(RFC2307BIS, 1, [Define to set RFC2307BIS support.])])
+# start with default options
+nss_ldap_so_LIBS=
+nslcd_LIBS=
 
-dnl
-dnl --enable-schema-mapping is no longer necessary as schema
-dnl mapping is enabled by default
-dnl
-dnl AC_ARG_ENABLE(schema-mapping, [  --enable-schema-mapping   enable attribute/objectclass mapping ], [AC_DEFINE(AT_OC_MAP, 1, [Define to enable attribute/objectclass mapping.])])
-dnl
-
-# Check for debugging options
+# check for debugging options
 AC_ARG_ENABLE(debug,
               AS_HELP_STRING([--enable-debug],
                              [enable extensive debugging and logging]),
               [if test "x$enableval" != "xno" ; then CFLAGS="-g -DDEBUG $CFLAGS" ; fi])
+
+# Check for extra compiler warnings
+AC_ARG_ENABLE(warnings,
+              AS_HELP_STRING([--enable-warnings],
+                             [enable extra compiler warnings (gcc)]),
+              [if test "x$enableval" != "no" ; then CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations" ; fi])
 
 dnl
 dnl --enable-paged-results is now deprecated; if this option is set,
@@ -80,44 +76,64 @@ dnl now always be enabled at runtime (as long as the underlying LDAP
 dnl library supports ldap_search_ext()) with the nss_paged_results
 dnl keyword. See nss_ldap(5) for more information
 dnl
-AC_ARG_ENABLE(paged-results, [  --enable-paged-results    use paged results control by default ], [AC_DEFINE(PAGE_RESULTS, 1, [Define to enable paged results control.])])
+AC_ARG_ENABLE(paged-results,
+              AS_HELP_STRING([--enable-paged-results],
+                             [use paged results control by default]),
+              [AC_DEFINE(PAGE_RESULTS,1,[Define to enable paged results control.])])
 
 dnl
 dnl XXX TODO make configurable-krb5-ccname-* configurable at runtime
 dnl
-AC_ARG_ENABLE(configurable-krb5-ccname-env, [  --enable-configurable-krb5-ccname-env   enable configurable Kerberos V credentials cache name (putenv method)], [AC_DEFINE(CONFIGURE_KRB5_CCNAME, 1, [Define to enable configurable Kerberos credentials cache.]) AC_DEFINE(CONFIGURE_KRB5_CCNAME_ENV, 1, [Define to enable configurable Kerberos credentials cache (putenv method).])])
-AC_ARG_ENABLE(configurable-krb5-ccname-gssapi, [  --enable-configurable-krb5-ccname-gssapi   enable configurable Kerberos V credentials cache name (gssapi method)], [AC_DEFINE(CONFIGURE_KRB5_CCNAME) AC_DEFINE(CONFIGURE_KRB5_CCNAME_GSSAPI, 1, [Define to enable configurable Kerberos credentials cache (gssapi method).])])
+AC_ARG_ENABLE(configurable-krb5-ccname-env,
+              AS_HELP_STRING([--enable-configurable-krb5-ccname-env],
+                             [enable configurable Kerberos V credentials cache name (putenv method)]),
+              [ AC_DEFINE(CONFIGURE_KRB5_CCNAME,1,[Define to enable configurable Kerberos credentials cache.])
+                AC_DEFINE(CONFIGURE_KRB5_CCNAME_ENV,1,[Define to enable configurable Kerberos credentials cache (putenv method).]) ])
 
-AC_ARG_WITH(ldap-lib, [  --with-ldap-lib=type      select ldap library [auto|netscape5|netscape4|netscape3|umich|openldap]])
-AC_ARG_WITH(ldap-dir, [  --with-ldap-dir=DIR       base directory of LDAP SDK])
-AC_ARG_WITH(ldap-conf-file, [  --with-ldap-conf-file     path to LDAP configuration file],
+AC_ARG_ENABLE(configurable-krb5-ccname-gssapi,
+              AS_HELP_STRING([--enable-configurable-krb5-ccname-gssapi],
+                             [enable configurable Kerberos V credentials cache name (gssapi method)]),
+              [ AC_DEFINE(CONFIGURE_KRB5_CCNAME)
+                AC_DEFINE(CONFIGURE_KRB5_CCNAME_GSSAPI,1,[Define to enable configurable Kerberos credentials cache (gssapi method).]) ])
+
+AC_ARG_WITH(ldap-lib,
+            AS_HELP_STRING([--with-ldap-lib=type],
+                           [select ldap library [auto|netscape5|netscape4|netscape3|umich|openldap]]))
+if test -z "$with_ldap_lib"; then
+  with_ldap_lib=auto
+fi
+
+#AC_ARG_WITH(ldap-dir,
+#            AS_HELP_STRING([--with-ldap-dir=DIR],
+#                           [base directory of LDAP SDK]))
+
+AC_ARG_WITH(ldap-conf-file, 
+            AS_HELP_STRING([--with-ldap-conf-file],
+                           [path to LDAP configuration file]),
             [ NSS_LDAP_PATH_CONF="$with_ldap_conf_file" ],
             [ NSS_LDAP_PATH_CONF="/etc/ldap.conf" ])
-AC_ARG_WITH(ldap-secret-file, [  --with-ldap-secret-file   path to LDAP root secret file],
+
+AC_ARG_WITH(ldap-secret-file,
+            AS_HELP_STRING([--with-ldap-secret-file],
+                           [path to LDAP root secret file]),
             [ NSS_LDAP_PATH_ROOTPASSWD="$with_ldap_secret_file" ],
             [ NSS_LDAP_PATH_ROOTPASSWD="/etc/ldap.secret" ])
-AC_ARG_WITH(gssapi-dir, [  --with-gssapi-dir=DIR     base directory of gssapi SDK])
-ldap_nss_ngroups=64
-AC_ARG_WITH(ngroups, [  --with-ngroups=num        average group size hint, experts only], [ldap_nss_ngroups=$with_ngroups])
-AC_DEFINE_UNQUOTED(LDAP_NSS_NGROUPS, $ldap_nss_ngroups, [Maximum number of group members in static buffer.])
 
-AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_CONF, "$NSS_LDAP_PATH_CONF", [Path to LDAP configuration file.])
-AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_ROOTPASSWD, "$NSS_LDAP_PATH_ROOTPASSWD", [Path to LDAP root secret file.])
+AC_ARG_WITH(gssapi-dir, 
+            AS_HELP_STRING([--with-gssapi-dir=DIR],
+                           [base directory of gssapi SDK]))
+
+ldap_nss_ngroups=64
+AC_ARG_WITH(ngroups,
+            AS_HELP_STRING([--with-ngroups=num],
+                           [average group size hint, experts only]),
+            [ldap_nss_ngroups=$with_ngroups])
+AC_DEFINE_UNQUOTED(LDAP_NSS_NGROUPS,$ldap_nss_ngroups,[Maximum number of group members in static buffer.])
+
+AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_CONF,"$NSS_LDAP_PATH_CONF",[Path to LDAP configuration file.])
+AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_ROOTPASSWD,"$NSS_LDAP_PATH_ROOTPASSWD",[Path to LDAP root secret file.])
 AC_SUBST(NSS_LDAP_PATH_CONF)
 AC_SUBST(NSS_LDAP_PATH_ROOTPASSWD)
-
-if test "$ac_cv_c_compiler_gnu" = "yes"; then CFLAGS="$CFLAGS -Wall -fPIC"; fi
-
-# Check for extra compiler warnings
-AC_ARG_ENABLE(warnings,
-              AS_HELP_STRING([--enable-warnings],
-                             [enable extra compiler warnings (gcc)]),
-              [if test "x$enableval" != "no" ; then CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations" ; fi])
-
-
-dnl This is needed for the native Solaris LDAP SDK and
-dnl OpenLDAP 2.2, respectively
-CPPFLAGS="$CPPFLAGS -DLDAP_REFERRALS -DLDAP_DEPRECATED"
 
 case "$target_os" in
 freebsd*) CPPFLAGS="$CPPFLAGS -DPIC -D_REENTRANT" ;;
@@ -125,88 +141,13 @@ aix*) CPPFLAGS="$CPPFLAGS -D_THREAD_SAFE" ;;
 *) CPPFLAGS="$CPPFLAGS -D_REENTRANT" ;;
 esac
 
-# Always use native linker on Solaris and AIX
-# but only invoke directly if compiling with gcc (?)
-
-case "$target_os" in
-aix*) if test "$ac_cv_c_compiler_gnu" = "yes"; then
-    nss_ldap_so_LD="/usr/bin/ld"
-  fi
-  LDFLAGS="$LDFLAGS -Wl,-brtl"
-  nss_ldap_so_LDFLAGS="-bM:SRE -bnoentry -bE:\$(srcdir)/exports.aix -brtl -lc"
-  NSS_LDAP_LDFLAGS="-bM:SRE -enss_ldap_initialize -brtl -lc"
-  CPPFLAGS="$CPPFLAGS -I."
-  need_pthread=yes
-  TARGET_OS=AIX ;;
-solaris*) if test "$ac_cv_c_compiler_gnu" = yes; then
-    nss_ldap_so_LD="/usr/ccs/bin/ld"
-  fi
-  nss_ldap_so_LDFLAGS="-Bdynamic -M \$(srcdir)/exports.solaris -G" ;;
-hpux*) if test "$ac_cv_c_compiler_gnu" = yes; then
-    nss_ldap_so_LD="/bin/ld"
-  fi
-  nss_ldap_so_LDFLAGS="-b -dynamic -G `cat exports.hpux`"
-  CPPFLAGS="$CPPFLAGS -I. -DHPUX"
-  TARGET_OS=HPUX ;;
-linux*) nss_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic -Wl,--version-script,\$(srcdir)/exports.linux" ;;
-*) nss_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic" ;;
-esac
-
-AM_CONDITIONAL(GLIBC, test "$target_os" = "linux" -o "$target_os" = "linux-gnu")
-AM_CONDITIONAL(AIX, test "$TARGET_OS" = AIX)
-AM_CONDITIONAL(HPUX, test "$TARGET_OS" = HPUX)
-
-AM_CONDITIONAL(USE_NATIVE_LINKER, test -n "$nss_ldap_so_LD")
-
-# unfortunately the linker flags have to be defined twice for
-# AIX as we can't force using the native linker for configure
-# tests, and the gcc front-end does not understand native
-# linker flags.
-if test -n "$with_ldap_dir"; then
-  CPPFLAGS="$CPPFLAGS -I$with_ldap_dir/include"
-  LDFLAGS="$LDFLAGS -L$with_ldap_dir/lib"
-  case "$target_os" in
-  aix*) LDFLAGS="$LDFLAGS -Wl,-blibpath:$with_ldap_dir/lib"
-    nss_ldap_so_LDFLAGS="$nss_ldap_so_LDFLAGS -L$with_ldap_dir/lib -blibpath:$with_ldap_dir/lib"
-    NSS_LDAP_LDFLAGS="$NSS_LDAP_LDFLAGS -L$with_ldap_dir/lib -blibpath:$with_ldap_dir/lib" ;;
-  hpux*) LDFLAGS="$LDFLAGS -Wl,+b$with_ldap_dir/lib"
-    nss_ldap_so_LDFLAGS="$nss_ldap_so_LDFLAGS -L$with_ldap_dir/lib +b$with_ldap_dir/lib" ;;
-  solaris*) LDFLAGS="$LDFLAGS -R$with_ldap_dir/lib"
-    nss_ldap_so_LDFLAGS="$nss_ldap_so_LDFLAGS -L$with_ldap_dir/lib -R$with_ldap_dir/lib" ;;
-  *) LDFLAGS="$LDFLAGS -Wl,-rpath,$with_ldap_dir/lib" ;;
-  esac
-fi
-if test -n "$with_gssapi_dir"; then
-  CPPFLAGS="$CPPFLAGS -I$with_gssapi_dir/include"
-  LDFLAGS="$LDFLAGS -L$with_gssapi_dir/lib"
-fi
-
-AC_SUBST(nss_ldap_so_LD)
-AC_SUBST(nss_ldap_so_LDFLAGS)
-AC_SUBST(NSS_LDAP_LDFLAGS)
-
+# checks for availability of header files
 AC_CHECK_HEADERS(lber.h)
-AC_CHECK_HEADERS(ldap.h, , AC_MSG_ERROR(could not locate <ldap.h>))
+AC_CHECK_HEADERS(ldap.h,,AC_MSG_ERROR([could not locate <ldap.h>]))
 AC_CHECK_HEADERS(ldap_ssl.h)
-
-dnl AC_MSG_CHECKING(for ldap_ssl.h)
-dnl AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
-dnl     #include <ldap.h>
-dnl     #include <ldap_ssl.h>]], [[]])],[dnl
-dnl             AC_MSG_RESULT(yes),
-dnl             AC_DEFINE(HAVE_LDAP_SSL_H, 1)
-dnl     ],[dnl  AC_MSG_RESULT(no)])
-
-# For HP-UX and AIX we use private API, the headers for which
-# are included locally. We need to do something to stop both
-# API being detected.
-case "$target_os" in
-  aix*) AC_CHECK_HEADERS(irs.h usersec.h) ;;
-  hpux*) AC_CHECK_HEADERS(nsswitch.h) ;;
-  *) AC_CHECK_HEADERS(nss.h)
-     AC_CHECK_HEADERS(nsswitch.h)
-     AC_CHECK_HEADERS(irs.h) ;;
-esac
+AC_CHECK_HEADERS(nss.h)
+AC_CHECK_HEADERS(nsswitch.h)
+AC_CHECK_HEADERS(irs.h)
 AC_CHECK_HEADERS(thread.h)
 AC_CHECK_HEADERS(pthread.h)
 AC_CHECK_HEADERS(synch.h)
@@ -234,10 +175,27 @@ AC_CHECK_HEADERS(gsssasl.h)
 AC_CHECK_HEADERS(gssapi/gssapi_krb5.h gssapi.h)
 AC_CHECK_HEADERS(grp.h)
 
-AC_CHECK_LIB(resolv, main)
-AC_CHECK_LIB(nsl, main)
-AC_CHECK_LIB(socket, main)
+# checks for availability of system libraries for nslcd
+save_LIBS="$LIBS"
+LIBS="$nslcd_LIBS"
+AC_SEARCH_LIBS(gethostbyname,nsl socket)
+AC_SEARCH_LIBS(socket,socket)
+AC_CHECK_LIB(resolv,main)
+AC_SEARCH_LIBS(daemon,bsd)
+nslcd_LIBS="$LIBS"
+LIBS="$save_LIBS"
 
+# check for availability of system libraries for nss part
+save_LIBS="$LIBS"
+LIBS="$nss_ldap_so_LIBS"
+AC_SEARCH_LIBS(socket,socket)
+nss_ldap_so_LIBS="$LIBS"
+LIBS="$save_LIBS"
+
+# TODO: simplify the above since we need a correct LIBS for the following
+#       tests
+
+# checks for availability of functions
 AC_CHECK_FUNCS(strtok_r)
 AC_CHECK_FUNCS(sigaction)
 AC_CHECK_FUNCS(sigset)
@@ -251,9 +209,10 @@ AC_CHECK_FUNCS(ether_aton)
 AC_CHECK_FUNCS(ether_ntoa)
 AC_CHECK_FUNCS(setgroups)
 
+# checks for types
 AC_TYPE_SIGNAL
 
-# Check for support for the __thread keyword.
+# check for support for the __thread keyword
 AC_CACHE_CHECK([whether $CC supports '__thread'], [mn_cv_c___thread_supported],
                [AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[static __thread i;]], []),
                        [mn_cv_c___thread_supported=yes],
@@ -263,6 +222,7 @@ AC_CACHE_CHECK([whether $CC supports '__thread'], [mn_cv_c___thread_supported],
        	      AC_MSG_ERROR([$CC does not support '__thread' keyword])
  	fi
 
+# check for support for the struct ether_addr structure
 AC_MSG_CHECKING(for struct ether_addr)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
         #include <sys/socket.h>
@@ -270,7 +230,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
         #include <netinet/in.h>
         #include <netinet/if_ether.h>]], [[struct ether_addr x;]])],[
                 AC_MSG_RESULT(yes)
-                AC_DEFINE(HAVE_STRUCT_ETHER_ADDR, 1, [Define to enable struct ether_addr definition.])
+                AC_DEFINE(HAVE_STRUCT_ETHER_ADDR,1,[Define to enable struct ether_addr definition.])
         ],[AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING(for socklen_t)
@@ -280,39 +240,30 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
                 AC_DEFINE(HAVE_SOCKLEN_T, 1, [Define to enable socklen_t definition.])
         ],[AC_MSG_RESULT(no)])
 
-AC_MSG_CHECKING(for pw_change in struct passwd)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <pwd.h>]], [[struct passwd pwd; time_t t = pwd.pw_change]])],[
-                AC_MSG_RESULT(yes)
-                AC_DEFINE(HAVE_PASSWD_PW_CHANGE, 1, [Define if struct passwd has a pw_change member.])
-        ],[AC_MSG_RESULT(no)])
-AC_MSG_CHECKING(for pw_expire in struct passwd)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <pwd.h>]], [[struct passwd pwd; time_t t = pwd.pw_expire]])],[
-                AC_MSG_RESULT(yes)
-                AC_DEFINE(HAVE_PASSWD_PW_EXPIRE, 1, [Define if struct passwd has a pw_expire member.])
-        ],[AC_MSG_RESULT(no)])
+# check to see if socklen_t is defined
+AC_CHECK_TYPE(socklen_t,,
+    AC_DEFINE(socklen_t, size_t,
+    [Define to `size_t' if not defined elswhere.]),
+    [
+#include <sys/types.h>
+#include <sys/socket.h>])
 
-dnl check which ldap library we have
-dnl check which ldap library we have
-if test -z "$with_ldap_lib"; then
-  with_ldap_lib=auto
-fi
+# check to see if struct sockaddr_storage is defined
+AC_CHECK_TYPE(struct sockaddr_storage,,
+    AC_DEFINE(sockaddr_storage,sockaddr_in,
+    [Define to 'sockaddr_in' if not defined elsewhere.]),
+    [
+#include <sys/types.h>
+#include <sys/socket.h>])
 
-AC_CHECK_LIB(dl, dlopen,[LIBS="-ldl $LIBS"],,$LIBS)
-dnl AC_CHECK_LIB(db, main,[LIBS="-ldb $LIBS"],,$LIBS)
+# checks for LDAP library
+save_LIBS="$LIBS"
+LIBS="$nslcd_LIBS"
 
 AC_CHECK_LIB(gssapi, gss_krb5_ccache_name,[LIBS="-lgssapi $LIBS" found_gssapi_lib=yes],,$LIBS)
 if test -z "$found_gssapi_lib"; then
   AC_CHECK_LIB(gssapi_krb5, gss_krb5_ccache_name,[LIBS="-lgssapi_krb5 $LIBS"],,$LIBS)
 fi
-
-dnl Following checks probably not strictly necessary.
-dnl AC_CHECK_LIB(crypto, main,[LIBS="-lcrypto $LIBS"],,$LIBS)
-dnl AC_CHECK_LIB(ssl, main,[LIBS="-lssl $LIBS"],,$LIBS)
-dnl AC_CHECK_LIB(com_err, main,[LIBS="-lcom_err $LIBS"],,$LIBS)
-dnl AC_CHECK_LIB(k5crypto, main,[LIBS="-lk5crypto $LIBS"],,$LIBS)
-dnl AC_CHECK_LIB(krb5, main,[LIBS="-lkrb5 $LIBS"],,$LIBS)
-dnl AC_CHECK_LIB(krb4, main,[LIBS="-lkrb4 $LIBS"],,$LIBS)
-dnl AC_CHECK_LIB(sasl, sasl_client_init,[LIBS="-lsasl $LIBS"],,$LIBS)
 
 if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = umich -o $with_ldap_lib = openldap \); then
   AC_CHECK_LIB(lber, main)
@@ -336,15 +287,12 @@ fi
 if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape3 \); then
   AC_CHECK_LIB(ldapssl30, main, LIBS="-lldapssl30 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
 fi
-
 if test -z "$found_ldap_lib"; then
   AC_MSG_ERROR(could not locate a valid LDAP library)
 fi
-
 if test "$need_pthread" = "yes"; then
   AC_CHECK_LIB(pthread, main)
 fi
-
 AC_CHECK_LIB(gssldap, ldap_gss_bind,[LIBS="-lgssldap $LIBS"],,$LIBS)
 
 AC_CHECK_FUNCS(sasl_auxprop_request)
@@ -352,18 +300,6 @@ AC_CHECK_FUNCS(ldap_init ldap_get_lderrno ldap_parse_result ldap_memfree ldap_co
 AC_CHECK_FUNCS(ldap_ld_free ldap_explode_rdn ldap_set_option ldap_get_option)
 AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s ldap_initialize ldap_search_ext)
 AC_CHECK_FUNCS(ldap_create_control ldap_create_page_control ldap_parse_page_control)
-if test "$enable_ssl" \!= "no"; then
-  AC_CHECK_FUNCS(ldapssl_client_init ldap_start_tls_s ldap_pvt_tls_set_option ldap_start_tls)
-fi
-AC_CHECK_FUNCS(gethostbyname_r)
-
-if test "$ac_cv_func_gethostbyname_r" = "yes"; then
-AC_CACHE_CHECK(whether gethostbyname_r takes 6 arguments, nss_ldap_cv_gethostbyname_r_args, [
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include <netdb.h>]], [[gethostbyname_r(0, 0, 0, 0, 0, 0);]])],[nss_ldap_cv_gethostbyname_r_args=6],[nss_ldap_cv_gethostbyname_r_args=5]) ])
-AC_DEFINE_UNQUOTED(GETHOSTBYNAME_R_ARGS, $nss_ldap_cv_gethostbyname_r_args, [Define to the number of args to gethostbyname_r.])
-fi
-
 AC_CHECK_FUNCS(ldap_set_rebind_proc)
 AC_CACHE_CHECK(whether ldap_set_rebind_proc takes 3 arguments, nss_ldap_cv_ldap_set_rebind_proc, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -371,5 +307,12 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <ldap.h>]], [[ldap_set_rebind_proc(0, 0, 0);]])],[nss_ldap_cv_ldap_set_rebind_proc=3],[nss_ldap_cv_ldap_set_rebind_proc=2]) ])
 AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS, $nss_ldap_cv_ldap_set_rebind_proc,[Define to the number of arguments to ldap_set_rebindproc.])
 
+nslcd_LIBS="$LIBS"
+LIBS="$save_LIBS"
+
+AC_SUBST(nss_ldap_so_LIBS)
+AC_SUBST(nslcd_LIBS)
+
+# generate files
 AC_CONFIG_FILES([Makefile nss/Makefile server/Makefile tests/Makefile])
 AC_OUTPUT
