@@ -4030,36 +4030,3 @@ _nss_ldap_test_initgroups_ignoreuser (const char *user)
 
   return 0;
 }
-
-int
-_nss_ldap_get_ld_errno (char **m, char **s)
-{
-  int rc;
-  int lderrno;
-
-  if (__session.ls_conn == NULL)
-    {
-      return LDAP_UNAVAILABLE;
-    }
-
-  /* is this needed? */
-  rc = ldap_get_option (__session.ls_conn, LDAP_OPT_ERROR_NUMBER, &lderrno);
-  if (rc != LDAP_SUCCESS)
-    return rc;
-
-  if (s != NULL)
-    {
-      rc = ldap_get_option (__session.ls_conn, LDAP_OPT_ERROR_STRING, s);
-      if (rc != LDAP_SUCCESS)
-        return rc;
-    }
-
-  if (m != NULL)
-    {
-      rc = ldap_get_option (__session.ls_conn, LDAP_OPT_MATCHED_DN, m);
-      if (rc != LDAP_SUCCESS)
-        return rc;
-    }
-
-  return lderrno;
-}
