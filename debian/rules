@@ -1,24 +1,95 @@
 #!/usr/bin/make -f
 
-export DH_COMPAT=4
-export LIBS=-lpthread
+export DH_VERBOSE=1
 
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/autotools.mk
+# code for passing host/build options to configure
+export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+ifeq ($(DEB_BUILD_GNU_TYPE), $(DEB_HOST_GNU_TYPE))
+  confflags += --build $(DEB_HOST_GNU_TYPE)
+else
+  confflags += --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
+endif
 
-DEB_CONFIGURE_EXTRA_FLAGS += --enable-rfc2307bis --with-ldap-lib=openldap --with-ldap-conf-file=/etc/libnss-ldap.conf --with-ldap-secret-file=/etc/libnss-ldap.secret --enable-schema-mapping --enable-paged-results --enable-configurable-krb5-ccname-gssapi
-DEB_DESTDIR = $(CURDIR)/debian/tmp
-DEB_OPT_FLAG += -fPIC
-DEB_DH_INSTALLINIT_ARGS = --no-start -- start 03 S . start 01 0 . stop 01 2 . stop 01 3 . stop 01 4 . stop 01 5 . start 01 6 .
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	./configure $(confflags) \
+	            --prefix=/usr \
+	            --mandir=\$${prefix}/share/man \
+	            --infodir=\$${prefix}/share/info \
+	            --sysconfdir=/etc \
+	            --localstatedir=/var \
+	            --enable-warnings \
+	            --disable-maintainer-mode \
+	            --disable-dependency-tracking \
+	            --enable-rfc2307bis \
+	            --with-ldap-lib=openldap \
+	            --with-ldap-conf-file=/etc/libnss-ldap.conf \
+	            --with-ldap-secret-file=/etc/libnss-ldap.secret \
+	            --enable-schema-mapping \
+	            --enable-paged-results \
+	            --enable-configurable-krb5-ccname-gssapi
+	touch configure-stamp
 
-MY_INST_DIR = $(CURDIR)/debian/libnss-ldap/usr/share
+build: configure-stamp build-stamp
+build-stamp:
+	dh_testdir
+	$(MAKE)
+	touch build-stamp
 
-binary-post-install/libnss-ldap::
+clean:
+	-test -r /usr/share/misc/config.sub && \
+	  cp -f /usr/share/misc/config.sub config.sub
+	-test -r /usr/share/misc/config.guess && \
+	  cp -f /usr/share/misc/config.guess config.guess
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+	-$(MAKE) distclean
+	dh_clean
+	debconf-updatepo --verbose
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/libnss-ldapd
+	# make configfile fully generated
+	rm -f $(CURDIR)/debian/libnss-ldapd/etc/libnss-ldap.conf
+	rm -f $(CURDIR)/debian/libnss-ldapd/etc/libnss-ldap.secret
 	# rename man page
-	mv $(MY_INST_DIR)/man/man5/nss_ldap.5 $(MY_INST_DIR)/man/man5/libnss-ldap.conf.5
+	mv $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/nss_ldap.5 $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/libnss-ldap.conf.5
 	# change all references from /etc/ldap.conf to /etc/libnss-ldap.conf
-	for file in $(MY_INST_DIR)/man/man5/libnss-ldap.conf.5 \
-		$(MY_INST_DIR)/libnss-ldap/ldap.conf ; do \
+	for file in $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/libnss-ldap.conf.5 \
+	            ; \
+	do \
 	  sed -i -e 's:/etc/ldap.conf:/etc/libnss-ldap.conf:g' \
-	  	 -e 's:/etc/ldap.secret:/etc/libnss-ldap.secret:g' $$file; \
+	         -e 's:/etc/ldap.secret:/etc/libnss-ldap.secret:g' $$file; \
 	done
+
+# build architecture-independent files
+binary-indep: build install
+# we have nothing to do by default
+
+# build architecture-dependent files
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installdebconf
+	dh_installdocs
+	dh_installexamples
+	dh_installinit
+	dh_installman
+	dh_installchangelogs
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch

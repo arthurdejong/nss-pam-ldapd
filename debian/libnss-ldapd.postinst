@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-PACKAGE=libnss-ldap
+PACKAGE=libnss-ldapd
 CONFFILE="/etc/libnss-ldap.conf"
 PASSWDFILE="/etc/libnss-ldap.secret"
 

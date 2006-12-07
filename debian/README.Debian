@@ -4,7 +4,7 @@ libnss-ldap for Debian
 This package was compiled against OpenLDAP and provides an excellent way
 of merging LDAP into an NIS network.
 An example for /etc/nsswitch.conf is installed in
-/usr/share/doc/libnss-ldap/examples/nsswitch.ldap. 
+/usr/share/doc/libnss-ldapd/examples/nsswitch.ldap. 
 
  -- Configuration files --
 

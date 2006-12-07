@@ -1,3 +1,9 @@
+libnss-ldapd (0.1.0) unstable; urgency=low
+
+  * This is a fork from the libnss-ldap package.
+
+ -- Arthur de Jong <adejong@debian.org>  Thu,  7 Dec 2006 12:04:11 +0100
+
 libnss-ldap (251-5.2) unstable; urgency=high
 
   * Non-maintainer upload.
