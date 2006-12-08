@@ -60,7 +60,7 @@ case "$1" in
 
 		# lets create the configuration from example if it's not there.
 		examplefile=/usr/share/$PACKAGE/ldap.conf
-		if [ ! -e $CONFFILE -a -e $examplefile ]; then
+		if [ ! -e $CONFFILE ] && [ -e $examplefile ]; then
 			cat > $CONFFILE << EOM
 ###DEBCONF###
 # the configuration of this file will be done by debconf as long as the
@@ -162,10 +162,11 @@ EOM
        ;;
 esac
 
-if [ -e /etc/ldap.secret -a ! -e /etc/libnss-ldap.secret ]; then
+if [ -e /etc/ldap.secret ] && [ ! -e /etc/libnss-ldap.secret ]; then
 	cp -p /etc/ldap.secret /etc/libnss-ldap.secret
 fi
 
+# restart nscd for some reason
 if [ -s /usr/sbin/nscd ]; then
 	if [ `pidof -s nscd` ]; then 
 		if which invoke-rc.d >/dev/null 2>&1; then
@@ -174,12 +175,6 @@ if [ -s /usr/sbin/nscd ]; then
 			/etc/init.d/nscd restart
 		fi
 	fi
-fi
-
-# This directory was used earlier, and should no longer have any
-# function (we use /lib/init/rw instead).
-if [ -d /var/lib/libnss-ldap ]; then
-	rm -rf /var/lib/libnss-ldap
 fi
 
 #DEBHELPER#

@@ -601,7 +601,3 @@ libnss-ldap (2.49-1) unstable; urgency=low
   * Initial Release.
 
  -- Ben Collins <bcollins@debian.org>  Thu, 11 Feb 1999 22:46:20 -0500
-
-Local variables:
-mode: debian-changelog
-End:

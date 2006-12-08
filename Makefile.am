@@ -26,8 +26,15 @@ man_MANS = nss_ldap.5
 EXTRA_DIST = ChangeLog \
              AUTHORS ANNOUNCE NEWS INSTALL README COPYING \
              ldap.conf \
-             debian \
-             nslcd.h nslcd-common.h
+             debian/changelog debian/compat debian/config \
+             debian/control debian/copyright debian/rules \
+             debian/templates debian/libnss-ldapd.docs \
+             debian/libnss-ldapd.postinst \
+             debian/libnss-ldapd.postrm debian/README.Debian \
+             debian/po/*.po debian/po/templates.pot \
+             debian/po/POTFILES.in \
+             nslcd.h nslcd-common.h \
+             nss_ldap.5
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
 
@@ -39,3 +46,11 @@ install-ldap_conf:
 	else \
 	  $(INSTALL_DATA) -D $(srcdir)/ldap.conf $(DESTDIR)$(NSS_LDAP_PATH_CONF); \
 	fi
+
+# target for easily creating a Debian package
+# the find is an ugly hack to fix a bug if being built on an nfs filesystem
+deb: distdir
+	find $(distdir) -type d | xargs touch
+	cd $(distdir) && \
+	  debuild
+	rm -rf $(distdir)

@@ -2,7 +2,7 @@ Source: libnss-ldapd
 Section: net
 Priority: extra
 Maintainer: Arthur de Jong <adejong@debian.org>
-Standards-Version: 3.5.9.0
+Standards-Version: 3.7.2
 Build-Depends: debhelper (>= 4.1.13), libkrb5-dev, libldap2-dev, libsasl2-dev, po-debconf (>= 0.5.0)
 
 Package: libnss-ldapd
