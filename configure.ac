@@ -112,12 +112,32 @@ AC_ARG_WITH(ldap-conf-file,
                            [path to LDAP configuration file]),
             [ NSS_LDAP_PATH_CONF="$with_ldap_conf_file" ],
             [ NSS_LDAP_PATH_CONF="/etc/ldap.conf" ])
+AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_CONF,"$NSS_LDAP_PATH_CONF",[Path to LDAP configuration file.])
+AC_SUBST(NSS_LDAP_PATH_CONF)
 
 AC_ARG_WITH(ldap-secret-file,
             AS_HELP_STRING([--with-ldap-secret-file],
                            [path to LDAP root secret file]),
             [ NSS_LDAP_PATH_ROOTPASSWD="$with_ldap_secret_file" ],
             [ NSS_LDAP_PATH_ROOTPASSWD="/etc/ldap.secret" ])
+AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_ROOTPASSWD,"$NSS_LDAP_PATH_ROOTPASSWD",[Path to LDAP root secret file.])
+AC_SUBST(NSS_LDAP_PATH_ROOTPASSWD)
+
+AC_ARG_WITH(nslcd-pidfile,
+            AS_HELP_STRING([--with-nslcd-pidfile],
+                           [path to pidfile [/var/run/nslcd/nslcd.pid]]),
+            [ NSLCD_PIDFILE="$with_nslcd_pidfile" ],
+            [ NSLCD_PIDFILE="/var/run/nslcd/nslcd.pid" ])
+AC_DEFINE_UNQUOTED(NSLCD_PIDFILE,"$NSLCD_PIDFILE",[The location of the pidfile used for checking availability of the nslcd.])
+AC_SUBST(NSLCD_PIDFILE)
+
+AC_ARG_WITH(nslcd-socket,
+            AS_HELP_STRING([--with-nslcd-socket],
+                           [path to socket [/var/run/nslcd/socket]]),
+            [ NSLCD_SOCKET="$with_nslcd_socket" ],
+            [ NSLCD_SOCKET="/var/run/nslcd/socket" ])
+AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used for communicating.])
+AC_SUBST(NSLCD_SOCKET)
 
 AC_ARG_WITH(gssapi-dir, 
             AS_HELP_STRING([--with-gssapi-dir=DIR],
@@ -130,10 +150,6 @@ AC_ARG_WITH(ngroups,
             [ldap_nss_ngroups=$with_ngroups])
 AC_DEFINE_UNQUOTED(LDAP_NSS_NGROUPS,$ldap_nss_ngroups,[Maximum number of group members in static buffer.])
 
-AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_CONF,"$NSS_LDAP_PATH_CONF",[Path to LDAP configuration file.])
-AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_ROOTPASSWD,"$NSS_LDAP_PATH_ROOTPASSWD",[Path to LDAP root secret file.])
-AC_SUBST(NSS_LDAP_PATH_CONF)
-AC_SUBST(NSS_LDAP_PATH_ROOTPASSWD)
 
 case "$target_os" in
 freebsd*) CPPFLAGS="$CPPFLAGS -DPIC -D_REENTRANT" ;;

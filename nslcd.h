@@ -154,12 +154,6 @@
   NSLCD_INT32(SHADOW_EXPIRE) \
   NSLCD_INT32(SHADOW_FLAG)
 
-/* The location of the socket used for communicating. */
-#define NSLCD_SOCKET "/tmp/nslcd.socket"
-
-/* The location of the pidfile used for checking availability of the nslcd. */
-#define NSLCD_PIDFILE "/tmp/nslcd.pid"
-
 /* The current version of the protocol. */
 #define NSLCD_VERSION 1
 
