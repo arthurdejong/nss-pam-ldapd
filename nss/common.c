@@ -44,7 +44,7 @@ enum nss_status nslcd2nss(int code)
     case NSLCD_RESULT_UNAVAIL:  return NSS_STATUS_UNAVAIL;
     case NSLCD_RESULT_NOTFOUND: return NSS_STATUS_NOTFOUND;
     case NSLCD_RESULT_SUCCESS:  return NSS_STATUS_SUCCESS;
-    default:                return NSS_STATUS_UNAVAIL;
+    default:                    return NSS_STATUS_UNAVAIL;
   }
 }
 
