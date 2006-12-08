@@ -8,8 +8,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap_211-4\n"
-"Report-Msgid-Bugs-To: adejong@debian.org\n"
-"POT-Creation-Date: 2006-12-08 17:27+0100\n"
+"Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
+"POT-Creation-Date: 2006-12-08 19:37+0100\n"
 "PO-Revision-Date: 2003-11-19 15:00+0500\n"
 "Last-Translator: Ilgiz Kalmetev <translator@ilgiz.pp.ru>\n"
 "Language-Team: russian <debian-russian@lists.debian.org>\n"
@@ -85,12 +85,6 @@ msgstr ""
 "Также: перед удалением этого пакета, он сотрет записи ldap из файла nsswitch."
 "conf, чтобы работа основных сервисов не нарушалась."
 
-#. Type: string
-#. Default
-#: ../templates:3001
-msgid "dc=example,dc=net"
-msgstr "dc=example,dc=net"
-
 #  Template: libnss-ldap/confperm
 #  ddtp-prioritize: 56
 #
@@ -137,14 +131,14 @@ msgstr "dc=example,dc=net"
 #
 #. Type: string
 #. Description
-#: ../templates:3002
+#: ../templates:3001
 msgid "distinguished name of the search base"
 msgstr "индивидуальное имя базы поиска."
 
 #
 #. Type: string
 #. Description
-#: ../templates:3002
+#: ../templates:3001
 msgid ""
 "Please enter the distinguished name of the LDAP search base.  Many sites use "
 "the components of their domain names for this purpose.  For example, the "
@@ -219,20 +213,14 @@ msgid "All new installations will have this by default."
 msgstr "Все вновь установленные системы должны иметь это по умолчанию."
 
 #. Type: string
-#. Default
-#: ../templates:6001
-msgid "cn=proxyuser,dc=example,dc=net"
-msgstr "cn=proxyuser,dc=example,dc=net"
-
-#. Type: string
 #. Description
-#: ../templates:6002
+#: ../templates:6001
 msgid "unprivileged database user"
 msgstr "непривилегированный пользователь базы данных"
 
 #. Type: string
 #. Description
-#: ../templates:6002
+#: ../templates:6001
 msgid ""
 "Enter the name of the account that will be used to log in to the LDAP "
 "database."
@@ -252,20 +240,14 @@ msgstr ""
 "Введите пароль, который будет использован для подключения к базе данных LDAP."
 
 #. Type: select
-#. Choices
-#: ../templates:8001
-msgid "3, 2"
-msgstr "3, 2"
-
-#. Type: select
 #. Description
-#: ../templates:8002
+#: ../templates:8001
 msgid "LDAP version to use"
 msgstr "Использовать версию LDAP"
 
 #. Type: select
 #. Description
-#: ../templates:8002
+#: ../templates:8001
 msgid ""
 "Please enter which version of the LDAP protocol ldapns is to use.  It is "
 "usually a good idea to set this to highest available version number."
@@ -274,21 +256,14 @@ msgstr ""
 "лучше использовать версию с наибольшим номером."
 
 #. Type: string
-#. Default
-#: ../templates:9001
-#, fuzzy
-msgid "ldap://127.0.0.1/"
-msgstr "127.0.0.1"
-
-#. Type: string
 #. Description
-#: ../templates:9002
+#: ../templates:9001
 msgid "LDAP server Uniform Resource Identifier"
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../templates:9002
+#: ../templates:9001
 msgid ""
 "Please enter the URI of the LDAP server used. This is a string in the form "
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
@@ -297,7 +272,7 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../templates:9002
+#: ../templates:9001
 msgid ""
 "Note: It is usually a good idea to use an IP address; this reduces risks of "
 "failure in the event name service is unavailable."
@@ -375,6 +350,19 @@ msgstr ""
 #: ../templates:12001
 msgid "Entering an empty password will re-use the old password."
 msgstr ""
+
+#~ msgid "dc=example,dc=net"
+#~ msgstr "dc=example,dc=net"
+
+#~ msgid "cn=proxyuser,dc=example,dc=net"
+#~ msgstr "cn=proxyuser,dc=example,dc=net"
+
+#~ msgid "3, 2"
+#~ msgstr "3, 2"
+
+#, fuzzy
+#~ msgid "ldap://127.0.0.1/"
+#~ msgstr "127.0.0.1"
 
 #~ msgid "LDAP server host address"
 #~ msgstr "Хостовый адрес сервера LDAP"
