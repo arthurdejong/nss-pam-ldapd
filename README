@@ -434,3 +434,279 @@ sendmailvars:   files
 
 # Note: there is no support for netgroups on Solaris (yet)
 netgroup:   ldap [NOTFOUND=return] files
+
+***********************************************************
+**** sample people.ldif ***********************************
+***********************************************************
+
+dn: ou=People,dc=example,dc=com
+ou: People
+objectClass: organizationalUnit
+objectClass: top
+
+dn: cn=Local Root,ou=People,dc=example,dc=com
+cn: Local Root
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: organizationalRole
+uid: root
+uidNumber: 0
+gidNumber: 0
+homeDirectory: /root
+
+dn: cn=Andrew Suffield,ou=People,dc=example,dc=com
+cn: Andrew Suffield
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+givenName: Andrew
+sn: Suffield
+uid: asuffield
+uidNumber: 1000
+gidNumber: 5001
+homeDirectory: /home/asuffield
+loginShell: /bin/bash
+
+dn: cn=Test User,ou=People,dc=example,dc=com
+cn: Test User
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+sn: User
+uid: test
+uidNumber: 1001
+gidNumber: 1001
+homeDirectory: /home/test
+
+dn: cn=Test User 2,ou=People,dc=example,dc=com
+cn: Test User 2
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+sn: User
+uid: test2
+uidNumber: 1002
+gidNumber: 1002
+homeDirectory: /home/test2
+
+***********************************************************
+**** sample groups.ldif ***********************************
+***********************************************************
+
+dn: ou=Group,dc=example,dc=com
+ou: Group
+objectClass: organizationalUnit
+objectClass: top
+
+dn: cn=root,ou=Group,dc=example,dc=com
+cn: root
+objectClass: posixGroup
+objectClass: top
+gidNumber: 0
+memberUid: 0
+
+dn: cn=users,ou=Group,dc=example,dc=com
+cn: users
+objectClass: posixGroup
+objectClass: top
+gidNumber: 5000
+memberUid: asuffield
+memberUid: test
+memberUid: test2
+
+dn: cn=admin,ou=Group,dc=example,dc=com
+cn: admin
+objectClass: posixGroup
+objectClass: top
+gidNumber: 5001
+memberUid: asuffield
+
+***********************************************************
+**** LDAP Permissions *************************************
+***********************************************************
+
+nss_ldap LDAP Searches
+======================
+
+The following list describes the search filters and attributes that nss_ldap
+uses for each database type in /etc/nsswitch.conf
+
+For each of the entries the search base is determined by the nss_base_...
+parameter in /etc/libnss-ldap.conf.
+
+The search filters are used when the resprective functions are called.
+
+For brevity's sake the attributes have been given as one complete list
+per database type and not as one list per each search, which whould
+have been more correct.
+
+The information contained in the list may be used to determine the required
+permissions to objects and attributes in the directory for the accounts
+referred to by 'binddn' and 'rootbinddn' in /etc/libnss-ldap.conf.
+
+'rootbinddn' is used if it is set and libnss-ldap is called with effective
+user id 0. In all other cases 'binddn' is used if it is set. If 'binddn is
+not set the LDAP searches are done anonymously.
+
+If 'rootbinddn' is set and has read access to the attributes marked below
+as "readable by 'rootbinddn' only" while 'binddn' hasn't, then ilibnss-ldap
+behaves identical compared to flat files. (i.e. 'getent shadow' returns
+nothing for regular users while it returns the information wanted for 
+root)
+
+The list contains only the unmapped names. If you use libnss-ldap's
+attribute or objectclass mapping feature then you have to map the
+names in the list to the mapped ones.
+
+aliases
+-------
+* Filters:
+  getaliasbyname():	(&(objectclass=nisMailAlias)(cn=%s))
+  getaliasent():	(objectclass=nisMailAlias)
+* Attributes:
+  cn
+  rfc822MailMember
+
+bootparams
+----------
+* Filters:
+  getbootparamsbyname():	(&(objectclass=bootableDevice)(cn=%s))" 
+* Attributes:
+  cn
+  bootParameter
+
+ethers
+------
+* Filters:
+  gethostton():		(&(objectclass=ieee802Device)(cn=%s))
+  getntohost():		(&(objectclass=ieee802Device)(macAddress=%s))
+  getetherent():	(objectclass=ieee802Device)
+* Attributes:
+  cn
+  macAddress
+
+group
+-----
+* Filters:
+  getgrnam():		(&(objectclass=posixGroup)(cn=%s))
+  getgrgid():		(&(objectclass=posixGroup)(gidNumber=%s))
+  getgrent():		(&(objectclass=posixGroup))
+  getgroupsbymemberanddn():	(&(objectclass=posixGroup)(|(memberUid=%s)(uniqueMember=%s)))
+  getgroupsbydn():	(&(objectclass=posixGroup)(uniqueMember=%s))
+  getgroupsbymember():	(&(objectclass=posixGroup)(memberUid=%s))
+* Attributes:
+  cn
+  userPassword		<- should be readable by 'rootbinddn' only
+  memberUid
+  uniqueMember
+  gidNumber
+
+hosts
+-----
+* Filters:
+  gethostbyname():	(&(objectclass=ipHost)(cn=%s))
+  gethostbyaddr():	(&(objectclass=ipHost)(ipHostNumber=%s))
+  gethostent():		(objectclass=ipHost)
+* Attributes:
+  cn
+  ipHostNumber
+
+networks
+--------
+* Filters:
+  getnetbyname():	(&(objectclass=ipNetwork)(cn=%s))
+  getnetbyaddr():	(&(objectclass=ipNetwork)(ipNetworkNumber=%s))
+  getnetent():		(objectclass=ipNetwork)",
+* Attributes:
+  cn
+  ipNetworkNumber
+  ipNetmaskNumber
+
+protocols
+---------
+* Filters:
+  getprotobyname():	(&(objectclass=ipProtocol)(cn=%s))
+  getprotobynumber():	(&(objectclassipProtocols)(ipProtocolNumber=%s))
+  getprotoent():	(objectclass=ipProtocol)
+* Attributes:
+  cn
+  ipProtocolNumber
+
+passwd
+------
+* Filters:
+  getpwnam():	(&(objectclass=posixAccount)(uid=%s))
+  getpwuid():	(&(objectclass=posixAccount)(uidNumber=%s))
+  getpwent():	(objectclass=posixAccount)
+* Attributes:
+  uid
+  userPassword		<- should be readable by 'rootbinddn' only
+  uidNumber
+  gidNumber
+  cn
+  homeDirectory
+  loginShell
+  gecos
+  description
+  shadowLastChange	<- should be readable by 'rootbinddn' only
+  shadowMax		<- should be readable by 'rootbinddn' only
+  shadowExpire		<- should be readable by 'rootbinddn' only
+
+rpc
+---
+* Filters:
+  getrpcbyname():	(&(objectclass=oncRpc)(cn=%s))
+  getrpcbynumber():	(&(objectclass=oncRpc)(oncRpcNumber=%s))
+  getrpcent():		(objectclass=oncRpc)
+* Attributes:
+  cn
+  oncRpcNumber
+
+services
+--------
+* Filters:
+  getservbyname():	(&(objectclass=ipService)(cn=%s))",
+  getservbynameproto():	(&(objectclass=ipService)(cn=%s)(ipServiceProtocol=%s))
+  getservbyport():	(&(objectclass=ipService)(ipServicePort=%s))
+  getservbyportproto():	(&(objectclass=ipService)(ipServicePort=%s)(ipServiceProtocol=%s))
+  getservent():		(objectclass=ipService)
+* Attributes:
+  cn
+  ipServicePort
+  ipServiceProtocol
+
+shadow
+------
+* Filters:
+  getspnam():		(&(objectclass=shadowAccount)(uid=%s))
+  getspent():		(objectclass=shadowAccount)
+* Attributes:
+  uid
+  userPassword
+  shadowLastChange
+  shadowMax
+  shadowMin
+  shadowWarning
+  shadowInactive
+  shadowExpire
+  shadowFlag
+
+netgroup
+--------
+* Filters:
+  getnetgrent():	(&(objectclass=nisNetgroup)(cn=%s))
+  innetgr():		(&(objectclass=nisNetgroup)(memberNisNetgroup=%s))
+* Attributes:
+  cn
+  nisNetgroupTriple
+  memberNisNetgroup
+
+automount
+---------
+* Attributes:  
+  cn
+  nisMapEntry
+  nisMapName
+  description
+
+ -- Peter Marschall <peter@adpm.de>
