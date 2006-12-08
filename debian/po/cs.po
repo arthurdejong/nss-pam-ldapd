@@ -14,7 +14,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap\n"
-"POT-Creation-Date: 2003-03-23 10:45+0200\n"
+"Report-Msgid-Bugs-To: adejong@debian.org\n"
+"POT-Creation-Date: 2006-12-08 17:27+0100\n"
 "PO-Revision-Date: 2005-07-10 16:33+0200\n"
 "Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
 "Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
@@ -22,22 +23,25 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. Type: boolean
 #. Description
-#: ../templates:4
+#: ../templates:1001
 msgid "make configuration readable/writeable by owner only"
 msgstr "Umožnit čtení/zápis do konfigurace pouze vlastníkovi"
 
+#. Type: boolean
 #. Description
-#: ../templates:4
+#: ../templates:1001
 msgid ""
 "Should the libnss-ldap configuration file be readable and writable only by "
 "the file owner?"
 msgstr ""
-"Nastavit oprávnění konfiguračního souboru libnss-ldap tak, aby jej mohl "
-"číst/zapisovat pouze vlastník souboru?"
+"Nastavit oprávnění konfiguračního souboru libnss-ldap tak, aby jej mohl číst/"
+"zapisovat pouze vlastník souboru?"
 
+#. Type: boolean
 #. Description
-#: ../templates:4
+#: ../templates:1001
 msgid ""
 "If you use passwords in your libnss-ldap configuration, it is usually a good "
 "idea to have the configuration set with mode 0600 (readable and writable "
@@ -46,8 +50,9 @@ msgstr ""
 "Používáte-li ve své konfiguraci libnss-ldap hesla, je obvykle dobrým nápadem "
 "nastavit souboru práva 0600 (čtení a zápis pouze pro vlastníka souboru)."
 
+#. Type: boolean
 #. Description
-#: ../templates:4
+#: ../templates:1001
 msgid ""
 "Note: As a sanity check, libnss-ldap will check if you have nscd installed "
 "and will only set the mode to 0600 if nscd is present."
@@ -55,45 +60,51 @@ msgstr ""
 "Poznámka: libnss-ldap ještě zkontroluje, zda máte nainstalován nscd a "
 "oprávnění změní pouze v případě, že ano."
 
+#. Type: note
 #. Description
-#: ../templates:17
+#: ../templates:2001
 msgid "nsswitch.conf is not managed automatically"
 msgstr "nsswitch.conf není spravován automaticky"
 
+#. Type: note
 #. Description
-#: ../templates:17
+#: ../templates:2001
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
 "examples/nsswitch.ldap which can be used as an example for your nsswitch "
 "setup, or it can be copied over your current setup."
 msgstr ""
-"Aby tento balík fungoval, musíte upravit svůj /etc/nsswitch.conf, aby "
-"jako zdroj dat používal ldap. V /usr/share/doc/libnss-ldap/examples/"
-"nsswitch.ldap se nachází vzorový soubor, který můžete použít jako "
-"základ pro vaše nastavení (stačí jej i prostě zkopírovat)."
+"Aby tento balík fungoval, musíte upravit svůj /etc/nsswitch.conf, aby jako "
+"zdroj dat používal ldap. V /usr/share/doc/libnss-ldap/examples/nsswitch.ldap "
+"se nachází vzorový soubor, který můžete použít jako základ pro vaše "
+"nastavení (stačí jej i prostě zkopírovat)."
 
+#. Type: note
 #. Description
-#: ../templates:17
+#: ../templates:2001
 msgid ""
 "Also, before removing this package, it is wise to remove the ldap entries "
 "from nsswitch.conf to keep basic services functioning."
 msgstr ""
-"Podobně je vhodné při odinstalování balíčku tyto ldap záznamy z "
-"nsswitch.conf zase odstranit, aby byla zachována funkčnost základních služeb."
+"Podobně je vhodné při odinstalování balíčku tyto ldap záznamy z nsswitch."
+"conf zase odstranit, aby byla zachována funkčnost základních služeb."
 
+#. Type: string
 #. Default
-#: ../templates:29
+#: ../templates:3001
 msgid "dc=example,dc=net"
 msgstr "dc=priklad,dc=cz"
 
+#. Type: string
 #. Description
-#: ../templates:30
+#: ../templates:3002
 msgid "distinguished name of the search base"
 msgstr "Rozlišitelný název prohledávaného stromu"
 
+#. Type: string
 #. Description
-#: ../templates:30
+#: ../templates:3002
 msgid ""
 "Please enter the distinguished name of the LDAP search base.  Many sites use "
 "the components of their domain names for this purpose.  For example, the "
@@ -102,21 +113,24 @@ msgid ""
 msgstr ""
 "Zadejte prosím rozlišitelný název prohledávaného LDAP stromu. Mnoho serverů "
 "pro tento účel využívá části svých doménových jmen. Například doména "
-"\"priklad.cz\" by jako rozlišitelné jméno svého stromu použila "
-"\"dc=priklad,dc=cz\"."
+"\"priklad.cz\" by jako rozlišitelné jméno svého stromu použila \"dc=priklad,"
+"dc=cz\"."
 
+#. Type: boolean
 #. Description
-#: ../templates:39
+#: ../templates:4001
 msgid "database requires login"
 msgstr "Databáze vyžaduje přihlášení"
 
+#. Type: boolean
 #. Description
-#: ../templates:39
+#: ../templates:4001
 msgid "Does the LDAP database require login?"
 msgstr "Vyžaduje LDAP databáze přihlášení?"
 
+#. Type: boolean
 #. Description
-#: ../templates:39
+#: ../templates:4001
 msgid ""
 "Answer this question affirmatively only if you can't retreive entries from "
 "the database without logging in."
@@ -124,29 +138,34 @@ msgstr ""
 "Souhlaste pouze v případě, že nemůžete získávat záznamy z databáze bez "
 "přihlášení."
 
+#. Type: boolean
 #. Description
-#: ../templates:39
+#: ../templates:4001
 msgid "Note: Under a normal setup, this is not needed."
 msgstr "Poznámka: při běžném nastavení to není potřeba."
 
+#. Type: boolean
 #. Description
-#: ../templates:50
+#: ../templates:5001
 msgid "enable automatic configuration updates by debconf"
 msgstr "Povolit automatické zásahy do konfigurace pomocí debconfu"
 
+#. Type: boolean
 #. Description
-#: ../templates:50
+#: ../templates:5001
 msgid "Should debconf automatically update libnss-ldap's configuration file?"
 msgstr "Má debconf automaticky aktualizovat konfigurační soubor libnss-ldap?"
 
+#. Type: boolean
 #. Description
-#: ../templates:50
+#: ../templates:5001
 msgid "libnss-ldap has been moved to use debconf for its configuration."
 msgstr ""
 "libnss-ldap se konečně pochlapil a pro svou konfiguraci používá debconf."
 
+#. Type: boolean
 #. Description
-#: ../templates:50
+#: ../templates:5001
 msgid ""
 "The file will be prepended with \"###DEBCONF###\"; you can disable the "
 "debconf updates by removing that line."
@@ -154,50 +173,59 @@ msgstr ""
 "Na začátek souboru bude přidán řádek \"###DEBCONF###\". Chcete-li, aby "
 "debconf do souboru nezasahoval, stačí zmíněný řádek odstranit."
 
+#. Type: boolean
 #. Description
-#: ../templates:50
+#: ../templates:5001
 msgid "All new installations will have this by default."
 msgstr "Toto je výchozí nastavení pro všechny nové instalace."
 
+#. Type: string
 #. Default
-#: ../templates:62
+#: ../templates:6001
 msgid "cn=proxyuser,dc=example,dc=net"
 msgstr "cn=proxyuzivatel,dc=priklad,dc=cz"
 
+#. Type: string
 #. Description
-#: ../templates:63
+#: ../templates:6002
 msgid "unprivileged database user"
 msgstr "Neprivilegovaný databázový uživatel"
 
+#. Type: string
 #. Description
-#: ../templates:63
+#: ../templates:6002
 msgid ""
 "Enter the name of the account that will be used to log in to the LDAP "
 "database."
 msgstr "Zadejte jméno účtu, který se použije pro přístup k LDAP databázi."
 
+#. Type: password
 #. Description
-#: ../templates:69
+#: ../templates:7001
 msgid "password for database login account"
 msgstr "Heslo pro přihlášení k databázi"
 
+#. Type: password
 #. Description
-#: ../templates:69
+#: ../templates:7001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr "Zadejte heslo, které se použije pro přístup k LDAP databázi."
 
+#. Type: select
 #. Choices
-#: ../templates:74
+#: ../templates:8001
 msgid "3, 2"
 msgstr "3, 2"
 
+#. Type: select
 #. Description
-#: ../templates:76
+#: ../templates:8002
 msgid "LDAP version to use"
 msgstr "Verze LDAPu, která se má použít"
 
+#. Type: select
 #. Description
-#: ../templates:76
+#: ../templates:8002
 msgid ""
 "Please enter which version of the LDAP protocol ldapns is to use.  It is "
 "usually a good idea to set this to highest available version number."
@@ -205,26 +233,111 @@ msgstr ""
 "Zadejte verzi LDAP protokolu, kterou má ldapns používat. Obvykle se "
 "doporučuje použít nejvyšší dostupnou verzi."
 
+#. Type: string
 #. Default
-#: ../templates:82
-msgid "127.0.0.1"
+#: ../templates:9001
+#, fuzzy
+msgid "ldap://127.0.0.1/"
 msgstr "127.0.0.1"
 
+#. Type: string
 #. Description
-#: ../templates:83
-msgid "LDAP server host address"
-msgstr "Adresa počítače s LDAP serverem"
+#: ../templates:9002
+msgid "LDAP server Uniform Resource Identifier"
+msgstr ""
 
+#. Type: string
 #. Description
-#: ../templates:83
-msgid "Please enter the address of the LDAP server used."
-msgstr "Zadejte prosím adresu použitého LDAP serveru."
+#: ../templates:9002
+msgid ""
+"Please enter the URI of the LDAP server used. This is a string in the form "
+"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
+"port number is optional."
+msgstr ""
 
+#. Type: string
 #. Description
-#: ../templates:83
+#: ../templates:9002
 msgid ""
 "Note: It is usually a good idea to use an IP address; this reduces risks of "
 "failure in the event name service is unavailable."
 msgstr ""
 "Poznámka: vždy je lepší použít IP adresu, protože se tím snižuje riziko "
 "chyby v případě, že je služba překladu jmen nedostupná."
+
+#. Type: boolean
+#. Description
+#: ../templates:10001
+msgid "special LDAP privileges for root"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../templates:10001
+msgid ""
+"This option will allow tools that perform requests to the nss system with "
+"libnss-ldap as backend to return more information when called as root."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../templates:10001
+msgid ""
+"If you are using NFS mounted /etc or any other custom setup, you should "
+"disable this."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:11001
+msgid "LDAP account for root"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:11001
+msgid "This account will be used for nss requests with root privileges."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:11001
+msgid ""
+"Note: For this to work the account needs permission to access the attributes "
+"in the LDAP directory that are related to the users' shadow entries as well "
+"as users' and groups' passwords."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../templates:12001
+msgid "LDAP root account password"
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../templates:12001
+msgid ""
+"This password will be used when libnss-ldap tries to login to the LDAP "
+"directory using the LDAP account for root."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../templates:12001
+msgid ""
+"The password will be stored in a separate file /etc/libnss-ldap.secret which "
+"will be made readable to root only."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../templates:12001
+msgid "Entering an empty password will re-use the old password."
+msgstr ""
+
+#~ msgid "LDAP server host address"
+#~ msgstr "Adresa počítače s LDAP serverem"
+
+#~ msgid "Please enter the address of the LDAP server used."
+#~ msgstr "Zadejte prosím adresu použitého LDAP serveru."

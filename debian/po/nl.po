@@ -14,7 +14,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2003-03-23 10:45+0200\n"
+"Report-Msgid-Bugs-To: adejong@debian.org\n"
+"POT-Creation-Date: 2006-12-08 17:27+0100\n"
 "PO-Revision-Date: 2003-08-08 23:07+0100\n"
 "Last-Translator: Bart Cornelis <cobaco@linux.be>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,158 +23,331 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. Type: boolean
 #. Description
-#: ../templates:4
+#: ../templates:1001
 msgid "make configuration readable/writeable by owner only"
-msgstr "zorg dat de configuratie enkel te bekijken/veranderen is door de eigenaar"
+msgstr ""
+"zorg dat de configuratie enkel te bekijken/veranderen is door de eigenaar"
 
+#. Type: boolean
 #. Description
-#: ../templates:4
-msgid "Should the libnss-ldap configuration file be readable and writable only by the file owner?"
-msgstr "Wilt u dat het libnss-ldap configuratiebestand enkel te bekijken en veranderen is door de bestandeigenaar?"
+#: ../templates:1001
+msgid ""
+"Should the libnss-ldap configuration file be readable and writable only by "
+"the file owner?"
+msgstr ""
+"Wilt u dat het libnss-ldap configuratiebestand enkel te bekijken en "
+"veranderen is door de bestandeigenaar?"
 
+#. Type: boolean
 #. Description
-#: ../templates:4
-msgid "If you use passwords in your libnss-ldap configuration, it is usually a good idea to have the configuration set with mode 0600 (readable and writable only by the file's owner)."
-msgstr "Indien u wachtwoorden gebruikt in uw libnss-ldap configuratie is het meestal een goed idee om het configuratie bestand modus 0600 te geven (enkel lees- en schrijfbaar door de eigenaar van het bestand."
+#: ../templates:1001
+msgid ""
+"If you use passwords in your libnss-ldap configuration, it is usually a good "
+"idea to have the configuration set with mode 0600 (readable and writable "
+"only by the file's owner)."
+msgstr ""
+"Indien u wachtwoorden gebruikt in uw libnss-ldap configuratie is het meestal "
+"een goed idee om het configuratie bestand modus 0600 te geven (enkel lees- "
+"en schrijfbaar door de eigenaar van het bestand."
 
+#. Type: boolean
 #. Description
-#: ../templates:4
-msgid "Note: As a sanity check, libnss-ldap will check if you have nscd installed and will only set the mode to 0600 if nscd is present."
-msgstr "Opmerking: libnss-ldap zal nagaan of u nscd geinstalleerd heeft, en zal de modus enkel naar 0600 zetten indien nscd aanwezig is."
+#: ../templates:1001
+msgid ""
+"Note: As a sanity check, libnss-ldap will check if you have nscd installed "
+"and will only set the mode to 0600 if nscd is present."
+msgstr ""
+"Opmerking: libnss-ldap zal nagaan of u nscd geinstalleerd heeft, en zal de "
+"modus enkel naar 0600 zetten indien nscd aanwezig is."
 
+#. Type: note
 #. Description
-#: ../templates:17
+#: ../templates:2001
 msgid "nsswitch.conf is not managed automatically"
 msgstr "nsswitch.conf wordt niet automatisch beheerd"
 
+#. Type: note
 #. Description
-#: ../templates:17
-msgid "For this package to work, you need to modify your /etc/nsswitch.conf to use the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/examples/nsswitch.ldap which can be used as an example for your nsswitch setup, or it can be copied over your current setup."
-msgstr "Opdat dit pakket zou werken dient u uw /etc/nsswitch.conf bestand aan te passen om de ldap databron te gebruiken. Er is een voorbeeldbestand te vinden in /usr/share/doc/libnss-ldap/examples/nsswitch.ldap , u kunt dit gebruiken als een startpunt."
+#: ../templates:2001
+msgid ""
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
+"examples/nsswitch.ldap which can be used as an example for your nsswitch "
+"setup, or it can be copied over your current setup."
+msgstr ""
+"Opdat dit pakket zou werken dient u uw /etc/nsswitch.conf bestand aan te "
+"passen om de ldap databron te gebruiken. Er is een voorbeeldbestand te "
+"vinden in /usr/share/doc/libnss-ldap/examples/nsswitch.ldap , u kunt dit "
+"gebruiken als een startpunt."
 
+#. Type: note
 #. Description
-#: ../templates:17
-msgid "Also, before removing this package, it is wise to remove the ldap entries from nsswitch.conf to keep basic services functioning."
-msgstr "Daarnaast is het wenselijk om voor de verwijdering van dit pakket de ldap ingangen uit nsswitch.conf te verwijderen, teneinde de basis diensten werkend te houden."
+#: ../templates:2001
+msgid ""
+"Also, before removing this package, it is wise to remove the ldap entries "
+"from nsswitch.conf to keep basic services functioning."
+msgstr ""
+"Daarnaast is het wenselijk om voor de verwijdering van dit pakket de ldap "
+"ingangen uit nsswitch.conf te verwijderen, teneinde de basis diensten "
+"werkend te houden."
 
+#. Type: string
 #. Default
-#: ../templates:29
+#: ../templates:3001
 msgid "dc=example,dc=net"
 msgstr "dc=voorbeeld,dc=net"
 
+#. Type: string
 #. Description
-#: ../templates:30
+#: ../templates:3002
 msgid "distinguished name of the search base"
 msgstr "onderscheiden naam van de zoek basis"
 
+#. Type: string
 #. Description
-#: ../templates:30
-msgid "Please enter the distinguished name of the LDAP search base.  Many sites use the components of their domain names for this purpose.  For example, the domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished name of the search base."
-msgstr "Gelieve de onderscheiden naam van de LDAP zoek basis in te voeren. Veel sites gebruiken de componenten van hun domeinnaam voor dit doel. Bijvoorbeeld: de domein naam\"voorbeeld.net\" zou gebruik maken van \"dc=voorbeeld,dc=net\" als de onderscheiden naam van de zoek basis."
+#: ../templates:3002
+msgid ""
+"Please enter the distinguished name of the LDAP search base.  Many sites use "
+"the components of their domain names for this purpose.  For example, the "
+"domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
+"name of the search base."
+msgstr ""
+"Gelieve de onderscheiden naam van de LDAP zoek basis in te voeren. Veel "
+"sites gebruiken de componenten van hun domeinnaam voor dit doel. "
+"Bijvoorbeeld: de domein naam\"voorbeeld.net\" zou gebruik maken van "
+"\"dc=voorbeeld,dc=net\" als de onderscheiden naam van de zoek basis."
 
+#. Type: boolean
 #. Description
-#: ../templates:39
+#: ../templates:4001
 msgid "database requires login"
 msgstr "database vereist aanmelding"
 
+#. Type: boolean
 #. Description
-#: ../templates:39
+#: ../templates:4001
 msgid "Does the LDAP database require login?"
 msgstr "Wordt aanmelden door de LDAP database vereist?"
 
+#. Type: boolean
 #. Description
-#: ../templates:39
-msgid "Answer this question affirmatively only if you can't retreive entries from the database without logging in."
-msgstr "Beantwoord dit enkel positief indien u geen ingangen van de database kunt ontvangen zonder aan te melden."
+#: ../templates:4001
+msgid ""
+"Answer this question affirmatively only if you can't retreive entries from "
+"the database without logging in."
+msgstr ""
+"Beantwoord dit enkel positief indien u geen ingangen van de database kunt "
+"ontvangen zonder aan te melden."
 
+#. Type: boolean
 #. Description
-#: ../templates:39
+#: ../templates:4001
 msgid "Note: Under a normal setup, this is not needed."
 msgstr "Opmerking: In een normale opzet is dit niet nodig."
 
+#. Type: boolean
 #. Description
-#: ../templates:50
+#: ../templates:5001
 msgid "enable automatic configuration updates by debconf"
 msgstr "activeer automatische actualizatie van de configuratie via debconf"
 
+#. Type: boolean
 #. Description
-#: ../templates:50
+#: ../templates:5001
 msgid "Should debconf automatically update libnss-ldap's configuration file?"
-msgstr "Wilt u het libnss-ldap configuratiebestand automatisch door debconf laten actualizeren?"
+msgstr ""
+"Wilt u het libnss-ldap configuratiebestand automatisch door debconf laten "
+"actualizeren?"
 
+#. Type: boolean
 #. Description
-#: ../templates:50
+#: ../templates:5001
 msgid "libnss-ldap has been moved to use debconf for its configuration."
 msgstr "libnss-ldap is overgeschakeld naar debconf voor configuratie."
 
+#. Type: boolean
 #. Description
-#: ../templates:50
-msgid "The file will be prepended with \"###DEBCONF###\"; you can disable the debconf updates by removing that line."
-msgstr "Dit bestand zal beginnen met \"###DEBCONF###\"; u kunt debconf actualizatie uitschakelen door deze regel te verwijderen."
+#: ../templates:5001
+msgid ""
+"The file will be prepended with \"###DEBCONF###\"; you can disable the "
+"debconf updates by removing that line."
+msgstr ""
+"Dit bestand zal beginnen met \"###DEBCONF###\"; u kunt debconf actualizatie "
+"uitschakelen door deze regel te verwijderen."
 
+#. Type: boolean
 #. Description
-#: ../templates:50
+#: ../templates:5001
 msgid "All new installations will have this by default."
 msgstr "Alle nieuwe installaties gebruiken dit bij default."
 
+#. Type: string
 #. Default
-#: ../templates:62
+#: ../templates:6001
 msgid "cn=proxyuser,dc=example,dc=net"
 msgstr "cn=proxygebruiker,dc=voorbeeld,dc=net"
 
+#. Type: string
 #. Description
-#: ../templates:63
+#: ../templates:6002
 msgid "unprivileged database user"
 msgstr "niet bevoorrechte database gebruiker"
 
+#. Type: string
 #. Description
-#: ../templates:63
-msgid "Enter the name of the account that will be used to log in to the LDAP database."
-msgstr "Voer de naam in van de account die zal gebruikt worden voor aanmelding bij de LDAP database"
+#: ../templates:6002
+msgid ""
+"Enter the name of the account that will be used to log in to the LDAP "
+"database."
+msgstr ""
+"Voer de naam in van de account die zal gebruikt worden voor aanmelding bij "
+"de LDAP database"
 
+#. Type: password
 #. Description
-#: ../templates:69
+#: ../templates:7001
 msgid "password for database login account"
 msgstr "wachtwoord voor de database aanmeldings account"
 
+#. Type: password
 #. Description
-#: ../templates:69
+#: ../templates:7001
 msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr "Voer het wachtwoord in dat gebruikt zal worden om op de LDAP database aan te melden."
+msgstr ""
+"Voer het wachtwoord in dat gebruikt zal worden om op de LDAP database aan te "
+"melden."
 
+#. Type: select
 #. Choices
-#: ../templates:74
+#: ../templates:8001
 msgid "3, 2"
 msgstr "3, 2"
 
+#. Type: select
 #. Description
-#: ../templates:76
+#: ../templates:8002
 msgid "LDAP version to use"
 msgstr "Te gebruiken LDAP versie"
 
+#. Type: select
 #. Description
-#: ../templates:76
-msgid "Please enter which version of the LDAP protocol ldapns is to use.  It is usually a good idea to set this to highest available version number."
-msgstr "Gelieve de door ldapns te gebruiken versie van het LDAP protocol in te voeren. Gewoonlijk is het een goed idee om dit op het hoogst beschikbare nummer in te stellen."
+#: ../templates:8002
+msgid ""
+"Please enter which version of the LDAP protocol ldapns is to use.  It is "
+"usually a good idea to set this to highest available version number."
+msgstr ""
+"Gelieve de door ldapns te gebruiken versie van het LDAP protocol in te "
+"voeren. Gewoonlijk is het een goed idee om dit op het hoogst beschikbare "
+"nummer in te stellen."
 
+#. Type: string
 #. Default
-#: ../templates:82
-msgid "127.0.0.1"
+#: ../templates:9001
+#, fuzzy
+msgid "ldap://127.0.0.1/"
 msgstr "127.0.0.1"
 
+#. Type: string
 #. Description
-#: ../templates:83
-msgid "LDAP server host address"
-msgstr "LDAP server host adres"
+#: ../templates:9002
+msgid "LDAP server Uniform Resource Identifier"
+msgstr ""
 
+#. Type: string
 #. Description
-#: ../templates:83
-msgid "Please enter the address of the LDAP server used."
-msgstr "Gelieve het adres van de te gebruiken LDAP server in te voeren."
+#: ../templates:9002
+msgid ""
+"Please enter the URI of the LDAP server used. This is a string in the form "
+"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
+"port number is optional."
+msgstr ""
 
+#. Type: string
 #. Description
-#: ../templates:83
-msgid "Note: It is usually a good idea to use an IP address; this reduces risks of failure in the event name service is unavailable."
-msgstr "Opmerking: In het algemeen is het een goed idee om een IP adres te gebruiken; dit vermindert de kans op mislukkingen indien de eventnaam dienst onbeschikbaar is."
+#: ../templates:9002
+msgid ""
+"Note: It is usually a good idea to use an IP address; this reduces risks of "
+"failure in the event name service is unavailable."
+msgstr ""
+"Opmerking: In het algemeen is het een goed idee om een IP adres te "
+"gebruiken; dit vermindert de kans op mislukkingen indien de eventnaam dienst "
+"onbeschikbaar is."
 
+#. Type: boolean
+#. Description
+#: ../templates:10001
+msgid "special LDAP privileges for root"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../templates:10001
+msgid ""
+"This option will allow tools that perform requests to the nss system with "
+"libnss-ldap as backend to return more information when called as root."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../templates:10001
+msgid ""
+"If you are using NFS mounted /etc or any other custom setup, you should "
+"disable this."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:11001
+msgid "LDAP account for root"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:11001
+msgid "This account will be used for nss requests with root privileges."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:11001
+msgid ""
+"Note: For this to work the account needs permission to access the attributes "
+"in the LDAP directory that are related to the users' shadow entries as well "
+"as users' and groups' passwords."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../templates:12001
+msgid "LDAP root account password"
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../templates:12001
+msgid ""
+"This password will be used when libnss-ldap tries to login to the LDAP "
+"directory using the LDAP account for root."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../templates:12001
+msgid ""
+"The password will be stored in a separate file /etc/libnss-ldap.secret which "
+"will be made readable to root only."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../templates:12001
+msgid "Entering an empty password will re-use the old password."
+msgstr ""
+
+#~ msgid "LDAP server host address"
+#~ msgstr "LDAP server host adres"
+
+#~ msgid "Please enter the address of the LDAP server used."
+#~ msgstr "Gelieve het adres van de te gebruiken LDAP server in te voeren."
