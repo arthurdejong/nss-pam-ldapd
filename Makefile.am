@@ -26,7 +26,7 @@ man_MANS = nss_ldap.5
 EXTRA_DIST = ChangeLog \
              AUTHORS ANNOUNCE NEWS INSTALL README COPYING \
              ldap.conf \
-             debian doc \
+             debian \
              nslcd.h nslcd-common.h
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
