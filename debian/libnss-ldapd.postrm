@@ -1,12 +1,11 @@
 #!/bin/sh
 
-CONFFILE="/etc/libnss-ldap.conf"
-PASSWDFILE="/etc/libnss-ldap.secret"
-
 action=$1
 
-if [ "$action" = "purge" ]; then
-	rm -f $CONFFILE $PASSWDFILE
+# remove our configuration file (not a conffile) on purge manually
+if [ "$action" = "purge" ]
+then
+  rm -f /etc/libnss-ldapd.conf
 fi
 
 #DEBHELPER#

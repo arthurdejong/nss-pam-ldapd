@@ -1,180 +1,251 @@
-#!/bin/sh -e
+#!/bin/sh
+
+set -e
 
 PACKAGE=libnss-ldapd
-CONFFILE="/etc/libnss-ldap.conf"
-PASSWDFILE="/etc/libnss-ldap.secret"
+CONFFILE="/etc/libnss-ldapd.conf"
 
-add_missing()
+# set an option in the configuration file to the specified value
+cfg_set()
 {
-	# FIXME: it would be nice to get the prototype from a template.
-	
-	parameter=$1
-	value=$2
-	echo "$parameter $value" >> $CONFFILE
+  parameter=$1
+  value=$2
+  commented=0
+  notthere=0
+  # check if the parameter is defined
+  egrep -i -q "^$parameter " $CONFFILE || notthere=1
+  if [ "$notthere" = "1" ]
+  then
+    # check if the parameter is commented out
+    if ( egrep -i -q "^#$parameter" $CONFFILE )
+    then
+      notthere=0
+      commented=1
+    fi
+  fi
+  # decide what to do
+  if [ "$notthere" = "1" ]
+  then
+    # just append a new line
+    echo "$parameter $value" >> $CONFFILE
+  else
+    # TODO: check if the option is already defined with the value we need
+    # replace the existing option
+    replacestring="$parameter"
+    if [ "$commented" = "1" ]
+    then
+      replacestring="# *$parameter"
+    fi
+    # this works as long as any option is specified only once
+    # FIXME: also work when option is commented out on multiple lines
+    sed -i 's%^'"$replacestring"' .*$%'"$parameter $value"'%i' "$CONFFILE"
+  fi
+  # we're done
+  return 0
 }
 
-change_value()
+# disable an option in the configuration file by commenting it out
+cfg_disable()
 {
-	parameter=$1
-	value=$2
-	commented=0 ; notthere=0
-
-	egrep -i -q "^$parameter " $CONFFILE || notthere=1
-	if [ "$notthere" = "1" ]; then
-		if ( egrep -i -q "^# *$parameter" $CONFFILE ); then
-			notthere=0
-			commented=1	
-		fi
-	fi
-
-	if [ "$notthere" = "1" ]; then
-		add_missing $parameter $value
-	else
-		replacestring="^$parameter .*"	
-		if [ "$commented" = "1" ]; then
-			replacestring="^# *$parameter .*"	
-		fi
-		# i really need a better way to do this...
-		# currently we replace only the first match, we need a better
-		# way of dealing with multiple hits.
-		value=$value parameter=$parameter perl -i -p -e 's/^# *\Q$ENV{"parameter"}\E .*/$ENV{"parameter"} $ENV{"value"}/i
-			and $match=1 unless ($match)' $CONFFILE
-	fi
+  parameter=$1
+  # TODO add an option to also remove the option value
+  #      (for passwords)
+  if egrep -q "^$parameter " $CONFFILE
+  then
+    sed -i 's%^\('"$parameter"'.*\)$%#\1%i' "$CONFFILE"
+  fi
+  # we're done
+  return 0
 }
 
-disable_param()
+# check to see if name is configured to do lookups through
+# LDAP and enable if not
+nss_enable()
 {
-	parameter=$1
-	enabled=0
-	egrep -q "^$parameter " $CONFFILE && enabled=1
-	if [ "$enabled" = "1" ]; then
-		perl -i -p -e "s/^($parameter .*)/#\$1/i" $CONFFILE
-	fi
+  name=$1
+  if [ ! "`grep '^'$name':.*ldap.*' /etc/nsswitch.conf`" ]
+  then
+    echo "/etc/nsswitch.conf: enable LDAP lookups for $name" >&2
+    if [ "`grep '^'$name':' /etc/nsswitch.conf`" ]
+    then
+      # modify an existing entry by just adding ldap to the end
+      sed -i 's/^\('$name':.*\)[[:space:]]*$/\1 ldap/' /etc/nsswitch.conf
+    else
+      # append a new line
+      printf '%-15s ldap\n' $name':' >> /etc/nsswitch.conf
+    fi
+  fi
+  # we're done
+  return 0
 }
 
-# Real functions begin here.
-case "$1" in
-    configure)
-		# ok, lets get to business..
-		. /usr/share/debconf/confmodule
+# remove NSS lookups though LDAP for the specified service
+nss_disable()
+{
+  name=$1
+  # these functions also remove the lookup result handling part
+  # of the ldap entry (see nsswitch.conf(5))
+  if [ "`grep '^'$name':.*ldap.*' /etc/nsswitch.conf`" ]
+  then
+    echo "/etc/nsswitch.conf: disable LDAP lookups for $name" >&2
+    if [ "`sed -n '/^'$name':[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/p' /etc/nsswitch.conf`" ]
+    then
+      # the name service only maps to ldap, remove the whole line
+      sed -i '/^'$name':[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/d' /etc/nsswitch.conf
+    else
+      # remove ldap part from existing line, keeping other methods intact
+      # TODO: remove trailing space
+      sed -i 's/^\('$name':.*\)ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*\(.*\)$/\1\3/' /etc/nsswitch.conf
+    fi
+  fi
+  # we're done
+  return 0
+}
 
-		# lets create the configuration from example if it's not there.
-		examplefile=/usr/share/$PACKAGE/ldap.conf
-		if [ ! -e $CONFFILE ] && [ -e $examplefile ]; then
-			cat > $CONFFILE << EOM
-###DEBCONF###
-# the configuration of this file will be done by debconf as long as the
-# first line of the file says '###DEBCONF###'
+# create a default configuration file if nothing exists yet
+create_config()
+{
+  if [ ! -e "$CONFFILE" ]
+  then
+    if [ -f /etc/libnss-ldap.conf ]
+    then
+      # begin the file by some information as to where it came from
+      cat > "$CONFFILE" << EOM
+# $CONFFILE
+# libnss-ldapd configuration file. See libnss-ldapd.conf(5)
+# for details.
 #
-# you should use dpkg-reconfigure libnss-ldap to configure this file.
-#
+# This file was based on existing configuration files
+# /etc/libnss-ldap.conf and /etc/libnss-ldap.secret
+
 EOM
-			cat $examplefile >> $CONFFILE
-			chmod 0644 $CONFFILE
-			db_set libnss-ldap/override true
-		fi
+      # copy the existing config in place, getting rid
+      # of the silly #DEBCONF# lines
+      egrep -v '(###DEBCONF###|configuration of this file will be done by debconf|dpkg-reconfigure)' \
+        < /etc/libnss-ldap.conf \
+        >> "$CONFFILE"
+      # also append the secret file if it is present
+      if [ -f /etc/libnss-ldap.secret ]
+      then
+        cat /etc/libnss-ldap.secret >> "$CONFFILE"
+      fi
+    else
+      # fall back to generating a simple configuration file
+      # from this simple template
+      # TODO: improve this template
+      cat > "$CONFFILE" << EOM
+# $CONFFILE
+# libnss-ldapd configuration file. See libnss-ldapd.conf(5)
+# for details.
 
-		db_get libnss-ldap/override
-		if [ "$RET" = "true" ]; then
-			if ( head -1 $CONFFILE | grep -q -v '^###DEBCONF###$' ); then
-				mv $CONFFILE $CONFFILE.tmp
-				cat > $CONFFILE << EOM
-###DEBCONF###
+# The location at which the LDAP server(s) should be reachable.
+uri ldap://localhost/
+
+# The search base that will be used for all queries.
+base dc=example,dc=net
+
+# The LDAP protocol version to use.
+ldap_version 3
+
+binddn cn=annonymous,dc=example,dc=net
+bindpw secret
+
+rootbinddn cn=administrator,dc=example,dc=net
+rootbindpw verysecret
+
+# The search scope.
+#scope sub
+
 EOM
-				cat $CONFFILE.tmp >> $CONFFILE
-				rm -f $CONFFILE.tmp
-				chmod 0644 $CONFFILE
-			fi
+    fi
+  fi
+  # we're done
+  return 0
+}
 
-			db_get shared/ldapns/ldap-server
-			if echo $RET | egrep -q '^ldaps?://'; then
-				disable_param host
-				change_value uri "$RET"
-			else
-				disable_param uri
-				change_value host "$RET"
-			fi
-
-			db_get shared/ldapns/base-dn
-			change_value base "$RET"
-
-			db_get shared/ldapns/ldap_version
-			change_value ldap_version "$RET"
-
-			db_get libnss-ldap/dbrootlogin
-			if [ "$RET" = "true" ]; then
-				# user wants to log in to the database, so be it.
-				db_get libnss-ldap/rootbinddn
-				change_value rootbinddn "$RET"
-
-				db_get libnss-ldap/rootbindpw
-				if [ "$RET" != "" ]; then
-					rm -f $PASSWDFILE
-					echo $RET > $PASSWDFILE
-					chmod 0600 $PASSWDFILE
-					db_set libnss-ldap/rootbindpw ''
-				fi
-			else
-				# ok, so the user refused to use this feature, better make
-				# sure it's really off.
-				disable_param rootbinddn
-				rm -f $PASSWDFILE
-			fi
-
-			db_get libnss-ldap/dblogin
-			if [ "$RET" = "true" ]; then
-				# user wants to log in to the database, so be it.
-				db_get libnss-ldap/binddn
-				change_value binddn "$RET"
-
-				db_get libnss-ldap/bindpw
-				if [ "$RET" != "" ]; then
-					change_value bindpw "$RET"
-					db_set libnss-ldap/bindpw ''
-				fi
-			else
-				# once again, user didn't.. lets make sure we dont.
-				disable_param binddn
-				disable_param bindpw
-			fi
-
-			db_get libnss-ldap/confperm
-			if [ "$RET" = "true" ]; then
-				# FIXME: we need a way to check if the file
-				#        was 0700 and we removed the flag.
-				chmod 0600 $CONFFILE
-			else
-				# ICK! ugly hack, but i didn't get anything
-				# better to work.
-			        find $CONFFILE -perm 0600 -exec chmod 0644 {} \;
-			fi
-		fi
-		db_stop
-       ;;
-
-    abort-upgrade|abort-remove|abort-deconfigure)
-       exit 0
-       ;;
-
-    *)
-       echo "postinst called with unknown argument \`$1'" >&2
-       exit 1
-       ;;
-esac
-
-if [ -e /etc/ldap.secret ] && [ ! -e /etc/libnss-ldap.secret ]; then
-	cp -p /etc/ldap.secret /etc/libnss-ldap.secret
+# real functions begin here
+if [ "$1" = "configure" ]
+then
+  # get configuration data from debconf
+  . /usr/share/debconf/confmodule
+  # create a default configuration
+  create_config
+  # set server uri
+  db_get libnss-ldapd/ldap-uris
+  cfg_set uri "$RET"
+  # set search base
+  db_get libnss-ldapd/ldap-base
+  cfg_set base "$RET"
+  # set ldap version
+  db_get libnss-ldapd/ldap-version
+  cfg_set ldap_version "$RET"
+  # set bind dn/pw
+  db_get libnss-ldapd/ldap-binddn
+  if [ -n "$RET" ]
+  then
+    cfg_set binddn "$RET"
+    db_get libnss-ldapd/ldap-bindpw
+    cfg_set bindpw "$RET"
+    # remove password from database
+    db_set libnss-ldapd/ldap-bindpw ""
+  else
+    # no binddn/pw, disable options
+    cfg_disable binddn
+    cfg_disable bindpw
+    # FIXME: remove password value from config
+  fi
+  # set root bind dn/pw
+  db_get libnss-ldapd/ldap-rootbinddn
+  if [ -n "$RET" ]
+  then
+    cfg_set rootbinddn "$RET"
+    db_get libnss-ldapd/ldap-rootbindpw
+    cfg_set rootbindpw "$RET"
+    # remove password from database
+    db_set libnss-ldapd/ldap-rootbindpw ""
+  else
+    # no binddn/pw, disable options
+    cfg_disable rootbinddn
+    cfg_disable rootbindpw
+    # FIXME: remove password value from config
+  fi
+  # modify /etc/nsswitch.conf
+  db_get libnss-ldapd/nsswitch
+  enablenss=`echo "$RET" | sed 's/,//g'`
+  allnss=`sed -n 's/^\([a-z]*\):.*$/\1/p' /etc/nsswitch.conf`
+  allnss=`echo $allnss $enablenss | sed 's/ /\n/g' | sort -u`
+  for n in $allnss
+  do
+    if [ "`echo ' '$enablenss' ' | grep ' '$n' '`" ]
+    then
+      nss_enable $n
+    else
+      nss_disable $n
+    fi 
+  done
+  # we're done
+  db_stop
+  # TODO: fix permissions of configfile if passwords are stored
+  # TODO: create backups of /etc/nsswitch.conf and configfile
+  #       (probably store orig in tmpfile and if diff install it
+  #       as backup)
 fi
 
-# restart nscd for some reason
-if [ -s /usr/sbin/nscd ]; then
-	if [ `pidof -s nscd` ]; then 
-		if which invoke-rc.d >/dev/null 2>&1; then
-			invoke-rc.d nscd restart
-		else
-			/etc/init.d/nscd restart
-		fi
-	fi
+# restart nscd to pick up changes in nsswitch.conf
+# (other processes will have to be restarted manually)
+if [ -s /usr/sbin/nscd ]
+then
+  if [ `pidof -s nscd` ]
+  then 
+    if which invoke-rc.d >/dev/null 2>&1
+    then
+      invoke-rc.d nscd restart
+    else
+      /etc/init.d/nscd restart
+    fi
+  fi
 fi
 
 #DEBHELPER#
+
+exit 0

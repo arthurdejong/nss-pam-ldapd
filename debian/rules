@@ -25,8 +25,7 @@ configure-stamp:
 	            --disable-dependency-tracking \
 	            --enable-rfc2307bis \
 	            --with-ldap-lib=openldap \
-	            --with-ldap-conf-file=/etc/libnss-ldap.conf \
-	            --with-ldap-secret-file=/etc/libnss-ldap.secret \
+	            --with-ldap-conf-file=/etc/libnss-ldapd.conf \
 	            --with-nslcd-pidfile=/var/run/nslcd/nslcd.pid \
 	            --with-nslcd-socket=/var/run/nslcd/socket \
 	            --enable-schema-mapping \
@@ -58,8 +57,7 @@ install: build
 	dh_clean -k
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/libnss-ldapd
 	# make configfile fully generated
-	rm -f $(CURDIR)/debian/libnss-ldapd/etc/libnss-ldap.conf
-	rm -f $(CURDIR)/debian/libnss-ldapd/etc/libnss-ldap.secret
+	rm -f $(CURDIR)/debian/libnss-ldapd/etc/libnss-ldapd.conf
 	# rename man page
 	mv $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/nss_ldap.5 $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/libnss-ldap.conf.5
 	# change all references from /etc/ldap.conf to /etc/libnss-ldap.conf
