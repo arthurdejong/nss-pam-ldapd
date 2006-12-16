@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2006-12-11 23:32+0100\n"
+"POT-Creation-Date: 2006-12-16 22:46+0100\n"
 "PO-Revision-Date: 2005-07-10 16:33+0200\n"
 "Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
 "Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
@@ -26,7 +26,7 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-msgid "LDAP server Uniform Resource Identifier"
+msgid "LDAP server Uniform Resource Identifier:"
 msgstr ""
 
 #. Type: string
@@ -58,7 +58,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:2001
 #, fuzzy
-msgid "LDAP server search base"
+msgid "LDAP server search base:"
 msgstr "Adresa počítače s LDAP serverem"
 
 #. Type: string
@@ -78,7 +78,8 @@ msgstr ""
 #. Type: select
 #. Description
 #: ../libnss-ldapd.templates:3001
-msgid "LDAP version to use"
+#, fuzzy
+msgid "LDAP version to use:"
 msgstr "Verze LDAPu, která se má použít"
 
 #. Type: select
@@ -96,7 +97,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:4001
 #, fuzzy
-msgid "LDAP database user"
+msgid "LDAP database user:"
 msgstr "Neprivilegovaný databázový uživatel"
 
 #. Type: string
@@ -118,7 +119,7 @@ msgstr ""
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:5001
-msgid "LDAP user password"
+msgid "LDAP user password:"
 msgstr ""
 
 #. Type: password
@@ -130,7 +131,7 @@ msgstr "Zadejte heslo, které se použije pro přístup k LDAP databázi."
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:6001
-msgid "LDAP account for root"
+msgid "LDAP account for root:"
 msgstr ""
 
 #. Type: string
@@ -151,7 +152,7 @@ msgstr ""
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:7001
-msgid "LDAP root account password"
+msgid "LDAP root account password:"
 msgstr ""
 
 #. Type: password

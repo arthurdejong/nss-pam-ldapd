@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2006-12-11 23:32+0100\n"
+"POT-Creation-Date: 2006-12-16 22:46+0100\n"
 "PO-Revision-Date: 2004-02-17 07:40+0100\n"
 "Last-Translator: Philippe Batailler <philippe.batailler@free.fr>\n"
 "Language-Team: French <debian-l10n-french@lists.debian.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-msgid "LDAP server Uniform Resource Identifier"
+msgid "LDAP server Uniform Resource Identifier:"
 msgstr ""
 
 #. Type: string
@@ -49,7 +49,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:2001
 #, fuzzy
-msgid "LDAP server search base"
+msgid "LDAP server search base:"
 msgstr "Adresse du serveur LDAP :"
 
 #. Type: string
@@ -69,7 +69,8 @@ msgstr ""
 #. Type: select
 #. Description
 #: ../libnss-ldapd.templates:3001
-msgid "LDAP version to use"
+#, fuzzy
+msgid "LDAP version to use:"
 msgstr "Version de LDAP à utiliser :"
 
 #. Type: select
@@ -87,7 +88,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:4001
 #, fuzzy
-msgid "LDAP database user"
+msgid "LDAP database user:"
 msgstr "Utilisateur non privilégié de la base :"
 
 #. Type: string
@@ -109,7 +110,7 @@ msgstr ""
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:5001
-msgid "LDAP user password"
+msgid "LDAP user password:"
 msgstr ""
 
 #. Type: password
@@ -122,7 +123,7 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:6001
-msgid "LDAP account for root"
+msgid "LDAP account for root:"
 msgstr ""
 
 #. Type: string
@@ -143,7 +144,7 @@ msgstr ""
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:7001
-msgid "LDAP root account password"
+msgid "LDAP root account password:"
 msgstr ""
 
 #. Type: password

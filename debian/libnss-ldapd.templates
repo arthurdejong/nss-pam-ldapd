@@ -1,7 +1,7 @@
 Template: libnss-ldapd/ldap-uris
 Type: string
 Default: ldap://127.0.0.1/
-_Description: LDAP server Uniform Resource Identifier
+_Description: LDAP server Uniform Resource Identifier:
  Please enter the URI of the LDAP server used. This is a string in the
  form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also
  be used. The port number is optional.
@@ -14,7 +14,7 @@ _Description: LDAP server Uniform Resource Identifier
 Template: libnss-ldapd/ldap-base
 Type: string
 Default: dc=example,dc=net
-_Description: LDAP server search base
+_Description: LDAP server search base:
  Please enter the distinguished name of the LDAP search base.  Many sites
  use the components of their domain names for this purpose.  For example,
  the domain "example.net" would use "dc=example,dc=net" as the
@@ -24,14 +24,14 @@ Template: libnss-ldapd/ldap-version
 Type: select
 Choices: 3, 2
 Default: 3
-_Description: LDAP version to use
+_Description: LDAP version to use:
  Please enter which version of the LDAP protocol is to use.  It is
  usually a good idea to set this to highest available version number.
 
 Template: libnss-ldapd/ldap-binddn
 Type: string
 Default:
-_Description: LDAP database user
+_Description: LDAP database user:
  If the LDAP database requires a login for normal lookups, enter
  the name of the account that will be used here. Leave empty
  otherwise.
@@ -40,13 +40,13 @@ _Description: LDAP database user
 
 Template: libnss-ldapd/ldap-bindpw
 Type: password
-_Description: LDAP user password
+_Description: LDAP user password:
  Enter the password that will be used to log in to the LDAP database.
 
 Template: libnss-ldapd/ldap-rootbinddn
 Type: string
 Default: cn=manager,dc=example,dc=net
-_Description: LDAP account for root
+_Description: LDAP account for root:
  This account will be used for nss requests with root privileges.
  This can be used to give root processes more information
  (e.g. users' shadow entries or group passwords).
@@ -57,7 +57,7 @@ _Description: LDAP account for root
 
 Template: libnss-ldapd/ldap-rootbindpw
 Type: password
-_Description: LDAP root account password
+_Description: LDAP root account password:
  Enter the password that will be used to log in to the LDAP database
  when the root process does lookups.
 
