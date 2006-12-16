@@ -67,6 +67,9 @@ install: build
 	  sed -i -e 's:/etc/ldap.conf:/etc/libnss-ldapd.conf:g' \
 	         -e 's:/etc/ldap.secret:/etc/libnss-ldapd.secret:g' $$file; \
 	done
+	# install a lintian override file
+	install -D -m 644 $(CURDIR)/debian/libnss-ldapd.lintian-overrides \
+	        $(CURDIR)/debian/libnss-ldapd/usr/share/lintian/overrides/libnss-ldapd
 
 # build architecture-independent files
 binary-indep: build install
@@ -86,6 +89,7 @@ binary-arch: build install
 	dh_strip
 	dh_compress
 	dh_fixperms
+	dh_makeshlibs
 	dh_installdeb
 	dh_shlibdeps
 	dh_gencontrol
