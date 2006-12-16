@@ -60,6 +60,7 @@ enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer
   NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,gid,gid_t,read_group);
 }
 
+#ifdef REENABLE_WHEN_WORKING
 /* this function returns a list of groups, documentation for the
    interface is scarce (any pointers are welcome) but this is
    what is assumed the parameters mean:
@@ -118,6 +119,7 @@ enum nss_status _nss_ldap_initgroups_dyn(
   fclose(fp);
   return NSS_STATUS_SUCCESS;
 }
+#endif /* REENABLE_WHEN_WORKING */
 
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *grentfp;

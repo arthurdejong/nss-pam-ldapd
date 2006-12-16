@@ -99,7 +99,9 @@ enum nss_status _nss_ldap_endetherent(void);
 /* group - groups of users */
 enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer,size_t buflen,int *errnop);
+/*
 enum nss_status _nss_ldap_initgroups_dyn(const char *user,gid_t group,long int *start,long int *size,gid_t **groupsp,long int limit,int *errnop);
+*/
 enum nss_status _nss_ldap_setgrent(int stayopen);
 enum nss_status _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_endgrent(void);
@@ -116,7 +118,6 @@ enum nss_status _nss_ldap_endhostent(void);
 enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *result);
 enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_endnetgrent(struct __netgrent *result);
-/* TODO: should there be a innetgr() equivalent? */
 
 /* networks - network names and numbers */
 enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop);
