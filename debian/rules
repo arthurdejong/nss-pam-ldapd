@@ -59,13 +59,13 @@ install: build
 	# make configfile fully generated
 	rm -f $(CURDIR)/debian/libnss-ldapd/etc/libnss-ldapd.conf
 	# rename man page
-	mv $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/nss_ldap.5 $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/libnss-ldap.conf.5
-	# change all references from /etc/ldap.conf to /etc/libnss-ldap.conf
-	for file in $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/libnss-ldap.conf.5 \
+	mv $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/nss_ldap.5 $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/libnss-ldapd.conf.5
+	# change all references from /etc/ldap.conf to /etc/libnss-ldapd.conf
+	for file in $(CURDIR)/debian/libnss-ldapd/usr/share/man/man5/libnss-ldapd.conf.5 \
 	            ; \
 	do \
-	  sed -i -e 's:/etc/ldap.conf:/etc/libnss-ldap.conf:g' \
-	         -e 's:/etc/ldap.secret:/etc/libnss-ldap.secret:g' $$file; \
+	  sed -i -e 's:/etc/ldap.conf:/etc/libnss-ldapd.conf:g' \
+	         -e 's:/etc/ldap.secret:/etc/libnss-ldapd.secret:g' $$file; \
 	done
 
 # build architecture-independent files
