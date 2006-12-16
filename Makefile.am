@@ -23,24 +23,26 @@ SUBDIRS = nss server tests
 
 man_MANS = nss_ldap.5
 
-EXTRA_DIST = ChangeLog \
-             AUTHORS ANNOUNCE NEWS INSTALL README COPYING \
-             ldap.conf \
-             debian/changelog debian/compat debian/config \
-             debian/control debian/copyright debian/rules \
-             debian/templates debian/libnss-ldapd.docs \
-             debian/libnss-ldapd.nslcd.init \
-             debian/libnss-ldapd.postinst \
-             debian/libnss-ldapd.postrm debian/README.Debian \
-             debian/po/*.po debian/po/templates.pot \
-             debian/po/POTFILES.in \
-             nslcd.h nslcd-common.h \
-             nss_ldap.5
+DEBIAN_FILES = debian/changelog debian/compat debian/control \
+               debian/copyright debian/rules \
+               debian/libnss-ldapd.docs \
+               debian/libnss-ldapd.nslcd.init \
+               debian/libnss-ldapd.config \
+               debian/libnss-ldapd.templates \
+               debian/libnss-ldapd.postinst \
+               debian/libnss-ldapd.postrm \
+               debian/README.Debian \
+               debian/po/*.po debian/po/templates.pot \
+               debian/po/POTFILES.in
+
+EXTRA_DIST = ldap.conf nslcd.h nslcd-common.h \
+             nss_ldap.5 $(DEBIAN_FILES)
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
 
 install-data-local: install-ldap_conf
 
+# install a default configuration file if it is not already there
 install-ldap_conf:
 	@if [ -f $(DESTDIR)$(NSS_LDAP_PATH_CONF) ]; then \
 	  echo "$(DESTDIR)$(NSS_LDAP_PATH_CONF) already exists, install will not overwrite"; \
