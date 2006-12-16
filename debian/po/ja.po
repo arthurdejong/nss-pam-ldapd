@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2006-12-08 19:37+0100\n"
+"POT-Creation-Date: 2006-12-11 23:32+0100\n"
 "PO-Revision-Date: 2003-09-15 11:02+0900\n"
 "Last-Translator: Kenshi Muto <kmuto@debian.org>\n"
 "Language-Team: Japanese <debian-japanese@lists.debian.org>\n"
@@ -23,83 +23,47 @@ msgstr ""
 "Content-Type: text/plain; charset=EUC-JP\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. Type: boolean
+#. Type: string
 #. Description
-#: ../templates:1001
-msgid "make configuration readable/writeable by owner only"
-msgstr "オーナのみ設定ファイルの読み書きができるようにする"
-
-#. Type: boolean
-#. Description
-#: ../templates:1001
-msgid ""
-"Should the libnss-ldap configuration file be readable and writable only by "
-"the file owner?"
+#: ../libnss-ldapd.templates:1001
+msgid "LDAP server Uniform Resource Identifier"
 msgstr ""
-"ファイルのオーナのみ libnss-ldap 設定ファイルの読み書きができるようにします"
-"か?"
-
-#. Type: boolean
-#. Description
-#: ../templates:1001
-msgid ""
-"If you use passwords in your libnss-ldap configuration, it is usually a good "
-"idea to have the configuration set with mode 0600 (readable and writable "
-"only by the file's owner)."
-msgstr ""
-"libnss-ldap 設定でパスワードを使う場合、設定にモード 0600 (ファイルのオーナの"
-"み読み書き可能) をセットするのは良い考えです。"
-
-#. Type: boolean
-#. Description
-#: ../templates:1001
-msgid ""
-"Note: As a sanity check, libnss-ldap will check if you have nscd installed "
-"and will only set the mode to 0600 if nscd is present."
-msgstr ""
-"注意: 健全性チェックとして、libnss-ldap は nscd をインストールしているかを"
-"チェックし、nscd が提供されている場合は 0600 にモードをセットするだけにしま"
-"す。"
-
-#. Type: note
-#. Description
-#: ../templates:2001
-msgid "nsswitch.conf is not managed automatically"
-msgstr "nsswitch.conf は自動的には管理されません"
-
-#. Type: note
-#. Description
-#: ../templates:2001
-msgid ""
-"For this package to work, you need to modify your /etc/nsswitch.conf to use "
-"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
-"examples/nsswitch.ldap which can be used as an example for your nsswitch "
-"setup, or it can be copied over your current setup."
-msgstr ""
-"このパッケージが動作するために、ldap データリソースを使うよう /etc/nsswitch."
-"conf を変更する必要があります。/usr/share/doc/libnss-ldap/examples/nsswitch."
-"ldap に、あなたの nsswitch のセットアップの例として利用、あるいは現在のセット"
-"アップに上書きコピーできる見本ファイルがあります。"
-
-#. Type: note
-#. Description
-#: ../templates:2001
-msgid ""
-"Also, before removing this package, it is wise to remove the ldap entries "
-"from nsswitch.conf to keep basic services functioning."
-msgstr ""
-"また、このパッケージを削除する前には、基本的なサービス機能を保持するために "
-"nsswitch.conf から ldap エントリを削除しておくのが賢明です。"
 
 #. Type: string
 #. Description
-#: ../templates:3001
-msgid "distinguished name of the search base"
-msgstr "検索ベースの識別名"
+#: ../libnss-ldapd.templates:1001
+msgid ""
+"Please enter the URI of the LDAP server used. This is a string in the form "
+"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
+"port number is optional."
+msgstr ""
 
 #. Type: string
 #. Description
-#: ../templates:3001
+#: ../libnss-ldapd.templates:1001
+msgid ""
+"Note: It is usually a good idea to use an IP address; this reduces risks of "
+"failure in the event name service is unavailable."
+msgstr ""
+"注意: IP アドレスを使うのは、通常、良い考えです。これはネームサービスが利用で"
+"きないときの障害の危険を減らします。"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid "Multiple URIs can be be specified by separating them with spaces."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:2001
+#, fuzzy
+msgid "LDAP server search base"
+msgstr "LDAP サーバのホストアドレス"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:2001
 msgid ""
 "Please enter the distinguished name of the LDAP search base.  Many sites use "
 "the components of their domain names for this purpose.  For example, the "
@@ -110,206 +74,207 @@ msgstr ""
 "素をこの目的に使っています。たとえば、ドメイン \"example.net\" では検索ベース"
 "の識別名として \"dc=example,dc=net\" を使っているでしょう。"
 
-#. Type: boolean
-#. Description
-#: ../templates:4001
-msgid "database requires login"
-msgstr "データベースのログインの必要"
-
-#. Type: boolean
-#. Description
-#: ../templates:4001
-msgid "Does the LDAP database require login?"
-msgstr "LDAP データベースはログインを必要としますか?"
-
-#. Type: boolean
-#. Description
-#: ../templates:4001
-msgid ""
-"Answer this question affirmatively only if you can't retreive entries from "
-"the database without logging in."
-msgstr ""
-"ログインなしにデータベースからエントリを取得できないというときに限り、「は"
-"い」をこの質問に答えてください。"
-
-#. Type: boolean
-#. Description
-#: ../templates:4001
-msgid "Note: Under a normal setup, this is not needed."
-msgstr "注意: 通常のセットアップ下では、これは必要ありません。"
-
-#. Type: boolean
-#. Description
-#: ../templates:5001
-msgid "enable automatic configuration updates by debconf"
-msgstr "debconf による自動設定更新を有効にする"
-
-#. Type: boolean
-#. Description
-#: ../templates:5001
-msgid "Should debconf automatically update libnss-ldap's configuration file?"
-msgstr "debconf で libnss-ldap の設定ファイルを自動的に更新しますか?"
-
-#. Type: boolean
-#. Description
-#: ../templates:5001
-msgid "libnss-ldap has been moved to use debconf for its configuration."
-msgstr "libnss-ldap はその設定に debconf を使うように変更されました。"
-
-#. Type: boolean
-#. Description
-#: ../templates:5001
-msgid ""
-"The file will be prepended with \"###DEBCONF###\"; you can disable the "
-"debconf updates by removing that line."
-msgstr ""
-"ファイルには \"###DEBCONF###\" が前に付加されています。この行を削除すること"
-"で、debconf の更新を無効にできます。"
-
-#. Type: boolean
-#. Description
-#: ../templates:5001
-msgid "All new installations will have this by default."
-msgstr "新規のインストールではすべて、これがデフォルトで存在します。"
-
-#. Type: string
-#. Description
-#: ../templates:6001
-msgid "unprivileged database user"
-msgstr "特権のないデータベースユーザ"
-
-#. Type: string
-#. Description
-#: ../templates:6001
-msgid ""
-"Enter the name of the account that will be used to log in to the LDAP "
-"database."
-msgstr ""
-"LDAP データベースにログインするのに使うアカウント名を入力してください。"
-
-#. Type: password
-#. Description
-#: ../templates:7001
-msgid "password for database login account"
-msgstr "データベースログインアカウントのパスワード"
-
-#. Type: password
-#. Description
-#: ../templates:7001
-msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr "LDAP データベースにログインするのに使うパスワードを入力してください。"
-
 #. Type: select
 #. Description
-#: ../templates:8001
+#: ../libnss-ldapd.templates:3001
 msgid "LDAP version to use"
 msgstr "利用する LDAP バージョン"
 
 #. Type: select
 #. Description
-#: ../templates:8001
+#: ../libnss-ldapd.templates:3001
+#, fuzzy
 msgid ""
-"Please enter which version of the LDAP protocol ldapns is to use.  It is "
-"usually a good idea to set this to highest available version number."
+"Please enter which version of the LDAP protocol is to use.  It is usually a "
+"good idea to set this to highest available version number."
 msgstr ""
 "利用する LDAP プロトコル ldapns のバージョンを入力してください。利用できる最"
 "も高いバージョン番号をここに設定するのは、通常、良い考えです。"
 
 #. Type: string
 #. Description
-#: ../templates:9001
-msgid "LDAP server Uniform Resource Identifier"
+#: ../libnss-ldapd.templates:4001
+#, fuzzy
+msgid "LDAP database user"
+msgstr "特権のないデータベースユーザ"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:4001
+msgid ""
+"If the LDAP database requires a login for normal lookups, enter the name of "
+"the account that will be used here. Leave empty otherwise."
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../templates:9001
-msgid ""
-"Please enter the URI of the LDAP server used. This is a string in the form "
-"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
-"port number is optional."
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:4001 ../libnss-ldapd.templates:6001
+msgid "This value should be specified as a DN (distinguished name)."
 msgstr ""
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid "LDAP user password"
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr "LDAP データベースにログインするのに使うパスワードを入力してください。"
 
 #. Type: string
 #. Description
-#: ../templates:9001
-msgid ""
-"Note: It is usually a good idea to use an IP address; this reduces risks of "
-"failure in the event name service is unavailable."
-msgstr ""
-"注意: IP アドレスを使うのは、通常、良い考えです。これはネームサービスが利用で"
-"きないときの障害の危険を減らします。"
-
-#. Type: boolean
-#. Description
-#: ../templates:10001
-msgid "special LDAP privileges for root"
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:10001
-msgid ""
-"This option will allow tools that perform requests to the nss system with "
-"libnss-ldap as backend to return more information when called as root."
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:10001
-msgid ""
-"If you are using NFS mounted /etc or any other custom setup, you should "
-"disable this."
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../templates:11001
+#: ../libnss-ldapd.templates:6001
 msgid "LDAP account for root"
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../templates:11001
-msgid "This account will be used for nss requests with root privileges."
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"This account will be used for nss requests with root privileges. This can be "
+"used to give root processes more information (e.g. users' shadow entries or "
+"group passwords)."
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../templates:11001
-msgid ""
-"Note: For this to work the account needs permission to access the attributes "
-"in the LDAP directory that are related to the users' shadow entries as well "
-"as users' and groups' passwords."
+#: ../libnss-ldapd.templates:6001
+msgid "Leave this empty to not do anything special for root lookups."
 msgstr ""
 
 #. Type: password
 #. Description
-#: ../templates:12001
+#: ../libnss-ldapd.templates:7001
 msgid "LDAP root account password"
 msgstr ""
 
 #. Type: password
 #. Description
-#: ../templates:12001
+#: ../libnss-ldapd.templates:7001
+#, fuzzy
 msgid ""
-"This password will be used when libnss-ldap tries to login to the LDAP "
-"directory using the LDAP account for root."
+"Enter the password that will be used to log in to the LDAP database when the "
+"root process does lookups."
+msgstr "LDAP データベースにログインするのに使うパスワードを入力してください。"
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:8001
+msgid "Name services to configure:"
 msgstr ""
 
-#. Type: password
+#. Type: multiselect
 #. Description
-#: ../templates:12001
+#: ../libnss-ldapd.templates:8001
+#, fuzzy
 msgid ""
-"The password will be stored in a separate file /etc/libnss-ldap.secret which "
-"will be made readable to root only."
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
+"examples/nsswitch.ldap which can be used as an example for your nsswitch "
+"setup."
+msgstr ""
+"このパッケージが動作するために、ldap データリソースを使うよう /etc/nsswitch."
+"conf を変更する必要があります。/usr/share/doc/libnss-ldap/examples/nsswitch."
+"ldap に、あなたの nsswitch のセットアップの例として利用、あるいは現在のセット"
+"アップに上書きコピーできる見本ファイルがあります。"
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:8001
+msgid ""
+"You can also select the services that should be enabled or disabled for LDAP "
+"lookups. New LDAP lookups will be added as last option. Be sure to review "
+"these changes."
 msgstr ""
 
-#. Type: password
-#. Description
-#: ../templates:12001
-msgid "Entering an empty password will re-use the old password."
-msgstr ""
+#~ msgid "distinguished name of the search base"
+#~ msgstr "検索ベースの識別名"
+
+#~ msgid "password for database login account"
+#~ msgstr "データベースログインアカウントのパスワード"
+
+#~ msgid "nsswitch.conf is not managed automatically"
+#~ msgstr "nsswitch.conf は自動的には管理されません"
+
+#~ msgid "make configuration readable/writeable by owner only"
+#~ msgstr "オーナのみ設定ファイルの読み書きができるようにする"
+
+#~ msgid ""
+#~ "Should the libnss-ldap configuration file be readable and writable only "
+#~ "by the file owner?"
+#~ msgstr ""
+#~ "ファイルのオーナのみ libnss-ldap 設定ファイルの読み書きができるようにしま"
+#~ "すか?"
+
+#~ msgid ""
+#~ "If you use passwords in your libnss-ldap configuration, it is usually a "
+#~ "good idea to have the configuration set with mode 0600 (readable and "
+#~ "writable only by the file's owner)."
+#~ msgstr ""
+#~ "libnss-ldap 設定でパスワードを使う場合、設定にモード 0600 (ファイルのオー"
+#~ "ナのみ読み書き可能) をセットするのは良い考えです。"
+
+#~ msgid ""
+#~ "Note: As a sanity check, libnss-ldap will check if you have nscd "
+#~ "installed and will only set the mode to 0600 if nscd is present."
+#~ msgstr ""
+#~ "注意: 健全性チェックとして、libnss-ldap は nscd をインストールしているかを"
+#~ "チェックし、nscd が提供されている場合は 0600 にモードをセットするだけにし"
+#~ "ます。"
+
+#~ msgid "database requires login"
+#~ msgstr "データベースのログインの必要"
+
+#~ msgid "Does the LDAP database require login?"
+#~ msgstr "LDAP データベースはログインを必要としますか?"
+
+#~ msgid ""
+#~ "Answer this question affirmatively only if you can't retreive entries "
+#~ "from the database without logging in."
+#~ msgstr ""
+#~ "ログインなしにデータベースからエントリを取得できないというときに限り、「は"
+#~ "い」をこの質問に答えてください。"
+
+#~ msgid "Note: Under a normal setup, this is not needed."
+#~ msgstr "注意: 通常のセットアップ下では、これは必要ありません。"
+
+#~ msgid "enable automatic configuration updates by debconf"
+#~ msgstr "debconf による自動設定更新を有効にする"
+
+#~ msgid ""
+#~ "Should debconf automatically update libnss-ldap's configuration file?"
+#~ msgstr "debconf で libnss-ldap の設定ファイルを自動的に更新しますか?"
+
+#~ msgid "libnss-ldap has been moved to use debconf for its configuration."
+#~ msgstr "libnss-ldap はその設定に debconf を使うように変更されました。"
+
+#~ msgid ""
+#~ "The file will be prepended with \"###DEBCONF###\"; you can disable the "
+#~ "debconf updates by removing that line."
+#~ msgstr ""
+#~ "ファイルには \"###DEBCONF###\" が前に付加されています。この行を削除するこ"
+#~ "とで、debconf の更新を無効にできます。"
+
+#~ msgid "All new installations will have this by default."
+#~ msgstr "新規のインストールではすべて、これがデフォルトで存在します。"
+
+#~ msgid ""
+#~ "Enter the name of the account that will be used to log in to the LDAP "
+#~ "database."
+#~ msgstr ""
+#~ "LDAP データベースにログインするのに使うアカウント名を入力してください。"
+
+#~ msgid ""
+#~ "Also, before removing this package, it is wise to remove the ldap entries "
+#~ "from nsswitch.conf to keep basic services functioning."
+#~ msgstr ""
+#~ "また、このパッケージを削除する前には、基本的なサービス機能を保持するため"
+#~ "に nsswitch.conf から ldap エントリを削除しておくのが賢明です。"
 
 #~ msgid "dc=example,dc=net"
 #~ msgstr "dc=example,dc=net"
@@ -323,9 +288,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "ldap://127.0.0.1/"
 #~ msgstr "127.0.0.1"
-
-#~ msgid "LDAP server host address"
-#~ msgstr "LDAP サーバのホストアドレス"
 
 #~ msgid "Please enter the address of the LDAP server used."
 #~ msgstr "利用する LDAP サーバのアドレスを入力してください。"

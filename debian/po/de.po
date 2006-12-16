@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap_220-1_de\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2006-12-08 19:37+0100\n"
+"POT-Creation-Date: 2006-12-11 23:32+0100\n"
 "PO-Revision-Date: 2004-11-12 21:55+0100\n"
 "Last-Translator: Erik Schanze <mail@erikschanze.de>\n"
 "Language-Team: German <debian-l10n-german@lists.debian.org>\n"
@@ -19,100 +19,53 @@ msgstr ""
 "X-Generator: KBabel 1.3.1\n"
 "Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
-#  Template: libnss-ldap/confperm
-#  ddtp-prioritize: 56
-#
-#. Type: boolean
-#. Description
-#: ../templates:1001
-msgid "make configuration readable/writeable by owner only"
-msgstr "Konfiguration nur für den Eigentümer les-/schreibbar machen"
-
-#
-#. Type: boolean
-#. Description
-#: ../templates:1001
-msgid ""
-"Should the libnss-ldap configuration file be readable and writable only by "
-"the file owner?"
-msgstr ""
-"Soll die libnss-ldap-Konfigurationsdatei nur vom Eigentümer les- und "
-"schreibbar sein?"
-
-#
-#. Type: boolean
-#. Description
-#: ../templates:1001
-msgid ""
-"If you use passwords in your libnss-ldap configuration, it is usually a good "
-"idea to have the configuration set with mode 0600 (readable and writable "
-"only by the file's owner)."
-msgstr ""
-"Falls Sie Passworte in Ihrer libnss-ldap-Konfiguration verwenden, ist es "
-"üblicherweise eine gute Idee, die Konfiguration auf den Modus 0600 (les- und "
-"schreibbar nur durch den Eigentümer) zu setzen."
-
-#
-#. Type: boolean
-#. Description
-#: ../templates:1001
-msgid ""
-"Note: As a sanity check, libnss-ldap will check if you have nscd installed "
-"and will only set the mode to 0600 if nscd is present."
-msgstr ""
-"Anmerkung: Als Sinnprüfung checkt libnss-ldap, ob Sie nscd installierten und "
-"setzt mode 0600 nur, falls nscd vorhanden ist."
-
-#  Template: libnss-ldap/nsswitch
-#  ddtp-prioritize: 56
-#
-#. Type: note
-#. Description
-#: ../templates:2001
-msgid "nsswitch.conf is not managed automatically"
-msgstr "nsswitch.conf wird nicht automatisch verwaltet"
-
-#
-#. Type: note
-#. Description
-#: ../templates:2001
-msgid ""
-"For this package to work, you need to modify your /etc/nsswitch.conf to use "
-"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
-"examples/nsswitch.ldap which can be used as an example for your nsswitch "
-"setup, or it can be copied over your current setup."
-msgstr ""
-"Damit dieses Paket arbeitet, müssen Sie Ihre Datei /etc/nsswitch.conf für "
-"die ldap-Datenquelle anpassen.  Es gibt eine Beispieldatei unter /usr/share/"
-"doc/libnss-ldap/examples/nsswitch.ldap, die als Beispiel für Ihr nsswitch-"
-"Setup verwendet kann oder mit der Ihr aktuelles Setup überschrieben werden "
-"kann."
-
-#
-#. Type: note
-#. Description
-#: ../templates:2001
-msgid ""
-"Also, before removing this package, it is wise to remove the ldap entries "
-"from nsswitch.conf to keep basic services functioning."
-msgstr ""
-"Darüberhinaus ist es klug, die ldap-Einträge aus der nsswitch.conf zu "
-"löschen, bevor Sie dieses Paket entfernen, um die Funktion der Grunddienste "
-"zu erhalten."
-
-#  Template: shared/ldapns/base-dn
-#  ddtp-prioritize: 56
-#
 #. Type: string
 #. Description
-#: ../templates:3001
-msgid "distinguished name of the search base"
-msgstr "DN (distinguished name) der Suchbasis"
+#: ../libnss-ldapd.templates:1001
+msgid "LDAP server Uniform Resource Identifier"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid ""
+"Please enter the URI of the LDAP server used. This is a string in the form "
+"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
+"port number is optional."
+msgstr ""
 
 #
 #. Type: string
 #. Description
-#: ../templates:3001
+#: ../libnss-ldapd.templates:1001
+msgid ""
+"Note: It is usually a good idea to use an IP address; this reduces risks of "
+"failure in the event name service is unavailable."
+msgstr ""
+"Beachten Sie:  Es ist üblicherweise eine gute Idee, eine IP-Adresse zu "
+"verwenden; dieses reduziert das Risiko eines Ausfalls, falls der Name-"
+"Service einmal unerreichbar ist."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid "Multiple URIs can be be specified by separating them with spaces."
+msgstr ""
+
+#  Template: shared/ldapns/ldap-server
+#  ddtp-prioritize: 56
+#
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:2001
+#, fuzzy
+msgid "LDAP server search base"
+msgstr "LDAP-Server Host-Adresse"
+
+#
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:2001
 msgid ""
 "Please enter the distinguished name of the LDAP search base.  Many sites use "
 "the components of their domain names for this purpose.  For example, the "
@@ -123,236 +76,253 @@ msgstr ""
 "ihrer Domain-Namen für diesen Zweck. Beispielsweise würde die Domäne "
 "»example.net« »dc=example,dc=net« als den DN der Suchbasis benutzen."
 
-#  Template: libnss-ldap/dblogin
-#  ddtp-prioritize: 56
-#
-#. Type: boolean
-#. Description
-#: ../templates:4001
-msgid "database requires login"
-msgstr "Datenbank benötigt Login"
-
-#
-#. Type: boolean
-#. Description
-#: ../templates:4001
-msgid "Does the LDAP database require login?"
-msgstr "Benötigt die LDAP-Datenbank einen Login?"
-
-#
-#. Type: boolean
-#. Description
-#: ../templates:4001
-msgid ""
-"Answer this question affirmatively only if you can't retreive entries from "
-"the database without logging in."
-msgstr ""
-"Bestätigen Sie das nur, wenn Sie keine Abfragen aus der Datenbank ohne Login "
-"vornehmen können."
-
-#
-#. Type: boolean
-#. Description
-#: ../templates:4001
-msgid "Note: Under a normal setup, this is not needed."
-msgstr "Anmerkung: Bei einem normalen Setup ist das nicht nötig."
-
-#  Template: libnss-ldap/override
-#  ddtp-prioritize: 56
-#
-#. Type: boolean
-#. Description
-#: ../templates:5001
-msgid "enable automatic configuration updates by debconf"
-msgstr "Aktivieren automatischer Konfigurations-Updates durch debconf"
-
-#
-#. Type: boolean
-#. Description
-#: ../templates:5001
-msgid "Should debconf automatically update libnss-ldap's configuration file?"
-msgstr ""
-"Soll debconf automatisch die Konfigurations-Datei von libnss-ldap updaten?"
-
-#
-#. Type: boolean
-#. Description
-#: ../templates:5001
-msgid "libnss-ldap has been moved to use debconf for its configuration."
-msgstr ""
-"libnss-ldap wurde auf den Gebrauch von debconf für die Konfiguration "
-"umgestellt."
-
-#
-#. Type: boolean
-#. Description
-#: ../templates:5001
-msgid ""
-"The file will be prepended with \"###DEBCONF###\"; you can disable the "
-"debconf updates by removing that line."
-msgstr ""
-"Der Datei wird ein »###DEBCONF###« vorangestellt; Sie können Updates durch "
-"debconf verhindern, indem Sie diese Zeile entfernen."
-
-#
-#. Type: boolean
-#. Description
-#: ../templates:5001
-msgid "All new installations will have this by default."
-msgstr "Alle Neuinstallationen werden das als Voreinstellung haben."
-
-#  Template: libnss-ldap/binddn
-#  ddtp-prioritize: 56
-#
-#. Type: string
-#. Description
-#: ../templates:6001
-msgid "unprivileged database user"
-msgstr "nicht priviligierter Datenbank-Nutzer"
-
-#
-#. Type: string
-#. Description
-#: ../templates:6001
-msgid ""
-"Enter the name of the account that will be used to log in to the LDAP "
-"database."
-msgstr "Geben Sie den Namen eines Benutzerkontos für die LDAP-Datenbank ein."
-
-#  Template: libnss-ldap/bindpw
-#  ddtp-prioritize: 56
-#
-#. Type: password
-#. Description
-#: ../templates:7001
-msgid "password for database login account"
-msgstr "Passwort für das Datenbank-Login-Konto"
-
-#
-#. Type: password
-#. Description
-#: ../templates:7001
-msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr "Geben Sie das Passwort für das Login zur LDAP-Datenbank ein."
-
 #  Template: shared/ldapns/ldap_version
 #  ddtp-prioritize: 56
 #
 #. Type: select
 #. Description
-#: ../templates:8001
+#: ../libnss-ldapd.templates:3001
 msgid "LDAP version to use"
 msgstr "Welche LDAP-Version soll genutzt werden?"
 
 #
 #. Type: select
 #. Description
-#: ../templates:8001
+#: ../libnss-ldapd.templates:3001
+#, fuzzy
 msgid ""
-"Please enter which version of the LDAP protocol ldapns is to use.  It is "
-"usually a good idea to set this to highest available version number."
+"Please enter which version of the LDAP protocol is to use.  It is usually a "
+"good idea to set this to highest available version number."
 msgstr ""
 "Bitte geben Sie an, welche Version des LDAP-Protokolls von ldapns genutzt "
 "werden soll.  Es ist üblicherweise eine gute Idee, die höchstmögliche "
 "Versionsnummer zu setzen."
 
-#. Type: string
-#. Description
-#: ../templates:9001
-msgid "LDAP server Uniform Resource Identifier"
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../templates:9001
-msgid ""
-"Please enter the URI of the LDAP server used. This is a string in the form "
-"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
-"port number is optional."
-msgstr ""
-
+#  Template: libnss-ldap/binddn
+#  ddtp-prioritize: 56
 #
 #. Type: string
 #. Description
-#: ../templates:9001
-msgid ""
-"Note: It is usually a good idea to use an IP address; this reduces risks of "
-"failure in the event name service is unavailable."
-msgstr ""
-"Beachten Sie:  Es ist üblicherweise eine gute Idee, eine IP-Adresse zu "
-"verwenden; dieses reduziert das Risiko eines Ausfalls, falls der Name-"
-"Service einmal unerreichbar ist."
+#: ../libnss-ldapd.templates:4001
+#, fuzzy
+msgid "LDAP database user"
+msgstr "nicht priviligierter Datenbank-Nutzer"
 
-#. Type: boolean
+#. Type: string
 #. Description
-#: ../templates:10001
-msgid "special LDAP privileges for root"
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:10001
+#: ../libnss-ldapd.templates:4001
 msgid ""
-"This option will allow tools that perform requests to the nss system with "
-"libnss-ldap as backend to return more information when called as root."
-msgstr ""
-
-#. Type: boolean
-#. Description
-#: ../templates:10001
-msgid ""
-"If you are using NFS mounted /etc or any other custom setup, you should "
-"disable this."
+"If the LDAP database requires a login for normal lookups, enter the name of "
+"the account that will be used here. Leave empty otherwise."
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../templates:11001
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:4001 ../libnss-ldapd.templates:6001
+msgid "This value should be specified as a DN (distinguished name)."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid "LDAP user password"
+msgstr ""
+
+#
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr "Geben Sie das Passwort für das Login zur LDAP-Datenbank ein."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:6001
 msgid "LDAP account for root"
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../templates:11001
-msgid "This account will be used for nss requests with root privileges."
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"This account will be used for nss requests with root privileges. This can be "
+"used to give root processes more information (e.g. users' shadow entries or "
+"group passwords)."
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../templates:11001
-msgid ""
-"Note: For this to work the account needs permission to access the attributes "
-"in the LDAP directory that are related to the users' shadow entries as well "
-"as users' and groups' passwords."
+#: ../libnss-ldapd.templates:6001
+msgid "Leave this empty to not do anything special for root lookups."
 msgstr ""
 
 #. Type: password
 #. Description
-#: ../templates:12001
+#: ../libnss-ldapd.templates:7001
 msgid "LDAP root account password"
 msgstr ""
 
+#
 #. Type: password
 #. Description
-#: ../templates:12001
+#: ../libnss-ldapd.templates:7001
+#, fuzzy
 msgid ""
-"This password will be used when libnss-ldap tries to login to the LDAP "
-"directory using the LDAP account for root."
+"Enter the password that will be used to log in to the LDAP database when the "
+"root process does lookups."
+msgstr "Geben Sie das Passwort für das Login zur LDAP-Datenbank ein."
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:8001
+msgid "Name services to configure:"
 msgstr ""
 
-#. Type: password
+#
+#. Type: multiselect
 #. Description
-#: ../templates:12001
+#: ../libnss-ldapd.templates:8001
+#, fuzzy
 msgid ""
-"The password will be stored in a separate file /etc/libnss-ldap.secret which "
-"will be made readable to root only."
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
+"examples/nsswitch.ldap which can be used as an example for your nsswitch "
+"setup."
+msgstr ""
+"Damit dieses Paket arbeitet, müssen Sie Ihre Datei /etc/nsswitch.conf für "
+"die ldap-Datenquelle anpassen.  Es gibt eine Beispieldatei unter /usr/share/"
+"doc/libnss-ldap/examples/nsswitch.ldap, die als Beispiel für Ihr nsswitch-"
+"Setup verwendet kann oder mit der Ihr aktuelles Setup überschrieben werden "
+"kann."
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:8001
+msgid ""
+"You can also select the services that should be enabled or disabled for LDAP "
+"lookups. New LDAP lookups will be added as last option. Be sure to review "
+"these changes."
 msgstr ""
 
-#. Type: password
-#. Description
-#: ../templates:12001
-msgid "Entering an empty password will re-use the old password."
-msgstr ""
+#  Template: shared/ldapns/base-dn
+#  ddtp-prioritize: 56
+#
+#~ msgid "distinguished name of the search base"
+#~ msgstr "DN (distinguished name) der Suchbasis"
+
+#  Template: libnss-ldap/bindpw
+#  ddtp-prioritize: 56
+#
+#~ msgid "password for database login account"
+#~ msgstr "Passwort für das Datenbank-Login-Konto"
+
+#  Template: libnss-ldap/nsswitch
+#  ddtp-prioritize: 56
+#
+#~ msgid "nsswitch.conf is not managed automatically"
+#~ msgstr "nsswitch.conf wird nicht automatisch verwaltet"
+
+#  Template: libnss-ldap/confperm
+#  ddtp-prioritize: 56
+#
+#~ msgid "make configuration readable/writeable by owner only"
+#~ msgstr "Konfiguration nur für den Eigentümer les-/schreibbar machen"
+
+#
+#~ msgid ""
+#~ "Should the libnss-ldap configuration file be readable and writable only "
+#~ "by the file owner?"
+#~ msgstr ""
+#~ "Soll die libnss-ldap-Konfigurationsdatei nur vom Eigentümer les- und "
+#~ "schreibbar sein?"
+
+#
+#~ msgid ""
+#~ "If you use passwords in your libnss-ldap configuration, it is usually a "
+#~ "good idea to have the configuration set with mode 0600 (readable and "
+#~ "writable only by the file's owner)."
+#~ msgstr ""
+#~ "Falls Sie Passworte in Ihrer libnss-ldap-Konfiguration verwenden, ist es "
+#~ "üblicherweise eine gute Idee, die Konfiguration auf den Modus 0600 (les- "
+#~ "und schreibbar nur durch den Eigentümer) zu setzen."
+
+#
+#~ msgid ""
+#~ "Note: As a sanity check, libnss-ldap will check if you have nscd "
+#~ "installed and will only set the mode to 0600 if nscd is present."
+#~ msgstr ""
+#~ "Anmerkung: Als Sinnprüfung checkt libnss-ldap, ob Sie nscd installierten "
+#~ "und setzt mode 0600 nur, falls nscd vorhanden ist."
+
+#  Template: libnss-ldap/dblogin
+#  ddtp-prioritize: 56
+#
+#~ msgid "database requires login"
+#~ msgstr "Datenbank benötigt Login"
+
+#
+#~ msgid "Does the LDAP database require login?"
+#~ msgstr "Benötigt die LDAP-Datenbank einen Login?"
+
+#
+#~ msgid ""
+#~ "Answer this question affirmatively only if you can't retreive entries "
+#~ "from the database without logging in."
+#~ msgstr ""
+#~ "Bestätigen Sie das nur, wenn Sie keine Abfragen aus der Datenbank ohne "
+#~ "Login vornehmen können."
+
+#
+#~ msgid "Note: Under a normal setup, this is not needed."
+#~ msgstr "Anmerkung: Bei einem normalen Setup ist das nicht nötig."
+
+#  Template: libnss-ldap/override
+#  ddtp-prioritize: 56
+#
+#~ msgid "enable automatic configuration updates by debconf"
+#~ msgstr "Aktivieren automatischer Konfigurations-Updates durch debconf"
+
+#
+#~ msgid ""
+#~ "Should debconf automatically update libnss-ldap's configuration file?"
+#~ msgstr ""
+#~ "Soll debconf automatisch die Konfigurations-Datei von libnss-ldap updaten?"
+
+#
+#~ msgid "libnss-ldap has been moved to use debconf for its configuration."
+#~ msgstr ""
+#~ "libnss-ldap wurde auf den Gebrauch von debconf für die Konfiguration "
+#~ "umgestellt."
+
+#
+#~ msgid ""
+#~ "The file will be prepended with \"###DEBCONF###\"; you can disable the "
+#~ "debconf updates by removing that line."
+#~ msgstr ""
+#~ "Der Datei wird ein »###DEBCONF###« vorangestellt; Sie können Updates "
+#~ "durch debconf verhindern, indem Sie diese Zeile entfernen."
+
+#
+#~ msgid "All new installations will have this by default."
+#~ msgstr "Alle Neuinstallationen werden das als Voreinstellung haben."
+
+#
+#~ msgid ""
+#~ "Enter the name of the account that will be used to log in to the LDAP "
+#~ "database."
+#~ msgstr ""
+#~ "Geben Sie den Namen eines Benutzerkontos für die LDAP-Datenbank ein."
+
+#
+#~ msgid ""
+#~ "Also, before removing this package, it is wise to remove the ldap entries "
+#~ "from nsswitch.conf to keep basic services functioning."
+#~ msgstr ""
+#~ "Darüberhinaus ist es klug, die ldap-Einträge aus der nsswitch.conf zu "
+#~ "löschen, bevor Sie dieses Paket entfernen, um die Funktion der "
+#~ "Grunddienste zu erhalten."
 
 #~ msgid "dc=example,dc=net"
 #~ msgstr "dc=example,dc=net"
@@ -366,12 +336,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "ldap://127.0.0.1/"
 #~ msgstr "127.0.0.1"
-
-#  Template: shared/ldapns/ldap-server
-#  ddtp-prioritize: 56
-#
-#~ msgid "LDAP server host address"
-#~ msgstr "LDAP-Server Host-Adresse"
 
 #
 #~ msgid "Please enter the address of the LDAP server used."
