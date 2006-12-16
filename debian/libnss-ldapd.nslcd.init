@@ -1,0 +1,99 @@
+#! /bin/sh
+
+# /etc/init.d/linbss-ldapd script for starting and stopping nslcd
+# Copyright (C) 2006 West Consulting
+# Copyright (C) 2006 Arthur de Jong
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public
+# License as published by the Free Software Foundation; either
+# version 2 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public
+# License along with this library; if not, write to the Free
+# Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+# MA 02110-1301 USA
+
+### BEGIN INIT INFO
+# Provides:          nslcd
+# Required-Start:    $local_fs $syslog
+# Required-Stop:     $local_fs $syslog
+# Should-Start:      $remote_fs $network 
+# Should-Stop:       $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: NSS-LDAP connection daemon
+# Description:       nslcd is a LDAP connection daemon that is used to
+#                    do LDAP queries for the NSS libraries.
+### END INIT INFO
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+NSLCD_BIN=/usr/sbin/nslcd
+NSLCD_DESC="NSS-LDAP connection daemon"
+NSLCD_CFG=/etc/libnss-ldapd.conf
+
+[ -x "$NSLCD_BIN" ] || exit 0
+[ -f "$NSLCD_CFG" ] || exit 0
+
+. /lib/lsb/init-functions
+
+NSLCD_STATEDIR=/var/run/nslcd
+NSLCD_PIDFILE=$NSLCD_STATEDIR/nslcd.pid
+
+case "$1" in
+start)
+  [ -d "$NSLCD_STATEDIR" ] || mkdir "$NSLCD_STATEDIR" 
+  log_daemon_msg "Starting $NSLCD_DESC" "nslcd"
+  start-stop-daemon --start \
+                    --pidfile $NSLCD_PIDFILE \
+                    --startas $NSLCD_BIN
+  log_end_msg $?
+  ;;
+stop)
+  log_daemon_msg "Stopping $NSLCD_DESC" "nslcd"
+  start-stop-daemon --stop \
+                    --pidfile $NSLCD_PIDFILE \
+                    --name nslcd
+  log_end_msg $?
+  [ -n "$PIDFILE" ] && rm -f $NSLCD_PIDFILE
+  ;;
+restart|force-reload)
+  [ -d "$NSLCD_STATEDIR" ] || mkdir "$NSLCD_STATEDIR" 
+  log_daemon_msg "Restarting $NSLCD_DESC" "nslcd"
+  start-stop-daemon --stop --quiet --retry 10 \
+                    --pidfile $NSLCD_PIDFILE \
+                    --name nslcd
+  [ -n "$PIDFILE" ] && rm -f $NSLCD_PIDFILE
+  start-stop-daemon --start \
+                    --pidfile $NSLCD_PIDFILE \
+                    --startas $NSLCD_BIN
+  log_end_msg $?
+  ;;
+status)
+  if [ -f "$NSLCD_PIDFILE" ]
+  then
+    if kill -s 0 `cat $NSLCD_PIDFILE` > /dev/null 2>&1
+    then
+      log_success_msg "nslcd running"
+      exit 0
+    else
+      log_success_msg "nslcd stopped"
+      exit 1
+    fi
+  else
+    log_success_msg "nslcd stopped"
+    exit 3
+  fi
+  ;;
+*)
+  log_success_msg "Usage: $0 {start|stop|restart|force-reload|status}"
+  exit 1
+  ;;
+esac
+
+exit 0

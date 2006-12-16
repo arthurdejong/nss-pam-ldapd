@@ -29,6 +29,7 @@ EXTRA_DIST = ChangeLog \
              debian/changelog debian/compat debian/config \
              debian/control debian/copyright debian/rules \
              debian/templates debian/libnss-ldapd.docs \
+             debian/libnss-ldapd.nslcd.init \
              debian/libnss-ldapd.postinst \
              debian/libnss-ldapd.postrm debian/README.Debian \
              debian/po/*.po debian/po/templates.pot \
