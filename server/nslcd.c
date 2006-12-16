@@ -213,20 +213,35 @@ static RETSIGTYPE sigexit_handler(int signum)
   
 }
 
+
 /* do some cleaning up before terminating */
 static void exithandler(void)
 {
+  /* close socket if it's still in use */
   if (nslcd_serversocket >= 0)
   {
     if (close(nslcd_serversocket))
       log_log(LOG_WARNING,"problem closing server socket (ignored): %s",strerror(errno));
   }
+  /* remove existing named socket */
+  if (unlink(NSLCD_SOCKET)<0)
+  {
+    log_log(LOG_DEBUG,"unlink() of "NSLCD_SOCKET" failed (ignored): %s",
+            strerror(errno));
+  }
+  /* remove pidfile */
+  if (unlink(NSLCD_PIDFILE)<0)
+  {
+    log_log(LOG_DEBUG,"unlink() of "NSLCD_PIDFILE" failed (ignored): %s",
+            strerror(errno));
+  }
+  /* log exit */
   log_log(LOG_INFO,"version %s bailing out",VERSION);
 }
 
 
 /* returns a socket ready to answer requests from the client,
-   return <0 on error */
+   exit()s on error */
 static int open_socket(void)
 {
   int sock;
@@ -239,20 +254,20 @@ static int open_socket(void)
     exit(1);
   }
 
-  /* create socket address structure */
-  memset(&addr,0,sizeof(struct sockaddr_un));
-  addr.sun_family=AF_UNIX;
-  strcpy(addr.sun_path,NSLCD_SOCKET);
-
-  /* unlink to socket */
+  /* remove existing named socket */
   if (unlink(NSLCD_SOCKET)<0)
   {
     log_log(LOG_DEBUG,"unlink() of "NSLCD_SOCKET" failed (ignored): %s",
             strerror(errno));
   }
 
-  /* bind to the socket */
-  if (bind(sock,(struct sockaddr *)&addr,sizeof(struct sockaddr_un))<0)
+  /* create socket address structure */
+  memset(&addr,0,sizeof(struct sockaddr_un));
+  addr.sun_family=AF_UNIX;
+  strcpy(addr.sun_path,NSLCD_SOCKET);
+
+  /* bind to the named socket */
+  if (bind(sock,(struct sockaddr *)&addr,sizeof(struct sockaddr_un)))
   {
     log_log(LOG_ERR,"bind() to "NSLCD_SOCKET" failed: %s",
             strerror(errno));
@@ -263,6 +278,15 @@ static int open_socket(void)
 
   /* close the file descriptor on exit */
   if (fcntl(sock,F_SETFD,FD_CLOEXEC)<0)
+  {
+    log_log(LOG_ERR,"fctnl(F_SETFL,O_NONBLOCK) failed: %s",strerror(errno));
+    if (close(sock))
+      log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
+    exit(1);
+  }
+
+  /* set permissions of socket so anybody can do requests */
+  if (chmod(NSLCD_SOCKET,0666))
   {
     log_log(LOG_ERR,"fctnl(F_SETFL,O_NONBLOCK) failed: %s",strerror(errno));
     if (close(sock))
