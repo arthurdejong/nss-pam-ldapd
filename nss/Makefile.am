@@ -41,9 +41,7 @@ EXTRA_DIST = exports.linux
 
 install-exec-local: install-nss_ldap_so
 
-# install /lib/libnss_ldap.so.2 and create
-# /lib/libnss_ldap-2.3.6.so and /usr/lib/libnss_ldap.so symlinks
-# (skip the last one for now and see what breaks)
+# install libnss_ldap-2.3.6.so and create libnss_ldap.so.2 symlink
 install-nss_ldap_so: nss_ldap.so
 	$(INSTALL_PROGRAM) -D nss_ldap.so $(DESTDIR)$(libdir)/$(NSS_LDAP_LIBC_VERSIONED)
 	(cd $(DESTDIR)$(libdir); ln -sf $(NSS_LDAP_LIBC_VERSIONED) $(NSS_LDAP_NSS_VERSIONED))
