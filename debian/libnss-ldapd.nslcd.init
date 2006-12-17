@@ -23,7 +23,7 @@
 # Provides:          nslcd
 # Required-Start:    $local_fs $syslog
 # Required-Stop:     $local_fs $syslog
-# Should-Start:      $remote_fs $network 
+# Should-Start:      $remote_fs $network
 # Should-Stop:       $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
@@ -47,7 +47,7 @@ NSLCD_PIDFILE=$NSLCD_STATEDIR/nslcd.pid
 
 case "$1" in
 start)
-  [ -d "$NSLCD_STATEDIR" ] || mkdir "$NSLCD_STATEDIR" 
+  [ -d "$NSLCD_STATEDIR" ] || mkdir "$NSLCD_STATEDIR"
   log_daemon_msg "Starting $NSLCD_DESC" "nslcd"
   start-stop-daemon --start \
                     --pidfile $NSLCD_PIDFILE \
@@ -63,7 +63,7 @@ stop)
   [ -n "$PIDFILE" ] && rm -f $NSLCD_PIDFILE
   ;;
 restart|force-reload)
-  [ -d "$NSLCD_STATEDIR" ] || mkdir "$NSLCD_STATEDIR" 
+  [ -d "$NSLCD_STATEDIR" ] || mkdir "$NSLCD_STATEDIR"
   log_daemon_msg "Restarting $NSLCD_DESC" "nslcd"
   start-stop-daemon --stop --quiet --retry 10 \
                     --pidfile $NSLCD_PIDFILE \

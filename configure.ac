@@ -103,7 +103,7 @@ if test -z "$with_ldap_lib"; then
   with_ldap_lib=auto
 fi
 
-AC_ARG_WITH(ldap-conf-file, 
+AC_ARG_WITH(ldap-conf-file,
             AS_HELP_STRING([--with-ldap-conf-file=PATH],
                            [path to LDAP configuration file @<:@/etc/ldap.conf@:>@]),
             [ NSS_LDAP_PATH_CONF="$with_ldap_conf_file" ],
@@ -135,7 +135,7 @@ AC_ARG_WITH(nslcd-socket,
 AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used for communicating.])
 AC_SUBST(NSLCD_SOCKET)
 
-AC_ARG_WITH(gssapi-dir, 
+AC_ARG_WITH(gssapi-dir,
             AS_HELP_STRING([--with-gssapi-dir=PATH],
                            [base directory of gssapi SDK]))
 

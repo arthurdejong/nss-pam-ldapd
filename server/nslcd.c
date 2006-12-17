@@ -210,7 +210,7 @@ static RETSIGTYPE sigexit_handler(int signum)
   /* cancel all running threads */
   for (i=0;i<NUM_THREADS;i++)
     pthread_cancel(nslcd_threads[i]);
-  
+
 }
 
 
@@ -624,7 +624,7 @@ int main(int argc,char *argv[])
   /* TODO: install signal handlers for reloading configuration */
 
   log_log(LOG_INFO,"accepting connections");
-  
+
   /* start worker threads */
   for (i=0;i<NUM_THREADS;i++)
   {
@@ -634,7 +634,7 @@ int main(int argc,char *argv[])
       exit(1);
     }
   }
-  
+
   /* wait for all threads to die */
   for (i=0;i<NUM_THREADS;i++)
   {

@@ -81,7 +81,7 @@ int main(int argc,char *argv[])
     printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
     printf("h_errno=%d:%s\n",(int)h_errnocp,hstrerror(h_errnocp));
   }
-  
+
   /* test getnetbyaddr() */
   printf("\nTEST getnetbyaddr()\n");
   res=_nss_ldap_getnetbyaddr_r(inet_network("192.43.210.0"),AF_INET,&netresult,buffer,1024,&errnocp,&h_errnocp);

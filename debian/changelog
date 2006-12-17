@@ -77,7 +77,7 @@ libnss-ldap (251-1) unstable; urgency=low
   * Changed debconf 'host' question to 'uri', Closes: #312284, #359341
   * Added additional commentary to the ldap.conf, Closes: #368191, #369192
   * Enabled configurable krb5 CCNAME, Closes: #352032
-  * Included Swedish, Vietnamese and Czech translations, 
+  * Included Swedish, Vietnamese and Czech translations,
     Closes: #317672, #312435, #340633
   * Modified syslog() calls to use LOG_AUTHPRIV facility, Closes: #310421
   * Removed build-depend on libdb4.2-dev, Closes: #302541
@@ -165,7 +165,7 @@ libnss-ldap (207-1) unstable; urgency=low
   * Updated standards-version to 3.5.9, no changes.
   * Make the build scripts use -fPIC for the whole process. (Closes: #185937)
   * Removed LdapNS-howto, it's outdated (Closes: #179359)
-  * Updated nsswitch.ldap to reflect the current state of libnss-ldap 
+  * Updated nsswitch.ldap to reflect the current state of libnss-ldap
     (Closes: #192208)
 
  -- Sami Haahtinen <ressu@debian.org>  Fri,  9 May 2003 13:35:31 +0300
@@ -180,7 +180,7 @@ libnss-ldap (204-3) unstable; urgency=low
 
 libnss-ldap (204-2) unstable; urgency=low
 
-  * Fixed the build problems, by adding automake1.6 to dependancies 
+  * Fixed the build problems, by adding automake1.6 to dependancies
     (Closes: #184692)
   * Added debconf translations from ddtp
 
@@ -245,7 +245,7 @@ libnss-ldap (186-1) unstable; urgency=low
     (Closes: #139959)
   * enabled schema mapping (Closes: #131280)
   * Made postinst change the permission back from 0600 if it wasn't wanted,
-    interestin and ugly hack, but hey.. atleast it works.. =) 
+    interestin and ugly hack, but hey.. atleast it works.. =)
     (Closes: #130871)
 
  -- Sami Haahtinen <ressu@debian.org>  Thu,  4 Apr 2002 21:20:40 +0300
@@ -378,7 +378,7 @@ libnss-ldap (150-3) unstable; urgency=low
 
 libnss-ldap (150-2) unstable; urgency=low
 
-  * missed one db_input when i was checking for '|| true's fixed now. 
+  * missed one db_input when i was checking for '|| true's fixed now.
     (Closes: #94710)
 
  -- Sami Haahtinen <ressu@debian.org>  Sat, 21 Apr 2001 19:37:57 +0300
@@ -447,7 +447,7 @@ libnss-ldap (122-2) unstable; urgency=low
   * Added "Suggests: debconf" and removed some debug stuff from postinst;
     closes: #76363.
 
-  * debian/postinst: now we must restart nscd if it's running.  
+  * debian/postinst: now we must restart nscd if it's running.
 
  -- Davide Puricelli (evo) <evo@debian.org>  Sat, 11 Nov 2000 19:15:41 +0100
 
@@ -472,7 +472,7 @@ libnss-ldap (118-1) unstable; urgency=low
   * This situation isn't reproducible by me or other people, probably
     it's a local problem, so I'm closing it; if it occurs also with new
     upstream version feel free to reopen the bug. closes: #72118.
-  * Now ssh doesn't segfault, here we go! :)  
+  * Now ssh doesn't segfault, here we go! :)
 
  -- Davide Puricelli (evo) <evo@debian.org>  Thu, 12 Oct 2000 17:33:27 +0200
 
@@ -492,7 +492,7 @@ libnss-ldap (116-1) unstable; urgency=low
 
 libnss-ldap (115-1) unstable; urgency=low
 
-  * New upstream version. 
+  * New upstream version.
 
  -- Davide Puricelli (evo) <evo@debian.org>  Thu, 31 Aug 2000 17:06:59 +0200
 

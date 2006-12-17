@@ -62,7 +62,7 @@ FILE *nslcd_client_open(void);
     { ERROR_OUT_READERROR(fp) }
 
 /* Read the response code (the result code of the query) from
-   the stream. */ 
+   the stream. */
 #define READ_RESPONSE_CODE(fp) \
   READ_TYPE(fp,tmpint32,int32_t); \
   if (tmpint32!=NSLCD_RESULT_SUCCESS) \

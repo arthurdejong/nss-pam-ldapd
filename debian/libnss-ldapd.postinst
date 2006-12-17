@@ -221,7 +221,7 @@ then
       nss_enable $n
     else
       nss_disable $n
-    fi 
+    fi
   done
   # we're done
   db_stop
@@ -236,7 +236,7 @@ fi
 if [ -s /usr/sbin/nscd ]
 then
   if [ `pidof -s nscd` ]
-  then 
+  then
     if which invoke-rc.d >/dev/null 2>&1
     then
       invoke-rc.d nscd restart
