@@ -81,6 +81,11 @@ struct __netgrent
    documentation.
 
    Other services than those mentioned here are currently not implemented.
+
+   These definitions partially came from examining the GLIBC source code
+   as no complete documentation of the NSS interface is available.
+   This however is a useful pointer:
+   http://www.gnu.org/software/libc/manual/html_node/Name-Service-Switch.html
 */
 
 /* aliases - mail aliases */
