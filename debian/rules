@@ -17,18 +17,15 @@ configure-stamp:
 	./configure $(confflags) \
 	            --prefix=/usr \
 	            --mandir=\$${prefix}/share/man \
-	            --infodir=\$${prefix}/share/info \
 	            --sysconfdir=/etc \
 	            --localstatedir=/var \
 	            --enable-warnings \
 	            --disable-maintainer-mode \
 	            --disable-dependency-tracking \
-	            --enable-rfc2307bis \
 	            --with-ldap-lib=openldap \
 	            --with-ldap-conf-file=/etc/libnss-ldapd.conf \
 	            --with-nslcd-pidfile=/var/run/nslcd/nslcd.pid \
 	            --with-nslcd-socket=/var/run/nslcd/socket \
-	            --enable-schema-mapping \
 	            --enable-paged-results \
 	            --enable-configurable-krb5-ccname-gssapi
 	touch configure-stamp
