@@ -18,3 +18,7 @@ Description: NSS module for using LDAP as a naming service
  .
  If used with glibc's nscd (Name Service Cache Daemon) it will help
  reduce your network traffic and speed up lookups for entries.
+ .
+ This is a fork from the original libnss-ldap package and fixes,
+ amongst other things, problems related to hostname lookups and name
+ lookups during booting.
