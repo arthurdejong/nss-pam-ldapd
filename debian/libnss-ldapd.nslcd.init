@@ -79,7 +79,7 @@ status)
   then
     if kill -s 0 `cat $NSLCD_PIDFILE` > /dev/null 2>&1
     then
-      log_success_msg "nslcd running"
+      log_success_msg "nslcd running (pid `cat $NSLCD_PIDFILE`)"
       exit 0
     else
       log_success_msg "nslcd stopped"
