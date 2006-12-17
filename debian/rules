@@ -67,6 +67,8 @@ install: build
 	# install a lintian override file
 	install -D -m 644 $(CURDIR)/debian/libnss-ldapd.lintian-overrides \
 	        $(CURDIR)/debian/libnss-ldapd/usr/share/lintian/overrides/libnss-ldapd
+	# move the libraries to /lib
+	mv $(CURDIR)/debian/libnss-ldapd/usr/lib $(CURDIR)/debian/libnss-ldapd/lib
 
 # build architecture-independent files
 binary-indep: build install
