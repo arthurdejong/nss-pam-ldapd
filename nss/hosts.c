@@ -31,6 +31,20 @@
 
 /* Redifine some ERROR_OUT macros as we also want to set h_errnop. */
 
+#undef ERROR_OUT_OPENERROR
+#define ERROR_OUT_OPENERROR \
+  *errnop=ENOENT; \
+  *h_errnop=HOST_NOT_FOUND; \
+  return (errno==EAGAIN)?NSS_STATUS_TRYAGAIN:NSS_STATUS_UNAVAIL;
+
+#undef ERROR_OUT_READERROR
+#define ERROR_OUT_READERROR(fp) \
+  fclose(fp); \
+  fp=NULL; \
+  *errnop=ENOENT; \
+  *h_errnop=NO_RECOVERY; \
+  return NSS_STATUS_UNAVAIL;
+
 #undef ERROR_OUT_BUFERROR
 #define ERROR_OUT_BUFERROR(fp) \
   fclose(fp); \
@@ -38,6 +52,10 @@
   *errnop=ERANGE; \
   *h_errnop=TRY_AGAIN; \
   return NSS_STATUS_TRYAGAIN;
+
+#undef ERROR_OUT_WRITEERROR
+#define ERROR_OUT_WRITEERROR(fp) \
+  ERROR_OUT_READERROR(fp)
 
 #undef ERROR_OUT_NOSUCCESS
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
@@ -113,8 +131,6 @@ enum nss_status _nss_ldap_gethostbyname2_r(
   FILE *fp;
   int32_t tmpint32;
   enum nss_status retv;
-  /* set to NO_RECOVERY in case some error is caught */
-  *h_errnop=NO_RECOVERY;
   /* open socket and write request */
   OPEN_SOCK(fp);
   WRITE_REQUEST(fp,NSLCD_ACTION_HOST_BYNAME);
@@ -165,8 +181,6 @@ enum nss_status _nss_ldap_gethostbyaddr_r(
   FILE *fp;
   int32_t tmpint32;
   enum nss_status retv;
-  /* set to NO_RECOVERY in case some error is caught */
-  *h_errnop=NO_RECOVERY;
   /* open socket and write request */
   OPEN_SOCK(fp);
   WRITE_REQUEST(fp,NSLCD_ACTION_HOST_BYADDR);
@@ -200,6 +214,10 @@ static __thread FILE *hostentfp;
 
 enum nss_status _nss_ldap_sethostent(int stayopen)
 {
+  /* temporary storage for h_errno */
+  int h_errnotmp;
+  int *h_errnop=&h_errnotmp;
+  /* setent is normal enough */
   NSS_SETENT(hostentfp,NSLCD_ACTION_HOST_ALL);
 }
 
@@ -210,8 +228,6 @@ enum nss_status _nss_ldap_gethostent_r(
 {
   int32_t tmpint32;
   enum nss_status retv=NSS_STATUS_NOTFOUND;
-  /* set to NO_RECOVERY in case some error is caught */
-  *h_errnop=NO_RECOVERY;
   /* check that we have a valid file descriptor */
   if (hostentfp==NULL)
   {
@@ -228,7 +244,7 @@ enum nss_status _nss_ldap_gethostent_r(
   }
   while ((retv==NSS_STATUS_SUCCESS)&&(result->h_addr_list[0]==NULL));
   if (retv==NSS_STATUS_NOTFOUND)
-    *h_errnop=NO_ADDRESS;
+    *h_errnop=HOST_NOT_FOUND;
   return retv;
 }
 
