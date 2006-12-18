@@ -88,7 +88,6 @@ static void display_usage(FILE *fp,const char *program_name)
 {
   fprintf(fp,"Usage: %s [OPTION]...\n",program_name);
   fprintf(fp,"Name Service LDAP connection daemon.\n");
-  fprintf(fp,"  -f, --config=FILE  use FILE as configfile (default %s)\n",NSS_LDAP_PATH_CONF);
   fprintf(fp,"  -d, --debug        don't fork and print debugging to stderr\n");
   fprintf(fp,"      --help         display this help and exit\n");
   fprintf(fp,"      --version      output version information and exit\n");
