@@ -1,0 +1,54 @@
+.\" Copyright (C) 2006 West Consulting
+.\" Copyright (C) 2006 Arthur de Jong
+.\" 
+.\" This library is free software; you can redistribute it and/or
+.\" modify it under the terms of the GNU Library General Public
+.\" License as published by the Free Software Foundation; either
+.\" version 2 of the License, or (at your option) any later version.
+.\" 
+.\" This library is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+.\" Library General Public License for more details.
+.\" 
+.\" You should have received a copy of the GNU Library General Public
+.\" License along with this library; if not, write to the Free
+.\" Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+.\" MA 02110-1301 USA
+.TH "nslcd" "8" "Dec 2006" "Version 0.1.0" "System Manager's Manual"
+.nh
+.SH "NAME"
+nslcd \- local LDAP name service daemon.
+.SH "SYNOPSIS"
+.B nslcd
+.RI [ options ]
+.SH "DESCRIPTION"
+\fBnslcd\fP is a daemon that will do LDAP queries for local processes based on a simple configuration file.
+
+\fBnslcd\fP is configured through a configuration file (see
+.BR libnss\-ldapd.conf(5)
+).
+
+See the README for information on configuring the LDAP server.
+.SH "OPTIONS"
+\fBnslcd\fP accepts the following options:
+.TP 
+.B \-d, \-\-debug
+Enable debugging mode.
+\fBnslcd\fP will not put itself in the background and sends verbose debugging info to stderr.
+\fBnslcd\fP will handle connections as usual.
+This option is for debugging purposes only.
+.TP 
+.B \-\-help
+Display short help and exit.
+.TP 
+.B \-V, \-\-version
+Output version information and exit.
+.SH "SEE ALSO"
+.BR libnss\-ldapd.conf(5)
+.SH "FILES"
+/etc/libnss\-ldapd.conf \- the configuration file (see
+.BR libnss\-ldapd.conf(5)
+)
+.SH "AUTHOR"
+Arthur de Jong <arthur@ch.tudelft.nl>.

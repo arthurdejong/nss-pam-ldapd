@@ -21,7 +21,7 @@
 
 SUBDIRS = nss server tests
 
-man_MANS = nss_ldap.5
+dist_man_MANS = nss_ldap.5 nslcd.8
 
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/copyright debian/rules \
@@ -37,7 +37,7 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/po/POTFILES.in
 
 EXTRA_DIST = ldap.conf nslcd.h nslcd-common.h \
-             nss_ldap.5 $(DEBIAN_FILES)
+             $(DEBIAN_FILES)
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
 
