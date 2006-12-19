@@ -1,439 +1,231 @@
+   nss-ldapd - NSS library for name lookups using LDAP
 
-LDAP NAMESERVICE SWITCH LIBRARY
-===============================
+   nss-ldapd is a fork from nss_ldap which was orignally written by
+   Luke Howard of PADL Software Pty Ltd.
+   http://www.padl.com/OSS/nss_ldap.html
 
-This is the nss_ldap library, an LDAP module for the Solaris Nameservice
-Switch (NSS), the GNU libc NSS, and the ISC BIND IRS (used on BSDI
-and IRS).
+   In 2006 Arthur de Jong of West Consuling forked the library to
+   split it into a thin NSS part and a server part. Most of the code
+   was rewritten.
+   http://ch.tudelft.nl/~arthur/nss-ldapd/
+
+   Copyright (C) 1997-2006 Luke Howard
+   Copyright (C) 2006 West Consulting
+   Copyright (C) 2006 Arthur de Jong
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+
+   You should have received a copy of the GNU Library General Public
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+   MA 02110-1301 USA
+  
+INTRODUCTION
+============
+
+This is the nss-ldapd library which is an NSS module to do name lookups to an
+LDAP directory server. This library was forked from nss_ldap as provided by
+Luke Howard of PADL Software Pty Ltd.
+
+The library is currently work in progress.
+
+The library allows distributing account, group, host and other configuration
+information from a central LDAP server throughout an organisation. Because
+LDAP is a hierarchical directory service, you can distribute the information
+in a manner which reflects an organisational structure. This contrasts with
+the flat, single domain policy of NIS. LDAP has many of the advantages of NIS+
+(security and scalability) without the complexity. The system will work
+alongside your existing NIS, NIS+, DNS and flat file name services.
+
+This library consists of a thin NSS part that communicates with a local server
+that handles the LDAP lookups. This simplifies the architecture and fixes some
+scalability and locking problems with the original design.
+
+improvements over nss_ldap
+--------------------------
+
+The fork from nss_ldap was done to implement some major design changes to fix
+some structural problems in the library.
+
+The biggest of those problems were host name lookups through LDAP (which could
+cause deadlocks in most cases) and problems during booting (when the LDAP
+server was not started or not yet reachable).
+
+With nss-ldapd a number of refactoring steps were taken to simplify the code
+and improve maintainability. Legacy code was removed and support for non-Linux
+operating systems was initially removed to make the code more readable.
+Portability will be re-added once the architecture stabilises.
+
+The most practical improvements of nss-ldapd over nss_ldap are:
+
+* the LDAP library is not loaded for every process doing LDAP lookups
+* the number of connections to the LDAP server is limited, because not every
+  process will open it's own connection (this problem is also mitigated by
+  using nscd)
+* hostname lookups should now be deadlock-free because the LDAP server name
+  lookup no longer uses the ldap method
+
+This package runs a local daemon that will be enabled during the boot process.
+This daemon will handle connections to the LDAP server and accept NSS requests
+from a named socket (/var/run/nslcd/socket). The thin NSS library will proxy
+requests to the daemon.
+
+Note that the package currently cannot be used on the same system alongside
+nss_ldap.
+
+supported C libraries
+---------------------
+
+This library currently only supports the GNU C Library. Support for other C
+libraries has been removed in a refactoring step. Compatibility code and
+support for other C libraries will be added in due time.
+
+supported name databases
+------------------------
+
+Currently the following name databases are supported:
+
+  aliases, ethers, group, hosts, netgroup, networks, passwd, protocols, rpc,
+  services and shadow
+
+automounter map lookups (which are also defined in /etc/nsswitch.conf) are not
+supported because the NSS interface is not used for these. The common autofs
+implementation currently uses it's own method for getting the maps from LDAP.
+
+The publickey, bootparams and netmasks are currently also unsupported. Some
+investigation should be done if these are needed for anything, which
+interfaces should be exported and how the LDAP schema part should look like.
+
+supported LDAP libraries
+------------------------
+
+The current version of nss-ldapd has been developed with OpenLDAP 2.1.30 but
+adding support for other LDAP libraries with similar interfaces should not be
+too hard.
+
+The server part of the code is however still being refactored and cleaned up
+and the LDAP part is still subject to change and simplification.
+
+
+INSTALLATION
+============
+
+The nss-ldapd library uses autoconf and automake for building. Installing
+nss-ldapd should be as simple as:
+
+  % ./configure
+  % make
+  % make install
+
+That said, it is a good idea to go first through the options of configure by
+running:
+
+  % ./configure --help
+
+The last step (make install) should install the libnss_ldap.so.* file and the
+daemon (nslcd). The boot process needs to be manually modified to start the
+daemon at the right time.
+
+paged results
+-------------
+
+The --enable-paged-results configure option implements handling of paged
+results from the LDAP server in accordance with RFC2696.
+
+When doing LDAP searches against a Microsoft Active Directory database, the
+search results are divided into "chunks". A standard "ldap_search" against an
+untweaked AD returns a maximum of 1000 entries. To get more than that, either
+paging needs to be enabled or the page size needs to be increased in the
+server. Enableing paging is obviously the cleaner solution.
+
+The page size requested is 1000 entries, and is currently not configurable.
+However, this should be fine in most setups.
+
+Because of the way the page control is used, any LDAPv3 server that does not
+implement paging should simply ignore it and return entries as normal;
+however, this has not been fully tested yet.
+
+
+CONFIGURATION
+=============
+
+After installation the name service switch configuration file
+(/etc/nsswitch.conf) needs to be modified to do name lookups using the new
+module. Also, the nss-ldapd configuration file (specified at configure time)
+needs to be modified to contain to the correct LDAP configuration.
+
+Editing nsswitch.conf consist mostly of adding ldap in the list of lookup
+methods in the right place. See the nsswitch.conf(5) manual page for details
+on the format. As an example the file could look a little like this:
+
+  # the following contain normal unix user and group information
+  passwd:         files ldap
+  group:          files ldap
+  shadow:         files ldap
+
+  # hostname lookups through ldap before dns should work now
+  hosts:          files ldap dns
+  networks:       files ldap
+
+  # normal flat-file definitions
+  protocols:      files ldap
+  services:       files ldap
+  ethers:         files ldap
+  rpc:            files ldap
+  netgroup:       ldap
+
+  # whether alias lookups really use NSS depends on the mail server
+  aliases:        files ldap
+
+Furthermore a LDAP configuration file (by default /etc/nss-ldapd.conf) needs
+to be made. The location of this file can be specified with configure. See the
+shipped manual page for details on the format and options. It should at least
+contain something like:
+
+  # the location of LDAP server
+  uri ldap://localhost/
+
+  # search base for all queries.
+  base dc=example,dc=net
+
+  # LDAP protocol version
+  ldap_version 3
+
+
+LDAP SCHEMA
+===========
+
+nss-ldapd supports a wide range of possible LDAP schema configurations.
+Furthermore it can be customized heavily.
 
 The LDAP schema used is described in RFC 2307
 
-Insert this:
+Compiling with -DRFC2307BIS adds rfc2307bis support, which at the moment just
+gets you support for groups with distinguished name members (instead of login
+names). A posixGroup can thus have the both memberUid and uniqueMember
+attributes.
 
-passwd:     files nis ldap
-group:      files nis ldap
+Note that this is not the authoritative place for this kind of information.
+This section merely tries to describe the supported schemas by nss-ldapd
+implementation.
 
-or something similar in /etc/nsswitch.conf.
+using Microsoft Active Directory
+--------------------------------
 
-The source code is distributed under the GNU General Library Public Licence
-(see COPYING.LIB).
+When using Microsoft Active Directory server (tipically on Microsoft Windows
+2000) some changes need to be made to the nss-ldapd.conf configuration file.
+The default configuration file has some commented out attribute mappings for
+such a setup.
 
-Platforms this has been built under:
 
-        o Linux 2.x
-        o Solaris 2.4, 2.6, 7, 8
-        o FreeBSD BIND 8.x (not useful unless you recompile libc)
-        o AIX 4.3.3 with IRS
-
-If you are willing to use an older, and possibly buggy, version
-of nss_ldap, you *might* find patches to get it to work with the
-"real" FreeBSD nsswitch at http://www.nectar.com/freebsd/nsswitch.
-
-To install:
-
-% ./configure
-% make
-% make install
-
-NB: you need to use GNU make! (often called gmake or gnumake)
-
-1. Installation
----------------
-
-You need to ensure libnss_ldap.so.1 (or nss_ldap.so.1, for Solaris) is in
-/usr/lib.
-
-2. Building shared LDAP client libraries
-----------------------------------------
-
-You can build a position independent LDAP client library by compiling
--fPIC and linking with -shared, or downloading the Mozilla or Netscape
-LDAP SDKs. Note that OpenLDAP only appears to build shared libraries
-on some platforms (apparently not Solaris?). To build these, configure
-with --enable-shared.
-
-Q: Using the Netscape LDAP library with pam_ldap on Solaris 8
-- aka Solaris 2.8 - fails to link properly! David Begley writes:
-
-There are two releases of the Netscape LDAP library, one marked
-for Solaris 8 and the other marked for Solaris 2.6 - the additional
-catch is that the Solaris 8 library is a 64-bit library (this is marked
-on Netscape's site) whilst the other is a 32-bit library.
-
-It doesn't matter if you have a 64-bit UltraSPARC processor running
-the 64-bit Solaris kernel, if your compiler only works with 32-bit
-objects then it won't successfully link the 64-bit Solaris 8
-Netscape LDAP library.
-
-GCC (up to version 2.95.2) does not work properly with 64-bit objects
-under Solaris, so just use the Solaris 2.6 (32-bit) Netscape LDAP
-library and everything should be fine.
-
-Q: Can I use a third-party client LDAP library (such as Netscape's)
-on Solaris 7? David Begley writes:
-
-Yes, but if you have the Solaris 7 LDAP library installed (package
-SUNWlldap or SUNWldapx) configure will find it before the third-party
-library - in this case, you can't rely on the auto-lib-type detection of
-configure and must use the "--with-ldap-lib=" parameter.
-
-Q: Why does linking fail on Solaris 2.6 (complaining about
-relocations remaining against libcrypt)? David Begley
-writes:
-
-In short, the problem is that GCC is looking for a shared libcrypt
-(in response to the "--shared" parameter) which doesn't exist on
-Solaris 2.6 (but does on Solaris 7).  The fix is quite simple, use
-"-G" instead of "--shared" (could this be a GCC bug?).  This change
-should already be included in newer versions of pam_ldap.
-
-It doesn't look like libcrypt is even needed if you're using the
-Netscape LDAP client library (maybe it's required for OpenLDAP?).
-
-Scott M. Stone <sstone@foo3.com> writes:
-Your openldap libs *and* your SSL/RSAREF libs must be DYNAMIC LIBRARIES
-or neither nss_ldap nor pam_ldap will work.
-
-3. glibc 2.0 compatibility
---------------------------
-
-Current versions of the nss_ldap library are designed to work with
-glibc 2.1, not glibc 2.0. They _may_ work with glibc 2.0. YMMV.
-
-4. RFC2307BIS
--------------
-
-Compiling with -DRFC2307BIS adds rfc2307bis support, which at the
-moment just gets you support for groups with distinguished name
-members (instead of login names). A posixGroup can thus have the
-both memberUid and uniqueMember attributes.
-
-5. Building under FreeBSD
--------------------------
-
-Here's what I do to build it under FreeBSD. You will need to
-link it into libbind.a for it actually to be useful.
-
-CPPFLAGS="-I/usr/local/include -I/usr/local/include/bind -DPIC"
-export CPPFLAGS
-CFLAGS=$CPPFLAGS # this is weird
-export CFLAGS
-LDFLAGS="-L/usr/local/lib"
-LIBS="-lbind_r -lgnuregex -lsasl -lkrb"
-export LDFLAGS LIBS
-./configure
-make
-
-6. Solaris, shadowAccount
--------------------------
-
-Joerg Paysen notes:
-
-> I think its extremly important that you have a
-> /etc/shadow file so that an ObjectClass shadowAccount
-> will be created in the ldap database. My experience is
-> that without shadowAccount nss_ldap does not work on
-> solaris!!
-
-7. Secret file
---------------
-
-If using /etc/ldap.secret, it must have a newline at the end
-of the secret.
-
-8. Mailing lists
-----------------
-
-To discuss nss_ldap and related technologies, you may
-subscribe to the following mailing lists:
-
-        <URL:mailto:nssldap-request@padl.com>
-and
-        <URL:mailto:ldap-nis-request@padl.com>
-
-Send an electronic mail message with "subscribe" in the
-message body to join the list.
-
-9. Commercial support
----------------------
-
-Note that PADL now offer commercial support on a
-per-incident basis.
-
-To request a support incident, send email to: nssldap-support@padl.com
-
---
-PADL Software Pty Ltd
-nssldap-support@padl.com
-http://www.padl.com/
-
-
-***********************************************************
-**** README.SFU *******************************************
-***********************************************************
-
-
-*******************************************************************
-
-nss_ldap-AD-pwdgrp
-
-  This file describes the modifications that were made to, and the
-  build process of, the nss_ldap-150 source to allow passwd and 
-  group info to be retrieved from a Windows 2000 Active Directory.
-
-  Modified by: 	djflux (Andrew Rechenberg) - dj_flux@yahoo.com
-  Date:		3 May 2001
-  URL:		http://w3.one.net/~djflux/nss_ldap-AD.shtml
-
-*******************************************************************
-
-***              ***
-*** IMPORTANT!!! ***
-***              ***
--- One MUST have Microsoft Server for NIS from Microsoft Services 
-   for UNIX 2.0 installed on a Windows 2000 Server Domain Controller 
-   in order for this modified module to operate correctly.  See the 
-   URL below for more info about SFU 2.0:
-	
-	http://www.microsoft.com/windows2000/sfu
-
--- One must also have the LDAP devel libraries installed on the machine
-   in order to properly build this module.  The proper headers and 
-   libraries can be found in the openldap-devel package.
-
-From: "Rechenberg, Andrew" <arechenberg@shermfin.com>
-Subject: RE: [nssldap] Can not get nss_ldap to work, can anyone please hel p me?
-To: "'Allister Maguire'" <amaguire@actonz.com>, nssldap@padl.com
-Date: Thu, 24 Jan 2002 09:28:36 -0500
-
-
-The README.SFU is slightly little out of date and off topic now.  I
-originally wrote README.SFU when I modified nss_ldap and Luke Howard
-integrated the patch into nss_ldap-150 I believe as a configure option.
-
-There is now the ability to do schema mapping in nss_ldap and change which
-attributes are used for LDAP lookups.  You have to use the following
-configure option:
-
-./configure --enable-schema-mapping [REST_OF_YOUR_OPTIONS_HERE]
-
-Once nss_ldap is compiled then you edit your ldap.conf file and uncomment
-the attribute mapping under the MSSFU section (use your favorite text editor
-and search for MSSFU and you should find it).  Once you do that, and you
-modify your nsswitch.conf, you should be off and running.
-
-Let me know if you need anymore help.
-
-Regards,
-Andy.
-
-
-
-*
-*** Test systems specifications ***
-*
-This module has been tested and works with the following operating
-system versions:
-
-RedHat Linux 7.1, kernel 2.4.2-2, against Win2000 Server SP1 mixed-mode
-RedHat Linux 6.2, kernel 2.2.17 (smp, custom), Win2000 Server SP1 mixed mode
-RedHat Linux 6.1, kernel 2.2.17 (smp, custom), Win2000 Server SP1 mixed mode
-
-The module should compile work with other *NIX/*BSD OS's, but your mileage 
-may vary.
-
-I believe there is a coding difference in certain applications between Red 
-Hat 6.1, and versions 6.2 and greater.  When testing the modified module I 
-used 'id [USERNAME]' to make sure that the correct information was being 
-retrieved from the AD.  In Red Hat versions 6.2 or greater (7.0 not tested,
-but it should be the same), 'id [USERNAME]' would only return UID, and primary
-GID.  If [USERNAME] was logged in interactively and ran 'id' the command showed
-UID, primary GID, and all other group memberships.
-
-However, when running 'id [USERNAME]' in Red Hat 6.1, the command returned a 
-"Segmentation Fault."  If the user is logged in interactively on 6.1, all of
-the correct information is still retrieved.
-
-I am going to check into this issue, but the module should still behave correctly
-under 6.1.  Let me know if you find out anything different.
- 
-
-*
-*** What was modified ***  
-*
-There is very little to modify in order to retrieve passwd and group 
-information from a Windows 2000 Active Directory.
-
-[Ed note: the patches are incorporated, so all you need to do is
- run ./configure --enable-mssfu-schema]
-
-Supplied in the ./admods directory is the context diff of ldap-schema.h.  
-This file shows the attributes that needed to be modified in order to 
-use nss_ldap for user and group information on a Linux machine.  Besides
-a slight modification of the Makefile, this is the only file that needs 
-to be changed.
-
-Below are the lines that need to be modified in the Makefile.  Just make 
-the lines in your Makefile similar to the ones below.
-
-nss_ldap_so_LDFLAGS = -shared -L/lib/libdb.so
-LDFLAGS = -L/lib/libdb.so
-NSS_LDAP_LDFLAGS = -enss_ldap_initialize -lsys -lcsys -lc -ldb
-LIBS = -lldap -llber -lnsl -lresolv -ldb
-
-The "-ldb" in NSS_LDAP_LDFLAGS and LIBS may not be necessary, but I 
-wasn't about the change anything in the module after I had it working :)
-Also, the -L switch should have the path to your libdb.so (e.g if libdb.so.3
-is in /usr/local/lib then your LDFLAGS should have -L/usr/local/lib/libdb.so.3).
-
-
-*
-*** Building it ***
-*
-This is the procedure that was used to build this module. The ldap-schema.h
-file include in this source tree has already been modified to work with 
-SFUed Active Directory, so you do not need to modify that file.  The 
-ldap-schema.diff file has been provided for illustration purposes so one 
-knows what attributes have been modified.
-
-1) make distclean
-2) ./configure --with-ldap=openldap --libdir=/lib --enable-mssfu-schema
-3) Modify Makefile so that the lines in Makefile are similar to those listed 
-    above.
-4) make install
-
-That's it!
-
-
-*
-*** /etc/ldap.conf ***
-*
-Modify your /etc/ldap.conf file to match your Active Directory/LDAP 
-configuration.  Unless you have changed your AD from the stock install, 
-you should have the following RFC2307bis naming contexts in your 
-ldap.conf file:
-
-nss_base_passwd		cn=Users,dc=yourdomain,dc=com?one
-nss_base_group		cn=Users,dc=yourdomain,dc=com?one
-
-With the stock Active Directory, all users and groups are located in the 
-cn=users container underneath your domain.  If your AD has been modified, 
-then modify the naming contexts to suit your directory.
-
-You should also set the PAM login attribute.  Mine is as follows:
-
-pam_login_attribute	msSFUName
-
-
-*
-*** Basic info ***
-*
-For basic setup of LDAP authentication and information storage and retrieval
-see the following URLs (specific to OpenLDAP and Linux, but they give one a
-good base understanding of how the process works):
-
-http://www.linux.com/howto/LDAP-Implementation-HOWTO/pamnss.html
-http://www.openldap.org/lists/openldap-software//200010/msg00097.html
-
-***********************************************************
-**** README.paged *****************************************
-***********************************************************
-
-Purpose
--------
-
-These  amendments  cause  all "getXXent"   calls  implemented  by
-NSS_LDAP  to  request paging of results in  accordance  with  RFC
-2696. 
-
-If  you  are  using  LDAP searches  against  a  Microsoft  Active
-Directory  database,  you  will  find  that  search  results  are
-divided  into  "chunks".  A standard  "ldap_search"   against  an
-untweaked AD returns a maximum of 1000 entries. To get more  than
-that,  you have to either use an extended search with paging,  or
-increase  the  query  policy limits on your AD.  If  you  have  a
-large  number  of  users (we have over 30K)  raising  the  policy
-limits that high is worrying.  
-
-The  page  size requested is 1000 entries, and is  not  a  config
-file item. However, it should be OK with any Active Directory.
-
-Because  of the way the page control is used, any  LDAPv3  server
-that  does  not  implement paging should  simply  ignore  it  and
-return  entries as normal; however, I haven't been able  to  test
-this.
-
-Installing
-----------
-
-The  TAR file contains 3 context diff files and one extra C  file
-(pagectrl. c)  that implements the standard API calls  for  paged
-results  controls.  If your LDAP library supports  these  anyway,
-you  shouldn't  need it, but I don't know of one that  does.  The
-Sun  library  has the entry points, but I couldn't  get  them  to
-work. 
-
-1. Unpack the TAR file in your NSS LDAP directory.
-
-2. Run "patch" to apply the 3 diff files. On my system that is:
-
-	patch ldap-nss.c < ldap-nss.c.diff
-	patch ldap-nss.h < ldap-nss.h.diff
-	patch Makefile.in < Makefile.in.diff
-
-3. Run  "configure" as specified in the  NSS  LDAP  installation
-instructions, to recreate the Makefile.
-
-4. Run "make clean"
-
-5. Run "make"
-
-You should now have a new nss_ldap.so ready to copy to /lib.
-
-Max Caines (max.caines@wlv.ac.uk)
-16 April 2002
-
-
-***********************************************************
-**** sample nsswitch.conf *********************************
-***********************************************************
-
-# An example file that could be copied over to /etc/nsswitch.conf; it
-# uses LDAP conjunction with files.
-#
-# "hosts:" and "services:" in this file are used only if the
-# /etc/netconfig file has a "-" for nametoaddr_libs of "inet" transports.
-
-# the following two lines obviate the "+" entry in /etc/passwd and /etc/group.
-passwd:         files ldap
-group:          files ldap
-
-# consult DNS first, we will need it to resolve the LDAP host. (If we
-# can't resolve it, we're in infinite recursion, because libldap calls
-# gethostbyname(). Careful!)
-hosts:          dns ldap
-
-# LDAP is nominally authoritative for the following maps.
-services:   ldap [NOTFOUND=return] files
-networks:   ldap [NOTFOUND=return] files
-protocols:  ldap [NOTFOUND=return] files
-rpc:        ldap [NOTFOUND=return] files
-ethers:     ldap [NOTFOUND=return] files
-
-# no support for netmasks, bootparams, publickey yet.
-netmasks:   files
-bootparams: files
-publickey:  files
-automount:  files
-
-# I'm pretty sure nsswitch.conf is consulted directly by sendmail,
-# here, so we can't do much here. Instead, use bbense's LDAP
-# rules ofr sendmail.
-aliases:    files
-sendmailvars:   files
-
-# Note: there is no support for netgroups on Solaris (yet)
-netgroup:   ldap [NOTFOUND=return] files
 
 ***********************************************************
 **** sample people.ldif ***********************************
@@ -534,10 +326,10 @@ uses for each database type in /etc/nsswitch.conf
 For each of the entries the search base is determined by the nss_base_...
 parameter in /etc/libnss-ldap.conf.
 
-The search filters are used when the resprective functions are called.
+The search filters are used when the respective functions are called.
 
 For brevity's sake the attributes have been given as one complete list
-per database type and not as one list per each search, which whould
+per database type and not as one list per each search, which would
 have been more correct.
 
 The information contained in the list may be used to determine the required
@@ -561,8 +353,8 @@ names in the list to the mapped ones.
 aliases
 -------
 * Filters:
-  getaliasbyname():	(&(objectclass=nisMailAlias)(cn=%s))
-  getaliasent():	(objectclass=nisMailAlias)
+  getaliasbyname():     (&(objectclass=nisMailAlias)(cn=%s))
+  getaliasent():        (objectclass=nisMailAlias)
 * Attributes:
   cn
   rfc822MailMember
@@ -570,7 +362,7 @@ aliases
 bootparams
 ----------
 * Filters:
-  getbootparamsbyname():	(&(objectclass=bootableDevice)(cn=%s))" 
+  getbootparamsbyname():        (&(objectclass=bootableDevice)(cn=%s))" 
 * Attributes:
   cn
   bootParameter
@@ -578,9 +370,9 @@ bootparams
 ethers
 ------
 * Filters:
-  gethostton():		(&(objectclass=ieee802Device)(cn=%s))
-  getntohost():		(&(objectclass=ieee802Device)(macAddress=%s))
-  getetherent():	(objectclass=ieee802Device)
+  gethostton():         (&(objectclass=ieee802Device)(cn=%s))
+  getntohost():         (&(objectclass=ieee802Device)(macAddress=%s))
+  getetherent():        (objectclass=ieee802Device)
 * Attributes:
   cn
   macAddress
@@ -588,15 +380,15 @@ ethers
 group
 -----
 * Filters:
-  getgrnam():		(&(objectclass=posixGroup)(cn=%s))
-  getgrgid():		(&(objectclass=posixGroup)(gidNumber=%s))
-  getgrent():		(&(objectclass=posixGroup))
-  getgroupsbymemberanddn():	(&(objectclass=posixGroup)(|(memberUid=%s)(uniqueMember=%s)))
-  getgroupsbydn():	(&(objectclass=posixGroup)(uniqueMember=%s))
-  getgroupsbymember():	(&(objectclass=posixGroup)(memberUid=%s))
+  getgrnam():           (&(objectclass=posixGroup)(cn=%s))
+  getgrgid():           (&(objectclass=posixGroup)(gidNumber=%s))
+  getgrent():           (&(objectclass=posixGroup))
+  getgroupsbymemberanddn():     (&(objectclass=posixGroup)(|(memberUid=%s)(uniqueMember=%s)))
+  getgroupsbydn():      (&(objectclass=posixGroup)(uniqueMember=%s))
+  getgroupsbymember():  (&(objectclass=posixGroup)(memberUid=%s))
 * Attributes:
   cn
-  userPassword		<- should be readable by 'rootbinddn' only
+  userPassword          <- should be readable by 'rootbinddn' only
   memberUid
   uniqueMember
   gidNumber
@@ -604,9 +396,9 @@ group
 hosts
 -----
 * Filters:
-  gethostbyname():	(&(objectclass=ipHost)(cn=%s))
-  gethostbyaddr():	(&(objectclass=ipHost)(ipHostNumber=%s))
-  gethostent():		(objectclass=ipHost)
+  gethostbyname():      (&(objectclass=ipHost)(cn=%s))
+  gethostbyaddr():      (&(objectclass=ipHost)(ipHostNumber=%s))
+  gethostent():         (objectclass=ipHost)
 * Attributes:
   cn
   ipHostNumber
@@ -614,9 +406,9 @@ hosts
 networks
 --------
 * Filters:
-  getnetbyname():	(&(objectclass=ipNetwork)(cn=%s))
-  getnetbyaddr():	(&(objectclass=ipNetwork)(ipNetworkNumber=%s))
-  getnetent():		(objectclass=ipNetwork)",
+  getnetbyname():       (&(objectclass=ipNetwork)(cn=%s))
+  getnetbyaddr():       (&(objectclass=ipNetwork)(ipNetworkNumber=%s))
+  getnetent():          (objectclass=ipNetwork)",
 * Attributes:
   cn
   ipNetworkNumber
@@ -625,9 +417,9 @@ networks
 protocols
 ---------
 * Filters:
-  getprotobyname():	(&(objectclass=ipProtocol)(cn=%s))
-  getprotobynumber():	(&(objectclassipProtocols)(ipProtocolNumber=%s))
-  getprotoent():	(objectclass=ipProtocol)
+  getprotobyname():     (&(objectclass=ipProtocol)(cn=%s))
+  getprotobynumber():   (&(objectclassipProtocols)(ipProtocolNumber=%s))
+  getprotoent():        (objectclass=ipProtocol)
 * Attributes:
   cn
   ipProtocolNumber
@@ -635,12 +427,12 @@ protocols
 passwd
 ------
 * Filters:
-  getpwnam():	(&(objectclass=posixAccount)(uid=%s))
-  getpwuid():	(&(objectclass=posixAccount)(uidNumber=%s))
-  getpwent():	(objectclass=posixAccount)
+  getpwnam():   (&(objectclass=posixAccount)(uid=%s))
+  getpwuid():   (&(objectclass=posixAccount)(uidNumber=%s))
+  getpwent():   (objectclass=posixAccount)
 * Attributes:
   uid
-  userPassword		<- should be readable by 'rootbinddn' only
+  userPassword          <- should be readable by 'rootbinddn' only
   uidNumber
   gidNumber
   cn
@@ -648,16 +440,16 @@ passwd
   loginShell
   gecos
   description
-  shadowLastChange	<- should be readable by 'rootbinddn' only
-  shadowMax		<- should be readable by 'rootbinddn' only
-  shadowExpire		<- should be readable by 'rootbinddn' only
+  shadowLastChange      <- should be readable by 'rootbinddn' only
+  shadowMax             <- should be readable by 'rootbinddn' only
+  shadowExpire          <- should be readable by 'rootbinddn' only
 
 rpc
 ---
 * Filters:
-  getrpcbyname():	(&(objectclass=oncRpc)(cn=%s))
-  getrpcbynumber():	(&(objectclass=oncRpc)(oncRpcNumber=%s))
-  getrpcent():		(objectclass=oncRpc)
+  getrpcbyname():       (&(objectclass=oncRpc)(cn=%s))
+  getrpcbynumber():     (&(objectclass=oncRpc)(oncRpcNumber=%s))
+  getrpcent():          (objectclass=oncRpc)
 * Attributes:
   cn
   oncRpcNumber
@@ -665,11 +457,11 @@ rpc
 services
 --------
 * Filters:
-  getservbyname():	(&(objectclass=ipService)(cn=%s))",
-  getservbynameproto():	(&(objectclass=ipService)(cn=%s)(ipServiceProtocol=%s))
-  getservbyport():	(&(objectclass=ipService)(ipServicePort=%s))
-  getservbyportproto():	(&(objectclass=ipService)(ipServicePort=%s)(ipServiceProtocol=%s))
-  getservent():		(objectclass=ipService)
+  getservbyname():      (&(objectclass=ipService)(cn=%s))",
+  getservbynameproto(): (&(objectclass=ipService)(cn=%s)(ipServiceProtocol=%s))
+  getservbyport():      (&(objectclass=ipService)(ipServicePort=%s))
+  getservbyportproto(): (&(objectclass=ipService)(ipServicePort=%s)(ipServiceProtocol=%s))
+  getservent():         (objectclass=ipService)
 * Attributes:
   cn
   ipServicePort
@@ -678,8 +470,8 @@ services
 shadow
 ------
 * Filters:
-  getspnam():		(&(objectclass=shadowAccount)(uid=%s))
-  getspent():		(objectclass=shadowAccount)
+  getspnam():           (&(objectclass=shadowAccount)(uid=%s))
+  getspent():           (objectclass=shadowAccount)
 * Attributes:
   uid
   userPassword
@@ -694,8 +486,8 @@ shadow
 netgroup
 --------
 * Filters:
-  getnetgrent():	(&(objectclass=nisNetgroup)(cn=%s))
-  innetgr():		(&(objectclass=nisNetgroup)(memberNisNetgroup=%s))
+  getnetgrent():        (&(objectclass=nisNetgroup)(cn=%s))
+  innetgr():            (&(objectclass=nisNetgroup)(memberNisNetgroup=%s))
 * Attributes:
   cn
   nisNetgroupTriple
@@ -710,133 +502,3 @@ automount
   description
 
  -- Peter Marschall <peter@adpm.de>
-
-***********************************************************
-**** ANNOUNCE *********************************************
-***********************************************************
-
-
-                      ANNOUNCING NSS_LDAP
-                      ===================
-
-1. What is nss_ldap?
---------------------
-
-nss_ldap is a set of C library extensions which allows X.500 and LDAP
-directory servers to be used as a primary source of aliases, ethers,
-groups, hosts, networks, protocol, users, RPCs, services and shadow
-passwords (instead of or in addition to using flat files or NIS).
-
-nss_ldap nominally supports the following operating system libraries:
-
-        o the Nameservice Switch in Solaris 2.4 to 9
-        o the Nameservice Switch in HP-UX 11
-        o the Nameservice Switch in the GNU C Library 2.1 (as
-          in libc.so.6 under Linux)
-        o the Nameservice Switch in FreeBSD 5.x
-        o the Information Retrieval Service (IRS) in BIND
-        o the Information Retrieval Service (IRS) and proprietary
-          authentication and identity interface in AIX 4.3.3
-
-nss_ldap is an implementation of the schema specified in RFC 2307
-and is compatible with that used in PADL Software Pty Ltd's
-NIS/LDAP gateway (ypldapd), and current versions of Solaris,
-HP-UX and MacOS X.
-
-2. What can it do for me?
--------------------------
-
-nss_ldap lets you use LDAP servers, like Netscape's Directory Server,
-to distribute users, hosts, groups and other like information throughout
-an organization. Because LDAP is a hierarchical directory service,
-you can distribute the information in a manner which reflects an
-organizational structure. This contrasts with the flat, single domain
-policy of NIS. LDAP has many of the advantages of NIS+ (security and
-scalability) without the complexity.
-
-nss_ldap will work alongside your existing NIS, NIS+, DNS and flat file
-name services. More importantly, because it builds as a shared library,
-you don't have to recompile any of your applications to take advantage
-of LDAP. When used with a directory server under NT, it may be helpful
-in synchronizing Unix and NT accounts.
-
-3. What are its limitations?
-----------------------------
-
-Currently, some "maps" (like bootparams) are not supported. It's also
-alpha software, so use it at your own risk. This should be considered
-with respect to the fact the nss_ldap is loaded into the address space
-of *every* process which uses the C library's resolver functions and
-has LDAP in its search order. (This isn't entirely true under Solaris,
-but the implications are similar.)
-
-Finally, it only supports Linux and Solaris (and some versions of
-BSD). You might want to look at ypldapd (see below) if you need to
-support NIS clients.
-
-4. How much does it cost?
--------------------------
-
-It's free, and distributed under the GNU General Library Public
-Licence (LGPL). Please read the file COPYING.LIB For more information.
-
-5. Where do I get it?
----------------------
-
-nss_ldap is available from:
-
-        <URL:http://www.padl.com/download/nss_ldap.tgz>
-        <URL:ftp://ftp.padl.com/pub/nss_ldap.tgz>
-
-We have also made available some Perl scripts for populating LDAP
-databases from existing flat files, NIS and/or NetInfo data.
-
-        <URL:http://www.padl.com/download/MigrationTools.tgz>
-        <URL:ftp://www.padl.com/pub/MigrationTools.tgz>
-
-You'll need to compile a position-independent LDAP client library
-(libldap). You can either get the entire LDAP package from the University
-of Michigan (see below) and add "-fPIC" (if you're using gcc) to the
-C compiler flags; download the Mozilla SDK from www.mozilla.org;
-download the prebuilt Netscape LDAP SDK from developer.netscape.com;
-or download OpenLDAP from www.openldap.org.
-
-6. Where can I get more information?
-------------------------------------
-
-To discuss nss_ldap, ypldapd, and related technologies, you may subscribe
-to the following mailing list:
-
-        <URL:mailto:ldap-nis-request@padl.com>
-
-Send an electronic mail message with "subscribe" in the message body to
-join the list.
-
-To contact the developers, email:
-
-        <URL:mailto:dev@padl.com>
-
-Note that PADL offer commercial support on a per-incident basis. The
-support@padl.com is for commercial support customers only.
-
-For more information on using LDAP for name resolution, and related software,
-see:
-
-        <URL:http://www.padl.com>
-
-And if you need an LDAP server, or some general information on LDAP,
-see:
-
-        <URL:http://www.openldap.org>
-
-7. Who wrote it?
-----------------
-
-nss_ldap was written by PADL Software Pty Ltd <dev@padl.com>. Many
-others have contributed, see the file AUTHORS in this directory.
-
-Please read the following document before submitting any
-contributions:
-
-        <URL:http://www.padl.com/Articles/GuidelinesforContributing.html>
-

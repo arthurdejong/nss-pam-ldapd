@@ -1,3 +1,13 @@
+changes from nss_ldap to nss-ldapd 0.1
+--------------------------------------
+
+* split code in NSS part and daemon part
+* new test code
+* many thanks to my employer, West Consulting, for allowing me
+  to spend some work time on this fork
+* default configuration file location is changed to /etc/nss-ldapd.conf
+ 
+
 changes from 250 to 251
 -----------------------
 

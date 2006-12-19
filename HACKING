@@ -1,0 +1,113 @@
+
+This document tries to describe the software layout and design of the library.
+It should provide some help for contributing code to this package.
+
+CONTRIBUTING TO NSS-LDAPD
+=========================
+
+Contributions to nss-ldapd are most welcome. However not all contributions
+will be automatically integrated. Some notes:
+
+* for enhancements it is a good idea to send an email first
+* send your patches in unified diff (diff -u) format
+* try to use the svn version of the software to develop the patch
+* clearly state which problem you're trying to solve and how this is
+  accomplished
+* please follow the existing coding conventions
+* patches will be integrated on a best-effort bases
+* please test the patch and include information on testing with the patch
+  (platforms tested, etc)
+* include a copyright statement in the patched code if you feel the
+  contribution is significant enough (e.g. more than a few lines)
+* when including third-party code, retain copyright information (copyright
+  holder and license) and ensure that the license is LGPL compatible
+* contributions will be acknowledged in the AUTHORS file
+
+
+THE COMMUNICATIONS PROTOCOL
+===========================
+
+The protocol used for communicating between the NSS library and the nslcd
+daemon is very simple and almost fully described in the nslcd.h header file.
+The nslcd-common.h header file defines some macros that are used for reading
+and writing protocol entities (strings, 32-bit integers, etc).
+
+Some of the protocol handling code is automatically generated from the macros
+defined in nslcd.h. This cannot be done automatically in every case though so
+changing the protocol requires manual checking in the relevant source files in
+both the nss and the server directories.
+
+If the protocol is changed in an incompatible way the protocol version should
+be incremented in nslcd.h. There is currently no versioning schema available
+for this.
+
+
+RELEASE VERSIONING
+==================
+
+A new versioning schema was chosen over the nss_ldap release schema. The
+schema is a simple major.minor numbering starting with 0.1. Until a 1.0
+release is made the code will be considered work in progress. The interfaces
+may change and features may be added and removed.
+
+GENERAL DESIGN
+==============
+
+The basic design splits the functionality in two parts. The NSS part
+interfaces with libc and translates the NSS requests into simple generic
+requests (e.g. "get user with name test", "get group with gid 101" or "get all
+shadow entries"). Translating these requests into LDAP requests is then the
+job of the daemon so that the NSS part won't have to know anything about LDAP
+(in fact replacing it with another lookup method is very simple).
+
+                nslcd  -> OpenLDAP -> LDAP server
+                  ^
+    libc NSS -> libnss_ldap.so
+
+design goals
+------------
+* make it as simple as possible (focus on simplicity)
+* design as specified above
+* simpler configuration and semantics
+* simpler, clearer and completer documentation
+* split source code into directories (src, src/hacks, src/aix, src/irs, etc)
+* get rid of unneeded code and complexity
+* split complexity in two parts (LDAP interface in server, NSS interface in
+  library)
+
+
+NSS PART
+========
+
+all requests go:
+
+_nss_ldap_FUNCTION_r(...)
+  This function opens the connection to the nslcd (with some timeout and retry
+  mechanism) builds the correct data structures and does a request (write())
+  to the nslcd waiting for an answer (again with a timeout and retry
+  mechanism) [some helper functions should be available for opening the socket
+  and performing the write/read combo]
+
+http://mirrors.usc.edu/pub/gnu/Manuals/glibc-2.2.3/html_chapter/libc_28.html#SEC596
+http://www.gnu.org/software/libc/manual/html_node/index.html
+
+
+SERVER PART
+===========
+
+At the server end a dispatcher picks up the request and delegates it to one of
+the database specific functions.
+
+nslcd_FUNCION(...)
+  This functions fills in the correct parameters from the request. This
+  function should generate a response object [TODO: response objects can be
+  large]
+
+SECURITY NOTES
+==============
+
+This design does open up the system to more potential security issues as there
+is now a local interface to a daemon with privileges. Before processes could
+only potentially exploit bugs in the library and gain the privileges of the
+process that was doing the name lookups. In this case the privileges of the
+daemon are potentially exposed.

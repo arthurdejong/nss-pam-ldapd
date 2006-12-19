@@ -1,7 +1,62 @@
-Please contact PADL Software Development Support <dev@padl.com>
-if you wish to contribute.
+
+before next release
+-------------------
+* add a ChangeLog
+* fix permissions of created socket (so that non-root users will have access to nslcd)
+* debian package: install in /lib, not in /usr/lib (move in rules, this was hidden in debian/libnss-ldap.install in the old package)
+* add nslcd manual page
+* update all documentation
+* only set herrno on errors to fix hostname lookups?
+
+probably before we can call this stable
+---------------------------------------
+* implement _nss_ldap_initgroups_dyn()
+* split out configuration part into own source file
+* clean up ldap server code
+* reserve some threads in the server for root
+* FIXME: strerror() is not reentrant
+* align stuff in buffer (e.g. arrays of pointers)
+* add HACKING document describing how to make modifications
+
+other items
+-----------
+* another way to prevent deadlocks is to pass some flag from nsldc to nss_ldap
+* set up connection to LDAP server before making NSLCD mechanims available (e.g. before creating socket)
+* debian packaging: maybe remove stuff from /etc/nsswitch.conf on purge
+* make lintian and linda clean
+* support ipv6?
+
+
+assorted
+--------
+* rootdb is not much use in most nslcd configurations anyway since all nss
+  requests are done as root (except shadow)
+* apparently shadow lookups are not done through nscd and will be done by the
+  original process
+* probably disable this functionality for now and document the fact that you
+  should use libpam-ldap for authentication without exposing the passwords
+  through LDAP
+* FIXME: strerror() is not reentrant
+- remove dots from copyright statements
+- update copyright statements to be consistent throughout all files
+- change FSF address
+- add a warning somewhere as to when the NSS functions are available
+- set up a threading mechanism in the server process
+- reserve some threads in the server for root
+* IDEA - set up connection to LDAP server before making NSLCD mechanims available (e.g. before creating socket)
+* another way to prevent deadlocks is to pass some flag from nsldc to nss_ldap
+* look at packaging of libnss-mysql for lintian overrides and other things
+* look at http://svn.asta.mh-hannover.de/categories/python/pyauthd/
+* in all server modules add sanity checking code (e.g. not too large buffer allocation and checking that host, user, etc do not contain funky characters)
+* storing IPv6 address in LDAP is currently not supported (this needs to be implemented in the LDAP parsing end)
+* add netmask to network structure
+* rename server directory to nslcd
+* fix alignment problems in buffers
+* ISSUE: resolve.[ch] has license: BSD WITH ADVERTISING CLAUSE - GPL PROBLEM
+* implement running under a different uid/gid (maybe chroot jail)
 
 Please see http://bugzilla.padl.com for more information!
+http://bugzilla.padl.com/buglist.cgi?short_desc_type=allwordssubstr&short_desc=&product=nss_ldap&long_desc_type=allwordssubstr&long_desc=&bug_file_loc_type=allwordssubstr&bug_file_loc=&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&emailtype1=substring&email1=&emailtype2=substring&email2=&bugidtype=include&bug_id=&votes=&changedin=&chfieldfrom=&chfieldto=Now&chfieldvalue=&cmdtype=doit&order=Bug+Number&field0-0-0=noop&type0-0-0=noop&value0-0-0=
 
 BUGZILLA BUGS:
 ==============
@@ -92,56 +147,3 @@ Solaris and the GNU C Library (and, possibly, the BIND IRS, although
 no one seems to be particularly interested in that switch).  I haven't
 looked into them in great detail. You'll need to create ldap-netgrp.c
 (rip off ldap-pwd.c for starters). and implement the following:
-
-Linux
-=====
-
-NSS_STATUS
-_nss_ldap_setnetgrent(const char *group, struct __netgrent *result);
-
-NSS_STATUS
-_nss_ldap_endnetgrent(struct __netgrent *result);
-
-NSS_STATUS
-_nss_ldap_getnetgrent_r(struct __netgrent *result, char *buffer,
-        size_t buflen, int *errnop);
-
-Because netgroups are just triples in LDAP, you should be able to avail
-yourself of the _nss_netgroup_parseline() helper function. (Having
-the glibc source handy would be helpful.) Call this from the parser
-(see below) for values of the "nisNetgroupTriple" attribute.
-
-Solaris
-=======
-
-Check out /usr/include/nss_dbdefs.h. It looks pretty hairy:
-FYI, let's look at how a user is resolved:
-
-NSS_STATUS
-_nss_ldap_getpwnam_r (
-                       const char *name,
-                       struct passwd * result,
-                       char *buffer,
-                       size_t buflen,
-                       int *errnop)
-{
-  LOOKUP_NAME (name, result, buffer, buflen, errnop, filt_getpwnam, pw_attributes, _nss_ldap_parse_pw);
-}
-
-The LOOKUP_NAME macro marshalls arguments to pass to
-_nss_ldap_getbyname(), which is responsible for searching in the
-directory. If the search is successful, this function will call
-the parser (_nss_ldap_parse_pw()) with the LDAP result, and
-the buffers supplied by the user. The parser is responsible
-for mapping the LDAP entry into a struct pwent or whatever.
-There are helper functions provided for doing such, for example
-_nss_ldap_assign_attrval():
-
-  stat = _nss_ldap_assign_attrval (ld, e, LDAP_ATTR_USERNAME, &pw->pw_name, &buffer, &buflen);
-  if (stat != NSS_SUCCESS)
-
-This model works well when there is a 1:1 mapping between LDAP
-entries and entities that the host API is responsible for. Things
-get a bit trickier for things like getgroupsbymember(). Hope
-this helps. Note that for Solaris, each backend has a dispatch
-table, a "constructor" (_nss_ldap_passwd_constr, for example).
