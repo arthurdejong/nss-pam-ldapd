@@ -1,4 +1,4 @@
-Source: libnss-ldapd
+Source: nss-ldapd
 Section: net
 Priority: extra
 Maintainer: Arthur de Jong <adejong@debian.org>
