@@ -2,8 +2,7 @@
 
 set -e
 
-PACKAGE=libnss-ldapd
-CONFFILE="/etc/libnss-ldapd.conf"
+CONFFILE="/etc/nss-ldapd.conf"
 
 # set an option in the configuration file to the specified value
 cfg_set()
@@ -112,7 +111,7 @@ create_config()
       # begin the file by some information as to where it came from
       cat > "$CONFFILE" << EOM
 # $CONFFILE
-# libnss-ldapd configuration file. See libnss-ldapd.conf(5)
+# nss-ldapd configuration file. See nss-ldapd.conf(5)
 # for details.
 #
 # This file was based on existing configuration files
@@ -135,7 +134,7 @@ EOM
       # TODO: improve this template
       cat > "$CONFFILE" << EOM
 # $CONFFILE
-# libnss-ldapd configuration file. See libnss-ldapd.conf(5)
+# nss-ldapd configuration file. See nss-ldapd.conf(5)
 # for details.
 
 # The location at which the LDAP server(s) should be reachable.

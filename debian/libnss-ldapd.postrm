@@ -1,11 +1,11 @@
 #!/bin/sh
 
-action=$1
+CONFFILE="/etc/nss-ldapd.conf"
 
 # remove our configuration file (not a conffile) on purge manually
-if [ "$action" = "purge" ]
+if [ "$1" = "purge" ]
 then
-  rm -f /etc/libnss-ldapd.conf
+  rm -f "$CONFFILE"
 fi
 
 #DEBHELPER#

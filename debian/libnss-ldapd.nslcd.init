@@ -35,7 +35,7 @@
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 NSLCD_BIN=/usr/sbin/nslcd
 NSLCD_DESC="NSS-LDAP connection daemon"
-NSLCD_CFG=/etc/libnss-ldapd.conf
+NSLCD_CFG=/etc/nss-ldapd.conf
 
 [ -x "$NSLCD_BIN" ] || exit 0
 [ -f "$NSLCD_CFG" ] || exit 0

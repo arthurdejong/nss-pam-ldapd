@@ -21,7 +21,7 @@
 
 SUBDIRS = nss server tests
 
-dist_man_MANS = nss_ldap.5 nslcd.8
+dist_man_MANS = nss-ldapd.conf.5 nslcd.8
 
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/copyright debian/rules \
@@ -36,7 +36,7 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/po/*.po debian/po/templates.pot \
                debian/po/POTFILES.in
 
-EXTRA_DIST = ldap.conf nslcd.h nslcd-common.h \
+EXTRA_DIST = nss-ldapd.conf nslcd.h nslcd-common.h \
              $(DEBIAN_FILES)
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
@@ -48,7 +48,7 @@ install-ldap_conf:
 	@if [ -f $(DESTDIR)$(NSS_LDAP_PATH_CONF) ]; then \
 	  echo "$(DESTDIR)$(NSS_LDAP_PATH_CONF) already exists, install will not overwrite"; \
 	else \
-	  $(INSTALL_DATA) -D $(srcdir)/ldap.conf $(DESTDIR)$(NSS_LDAP_PATH_CONF); \
+	  $(INSTALL_DATA) -D $(srcdir)/nss-ldapd.conf $(DESTDIR)$(NSS_LDAP_PATH_CONF); \
 	fi
 
 # target for easily creating a Debian package
