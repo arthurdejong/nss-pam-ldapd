@@ -1,4 +1,4 @@
-libnss-ldapd (0.1.0) unstable; urgency=low
+libnss-ldapd (0.1) unstable; urgency=low
 
   * This is a fork from the libnss-ldap package.
 
