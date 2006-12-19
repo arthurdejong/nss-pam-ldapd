@@ -517,6 +517,7 @@ int main(int argc,char *argv[])
 
   /* disable ldap lookups of host names to avoid lookup loop
      and fall back to files dns (a sensible default) */
+  /* TODO: parse /etc/nsswitch ourselves and just remove ldap from the list */
   if (__nss_configure_lookup("hosts","files dns"))
     log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
 
