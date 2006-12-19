@@ -32,12 +32,11 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/libnss-ldapd.templates \
                debian/libnss-ldapd.postinst \
                debian/libnss-ldapd.postrm \
-               debian/README.Debian \
                debian/po/*.po debian/po/templates.pot \
                debian/po/POTFILES.in
 
 EXTRA_DIST = nss-ldapd.conf nslcd.h nslcd-common.h \
-             $(DEBIAN_FILES)
+             HACKING $(DEBIAN_FILES)
 
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
 
