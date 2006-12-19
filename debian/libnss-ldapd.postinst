@@ -12,11 +12,11 @@ cfg_set()
   commented=0
   notthere=0
   # check if the parameter is defined
-  egrep -i -q "^$parameter " $CONFFILE || notthere=1
+  grep -i -q "^$parameter " $CONFFILE || notthere=1
   if [ "$notthere" = "1" ]
   then
     # check if the parameter is commented out
-    if ( egrep -i -q "^#$parameter" $CONFFILE )
+    if grep -i -q "^#$parameter" $CONFFILE
     then
       notthere=0
       commented=1
@@ -49,7 +49,7 @@ cfg_disable()
   parameter=$1
   # TODO add an option to also remove the option value
   #      (for passwords)
-  if egrep -q "^$parameter " $CONFFILE
+  if grep -i -q "^$parameter " $CONFFILE
   then
     sed -i 's%^\('"$parameter"'.*\)$%#\1%i' "$CONFFILE"
   fi
@@ -62,10 +62,10 @@ cfg_disable()
 nss_enable()
 {
   name=$1
-  if [ ! "`grep '^'$name':.*ldap.*' /etc/nsswitch.conf`" ]
+  if ! grep -q '^'$name':.*ldap.*' /etc/nsswitch.conf
   then
     echo "/etc/nsswitch.conf: enable LDAP lookups for $name" >&2
-    if [ "`grep '^'$name':' /etc/nsswitch.conf`" ]
+    if grep -q '^'$name':' /etc/nsswitch.conf
     then
       # modify an existing entry by just adding ldap to the end
       sed -i 's/^\('$name':.*\)[[:space:]]*$/\1 ldap/' /etc/nsswitch.conf
@@ -84,10 +84,10 @@ nss_disable()
   name=$1
   # these functions also remove the lookup result handling part
   # of the ldap entry (see nsswitch.conf(5))
-  if [ "`grep '^'$name':.*ldap.*' /etc/nsswitch.conf`" ]
+  if grep -q '^'$name':.*ldap.*' /etc/nsswitch.conf
   then
     echo "/etc/nsswitch.conf: disable LDAP lookups for $name" >&2
-    if [ "`sed -n '/^'$name':[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/p' /etc/nsswitch.conf`" ]
+    if [ -n "`sed -n '/^'$name':[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/p' /etc/nsswitch.conf`" ]
     then
       # the name service only maps to ldap, remove the whole line
       sed -i '/^'$name':[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/d' /etc/nsswitch.conf
@@ -126,8 +126,11 @@ EOM
       # also append the secret file if it is present
       if [ -f /etc/libnss-ldap.secret ]
       then
-        cat /etc/libnss-ldap.secret >> "$CONFFILE"
+        echo "rootbindpw `cat /etc/libnss-ldap.secret`" >> "$CONFFILE"
       fi
+      # disable options that are no longer supported
+      cfg_disable host
+      cfg_disable port
     else
       # fall back to generating a simple configuration file
       # from this simple template
@@ -146,9 +149,11 @@ base dc=example,dc=net
 # The LDAP protocol version to use.
 ldap_version 3
 
+# The DN to bind with for normal lookups.
 binddn cn=annonymous,dc=example,dc=net
 bindpw secret
 
+# The DN to bind with for lookups as root.
 rootbinddn cn=administrator,dc=example,dc=net
 rootbindpw verysecret
 
@@ -215,7 +220,7 @@ then
   allnss=`echo $allnss $enablenss | sed 's/ /\n/g' | sort -u`
   for n in $allnss
   do
-    if [ "`echo ' '$enablenss' ' | grep ' '$n' '`" ]
+    if echo ' '$enablenss' ' | grep -q ' '$n' '
     then
       nss_enable $n
     else
