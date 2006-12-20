@@ -204,17 +204,17 @@ LDAP SCHEMA
 ===========
 
 nss-ldapd supports a wide range of possible LDAP schema configurations.
-Furthermore it can be customized heavily. The LDAP schema used is described in RFC 2307.
-Groups with distinguished name members (instead of login
-names) (RFC 2307bis) is also supported. A posixGroup can thus have the both memberUid and uniqueMember
-attributes.
+Furthermore it can be customized heavily. The LDAP schema used is described in
+RFC 2307. Groups with distinguished name members (instead of login names) (RFC
+2307bis) is also supported. A posixGroup can thus have the both memberUid and
+uniqueMember attributes.
 
 default attributes
 ------------------
 
 This paragraph describes the mapping between the NSS lookups and the LDAP
-database. The mapping may be modified by changeging the nss-ldapd.conf configuration
-file. See the nss-ldapd.conf(5) manual page for details.
+database. The mapping may be modified by changeging the nss-ldapd.conf
+configuration file. See the nss-ldapd.conf(5) manual page for details.
 
 aliases (nisMailAlias)
   cn                - alias name
