@@ -58,3 +58,7 @@ deb: distdir
 	cd $(distdir) && \
 	  debuild
 	rm -rf $(distdir)
+
+# target for generating the ChangeLog file
+changelog:
+	svn2cl -i
