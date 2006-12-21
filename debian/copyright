@@ -36,7 +36,7 @@ The following files are also contain other copyright holders (apart from to
 autoconf/automake stuff):
 debian/po/ca.po:   Copyright (C) 2004 Free Software Foundation, Inc.
 debian/po/vi.po:   Copyright (C) 2005 Free Software Foundation, Inc.
-server/netgroup.c: Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
-server/pagectrl.c: Copyright (C) 2002 Max Caines, All Rights Reserved.
-server/resolve.c:  Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Hvgskolan
-server/resolve.h:  Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Hvgskolan
+nslcd/netgroup.c: Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
+nslcd/pagectrl.c: Copyright (C) 2002 Max Caines, All Rights Reserved.
+nslcd/resolve.c:  Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Hvgskolan
+nslcd/resolve.h:  Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Hvgskolan

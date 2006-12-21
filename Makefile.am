@@ -19,7 +19,7 @@
 # Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
 # MA 02110-1301 USA
 
-SUBDIRS = nss server tests
+SUBDIRS = nss nslcd tests
 
 dist_man_MANS = nss-ldapd.conf.5 nslcd.8
 
