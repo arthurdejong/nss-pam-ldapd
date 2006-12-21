@@ -1,7 +1,7 @@
 /*
    xmalloc.c - malloc wrapper
 
-   Copyright (C) 2002, 2003, 2006 Arthur de Jong.
+   Copyright (C) 2002, 2003, 2006 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public

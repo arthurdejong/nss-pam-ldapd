@@ -1,6 +1,6 @@
 /*
    util.c - LDAP utility functions
-   This file was part of the nss-ldap library which has been
+   This file was part of the nss_ldap library which has been
    forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard

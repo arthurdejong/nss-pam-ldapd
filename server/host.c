@@ -1,6 +1,6 @@
 /*
    host.c - host name lookup routines
-   This file was part of the nss-ldap library (as ldap-hosts.c)
+   This file was part of the nss_ldap library (as ldap-hosts.c)
    which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard

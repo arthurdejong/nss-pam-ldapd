@@ -1,6 +1,6 @@
 /*
    netgroup.c - netgroup lookup routines
-   This file was part of the nss-ldap library (as ldap-netgrp.c)
+   This file was part of the nss_ldap library (as ldap-netgrp.c)
    which has been forked into the nss-ldapd library.
    This file also contains code that is taken from the GNU C
    Library (nss/nss_files/files-netgrp.c).

@@ -1,6 +1,6 @@
 /*
    ether.c - ethernet address entry lookup routines
-   This file was part of the nss-ldap library (as ldap-ethers.c)
+   This file was part of the nss_ldap library (as ldap-ethers.c)
    which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
