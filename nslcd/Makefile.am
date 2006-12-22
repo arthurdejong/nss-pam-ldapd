@@ -25,9 +25,12 @@ nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
                 log.c log.h \
                 xmalloc.c xmalloc.h \
                 common.c common.h \
+                resolve.c resolve.h \
+                ldap-schema.c ldap-schema.h \
+                dnsconfig.c dnsconfig.h \
+                ldap-nss.c ldap-nss.h \
+                pagectrl.c pagectrl.h \
+                util.c util.h \
                 alias.c ether.c group.c host.c netgroup.c network.c \
-                passwd.c protocol.c rpc.c service.c shadow.c \
-                dnsconfig.c dnsconfig.h ldap-nss.c ldap-nss.h \
-                ldap-schema.c ldap-schema.h pagectrl.c pagectrl.h \
-                resolve.c resolve.h util.c util.h
+                passwd.c protocol.c rpc.c service.c shadow.c
 nslcd_LDADD = @nslcd_LIBS@
