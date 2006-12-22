@@ -35,7 +35,7 @@ and writing protocol entities (strings, 32-bit integers, etc).
 Some of the protocol handling code is automatically generated from the macros
 defined in nslcd.h. This cannot be done automatically in every case though so
 changing the protocol requires manual checking in the relevant source files in
-both the nss and the server directories.
+both the nss and the nslcd directories.
 
 If the protocol is changed in an incompatible way the protocol version should
 be incremented in nslcd.h. There is currently no versioning schema available
