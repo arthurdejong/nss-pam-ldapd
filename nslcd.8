@@ -15,7 +15,7 @@
 .\" License along with this library; if not, write to the Free
 .\" Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
 .\" MA 02110-1301 USA
-.TH "nslcd" "8" "Dec 2006" "Version 0.1.0" "System Manager's Manual"
+.TH "nslcd" "8" "Dec 2006" "Version 0.1" "System Manager's Manual"
 .nh
 .SH "NAME"
 nslcd \- local LDAP name service daemon.
@@ -26,7 +26,7 @@ nslcd \- local LDAP name service daemon.
 \fBnslcd\fP is a daemon that will do LDAP queries for local processes based on a simple configuration file.
 
 \fBnslcd\fP is configured through a configuration file (see
-.BR libnss\-ldapd.conf(5)
+.BR nss\-ldapd.conf(5)
 ).
 
 See the README for information on configuring the LDAP server.
@@ -45,10 +45,10 @@ Display short help and exit.
 .B \-V, \-\-version
 Output version information and exit.
 .SH "SEE ALSO"
-.BR libnss\-ldapd.conf(5)
+.BR nss\-ldapd.conf(5)
 .SH "FILES"
-/etc/libnss\-ldapd.conf \- the configuration file (see
-.BR libnss\-ldapd.conf(5)
+/etc/nss\-ldapd.conf \- the configuration file (see
+.BR nss\-ldapd.conf(5)
 )
 .SH "AUTHOR"
 Arthur de Jong <arthur@ch.tudelft.nl>.
