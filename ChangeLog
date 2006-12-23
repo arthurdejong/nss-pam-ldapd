@@ -1,3 +1,39 @@
+2006-12-22 23:23  arthur
+
+	* [r200] nslcd.8: fix name of configuration file and update date
+	  and version number
+
+2006-12-22 23:20  arthur
+
+	* [r199] NEWS, TODO, nslcd/alias.c, nslcd/dnsconfig.c,
+	  nslcd/dnsconfig.h, nslcd/ether.c, nslcd/group.c, nslcd/host.c,
+	  nslcd/ldap-nss.c, nslcd/ldap-nss.h, nslcd/ldap-schema.c,
+	  nslcd/ldap-schema.h, nslcd/netgroup.c, nslcd/network.c,
+	  nslcd/pagectrl.c, nslcd/pagectrl.h, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/resolve.c, nslcd/resolve.h, nslcd/rpc.c,
+	  nslcd/service.c, nslcd/shadow.c, nslcd/util.c, nslcd/util.h,
+	  nss-ldapd.conf, nss-ldapd.conf.5, nss/exports.linux: remove last
+	  keyword and disable keyword expansion
+
+2006-12-22 10:56  arthur
+
+	* [r198] nslcd/Makefile.am: make list of source files a little
+	  clearer
+
+2006-12-22 07:35  arthur
+
+	* [r197] HACKING: change reference to directory name
+
+2006-12-21 19:55  arthur
+
+	* [r196] Makefile.am, configure.ac, debian/copyright, nslcd,
+	  server: rename server directory to nslcd
+
+2006-12-21 19:53  arthur
+
+	* [r195] ChangeLog, Makefile.am: add code for generating ChangeLog
+	  and add initial ChangeLog
+
 2006-12-21 19:04  arthur
 
 	* [r194] libnss_ldapd, .: change trunk location in repository to
@@ -232,8 +268,8 @@
 	  libnss_ldapd/debian/libnss-ldapd.postrm,
 	  libnss_ldapd/debian/libnss-ldapd.templates,
 	  libnss_ldapd/debian/rules, libnss_ldapd/debian/templates: redid
-	  debian packaging: on installation a search is done for any
-	  reasonable configuration informatio (existing nss_ldap config,
+	  Debian packaging: on installation a search is done for any
+	  reasonable configuration information (existing nss_ldap config,
 	  hostname info, etc), configuring nsswitch.conf is also done and
 	  all files in the debian directory have more logical names
 
@@ -269,7 +305,7 @@
 	* [r152] libnss_ldapd/Makefile.am, libnss_ldapd/debian/changelog,
 	  libnss_ldapd/debian/control,
 	  libnss_ldapd/debian/libnss-ldapd.postinst,
-	  libnss_ldapd/debian/rules: clean up debian packaging a bit
+	  libnss_ldapd/debian/rules: clean up Debian packaging a bit
 
 2006-12-08 21:45  arthur
 
@@ -313,8 +349,8 @@
 2006-12-08 19:04  arthur
 
 	* [r146] libnss_ldapd/Makefile.am, libnss_ldapd/README,
-	  libnss_ldapd/doc: get rid of unneeded docs and integrate useful
-	  parts in topleven README
+	  libnss_ldapd/doc: reasonable configuration information (existing
+	  nss_ldap config, parts in top-level README
 
 2006-12-08 18:37  arthur
 
@@ -336,7 +372,7 @@
 2006-12-08 16:26  arthur
 
 	* [r143] libnss_ldapd/debian/control: get rid of cdbs build
-	  depenency
+	  dependency
 
 2006-12-07 12:18  arthur
 
@@ -471,7 +507,7 @@
 2006-11-28 09:45  arthur
 
 	* [r128] libnss_ldapd/nslcd-common.h: implement more detailed
-	  protocol logging (dunping the actual byte values read and
+	  protocol logging (dumping the actual byte values read and
 	  written)
 
 2006-11-27 09:59  arthur
@@ -699,8 +735,8 @@
 	  libnss_ldapd/nss/ethers.c, libnss_ldapd/nss/group.c,
 	  libnss_ldapd/nss/hosts.c, libnss_ldapd/nss/networks.c,
 	  libnss_ldapd/nss/passwd.c, libnss_ldapd/nss/shadow.c: switch to a
-	  simler and more compact framework to generate methods (one reader
-	  function to deserialize a struct from the stream and
+	  simpler and more compact framework to generate methods (one
+	  reader function to deserialize a struct from the stream and
 	  auto-generated functions)
 
 2006-11-15 15:06  arthur
@@ -718,7 +754,7 @@
 2006-11-14 14:41  arthur
 
 	* [r89] libnss_ldapd/xmalloc.h: add xxmalloc() macro to simply
-	  allocate a structure of a ceirtain type
+	  allocate a structure of a certain type
 
 2006-11-14 14:40  arthur
 
@@ -1323,7 +1359,7 @@
 	  libnss_ldapd/resolve.h, libnss_ldapd/snprintf.c,
 	  libnss_ldapd/snprintf.h, libnss_ldapd/util.c,
 	  libnss_ldapd/util.h: first round of cleanups, all non-glibc NSS
-	  stuff has been removed, beacause we are going to do some major
+	  stuff has been removed, because we are going to do some major
 	  restructuring it will not likely remain valid anyway and we can
 	  always re-add it later
 
@@ -1367,7 +1403,7 @@
 	  libnss_ldapd/tests/testpw4.c, libnss_ldapd/tests/testpw5.c,
 	  libnss_ldapd/tests/testpw6.c, libnss_ldapd/util.c,
 	  libnss_ldapd/util.h: add keyword expansion (svn:keywords) to all
-	  files containting keywords
+	  files containing keywords
 
 2006-10-12 07:50  arthur
 

@@ -1,8 +1,23 @@
 nss-ldapd (0.1) unstable; urgency=low
 
-  * This is a fork from the libnss-ldap package.
+  * initial release of nss-ldapd (should be functional but not yet stable
+    enough for production use)
+  * fork from the nss_ldap which was originally written by Luke Howard of PADL
+    Software Pty Ltd. changing package name to nss-ldapd and changing
+    versioning schema
+  * the functionality was split into a thin NSS library and a simple daemon
+    proxying the requests to the LDAP server (see README for rationale)
+  * a lot of dead and old compatibility code was removed (about 25% of the
+    code was removed) (more simplifications to come)
+  * the test code was rewritten
+  * build script simplifications
+  * default configuration file has been changed to /etc/nss-ldapd.conf
+  * most documentation has been updated and rewritten
+  * improved Debian packaging configuration with auto-detection of proper
+    default settings
+  * switched to native package (no deviation from "upstream")
 
- -- Arthur de Jong <adejong@debian.org>  Thu,  7 Dec 2006 12:04:11 +0100
+ -- Arthur de Jong <adejong@debian.org>  Fri, 22 Dec 2006 23:00:00 +0100
 
 libnss-ldap (251-5.2) unstable; urgency=high
 

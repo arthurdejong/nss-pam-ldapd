@@ -33,7 +33,7 @@ configure.ac file for more details.])
 
 # initialize and set version and bugreport address
 AC_INIT([nss-ldapd],[0.1],[arthur@ch.tudelft.nl])
-RELEASE_MONTH="Nov 2006"
+RELEASE_MONTH="Dec 2006"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])
 

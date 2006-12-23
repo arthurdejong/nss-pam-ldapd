@@ -1,12 +1,21 @@
-changes from nss_ldap to nss-ldapd 0.1
---------------------------------------
+changes from nss_ldap 251 to nss-ldapd 0.1
+------------------------------------------
 
-* split code in NSS part and daemon part
-* new test code
-* many thanks to my employer, West Consulting, for allowing me
-  to spend some work time on this fork
-* default configuration file location is changed to /etc/nss-ldapd.conf
- 
+* initial release of nss-ldapd (should be functional but not yet stable enough
+  for production use)
+* fork from the nss_ldap which was originally written by Luke Howard of PADL
+  Software Pty Ltd. changing package name to nss-ldapd and versioning scheme
+* the functionality was split into a thin NSS library and a simple daemon
+  proxying the requests to the LDAP server (see README for rationale)
+* a lot of dead and old compatibility code was removed (about 25% of the code
+  was removed) (more simplifications to come)
+* the test code was rewritten
+* build script simplifications
+* default configuration file has been changed to /etc/nss-ldapd.conf
+* most documentation has been updated and rewritten
+* dropped support for non-glibc NSS interfaces and assumed OpenLDAP compatible
+  library
+
 
 changes from 250 to 251
 -----------------------
@@ -228,7 +237,7 @@ changes from 226 to 227
 * separate initializing LDAP session with actually connecting to the DSA, so
   that we don't try to bind until we actually need to search (which allows the
   retry logic in the search function to also apply to binding). NB: this will
-  only provide improved behaviour for LDAP client libraries that support
+  only provide improved behavior for LDAP client libraries that support
   ldap_init() or ldap_initialize() rather than ldap_open
 * fix for BUG#183: support pw_change and pw_expire on BSD
 * fix for BUG#187: NSS_BUFLEN_DEFAULT causing problems on IRS platforms
@@ -586,7 +595,7 @@ changes from 181 to 183
 -----------------------
 
 * return error strings in AIX authentication routine
-* initialise schema in getgroupsbymember()
+* initialize schema in getgroupsbymember()
 * fix for tls_checkpeer; pass NULL session in to set global option
 * BUG#77: configurable config file locations
 
@@ -753,7 +762,7 @@ changes from 159 to 160
 -----------------------
 
 * patch from RedHat to check for DB3, override install user/group optionally
-* use synchoronous searches for _nss_ldap_getbyname()
+* use synchronous searches for _nss_ldap_getbyname()
 * only set SSL options if we have values for those options
 
 
@@ -849,7 +858,7 @@ changes from 146 to 147
 changes from 145 to 146
 -----------------------
 
-* mass reindentation, GNU style
+* mass re-indentation, GNU style
 * patch from Simon Wilkinson <sxw@sxw.org.uk> for compatibility with old
   initgroups entry point
 * request authPassword attribute if --enable-authpassword
