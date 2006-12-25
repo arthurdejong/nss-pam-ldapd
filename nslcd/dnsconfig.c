@@ -135,7 +135,7 @@ _nss_ldap_mergeconfigfromdns (struct ldap_config * result,
   struct resource_record *rr;
   char domain[MAXHOSTNAMELEN + 1];
   char *pDomain;
-  char uribuf[NSS_BUFSIZ];
+  char uribuf[1024];
 
   if ((_res.options & RES_INIT) == 0 && res_init () == -1)
     {

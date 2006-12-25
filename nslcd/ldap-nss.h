@@ -48,14 +48,6 @@
 
 #include "ldap-schema.h"
 
-#ifndef NSS_BUFSIZ
-#define NSS_BUFSIZ              1024
-#endif
-
-#ifndef NSS_BUFLEN_GROUP
-#define NSS_BUFLEN_GROUP        LDAP_NSS_BUFLEN_GROUP
-#endif
-
 #ifndef LDAP_FILT_MAXSIZ
 #define LDAP_FILT_MAXSIZ 1024
 #endif /* not LDAP_FILT_MAXSIZ */
@@ -544,11 +536,6 @@ enum nss_status _nss_ldap_getbyname (struct ldap_args * args,        /* IN/OUT *
                                 enum ldap_map_selector sel,        /* IN */
                                 parser_t parser /* IN */ );
 
-int _nss_ldap_searchbyname(struct ldap_args *args,        /* IN/OUT */
-                           const char *filterprot, /* IN */
-                           enum ldap_map_selector sel,        /* IN */
-                           FILE *fp,NEWparser_t parser /* IN */ );
-
 
 /* parsing utility functions */
 enum nss_status _nss_ldap_assign_attrvals (LDAPMessage * e,     /* IN */
@@ -559,7 +546,6 @@ enum nss_status _nss_ldap_assign_attrvals (LDAPMessage * e,     /* IN */
                                       size_t * buflen,  /* IN/OUT */
                                       size_t * pvalcount /* OUT */ );
 
-int _nss_ldap_write_attrvals(FILE *fp,LDAPMessage *e,const char *attr);
 
 enum nss_status _nss_ldap_assign_attrval (LDAPMessage * e,      /* IN */
                                      const char *attr,  /* IN */
@@ -576,7 +562,9 @@ enum nss_status _nss_ldap_assign_userpassword (LDAPMessage * e, /* IN */
                                           char **buffer,        /* IN/OUT */
                                           size_t * buflen);     /* IN/OUT */
 
-enum nss_status _nss_ldap_oc_check (LDAPMessage * e, const char *oc);
+/* check that the entry has the specified objectclass
+   return 0 for false, not-0 for true */ 
+int has_objectclass(LDAPMessage *entry,const char *objectclass);
 
 int _nss_ldap_shadow_date(const char *val);
 void _nss_ldap_shadow_handle_flag(struct spwd *sp);

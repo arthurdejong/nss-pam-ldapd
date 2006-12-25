@@ -87,7 +87,7 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
 
   tmpbuf[ sizeof(tmpbuf) - 1 ] = '\0';
 
-  if (_nss_ldap_oc_check (e, "shadowAccount") == NSS_STATUS_SUCCESS)
+  if (has_objectclass(e,"shadowAccount"))
     {
       /* don't include password for shadowAccount */
       if (buflen < 3)

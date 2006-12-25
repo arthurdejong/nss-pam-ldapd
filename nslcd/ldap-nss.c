@@ -1048,7 +1048,7 @@ do_init_session (LDAP ** ld, const char *uri, int defport)
 {
   int rc;
   int ldaps;
-  char uribuf[NSS_BUFSIZ];
+  char uribuf[1024];
   char *p;
   enum nss_status stat;
 
@@ -1931,7 +1931,7 @@ do_result (struct ent_context * ctx, int all)
  * delay it until the setXXent() function is called.
  */
 struct ent_context *
-_nss_ldap_ent_context_init_locked (struct ent_context ** pctx)
+_nss_ldap_ent_context_init_locked(struct ent_context **pctx)
 {
   struct ent_context *ctx;
 
@@ -1940,15 +1940,15 @@ _nss_ldap_ent_context_init_locked (struct ent_context ** pctx)
   ctx = *pctx;
 
   if (ctx == NULL)
+  {
+    ctx=(struct ent_context *)malloc(sizeof(struct ent_context));
+    if (ctx == NULL)
     {
-      ctx = (struct ent_context *) malloc (sizeof (*ctx));
-      if (ctx == NULL)
-        {
-          debug ("<== _nss_ldap_ent_context_init_locked");
-          return NULL;
-        }
-      *pctx = ctx;
+      debug ("<== _nss_ldap_ent_context_init_locked");
+      return NULL;
     }
+    *pctx = ctx;
+  }
   else
     {
       if (ctx->ec_res != NULL)
@@ -2051,10 +2051,8 @@ do_aggregate_filter (const char **values,
       size_t len;
       char filter[LDAP_FILT_MAXSIZ], escapedBuf[LDAP_FILT_MAXSIZ];
 
-      stat =
-        _nss_ldap_escape_string (*valueP, escapedBuf, sizeof (escapedBuf));
-      if (stat != NSS_STATUS_SUCCESS)
-        return stat;
+      if (_nss_ldap_escape_string (*valueP, escapedBuf, sizeof (escapedBuf)))
+        return NSS_STATUS_TRYAGAIN;
 
       snprintf (filter, sizeof (filter), filterprot, escapedBuf);
       len = strlen (filter);
@@ -2083,8 +2081,8 @@ do_aggregate_filter (const char **values,
  * Do the necessary formatting to create a string filter.
  */
 static enum nss_status
-do_filter (const struct ldap_args * args, const char *filterprot,
-           struct ldap_service_search_descriptor * sd, char *userBuf,
+do_filter (const struct ldap_args *args, const char *filterprot,
+           struct ldap_service_search_descriptor *sd, char *userBuf,
            size_t userBufSiz, char **dynamicUserBuf, const char **retFilter)
 {
   char buf1[LDAP_FILT_MAXSIZ], buf2[LDAP_FILT_MAXSIZ];
@@ -2114,11 +2112,11 @@ do_filter (const struct ldap_args * args, const char *filterprot,
       switch (args->la_type)
         {
         case LA_TYPE_STRING:
-          stat = _nss_ldap_escape_string (args->la_arg1.la_string, buf1,
-                                          sizeof (buf1));
-          if (stat != NSS_STATUS_SUCCESS)
+          if (_nss_ldap_escape_string(args->la_arg1.la_string,buf1,sizeof(buf1)))
+          {
+            stat=NSS_STATUS_TRYAGAIN;
             break;
-
+          }
           snprintf (filterBufP, filterSiz, filterprot, buf1);
           break;
         case LA_TYPE_NUMBER:
@@ -2126,24 +2124,24 @@ do_filter (const struct ldap_args * args, const char *filterprot,
                     args->la_arg1.la_number);
           break;
         case LA_TYPE_STRING_AND_STRING:
-          stat = _nss_ldap_escape_string (args->la_arg1.la_string, buf1,
-                                          sizeof (buf1));
-          if (stat != NSS_STATUS_SUCCESS)
+          if (_nss_ldap_escape_string(args->la_arg1.la_string,buf1,sizeof(buf1)))
+          {
+            stat=NSS_STATUS_TRYAGAIN;
             break;
-
-          stat = _nss_ldap_escape_string (args->la_arg2.la_string, buf2,
-                                          sizeof (buf2));
-          if (stat != NSS_STATUS_SUCCESS)
+          }
+          if (_nss_ldap_escape_string(args->la_arg2.la_string,buf2,sizeof(buf2)))
+          {
+            stat=NSS_STATUS_TRYAGAIN;
             break;
-
+          }
           snprintf (filterBufP, filterSiz, filterprot, buf1, buf2);
           break;
         case LA_TYPE_NUMBER_AND_STRING:
-          stat = _nss_ldap_escape_string (args->la_arg2.la_string, buf1,
-                                          sizeof (buf1));
-          if (stat != NSS_STATUS_SUCCESS)
+          if (_nss_ldap_escape_string(args->la_arg2.la_string,buf1,sizeof(buf1)))
+          {
+            stat=NSS_STATUS_TRYAGAIN;
             break;
-
+          }
           snprintf (filterBufP, filterSiz, filterprot,
                     args->la_arg1.la_number, buf1);
           break;
@@ -2730,97 +2728,82 @@ _nss_ldap_next_attribute (LDAPMessage * entry, BerElement * ber)
  * The generic synchronous lookup cover function.
  * Assumes caller holds lock.
  */
-enum nss_status
-_nss_ldap_search_s (const struct ldap_args * args,
-                    const char *filterprot, enum ldap_map_selector sel, const
-                    char **user_attrs, int sizelimit, LDAPMessage ** res)
+enum nss_status _nss_ldap_search_s(
+        const struct ldap_args *args,
+        const char *filterprot,enum ldap_map_selector sel,
+        const char **user_attrs,int sizelimit,LDAPMessage **res)
 {
   char sdBase[LDAP_FILT_MAXSIZ];
-  const char *base = NULL;
-  char filterBuf[LDAP_FILT_MAXSIZ], *dynamicFilterBuf = NULL;
-  const char **attrs, *filter;
+  const char *base=NULL;
+  char filterBuf[LDAP_FILT_MAXSIZ],*dynamicFilterBuf=NULL;
+  const char **attrs,*filter;
   int scope;
   enum nss_status stat;
-  struct ldap_service_search_descriptor *sd = NULL;
-
+  struct ldap_service_search_descriptor *sd=NULL;
   debug ("==> _nss_ldap_search_s");
-
-  stat = do_init ();
-  if (stat != NSS_STATUS_SUCCESS)
+  /* initilize session */
+  if ((stat=do_init())!=NSS_STATUS_SUCCESS)
   {
     debug ("<== _nss_ldap_search_s");
     return stat;
   }
-
   /* Set some reasonable defaults. */
-  base = __session.ls_config->ldc_base;
-  scope = __session.ls_config->ldc_scope;
-  attrs = NULL;
-
-  if (args != NULL && args->la_base != NULL)
+  base=__session.ls_config->ldc_base;
+  scope=__session.ls_config->ldc_scope;
+  attrs=NULL;
+  /* if args includes a base, use that */
+  if (args!=NULL&&args->la_base!=NULL)
+  {
+    sel=LM_NONE;
+    base=args->la_base;
+  }
+  if (sel<LM_NONE)
+  {
+    /* get search descriptor */
+    sd=__session.ls_config->ldc_sds[sel];
+next:
+    if (sd!=NULL)
     {
-      sel = LM_NONE;
-      base = args->la_base;
+      if (sd->lsd_base[strlen(sd->lsd_base)-1]==',')
+      {
+        /* is relative */
+        snprintf(sdBase,sizeof(sdBase),"%s%s", sd->lsd_base,__session.ls_config->ldc_base);
+        base=sdBase;
+      }
+      else
+      {
+        base=sd->lsd_base;
+      }
+      if (sd->lsd_scope!=-1)
+      {
+        scope=sd->lsd_scope;
+      }
     }
-
-  if (sel < LM_NONE)
-    {
-      sd = __session.ls_config->ldc_sds[sel];
-    next:
-      if (sd != NULL)
-        {
-          size_t len = strlen (sd->lsd_base);
-          if (sd->lsd_base[len - 1] == ',')
-            {
-              /* is relative */
-              snprintf (sdBase, sizeof (sdBase),
-                                          "%s%s", sd->lsd_base,
-                                          __session.ls_config->ldc_base);
-              base = sdBase;
-            }
-          else
-            {
-              base = sd->lsd_base;
-            }
-
-          if (sd->lsd_scope != -1)
-            {
-              scope = sd->lsd_scope;
-            }
-        }
-      attrs = __session.ls_config->ldc_attrtab[sel];
-    }
-
-  stat =
-    do_filter (args, filterprot, sd, filterBuf, sizeof (filterBuf),
-               &dynamicFilterBuf, &filter);
-  if (stat != NSS_STATUS_SUCCESS)
+    attrs=__session.ls_config->ldc_attrtab[sel];
+  }
+  /* this may allocate dynamicFilterBuf */
+  stat=do_filter(args,filterprot,sd,filterBuf,sizeof(filterBuf),&dynamicFilterBuf,&filter);
+  if (stat!=NSS_STATUS_SUCCESS)
     return stat;
-
-  stat = do_with_reconnect (base, scope, filter,
-                            (user_attrs != NULL) ? user_attrs : attrs,
-                            sizelimit, res, (search_func_t) do_search_s);
-
-  if (dynamicFilterBuf != NULL)
-    {
-      free (dynamicFilterBuf);
-      dynamicFilterBuf = NULL;
-    }
-
+  stat=do_with_reconnect(
+          base,scope,filter,(user_attrs!=NULL)?user_attrs:attrs,
+          sizelimit,res,(search_func_t)do_search_s);
+  if (dynamicFilterBuf!=NULL)
+  {
+    free(dynamicFilterBuf);
+    dynamicFilterBuf=NULL;
+  }
   /* If no entry was returned, try the next search descriptor. */
   if (sd != NULL && sd->lsd_next != NULL)
+  {
+    if (stat==NSS_STATUS_NOTFOUND ||
+        (stat==NSS_STATUS_SUCCESS &&
+         ldap_first_entry(__session.ls_conn,*res)==NULL))
     {
-      if (stat == NSS_STATUS_NOTFOUND ||
-          (stat == NSS_STATUS_SUCCESS &&
-           ldap_first_entry (__session.ls_conn, *res) == NULL))
-        {
-          sd = sd->lsd_next;
-          goto next;
-        }
+      sd=sd->lsd_next;
+      goto next;
     }
-
-  debug ("<== _nss_ldap_search_s");
-
+  }
   return stat;
 }
 
@@ -3538,10 +3521,10 @@ _nss_ldap_assign_userpassword (LDAPMessage * e,
       return NSS_STATUS_UNAVAIL;
     }
 
-  vals = ldap_get_values (__session.ls_conn, e, (char *) attr);
-  pwd = _nss_ldap_locate_userpassword (vals);
+  vals=ldap_get_values(__session.ls_conn,e,(char *)attr);
+  pwd=_nss_ldap_locate_userpassword(vals);
 
-  vallen = strlen (pwd);
+  vallen=strlen(pwd);
 
   if (*buflen < (size_t) (vallen + 1))
     {
@@ -3571,36 +3554,27 @@ _nss_ldap_assign_userpassword (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status
-_nss_ldap_oc_check (LDAPMessage * e, const char *oc)
+int has_objectclass(LDAPMessage *entry,const char *objectclass)
 {
-  char **vals, **valiter;
-  enum nss_status ret = NSS_STATUS_NOTFOUND;
-
-  if (__session.ls_conn == NULL)
+  char **vals;
+  int i;
+  LDAP *ld;
+  ld=__session.ls_conn;
+  if (ld==NULL)
+    return 0;
+  vals=ldap_get_values(ld,entry,AT(objectClass));
+  if (vals==NULL)
+    return 0;
+  for (i=0;vals[i]!=NULL;i++)
+  {
+    if (strcasecmp(vals[i],objectclass)==0)
     {
-      return NSS_STATUS_UNAVAIL;
+      ldap_value_free(vals);
+      return -1;
     }
-
-  vals = ldap_get_values (__session.ls_conn, e, AT (objectClass));
-  if (vals != NULL)
-    {
-      for (valiter = vals; *valiter != NULL; valiter++)
-        {
-          if (strcasecmp (*valiter, oc) == 0)
-            {
-              ret = NSS_STATUS_SUCCESS;
-              break;
-            }
-        }
-    }
-
-  if (vals != NULL)
-    {
-      ldap_value_free (vals);
-    }
-
-  return ret;
+  }
+  ldap_value_free(vals);
+  return 0;
 }
 
 #ifdef HAVE_SHADOW_H

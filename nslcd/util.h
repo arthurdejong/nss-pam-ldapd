@@ -82,8 +82,7 @@ enum nss_status _nss_ldap_validateconfig (struct ldap_config *config);
  * Escape '*' in a string for use as a filter
  */
 
-enum nss_status _nss_ldap_escape_string (const char *str,
-                                    char *buf, size_t buflen);
+int _nss_ldap_escape_string(const char *str,char *buf,size_t buflen);
 
 struct ldap_datum
 {

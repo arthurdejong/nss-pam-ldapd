@@ -237,7 +237,7 @@ _nss_ldap_dn2uid (const char *dn, char **uid, char **buffer, size_t * buflen,
           LDAPMessage *e = _nss_ldap_first_entry (res);
           if (e != NULL)
             {
-              if (_nss_ldap_oc_check (e, OC (posixGroup)) == NSS_STATUS_SUCCESS)
+              if (has_objectclass(e,OC(posixGroup)))
                 {
                   *pIsNestedGroup = 1;
                   *pRes = res;
@@ -1347,49 +1347,43 @@ _nss_ldap_readconfig (struct ldap_config ** presult, char **buffer, size_t *bufl
   return status;
 }
 
-enum nss_status
-_nss_ldap_escape_string (const char *str, char *buf, size_t buflen)
+int _nss_ldap_escape_string(const char *src,char *buffer,size_t buflen)
 {
-  int ret = NSS_STATUS_TRYAGAIN;
-  char *p = buf;
-  char *limit = p + buflen - 3;
-  const char *s = str;
-
-  while (p < limit && *s)
+  int pos=0;
+  /* go over all characters in source string */
+  for (;*src!='\0';src++)
+  {
+    /* check if char will fit */
+    if (pos>=(buflen+4))
+      return -1;
+    /* do escaping for some characters */
+    switch (*src)
     {
-      switch (*s)
-        {
-        case '*':
-          strcpy (p, "\\2a");
-          p += 3;
-          break;
-        case '(':
-          strcpy (p, "\\28");
-          p += 3;
-          break;
-        case ')':
-          strcpy (p, "\\29");
-          p += 3;
-          break;
-        case '\\':
-          strcpy (p, "\\5c");
-          p += 3;
-          break;
-        default:
-          *p++ = *s;
-          break;
-        }
-      s++;
+      case '*':
+        strcpy(buffer+pos,"\\2a");
+        pos+=3;
+        break;
+      case '(':
+        strcpy(buffer+pos,"\\28");
+        pos+=3;
+        break;
+      case ')':
+        strcpy(buffer+pos,"\\29");
+        pos+=3;
+        break;
+      case '\\':
+        strcpy(buffer+pos,"\\5c");
+        pos+=3;
+        break;
+      default:
+        /* just copy character */
+        buffer[pos++]=*src;
+        break;
     }
-
-  if (*s == '\0')
-    {
-      /* got to end */
-      *p = '\0';
-      ret = NSS_STATUS_SUCCESS;
-    }
-
-  return ret;
+  }
+  /* terminate destination string */
+  buffer[pos]='\0';
+  return 0;
 }
 
 /* XXX just a linked list for now */

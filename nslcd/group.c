@@ -77,9 +77,9 @@ ldap_initgroups_args_t;
 #define LDAP_NSS_MAXGR_DEPTH     16     /* maximum depth of group nesting for getgrent()/initgroups() */
 
 #if LDAP_NSS_NGROUPS > 64
-#define LDAP_NSS_BUFLEN_GROUP   (NSS_BUFSIZ + (LDAP_NSS_NGROUPS * (sizeof (char *) + LOGNAME_MAX)))
+#define LDAP_NSS_BUFLEN_GROUP   (1024 + (LDAP_NSS_NGROUPS * (sizeof (char *) + LOGNAME_MAX)))
 #else
-#define LDAP_NSS_BUFLEN_GROUP   NSS_BUFSIZ
+#define LDAP_NSS_BUFLEN_GROUP   1024
 #endif /* LDAP_NSS_NGROUPS > 64 */
 
 #ifndef LOGNAME_MAX
