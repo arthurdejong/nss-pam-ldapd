@@ -192,7 +192,7 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
 int nslcd_service_byname(FILE *fp)
 {
   int32_t tmpint32;
-  char *name,*protocol;
+  char name[256],protocol[256];
   struct ldap_args a;
   /* these are here for now until we rewrite the LDAP code */
   struct servent result;
@@ -200,8 +200,8 @@ int nslcd_service_byname(FILE *fp)
   int errnop;
   int retv;
   /* read request parameters */
-  READ_STRING_ALLOC(fp,name);
-  READ_STRING_ALLOC(fp,protocol);
+  READ_STRING_BUF2(fp,name,sizeof(name));
+  READ_STRING_BUF2(fp,protocol,sizeof(protocol));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_service_byname(%s,%s)",name,protocol);
   /* write the response header */
@@ -215,9 +215,6 @@ int nslcd_service_byname(FILE *fp)
   retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,
                  ((strlen(protocol)==0)?_nss_ldap_filt_getservbyname:_nss_ldap_filt_getservbynameproto),
                  LM_SERVICES,_nss_ldap_parse_serv));
-  /* no more need for these strings */
-  free(name);
-  free(protocol);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -231,7 +228,7 @@ int nslcd_service_bynumber(FILE *fp)
 {
   int32_t tmpint32;
   int number;
-  char *protocol;
+  char protocol[256];
   struct ldap_args a;
   /* these are here for now until we rewrite the LDAP code */
   struct servent result;
@@ -240,7 +237,7 @@ int nslcd_service_bynumber(FILE *fp)
   int retv;
   /* read request parameters */
   READ_INT32(fp,number);
-  READ_STRING_ALLOC(fp,protocol);
+  READ_STRING_BUF2(fp,protocol,sizeof(protocol));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_service_bynumber(%d,%s)",number,protocol);
   /* write the response header */
@@ -254,8 +251,6 @@ int nslcd_service_bynumber(FILE *fp)
   retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,
                  ((strlen(protocol)==0)?_nss_ldap_filt_getservbyport:_nss_ldap_filt_getservbyportproto),
                  LM_SERVICES,_nss_ldap_parse_serv));
-  /* no more need for this string */
-  free(protocol);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)

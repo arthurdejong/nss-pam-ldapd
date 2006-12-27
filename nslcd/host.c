@@ -247,14 +247,14 @@ _nss_ldap_parse_hostv6 (LDAPMessage * e,
 int nslcd_host_byname(FILE *fp)
 {
   int32_t tmpint32;
-  char *name;
+  char name[256];
   struct ldap_args a;
   int retv;
   struct hostent result;
   char buffer[1024];
   int errnop;
   /* read request parameters */
-  READ_STRING_ALLOC(fp,name);
+  READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_host_byname(%s)",name);
   /* write the response header */
@@ -270,8 +270,6 @@ int nslcd_host_byname(FILE *fp)
 #else
                      _nss_ldap_parse_hostv4));
 #endif
-  /* no more need for this string */
-  free(name);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)

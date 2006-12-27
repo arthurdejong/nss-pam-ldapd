@@ -1059,7 +1059,7 @@ static enum nss_status group_bymember(const char *user, long int *start,
 int nslcd_group_byname(FILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  char *name;
+  char name[256];
   struct ldap_args a;
   /* these are here for now until we rewrite the LDAP code */
   struct group result;
@@ -1067,8 +1067,7 @@ int nslcd_group_byname(FILE *fp)
   int errnop;
   int retv;
   /* read request parameters */
-  READ_STRING_ALLOC(fp,name);
-  /* FIXME: free() this buffer somewhere */
+  READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_group_byname(%s)",name);
   /* static buffer size check */
@@ -1082,8 +1081,6 @@ int nslcd_group_byname(FILE *fp)
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
   retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrnam,LM_GROUP,_nss_ldap_parse_gr));
-  /* no more need for this */
-  free(name);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYNAME);
@@ -1109,7 +1106,6 @@ int nslcd_group_bygid(FILE *fp)
   int retv;
   /* read request parameters */
   READ_TYPE(fp,gid,gid_t);
-  /* FIXME: free() this buffer somewhere */
   /* log call */
   log_log(LOG_DEBUG,"nslcd_group_bygid(%d)",(int)gid);
   /* static buffer size check */
@@ -1139,7 +1135,7 @@ int nslcd_group_bygid(FILE *fp)
 int nslcd_group_bymember(FILE *fp)
 {
   int32_t tmpint32;
-  char *name;
+  char name[256];
   /* these are here for now until we rewrite the LDAP code */
   int errnop;
   int retv;
@@ -1147,8 +1143,7 @@ int nslcd_group_bymember(FILE *fp)
   long int i;
   gid_t groupsp[1024];
   /* read request parameters */
-  READ_STRING_ALLOC(fp,name);
-  /* FIXME: free() this buffer somewhere */
+  READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_group_bymember(%s)",name);
   /* do the LDAP request */
@@ -1189,8 +1184,6 @@ int nslcd_group_bymember(FILE *fp)
     WRITE_INT32(fp,retv);
   }
   WRITE_FLUSH(fp);
-  /* no more need for this */
-  free(name);
   /* we're done */
   return 0;
 }

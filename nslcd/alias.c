@@ -80,10 +80,10 @@ static int write_alias(LDAPMessage *e,struct ldap_state *pvt,FILE *fp)
 int nslcd_alias_byname(FILE *fp)
 {
   int32_t tmpint32;
-  char *name;
+  char name[256];
   struct ldap_args a;
   /* read request parameters */
-  READ_STRING_ALLOC(fp,name);
+  READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_alias_byname(%s)",name);
   /* write the response header */
@@ -94,8 +94,6 @@ int nslcd_alias_byname(FILE *fp)
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
   _nss_ldap_searchbyname(&a,_nss_ldap_filt_getaliasbyname,LM_ALIASES,fp,write_alias);
-  /* no more need for this */
-  free(name);
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;

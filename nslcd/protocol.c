@@ -96,7 +96,7 @@ static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
 int nslcd_protocol_byname(FILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  char *name;
+  char name[256];
   struct ldap_args a;
   /* these are here for now until we rewrite the LDAP code */
   struct protoent result;
@@ -104,7 +104,7 @@ int nslcd_protocol_byname(FILE *fp)
   int errnop;
   int retv;
   /* read request parameters */
-  READ_STRING_ALLOC(fp,name);
+  READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_protocol_byname(%s)",name);
   /* write the response header */
@@ -115,8 +115,6 @@ int nslcd_protocol_byname(FILE *fp)
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
   retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotobyname,LM_PROTOCOLS,_nss_ldap_parse_proto));
-  /* no more need for this string */
-  free(name);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)

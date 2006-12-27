@@ -150,9 +150,10 @@ static void debug_dump(const void *ptr,size_t size)
 #define BUF_CHECK(fp,sz) \
   if ((bufptr+(size_t)(sz))>buflen) \
   { \
-    DEBUG_PRINT("READ       : buffer error: %d bytes missing",((sz)-(buflen))); \
+    /* will not fit */ \
+    DEBUG_PRINT("READ       : buffer error: %d bytes too large",((sz)-(buflen))); \
     ERROR_OUT_BUFERROR(fp); \
-  } /* will not fit */
+  }
 
 /* move the buffer pointer */
 #define BUF_SKIP(sz) \
@@ -176,24 +177,24 @@ static void debug_dump(const void *ptr,size_t size)
   (field)=BUF_CUR; \
   BUF_SKIP(tmpint32+1);
 
-/* read a string from the stream dynamically allocating memory
-   for the string (don't forget to call free() later on) */
-#define READ_STRING_ALLOC(fp,field) \
+/* read a string in a fixed-size "normal" buffer */
+#define READ_STRING_BUF2(fp,buffer,buflen) \
   /* read the size of the string */ \
   READ_TYPE(fp,tmpint32,int32_t); \
-  /* allocate memory */ \
-  (field)=(char *)malloc((size_t)(tmpint32+1)); \
-  if ((field)==NULL) \
+  DEBUG_PRINT("READ_STRING: var="__STRING(buffer)" strlen=%d",tmpint32); \
+  /* check if read would fit */ \
+  if (((size_t)tmpint32)>=(buflen)) \
   { \
-    DEBUG_PRINT("READ_STRING: var="__STRING(field)" malloc() error: %s",strerror(errno)); \
-    ERROR_OUT_ALLOCERROR(fp); \
-  } /* problem allocating */ \
+    /* will not fit */ \
+    DEBUG_PRINT("READ       : buffer error: %d bytes too large",(tmpint32-(buflen))+1); \
+    ERROR_OUT_BUFERROR(fp); \
+  } \
   /* read string from the stream */ \
   if (tmpint32>0) \
-    { READ(fp,(field),(size_t)tmpint32); } \
-  /* null-terminate string */ \
-  (field)[tmpint32]='\0'; \
-  DEBUG_PRINT("READ_STRING: var="__STRING(field)" string=\"%s\"",(field));
+    { READ(fp,buffer,(size_t)tmpint32); } \
+  /* null-terminate string in buffer */ \
+  buffer[tmpint32]='\0'; \
+  DEBUG_PRINT("READ_STRING: var="__STRING(buffer)" string=\"%s\"",buffer);
 
 /* read an array from a stram and store the length of the
    array in num (size for the array is allocated) */

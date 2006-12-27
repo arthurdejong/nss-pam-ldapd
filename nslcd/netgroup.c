@@ -291,7 +291,7 @@ int nslcd_netgroup_byname(FILE *fp)
 
   int32_t tmpint32;
   static struct ent_context *netgroup_context=NULL;
-  char *name;
+  char name[256];
   /* these are here for now until we rewrite the LDAP code */
   struct __netgrent result;
   char buffer[1024];
@@ -299,7 +299,7 @@ int nslcd_netgroup_byname(FILE *fp)
   struct ldap_args a;
   enum nss_status stat=NSS_STATUS_SUCCESS;
   /* read request parameters */
-  READ_STRING_ALLOC(fp,name);
+  READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_netgroup_byname(%s)",name);
   /* write the response header */

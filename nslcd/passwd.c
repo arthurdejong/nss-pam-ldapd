@@ -173,7 +173,7 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
 int nslcd_passwd_byname(FILE *fp)
 {
   int32_t tmpint32;
-  char *name;
+  char name[256];
   /* these are here for now until we rewrite the LDAP code */
   struct passwd result;
   char buffer[1024];
@@ -181,8 +181,7 @@ int nslcd_passwd_byname(FILE *fp)
   int retv;
   struct ldap_args a;
   /* read request parameters */
-  READ_STRING_ALLOC(fp,name);
-  /* FIXME: free() this buffer somewhere */
+  READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);
   /* do the LDAP request */
@@ -190,8 +189,6 @@ int nslcd_passwd_byname(FILE *fp)
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
   retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwnam,LM_PASSWD,_nss_ldap_parse_pw));
-  /* no more need for this string */
-  free(name);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYNAME);

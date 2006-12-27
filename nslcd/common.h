@@ -48,8 +48,8 @@ int nss2nslcd(enum nss_status code);
   log_log(LOG_WARNING,"error reading from client"); \
   return -1;
 
-#define ERROR_OUT_ALLOCERROR(fp) \
-  log_log(LOG_ERR,"error allocating memory"); \
+#define ERROR_OUT_BUFERROR(fp) \
+  log_log(LOG_WARNING,"client supplied argument too large"); \
   return -1;
 
 

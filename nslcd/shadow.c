@@ -122,14 +122,14 @@ static enum nss_status _nss_ldap_parse_sp(LDAPMessage *e,
 int nslcd_shadow_byname(FILE *fp)
 {
   int32_t tmpint32;
-  char *name;
+  char name[256];
   struct ldap_args a;
   int retv;
   struct spwd result;
   char buffer[1024];
   int errnop;
   /* read request parameters */
-  READ_STRING_ALLOC(fp,name);
+  READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_shadow_byname(%s)",name);
   /* write the response header */
@@ -140,8 +140,6 @@ int nslcd_shadow_byname(FILE *fp)
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
   retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getspnam,LM_SHADOW,_nss_ldap_parse_sp));
-  /* no more need for this string */
-  free(name);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)

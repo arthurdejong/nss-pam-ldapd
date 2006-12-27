@@ -111,18 +111,17 @@ _nss_ldap_parse_net (LDAPMessage * e,
 int nslcd_network_byname(FILE *fp)
 {
   int32_t tmpint32;
-  char *name;
+  char name[256];
   struct ldap_args a;
   int retv;
   struct netent result;
   char buffer[1024];
   int errnop;
   /* read request parameters */
-  READ_STRING_ALLOC(fp,name);
+  READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_network_byname(%s)",name);
   /* write the response header */
-  /* FIXME: free(name) when one of these writes fails */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_NETWORK_BYNAME);
   /* do the LDAP request */
@@ -130,8 +129,6 @@ int nslcd_network_byname(FILE *fp)
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
   retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getnetbyname,LM_NETWORKS,_nss_ldap_parse_net));
-  /* no more need for this string */
-  free(name);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
