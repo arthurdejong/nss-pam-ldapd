@@ -308,7 +308,7 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
   struct timeval tv;
   LDAPMessage *result;
 
-  debug("==> do_bind");
+  log_log(LOG_DEBUG,"==> do_bind");
 
   /*
    * set timelimit in ld for select() call in ldap_pvt_connect()
@@ -333,7 +333,7 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
           /* Notify if we failed. */
           syslog (LOG_AUTHPRIV | LOG_ERR, "nss_ldap: could not connect to any LDAP server as %s - %s",
                           dn, ldap_err2string (rc));
-          debug ("<== do_bind");
+          log_log(LOG_DEBUG,"<== do_bind");
 
           return rc;
         }
@@ -341,7 +341,7 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
       rc = ldap_result (ld, msgid, 0, &tv, &result);
       if (rc > 0)
         {
-          debug ("<== do_bind");
+          log_log(LOG_DEBUG,"<== do_bind");
           return ldap_result2error (ld, result, 1);
         }
 
@@ -375,7 +375,7 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
                              (void *) __config->ldc_sasl_secprops);
           if (rc != LDAP_SUCCESS)
             {
-              debug ("do_bind: unable to set SASL security properties");
+              log_log(LOG_DEBUG,"do_bind: unable to set SASL security properties");
               return rc;
             }
         }
@@ -404,7 +404,7 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
           if (gss_krb5_ccache_name (&retval, ccname, &oldccname) !=
               GSS_S_COMPLETE)
             {
-              debug ("do_bind: unable to set default credential cache");
+              log_log(LOG_DEBUG,"do_bind: unable to set default credential cache");
               return -1;
             }
 #endif
@@ -426,7 +426,7 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
           if (gss_krb5_ccache_name (&retval, oldccname, NULL) !=
               GSS_S_COMPLETE)
             {
-              debug ("do_bind: unable to restore default credential cache");
+              log_log(LOG_DEBUG,"do_bind: unable to restore default credential cache");
               return -1;
             }
 #endif
@@ -438,7 +438,7 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
     }
 #endif
 
-  debug ("<== do_bind");
+  log_log(LOG_DEBUG,"<== do_bind");
 
   return -1;
 }
@@ -517,11 +517,11 @@ do_rebind (LDAP * ld, LDAP_CONST char *url, int request, ber_int_t msgid)
 
       if (do_start_tls (&__session) == LDAP_SUCCESS)
         {
-          debug ("TLS startup succeeded");
+          log_log(LOG_DEBUG,"TLS startup succeeded");
         }
       else
         {
-          debug ("TLS startup failed");
+          log_log(LOG_DEBUG,"TLS startup failed");
           return NSS_STATUS_UNAVAIL;
         }
     }
@@ -626,34 +626,34 @@ _nss_ldap_unblock_sigpipe (void)
 static void
 do_atfork_prepare (void)
 {
-  debug ("==> do_atfork_prepare");
+  log_log(LOG_DEBUG,"==> do_atfork_prepare");
   NSS_LDAP_LOCK (__lock);
-  debug ("<== do_atfork_prepare");
+  log_log(LOG_DEBUG,"<== do_atfork_prepare");
 }
 
 static void
 do_atfork_parent (void)
 {
-  debug ("==> do_atfork_parent");
+  log_log(LOG_DEBUG,"==> do_atfork_parent");
   NSS_LDAP_UNLOCK (__lock);
-  debug ("<== do_atfork_parent");
+  log_log(LOG_DEBUG,"<== do_atfork_parent");
 }
 
 static void
 do_atfork_child (void)
 {
-  debug ("==> do_atfork_child");
+  log_log(LOG_DEBUG,"==> do_atfork_child");
   _nss_ldap_block_sigpipe();
   do_close_no_unbind ();
   _nss_ldap_unblock_sigpipe();
   NSS_LDAP_UNLOCK (__lock);
-  debug ("<== do_atfork_child");
+  log_log(LOG_DEBUG,"<== do_atfork_child");
 }
 
 static void
 do_atfork_setup (void)
 {
-  debug ("==> do_atfork_setup");
+  log_log(LOG_DEBUG,"==> do_atfork_setup");
 
 #ifdef HAVE_PTHREAD_ATFORK
   (void) pthread_atfork (do_atfork_prepare, do_atfork_parent,
@@ -662,7 +662,7 @@ do_atfork_setup (void)
   (void) __libc_atfork (do_atfork_prepare, do_atfork_parent, do_atfork_child);
 #endif
 
-  debug ("<== do_atfork_setup");
+  log_log(LOG_DEBUG,"<== do_atfork_setup");
 }
 #endif
 
@@ -672,12 +672,12 @@ do_atfork_setup (void)
 void
 _nss_ldap_enter (void)
 {
-  debug ("==> _nss_ldap_enter");
+  log_log(LOG_DEBUG,"==> _nss_ldap_enter");
 
   NSS_LDAP_LOCK (__lock);
   _nss_ldap_block_sigpipe();
 
-  debug ("<== _nss_ldap_enter");
+  log_log(LOG_DEBUG,"<== _nss_ldap_enter");
 }
 
 /*
@@ -686,12 +686,12 @@ _nss_ldap_enter (void)
 void
 _nss_ldap_leave (void)
 {
-  debug ("==> _nss_ldap_leave");
+  log_log(LOG_DEBUG,"==> _nss_ldap_leave");
 
   _nss_ldap_unblock_sigpipe();
   NSS_LDAP_UNLOCK (__lock);
 
-  debug ("<== _nss_ldap_leave");
+  log_log(LOG_DEBUG,"<== _nss_ldap_leave");
 }
 
 static void
@@ -704,7 +704,7 @@ do_set_sockopts (void)
 #ifndef HAVE_LDAPSSL_CLIENT_INIT
   int sd = -1;
 
-  debug ("==> do_set_sockopts");
+  log_log(LOG_DEBUG,"==> do_set_sockopts");
   if (ldap_get_option (__session.ls_conn, LDAP_OPT_DESC, &sd) == 0)
     {
       int off = 0;
@@ -731,7 +731,7 @@ do_set_sockopts (void)
       (void) getpeername (sd, (struct sockaddr *) &__session.ls_peername,
                           &peernamelen);
     }
-  debug ("<== do_set_sockopts");
+  log_log(LOG_DEBUG,"<== do_set_sockopts");
 #endif /* HAVE_LDAPSSL_CLIENT_INIT */
 
   return;
@@ -750,7 +750,7 @@ do_close (void)
   int sd = -1;
 #endif
 
-  debug ("==> do_close");
+  log_log(LOG_DEBUG,"==> do_close");
 
   if (__session.ls_conn != NULL)
     {
@@ -769,7 +769,7 @@ do_close (void)
       __session.ls_state = LS_UNINITIALIZED;
     }
 
-  debug ("<== do_close");
+  log_log(LOG_DEBUG,"<== do_close");
 }
 
 static int
@@ -1020,12 +1020,12 @@ do_close_no_unbind (void)
   int sd = -1;
   int closeSd = 1;
 
-  debug ("==> do_close_no_unbind");
+  log_log(LOG_DEBUG,"==> do_close_no_unbind");
 
   if (__session.ls_state == LS_UNINITIALIZED)
     {
       assert (__session.ls_conn == NULL);
-      debug ("<== do_close_no_unbind (connection was not open)");
+      log_log(LOG_DEBUG,"<== do_close_no_unbind (connection was not open)");
       return;
     }
 
@@ -1038,7 +1038,7 @@ do_close_no_unbind (void)
 
   do_drop_connection(sd, closeSd);
 
-  debug ("<== do_close_no_unbind");
+  log_log(LOG_DEBUG,"<== do_close_no_unbind");
 
   return;
 }
@@ -1124,7 +1124,7 @@ do_init (void)
   enum nss_status stat;
   int sd=-1;
 
-  debug ("==> do_init");
+  log_log(LOG_DEBUG,"==> do_init");
 
   if (_nss_ldap_validateconfig (__config) != NSS_STATUS_SUCCESS)
     {
@@ -1190,7 +1190,7 @@ do_init (void)
       do_get_our_socket (&sd) == 0)
     {
       /* The calling app has stolen our socket. */
-      debug (":== do_init (stolen socket detected)");
+      log_log(LOG_DEBUG,":== do_init (stolen socket detected)");
       do_drop_connection (sd, 0);
     }
   else
@@ -1234,7 +1234,7 @@ do_init (void)
           if ((__session.ls_timestamp +
                __session.ls_config->ldc_idle_timelimit) < current_time)
             {
-              debug ("idle_timelimit reached");
+              log_log(LOG_DEBUG,"idle_timelimit reached");
               do_close ();
             }
         }
@@ -1245,7 +1245,7 @@ do_init (void)
        */
       if (__session.ls_state == LS_CONNECTED_TO_DSA)
         {
-          debug ("<== do_init (cached session)");
+          log_log(LOG_DEBUG,"<== do_init (cached session)");
           return NSS_STATUS_SUCCESS;
         }
     }
@@ -1257,7 +1257,7 @@ do_init (void)
 #ifdef HAVE_PTHREAD_ATFORK
   if (pthread_once (&__once, do_atfork_setup) != 0)
     {
-      debug ("<== do_init (pthread_once failed)");
+      log_log(LOG_DEBUG,"<== do_init (pthread_once failed)");
       return NSS_STATUS_UNAVAIL;
     }
 #elif defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
@@ -1291,7 +1291,7 @@ do_init (void)
 
       if (stat != NSS_STATUS_SUCCESS)
         {
-          debug ("<== do_init (failed to read config)");
+          log_log(LOG_DEBUG,"<== do_init (failed to read config)");
           return NSS_STATUS_UNAVAIL;
         }
     }
@@ -1339,7 +1339,7 @@ do_init (void)
       if (__ssl_initialized == 0
           && (rc = ldapssl_client_init (cfg->ldc_sslpath, NULL)) != LDAP_SUCCESS)
         {
-          debug ("<== do_init (ldapssl_client_init failed with rc = %d)", rc);
+          log_log(LOG_DEBUG,"<== do_init (ldapssl_client_init failed with rc = %d)", rc);
           return NSS_STATUS_UNAVAIL;
         }
       __ssl_initialized = 1;
@@ -1356,14 +1356,14 @@ do_init (void)
                           cfg->ldc_port);
   if (stat != NSS_STATUS_SUCCESS)
     {
-      debug ("<== do_init (failed to initialize LDAP session)");
+      log_log(LOG_DEBUG,"<== do_init (failed to initialize LDAP session)");
       return stat;
     }
 
   __session.ls_config = cfg;
   __session.ls_state = LS_INITIALIZED;
 
-  debug ("<== do_init (initialized session)");
+  log_log(LOG_DEBUG,"<== do_init (initialized session)");
 
   return NSS_STATUS_SUCCESS;
 }
@@ -1396,12 +1396,12 @@ do_start_tls (struct ldap_session * session)
   struct timeval tv, *timeout;
   LDAPMessage *res = NULL;
 
-  debug ("==> do_start_tls");
+  log_log(LOG_DEBUG,"==> do_start_tls");
 
   rc = ldap_start_tls (session->ls_conn, NULL, NULL, &msgid);
   if (rc != LDAP_SUCCESS)
     {
-      debug ("<== do_start_tls (ldap_start_tls failed: %s)", ldap_err2string (rc));
+      log_log(LOG_DEBUG,"<== do_start_tls (ldap_start_tls failed: %s)", ldap_err2string (rc));
       return rc;
     }
 
@@ -1428,14 +1428,14 @@ do_start_tls (struct ldap_session * session)
       rc = ld->ld_errno;
 #endif /* LDAP_OPT_ERROR_NUMBER */
 
-      debug ("<== do_start_tls (ldap_start_tls failed: %s)", ldap_err2string (rc));
+      log_log(LOG_DEBUG,"<== do_start_tls (ldap_start_tls failed: %s)", ldap_err2string (rc));
       return rc;
     }
 
   rc = ldap_result2error (session->ls_conn, res, 1);
   if (rc != LDAP_SUCCESS)
     {
-      debug ("<== do_start_tls (ldap_result2error failed: %s)", ldap_err2string (rc));
+      log_log(LOG_DEBUG,"<== do_start_tls (ldap_result2error failed: %s)", ldap_err2string (rc));
       return rc;
     }
 
@@ -1446,7 +1446,7 @@ do_start_tls (struct ldap_session * session)
 
   if (rc != LDAP_SUCCESS)
     {
-      debug ("<== do_start_tls (start TLS failed: %s)", ldap_err2string(rc));
+      log_log(LOG_DEBUG,"<== do_start_tls (start TLS failed: %s)", ldap_err2string(rc));
       return rc;
     }
 
@@ -1477,13 +1477,13 @@ do_open (void)
 #endif
   int rc;
 
-  debug ("==> do_open");
+  log_log(LOG_DEBUG,"==> do_open");
 
   /* Moved the head part of do_open() into do_init() */
   stat = do_init ();
   if (stat != NSS_STATUS_SUCCESS)
     {
-      debug ("<== do_open (session initialization failed)");
+      log_log(LOG_DEBUG,"<== do_open (session initialization failed)");
       return stat;
     }
 
@@ -1493,7 +1493,7 @@ do_open (void)
 
   if (__session.ls_state == LS_CONNECTED_TO_DSA)
     {
-      debug ("<== do_open (cached session)");
+      log_log(LOG_DEBUG,"<== do_open (cached session)");
       return NSS_STATUS_SUCCESS;
     }
 
@@ -1560,19 +1560,19 @@ do_open (void)
       if (do_ssl_options (cfg) != LDAP_SUCCESS)
         {
           do_close ();
-          debug ("<== do_open (SSL setup failed)");
+          log_log(LOG_DEBUG,"<== do_open (SSL setup failed)");
           return NSS_STATUS_UNAVAIL;
         }
 
       stat = do_map_error (do_start_tls (&__session));
       if (stat == NSS_STATUS_SUCCESS)
         {
-          debug (":== do_open (TLS startup succeeded)");
+          log_log(LOG_DEBUG,":== do_open (TLS startup succeeded)");
         }
       else
         {
           do_close ();
-          debug ("<== do_open (TLS startup failed)");
+          log_log(LOG_DEBUG,"<== do_open (TLS startup failed)");
           return stat;
         }
     }
@@ -1590,7 +1590,7 @@ do_open (void)
           LDAP_SUCCESS)
         {
           do_close ();
-          debug ("<== do_open (TLS setup failed)");
+          log_log(LOG_DEBUG,"<== do_open (TLS setup failed)");
           return NSS_STATUS_UNAVAIL;
         }
 
@@ -1598,7 +1598,7 @@ do_open (void)
       if (do_ssl_options (cfg) != LDAP_SUCCESS)
         {
           do_close ();
-          debug ("<== do_open (SSL setup failed)");
+          log_log(LOG_DEBUG,"<== do_open (SSL setup failed)");
           return NSS_STATUS_UNAVAIL;
         }
 
@@ -1606,7 +1606,7 @@ do_open (void)
       if (ldapssl_install_routines (__session.ls_conn) != LDAP_SUCCESS)
         {
           do_close ();
-          debug ("<== do_open (SSL setup failed)");
+          log_log(LOG_DEBUG,"<== do_open (SSL setup failed)");
           return NSS_STATUS_UNAVAIL;
         }
 /* not in Solaris 9? */
@@ -1617,7 +1617,7 @@ do_open (void)
           LDAP_SUCCESS)
         {
           do_close ();
-          debug ("<== do_open (SSL setup failed)");
+          log_log(LOG_DEBUG,"<== do_open (SSL setup failed)");
           return NSS_STATUS_UNAVAIL;
         }
 #endif
@@ -1669,7 +1669,7 @@ do_open (void)
               ldap_err2string (rc));
       stat = do_map_error (rc);
       do_close ();
-      debug ("<== do_open (failed to bind to DSA");
+      log_log(LOG_DEBUG,"<== do_open (failed to bind to DSA");
     }
   else
     {
@@ -1677,7 +1677,7 @@ do_open (void)
       time (&__session.ls_timestamp);
       __session.ls_state = LS_CONNECTED_TO_DSA;
       stat = NSS_STATUS_SUCCESS;
-      debug ("<== do_open (session connected to DSA)");
+      log_log(LOG_DEBUG,"<== do_open (session connected to DSA)");
     }
 
   return stat;
@@ -1689,7 +1689,7 @@ do_ssl_options (struct ldap_config * cfg)
 {
   int rc;
 
-  debug ("==> do_ssl_options");
+  log_log(LOG_DEBUG,"==> do_ssl_options");
 
 #ifdef LDAP_OPT_X_TLS_RANDOM_FILE
   if (cfg->ldc_tls_randfile != NULL)
@@ -1699,8 +1699,7 @@ do_ssl_options (struct ldap_config * cfg)
                             cfg->ldc_tls_randfile);
       if (rc != LDAP_SUCCESS)
         {
-          debug
-            ("<== do_ssl_options: Setting of LDAP_OPT_X_TLS_RANDOM_FILE failed");
+          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_RANDOM_FILE failed");
           return LDAP_OPERATIONS_ERROR;
         }
     }
@@ -1713,8 +1712,7 @@ do_ssl_options (struct ldap_config * cfg)
                             cfg->ldc_tls_cacertfile);
       if (rc != LDAP_SUCCESS)
         {
-          debug
-            ("<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CACERTFILE failed");
+          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CACERTFILE failed");
           return LDAP_OPERATIONS_ERROR;
         }
     }
@@ -1726,8 +1724,7 @@ do_ssl_options (struct ldap_config * cfg)
                             cfg->ldc_tls_cacertdir);
       if (rc != LDAP_SUCCESS)
         {
-          debug
-            ("<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CACERTDIR failed");
+          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CACERTDIR failed");
           return LDAP_OPERATIONS_ERROR;
         }
     }
@@ -1739,8 +1736,7 @@ do_ssl_options (struct ldap_config * cfg)
                             &cfg->ldc_tls_checkpeer);
       if (rc != LDAP_SUCCESS)
         {
-          debug
-            ("<== do_ssl_options: Setting of LDAP_OPT_X_TLS_REQUIRE_CERT failed");
+          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_REQUIRE_CERT failed");
           return LDAP_OPERATIONS_ERROR;
         }
     }
@@ -1752,8 +1748,7 @@ do_ssl_options (struct ldap_config * cfg)
                             cfg->ldc_tls_ciphers);
       if (rc != LDAP_SUCCESS)
         {
-          debug
-            ("<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CIPHER_SUITE failed");
+          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CIPHER_SUITE failed");
           return LDAP_OPERATIONS_ERROR;
         }
     }
@@ -1763,8 +1758,7 @@ do_ssl_options (struct ldap_config * cfg)
       rc = ldap_set_option (NULL, LDAP_OPT_X_TLS_CERTFILE, cfg->ldc_tls_cert);
       if (rc != LDAP_SUCCESS)
         {
-          debug
-            ("<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CERTFILE failed");
+          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CERTFILE failed");
           return LDAP_OPERATIONS_ERROR;
         }
     }
@@ -1774,13 +1768,12 @@ do_ssl_options (struct ldap_config * cfg)
       rc = ldap_set_option (NULL, LDAP_OPT_X_TLS_KEYFILE, cfg->ldc_tls_key);
       if (rc != LDAP_SUCCESS)
         {
-          debug
-            ("<== do_ssl_options: Setting of LDAP_OPT_X_TLS_KEYFILE failed");
+          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_KEYFILE failed");
           return LDAP_OPERATIONS_ERROR;
         }
     }
 
-  debug ("<== do_ssl_options");
+  log_log(LOG_DEBUG,"<== do_ssl_options");
 
   return LDAP_SUCCESS;
 }
@@ -1818,7 +1811,7 @@ do_result (struct ent_context * ctx, int all)
   enum nss_status stat = NSS_STATUS_TRYAGAIN;
   struct timeval tv, *tvp;
 
-  debug ("==> do_result");
+  log_log(LOG_DEBUG,"==> do_result");
 
   if (__session.ls_config->ldc_timelimit == LDAP_NO_LIMIT)
     {
@@ -1919,7 +1912,7 @@ do_result (struct ent_context * ctx, int all)
   if (stat == NSS_STATUS_SUCCESS)
     time (&__session.ls_timestamp);
 
-  debug ("<== do_result");
+  log_log(LOG_DEBUG,"<== do_result");
 
   return stat;
 }
@@ -1935,7 +1928,7 @@ _nss_ldap_ent_context_init_locked(struct ent_context **pctx)
 {
   struct ent_context *ctx;
 
-  debug ("==> _nss_ldap_ent_context_init_locked");
+  log_log(LOG_DEBUG,"==> _nss_ldap_ent_context_init_locked");
 
   ctx = *pctx;
 
@@ -1944,7 +1937,7 @@ _nss_ldap_ent_context_init_locked(struct ent_context **pctx)
     ctx=(struct ent_context *)malloc(sizeof(struct ent_context));
     if (ctx == NULL)
     {
-      debug ("<== _nss_ldap_ent_context_init_locked");
+      log_log(LOG_DEBUG,"<== _nss_ldap_ent_context_init_locked");
       return NULL;
     }
     *pctx = ctx;
@@ -1972,7 +1965,7 @@ _nss_ldap_ent_context_init_locked(struct ent_context **pctx)
 
   LS_INIT (ctx->ec_state);
 
-  debug ("<== _nss_ldap_ent_context_init_locked");
+  log_log(LOG_DEBUG,"<== _nss_ldap_ent_context_init_locked");
 
   return ctx;
 }
@@ -1984,11 +1977,11 @@ _nss_ldap_ent_context_init_locked(struct ent_context **pctx)
 void
 _nss_ldap_ent_context_release (struct ent_context * ctx)
 {
-  debug ("==> _nss_ldap_ent_context_release");
+  log_log(LOG_DEBUG,"==> _nss_ldap_ent_context_release");
 
   if (ctx == NULL)
     {
-      debug ("<== _nss_ldap_ent_context_release");
+      log_log(LOG_DEBUG,"<== _nss_ldap_ent_context_release");
       return;
     }
 
@@ -2022,7 +2015,7 @@ _nss_ldap_ent_context_release (struct ent_context * ctx)
       do_close ();
     }
 
-  debug ("<== _nss_ldap_ent_context_release");
+  log_log(LOG_DEBUG,"<== _nss_ldap_ent_context_release");
 
   return;
 }
@@ -2090,7 +2083,7 @@ do_filter (const struct ldap_args *args, const char *filterprot,
   size_t filterSiz;
   enum nss_status stat = NSS_STATUS_SUCCESS;
 
-  debug ("==> do_filter");
+  log_log(LOG_DEBUG,"==> do_filter");
 
   *dynamicUserBuf = NULL;
 
@@ -2227,9 +2220,9 @@ do_filter (const struct ldap_args *args, const char *filterprot,
         }
     }
 
-  debug (":== do_filter: %s", *retFilter);
+  log_log(LOG_DEBUG,":== do_filter: %s", *retFilter);
 
-  debug ("<== do_filter");
+  log_log(LOG_DEBUG,"<== do_filter");
 
   return NSS_STATUS_SUCCESS;
 }
@@ -2248,7 +2241,7 @@ do_with_reconnect (const char *base, int scope,
   enum nss_status stat = NSS_STATUS_UNAVAIL;
   int maxtries;
 
-  debug ("==> do_with_reconnect");
+  log_log(LOG_DEBUG,"==> do_with_reconnect");
 
   /* caller must successfully call do_init() first */
   assert (__session.ls_config != NULL);
@@ -2365,7 +2358,7 @@ do_with_reconnect (const char *base, int scope,
       break;
     }
 
-  debug ("<== do_with_reconnect");
+  log_log(LOG_DEBUG,"<== do_with_reconnect");
   return stat;
 }
 
@@ -2382,7 +2375,7 @@ do_search_s (const char *base, int scope,
   int rc;
   struct timeval tv, *tvp;
 
-  debug ("==> do_search_s");
+  log_log(LOG_DEBUG,"==> do_search_s");
 
   ldap_set_option (__session.ls_conn, LDAP_OPT_SIZELIMIT,
                    (void *) &sizelimit);
@@ -2401,7 +2394,7 @@ do_search_s (const char *base, int scope,
   rc = ldap_search_st (__session.ls_conn, base, scope, filter,
                        (char **) attrs, 0, tvp, res);
 
-  debug ("<== do_search_s");
+  log_log(LOG_DEBUG,"<== do_search_s");
 
   return rc;
 }
@@ -2419,7 +2412,7 @@ do_search (const char *base, int scope,
   LDAPControl *serverCtrls[2];
   LDAPControl **pServerCtrls;
 
-  debug ("==> do_search");
+  log_log(LOG_DEBUG,"==> do_search");
 
 #ifdef HAVE_LDAP_SEARCH_EXT
   if (_nss_ldap_test_config_flag (NSS_LDAP_FLAGS_PAGED_RESULTS))
@@ -2468,7 +2461,7 @@ do_search (const char *base, int scope,
     }
 #endif /* HAVE_LDAP_SEARCH_EXT */
 
-  debug ("<== do_search");
+  log_log(LOG_DEBUG,"<== do_search");
 
   return rc;
 }
@@ -2501,7 +2494,7 @@ do_parse (struct ent_context * ctx, void *result, char
 {
   enum nss_status parseStat = NSS_STATUS_NOTFOUND;
 
-  debug ("==> do_parse");
+  log_log(LOG_DEBUG,"==> do_parse");
 
   /*
    * if ec_state.ls_info.ls_index is non-zero, then we don't collect another
@@ -2557,7 +2550,7 @@ do_parse (struct ent_context * ctx, void *result, char
 
   do_map_errno (parseStat, errnop);
 
-  debug ("<== do_parse");
+  log_log(LOG_DEBUG,"<== do_parse");
 
   return parseStat;
 }
@@ -2572,7 +2565,7 @@ do_parse_s (struct ent_context * ctx, void *result, char
   enum nss_status parseStat = NSS_STATUS_NOTFOUND;
   LDAPMessage *e = NULL;
 
-  debug ("==> do_parse_s");
+  log_log(LOG_DEBUG,"==> do_parse_s");
 
   /*
    * if ec_state.ls_info.ls_index is non-zero, then we don't collect another
@@ -2618,7 +2611,7 @@ do_parse_s (struct ent_context * ctx, void *result, char
 
   do_map_errno (parseStat, errnop);
 
-  debug ("<== do_parse_s");
+  log_log(LOG_DEBUG,"<== do_parse_s");
 
   return parseStat;
 }
@@ -2740,11 +2733,11 @@ enum nss_status _nss_ldap_search_s(
   int scope;
   enum nss_status stat;
   struct ldap_service_search_descriptor *sd=NULL;
-  debug ("==> _nss_ldap_search_s");
+  log_log(LOG_DEBUG,"==> _nss_ldap_search_s");
   /* initilize session */
   if ((stat=do_init())!=NSS_STATUS_SUCCESS)
   {
-    debug ("<== _nss_ldap_search_s");
+    log_log(LOG_DEBUG,"<== _nss_ldap_search_s");
     return stat;
   }
   /* Set some reasonable defaults. */
@@ -2825,14 +2818,14 @@ _nss_ldap_search (const struct ldap_args * args,
   enum nss_status stat;
   struct ldap_service_search_descriptor *sd = NULL;
 
-  debug ("==> _nss_ldap_search");
+  log_log(LOG_DEBUG,"==> _nss_ldap_search");
 
   *msgid = -1;
 
   stat = do_init ();
   if (stat != NSS_STATUS_SUCCESS)
     {
-      debug ("<== _nss_ldap_search");
+      log_log(LOG_DEBUG,"<== _nss_ldap_search");
       return stat;
     }
 
@@ -2902,7 +2895,7 @@ _nss_ldap_search (const struct ldap_args * args,
   if (dynamicFilterBuf != NULL)
     free (dynamicFilterBuf);
 
-  debug ("<== _nss_ldap_search");
+  log_log(LOG_DEBUG,"<== _nss_ldap_search");
 
   return stat;
 }
@@ -3038,7 +3031,7 @@ _nss_ldap_getent_ex (struct ldap_args * args,
 {
   enum nss_status stat = NSS_STATUS_SUCCESS;
 
-  debug ("==> _nss_ldap_getent_ex");
+  log_log(LOG_DEBUG,"==> _nss_ldap_getent_ex");
 
   if (*ctx == NULL || (*ctx)->ec_msgid < 0)
     {
@@ -3048,7 +3041,7 @@ _nss_ldap_getent_ex (struct ldap_args * args,
        */
       if (_nss_ldap_ent_context_init_locked (ctx) == NULL)
         {
-          debug ("<== _nss_ldap_getent_ex");
+          log_log(LOG_DEBUG,"<== _nss_ldap_getent_ex");
           return NSS_STATUS_UNAVAIL;
         }
     }
@@ -3065,7 +3058,7 @@ next:
                                LDAP_NO_LIMIT, &msgid, &(*ctx)->ec_sd);
       if (stat != NSS_STATUS_SUCCESS)
         {
-          debug ("<== _nss_ldap_getent_ex");
+          log_log(LOG_DEBUG,"<== _nss_ldap_getent_ex");
           return stat;
         }
 
@@ -3087,7 +3080,7 @@ next:
                           (*ctx)->ec_cookie);
           if (stat != NSS_STATUS_SUCCESS)
             {
-              debug ("<== _nss_ldap_getent_ex");
+              log_log(LOG_DEBUG,"<== _nss_ldap_getent_ex");
               return stat;
             }
           (*ctx)->ec_msgid = msgid;
@@ -3102,7 +3095,7 @@ next:
       goto next;
     }
 
-  debug ("<== _nss_ldap_getent_ex");
+  log_log(LOG_DEBUG,"<== _nss_ldap_getent_ex");
 
   return stat;
 }
@@ -3122,7 +3115,7 @@ _nss_ldap_getbyname (struct ldap_args * args,
 
   _nss_ldap_enter ();
 
-  debug ("==> _nss_ldap_getbyname");
+  log_log(LOG_DEBUG,"==> _nss_ldap_getbyname");
 
   ctx.ec_msgid = -1;
   ctx.ec_cookie = NULL;
@@ -3131,7 +3124,7 @@ _nss_ldap_getbyname (struct ldap_args * args,
   if (stat != NSS_STATUS_SUCCESS)
     {
       _nss_ldap_leave ();
-      debug ("<== _nss_ldap_getbyname");
+      log_log(LOG_DEBUG,"<== _nss_ldap_getbyname");
       return stat;
     }
 
@@ -3149,7 +3142,7 @@ _nss_ldap_getbyname (struct ldap_args * args,
 
   _nss_ldap_ent_context_release (&ctx);
 
-  debug ("<== _nss_ldap_getbyname");
+  log_log(LOG_DEBUG,"<== _nss_ldap_getbyname");
 
   /* moved unlock here to avoid race condition bug #49 */
   _nss_ldap_leave ();
@@ -3514,7 +3507,7 @@ _nss_ldap_assign_userpassword (LDAPMessage * e,
   const char *pwd;
   int vallen;
 
-  debug ("==> _nss_ldap_assign_userpassword");
+  log_log(LOG_DEBUG,"==> _nss_ldap_assign_userpassword");
 
   if (__session.ls_conn == NULL)
     {
@@ -3532,7 +3525,7 @@ _nss_ldap_assign_userpassword (LDAPMessage * e,
         {
           ldap_value_free (vals);
         }
-      debug ("<== _nss_ldap_assign_userpassword");
+      log_log(LOG_DEBUG,"<== _nss_ldap_assign_userpassword");
       return NSS_STATUS_TRYAGAIN;
     }
 
@@ -3549,7 +3542,7 @@ _nss_ldap_assign_userpassword (LDAPMessage * e,
       ldap_value_free (vals);
     }
 
-  debug ("<== _nss_ldap_assign_userpassword");
+  log_log(LOG_DEBUG,"<== _nss_ldap_assign_userpassword");
 
   return NSS_STATUS_SUCCESS;
 }
@@ -3866,7 +3859,7 @@ _nss_ldap_proxy_bind (const char *user, const char *password)
   struct ldap_proxy_bind_args *proxy_args = &__proxy_args;
 #endif
 
-  debug ("==> _nss_ldap_proxy_bind");
+  log_log(LOG_DEBUG,"==> _nss_ldap_proxy_bind");
 
   LA_INIT (args);
   LA_TYPE (args) = LA_TYPE_STRING;
@@ -3878,7 +3871,7 @@ _nss_ldap_proxy_bind (const char *user, const char *password)
    */
   if (password == NULL || password[0] == '\0')
     {
-      debug ("<== _nss_ldap_proxy_bind (empty password not permitted)");
+      log_log(LOG_DEBUG,"<== _nss_ldap_proxy_bind (empty password not permitted)");
       /* XXX overload */
       return NSS_STATUS_TRYAGAIN;
     }
@@ -3904,7 +3897,7 @@ _nss_ldap_proxy_bind (const char *user, const char *password)
               ldap_set_rebind_proc (__session.ls_conn, do_proxy_rebind);
 #endif
 
-              debug (":== _nss_ldap_proxy_bind: %s", proxy_args->binddn);
+              log_log(LOG_DEBUG,":== _nss_ldap_proxy_bind: %s", proxy_args->binddn);
 
               rc = do_bind (__session.ls_conn,
                             __session.ls_config->ldc_bind_timelimit,
@@ -3948,7 +3941,7 @@ _nss_ldap_proxy_bind (const char *user, const char *password)
 
   _nss_ldap_leave ();
 
-  debug ("<== _nss_ldap_proxy_bind");
+  log_log(LOG_DEBUG,"<== _nss_ldap_proxy_bind");
 
   return stat;
 }
@@ -3958,20 +3951,20 @@ _nss_ldap_get_attributes (enum ldap_map_selector sel)
 {
   const char **attrs = NULL;
 
-  debug ("==> _nss_ldap_get_attributes");
+  log_log(LOG_DEBUG,"==> _nss_ldap_get_attributes");
 
   if (sel < LM_NONE)
     {
       if (do_init () != NSS_STATUS_SUCCESS)
         {
-          debug ("<== _nss_ldap_get_attributes (init failed)");
+          log_log(LOG_DEBUG,"<== _nss_ldap_get_attributes (init failed)");
           return NULL;
         }
 
       attrs = __session.ls_config->ldc_attrtab[sel];
     }
 
-  debug ("<== _nss_ldap_get_attributes");
+  log_log(LOG_DEBUG,"<== _nss_ldap_get_attributes");
 
   return attrs;
 }

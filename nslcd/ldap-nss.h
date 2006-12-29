@@ -56,34 +56,6 @@
 #define LDAPS_PORT 636
 #endif /* not LDAPS_PORT */
 
-#ifdef DEBUG
-#ifdef __XGNUC__
-#define debug(fmt, args...) fprintf(stderr, "nss_ldap: " fmt "\n" , ## args)
-#else
-#include <stdarg.h>
-#include <stdio.h>
-static void
-debug (char *fmt, ...)
-{
-  va_list ap;
-  va_start (ap, fmt);
-  fprintf (stderr, "nss_ldap: ");
-  vfprintf (stderr, fmt, ap);
-  va_end (ap);
-  fprintf (stderr, "\n");
-}
-#endif /* __GNUC__ */
-#else /* DEBUG */
-#ifdef __GNUC__
-#define debug(fmt, args...)
-#else /* __GNUC__ */
-static void
-debug (char *fmt, ...)
-{
-}
-#endif /* not __GNUC__ */
-#endif /* not DEBUG */
-
 #ifdef __GNUC__
 #define alignof(ptr) __alignof__(ptr)
 #elif defined(HAVE_ALIGNOF_H)

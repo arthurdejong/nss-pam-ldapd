@@ -217,7 +217,7 @@ _nss_ldap_dn2uid (const char *dn, char **uid, char **buffer, size_t * buflen,
 {
   enum nss_status status;
 
-  debug ("==> _nss_ldap_dn2uid");
+  log_log(LOG_DEBUG,"==> _nss_ldap_dn2uid");
 
   *pIsNestedGroup = 0;
 
@@ -241,7 +241,7 @@ _nss_ldap_dn2uid (const char *dn, char **uid, char **buffer, size_t * buflen,
                 {
                   *pIsNestedGroup = 1;
                   *pRes = res;
-                  debug ("<== _nss_ldap_dn2uid (nested group)");
+                  log_log(LOG_DEBUG,"<== _nss_ldap_dn2uid (nested group)");
                   return NSS_STATUS_SUCCESS;
                 }
 
@@ -255,7 +255,7 @@ _nss_ldap_dn2uid (const char *dn, char **uid, char **buffer, size_t * buflen,
       ldap_msgfree (res);
     }
 
-  debug ("<== _nss_ldap_dn2uid");
+  log_log(LOG_DEBUG,"<== _nss_ldap_dn2uid");
 
   return status;
 }
@@ -791,14 +791,14 @@ _nss_ldap_add_uri (struct ldap_config *result, const char *uri,
   int i;
   size_t uri_len;
 
-  debug ("==> _nss_ldap_add_uri");
+  log_log(LOG_DEBUG,"==> _nss_ldap_add_uri");
 
   for (i = 0; result->ldc_uris[i] != NULL; i++)
     ;
 
   if (i == NSS_LDAP_CONFIG_URI_MAX)
     {
-      debug ("<== _nss_ldap_add_uri: maximum number of URIs exceeded");
+      log_log(LOG_DEBUG,"<== _nss_ldap_add_uri: maximum number of URIs exceeded");
       return NSS_STATUS_UNAVAIL;
     }
 
@@ -817,7 +817,7 @@ _nss_ldap_add_uri (struct ldap_config *result, const char *uri,
   *buffer += uri_len + 1;
   *buflen -= uri_len + 1;
 
-  debug ("<== _nss_ldap_add_uri: added URI %s", uri);
+  log_log(LOG_DEBUG,"<== _nss_ldap_add_uri: added URI %s", uri);
 
   return NSS_STATUS_SUCCESS;
 }
@@ -1541,19 +1541,19 @@ _nss_ldap_namelist_push (struct name_list **head, const char *name)
 {
   struct name_list *nl;
 
-  debug ("==> _nss_ldap_namelist_push (%s)", name);
+  log_log(LOG_DEBUG,"==> _nss_ldap_namelist_push (%s)", name);
 
   nl = (struct name_list *) malloc (sizeof (*nl));
   if (nl == NULL)
     {
-      debug ("<== _nss_ldap_namelist_push");
+      log_log(LOG_DEBUG,"<== _nss_ldap_namelist_push");
       return NSS_STATUS_TRYAGAIN;
     }
 
   nl->name = strdup (name);
   if (nl->name == NULL)
     {
-      debug ("<== _nss_ldap_namelist_push");
+      log_log(LOG_DEBUG,"<== _nss_ldap_namelist_push");
       free (nl);
       return NSS_STATUS_TRYAGAIN;
     }
@@ -1562,7 +1562,7 @@ _nss_ldap_namelist_push (struct name_list **head, const char *name)
 
   *head = nl;
 
-  debug ("<== _nss_ldap_namelist_push");
+  log_log(LOG_DEBUG,"<== _nss_ldap_namelist_push");
 
   return NSS_STATUS_SUCCESS;
 }
@@ -1575,7 +1575,7 @@ _nss_ldap_namelist_pop (struct name_list **head)
 {
   struct name_list *nl;
 
-  debug ("==> _nss_ldap_namelist_pop");
+  log_log(LOG_DEBUG,"==> _nss_ldap_namelist_pop");
 
   assert (*head != NULL);
   nl = *head;
@@ -1586,7 +1586,7 @@ _nss_ldap_namelist_pop (struct name_list **head)
   free (nl->name);
   free (nl);
 
-  debug ("<== _nss_ldap_namelist_pop");
+  log_log(LOG_DEBUG,"<== _nss_ldap_namelist_pop");
 }
 
 /*
@@ -1597,7 +1597,7 @@ _nss_ldap_namelist_destroy (struct name_list **head)
 {
   struct name_list *p, *next;
 
-  debug ("==> _nss_ldap_namelist_destroy");
+  log_log(LOG_DEBUG,"==> _nss_ldap_namelist_destroy");
 
   for (p = *head; p != NULL; p = next)
     {
@@ -1610,7 +1610,7 @@ _nss_ldap_namelist_destroy (struct name_list **head)
 
   *head = NULL;
 
-  debug ("<== _nss_ldap_namelist_destroy");
+  log_log(LOG_DEBUG,"<== _nss_ldap_namelist_destroy");
 }
 
 /*
@@ -1623,7 +1623,7 @@ _nss_ldap_namelist_find (struct name_list *head, const char *netgroup)
   struct name_list *p;
   int found = 0;
 
-  debug ("==> _nss_ldap_namelist_find");
+  log_log(LOG_DEBUG,"==> _nss_ldap_namelist_find");
 
   for (p = head; p != NULL; p = p->next)
     {
@@ -1634,7 +1634,7 @@ _nss_ldap_namelist_find (struct name_list *head, const char *netgroup)
         }
     }
 
-  debug ("<== _nss_ldap_namelist_find");
+  log_log(LOG_DEBUG,"<== _nss_ldap_namelist_find");
 
   return found;
 }

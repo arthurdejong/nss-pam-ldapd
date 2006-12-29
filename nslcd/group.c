@@ -933,7 +933,7 @@ static enum nss_status group_bymember(const char *user, long int *start,
   LA_STRING (a) = user;
   LA_TYPE (a) = LA_TYPE_STRING;
 
-  debug ("==> group_bymember (user=%s)", LA_STRING (a) );
+  log_log(LOG_DEBUG,"==> group_bymember (user=%s)", LA_STRING (a) );
 
   lia.depth = 0;
   lia.known_groups = NULL;
@@ -944,14 +944,14 @@ static enum nss_status group_bymember(const char *user, long int *start,
   stat = _nss_ldap_init ();
   if (stat != NSS_STATUS_SUCCESS)
     {
-      debug ("<== group_bymember (init failed)");
+      log_log(LOG_DEBUG,"<== group_bymember (init failed)");
       _nss_ldap_leave ();
       return stat;
     }
 
   if (_nss_ldap_test_initgroups_ignoreuser (LA_STRING (a)))
     {
-      debug ("<== group_bymember (user ignored)");
+      log_log(LOG_DEBUG,"<== group_bymember (user ignored)");
       _nss_ldap_leave ();
       return NSS_STATUS_NOTFOUND;
     }
@@ -1009,7 +1009,7 @@ static enum nss_status group_bymember(const char *user, long int *start,
 
   if (_nss_ldap_ent_context_init_locked(&ctx)==NULL)
     {
-      debug ("<== group_bymember (ent_context_init failed)");
+      log_log(LOG_DEBUG,"<== group_bymember (ent_context_init failed)");
       _nss_ldap_leave ();
       return NSS_STATUS_UNAVAIL;
     }
@@ -1036,13 +1036,13 @@ static enum nss_status group_bymember(const char *user, long int *start,
    */
   if (stat != NSS_STATUS_SUCCESS && stat != NSS_STATUS_NOTFOUND)
     {
-      debug ("<== group_bymember (not found)");
+      log_log(LOG_DEBUG,"<== group_bymember (not found)");
       if (erange)
         errno = ERANGE;
       return stat;
     }
 
-  debug ("<== group_bymember (success)");
+  log_log(LOG_DEBUG,"<== group_bymember (success)");
 
   return NSS_STATUS_SUCCESS;
 }
