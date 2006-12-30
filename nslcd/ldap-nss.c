@@ -2028,7 +2028,6 @@ do_aggregate_filter (const char **values,
                      enum ldap_args_types type,
                      const char *filterprot, char *bufptr, size_t buflen)
 {
-  enum nss_status stat;
   const char **valueP;
 
   assert (buflen > sizeof ("(|)"));

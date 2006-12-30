@@ -66,8 +66,10 @@ int main(int argc,char *argv[])
   char buffer[1024];
   enum nss_status res;
   int errnocp;
+#ifdef REENABLE_WHEN_WORKING
   long int start,size=40;
   gid_t *gidlist=(gid_t *)buffer;
+#endif /* REENABLE_WHEN_WORKING */
 
   /* test getgrnam() */
   printf("\nTEST getgrnam()\n");
