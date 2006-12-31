@@ -81,9 +81,16 @@ static void debug_dump(const void *ptr,size_t size)
 
 #define WRITE_STRING(fp,str) \
   DEBUG_PRINT("WRITE_STRING: var="__STRING(str)" string=\"%s\"",str); \
-  WRITE_INT32(fp,strlen(str)); \
-  if (tmpint32>0) \
-    { WRITE(fp,str,tmpint32); }
+  if (str==NULL) \
+  { \
+    WRITE_INT32(fp,0); \
+  } \
+  else \
+  { \
+    WRITE_INT32(fp,strlen(str)); \
+    if (tmpint32>0) \
+      { WRITE(fp,str,tmpint32); } \
+  }
 
 #define WRITE_FLUSH(fp) \
   if (fflush(fp)<0) \
