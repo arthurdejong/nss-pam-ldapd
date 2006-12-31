@@ -159,6 +159,24 @@ static void debug_dump(const void *ptr,size_t size)
 #define BUF_SKIP(sz) \
   bufptr+=(size_t)(sz);
 
+/* move BUF_CUR foreward so that it is aligned to the specified
+   type width */
+#define BUF_ALIGN(fp,type) \
+  /* figure out number of bytes to skip foreward */ \
+  tmp2int32=(sizeof(type)-((BUF_CUR-(char *)NULL)%sizeof(type)))%sizeof(type); \
+  /* check and skip */ \
+  BUF_CHECK(fp,tmp2int32); \
+  BUF_SKIP(tmp2int32);
+
+/* allocate a piece of the buffer to store an array in */
+#define BUF_ALLOC(fp,ptr,type,num) \
+  /* check that we have enough room */ \
+  BUF_CHECK(fp,(num)*sizeof(type)); \
+  /* store the pointer */ \
+  (ptr)=(type *)BUF_CUR; \
+  /* reserve the space */ \
+  BUF_SKIP((num)*sizeof(type));
+
 /* read string in the buffer (using buffer, buflen and bufptr)
    and store the actual location of the string in field */
 #define READ_STRING_BUF(fp,field) \
@@ -196,6 +214,15 @@ static void debug_dump(const void *ptr,size_t size)
   buffer[tmpint32]='\0'; \
   DEBUG_PRINT("READ_STRING: var="__STRING(buffer)" string=\"%s\"",buffer);
 
+/* read a binary blob into the buffer */
+#define READ_BUF(fp,ptr,sz) \
+  /* check that there is enough room and read */ \
+  BUF_CHECK(fp,sz); \
+  READ(fp,BUF_CUR,(size_t)sz); \
+  /* store pointer and skip */ \
+  (ptr)=BUF_CUR; \
+  BUF_SKIP(sz);
+
 /* read an array from a stram and store the length of the
    array in num (size for the array is allocated) */
 #define READ_STRINGLIST_NUM(fp,arr,num) \
@@ -203,10 +230,8 @@ static void debug_dump(const void *ptr,size_t size)
   READ_INT32(fp,(num)); \
   DEBUG_PRINT("READ_STRLST: var="__STRING(arr)" num=%d",(int)(num)); \
   /* allocate room for *char[num] */ \
-  tmpint32*=sizeof(char *); \
-  BUF_CHECK(fp,tmpint32); \
-  (arr)=(char **)BUF_CUR; \
-  BUF_SKIP(tmpint32); \
+  BUF_ALLOC(fp,arr,char *,tmpint32); \
+  /* read all the strings */ \
   for (tmp2int32=0;tmp2int32<(num);tmp2int32++) \
   { \
     READ_STRING_BUF(fp,(arr)[tmp2int32]); \
@@ -219,10 +244,7 @@ static void debug_dump(const void *ptr,size_t size)
   READ_TYPE(fp,tmp3int32,int32_t); \
   DEBUG_PRINT("READ_STRLST: var="__STRING(arr)" num=%d",(int)tmp3int32); \
   /* allocate room for *char[num+1] */ \
-  tmp2int32=(tmp3int32+1)*sizeof(char *); \
-  BUF_CHECK(fp,tmp2int32); \
-  (arr)=(char **)BUF_CUR; \
-  BUF_SKIP(tmp2int32); \
+  BUF_ALLOC(fp,arr,char *,tmp3int32+1); \
   /* read all entries */ \
   for (tmp2int32=0;tmp2int32<tmp3int32;tmp2int32++) \
   { \

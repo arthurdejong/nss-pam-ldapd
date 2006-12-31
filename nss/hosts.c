@@ -88,9 +88,7 @@ static enum nss_status read_hostent(
   /* Note: this may allocate too much memory (e.g. also for
            address records of other address families) but
            this is an easy way to do it */
-  BUF_CHECK(fp,(numaddr+1)*sizeof(char *));
-  result->h_addr_list=(char **)BUF_CUR;
-  BUF_SKIP((numaddr+1)*sizeof(char *));
+  BUF_ALLOC(fp,result->h_addr_list,char *,numaddr+1);
   /* go through the address list and filter on af */
   i=0;
   while (--numaddr>=0)
@@ -100,12 +98,9 @@ static enum nss_status read_hostent(
     READ_INT32(fp,tmp2int32);
     if (readaf==af)
     {
+      /* read the address */
       result->h_length=tmp2int32;
-      /* allocate room in buffer */
-      BUF_CHECK(fp,tmp2int32);
-      READ(fp,BUF_CUR,(size_t)tmp2int32);
-      result->h_addr_list[i++]=BUF_CUR;
-      BUF_SKIP(tmp2int32);
+      READ_BUF(fp,result->h_addr_list[i++],tmp2int32);
     }
     else
     {
