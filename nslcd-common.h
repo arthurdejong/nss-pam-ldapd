@@ -168,8 +168,19 @@ static void debug_dump(const void *ptr,size_t size)
   BUF_CHECK(fp,tmp2int32); \
   BUF_SKIP(tmp2int32);
 
+/* move BUF_CUR foreward so that it is aligned to the specified
+   type width */
+#define BUF_ALIGN(fp,type) \
+  /* figure out number of bytes to skip foreward */ \
+  tmp2int32=(sizeof(type)-((BUF_CUR-(char *)NULL)%sizeof(type)))%sizeof(type); \
+  /* check and skip */ \
+  BUF_CHECK(fp,tmp2int32); \
+  BUF_SKIP(tmp2int32);
+
 /* allocate a piece of the buffer to store an array in */
 #define BUF_ALLOC(fp,ptr,type,num) \
+  /* align to the specified type width */ \
+  BUF_ALIGN(fp,type); \
   /* check that we have enough room */ \
   BUF_CHECK(fp,(num)*sizeof(type)); \
   /* store the pointer */ \
