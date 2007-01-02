@@ -27,14 +27,14 @@
 # Should-Stop:       $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
-# Short-Description: NSS-LDAP connection daemon
+# Short-Description: nss-ldapd connection daemon
 # Description:       nslcd is a LDAP connection daemon that is used to
 #                    do LDAP queries for the NSS libraries.
 ### END INIT INFO
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 NSLCD_BIN=/usr/sbin/nslcd
-NSLCD_DESC="NSS-LDAP connection daemon"
+NSLCD_DESC="nss-ldapd connection daemon"
 NSLCD_CFG=/etc/nss-ldapd.conf
 
 [ -x "$NSLCD_BIN" ] || exit 0
