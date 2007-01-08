@@ -78,8 +78,12 @@ static enum nss_status read_netgrent(
   return NSS_STATUS_SUCCESS;
 }
 
+/* thread-local file pointer to an ongoing request */
+static __thread FILE *netgrentfp;
+
 enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *result)
 {
+  /* we cannot use NSS_SETENT() here because we have a parameter */
   int32_t tmpint32;
   int errnocp;
   int *errnop;
@@ -88,22 +92,21 @@ enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *resul
   if ((group==NULL)||(group[0]=='\0'))
     return NSS_STATUS_UNAVAIL;
   /* open a new stream and write the request */
-  OPEN_SOCK(result->data);
-  WRITE_REQUEST(result->data,NSLCD_ACTION_NETGROUP_BYNAME);
-  WRITE_STRING(result->data,group);
-  WRITE_FLUSH(result->data);
+  OPEN_SOCK(netgrentfp);
+  WRITE_REQUEST(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME);
+  WRITE_STRING(netgrentfp,group);
+  WRITE_FLUSH(netgrentfp);
   /* read response header */
-  READ_RESPONSEHEADER(result->data,NSLCD_ACTION_NETGROUP_BYNAME);
+  READ_RESPONSEHEADER(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME);
   return NSS_STATUS_SUCCESS;
-/* fixme: this should probably also set result->known_groups */
 }
 
 enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(result->data,read_netgrent);
+  NSS_GETENT(netgrentfp,read_netgrent);
 }
 
 enum nss_status _nss_ldap_endnetgrent(struct __netgrent *result)
 {
-  NSS_ENDENT(result->data);
+  NSS_ENDENT(netgrentfp);
 }

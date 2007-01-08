@@ -45,10 +45,9 @@ struct etherent
 /* We also define struct __netgrent because it's definition is
    not publically available. This is taken from inet/netgroup.h
    of the glibc (2.3.6) source tarball.
-   This definition changes the definition of the data field
-   to pass our file pointer for ongoing requests and the
-   definition of the nip field to not drag in extra unneeded
-   types. */
+   The first part of the struct is the only part that is modified
+   by the getnetgrent() function, all the other fields are not
+   touched at all. */
 struct __netgrent
 {
   enum { triple_val, group_val } type;
@@ -62,14 +61,18 @@ struct __netgrent
     } triple;
     const char *group;
   } val;
-  FILE *data; /* was `char *data' */
+  /* the following stuff is used by some NSS services
+     but not by ours (it's not completely clear how these
+     are shared between different services) */
+  char *data;
   size_t data_size;
   union
   {
     char *cursor;
     unsigned long int position;
-  } insertedname;
+  } insertedname; /* added name to union to avoid warning */
   int first;
+  /* this is used by our caller, we also won't touch these */
   struct name_list *known_groups;
   struct name_list *needed_groups;
   void *nip; /* changed from `service_user *nip' */
