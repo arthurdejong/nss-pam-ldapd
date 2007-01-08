@@ -10,6 +10,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, debconf | debconf-2.0
 Recommends: nscd, libpam-ldap
 Conflicts: libnss-ldap
+Provides: libnss-ldap
 Description: NSS module for using LDAP as a naming service
  This package provides a Name Service Switch that allows your LDAP server
  act as a name service. This means providing user account information,
