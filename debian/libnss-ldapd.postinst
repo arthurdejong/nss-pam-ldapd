@@ -216,9 +216,7 @@ then
   # modify /etc/nsswitch.conf
   db_get libnss-ldapd/nsswitch
   enablenss=`echo "$RET" | sed 's/,//g'`
-  allnss=`sed -n 's/^\([a-z]*\):.*$/\1/p' /etc/nsswitch.conf`
-  allnss=`echo $allnss $enablenss | sed 's/ /\n/g' | sort -u`
-  for n in $allnss
+  for n in aliases ethers group hosts netgroup networks passwd protocols rpc services shadow
   do
     if echo ' '$enablenss' ' | grep -q ' '$n' '
     then
