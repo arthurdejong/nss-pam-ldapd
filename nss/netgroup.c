@@ -2,7 +2,7 @@
    netgroup.c - NSS lookup functions for netgroup entries
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,20 @@
 
 #include "prototypes.h"
 #include "common.h"
+
+/* we redifine this here because we need to return NSS_STATUS_RETURN
+   if we have sucessfully read some entries */
+#undef ERROR_OUT_NOSUCCESS
+#define ERROR_OUT_NOSUCCESS(fp,retv) \
+  fclose(fp); \
+  fp=NULL; \
+  if (result->first) \
+  { \
+    *errnop=ENOENT; \
+    return nslcd2nss(retv); \
+  } \
+  else \
+    return NSS_STATUS_RETURN;
 
 static enum nss_status read_netgrent(
         FILE *fp,struct __netgrent *result,
@@ -74,6 +88,8 @@ static enum nss_status read_netgrent(
   }
   else
     return NSS_STATUS_UNAVAIL;
+  /* flag the fact that we have successfully returned an entry */
+  result->first=0;
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }
@@ -98,6 +114,10 @@ enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *resul
   WRITE_FLUSH(netgrentfp);
   /* read response header */
   READ_RESPONSEHEADER(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME);
+  /* set the first flag, this is used to check if we should
+     return NSS_STATUS_NOTFOUND (entry not found) or
+     NSS_STATUS_RETURN (entry found but no more lines) */
+  result->first=1;
   return NSS_STATUS_SUCCESS;
 }
 

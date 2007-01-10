@@ -71,6 +71,7 @@ struct __netgrent
     char *cursor;
     unsigned long int position;
   } insertedname; /* added name to union to avoid warning */
+  /* this one is used to flag the first entry */
   int first;
   /* this is used by our caller, we also won't touch these */
   struct name_list *known_groups;
