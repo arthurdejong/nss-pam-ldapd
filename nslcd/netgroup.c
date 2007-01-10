@@ -345,6 +345,8 @@ int nslcd_netgroup_byname(FILE *fp)
   /* free data */
   if (result.data!=NULL)
     free(result.data);
+  /* write the final result code */
+  WRITE_INT32(fp,NSLCD_RESULT_NOTFOUND);
   /* we're done */
   _nss_ldap_enter();
   _nss_ldap_ent_context_release(netgroup_context);
