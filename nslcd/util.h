@@ -82,13 +82,6 @@ enum nss_status _nss_ldap_db_get (void *db,
                              const struct ldap_datum * key,
                              struct ldap_datum * value);
 
-/* Routines for managing namelists */
-
-enum nss_status _nss_ldap_namelist_push (struct name_list **head, const char *name);
-void _nss_ldap_namelist_pop (struct name_list **head);
-int _nss_ldap_namelist_find (struct name_list *head, const char *netgroup);
-void _nss_ldap_namelist_destroy (struct name_list **head);
-
 enum nss_status
 _nss_ldap_add_uri (struct ldap_config *result, const char *uri,
                    char **buffer, size_t *buflen);

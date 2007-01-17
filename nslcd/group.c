@@ -49,6 +49,12 @@
 #include "common.h"
 #include "log.h"
 
+struct name_list
+{
+  char *name;
+  struct name_list *next;
+};
+
 #ifdef HAVE_USERSEC_H
 typedef struct ldap_initgroups_args
 {
@@ -94,11 +100,91 @@ ldap_initgroups_args_t;
 #define GID_NOBODY     UID_NOBODY
 #endif
 
-static enum nss_status
-ng_chase (const char *dn, ldap_initgroups_args_t * lia);
+static enum nss_status ng_chase (const char *dn, ldap_initgroups_args_t * lia);
 
-static enum nss_status
-ng_chase_backlink (const char ** membersOf, ldap_initgroups_args_t * lia);
+static enum nss_status ng_chase_backlink (const char ** membersOf, ldap_initgroups_args_t * lia);
+
+
+/*
+ * Add a nested netgroup or group to the namelist
+ */
+static enum nss_status _nss_ldap_namelist_push(struct name_list **head,const char *name)
+{
+  struct name_list *nl;
+
+  log_log(LOG_DEBUG,"==> _nss_ldap_namelist_push (%s)", name);
+
+  nl = (struct name_list *) malloc (sizeof (*nl));
+  if (nl == NULL)
+    {
+      log_log(LOG_DEBUG,"<== _nss_ldap_namelist_push");
+      return NSS_STATUS_TRYAGAIN;
+    }
+
+  nl->name = strdup (name);
+  if (nl->name == NULL)
+    {
+      log_log(LOG_DEBUG,"<== _nss_ldap_namelist_push");
+      free (nl);
+      return NSS_STATUS_TRYAGAIN;
+    }
+
+  nl->next = *head;
+
+  *head = nl;
+
+  log_log(LOG_DEBUG,"<== _nss_ldap_namelist_push");
+
+  return NSS_STATUS_SUCCESS;
+}
+
+/*
+ * Cleanup nested netgroup or group namelist.
+ */
+static void _nss_ldap_namelist_destroy(struct name_list **head)
+{
+  struct name_list *p, *next;
+
+  log_log(LOG_DEBUG,"==> _nss_ldap_namelist_destroy");
+
+  for (p = *head; p != NULL; p = next)
+    {
+      next = p->next;
+
+      if (p->name != NULL)
+        free (p->name);
+      free (p);
+    }
+
+  *head = NULL;
+
+  log_log(LOG_DEBUG,"<== _nss_ldap_namelist_destroy");
+}
+
+/*
+ * Check whether we have already seen a netgroup or group,
+ * to avoid loops in nested netgroup traversal
+ */
+static int _nss_ldap_namelist_find(struct name_list *head,const char *netgroup)
+{
+  struct name_list *p;
+  int found = 0;
+
+  log_log(LOG_DEBUG,"==> _nss_ldap_namelist_find");
+
+  for (p = head; p != NULL; p = p->next)
+    {
+      if (strcasecmp (p->name, netgroup) == 0)
+        {
+          found++;
+          break;
+        }
+    }
+
+  log_log(LOG_DEBUG,"<== _nss_ldap_namelist_find");
+
+  return found;
+}
 
 /*
  * Range retrieval logic was reimplemented from example in

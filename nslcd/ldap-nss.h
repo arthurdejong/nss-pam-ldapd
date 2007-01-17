@@ -257,12 +257,6 @@ struct ent_context
   struct berval *ec_cookie;          /* cookie for paged searches */
 };
 
-struct name_list
-{
-  char *name;
-  struct name_list *next;
-};
-
 typedef enum nss_status (*parser_t) (LDAPMessage *, struct ldap_state *, void *,
                                 char *, size_t);
 
