@@ -2,7 +2,7 @@
    shadow.c - NSS lookup functions for shadow database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,32 +29,29 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* Macros for expanding the NSLCD_SHADOW macro. */
-#define NSLCD_STRING(field)    READ_STRING_BUF(fp,field)
-#define NSLCD_INT32(field)     READ_INT32(fp,field)
-#define SHADOW_NAME          result->sp_namp
-#define SHADOW_PASSWD        result->sp_pwdp
-#define SHADOW_LASTCHANGE    result->sp_lstchg
-#define SHADOW_MINDAYS       result->sp_min
-#define SHADOW_MAXDAYS       result->sp_max
-#define SHADOW_WARN          result->sp_warn
-#define SHADOW_INACT         result->sp_inact
-#define SHADOW_EXPIRE        result->sp_expire
-#define SHADOW_FLAG          result->sp_flag
-
 static enum nss_status read_spwd(
         FILE *fp,struct spwd *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32;
   size_t bufptr=0;
-  NSLCD_SHADOW;
+  READ_STRING_BUF(fp,result->sp_namp);
+  READ_STRING_BUF(fp,result->sp_pwdp);
+  READ_INT32(fp,result->sp_lstchg);
+  READ_INT32(fp,result->sp_min);
+  READ_INT32(fp,result->sp_max);
+  READ_INT32(fp,result->sp_warn);
+  READ_INT32(fp,result->sp_inact);
+  READ_INT32(fp,result->sp_expire);
+  READ_INT32(fp,result->sp_flag);
   return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status _nss_ldap_getspnam_r(const char *name,struct spwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,name,read_spwd);
+  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,
+             name,
+             read_spwd(fp,result,buffer,buflen,errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -67,7 +64,7 @@ enum nss_status _nss_ldap_setspent(int stayopen)
 
 enum nss_status _nss_ldap_getspent_r(struct spwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(spentfp,read_spwd);
+  NSS_GETENT(spentfp,read_spwd(spentfp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_endspent(void)

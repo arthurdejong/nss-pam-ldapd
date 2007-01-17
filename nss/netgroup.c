@@ -44,6 +44,7 @@
   else \
     return NSS_STATUS_RETURN;
 
+/* function for reading a single result entry */
 static enum nss_status read_netgrent(
         FILE *fp,struct __netgrent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -58,7 +59,6 @@ static enum nss_status read_netgrent(
     /* the response is a reference to another netgroup */
     result->type=group_val;
     READ_STRING_BUF(fp,result->val.group);
-
   }
   else if (type==NETGROUP_TYPE_TRIPLE)
   {
@@ -123,7 +123,7 @@ enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *resul
 
 enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(netgrentfp,read_netgrent);
+  NSS_GETENT(netgrentfp,read_netgrent(netgrentfp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_endnetgrent(struct __netgrent *result)

@@ -2,7 +2,7 @@
    common.h - common functions for NSS lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -120,7 +120,7 @@ FILE *nslcd_client_open(void);
    name for reading a single result entry. The function is assumed
    to have result, buffer, buflen and errnop parameters that define
    the result structure, the user buffer with length and the
-   errno to return. This macro should be called with some of
+   errno to return. This macro should be called through some of
    the customized ones below. */
 #define NSS_BYGEN(action,param,readfn) \
   FILE *fp; \
@@ -135,7 +135,7 @@ FILE *nslcd_client_open(void);
   READ_RESPONSEHEADER(fp,action); \
   /* read response */ \
   READ_RESPONSE_CODE(fp); \
-  retv=readfn(fp,result,buffer,buflen,errnop); \
+  retv=readfn; \
   /* close socket and we're done */ \
   if (retv==NSS_STATUS_SUCCESS) \
     fclose(fp); \
@@ -188,7 +188,7 @@ FILE *nslcd_client_open(void);
   } \
   /* read a response */ \
   READ_RESPONSE_CODE(fp); \
-  retv=readfn(fp,result,buffer,buflen,errnop); \
+  retv=readfn; \
   /* check read result */ \
   if (retv!=NSS_STATUS_SUCCESS) \
     fp=NULL; /* file should be closed by now */ \

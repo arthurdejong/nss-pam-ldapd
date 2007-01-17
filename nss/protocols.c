@@ -2,7 +2,7 @@
    protocols.c - NSS lookup functions for protocol database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,34 +29,30 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* macros for expanding the NSLCD_PROTOCOL macro */
-#define NSLCD_STRING(field)     READ_STRING_BUF(fp,field)
-#define NSLCD_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
-#define NSLCD_INT32(field)      READ_INT32(fp,field)
-#define PROTOCOL_NAME         result->p_name
-#define PROTOCOL_ALIASES      result->p_aliases
-#define PROTOCOL_NUMBER       result->p_proto
-
 static enum nss_status read_protoent(
         FILE *fp,struct protoent *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
-  /* auto-genereted read code */
-  NSLCD_PROTOCOL;
-  /* we're done */
+  READ_STRING_BUF(fp,result->p_name);
+  READ_STRINGLIST_NULLTERM(fp,result->p_aliases);
+  READ_INT32(fp,result->p_proto);
   return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status _nss_ldap_getprotobyname_r(const char *name,struct protoent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_PROTOCOL_BYNAME,name,read_protoent);
+  NSS_BYNAME(NSLCD_ACTION_PROTOCOL_BYNAME,
+             name,
+             read_protoent(fp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_getprotobynumber_r(int number,struct protoent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYINT32(NSLCD_ACTION_PROTOCOL_BYNUMBER,number,read_protoent);
+  NSS_BYINT32(NSLCD_ACTION_PROTOCOL_BYNUMBER,
+              number,
+              read_protoent(fp,result,buffer,buflen,errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -69,7 +65,7 @@ enum nss_status _nss_ldap_setprotoent(int stayopen)
 
 enum nss_status _nss_ldap_getprotoent_r(struct protoent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(protoentfp,read_protoent);
+  NSS_GETENT(protoentfp,read_protoent(protoentfp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_endprotoent(void)

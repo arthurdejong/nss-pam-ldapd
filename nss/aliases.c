@@ -2,7 +2,7 @@
    aliases.c - NSS lookup functions for aliases database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,12 +29,6 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* macros for expanding the NSLCD_ALIAS macro */
-#define NSLCD_STRING(field)     READ_STRING_BUF(fp,field)
-#define NSLCD_STRINGLIST(field) READ_STRINGLIST_NUM(fp,field,result->alias_members_len)
-#define ALIAS_NAME            result->alias_name
-#define ALIAS_RCPTS           result->alias_members
-
 static enum nss_status read_aliasent(
         FILE *fp,struct aliasent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -42,7 +36,8 @@ static enum nss_status read_aliasent(
   int32_t tmpint32,tmp2int32;
   size_t bufptr=0;
   /* auto-genereted read code */
-  NSLCD_ALIAS;
+  READ_STRING_BUF(fp,result->alias_name);
+  READ_STRINGLIST_NUM(fp,result->alias_members,result->alias_members_len);
   /* fill in remaining gaps in struct */
   result->alias_local=0;
   /* we're done */
@@ -53,7 +48,9 @@ enum nss_status _nss_ldap_getaliasbyname_r(
         const char *name,struct aliasent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_ALIAS_BYNAME,name,read_aliasent);
+  NSS_BYNAME(NSLCD_ACTION_ALIAS_BYNAME,
+             name,
+             read_aliasent(fp,result,buffer,buflen,errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -66,7 +63,8 @@ enum nss_status _nss_ldap_setaliasent(void)
 
 enum nss_status _nss_ldap_getaliasent_r(struct aliasent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(aliasentfp,read_aliasent);
+  NSS_GETENT(aliasentfp,
+             read_aliasent(aliasentfp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_endaliasent(void)

@@ -2,7 +2,7 @@
    hosts.c - NSS lookup functions for hosts database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -112,6 +112,62 @@ static enum nss_status read_hostent(
   return NSS_STATUS_SUCCESS;
 }
 
+/* this is a wrapper around read_hostent() that does error handling
+   if the read address list does not contain any addresses for the
+   specified address familiy */
+static enum nss_status read_hostent_erronempty(
+        FILE *fp,int af,struct hostent *result,
+        char *buffer,size_t buflen,int *errnop,int *h_errnop)
+{
+  enum nss_status retv;
+  retv=read_hostent(fp,af,result,buffer,buflen,errnop,h_errnop);
+  /* check result */
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* check empty address list
+     (note that we cannot do this in the read_hostent() function as closing
+     the socket there will cause problems with the {set,get,end}ent() functions
+     below)
+  */
+  if (result->h_addr_list[0]==NULL)
+  {
+    *errnop=ENOENT;
+    *h_errnop=NO_ADDRESS;
+    fclose(fp);
+    return NSS_STATUS_NOTFOUND;
+  }
+  return NSS_STATUS_SUCCESS;
+}
+
+/* this is a wrapper around read_hostent() that skips to the
+   next address if the address list does not contain any addresses for the
+   specified address familiy */
+static enum nss_status read_hostent_nextonempty(
+        FILE *fp,int af,struct hostent *result,
+        char *buffer,size_t buflen,int *errnop,int *h_errnop)
+{
+  int32_t tmpint32;
+  enum nss_status retv;
+  /* check until we read an non-empty entry */
+  do
+  {
+    /* read a host entry */
+    retv=read_hostent(fp,AF_INET,result,buffer,buflen,errnop,h_errnop);
+    /* check result */
+    if (retv!=NSS_STATUS_SUCCESS)
+      return retv;
+    /* skip to the next entry if we read an empty address */
+    if (result->h_addr_list[0]==NULL)
+    {
+      retv=NSS_STATUS_NOTFOUND;
+      READ_RESPONSE_CODE(fp);
+    }
+    /* do another loop run if we read an empty address */
+  }
+  while (retv!=NSS_STATUS_SUCCESS);
+  return NSS_STATUS_SUCCESS;
+}
+
 /* this function looks up a single host entry and returns all the addresses
    associated with the host in a single address familiy
    name            - IN  - hostname to lookup
@@ -123,32 +179,9 @@ enum nss_status _nss_ldap_gethostbyname2_r(
         const char *name,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  FILE *fp;
-  int32_t tmpint32;
-  enum nss_status retv;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_HOST_BYNAME);
-  WRITE_STRING(fp,name);
-  WRITE_FLUSH(fp);
-  /* read response */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_HOST_BYNAME);
-  READ_RESPONSE_CODE(fp);
-  retv=read_hostent(fp,af,result,buffer,buflen,errnop,h_errnop);
-  /* check result */
-  if (retv!=NSS_STATUS_SUCCESS)
-    return retv;
-  /* check empty address list */
-  if (result->h_addr_list[0]==NULL)
-  {
-    *errnop=ENOENT;
-    *h_errnop=NO_ADDRESS;
-    fclose(fp);
-    return NSS_STATUS_NOTFOUND;
-  }
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,
+             name,
+             read_hostent_erronempty(fp,af,result,buffer,buflen,errnop,h_errnop));
 }
 
 /* this function just calls the gethostbyname2() variant with the address
@@ -160,6 +193,11 @@ enum nss_status _nss_ldap_gethostbyname_r(
   return _nss_ldap_gethostbyname2_r(name,AF_INET,result,buffer,buflen,errnop,h_errnop);
 }
 
+/* write an address value */
+#define WRITE_ADDRESS(fp,af,len,addr) \
+  WRITE_INT32(fp,af); \
+  WRITE_INT32(fp,len); \
+  WRITE(fp,addr,len);
 
 /* this function looks up a single host entry and returns all the addresses
    associated with the host in a single address familiy
@@ -173,35 +211,9 @@ enum nss_status _nss_ldap_gethostbyaddr_r(
         const void *addr,socklen_t len,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  FILE *fp;
-  int32_t tmpint32;
-  enum nss_status retv;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_HOST_BYADDR);
-  /* write the address */
-  WRITE_INT32(fp,af);
-  WRITE_INT32(fp,len);
-  WRITE(fp,addr,len);
-  WRITE_FLUSH(fp);
-  /* read response */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_HOST_BYADDR);
-  READ_RESPONSE_CODE(fp);
-  retv=read_hostent(fp,af,result,buffer,buflen,errnop,h_errnop);
-  /* check read result */
-  if (retv!=NSS_STATUS_SUCCESS)
-    return retv;
-  /* check empty address list */
-  if (result->h_addr_list[0]==NULL)
-  {
-    *errnop=ENOENT;
-    *h_errnop=NO_ADDRESS;
-    fclose(fp);
-    return NSS_STATUS_NOTFOUND;
-  }
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
+            WRITE_ADDRESS(fp,af,len,addr),
+            read_hostent_erronempty(fp,af,result,buffer,buflen,errnop,h_errnop))
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -209,10 +221,10 @@ static __thread FILE *hostentfp;
 
 enum nss_status _nss_ldap_sethostent(int stayopen)
 {
-  /* temporary storage for h_errno */
+  /* temporary storage for h_errno
+     (used in NSS_SETENT error handling) */
   int h_errnotmp;
   int *h_errnop=&h_errnotmp;
-  /* setent is normal enough */
   NSS_SETENT(hostentfp,NSLCD_ACTION_HOST_ALL);
 }
 
@@ -221,26 +233,8 @@ enum nss_status _nss_ldap_gethostent_r(
         struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  int32_t tmpint32;
-  enum nss_status retv=NSS_STATUS_NOTFOUND;
-  /* check that we have a valid file descriptor */
-  if (hostentfp==NULL)
-  {
-    *errnop=ENOENT;
-    return NSS_STATUS_UNAVAIL;
-  }
-  /* check until we read an non-empty entry */
-  do
-  {
-    /* read a response */
-    READ_RESPONSE_CODE(hostentfp);
-    retv=read_hostent(hostentfp,AF_INET,result,buffer,buflen,errnop,h_errnop);
-    /* do another loop run if we read an empty address */
-  }
-  while ((retv==NSS_STATUS_SUCCESS)&&(result->h_addr_list[0]==NULL));
-  if (retv==NSS_STATUS_NOTFOUND)
-    *h_errnop=HOST_NOT_FOUND;
-  return retv;
+  NSS_GETENT(hostentfp,
+             read_hostent_nextonempty(hostentfp,AF_INET,result,buffer,buflen,errnop,h_errnop));
 }
 
 enum nss_status _nss_ldap_endhostent(void)

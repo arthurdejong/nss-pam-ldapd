@@ -2,7 +2,7 @@
    networks.c - NSS lookup functions for networks database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,20 @@
 
 /* Redifine some ERROR_OUT macros as we also want to set h_errnop. */
 
+#undef ERROR_OUT_OPENERROR
+#define ERROR_OUT_OPENERROR \
+  *errnop=ENOENT; \
+  *h_errnop=HOST_NOT_FOUND; \
+  return (errno==EAGAIN)?NSS_STATUS_TRYAGAIN:NSS_STATUS_UNAVAIL;
+
+#undef ERROR_OUT_READERROR
+#define ERROR_OUT_READERROR(fp) \
+  fclose(fp); \
+  fp=NULL; \
+  *errnop=ENOENT; \
+  *h_errnop=NO_RECOVERY; \
+  return NSS_STATUS_UNAVAIL;
+
 #undef ERROR_OUT_BUFERROR
 #define ERROR_OUT_BUFERROR(fp) \
   fclose(fp); \
@@ -38,6 +52,10 @@
   *errnop=ERANGE; \
   *h_errnop=TRY_AGAIN; \
   return NSS_STATUS_TRYAGAIN;
+
+#undef ERROR_OUT_WRITEERROR
+#define ERROR_OUT_WRITEERROR(fp) \
+  ERROR_OUT_READERROR(fp)
 
 #undef ERROR_OUT_NOSUCCESS
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
@@ -47,7 +65,7 @@
   *h_errnop=HOST_NOT_FOUND; \
   return nslcd2nss(retv);
 
-/* read a single host entry from the stream, ignoring entries
+/* read a single network entry from the stream, ignoring entries
    that are not AF_INET (IPv4), result is stored in result */
 static enum nss_status read_netent(
         FILE *fp,struct netent *result,
@@ -58,7 +76,7 @@ static enum nss_status read_netent(
   int readaf;
   size_t bufptr=0;
   enum nss_status retv=NSS_STATUS_NOTFOUND;
-  /* read the host entry */
+  /* read the network entry */
   READ_STRING_BUF(fp,result->n_name);
   READ_STRINGLIST_NULLTERM(fp,result->n_aliases);
   result->n_addrtype=AF_INET;
@@ -78,6 +96,7 @@ static enum nss_status read_netent(
       result->n_net=ntohl(tmpint32);
       /* signal that we've read a proper entry */
       retv=NSS_STATUS_SUCCESS;
+      /* don't return here to not upset the stream */
     }
     else
     {
@@ -90,67 +109,24 @@ static enum nss_status read_netent(
 
 enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  FILE *fp;
-  int32_t tmpint32;
-  enum nss_status retv;
-  /* set to NO_RECOVERY in case some error is caught */
-  *h_errnop=NO_RECOVERY;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_NETWORK_BYNAME);
-  WRITE_STRING(fp,name);
-  WRITE_FLUSH(fp);
-  /* read response */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_NETWORK_BYNAME);
-  READ_RESPONSE_CODE(fp);
-  retv=read_netent(fp,result,buffer,buflen,errnop,h_errnop);
-  /* check read result */
-  if (retv==NSS_STATUS_NOTFOUND)
-  {
-    *h_errnop=NO_ADDRESS;
-    fclose(fp);
-    return NSS_STATUS_NOTFOUND;
-  }
-  else if (retv!=NSS_STATUS_SUCCESS)
-    return retv;
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,
+             name,
+             read_netent(fp,result,buffer,buflen,errnop,h_errnop));
 }
 
+/* write an address value */
+#define WRITE_ADDRESS(fp,af,len,addr) \
+  WRITE_INT32(fp,af); \
+  WRITE_INT32(fp,len); \
+  WRITE(fp,addr,len);
+
 /* Note: the af parameter is ignored and is assumed to be AF_INET */
+/* TODO: implement handling of af parameter */
 enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int af,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  FILE *fp;
-  int32_t tmpint32;
-  enum nss_status retv;
-  /* set to NO_RECOVERY in case some error is caught */
-  *h_errnop=NO_RECOVERY;
-  /* open socket and write request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_NETWORK_BYADDR);
-  /* write the address */
-  WRITE_INT32(fp,AF_INET);
-  WRITE_INT32(fp,4);
-  addr=htonl(addr);
-  WRITE_INT32(fp,addr);
-  WRITE_FLUSH(fp);
-  /* read response */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_NETWORK_BYADDR);
-  READ_RESPONSE_CODE(fp);
-  retv=read_netent(fp,result,buffer,buflen,errnop,h_errnop);
-  /* check read result */
-  if (retv==NSS_STATUS_NOTFOUND)
-  {
-    *h_errnop=NO_ADDRESS;
-    fclose(fp);
-    return NSS_STATUS_NOTFOUND;
-  }
-  else if (retv!=NSS_STATUS_SUCCESS)
-    return retv;
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
+            addr=htonl(addr);WRITE_ADDRESS(fp,AF_INET,4,&addr),
+            read_netent(fp,result,buffer,buflen,errnop,h_errnop))
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -158,29 +134,18 @@ static __thread FILE *netentfp;
 
 enum nss_status _nss_ldap_setnetent(int stayopen)
 {
+  /* temporary storage for h_errno
+     (used in NSS_SETENT error handling) */
+  int h_errnotmp;
+  int *h_errnop=&h_errnotmp;
+  /* setent is normal enough */
   NSS_SETENT(netentfp,NSLCD_ACTION_NETWORK_ALL);
 }
 
 enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  int32_t tmpint32;
-  enum nss_status retv=NSS_STATUS_NOTFOUND;
-  /* check that we have a valid file descriptor */
-  if (netentfp==NULL)
-  {
-    *errnop=ENOENT;
-    return NSS_STATUS_UNAVAIL;
-  }
-  /* check until we read an non-empty entry */
-  do
-  {
-    /* read a response */
-    READ_RESPONSE_CODE(netentfp);
-    retv=read_netent(netentfp,result,buffer,buflen,errnop,h_errnop);
-    /* do another loop run if we read an empty address list */
-  }
-  while (retv==NSS_STATUS_NOTFOUND);
-  return retv;
+  NSS_GETENT(netentfp,
+             read_netent(netentfp,result,buffer,buflen,errnop,h_errnop));
 }
 
 enum nss_status _nss_ldap_endnetent(void)

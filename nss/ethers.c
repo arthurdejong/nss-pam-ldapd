@@ -2,7 +2,7 @@
    ethers.c - NSS lookup functions for ethers database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,21 +29,14 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* macros for expanding the NSLCD_ETHER macro */
-#define NSLCD_STRING(field)     READ_STRING_BUF(fp,field)
-#define NSLCD_TYPE(field,type)  READ_TYPE(fp,field,type)
-#define ETHER_NAME            result->e_name
-#define ETHER_ADDR            result->e_addr
-
 static enum nss_status read_etherent(
         FILE *fp,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32;
   size_t bufptr=0;
-  /* auto-genereted read code */
-  NSLCD_ETHER;
-  /* we're done */
+  READ_STRING_BUF(fp,result->e_name);
+  READ_TYPE(fp,result->e_addr,u_int8_t[6]);
   return NSS_STATUS_SUCCESS;
 }
 
@@ -52,7 +45,9 @@ enum nss_status _nss_ldap_gethostton_r(
         const char *name,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,name,read_etherent);
+  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,
+             name,
+             read_etherent(fp,result,buffer,buflen,errnop));
 }
 
 /* map an ethernet address to the corresponding hostname */
@@ -60,7 +55,9 @@ enum nss_status _nss_ldap_getntohost_r(
         const struct ether_addr *addr,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,*addr,u_int8_t[6],read_etherent);
+  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,
+             *addr,u_int8_t[6],
+             read_etherent(fp,result,buffer,buflen,errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -75,7 +72,8 @@ enum nss_status _nss_ldap_getetherent_r(
         struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(etherentfp,read_etherent);
+  NSS_GETENT(etherentfp,
+             read_etherent(etherentfp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_endetherent(void)

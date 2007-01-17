@@ -2,7 +2,7 @@
    group.c - NSS lookup functions for group database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,35 +29,67 @@
 #include "prototypes.h"
 #include "common.h"
 
-/* macros for expanding the NSLCD_GROUP macro */
-#define NSLCD_STRING(field)     READ_STRING_BUF(fp,field)
-#define NSLCD_TYPE(field,type)  READ_TYPE(fp,field,type)
-#define NSLCD_STRINGLIST(field) READ_STRINGLIST_NULLTERM(fp,field)
-#define GROUP_NAME            result->gr_name
-#define GROUP_PASSWD          result->gr_passwd
-#define GROUP_GID             result->gr_gid
-#define GROUP_MEMBERS         result->gr_mem
-
 static enum nss_status read_group(
         FILE *fp,struct group *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
-  /* auto-genereted read code */
-  NSLCD_GROUP;
-  /* we're done */
+  READ_STRING_BUF(fp,result->gr_name);
+  READ_STRING_BUF(fp,result->gr_passwd);
+  READ_TYPE(fp,result->gr_gid,gid_t);
+  READ_STRINGLIST_NULLTERM(fp,result->gr_mem);
   return NSS_STATUS_SUCCESS;
+}
+
+/* read all group entries from the stream and add
+   gids of these groups to the list */
+static enum nss_status read_gids(
+        FILE *fp,long int *start,long int *size,
+        gid_t **groupsp,long int limit,int *errnop)
+{
+  int32_t res=NSLCD_RESULT_SUCCESS;
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  gid_t gid;
+  int num=0;
+  /* loop over results */
+  while (res==NSLCD_RESULT_SUCCESS)
+  {
+    /* skip group name */
+    SKIP_STRING(fp);
+    /* skip passwd entry */
+    SKIP_STRING(fp);
+    /* read gid */
+    READ_TYPE(fp,gid,gid_t);
+    /* skip members */
+    SKIP_STRINGLIST(fp);
+    /* check if entry would fit and we have not returned too many */
+    if ( ((*start)>=(*size)) || (num>=limit) )
+      { ERROR_OUT_BUFERROR(fp); }
+    /* add gid to list */
+    (*groupsp)[*start++]=gid;
+    num++;
+    /* read next response code
+      (don't bail out on not success since we just want to build
+      up a list) */
+    READ_TYPE(fp,res,int32_t);
+  }
+  /* return the proper status code */
+  return (res==NSLCD_RESULT_NOTFOUND)?NSS_STATUS_SUCCESS:nslcd2nss(res);
 }
 
 enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,name,read_group);
+  NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,
+             name,
+             read_group(fp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,gid,gid_t,read_group);
+  NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,
+             gid,gid_t,
+             read_group(fp,result,buffer,buflen,errnop));
 }
 
 #ifdef REENABLE_WHEN_WORKING
@@ -81,43 +113,9 @@ enum nss_status _nss_ldap_initgroups_dyn(
         const char *user,gid_t group,long int *start,
         long int *size,gid_t **groupsp,long int limit,int *errnop)
 {
-  FILE *fp;
-  int32_t cd;
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  gid_t gid;
-  int num=0;
-  /* open socket and write the request */
-  OPEN_SOCK(fp);
-  WRITE_REQUEST(fp,NSLCD_ACTION_GROUP_BYMEMBER);
-  WRITE_STRING(fp,user);
-  WRITE_FLUSH(fp);
-  /* read response */
-  READ_RESPONSEHEADER(fp,NSLCD_ACTION_GROUP_BYMEMBER);
-  /* read response code */
-  READ_TYPE(fp,cd,int32_t);
-  /* loop over results */
-  while (cd==NSLCD_RESULT_SUCCESS)
-  {
-    /* skip group name */
-    SKIP_STRING(fp);
-    /* skip passwd entry */
-    SKIP_STRING(fp);
-    /* read gid */
-    READ_TYPE(fp,gid,gid_t);
-    /* skip members */
-    SKIP_STRINGLIST(fp);
-    /* check if entry would fit and we have not returned too many */
-    if ( ((*start)>=(*size)) || (num>=limit) )
-      { ERROR_OUT_BUFERROR(fp); }
-    /* add gid to list */
-    (*groupsp)[*start++]=gid;
-    num++;
-    /* read next response code */
-    READ_TYPE(fp,cd,int32_t);
-  }
-  /* close socket and we're done */
-  fclose(fp);
-  return NSS_STATUS_SUCCESS;
+  NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,
+             user,
+             read_gids(fp,start,size,groupsp,limit,errnop));
 }
 #endif /* REENABLE_WHEN_WORKING */
 
@@ -131,7 +129,7 @@ enum nss_status _nss_ldap_setgrent(int stayopen)
 
 enum nss_status _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(grentfp,read_group);
+  NSS_GETENT(grentfp,read_group(grentfp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_endgrent(void)
