@@ -57,7 +57,7 @@
    track which netgroups were read and which still have to be read.  */
 
 /* Dataset for iterating netgroups.  */
-struct __netgrent
+struct mynetgrent
 {
   enum
   { triple_val, group_val }
@@ -83,15 +83,12 @@ struct __netgrent
   size_t data_size;
   char *cursor;
   int first;
-
-  struct name_list *known_groups;
-  struct name_list *needed_groups;
 };
 
 /*
  * I (Luke Howard) pulled the following macro (EXPAND), functions
  * (strip_whitespace and _nss_netgroup_parseline) and structures
- * (name_list and __netgrent) from glibc-2.2.x.  _nss_netgroup_parseline
+ * (name_list and mynetgrent) from glibc-2.2.x.  _nss_netgroup_parseline
  * became _nss_ldap_parse_netgr after some modification.
  *
  * The rest of the code is modeled on various other _nss_ldap functions.
@@ -137,7 +134,7 @@ strip_whitespace (char *str)
 static enum nss_status
 _nss_ldap_parse_netgr (void *vresultp, char *buffer, size_t buflen)
 {
-  struct __netgrent *result = (struct __netgrent *) vresultp;
+  struct mynetgrent *result = (struct mynetgrent *) vresultp;
   char *cp = result->cursor;
   char *user, *host, *domain;
 
@@ -228,7 +225,7 @@ _nss_ldap_load_netgr (LDAPMessage * e,
   int valcount = 0;
   char **vals;
   char **valiter;
-  struct __netgrent *result = vresultp;
+  struct mynetgrent *result = vresultp;
   enum nss_status stat = NSS_STATUS_SUCCESS;
 
   for (attr = 0; attr < 2; attr++)
@@ -293,7 +290,7 @@ int nslcd_netgroup_byname(FILE *fp)
   static struct ent_context *netgroup_context=NULL;
   char name[256];
   /* these are here for now until we rewrite the LDAP code */
-  struct __netgrent result;
+  struct mynetgrent result;
   char buffer[1024];
   int errnop;
   struct ldap_args a;
