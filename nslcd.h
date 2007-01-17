@@ -2,7 +2,7 @@
    nslcd.h - file describing client/server protocol
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,8 @@
    A response looks like:
      int32 NSLCD_VERSION
      int32 NSLCD_ACTION_* (the original request type)
+     [result(s)]
+   A result looks like:
      int32 NSLCD_RESULT_* (response code)
      [result value(s)]
    If a response would return multiple values (e.g. for NSLCD_ACTION_*_ALL
@@ -154,7 +156,9 @@
   NSLCD_INT32(SHADOW_EXPIRE) \
   NSLCD_INT32(SHADOW_FLAG)
 
-/* The current version of the protocol. */
+/* The current version of the protocol. Note that version 1
+   is experimental and this version will be used until a
+   1.0 release of nss-ldapd is made. */
 #define NSLCD_VERSION 1
 
 /* Request types. */
