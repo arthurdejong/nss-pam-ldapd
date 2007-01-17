@@ -82,7 +82,6 @@
 
 #include "ldap-nss.h"
 #include "util.h"
-#include "dnsconfig.h"
 #include "pagectrl.h"
 #include "common.h"
 #include "log.h"
@@ -146,14 +145,6 @@ static void do_close (void);
  * Disable keepalive on a LDAP connection's socket.
  */
 static void do_set_sockopts (void);
-
-/*
- * TLS routines: set global SSL session options.
- */
-#if defined(HAVE_LDAP_START_TLS_S) || defined(HAVE_LDAP_START_TLS) || (defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_X_TLS))
-static int do_ssl_options(struct ldap_config *cfg);
-static int do_start_tls(struct ldap_session *session);
-#endif
 
 /*
  * Function to be braced by reconnect harness. Used so we
@@ -392,6 +383,72 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
 
   return -1;
 }
+
+#if defined(HAVE_LDAP_START_TLS_S) || defined(HAVE_LDAP_START_TLS)
+static int do_start_tls (struct ldap_session * session)
+{
+  int rc;
+#ifdef HAVE_LDAP_START_TLS
+  int msgid;
+  struct timeval tv,*timeout;
+  LDAPMessage *res=NULL;
+
+  log_log(LOG_DEBUG,"==> do_start_tls");
+
+  rc=ldap_start_tls(session->ls_conn, NULL, NULL, &msgid);
+  if (rc != LDAP_SUCCESS)
+  {
+    log_log(LOG_DEBUG,"<== do_start_tls (ldap_start_tls failed: %s)",ldap_err2string(rc));
+    return rc;
+  }
+
+  if (session->ls_config->ldc_bind_timelimit==LDAP_NO_LIMIT)
+  {
+    timeout=NULL;
+  }
+  else
+  {
+    tv.tv_sec=session->ls_config->ldc_bind_timelimit;
+    tv.tv_usec=0;
+    timeout=&tv;
+  }
+
+  rc=ldap_result(session->ls_conn,msgid,1,timeout,&res);
+  if (rc==-1)
+  {
+#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_ERROR_NUMBER)
+    if (ldap_get_option(session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
+    {
+      rc=LDAP_UNAVAILABLE;
+    }
+#else
+    rc=ld->ld_errno;
+#endif /* LDAP_OPT_ERROR_NUMBER */
+    log_log(LOG_DEBUG,"<== do_start_tls (ldap_start_tls failed: %s)",ldap_err2string (rc));
+    return rc;
+  }
+
+  rc=ldap_result2error(session->ls_conn,res,1);
+  if (rc!=LDAP_SUCCESS)
+  {
+    log_log(LOG_DEBUG,"<== do_start_tls (ldap_result2error failed: %s)",ldap_err2string (rc));
+    return rc;
+  }
+
+  rc=ldap_install_tls(session->ls_conn);
+#else
+  rc=ldap_start_tls_s(session->ls_conn,NULL,NULL);
+#endif /* HAVE_LDAP_START_TLS */
+
+  if (rc != LDAP_SUCCESS)
+  {
+    log_log(LOG_DEBUG,"<== do_start_tls (start TLS failed: %s)",ldap_err2string(rc));
+    return rc;
+  }
+
+  return LDAP_SUCCESS;
+}
+#endif
 
 /*
  * Rebind functions.
@@ -860,70 +917,83 @@ _nss_ldap_init (void)
   return do_init ();
 }
 
-#if defined(HAVE_LDAP_START_TLS_S) || defined(HAVE_LDAP_START_TLS)
-static int
-do_start_tls (struct ldap_session * session)
+#if defined HAVE_LDAP_START_TLS_S || (defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_X_TLS))
+static int do_ssl_options(void)
 {
-  int rc;
-#ifdef HAVE_LDAP_START_TLS
-  int msgid;
-  struct timeval tv, *timeout;
-  LDAPMessage *res = NULL;
-
-  log_log(LOG_DEBUG,"==> do_start_tls");
-
-  rc = ldap_start_tls (session->ls_conn, NULL, NULL, &msgid);
-  if (rc != LDAP_SUCCESS)
+  log_log(LOG_DEBUG,"==> do_ssl_options");
+#ifdef LDAP_OPT_X_TLS_RANDOM_FILE
+  if (nslcd_cfg->ldc_tls_randfile!=NULL)
+  {
+    /* rand file */
+    if (ldap_set_option(NULL,LDAP_OPT_X_TLS_RANDOM_FILE,
+                        nslcd_cfg->ldc_tls_randfile)!=LDAP_SUCCESS)
     {
-      log_log(LOG_DEBUG,"<== do_start_tls (ldap_start_tls failed: %s)", ldap_err2string (rc));
-      return rc;
+      log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_RANDOM_FILE failed");
+      return LDAP_OPERATIONS_ERROR;
     }
-
-  if (session->ls_config->ldc_bind_timelimit == LDAP_NO_LIMIT)
+  }
+#endif /* LDAP_OPT_X_TLS_RANDOM_FILE */
+  if (nslcd_cfg->ldc_tls_cacertfile!=NULL)
+  {
+    /* ca cert file */
+    if (ldap_set_option(NULL,LDAP_OPT_X_TLS_CACERTFILE,
+                        nslcd_cfg->ldc_tls_cacertfile)!=LDAP_SUCCESS)
     {
-      timeout = NULL;
+      log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CACERTFILE failed");
+      return LDAP_OPERATIONS_ERROR;
     }
-  else
+  }
+  if (nslcd_cfg->ldc_tls_cacertdir!=NULL)
+  {
+    /* ca cert directory */
+    if (ldap_set_option(NULL,LDAP_OPT_X_TLS_CACERTDIR,
+                        nslcd_cfg->ldc_tls_cacertdir)!=LDAP_SUCCESS)
     {
-      tv.tv_sec = session->ls_config->ldc_bind_timelimit;
-      tv.tv_usec = 0;
-      timeout = &tv;
+      log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CACERTDIR failed");
+      return LDAP_OPERATIONS_ERROR;
     }
-
-  rc = ldap_result (session->ls_conn, msgid, 1, timeout, &res);
-  if (rc == -1)
+  }
+  /* require cert? */
+  if (nslcd_cfg->ldc_tls_checkpeer > -1)
+  {
+    if (ldap_set_option(NULL,LDAP_OPT_X_TLS_REQUIRE_CERT,
+                          &nslcd_cfg->ldc_tls_checkpeer)!=LDAP_SUCCESS)
     {
-#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_ERROR_NUMBER)
-      if (ldap_get_option (session->ls_conn, LDAP_OPT_ERROR_NUMBER, &rc) != LDAP_SUCCESS)
-        {
-          rc = LDAP_UNAVAILABLE;
-        }
-#else
-      rc = ld->ld_errno;
-#endif /* LDAP_OPT_ERROR_NUMBER */
-
-      log_log(LOG_DEBUG,"<== do_start_tls (ldap_start_tls failed: %s)", ldap_err2string (rc));
-      return rc;
+      log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_REQUIRE_CERT failed");
+      return LDAP_OPERATIONS_ERROR;
     }
+  }
 
-  rc = ldap_result2error (session->ls_conn, res, 1);
-  if (rc != LDAP_SUCCESS)
-    {
-      log_log(LOG_DEBUG,"<== do_start_tls (ldap_result2error failed: %s)", ldap_err2string (rc));
-      return rc;
-    }
+  if (nslcd_cfg->ldc_tls_ciphers != NULL)
+  {
+    /* set cipher suite, certificate and private key: */
+    if (ldap_set_option(NULL,LDAP_OPT_X_TLS_CIPHER_SUITE,
+                          nslcd_cfg->ldc_tls_ciphers)!=LDAP_SUCCESS)
+      {
+        log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CIPHER_SUITE failed");
+        return LDAP_OPERATIONS_ERROR;
+      }
+  }
 
-  rc = ldap_install_tls (session->ls_conn);
-#else
-  rc = ldap_start_tls_s (session->ls_conn, NULL, NULL);
-#endif /* HAVE_LDAP_START_TLS */
-
-  if (rc != LDAP_SUCCESS)
-    {
-      log_log(LOG_DEBUG,"<== do_start_tls (start TLS failed: %s)", ldap_err2string(rc));
-      return rc;
-    }
-
+  if (nslcd_cfg->ldc_tls_cert != NULL)
+  {
+    if (ldap_set_option(NULL,LDAP_OPT_X_TLS_CERTFILE,
+                        nslcd_cfg->ldc_tls_cert)!=LDAP_SUCCESS)
+      {
+        log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CERTFILE failed");
+        return LDAP_OPERATIONS_ERROR;
+      }
+  }
+  if (nslcd_cfg->ldc_tls_key != NULL)
+  {
+    if (ldap_set_option(NULL,LDAP_OPT_X_TLS_KEYFILE,
+                        nslcd_cfg->ldc_tls_key)!=LDAP_SUCCESS)
+      {
+        log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_KEYFILE failed");
+        return LDAP_OPERATIONS_ERROR;
+      }
+  }
+  log_log(LOG_DEBUG,"<== do_ssl_options");
   return LDAP_SUCCESS;
 }
 #endif
@@ -939,7 +1009,6 @@ do_start_tls (struct ldap_session * session)
 static enum nss_status
 do_open (void)
 {
-  struct ldap_config *cfg;
   int usesasl;
   char *bindarg;
   enum nss_status stat;
@@ -971,8 +1040,6 @@ do_open (void)
       return NSS_STATUS_SUCCESS;
     }
 
-  cfg = nslcd_cfg;
-
 #if LDAP_SET_REBIND_PROC_ARGS == 3
   ldap_set_rebind_proc (__session.ls_conn, do_rebind, NULL);
 #elif LDAP_SET_REBIND_PROC_ARGS == 2
@@ -980,12 +1047,12 @@ do_open (void)
 #endif
 
   ldap_set_option (__session.ls_conn, LDAP_OPT_PROTOCOL_VERSION,
-                   &cfg->ldc_version);
+                   &nslcd_cfg->ldc_version);
 
-  ldap_set_option (__session.ls_conn, LDAP_OPT_DEREF, &cfg->ldc_deref);
+  ldap_set_option (__session.ls_conn, LDAP_OPT_DEREF, &nslcd_cfg->ldc_deref);
 
   ldap_set_option (__session.ls_conn, LDAP_OPT_TIMELIMIT,
-                   &cfg->ldc_timelimit);
+                   &nslcd_cfg->ldc_timelimit);
 
 #ifdef LDAP_X_OPT_CONNECT_TIMEOUT
   /*
@@ -993,28 +1060,28 @@ do_open (void)
    * the TCP connect timeout. For want of a better value,
    * we use the bind_timelimit to control this.
    */
-  timeout = cfg->ldc_bind_timelimit * 1000;
+  timeout = nslcd_cfg->ldc_bind_timelimit * 1000;
   ldap_set_option (__session.ls_conn, LDAP_X_OPT_CONNECT_TIMEOUT, &timeout);
 #endif /* LDAP_X_OPT_CONNECT_TIMEOUT */
 
 #ifdef LDAP_OPT_NETWORK_TIMEOUT
-  tv.tv_sec = cfg->ldc_bind_timelimit;
+  tv.tv_sec = nslcd_cfg->ldc_bind_timelimit;
   tv.tv_usec = 0;
   ldap_set_option (__session.ls_conn, LDAP_OPT_NETWORK_TIMEOUT, &tv);
 #endif /* LDAP_OPT_NETWORK_TIMEOUT */
 
 #ifdef LDAP_OPT_REFERRALS
   ldap_set_option (__session.ls_conn, LDAP_OPT_REFERRALS,
-                   cfg->ldc_referrals ? LDAP_OPT_ON : LDAP_OPT_OFF);
+                   nslcd_cfg->ldc_referrals ? LDAP_OPT_ON : LDAP_OPT_OFF);
 #endif /* LDAP_OPT_REFERRALS */
 
 #ifdef LDAP_OPT_RESTART
   ldap_set_option (__session.ls_conn, LDAP_OPT_RESTART,
-                   cfg->ldc_restart ? LDAP_OPT_ON : LDAP_OPT_OFF);
+                   nslcd_cfg->ldc_restart ? LDAP_OPT_ON : LDAP_OPT_OFF);
 #endif /* LDAP_OPT_RESTART */
 
 #if defined(HAVE_LDAP_START_TLS_S) || defined(HAVE_LDAP_START_TLS)
-  if (cfg->ldc_ssl_on == SSL_START_TLS)
+  if (nslcd_cfg->ldc_ssl_on == SSL_START_TLS)
     {
       int version;
 
@@ -1031,7 +1098,7 @@ do_open (void)
         }
 
       /* set up SSL context */
-      if (do_ssl_options (cfg) != LDAP_SUCCESS)
+      if (do_ssl_options()!=LDAP_SUCCESS)
         {
           do_close ();
           log_log(LOG_DEBUG,"<== do_open (SSL setup failed)");
@@ -1056,11 +1123,11 @@ do_open (void)
     /*
      * If SSL is desired, then enable it.
      */
-  if (cfg->ldc_ssl_on == SSL_LDAPS)
+  if (nslcd_cfg->ldc_ssl_on == SSL_LDAPS)
     {
 #if defined(LDAP_OPT_X_TLS)
       int tls = LDAP_OPT_X_TLS_HARD;
-      if (ldap_set_option (__session.ls_conn, LDAP_OPT_X_TLS, &tls) !=
+      if (ldap_set_option(__session.ls_conn, LDAP_OPT_X_TLS, &tls) !=
           LDAP_SUCCESS)
         {
           do_close ();
@@ -1069,7 +1136,7 @@ do_open (void)
         }
 
       /* set up SSL context */
-      if (do_ssl_options (cfg) != LDAP_SUCCESS)
+      if (do_ssl_options()!=LDAP_SUCCESS)
         {
           do_close ();
           log_log(LOG_DEBUG,"<== do_open (SSL setup failed)");
@@ -1103,35 +1170,34 @@ do_open (void)
    * Thanks to Doug Nazar <nazard@dragoninc.on.ca> for this
    * patch.
    */
-  if (geteuid() == 0 && cfg->ldc_rootbinddn != NULL)
+  if (geteuid() == 0 && nslcd_cfg->ldc_rootbinddn != NULL)
     {
 #if defined(HAVE_LDAP_SASL_INTERACTIVE_BIND_S) && (defined(HAVE_SASL_H) || defined(HAVE_SASL_SASL_H))
-      usesasl = cfg->ldc_rootusesasl;
-      bindarg =
-        cfg->ldc_rootusesasl ? cfg->ldc_rootsaslid : cfg->ldc_rootbindpw;
+      usesasl = nslcd_cfg->ldc_rootusesasl;
+      bindarg = nslcd_cfg->ldc_rootusesasl ? nslcd_cfg->ldc_rootsaslid : nslcd_cfg->ldc_rootbindpw;
 #else
       usesasl = 0;
-      bindarg = cfg->ldc_rootbindpw;
+      bindarg = nslcd_cfg->ldc_rootbindpw;
 #endif
 
       rc = do_bind (__session.ls_conn,
-                    cfg->ldc_bind_timelimit,
-                    cfg->ldc_rootbinddn, bindarg, usesasl);
+                    nslcd_cfg->ldc_bind_timelimit,
+                    nslcd_cfg->ldc_rootbinddn, bindarg, usesasl);
     }
   else
     {
 #if defined(HAVE_LDAP_SASL_INTERACTIVE_BIND_S) && (defined(HAVE_SASL_H) || defined(HAVE_SASL_SASL_H))
-      usesasl = cfg->ldc_usesasl;
-      bindarg = cfg->ldc_usesasl ? cfg->ldc_saslid : cfg->ldc_bindpw;
+      usesasl = nslcd_cfg->ldc_usesasl;
+      bindarg = nslcd_cfg->ldc_usesasl ? nslcd_cfg->ldc_saslid : nslcd_cfg->ldc_bindpw;
 #else
       usesasl = 0;
-      bindarg = cfg->ldc_bindpw;
+      bindarg = nslcd_cfg->ldc_bindpw;
 #endif
 
       rc = do_bind (__session.ls_conn,
-                    cfg->ldc_bind_timelimit,
-                    cfg->ldc_binddn,
-                    cfg->ldc_bindpw, usesasl);
+                    nslcd_cfg->ldc_bind_timelimit,
+                    nslcd_cfg->ldc_binddn,
+                    nslcd_cfg->ldc_bindpw, usesasl);
     }
 
   if (rc != LDAP_SUCCESS)
@@ -1139,7 +1205,7 @@ do_open (void)
       /* log actual LDAP error code */
       syslog (LOG_AUTHPRIV | LOG_INFO,
               "nss_ldap: failed to bind to LDAP server %s: %s",
-              cfg->ldc_uris[__session.ls_current_uri],
+              nslcd_cfg->ldc_uris[__session.ls_current_uri],
               ldap_err2string (rc));
       stat = do_map_error (rc);
       do_close ();
@@ -1156,102 +1222,6 @@ do_open (void)
 
   return stat;
 }
-
-#if defined HAVE_LDAP_START_TLS_S || (defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_X_TLS))
-static int
-do_ssl_options (struct ldap_config * cfg)
-{
-  int rc;
-
-  log_log(LOG_DEBUG,"==> do_ssl_options");
-
-#ifdef LDAP_OPT_X_TLS_RANDOM_FILE
-  if (cfg->ldc_tls_randfile != NULL)
-    {
-      /* rand file */
-      rc = ldap_set_option (NULL, LDAP_OPT_X_TLS_RANDOM_FILE,
-                            cfg->ldc_tls_randfile);
-      if (rc != LDAP_SUCCESS)
-        {
-          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_RANDOM_FILE failed");
-          return LDAP_OPERATIONS_ERROR;
-        }
-    }
-#endif /* LDAP_OPT_X_TLS_RANDOM_FILE */
-
-  if (cfg->ldc_tls_cacertfile != NULL)
-    {
-      /* ca cert file */
-      rc = ldap_set_option (NULL, LDAP_OPT_X_TLS_CACERTFILE,
-                            cfg->ldc_tls_cacertfile);
-      if (rc != LDAP_SUCCESS)
-        {
-          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CACERTFILE failed");
-          return LDAP_OPERATIONS_ERROR;
-        }
-    }
-
-  if (cfg->ldc_tls_cacertdir != NULL)
-    {
-      /* ca cert directory */
-      rc = ldap_set_option (NULL, LDAP_OPT_X_TLS_CACERTDIR,
-                            cfg->ldc_tls_cacertdir);
-      if (rc != LDAP_SUCCESS)
-        {
-          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CACERTDIR failed");
-          return LDAP_OPERATIONS_ERROR;
-        }
-    }
-
-  /* require cert? */
-  if (cfg->ldc_tls_checkpeer > -1)
-    {
-      rc = ldap_set_option (NULL, LDAP_OPT_X_TLS_REQUIRE_CERT,
-                            &cfg->ldc_tls_checkpeer);
-      if (rc != LDAP_SUCCESS)
-        {
-          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_REQUIRE_CERT failed");
-          return LDAP_OPERATIONS_ERROR;
-        }
-    }
-
-  if (cfg->ldc_tls_ciphers != NULL)
-    {
-      /* set cipher suite, certificate and private key: */
-      rc = ldap_set_option (NULL, LDAP_OPT_X_TLS_CIPHER_SUITE,
-                            cfg->ldc_tls_ciphers);
-      if (rc != LDAP_SUCCESS)
-        {
-          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CIPHER_SUITE failed");
-          return LDAP_OPERATIONS_ERROR;
-        }
-    }
-
-  if (cfg->ldc_tls_cert != NULL)
-    {
-      rc = ldap_set_option (NULL, LDAP_OPT_X_TLS_CERTFILE, cfg->ldc_tls_cert);
-      if (rc != LDAP_SUCCESS)
-        {
-          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_CERTFILE failed");
-          return LDAP_OPERATIONS_ERROR;
-        }
-    }
-
-  if (cfg->ldc_tls_key != NULL)
-    {
-      rc = ldap_set_option (NULL, LDAP_OPT_X_TLS_KEYFILE, cfg->ldc_tls_key);
-      if (rc != LDAP_SUCCESS)
-        {
-          log_log(LOG_DEBUG,"<== do_ssl_options: Setting of LDAP_OPT_X_TLS_KEYFILE failed");
-          return LDAP_OPERATIONS_ERROR;
-        }
-    }
-
-  log_log(LOG_DEBUG,"<== do_ssl_options");
-
-  return LDAP_SUCCESS;
-}
-#endif
 
 /*
  * This function initializes an enumeration context, acquiring
@@ -3165,12 +3135,12 @@ _nss_ldap_map_get (enum ldap_map_selector sel,
 
   NSS_LDAP_DATUM_ZERO (&val);
 
-  stat = _nss_ldap_db_get (map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
+  stat = dict_get (map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
   if (stat == NSS_STATUS_NOTFOUND && sel != LM_NONE)
     {
       map = nslcd_cfg->ldc_maps[LM_NONE][type];
       assert (map != NULL);
-      stat = _nss_ldap_db_get (map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
+      stat = dict_get (map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
     }
 
   if (stat == NSS_STATUS_SUCCESS)

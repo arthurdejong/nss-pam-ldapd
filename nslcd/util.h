@@ -44,21 +44,13 @@ enum nss_status _nss_ldap_dn2uid (const char *dn,
                              int *pIsNestedGroup, LDAPMessage ** pRes);
 
 
-#define NSS_LDAP_CONFIG_BUFSIZ          4096
-
-/*
- * Flags that are exposed via _nss_ldap_test_config_flag()
- */
-#define NSS_LDAP_FLAGS_INITGROUPS_BACKLINK      0x0001
-#define NSS_LDAP_FLAGS_PAGED_RESULTS            0x0002
-#define NSS_LDAP_FLAGS_RFC2307BIS               0x0004
-#define NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT   0x0008
-
 /*
  * Escape '*' in a string for use as a filter
  */
 
 int _nss_ldap_escape_string(const char *str,char *buf,size_t buflen);
+
+/* Dictionary functions. */
 
 struct ldap_datum
 {
@@ -73,17 +65,24 @@ struct ldap_datum
 
 #define NSS_LDAP_DB_NORMALIZE_CASE      0x1
 
-enum nss_status _nss_ldap_db_put (void *db,
-                             unsigned flags,
-                             const struct ldap_datum * key,
-                             const struct ldap_datum * value);
-enum nss_status _nss_ldap_db_get (void *db,
-                             unsigned flags,
-                             const struct ldap_datum * key,
-                             struct ldap_datum * value);
+struct ldap_dictionary
+{
+  struct ldap_datum key;
+  struct ldap_datum value;
+  struct ldap_dictionary *next;
+};
 
-enum nss_status
-_nss_ldap_add_uri (struct ldap_config *result, const char *uri,
-                   char **buffer, size_t *buflen);
+struct ldap_dictionary *dict_new(void);
+enum nss_status dict_put(struct ldap_dictionary *db,
+                         unsigned flags,
+                         const struct ldap_datum *key,
+                         const struct ldap_datum *value);
+enum nss_status dict_get(struct ldap_dictionary *db,
+                         unsigned flags,
+                         const struct ldap_datum *key,
+                         struct ldap_datum *value);
+
+
+
 
 #endif /* _LDAP_NSS_LDAP_UTIL_H */

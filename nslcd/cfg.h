@@ -152,12 +152,18 @@ extern struct ldap_config *nslcd_cfg;
  * ** implemented
  */
 
-enum nss_status _nss_ldap_readconfig(struct ldap_config **result,char **buffer,size_t *buflen);
-enum nss_status _nss_ldap_validateconfig(struct ldap_config *config);
+/*
+ * Flags that are exposed via _nss_ldap_test_config_flag()
+ */
+#define NSS_LDAP_FLAGS_INITGROUPS_BACKLINK      0x0001
+#define NSS_LDAP_FLAGS_PAGED_RESULTS            0x0002
+#define NSS_LDAP_FLAGS_RFC2307BIS               0x0004
+#define NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT   0x0008
 
 int _nss_ldap_test_config_flag(unsigned int flag);
-int _nss_ldap_test_initgroups_ignoreuser(const char *user);
 
 int cfg_init(void);
+
+enum nss_status _nss_ldap_add_uri (struct ldap_config *result, const char *uri,char **buffer, size_t *buflen);
 
 #endif /* _CFG_H */

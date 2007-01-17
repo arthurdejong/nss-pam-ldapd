@@ -48,6 +48,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "cfg.h"
 
 struct name_list
 {
@@ -998,6 +999,20 @@ static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroup
   return stat;
 }
 
+static int _nss_ldap_test_initgroups_ignoreuser(const char *user)
+{
+  char **p;
+  if (nslcd_cfg == NULL)
+    return 0;
+  if (nslcd_cfg->ldc_initgroups_ignoreusers == NULL)
+    return 0;
+  for (p = nslcd_cfg->ldc_initgroups_ignoreusers; *p != NULL; p++)
+  {
+    if (strcmp (*p, user) == 0)
+      return 1;
+  }
+  return 0;
+}
 
 static enum nss_status group_bymember(const char *user, long int *start,
                           long int *size, long int limit,
