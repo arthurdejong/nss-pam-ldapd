@@ -346,11 +346,11 @@ static enum nss_status _nss_ldap_map_put(
 }
 
 static enum nss_status do_parse_map_statement(
-                struct ldap_config *cfg,const char *statement,
+                struct ldap_config *cfg,char *statement,
                 enum ldap_map_type type)
 {
-  char *key, *val;
-  enum ldap_map_selector sel = LM_NONE;
+  char *key,*val;
+  enum ldap_map_selector sel=LM_NONE;
   char *p;
   key=(char *)statement;
   val=key;
@@ -363,7 +363,7 @@ static enum nss_status do_parse_map_statement(
   if (p!=NULL)
   {
     *p='\0';
-    sel=_nss_ldap_str2selector (key);
+    sel=_nss_ldap_str2selector(key);
     key=++p;
   }
   return _nss_ldap_map_put(cfg,sel,type,key,val);
