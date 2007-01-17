@@ -4,8 +4,8 @@
    forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
-   Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 West Consulting
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -47,36 +47,12 @@ enum nss_status _nss_ldap_dn2uid (const char *dn,
 #define NSS_LDAP_CONFIG_BUFSIZ          4096
 
 /*
- * support separate naming contexts for each map
- * eventually this will support the syntax defined in
- * the DUAConfigProfile searchDescriptor attribute
- */
-#define NSS_LDAP_KEY_NSS_BASE_PREFIX            "nss_base_"
-#define NSS_LDAP_KEY_NSS_BASE_PREFIX_LEN        ( sizeof(NSS_LDAP_KEY_NSS_BASE_PREFIX) - 1 )
-
-/*
  * Flags that are exposed via _nss_ldap_test_config_flag()
  */
 #define NSS_LDAP_FLAGS_INITGROUPS_BACKLINK      0x0001
 #define NSS_LDAP_FLAGS_PAGED_RESULTS            0x0002
 #define NSS_LDAP_FLAGS_RFC2307BIS               0x0004
 #define NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT   0x0008
-
-/*
- * There are a number of means of obtaining configuration information.
- *
- * (a) DHCP (Cf draft-hedstrom-dhc-ldap-00.txt)
- * (b) a configuration file (/etc/ldap.conf) **
- * (c) a coldstart file & subsequent referrals from the LDAP server
- * (d) a custom LDAP bind protocol
- * (e) DNS **
- *
- * This should be opaque to the rest of the library.
- * ** implemented
- */
-
-enum nss_status _nss_ldap_readconfig (struct ldap_config ** result, char **buffer, size_t *buflen);
-enum nss_status _nss_ldap_validateconfig (struct ldap_config *config);
 
 /*
  * Escape '*' in a string for use as a filter

@@ -45,6 +45,7 @@
 #include <syslog.h>
 
 #include <nss.h>
+#include <ldap.h>
 
 #include "ldap-schema.h"
 
@@ -109,24 +110,6 @@ enum ldap_shadow_selector
   LS_OTHER_SHADOW
 };
 
-#ifndef UF_DONT_EXPIRE_PASSWD
-#define UF_DONT_EXPIRE_PASSWD 0x10000
-#endif
-
-enum ldap_ssl_options
-{
-  SSL_OFF,
-  SSL_LDAPS,
-  SSL_START_TLS
-};
-
-enum ldap_reconnect_policy
-{
-  LP_RECONNECT_HARD_INIT,
-  LP_RECONNECT_HARD_OPEN,
-  LP_RECONNECT_SOFT
-};
-
 /*
  * POSIX profile information (not used yet)
  * see draft-joslin-config-schema-00.txt
@@ -143,105 +126,7 @@ struct ldap_service_search_descriptor
   struct ldap_service_search_descriptor *lsd_next;
 };
 
-/* maximum number of URIs */
-#define NSS_LDAP_CONFIG_URI_MAX         31
-
-/*
- * linked list of configurations pointing to LDAP servers. The first
- * which has a successful ldap_open() is used. Conceivably the rest
- * could be used after a failed or exhausted search.
- */
-struct ldap_config
-{
-  /* NULL terminated list of URIs */
-  char *ldc_uris[NSS_LDAP_CONFIG_URI_MAX + 1];
-  /* default port, if not specified in URI */
-  int ldc_port;
-  /* base DN, eg. dc=gnu,dc=org */
-  char *ldc_base;
-  /* scope for searches */
-  int ldc_scope;
-  /* dereference aliases/links */
-  int ldc_deref;
-  /* bind DN */
-  char *ldc_binddn;
-  /* bind cred */
-  char *ldc_bindpw;
-  /* sasl auth id */
-  char *ldc_saslid;
-  /* do we use sasl when binding? */
-  int ldc_usesasl;
-  /* shadow bind DN */
-  char *ldc_rootbinddn;
-  /* shadow bind cred */
-  char *ldc_rootbindpw;
-  /* shadow sasl auth id */
-  char *ldc_rootsaslid;
-  /* do we use sasl for root? */
-  int ldc_rootusesasl;
-  /* protocol version */
-  int ldc_version;
-  /* search timelimit */
-  int ldc_timelimit;
-  /* bind timelimit */
-  int ldc_bind_timelimit;
-  /* SSL enabled */
-  enum ldap_ssl_options ldc_ssl_on;
-  /* SSL certificate path */
-  char *ldc_sslpath;
-  /* Chase referrals */
-  int ldc_referrals;
-  int ldc_restart;
-  /* naming contexts */
-  struct ldap_service_search_descriptor *ldc_sds[LM_NONE];
-  /* tls check peer */
-  int ldc_tls_checkpeer;
-  /* tls ca certificate file */
-  char *ldc_tls_cacertfile;
-  /* tls ca certificate dir */
-  char *ldc_tls_cacertdir;
-  /* tls ciphersuite */
-  char *ldc_tls_ciphers;
-  /* tls certificate */
-  char *ldc_tls_cert;
-  /* tls key */
-  char *ldc_tls_key;
-  /* tls randfile */
-  char *ldc_tls_randfile;
-  /* idle timeout */
-  time_t ldc_idle_timelimit;
-  /* reconnect policy */
-  enum ldap_reconnect_policy ldc_reconnect_pol;
-  int ldc_reconnect_tries;
-  int ldc_reconnect_sleeptime;
-  int ldc_reconnect_maxsleeptime;
-  int ldc_reconnect_maxconntries;
-  /* sasl security */
-  char *ldc_sasl_secprops;
-  /* DNS SRV RR domain */
-  char *ldc_srv_domain;
-  /* directory for debug files */
-  char *ldc_logdir;
-  /* LDAP debug level */
-  int ldc_debug;
-  int ldc_pagesize;
-#ifdef CONFIGURE_KRB5_CCNAME
-  /* krb5 ccache name */
-  char *ldc_krb5_ccname;
-#endif /* CONFIGURE_KRB5_CCNAME */
-  /* attribute/objectclass maps relative to this config */
-  void *ldc_maps[LM_NONE + 1][6]; /* must match MAP_MAX */
-  /* is userPassword "userPassword" or not? ie. do we need {crypt} to be stripped */
-  enum ldap_userpassword_selector ldc_password_type;
-  /* Use active directory time offsets? */
-  enum ldap_shadow_selector ldc_shadow_type;
-  /* attribute table for ldap search requensts */
-  const char **ldc_attrtab[LM_NONE + 1];
-  unsigned int ldc_flags;
-  /* last modification time */
-  time_t ldc_mtime;
-  char **ldc_initgroups_ignoreusers;
-};
+#include "cfg.h"
 
 #if defined(__GLIBC__) && __GLIBC_MINOR__ > 1
 #else
@@ -263,8 +148,6 @@ struct ldap_session
 {
   /* the connection */
   LDAP *ls_conn;
-  /* pointer into config table */
-  struct ldap_config *ls_config;
   /* timestamp of last activity */
   time_t ls_timestamp;
   /* has session been connected? */
@@ -446,7 +329,6 @@ LDAPMessage *_nss_ldap_first_entry (LDAPMessage * res);
 LDAPMessage *_nss_ldap_next_entry (LDAPMessage * res);
 char *_nss_ldap_first_attribute (LDAPMessage * entry, BerElement **berptr);
 char *_nss_ldap_next_attribute (LDAPMessage * entry, BerElement *ber);
-const char **_nss_ldap_get_attributes (enum ldap_map_selector sel);
 
 /*
  * Synchronous search cover (caller acquires lock).
@@ -523,8 +405,6 @@ enum nss_status _nss_ldap_assign_attrval (LDAPMessage * e,      /* IN */
                                      size_t * buflen /* IN/OUT */ );
 
 
-const char *_nss_ldap_locate_userpassword (char **vals);
-
 enum nss_status _nss_ldap_assign_userpassword (LDAPMessage * e, /* IN */
                                           const char *attr,     /* IN */
                                           char **valptr,        /* OUT */
@@ -538,15 +418,9 @@ int has_objectclass(LDAPMessage *entry,const char *objectclass);
 int _nss_ldap_shadow_date(const char *val);
 void _nss_ldap_shadow_handle_flag(struct spwd *sp);
 
-enum nss_status _nss_ldap_map_put (struct ldap_config * config,
-                              enum ldap_map_selector sel,
-                              enum ldap_map_type map,
-                              const char *key, const char *value);
-
-enum nss_status _nss_ldap_map_get (struct ldap_config * config,
-                              enum ldap_map_selector sel,
-                              enum ldap_map_type map,
-                              const char *key, const char **value);
+enum nss_status _nss_ldap_map_get(enum ldap_map_selector sel,
+                                  enum ldap_map_type map,
+                                  const char *key, const char **value);
 
 const char *_nss_ldap_map_at (enum ldap_map_selector sel, const char *pChar2);
 const char *_nss_ldap_unmap_at (enum ldap_map_selector sel, const char *attribute);
@@ -554,15 +428,6 @@ const char *_nss_ldap_unmap_at (enum ldap_map_selector sel, const char *attribut
 const char *_nss_ldap_map_oc (enum ldap_map_selector sel, const char *pChar);
 const char *_nss_ldap_unmap_oc (enum ldap_map_selector sel, const char *pChar);
 
-const char *_nss_ldap_map_ov (const char *pChar);
-const char *_nss_ldap_map_df (const char *pChar);
-
-enum nss_status _nss_ldap_proxy_bind (const char *user, const char *password);
-
 enum nss_status _nss_ldap_init (void);
-void _nss_ldap_close (void);
-
-int _nss_ldap_test_config_flag (unsigned int flag);
-int _nss_ldap_test_initgroups_ignoreuser (const char *user);
 
 #endif /* _LDAP_NSS_LDAP_LDAP_NSS_H */

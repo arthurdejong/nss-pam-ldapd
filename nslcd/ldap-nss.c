@@ -98,14 +98,12 @@
 #define LDAP_MSG_RECEIVED       0x02
 #endif
 
-#ifdef HAVE_LDAP_LD_FREE
 #if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
 extern int ldap_ld_free (LDAP * ld, int close, LDAPControl **,
                          LDAPControl **);
 #else
 extern int ldap_ld_free (LDAP * ld, int close);
 #endif /* OPENLDAP 2.x */
-#endif /* HAVE_LDAP_LD_FREE */
 
 NSS_LDAP_DEFINE_LOCK (__lock);
 
@@ -114,13 +112,6 @@ NSS_LDAP_DEFINE_LOCK (__lock);
  */
 #define LS_INIT(state)  do { state.ls_type = LS_TYPE_INDEX; state.ls_retry = 0; state.ls_info.ls_index = -1; } while (0)
 
-/*
- * the configuration is read by the first call to do_open().
- * Pointers to elements of the list are passed around but should not
- * be freed.
- */
-static char __configbuf[NSS_LDAP_CONFIG_BUFSIZ];
-static struct ldap_config *__config = NULL;
 
 #ifdef HAVE_SIGACTION
 static struct sigaction __stored_handler;
@@ -129,10 +120,14 @@ static int __sigaction_retval = -1;
 static void (*__sigpipe_handler) (int) = SIG_DFL;
 #endif /* HAVE_SIGACTION */
 
+static const char *_nss_ldap_map_ov (const char *pChar);
+static const char *_nss_ldap_map_df (const char *pChar);
+static const char *_nss_ldap_locate_userpassword (char **vals);
+
 /*
  * Global LDAP session.
  */
-static struct ldap_session __session = { NULL, NULL, 0, LS_UNINITIALIZED };
+static struct ldap_session __session = { NULL, 0, LS_UNINITIALIZED };
 
 #ifdef LBER_OPT_LOG_PRINT_FILE
 static FILE *__debugfile;
@@ -156,8 +151,8 @@ static void do_set_sockopts (void);
  * TLS routines: set global SSL session options.
  */
 #if defined(HAVE_LDAP_START_TLS_S) || defined(HAVE_LDAP_START_TLS) || (defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_X_TLS))
-static int do_ssl_options (struct ldap_config * cfg);
-static int do_start_tls (struct ldap_session * session);
+static int do_ssl_options(struct ldap_config *cfg);
+static int do_start_tls(struct ldap_session *session);
 #endif
 
 /*
@@ -323,11 +318,11 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
       int retval;
 #endif /* CONFIGURE_KRB5_CCNAME */
 
-      if (__config->ldc_sasl_secprops != NULL)
+      if (nslcd_cfg->ldc_sasl_secprops!=NULL)
         {
           rc =
             ldap_set_option (ld, LDAP_OPT_X_SASL_SECPROPS,
-                             (void *) __config->ldc_sasl_secprops);
+                             (void *)nslcd_cfg->ldc_sasl_secprops);
           if (rc != LDAP_SUCCESS)
             {
               log_log(LOG_DEBUG,"do_bind: unable to set SASL security properties");
@@ -338,9 +333,9 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
 #ifdef CONFIGURE_KRB5_CCNAME
       /* Set default Kerberos ticket cache for SASL-GSSAPI */
       /* There are probably race conditions here XXX */
-      if (__config->ldc_krb5_ccname != NULL)
+      if (nslcd_cfg->ldc_krb5_ccname != NULL)
         {
-          ccname = __config->ldc_krb5_ccname;
+          ccname = nslcd_cfg->ldc_krb5_ccname;
 #ifdef CONFIGURE_KRB5_CCNAME_ENV
           oldccname = getenv ("KRB5CCNAME");
           if (oldccname != NULL)
@@ -416,45 +411,45 @@ do_rebind (LDAP * ld, LDAP_CONST char *url, int request, ber_int_t msgid)
   int timelimit;
   int with_sasl = 0;
 
-  if (geteuid () == 0 && __session.ls_config->ldc_rootbinddn)
+  if (geteuid () == 0 && nslcd_cfg->ldc_rootbinddn)
     {
-      who = __session.ls_config->ldc_rootbinddn;
+      who = nslcd_cfg->ldc_rootbinddn;
 #if defined(HAVE_LDAP_SASL_INTERACTIVE_BIND_S) && (defined(HAVE_SASL_H) || defined(HAVE_SASL_SASL_H))
-      with_sasl = __session.ls_config->ldc_rootusesasl;
+      with_sasl = nslcd_cfg->ldc_rootusesasl;
       if (with_sasl)
         {
-          cred = __session.ls_config->ldc_rootsaslid;
+          cred = nslcd_cfg->ldc_rootsaslid;
         }
       else
         {
 #endif
-          cred = __session.ls_config->ldc_rootbindpw;
+          cred = nslcd_cfg->ldc_rootbindpw;
 #if defined(HAVE_LDAP_SASL_INTERACTIVE_BIND_S) && (defined(HAVE_SASL_H) || defined(HAVE_SASL_SASL_H))
         }
 #endif
     }
   else
     {
-      who = __session.ls_config->ldc_binddn;
+      who = nslcd_cfg->ldc_binddn;
 #if defined(HAVE_LDAP_SASL_INTERACTIVE_BIND_S) && (defined(HAVE_SASL_H) || defined(HAVE_SASL_SASL_H))
-      with_sasl = __session.ls_config->ldc_usesasl;
+      with_sasl = nslcd_cfg->ldc_usesasl;
       if (with_sasl)
         {
-          cred = __session.ls_config->ldc_saslid;
+          cred = nslcd_cfg->ldc_saslid;
         }
       else
         {
 #endif
-          cred = __session.ls_config->ldc_bindpw;
+          cred = nslcd_cfg->ldc_bindpw;
 #if defined(HAVE_LDAP_SASL_INTERACTIVE_BIND_S) && (defined(HAVE_SASL_H) || defined(HAVE_SASL_SASL_H))
         }
 #endif
     }
 
-  timelimit = __session.ls_config->ldc_bind_timelimit;
+  timelimit = nslcd_cfg->ldc_bind_timelimit;
 
 #ifdef HAVE_LDAP_START_TLS_S
-  if (__session.ls_config->ldc_ssl_on == SSL_START_TLS)
+  if (nslcd_cfg->ldc_ssl_on == SSL_START_TLS)
     {
       int version;
 
@@ -503,18 +498,18 @@ do_rebind (LDAP * ld, char **whop, char **credp, int *methodp, int freeit)
     }
 
   *whop = *credp = NULL;
-  if (geteuid () == 0 && __session.ls_config->ldc_rootbinddn)
+  if (geteuid () == 0 && nslcd_cfg->ldc_rootbinddn)
     {
-      *whop = strdup (__session.ls_config->ldc_rootbinddn);
-      if (__session.ls_config->ldc_rootbindpw != NULL)
-        *credp = strdup (__session.ls_config->ldc_rootbindpw);
+      *whop = strdup (nslcd_cfg->ldc_rootbinddn);
+      if (nslcd_cfg->ldc_rootbindpw != NULL)
+        *credp = strdup (nslcd_cfg->ldc_rootbindpw);
     }
   else
     {
-      if (__session.ls_config->ldc_binddn != NULL)
-        *whop = strdup (__session.ls_config->ldc_binddn);
-      if (__session.ls_config->ldc_bindpw != NULL)
-        *credp = strdup (__session.ls_config->ldc_bindpw);
+      if (nslcd_cfg->ldc_binddn != NULL)
+        *whop = strdup (nslcd_cfg->ldc_binddn);
+      if (nslcd_cfg->ldc_bindpw != NULL)
+        *credp = strdup (nslcd_cfg->ldc_bindpw);
     }
 
   *methodp = LDAP_AUTH_SIMPLE;
@@ -619,8 +614,6 @@ do_set_sockopts (void)
   if (ldap_get_option (__session.ls_conn, LDAP_OPT_DESC, &sd) == 0)
     {
       int off = 0;
-      socklen_t socknamelen = sizeof (struct sockaddr_storage);
-      socklen_t peernamelen = sizeof (struct sockaddr_storage);
 
       (void) setsockopt (sd, SOL_SOCKET, SO_KEEPALIVE, (void *) &off,
                          sizeof (off));
@@ -740,17 +733,13 @@ do_init_session (LDAP ** ld, const char *uri, int defport)
 static enum nss_status
 do_init (void)
 {
-  struct ldap_config *cfg;
   enum nss_status stat;
 
   log_log(LOG_DEBUG,"==> do_init");
 
-  if (_nss_ldap_validateconfig (__config) != NSS_STATUS_SUCCESS)
-    {
-      do_close ();
-      __config = NULL;
-      __session.ls_current_uri = 0;
-    }
+  /* Initialize schema and LDAP handle (but do not connect) */
+  cfg_init();
+  /* FIXME: if config was reloaded, do_close() and set __session.ls_current_uri=0 */
 
   if (__session.ls_state == LS_CONNECTED_TO_DSA)
     {
@@ -765,13 +754,13 @@ do_init (void)
        */
 
       assert (__session.ls_conn != NULL);
-      assert (__session.ls_config != NULL);
+      assert (nslcd_cfg != NULL);
 
-      if (__session.ls_config->ldc_idle_timelimit)
+      if (nslcd_cfg->ldc_idle_timelimit)
         {
           time (&current_time);
           if ((__session.ls_timestamp +
-               __session.ls_config->ldc_idle_timelimit) < current_time)
+               nslcd_cfg->ldc_idle_timelimit) < current_time)
             {
               log_log(LOG_DEBUG,"idle_timelimit reached");
               do_close ();
@@ -793,40 +782,18 @@ do_init (void)
   __session.ls_timestamp = 0;
   __session.ls_state = LS_UNINITIALIZED;
 
-  /* Initialize schema and LDAP handle (but do not connect) */
-  if (__config == NULL)
-    {
-      char *configbufp = __configbuf;
-      size_t configbuflen = sizeof (__configbuf);
-
-      stat = _nss_ldap_readconfig (&__config, &configbufp, &configbuflen);
-      if (stat == NSS_STATUS_NOTFOUND)
-        {
-          /* Config was read but no host information specified; try DNS */
-          stat = _nss_ldap_mergeconfigfromdns (__config, &configbufp, &configbuflen);
-        }
-
-      if (stat != NSS_STATUS_SUCCESS)
-        {
-          log_log(LOG_DEBUG,"<== do_init (failed to read config)");
-          return NSS_STATUS_UNAVAIL;
-        }
-    }
-
-  cfg = __config;
-
-  _nss_ldap_init_attributes (cfg->ldc_attrtab);
+  _nss_ldap_init_attributes (nslcd_cfg->ldc_attrtab);
   _nss_ldap_init_filters ();
 
 #ifdef HAVE_LDAP_SET_OPTION
-  if (cfg->ldc_debug)
+  if (nslcd_cfg->ldc_debug)
     {
 #ifdef LBER_OPT_LOG_PRINT_FILE
-      if (cfg->ldc_logdir && !__debugfile)
+      if (nslcd_cfg->ldc_logdir && !__debugfile)
         {
           char namebuf[PATH_MAX];
 
-          snprintf (namebuf, sizeof (namebuf), "%s/ldap.%d", cfg->ldc_logdir,
+          snprintf (namebuf, sizeof (namebuf), "%s/ldap.%d", nslcd_cfg->ldc_logdir,
                     (int) getpid ());
           __debugfile = fopen (namebuf, "a");
 
@@ -837,10 +804,10 @@ do_init (void)
         }
 #endif /* LBER_OPT_LOG_PRINT_FILE */
 #ifdef LBER_OPT_DEBUG_LEVEL
-      if (cfg->ldc_debug)
+      if (nslcd_cfg->ldc_debug)
         {
-          ber_set_option (NULL, LBER_OPT_DEBUG_LEVEL, &cfg->ldc_debug);
-          ldap_set_option (NULL, LDAP_OPT_DEBUG_LEVEL, &cfg->ldc_debug);
+          ber_set_option (NULL, LBER_OPT_DEBUG_LEVEL, &nslcd_cfg->ldc_debug);
+          ldap_set_option (NULL, LDAP_OPT_DEBUG_LEVEL, &nslcd_cfg->ldc_debug);
         }
 #endif /* LBER_OPT_DEBUG_LEVEL */
     }
@@ -850,11 +817,11 @@ do_init (void)
   /*
    * Initialize the SSL library.
    */
-  if (cfg->ldc_ssl_on == SSL_LDAPS)
+  if (nslcd_cfg->ldc_ssl_on == SSL_LDAPS)
     {
       int rc = 0;
       if (__ssl_initialized == 0
-          && (rc = ldapssl_client_init (cfg->ldc_sslpath, NULL)) != LDAP_SUCCESS)
+          && (rc = ldapssl_client_init (nslcd_cfg->ldc_sslpath, NULL)) != LDAP_SUCCESS)
         {
           log_log(LOG_DEBUG,"<== do_init (ldapssl_client_init failed with rc = %d)", rc);
           return NSS_STATUS_UNAVAIL;
@@ -866,18 +833,17 @@ do_init (void)
   __session.ls_conn = NULL;
 
   assert (__session.ls_current_uri <= NSS_LDAP_CONFIG_URI_MAX);
-  assert (cfg->ldc_uris[__session.ls_current_uri] != NULL);
+  assert (nslcd_cfg->ldc_uris[__session.ls_current_uri] != NULL);
 
   stat = do_init_session (&__session.ls_conn,
-                          cfg->ldc_uris[__session.ls_current_uri],
-                          cfg->ldc_port);
+                          nslcd_cfg->ldc_uris[__session.ls_current_uri],
+                          nslcd_cfg->ldc_port);
   if (stat != NSS_STATUS_SUCCESS)
     {
       log_log(LOG_DEBUG,"<== do_init (failed to initialize LDAP session)");
       return stat;
     }
 
-  __session.ls_config = cfg;
   __session.ls_state = LS_INITIALIZED;
 
   log_log(LOG_DEBUG,"<== do_init (initialized session)");
@@ -892,15 +858,6 @@ enum nss_status
 _nss_ldap_init (void)
 {
   return do_init ();
-}
-
-/*
- * A simple alias around do_close().
- */
-void
-_nss_ldap_close (void)
-{
-  do_close ();
 }
 
 #if defined(HAVE_LDAP_START_TLS_S) || defined(HAVE_LDAP_START_TLS)
@@ -1005,7 +962,7 @@ do_open (void)
     }
 
   assert (__session.ls_conn != NULL);
-  assert (__session.ls_config != NULL);
+  assert (nslcd_cfg != NULL);
   assert (__session.ls_state != LS_UNINITIALIZED);
 
   if (__session.ls_state == LS_CONNECTED_TO_DSA)
@@ -1014,7 +971,7 @@ do_open (void)
       return NSS_STATUS_SUCCESS;
     }
 
-  cfg = __session.ls_config;
+  cfg = nslcd_cfg;
 
 #if LDAP_SET_REBIND_PROC_ARGS == 3
   ldap_set_rebind_proc (__session.ls_conn, do_rebind, NULL);
@@ -1330,13 +1287,13 @@ do_result (struct ent_context * ctx, int all)
 
   log_log(LOG_DEBUG,"==> do_result");
 
-  if (__session.ls_config->ldc_timelimit == LDAP_NO_LIMIT)
+  if (nslcd_cfg->ldc_timelimit == LDAP_NO_LIMIT)
     {
       tvp = NULL;
     }
   else
     {
-      tv.tv_sec = __session.ls_config->ldc_timelimit;
+      tv.tv_sec = nslcd_cfg->ldc_timelimit;
       tv.tv_usec = 0;
       tvp = &tv;
     }
@@ -1760,18 +1717,18 @@ do_with_reconnect (const char *base, int scope,
   log_log(LOG_DEBUG,"==> do_with_reconnect");
 
   /* caller must successfully call do_init() first */
-  assert (__session.ls_config != NULL);
+  assert (nslcd_cfg != NULL);
 
-  maxtries = __session.ls_config->ldc_reconnect_maxconntries +
-             __session.ls_config->ldc_reconnect_tries;
+  maxtries = nslcd_cfg->ldc_reconnect_maxconntries +
+             nslcd_cfg->ldc_reconnect_tries;
 
   while (stat == NSS_STATUS_UNAVAIL && hard && tries < maxtries)
     {
-      if (tries >= __session.ls_config->ldc_reconnect_maxconntries)
+      if (tries >= nslcd_cfg->ldc_reconnect_maxconntries)
         {
           if (backoff == 0)
-            backoff = __session.ls_config->ldc_reconnect_sleeptime;
-          else if (backoff < __session.ls_config->ldc_reconnect_maxsleeptime)
+            backoff = nslcd_cfg->ldc_reconnect_sleeptime;
+          else if (backoff < nslcd_cfg->ldc_reconnect_maxsleeptime)
             backoff *= 2;
 
           syslog (LOG_AUTHPRIV | LOG_INFO,
@@ -1801,14 +1758,14 @@ do_with_reconnect (const char *base, int scope,
           log++;
 
           /* test in case config file could not be read */
-          if (__session.ls_config != NULL)
+          if (nslcd_cfg != NULL)
             {
-              assert (__session.ls_config->
+              assert (nslcd_cfg->
                       ldc_uris[__session.ls_current_uri] != NULL);
 
               __session.ls_current_uri++;
 
-              if (__session.ls_config->ldc_uris[__session.ls_current_uri] ==
+              if (nslcd_cfg->ldc_uris[__session.ls_current_uri] ==
                   NULL)
                 __session.ls_current_uri = 0;
             }
@@ -1823,7 +1780,7 @@ do_with_reconnect (const char *base, int scope,
            * If a soft reconnect policy is specified, then do not
            * try to reconnect to the LDAP server if it is down.
            */
-          if (__session.ls_config->ldc_reconnect_pol == LP_RECONNECT_SOFT)
+          if (nslcd_cfg->ldc_reconnect_pol == LP_RECONNECT_SOFT)
             hard = 0;
 
           /*
@@ -1856,7 +1813,7 @@ do_with_reconnect (const char *base, int scope,
     case NSS_STATUS_SUCCESS:
       if (log)
         {
-          char *uri = __session.ls_config->ldc_uris[__session.ls_current_uri];
+          char *uri = nslcd_cfg->ldc_uris[__session.ls_current_uri];
 
           if (uri == NULL)
             uri = "(null)";
@@ -1896,13 +1853,13 @@ do_search_s (const char *base, int scope,
   ldap_set_option (__session.ls_conn, LDAP_OPT_SIZELIMIT,
                    (void *) &sizelimit);
 
-  if (__session.ls_config->ldc_timelimit == LDAP_NO_LIMIT)
+  if (nslcd_cfg->ldc_timelimit == LDAP_NO_LIMIT)
     {
       tvp = NULL;
     }
   else
     {
-      tv.tv_sec = __session.ls_config->ldc_timelimit;
+      tv.tv_sec = nslcd_cfg->ldc_timelimit;
       tv.tv_usec = 0;
       tvp = &tv;
     }
@@ -1934,7 +1891,7 @@ do_search (const char *base, int scope,
   if (_nss_ldap_test_config_flag (NSS_LDAP_FLAGS_PAGED_RESULTS))
     {
       rc = ldap_create_page_control (__session.ls_conn,
-                                     __session.ls_config->ldc_pagesize,
+                                     nslcd_cfg->ldc_pagesize,
                                      NULL, 0, &serverCtrls[0]);
       if (rc != LDAP_SUCCESS)
         return rc;
@@ -2257,8 +2214,8 @@ enum nss_status _nss_ldap_search_s(
     return stat;
   }
   /* Set some reasonable defaults. */
-  base=__session.ls_config->ldc_base;
-  scope=__session.ls_config->ldc_scope;
+  base=nslcd_cfg->ldc_base;
+  scope=nslcd_cfg->ldc_scope;
   attrs=NULL;
   /* if args includes a base, use that */
   if (args!=NULL&&args->la_base!=NULL)
@@ -2269,14 +2226,14 @@ enum nss_status _nss_ldap_search_s(
   if (sel<LM_NONE)
   {
     /* get search descriptor */
-    sd=__session.ls_config->ldc_sds[sel];
+    sd=nslcd_cfg->ldc_sds[sel];
 next:
     if (sd!=NULL)
     {
       if (sd->lsd_base[strlen(sd->lsd_base)-1]==',')
       {
         /* is relative */
-        snprintf(sdBase,sizeof(sdBase),"%s%s", sd->lsd_base,__session.ls_config->ldc_base);
+        snprintf(sdBase,sizeof(sdBase),"%s%s", sd->lsd_base,nslcd_cfg->ldc_base);
         base=sdBase;
       }
       else
@@ -2288,7 +2245,7 @@ next:
         scope=sd->lsd_scope;
       }
     }
-    attrs=__session.ls_config->ldc_attrtab[sel];
+    attrs=nslcd_cfg->ldc_attrtab[sel];
   }
   /* this may allocate dynamicFilterBuf */
   stat=do_filter(args,filterprot,sd,filterBuf,sizeof(filterBuf),&dynamicFilterBuf,&filter);
@@ -2346,8 +2303,8 @@ _nss_ldap_search (const struct ldap_args * args,
     }
 
   /* Set some reasonable defaults. */
-  base = __session.ls_config->ldc_base;
-  scope = __session.ls_config->ldc_scope;
+  base = nslcd_cfg->ldc_base;
+  scope = nslcd_cfg->ldc_scope;
   attrs = NULL;
 
   if (args != NULL && args->la_base != NULL)
@@ -2370,7 +2327,7 @@ _nss_ldap_search (const struct ldap_args * args,
         }
       else
         {
-          sd = __session.ls_config->ldc_sds[sel];
+          sd = nslcd_cfg->ldc_sds[sel];
         }
 
       *csd = sd;
@@ -2382,7 +2339,7 @@ _nss_ldap_search (const struct ldap_args * args,
             {
               /* is relative */
               snprintf (sdBase, sizeof (sdBase), "%s%s", sd->lsd_base,
-                        __session.ls_config->ldc_base);
+                        nslcd_cfg->ldc_base);
               base = sdBase;
             }
           else
@@ -2395,7 +2352,7 @@ _nss_ldap_search (const struct ldap_args * args,
               scope = sd->lsd_scope;
             }
         }
-      attrs = __session.ls_config->ldc_attrtab[sel];
+      attrs = nslcd_cfg->ldc_attrtab[sel];
     }
 
   stat =
@@ -2434,8 +2391,8 @@ do_next_page (const struct ldap_args * args,
   };
 
   /* Set some reasonable defaults. */
-  base = __session.ls_config->ldc_base;
-  scope = __session.ls_config->ldc_scope;
+  base = nslcd_cfg->ldc_base;
+  scope = nslcd_cfg->ldc_scope;
   attrs = NULL;
 
   if (args != NULL && args->la_base != NULL)
@@ -2446,14 +2403,14 @@ do_next_page (const struct ldap_args * args,
 
   if (sel < LM_NONE)
     {
-      sd = __session.ls_config->ldc_sds[sel];
+      sd = nslcd_cfg->ldc_sds[sel];
       if (sd != NULL)
         {
           size_t len = strlen (sd->lsd_base);
           if (sd->lsd_base[len - 1] == ',')
             {
               snprintf (sdBase, sizeof (sdBase), "%s%s", sd->lsd_base,
-                        __session.ls_config->ldc_base);
+                        nslcd_cfg->ldc_base);
               base = sdBase;
             }
           else
@@ -2466,7 +2423,7 @@ do_next_page (const struct ldap_args * args,
               scope = sd->lsd_scope;
             }
         }
-      attrs = __session.ls_config->ldc_attrtab[sel];
+      attrs = nslcd_cfg->ldc_attrtab[sel];
     }
 
   stat =
@@ -2479,7 +2436,7 @@ do_next_page (const struct ldap_args * args,
 
   stat =
     ldap_create_page_control (__session.ls_conn,
-                              __session.ls_config->ldc_pagesize,
+                              nslcd_cfg->ldc_pagesize,
                               pCookie, 0, &serverctrls[0]);
   if (stat != LDAP_SUCCESS)
     {
@@ -2490,7 +2447,7 @@ do_next_page (const struct ldap_args * args,
 
   stat =
     ldap_search_ext (__session.ls_conn, base,
-                     __session.ls_config->ldc_scope,
+                     nslcd_cfg->ldc_scope,
                      filter,
                      (char **) attrs, 0, serverctrls, NULL, LDAP_NO_LIMIT,
                      sizelimit, msgid);
@@ -2891,7 +2848,7 @@ _nss_ldap_assign_attrval (LDAPMessage * e,
   int vallen;
   const char *ovr, *def;
 
-  ovr = OV (attr);
+  ovr = _nss_ldap_map_ov(attr);
   if (ovr != NULL)
     {
       vallen = strlen (ovr);
@@ -2919,7 +2876,7 @@ _nss_ldap_assign_attrval (LDAPMessage * e,
   vals = ldap_get_values (__session.ls_conn, e, (char *) attr);
   if (vals == NULL)
     {
-      def = DF (attr);
+      def = _nss_ldap_map_df(attr);
       if (def != NULL)
         {
           vallen = strlen (def);
@@ -2972,9 +2929,9 @@ _nss_ldap_locate_userpassword (char **vals)
   char **valiter;
   const char *pwd = NULL;
 
-  if (__config != NULL)
+  if (nslcd_cfg != NULL)
     {
-      switch (__config->ldc_password_type)
+      switch (nslcd_cfg->ldc_password_type)
         {
         case LU_RFC2307_USERPASSWORD:
           token = "{CRYPT}";
@@ -3092,7 +3049,7 @@ _nss_ldap_shadow_date (const char *val)
 {
   int date;
 
-  if (__config->ldc_shadow_type == LS_AD_SHADOW)
+  if (nslcd_cfg->ldc_shadow_type == LS_AD_SHADOW)
     {
       date = atoll (val) / 864000000000LL - 134774LL;
       date = (date > 99999) ? 99999 : date;
@@ -3105,10 +3062,14 @@ _nss_ldap_shadow_date (const char *val)
   return date;
 }
 
+#ifndef UF_DONT_EXPIRE_PASSWD
+#define UF_DONT_EXPIRE_PASSWD 0x10000
+#endif
+
 void
 _nss_ldap_shadow_handle_flag (struct spwd *sp)
 {
-  if (__config->ldc_shadow_type == LS_AD_SHADOW)
+  if (nslcd_cfg->ldc_shadow_type == LS_AD_SHADOW)
     {
       if (sp->sp_flag & UF_DONT_EXPIRE_PASSWD)
         sp->sp_max = 99999;
@@ -3123,7 +3084,7 @@ _nss_ldap_map_at (enum ldap_map_selector sel, const char *attribute)
   const char *mapped = NULL;
   enum nss_status stat;
 
-  stat = _nss_ldap_map_get (__config, sel, MAP_ATTRIBUTE, attribute, &mapped);
+  stat = _nss_ldap_map_get (sel, MAP_ATTRIBUTE, attribute, &mapped);
 
   return (stat == NSS_STATUS_SUCCESS) ? mapped : attribute;
 }
@@ -3134,7 +3095,7 @@ _nss_ldap_unmap_at (enum ldap_map_selector sel, const char *attribute)
   const char *mapped = NULL;
   enum nss_status stat;
 
-  stat = _nss_ldap_map_get (__config, sel, MAP_ATTRIBUTE_REVERSE, attribute, &mapped);
+  stat = _nss_ldap_map_get (sel, MAP_ATTRIBUTE_REVERSE, attribute, &mapped);
 
   return (stat == NSS_STATUS_SUCCESS) ? mapped : attribute;
 }
@@ -3145,7 +3106,7 @@ _nss_ldap_map_oc (enum ldap_map_selector sel, const char *objectclass)
   const char *mapped = NULL;
   enum nss_status stat;
 
-  stat = _nss_ldap_map_get (__config, sel, MAP_OBJECTCLASS, objectclass, &mapped);
+  stat = _nss_ldap_map_get (sel, MAP_OBJECTCLASS, objectclass, &mapped);
 
   return (stat == NSS_STATUS_SUCCESS) ? mapped : objectclass;
 }
@@ -3156,7 +3117,7 @@ _nss_ldap_unmap_oc (enum ldap_map_selector sel, const char *objectclass)
   const char *mapped = NULL;
   enum nss_status stat;
 
-  stat = _nss_ldap_map_get (__config, sel, MAP_OBJECTCLASS_REVERSE, objectclass, &mapped);
+  stat = _nss_ldap_map_get (sel, MAP_OBJECTCLASS_REVERSE, objectclass, &mapped);
 
   return (stat == NSS_STATUS_SUCCESS) ? mapped : objectclass;
 }
@@ -3166,7 +3127,7 @@ _nss_ldap_map_ov (const char *attribute)
 {
   const char *value = NULL;
 
-  _nss_ldap_map_get (__config, LM_NONE, MAP_OVERRIDE, attribute, &value);
+  _nss_ldap_map_get (LM_NONE, MAP_OVERRIDE, attribute, &value);
 
   return value;
 }
@@ -3176,83 +3137,13 @@ _nss_ldap_map_df (const char *attribute)
 {
   const char *value = NULL;
 
-  _nss_ldap_map_get (__config, LM_NONE, MAP_DEFAULT, attribute, &value);
+  _nss_ldap_map_get (LM_NONE, MAP_DEFAULT, attribute, &value);
 
   return value;
 }
 
 enum nss_status
-_nss_ldap_map_put (struct ldap_config * config,
-                   enum ldap_map_selector sel,
-                   enum ldap_map_type type,
-                   const char *from,
-                   const char *to)
-{
-  struct ldap_datum key, val;
-  void **map;
-  enum nss_status stat;
-
-  switch (type)
-    {
-    case MAP_ATTRIBUTE:
-      /* special handling for attribute mapping */ if (strcmp
-                                                       (from,
-                                                        "userPassword") == 0)
-        {
-          if (strcasecmp (to, "userPassword") == 0)
-            config->ldc_password_type = LU_RFC2307_USERPASSWORD;
-          else if (strcasecmp (to, "authPassword") == 0)
-            config->ldc_password_type = LU_RFC3112_AUTHPASSWORD;
-          else
-            config->ldc_password_type = LU_OTHER_PASSWORD;
-        }
-      else if (strcmp (from, "shadowLastChange") == 0)
-        {
-          if (strcasecmp (to, "shadowLastChange") == 0)
-            config->ldc_shadow_type = LS_RFC2307_SHADOW;
-          else if (strcasecmp (to, "pwdLastSet") == 0)
-            config->ldc_shadow_type = LS_AD_SHADOW;
-          else
-            config->ldc_shadow_type = LS_OTHER_SHADOW;
-        }
-      break;
-    case MAP_OBJECTCLASS:
-    case MAP_OVERRIDE:
-    case MAP_DEFAULT:
-      break;
-    default:
-      return NSS_STATUS_NOTFOUND;
-      break;
-    }
-
-  assert (sel <= LM_NONE);
-  map = &config->ldc_maps[sel][type];
-  assert (*map != NULL);
-
-  NSS_LDAP_DATUM_ZERO (&key);
-  key.data = (void *) from;
-  key.size = strlen (from) + 1;
-
-  NSS_LDAP_DATUM_ZERO (&val);
-  val.data = (void *) to;
-  val.size = strlen (to) + 1;
-
-  stat = _nss_ldap_db_put (*map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
-  if (stat == NSS_STATUS_SUCCESS &&
-      (type == MAP_ATTRIBUTE || type == MAP_OBJECTCLASS))
-    {
-      type = (type == MAP_ATTRIBUTE) ? MAP_ATTRIBUTE_REVERSE : MAP_OBJECTCLASS_REVERSE;
-      map = &config->ldc_maps[sel][type];
-
-      stat = _nss_ldap_db_put (*map, NSS_LDAP_DB_NORMALIZE_CASE, &val, &key);
-    }
-
-  return stat;
-}
-
-enum nss_status
-_nss_ldap_map_get (struct ldap_config * config,
-                   enum ldap_map_selector sel,
+_nss_ldap_map_get (enum ldap_map_selector sel,
                    enum ldap_map_type type,
                    const char *from, const char **to)
 {
@@ -3260,12 +3151,12 @@ _nss_ldap_map_get (struct ldap_config * config,
   void *map;
   enum nss_status stat;
 
-  if (config == NULL || sel > LM_NONE || type > MAP_MAX)
+  if (_nss_ldap_map_get == NULL || sel > LM_NONE || type > MAP_MAX)
     {
       return NSS_STATUS_NOTFOUND;
     }
 
-  map = config->ldc_maps[sel][type];
+  map = nslcd_cfg->ldc_maps[sel][type];
   assert (map != NULL);
 
   NSS_LDAP_DATUM_ZERO (&key);
@@ -3277,7 +3168,7 @@ _nss_ldap_map_get (struct ldap_config * config,
   stat = _nss_ldap_db_get (map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
   if (stat == NSS_STATUS_NOTFOUND && sel != LM_NONE)
     {
-      map = config->ldc_maps[LM_NONE][type];
+      map = nslcd_cfg->ldc_maps[LM_NONE][type];
       assert (map != NULL);
       stat = _nss_ldap_db_get (map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
     }
@@ -3301,7 +3192,6 @@ struct ldap_proxy_bind_args
   const char *bindpw;
 };
 
-
 #if LDAP_SET_REBIND_PROC_ARGS < 3
 static struct ldap_proxy_bind_args __proxy_args = { NULL, NULL };
 #endif
@@ -3324,7 +3214,7 @@ do_proxy_rebind (LDAP * ld, LDAP_CONST char *url, int request,
   struct ldap_proxy_bind_args *who = &__proxy_args;
 #endif
 
-  timelimit = __session.ls_config->ldc_bind_timelimit;
+  timelimit = nslcd_cfg->ldc_bind_timelimit;
 
   return do_bind (ld, timelimit, who->binddn, who->bindpw, 0);
 }
@@ -3416,7 +3306,7 @@ _nss_ldap_proxy_bind (const char *user, const char *password)
               log_log(LOG_DEBUG,":== _nss_ldap_proxy_bind: %s", proxy_args->binddn);
 
               rc = do_bind (__session.ls_conn,
-                            __session.ls_config->ldc_bind_timelimit,
+                            nslcd_cfg->ldc_bind_timelimit,
                             proxy_args->binddn, proxy_args->bindpw, 0);
               switch (rc)
                 {
@@ -3477,39 +3367,10 @@ _nss_ldap_get_attributes (enum ldap_map_selector sel)
           return NULL;
         }
 
-      attrs = __session.ls_config->ldc_attrtab[sel];
+      attrs = nslcd_cfg->ldc_attrtab[sel];
     }
 
   log_log(LOG_DEBUG,"<== _nss_ldap_get_attributes");
 
   return attrs;
-}
-
-int
-_nss_ldap_test_config_flag (unsigned int flag)
-{
-  if (__config != NULL && (__config->ldc_flags & flag) != 0)
-    return 1;
-
-  return 0;
-}
-
-int
-_nss_ldap_test_initgroups_ignoreuser (const char *user)
-{
-  char **p;
-
-  if (__config == NULL)
-    return 0;
-
-  if (__config->ldc_initgroups_ignoreusers == NULL)
-    return 0;
-
-  for (p = __config->ldc_initgroups_ignoreusers; *p != NULL; p++)
-    {
-      if (strcmp (*p, user) == 0)
-        return 1;
-    }
-
-  return 0;
 }

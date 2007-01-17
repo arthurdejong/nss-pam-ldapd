@@ -110,8 +110,6 @@ extern char _nss_ldap_filt_innetgr[];
 #define OCM(map, at)             _nss_ldap_map_oc(map, AT##_##at)
 #define AT(at)                   _nss_ldap_map_at(LM_NONE, AT##_##at)
 #define ATM(map, at)             _nss_ldap_map_at(map, AT##_##at)
-#define DF(at)                   _nss_ldap_map_df(at)
-#define OV(at)                   _nss_ldap_map_ov(at)
 
 /**
  * Common attributes, not from RFC 2307.

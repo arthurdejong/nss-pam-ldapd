@@ -4,8 +4,8 @@
    forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
-   Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 West Consulting
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
-
+#include "cfg.h"
 
 #define NSS_LDAP_KEY_MAP_ATTRIBUTE      "nss_map_attribute"
 #define NSS_LDAP_KEY_MAP_OBJECTCLASS    "nss_map_objectclass"
@@ -102,6 +102,14 @@
 #define NSS_LDAP_KEY_SCHEMA             "nss_schema"
 #define NSS_LDAP_KEY_SRV_DOMAIN         "nss_srv_domain"
 #define NSS_LDAP_KEY_CONNECT_POLICY     "nss_connect_policy"
+
+/*
+ * support separate naming contexts for each map
+ * eventually this will support the syntax defined in
+ * the DUAConfigProfile searchDescriptor attribute
+ */
+#define NSS_LDAP_KEY_NSS_BASE_PREFIX            "nss_base_"
+#define NSS_LDAP_KEY_NSS_BASE_PREFIX_LEN        ( sizeof(NSS_LDAP_KEY_NSS_BASE_PREFIX) - 1 )
 
 /*
  * Timeouts for reconnecting code. Similar to rebind
@@ -531,6 +539,75 @@ _nss_ldap_str2selector (const char *key)
   else
     sel = LM_NONE;
   return sel;
+}
+
+static enum nss_status
+_nss_ldap_map_put(struct ldap_config * config,
+                  enum ldap_map_selector sel,
+                  enum ldap_map_type type,
+                  const char *from,
+                  const char *to)
+{
+  struct ldap_datum key, val;
+  void **map;
+  enum nss_status retv;
+
+  switch (type)
+    {
+    case MAP_ATTRIBUTE:
+      /* special handling for attribute mapping */ if (strcmp
+                                                       (from,
+                                                        "userPassword") == 0)
+        {
+          if (strcasecmp (to, "userPassword") == 0)
+            config->ldc_password_type = LU_RFC2307_USERPASSWORD;
+          else if (strcasecmp (to, "authPassword") == 0)
+            config->ldc_password_type = LU_RFC3112_AUTHPASSWORD;
+          else
+            config->ldc_password_type = LU_OTHER_PASSWORD;
+        }
+      else if (strcmp (from, "shadowLastChange") == 0)
+        {
+          if (strcasecmp (to, "shadowLastChange") == 0)
+            config->ldc_shadow_type = LS_RFC2307_SHADOW;
+          else if (strcasecmp (to, "pwdLastSet") == 0)
+            config->ldc_shadow_type = LS_AD_SHADOW;
+          else
+            config->ldc_shadow_type = LS_OTHER_SHADOW;
+        }
+      break;
+    case MAP_OBJECTCLASS:
+    case MAP_OVERRIDE:
+    case MAP_DEFAULT:
+      break;
+    default:
+      return NSS_STATUS_NOTFOUND;
+      break;
+    }
+
+  assert (sel <= LM_NONE);
+  map = &config->ldc_maps[sel][type];
+  assert (*map != NULL);
+
+  NSS_LDAP_DATUM_ZERO (&key);
+  key.data = (void *) from;
+  key.size = strlen (from) + 1;
+
+  NSS_LDAP_DATUM_ZERO (&val);
+  val.data = (void *) to;
+  val.size = strlen (to) + 1;
+
+  retv = _nss_ldap_db_put (*map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
+  if (retv == NSS_STATUS_SUCCESS &&
+      (type == MAP_ATTRIBUTE || type == MAP_OBJECTCLASS))
+    {
+      type = (type == MAP_ATTRIBUTE) ? MAP_ATTRIBUTE_REVERSE : MAP_OBJECTCLASS_REVERSE;
+      map = &config->ldc_maps[sel][type];
+
+      retv = _nss_ldap_db_put (*map, NSS_LDAP_DB_NORMALIZE_CASE, &val, &key);
+    }
+
+  return retv;
 }
 
 static enum nss_status
@@ -1660,4 +1737,3 @@ enum nss_status _nss_ldap_validateconfig (struct ldap_config *config)
 
   return NSS_STATUS_SUCCESS;
 }
-
