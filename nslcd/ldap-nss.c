@@ -87,12 +87,6 @@
 #include "common.h"
 #include "log.h"
 
-#if defined(HAVE_THREAD_H)
-#ifdef HAVE_PTHREAD_ATFORK
-#undef HAVE_PTHREAD_ATFORK
-#endif
-#endif
-
 /* how many messages to retrieve results for */
 #ifndef LDAP_MSG_ONE
 #define LDAP_MSG_ONE            0x00
@@ -140,47 +134,13 @@ static void (*__sigpipe_handler) (int) = SIG_DFL;
  */
 static struct ldap_session __session = { NULL, NULL, 0, LS_UNINITIALIZED };
 
-#if defined(HAVE_PTHREAD_ATFORK) || defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
-static pthread_once_t __once = PTHREAD_ONCE_INIT;
-#endif
-
 #ifdef LBER_OPT_LOG_PRINT_FILE
 static FILE *__debugfile;
 #endif /* LBER_OPT_LOG_PRINT_FILE */
 
-#ifndef HAVE_PTHREAD_ATFORK
-/*
- * Process ID that opened the session.
- */
-static pid_t __pid = -1;
-#endif
-static uid_t __euid = -1;
-
 #ifdef HAVE_LDAPSSL_CLIENT_INIT
 static int __ssl_initialized = 0;
 #endif /* HAVE_LDAPSSL_CLIENT_INIT */
-
-#if defined(HAVE_PTHREAD_ATFORK) || defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
-/*
- * Prepare for fork(); lock mutex.
- */
-static void do_atfork_prepare (void);
-
-/*
- * Forked in parent, unlock mutex.
- */
-static void do_atfork_parent (void);
-
-/*
- * Forked in child; close LDAP socket, unlock mutex.
- */
-static void do_atfork_child (void);
-
-/*
- * Install handlers for atfork, called once.
- */
-static void do_atfork_setup (void);
-#endif
 
 /*
  * Close the global session, sending an unbind.
@@ -621,50 +581,6 @@ _nss_ldap_unblock_sigpipe (void)
     }
 #endif /* HAVE_SIGACTION */
 }
-
-#if defined(HAVE_PTHREAD_ATFORK) || defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
-static void
-do_atfork_prepare (void)
-{
-  log_log(LOG_DEBUG,"==> do_atfork_prepare");
-  NSS_LDAP_LOCK (__lock);
-  log_log(LOG_DEBUG,"<== do_atfork_prepare");
-}
-
-static void
-do_atfork_parent (void)
-{
-  log_log(LOG_DEBUG,"==> do_atfork_parent");
-  NSS_LDAP_UNLOCK (__lock);
-  log_log(LOG_DEBUG,"<== do_atfork_parent");
-}
-
-static void
-do_atfork_child (void)
-{
-  log_log(LOG_DEBUG,"==> do_atfork_child");
-  _nss_ldap_block_sigpipe();
-  do_close_no_unbind ();
-  _nss_ldap_unblock_sigpipe();
-  NSS_LDAP_UNLOCK (__lock);
-  log_log(LOG_DEBUG,"<== do_atfork_child");
-}
-
-static void
-do_atfork_setup (void)
-{
-  log_log(LOG_DEBUG,"==> do_atfork_setup");
-
-#ifdef HAVE_PTHREAD_ATFORK
-  (void) pthread_atfork (do_atfork_prepare, do_atfork_parent,
-                         do_atfork_child);
-#elif defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
-  (void) __libc_atfork (do_atfork_prepare, do_atfork_parent, do_atfork_child);
-#endif
-
-  log_log(LOG_DEBUG,"<== do_atfork_setup");
-}
-#endif
 
 /*
  * Acquires global lock, blocks SIGPIPE.
@@ -1117,10 +1033,6 @@ static enum nss_status
 do_init (void)
 {
   struct ldap_config *cfg;
-#ifndef HAVE_PTHREAD_ATFORK
-  pid_t pid;
-#endif
-  uid_t euid;
   enum nss_status stat;
   int sd=-1;
 
@@ -1133,85 +1045,12 @@ do_init (void)
       __session.ls_current_uri = 0;
     }
 
-#ifndef HAVE_PTHREAD_ATFORK
-#if defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
-  /*
-   * This bogosity is necessary because Linux uses different
-   * PIDs for different threads (like IRIX, which we don't
-   * support). We can tell whether we are linked against
-   * libpthreads by whether __pthread_once is NULL or
-   * not. If it is NULL, then we're not linked with the
-   * threading library, and we need to compare the current
-   * process ID against the saved one to figure out
-   * whether we've forked.
-   *
-   * Once we know whether we have forked or not,
-   * courtesy of pthread_atfork() or us checking
-   * ourselves, we can close the socket to the LDAP
-   * server to avoid leaking a socket, and reopen
-   * another connection. Under no circumstances do we
-   * wish to use the same connection, or to send an
-   * unbind PDU over the parents connection, as that
-   * will wreak all sorts of havoc or inefficiencies,
-   * respectively.
-   */
-  if (__pthread_once == NULL)
-    pid = getpid ();
-  else
-    pid = -1;                   /* linked against libpthreads, don't care */
-#else
-  pid = getpid ();
-#endif /* HAVE_LIBC_LOCK_H || HAVE_BITS_LIBC_LOCK_H */
-#endif /* HAVE_PTHREAD_ATFORK */
-
-  euid = geteuid ();
-
-#ifdef DEBUG
-#ifdef HAVE_PTHREAD_ATFORK
-  syslog (LOG_AUTHPRIV | LOG_DEBUG,
-          "nss_ldap: __session.ls_state=%d, __session.ls_conn=%p, __euid=%i, euid=%i",
-          __session.ls_state, __session.ls_conn, __euid, euid);
-#elif defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
-  syslog (LOG_AUTHPRIV | LOG_DEBUG,
-          "nss_ldap: libpthreads=%s, __session.ls_state=%d, __session.ls_conn=%p, __pid=%i, pid=%i, __euid=%i, euid=%i",
-          (__pthread_once == NULL ? "FALSE" : "TRUE"),
-          __session.ls_state,
-          (void *)__session.ls_conn,
-          (__pthread_once == NULL ? __pid : -1),
-          (__pthread_once == NULL ? pid : -1), __euid, euid);
-#else
-  syslog (LOG_AUTHPRIV | LOG_DEBUG,
-          "nss_ldap: __session.ls_state=%d, __session.ls_conn=%p, __pid=%i, pid=%i, __euid=%i, euid=%i",
-          __session.ls_state, __session.ls_conn, __pid, pid, __euid, euid);
-#endif
-#endif /* DEBUG */
-
   if (__session.ls_state == LS_CONNECTED_TO_DSA &&
       do_get_our_socket (&sd) == 0)
     {
       /* The calling app has stolen our socket. */
       log_log(LOG_DEBUG,":== do_init (stolen socket detected)");
       do_drop_connection (sd, 0);
-    }
-  else
-#ifndef HAVE_PTHREAD_ATFORK
-#if defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
-  if (__pthread_once == NULL && __pid != pid)
-#else
-  if (__pid != pid)
-#endif /* HAVE_LIBC_LOCK_H || HAVE_BITS_LIBC_LOCK_H */
-    {
-      do_close_no_unbind ();
-    }
-  else
-#endif /* HAVE_PTHREAD_ATFORK */
-  if (__euid != euid && (__euid == 0 || euid == 0))
-    {
-      /*
-       * If we've changed user ids, close the session so we can
-       * rebind as the correct user.
-       */
-      do_close ();
     }
   else if (__session.ls_state == LS_CONNECTED_TO_DSA)
     {
@@ -1253,28 +1092,6 @@ do_init (void)
   __session.ls_conn = NULL;
   __session.ls_timestamp = 0;
   __session.ls_state = LS_UNINITIALIZED;
-
-#ifdef HAVE_PTHREAD_ATFORK
-  if (pthread_once (&__once, do_atfork_setup) != 0)
-    {
-      log_log(LOG_DEBUG,"<== do_init (pthread_once failed)");
-      return NSS_STATUS_UNAVAIL;
-    }
-#elif defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
-  /*
-   * Only install the pthread_atfork() handlers i
-   * we are linked against libpthreads. Otherwise,
-   * do close the session when the PID changes.
-   */
-  if (__pthread_once == NULL)
-    __pid = pid;
-  else
-    __libc_once (__once, do_atfork_setup);
-#else
-  __pid = pid;
-#endif
-
-  __euid = euid;
 
   /* Initialize schema and LDAP handle (but do not connect) */
   if (__config == NULL)
@@ -1629,7 +1446,7 @@ do_open (void)
    * Thanks to Doug Nazar <nazard@dragoninc.on.ca> for this
    * patch.
    */
-  if (__euid == 0 && cfg->ldc_rootbinddn != NULL)
+  if (geteuid() == 0 && cfg->ldc_rootbinddn != NULL)
     {
 #if defined(HAVE_LDAP_SASL_INTERACTIVE_BIND_S) && (defined(HAVE_SASL_H) || defined(HAVE_SASL_SASL_H))
       usesasl = cfg->ldc_rootusesasl;
