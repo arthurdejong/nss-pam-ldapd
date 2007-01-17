@@ -4,8 +4,8 @@
    forked into the nss-ldapd library.
 
    Copyright (C) 1997-2006 Luke Howard
-   Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 West Consulting
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -146,11 +146,6 @@ static int __ssl_initialized = 0;
  * Close the global session, sending an unbind.
  */
 static void do_close (void);
-
-/*
- * Close the global session without sending an unbind.
- */
-static void do_close_no_unbind (void);
 
 /*
  * Disable keepalive on a LDAP connection's socket.
@@ -630,22 +625,6 @@ do_set_sockopts (void)
       (void) setsockopt (sd, SOL_SOCKET, SO_KEEPALIVE, (void *) &off,
                          sizeof (off));
       (void) fcntl (sd, F_SETFD, FD_CLOEXEC);
-      /*
-       * NSS modules shouldn't open file descriptors that the program/utility
-       * linked against NSS doesn't know about.  The LDAP library opens a
-       * connection to the LDAP server transparently.  There's an edge case
-       * where a daemon might fork a child and, being written well, closes
-       * all its file descriptors.  This will close the socket descriptor
-       * being used by the LDAP library!  Worse, the daemon might open many
-       * files and sockets, eventually opening a descriptor with the same number
-       * as that originally used by the LDAP library.  The only way to know that
-       * this isn't "our" socket descriptor is to save the local and remote
-       * sockaddr_in structures for later comparison.
-       */
-      (void) getsockname (sd, (struct sockaddr *) &__session.ls_sockname,
-                          &socknamelen);
-      (void) getpeername (sd, (struct sockaddr *) &__session.ls_peername,
-                          &peernamelen);
     }
   log_log(LOG_DEBUG,"<== do_set_sockopts");
 #endif /* HAVE_LDAPSSL_CLIENT_INIT */
@@ -686,277 +665,6 @@ do_close (void)
     }
 
   log_log(LOG_DEBUG,"<== do_close");
-}
-
-static int
-do_sockaddr_isequal (struct sockaddr_storage *_s1,
-                     socklen_t _slen1,
-                     struct sockaddr_storage *_s2,
-                     socklen_t _slen2)
-{
-  int ret;
-
-  if (_s1->ss_family != _s2->ss_family)
-    return 0;
-
-  if (_slen1 != _slen2)
-    return 0;
-
-  ret = 0;
-
-  switch (_s1->ss_family)
-    {
-      case AF_INET:
-        {
-          struct sockaddr_in *s1 = (struct sockaddr_in *) _s1;
-          struct sockaddr_in *s2 = (struct sockaddr_in *) _s2;
-
-          ret = (s1->sin_port == s2->sin_port &&
-                 memcmp (&s1->sin_addr, &s2->sin_addr, sizeof(struct in_addr)) == 0);
-          break;
-        }
-      case AF_UNIX:
-        {
-          struct sockaddr_un *s1 = (struct sockaddr_un *) _s1;
-          struct sockaddr_un *s2 = (struct sockaddr_un *) _s2;
-
-          ret = (memcmp (s1->sun_path, s2->sun_path,
-                         _slen1 - sizeof (_s1->ss_family)) == 0);
-          break;
-        }
-#ifdef INET6
-      case AF_INET6:
-        {
-          struct sockaddr_in6 *s1 = (struct sockaddr_in6 *) _s1;
-          struct sockaddr_in6 *s2 = (struct sockaddr_in6 *) _s2;
-
-          ret = (s1->sin6_port == s2->sin6_port &&
-                 memcmp (&s1->sin6_addr, &s2->sin6_addr, sizeof(struct in6_addr)) == 0 &&
-                 s1->sin6_scope_id == s2->sin6_scope_id);
-          break;
-        }
-#endif
-      default:
-        ret = (memcmp (_s1, _s2, _slen1) == 0);
-        break;
-    }
-
-  return ret;
-}
-
-static int
-do_get_our_socket(int *sd)
-{
-  /*
-   * Before freeing the LDAP context or closing the socket descriptor,
-   * we must ensure that it is *our* socket descriptor.  See the much
-   * lengthier description of this at the end of do_open () where the
-   * values __session.ls_sockname and __session.ls_peername are saved.
-   * With HAVE_LDAPSSL_CLIENT_INIT this returns 0 if the socket has
-   * been closed or reopened, and sets *sd to the ldap socket
-   * descriptor.. Returns 1 in all other cases.
-   */
-
-  int isOurSocket = 1;
-
-#ifndef HAVE_LDAPSSL_CLIENT_INIT
-  if (ldap_get_option (__session.ls_conn, LDAP_OPT_DESC, sd) == 0)
-    {
-      struct sockaddr_storage sockname;
-      struct sockaddr_storage peername;
-      socklen_t socknamelen = sizeof (sockname);
-      socklen_t peernamelen = sizeof (peername);
-
-      if (getsockname (*sd, (struct sockaddr *) &sockname, &socknamelen) != 0 ||
-          getpeername (*sd, (struct sockaddr *) &peername, &peernamelen) != 0)
-        {
-          isOurSocket = 0;
-        }
-      else
-        {
-          isOurSocket = do_sockaddr_isequal (&__session.ls_sockname,
-                                             socknamelen,
-                                             &sockname,
-                                             socknamelen);
-          if (isOurSocket)
-            {
-              isOurSocket = do_sockaddr_isequal (&__session.ls_peername,
-                                                 peernamelen,
-                                                 &peername,
-                                                 peernamelen);
-            }
-        }
-    }
-#endif /* HAVE_LDAPSSL_CLIENT_INIT */
-  return isOurSocket;
-}
-
-static int
-do_dupfd(int oldfd, int newfd)
-{
-  int d = -1;
-  int flags;
-
-  flags = fcntl(oldfd, F_GETFD);
-
-  while (1)
-    {
-      d = (newfd > -1) ? dup2 (oldfd, newfd) : dup (oldfd);
-      if (d > -1)
-        break;
-
-      if (errno == EBADF)
-        return -1; /* not open */
-
-      if (errno != EINTR
-#ifdef EBUSY
-            && errno != EBUSY
-#endif
-            )
-        return -1;
-  }
-
-  /* duplicate close-on-exec flag */
-  (void) fcntl (d, F_SETFD, flags);
-
-  return d;
-}
-
-static int
-do_closefd(int fd)
-{
-  int rc;
-
-  while ((rc = close(fd)) < 0 && errno == EINTR)
-    ;
-
-  return rc;
-}
-
-static void
-do_drop_connection(int sd, int closeSd)
-{
-     /* Close the LDAP connection without writing anything to the
-        underlying socket.  The socket will be left open afterwards if
-        closeSd is 0 */
-#ifndef HAVE_LDAPSSL_CLIENT_INIT
-  {
-    int dummyfd = -1, savedfd = -1;
-    /*  Under OpenLDAP 2.x, ldap_set_option (..., LDAP_OPT_DESC, ...) is
-        a no-op, so to shut down the LDAP connection without writing
-        anything to the socket, we swap a dummy socket onto that file
-        descriptor, and then swap the real fd back once the shutdown is
-        done. */
-    savedfd = do_dupfd (sd, -1);
-    dummyfd = socket (AF_INET, SOCK_STREAM, 0);
-    if (dummyfd > -1 && dummyfd != sd)
-      {
-        do_closefd (sd);
-        do_dupfd (dummyfd, sd);
-        do_closefd (dummyfd);
-      }
-
-#ifdef HAVE_LDAP_LD_FREE
-#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
-    (void) ldap_ld_free (__session.ls_conn, 0, NULL, NULL);
-#else
-    (void) ldap_ld_free (__session.ls_conn, 0);
-#endif /* OPENLDAP 2.x */
-#else
-    ldap_unbind (__session.ls_conn);
-#endif /* HAVE_LDAP_LD_FREE */
-
-    /* Do we want our original sd back? */
-    do_closefd (sd);
-    if (savedfd > -1)
-      {
-        if (closeSd == 0)
-          do_dupfd (savedfd, sd);
-        do_closefd (savedfd);
-    }
-  }
-#else /* No sd available */
-  {
-    int bogusSd = -1;
-    if (closeSd == 0)
-      {
-        sd = -1; /* don't want to really close the socket */
-#ifdef HAVE_LDAP_LD_FREE
-#if defined(HAVE_LDAP_GET_OPTION) && defined(LDAP_OPT_DESC)
-        (void) ldap_set_option (__session.ls_conn, LDAP_OPT_DESC, &sd);
-#else
-        __session.ls_conn->ld_sb.sb_sd = -1;
-#endif /* LDAP_OPT_DESC */
-#endif /* HAVE_LDAP_LD_FREE */
-      }
-
-#ifdef HAVE_LDAP_LD_FREE
-
-#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
-    (void) ldap_ld_free (__session.ls_conn, 0, NULL, NULL);
-#else
-    (void) ldap_ld_free (__session.ls_conn, 0);
-#endif /* OPENLDAP 2.x */
-
-#else
-
-#if defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_DESC)
-    (void) ldap_set_option (__session.ls_conn, LDAP_OPT_DESC, &bogusSd);
-#else
-    __session.ls_conn->ld_sb.sb_sd = bogusSd;
-#endif /* LDAP_OPT_DESC */
-
-    /* hope we closed it OK! */
-    ldap_unbind (__session.ls_conn);
-
-#endif /* HAVE_LDAP_LD_FREE */
-
-  }
-#endif /* HAVE_LDAPSSL_CLIENT_INIT */
-  __session.ls_conn = NULL;
-  __session.ls_state = LS_UNINITIALIZED;
-
-  return;
-}
-
-/*
- * If we've forked, then we need to open a new session.
- * Careful: we have the socket shared with our parent,
- * so we don't want to send an unbind to the server.
- * However, we want to close the descriptor to avoid
- * leaking it, and we also want to release the memory
- * used by __session.ls_conn. The only entry point
- * we have is ldap_unbind() which does both of these
- * things, so we use an internal API, at the expense
- * of compatibility.
- */
-static void
-do_close_no_unbind (void)
-{
-  int sd = -1;
-  int closeSd = 1;
-
-  log_log(LOG_DEBUG,"==> do_close_no_unbind");
-
-  if (__session.ls_state == LS_UNINITIALIZED)
-    {
-      assert (__session.ls_conn == NULL);
-      log_log(LOG_DEBUG,"<== do_close_no_unbind (connection was not open)");
-      return;
-    }
-
-  closeSd = do_get_our_socket (&sd);
-
-#if defined(DEBUG) || defined(DEBUG_SOCKETS)
-  syslog (LOG_AUTHPRIV | LOG_INFO, "nss_ldap: %sclosing connection (no unbind) %p fd %d",
-          closeSd ? "" : "not ", (void *)__session.ls_conn, sd);
-#endif /* DEBUG */
-
-  do_drop_connection(sd, closeSd);
-
-  log_log(LOG_DEBUG,"<== do_close_no_unbind");
-
-  return;
 }
 
 static enum nss_status
@@ -1034,7 +742,6 @@ do_init (void)
 {
   struct ldap_config *cfg;
   enum nss_status stat;
-  int sd=-1;
 
   log_log(LOG_DEBUG,"==> do_init");
 
@@ -1045,14 +752,7 @@ do_init (void)
       __session.ls_current_uri = 0;
     }
 
-  if (__session.ls_state == LS_CONNECTED_TO_DSA &&
-      do_get_our_socket (&sd) == 0)
-    {
-      /* The calling app has stolen our socket. */
-      log_log(LOG_DEBUG,":== do_init (stolen socket detected)");
-      do_drop_connection (sd, 0);
-    }
-  else if (__session.ls_state == LS_CONNECTED_TO_DSA)
+  if (__session.ls_state == LS_CONNECTED_TO_DSA)
     {
       time_t current_time;
 

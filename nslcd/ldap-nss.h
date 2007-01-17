@@ -4,8 +4,8 @@
    forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
-   Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 West Consulting
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -269,9 +269,6 @@ struct ldap_session
   time_t ls_timestamp;
   /* has session been connected? */
   enum ldap_session_state ls_state;
-  /* keep track of the LDAP sockets */
-  struct sockaddr_storage ls_sockname;
-  struct sockaddr_storage ls_peername;
   /* index into ldc_uris: currently connected DSA */
   int ls_current_uri;
 };
