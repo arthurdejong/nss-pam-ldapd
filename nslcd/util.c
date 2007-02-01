@@ -64,6 +64,155 @@ NSS_LDAP_DEFINE_LOCK (__cache_lock);
 #define cache_lock()     NSS_LDAP_LOCK(__cache_lock)
 #define cache_unlock()   NSS_LDAP_UNLOCK(__cache_lock)
 
+struct ldap_datum
+{
+  void *data;
+  size_t size;
+};
+
+#define NSS_LDAP_DATUM_ZERO(d)  do { \
+                (d)->data = NULL; \
+                (d)->size = 0; \
+        } while (0)
+
+#define NSS_LDAP_DB_NORMALIZE_CASE      0x1
+
+struct ldap_dictionary
+{
+  struct ldap_datum key;
+  struct ldap_datum value;
+  struct ldap_dictionary *next;
+};
+
+static struct ldap_dictionary *old_dict_new(void)
+{
+  struct ldap_dictionary *dict;
+  dict = malloc(sizeof(struct ldap_dictionary));
+  if (dict==NULL)
+  {
+    return NULL;
+  }
+  NSS_LDAP_DATUM_ZERO(&dict->key);
+  NSS_LDAP_DATUM_ZERO(&dict->value);
+  dict->next=NULL;
+  return dict;
+}
+
+static struct ldap_dictionary *
+do_find_last (struct ldap_dictionary *dict)
+{
+  struct ldap_dictionary *p;
+
+  for (p = dict; p->next != NULL; p = p->next)
+    ;
+
+  return p;
+}
+
+static enum nss_status
+do_dup_datum (unsigned flags, struct ldap_datum * dst, const struct ldap_datum * src)
+{
+  dst->data = malloc (src->size);
+  if (dst->data == NULL)
+    return NSS_STATUS_TRYAGAIN;
+
+  memcpy (dst->data, src->data, src->size);
+  dst->size = src->size;
+
+  return NSS_STATUS_SUCCESS;
+}
+
+static void
+do_free_datum (struct ldap_datum * datum)
+{
+  if (datum->data != NULL)
+    {
+      free (datum->data);
+      datum->data = NULL;
+    }
+  datum->size = 0;
+}
+
+static void
+do_free_dictionary (struct ldap_dictionary *dict)
+{
+  do_free_datum (&dict->key);
+  do_free_datum (&dict->value);
+  free (dict);
+}
+
+static enum nss_status old_dict_put(
+                struct ldap_dictionary *db,
+                unsigned flags,
+                const struct ldap_datum *key,
+                const struct ldap_datum *value)
+{
+  struct ldap_dictionary *dict = (struct ldap_dictionary *) db;
+  struct ldap_dictionary *p, *q;
+
+  assert(key!=NULL);
+  assert(key->data!=NULL);
+
+  if (dict->key.data==NULL)
+  {
+    /* uninitialized */
+    q=dict;
+    p=NULL;
+  }
+  else
+  {
+    p=do_find_last(dict);
+    assert(p!=NULL);
+    assert(p->next==NULL);
+    q=old_dict_new();
+    if (q==NULL)
+      return NSS_STATUS_TRYAGAIN;
+  }
+
+  if (do_dup_datum(flags,&q->key,key)!=NSS_STATUS_SUCCESS)
+  {
+    do_free_dictionary(q);
+    return NSS_STATUS_TRYAGAIN;
+  }
+
+  if (do_dup_datum(flags,&q->value,value)!=NSS_STATUS_SUCCESS)
+  {
+    do_free_dictionary(q);
+    return NSS_STATUS_TRYAGAIN;
+  }
+
+  if (p!=NULL)
+    p->next=q;
+
+  return NSS_STATUS_SUCCESS;
+}
+
+static enum nss_status old_dict_get(
+                struct ldap_dictionary *db,
+                unsigned flags,
+                const struct ldap_datum *key,
+                struct ldap_datum *value)
+{
+  struct ldap_dictionary *p;
+  for (p=db;p!=NULL;p=p->next)
+  {
+    int cmp;
+    if (p->key.size != key->size)
+      continue;
+    if (flags & NSS_LDAP_DB_NORMALIZE_CASE)
+      cmp=strncasecmp((char *)p->key.data,(char *)key->data,key->size);
+    else
+      cmp=memcmp(p->key.data,key->data,key->size);
+    if (cmp==0)
+    {
+      value->data=p->value.data;
+      value->size=p->value.size;
+      return NSS_STATUS_SUCCESS;
+    }
+  }
+  return NSS_STATUS_NOTFOUND;
+}
+
 static enum nss_status
 dn2uid_cache_put (const char *dn, const char *uid)
 {
@@ -457,133 +606,4 @@ int _nss_ldap_escape_string(const char *src,char *buffer,size_t buflen)
   /* terminate destination string */
   buffer[pos]='\0';
   return 0;
-}
-
-struct ldap_dictionary *old_dict_new(void)
-{
-  struct ldap_dictionary *dict;
-  dict = malloc(sizeof(struct ldap_dictionary));
-  if (dict==NULL)
-  {
-    return NULL;
-  }
-  NSS_LDAP_DATUM_ZERO(&dict->key);
-  NSS_LDAP_DATUM_ZERO(&dict->value);
-  dict->next=NULL;
-  return dict;
-}
-
-static void
-do_free_datum (struct ldap_datum * datum)
-{
-  if (datum->data != NULL)
-    {
-      free (datum->data);
-      datum->data = NULL;
-    }
-  datum->size = 0;
-}
-
-static struct ldap_dictionary *
-do_find_last (struct ldap_dictionary *dict)
-{
-  struct ldap_dictionary *p;
-
-  for (p = dict; p->next != NULL; p = p->next)
-    ;
-
-  return p;
-}
-
-static void
-do_free_dictionary (struct ldap_dictionary *dict)
-{
-  do_free_datum (&dict->key);
-  do_free_datum (&dict->value);
-  free (dict);
-}
-
-static enum nss_status
-do_dup_datum (unsigned flags, struct ldap_datum * dst, const struct ldap_datum * src)
-{
-  dst->data = malloc (src->size);
-  if (dst->data == NULL)
-    return NSS_STATUS_TRYAGAIN;
-
-  memcpy (dst->data, src->data, src->size);
-  dst->size = src->size;
-
-  return NSS_STATUS_SUCCESS;
-}
-
-enum nss_status old_dict_get(
-                struct ldap_dictionary *db,
-                unsigned flags,
-                const struct ldap_datum *key,
-                struct ldap_datum *value)
-{
-  struct ldap_dictionary *p;
-  for (p=db;p!=NULL;p=p->next)
-  {
-    int cmp;
-    if (p->key.size != key->size)
-      continue;
-    if (flags & NSS_LDAP_DB_NORMALIZE_CASE)
-      cmp=strncasecmp((char *)p->key.data,(char *)key->data,key->size);
-    else
-      cmp=memcmp(p->key.data,key->data,key->size);
-    if (cmp==0)
-    {
-      value->data=p->value.data;
-      value->size=p->value.size;
-      return NSS_STATUS_SUCCESS;
-    }
-  }
-  return NSS_STATUS_NOTFOUND;
-}
-
-enum nss_status old_dict_put(
-                struct ldap_dictionary *db,
-                unsigned flags,
-                const struct ldap_datum *key,
-                const struct ldap_datum *value)
-{
-  struct ldap_dictionary *dict = (struct ldap_dictionary *) db;
-  struct ldap_dictionary *p, *q;
-
-  assert(key!=NULL);
-  assert(key->data!=NULL);
-
-  if (dict->key.data==NULL)
-  {
-    /* uninitialized */
-    q=dict;
-    p=NULL;
-  }
-  else
-  {
-    p=do_find_last(dict);
-    assert(p!=NULL);
-    assert(p->next==NULL);
-    q=old_dict_new();
-    if (q==NULL)
-      return NSS_STATUS_TRYAGAIN;
-  }
-
-  if (do_dup_datum(flags,&q->key,key)!=NSS_STATUS_SUCCESS)
-  {
-    do_free_dictionary(q);
-    return NSS_STATUS_TRYAGAIN;
-  }
-
-  if (do_dup_datum(flags,&q->value,value)!=NSS_STATUS_SUCCESS)
-  {
-    do_free_dictionary(q);
-    return NSS_STATUS_TRYAGAIN;
-  }
-
-  if (p!=NULL)
-    p->next=q;
-
-  return NSS_STATUS_SUCCESS;
 }

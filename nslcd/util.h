@@ -43,46 +43,10 @@ enum nss_status _nss_ldap_dn2uid (const char *dn,
                              char **uid, char **buf, size_t * len,
                              int *pIsNestedGroup, LDAPMessage ** pRes);
 
-
 /*
  * Escape '*' in a string for use as a filter
  */
 
 int _nss_ldap_escape_string(const char *str,char *buf,size_t buflen);
-
-/* Dictionary functions. */
-
-struct ldap_datum
-{
-  void *data;
-  size_t size;
-};
-
-#define NSS_LDAP_DATUM_ZERO(d)  do { \
-                (d)->data = NULL; \
-                (d)->size = 0; \
-        } while (0)
-
-#define NSS_LDAP_DB_NORMALIZE_CASE      0x1
-
-struct ldap_dictionary
-{
-  struct ldap_datum key;
-  struct ldap_datum value;
-  struct ldap_dictionary *next;
-};
-
-struct ldap_dictionary *old_dict_new(void);
-enum nss_status old_dict_put(struct ldap_dictionary *db,
-                         unsigned flags,
-                         const struct ldap_datum *key,
-                         const struct ldap_datum *value);
-enum nss_status old_dict_get(struct ldap_dictionary *db,
-                         unsigned flags,
-                         const struct ldap_datum *key,
-                         struct ldap_datum *value);
-
-
-
 
 #endif /* _LDAP_NSS_LDAP_UTIL_H */
