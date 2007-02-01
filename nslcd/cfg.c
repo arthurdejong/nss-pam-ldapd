@@ -178,7 +178,7 @@ static enum nss_status _nss_ldap_init_config(struct ldap_config *result)
   {
     for (j=0;j<=MAP_MAX;j++)
     {
-      result->ldc_maps[i][j]=(void *)dict_new();
+      result->ldc_maps[i][j]=dict_new();
       if (result->ldc_maps[i][j] == NULL)
         return NSS_STATUS_UNAVAIL;
     }
@@ -283,66 +283,49 @@ static enum nss_status _nss_ldap_map_put(
                 const char *from,
                 const char *to)
 {
-  struct ldap_datum key, val;
-  void **map;
-  enum nss_status retv;
-
-  switch (type)
+  DICT *map;
+  /* we do some special handling for attribute type mapping to do some
+     basic detection of what kind of LDAP server we're talking to */
+  if (type==MAP_ATTRIBUTE)
+  {
+    /* special handling for attribute mapping */
+    if (strcasecmp(from,"userPassword")==0)
     {
-    case MAP_ATTRIBUTE:
-      /* special handling for attribute mapping */ if (strcmp
-                                                       (from,
-                                                        "userPassword") == 0)
-        {
-          if (strcasecmp (to, "userPassword") == 0)
-            config->ldc_password_type = LU_RFC2307_USERPASSWORD;
-          else if (strcasecmp (to, "authPassword") == 0)
-            config->ldc_password_type = LU_RFC3112_AUTHPASSWORD;
-          else
-            config->ldc_password_type = LU_OTHER_PASSWORD;
-        }
-      else if (strcmp (from, "shadowLastChange") == 0)
-        {
-          if (strcasecmp (to, "shadowLastChange") == 0)
-            config->ldc_shadow_type = LS_RFC2307_SHADOW;
-          else if (strcasecmp (to, "pwdLastSet") == 0)
-            config->ldc_shadow_type = LS_AD_SHADOW;
-          else
-            config->ldc_shadow_type = LS_OTHER_SHADOW;
-        }
-      break;
-    case MAP_OBJECTCLASS:
-    case MAP_OVERRIDE:
-    case MAP_DEFAULT:
-      break;
-    default:
-      return NSS_STATUS_NOTFOUND;
-      break;
+      if (strcasecmp(to,"userPassword")==0)
+        config->ldc_password_type=LU_RFC2307_USERPASSWORD;
+      else if (strcasecmp (to,"authPassword")==0)
+        config->ldc_password_type=LU_RFC3112_AUTHPASSWORD;
+      else
+        config->ldc_password_type=LU_OTHER_PASSWORD;
     }
-
-  assert (sel <= LM_NONE);
-  map = &config->ldc_maps[sel][type];
-  assert (*map != NULL);
-
-  NSS_LDAP_DATUM_ZERO (&key);
-  key.data = (void *) from;
-  key.size = strlen (from) + 1;
-
-  NSS_LDAP_DATUM_ZERO (&val);
-  val.data = (void *) to;
-  val.size = strlen (to) + 1;
-
-  retv = dict_put (*map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
-  if (retv == NSS_STATUS_SUCCESS &&
-      (type == MAP_ATTRIBUTE || type == MAP_OBJECTCLASS))
+    else if (strcasecmp(from,"shadowLastChange")==0)
     {
-      type = (type == MAP_ATTRIBUTE) ? MAP_ATTRIBUTE_REVERSE : MAP_OBJECTCLASS_REVERSE;
-      map = &config->ldc_maps[sel][type];
-
-      retv = dict_put (*map, NSS_LDAP_DB_NORMALIZE_CASE, &val, &key);
+      if (strcasecmp(to,"shadowLastChange")==0)
+        config->ldc_shadow_type=LS_RFC2307_SHADOW;
+      else if (strcasecmp (to,"pwdLastSet")==0)
+        config->ldc_shadow_type=LS_AD_SHADOW;
+      else
+        config->ldc_shadow_type=LS_OTHER_SHADOW;
     }
-
-  return retv;
+  }
+  assert(sel <= LM_NONE);
+  map=config->ldc_maps[sel][type];
+  assert(map!=NULL);
+  if (dict_put(map,from,to))
+    return NSS_STATUS_TRYAGAIN;
+  if (type==MAP_ATTRIBUTE)
+  {
+    map = config->ldc_maps[sel][MAP_ATTRIBUTE_REVERSE];
+    if (dict_put(map,to,from))
+      return NSS_STATUS_TRYAGAIN;
+  }
+  else if (type==MAP_OBJECTCLASS)
+  {
+    map = config->ldc_maps[sel][MAP_OBJECTCLASS_REVERSE];
+    if (dict_put(map,to,from))
+      return NSS_STATUS_TRYAGAIN;
+  }
+  return NSS_STATUS_SUCCESS;
 }
 
 static enum nss_status do_parse_map_statement(

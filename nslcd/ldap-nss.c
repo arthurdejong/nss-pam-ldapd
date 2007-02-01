@@ -3117,38 +3117,23 @@ _nss_ldap_map_get (enum ldap_map_selector sel,
                    enum ldap_map_type type,
                    const char *from, const char **to)
 {
-  struct ldap_datum key, val;
-  void *map;
-  enum nss_status stat;
-
+  DICT *map;
   if (_nss_ldap_map_get == NULL || sel > LM_NONE || type > MAP_MAX)
+    return NSS_STATUS_NOTFOUND;
+  map=nslcd_cfg->ldc_maps[sel][type];
+  if (map!=NULL)
+  {
+    *to=(const char *)dict_get(map,from);
+    if ((*to==NULL) && (sel!=LM_NONE))
     {
-      return NSS_STATUS_NOTFOUND;
+      map=nslcd_cfg->ldc_maps[LM_NONE][type];
+      if (map!=NULL)
+        *to=(const char *)dict_get(map,from);
     }
-
-  map = nslcd_cfg->ldc_maps[sel][type];
-  assert (map != NULL);
-
-  NSS_LDAP_DATUM_ZERO (&key);
-  key.data = from;
-  key.size = strlen (from) + 1;
-
-  NSS_LDAP_DATUM_ZERO (&val);
-
-  stat = dict_get (map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
-  if (stat == NSS_STATUS_NOTFOUND && sel != LM_NONE)
-    {
-      map = nslcd_cfg->ldc_maps[LM_NONE][type];
-      assert (map != NULL);
-      stat = dict_get (map, NSS_LDAP_DB_NORMALIZE_CASE, &key, &val);
-    }
-
-  if (stat == NSS_STATUS_SUCCESS)
-    *to = (char *) val.data;
-  else
-    *to = NULL;
-
-  return stat;
+  }
+  if (*to==NULL)
+    return NSS_STATUS_NOTFOUND;
+  return NSS_STATUS_SUCCESS;
 }
 
 /*
@@ -3221,7 +3206,7 @@ do_proxy_rebind (LDAP * ld, char **whop, char **credp, int *methodp,
 }
 #endif
 
-enum nss_status
+static enum nss_status
 _nss_ldap_proxy_bind (const char *user, const char *password)
 {
   struct ldap_args args;
@@ -3322,7 +3307,7 @@ _nss_ldap_proxy_bind (const char *user, const char *password)
   return stat;
 }
 
-const char **
+static const char **
 _nss_ldap_get_attributes (enum ldap_map_selector sel)
 {
   const char **attrs = NULL;

@@ -27,6 +27,7 @@
 #define _CFG_H
 
 #include "ldap-nss.h"
+#include "dict.h"
 
 /* maximum number of URIs */
 #define NSS_LDAP_CONFIG_URI_MAX         31
@@ -124,7 +125,7 @@ struct ldap_config
   char *ldc_krb5_ccname;
 #endif /* CONFIGURE_KRB5_CCNAME */
   /* attribute/objectclass maps relative to this config */
-  void *ldc_maps[LM_NONE + 1][6]; /* must match MAP_MAX */
+  DICT *ldc_maps[LM_NONE + 1][6]; /* must match MAP_MAX */
   /* is userPassword "userPassword" or not? ie. do we need {crypt} to be stripped */
   enum ldap_userpassword_selector ldc_password_type;
   /* Use active directory time offsets? */

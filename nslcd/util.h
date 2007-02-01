@@ -72,12 +72,12 @@ struct ldap_dictionary
   struct ldap_dictionary *next;
 };
 
-struct ldap_dictionary *dict_new(void);
-enum nss_status dict_put(struct ldap_dictionary *db,
+struct ldap_dictionary *old_dict_new(void);
+enum nss_status old_dict_put(struct ldap_dictionary *db,
                          unsigned flags,
                          const struct ldap_datum *key,
                          const struct ldap_datum *value);
-enum nss_status dict_get(struct ldap_dictionary *db,
+enum nss_status old_dict_get(struct ldap_dictionary *db,
                          unsigned flags,
                          const struct ldap_datum *key,
                          struct ldap_datum *value);

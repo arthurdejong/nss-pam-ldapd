@@ -74,7 +74,7 @@ dn2uid_cache_put (const char *dn, const char *uid)
 
   if (__cache == NULL)
     {
-      __cache = (void *)dict_new();
+      __cache = (void *)old_dict_new();
       if (__cache == NULL)
         {
           cache_unlock ();
@@ -87,7 +87,7 @@ dn2uid_cache_put (const char *dn, const char *uid)
   val.data = (void *) uid;
   val.size = strlen (uid);
 
-  status = dict_put (__cache, 0, &key, &val);
+  status = old_dict_put (__cache, 0, &key, &val);
 
   cache_unlock ();
 
@@ -111,7 +111,7 @@ dn2uid_cache_get (const char *dn, char **uid, char **buffer, size_t * buflen)
   key.data = (void *) dn;
   key.size = strlen (dn);
 
-  status = dict_get (__cache, 0, &key, &val);
+  status = old_dict_get (__cache, 0, &key, &val);
   if (status != NSS_STATUS_SUCCESS)
     {
       cache_unlock ();
@@ -459,7 +459,7 @@ int _nss_ldap_escape_string(const char *src,char *buffer,size_t buflen)
   return 0;
 }
 
-struct ldap_dictionary *dict_new(void)
+struct ldap_dictionary *old_dict_new(void)
 {
   struct ldap_dictionary *dict;
   dict = malloc(sizeof(struct ldap_dictionary));
@@ -516,7 +516,7 @@ do_dup_datum (unsigned flags, struct ldap_datum * dst, const struct ldap_datum *
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status dict_get(
+enum nss_status old_dict_get(
                 struct ldap_dictionary *db,
                 unsigned flags,
                 const struct ldap_datum *key,
@@ -542,7 +542,7 @@ enum nss_status dict_get(
   return NSS_STATUS_NOTFOUND;
 }
 
-enum nss_status dict_put(
+enum nss_status old_dict_put(
                 struct ldap_dictionary *db,
                 unsigned flags,
                 const struct ldap_datum *key,
@@ -565,7 +565,7 @@ enum nss_status dict_put(
     p=do_find_last(dict);
     assert(p!=NULL);
     assert(p->next==NULL);
-    q=dict_new();
+    q=old_dict_new();
     if (q==NULL)
       return NSS_STATUS_TRYAGAIN;
   }
