@@ -23,7 +23,6 @@ AM_CFLAGS = -pthread
 
 nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
                 log.c log.h \
-                xmalloc.c xmalloc.h \
                 common.c common.h \
                 resolve.c resolve.h \
                 ldap-schema.c ldap-schema.h \

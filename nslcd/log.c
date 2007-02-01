@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <syslog.h>
@@ -31,7 +32,6 @@
 #include <string.h>
 
 #include "log.h"
-#include "xmalloc.h"
 
 
 /* set the logname */
@@ -63,7 +63,13 @@ static void log_addlogging_fp(FILE *fp,int loglevel)
 {
   struct cvsd_log *tmp,*lst;
   /* create new logstruct */
-  tmp=(struct cvsd_log *)xmalloc(sizeof(struct cvsd_log));
+  tmp=(struct cvsd_log *)malloc(sizeof(struct cvsd_log));
+  if (tmp==NULL)
+  {
+    fprintf(stderr,"malloc() failed: %s",strerror(errno));
+    /* since this is done during initialisation it's best to bail out */
+    exit(1);
+  }
   tmp->fp=fp;
   tmp->loglevel=loglevel;
   tmp->next=NULL;
