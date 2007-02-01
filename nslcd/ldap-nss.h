@@ -406,7 +406,7 @@ enum nss_status _nss_ldap_assign_userpassword (LDAPMessage * e, /* IN */
                                           size_t * buflen);     /* IN/OUT */
 
 /* check that the entry has the specified objectclass
-   return 0 for false, not-0 for true */ 
+   return 0 for false, not-0 for true */
 int has_objectclass(LDAPMessage *entry,const char *objectclass);
 
 int _nss_ldap_shadow_date(const char *val);

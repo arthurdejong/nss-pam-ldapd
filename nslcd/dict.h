@@ -43,7 +43,7 @@ int dict_put(DICT *dict,const char *key,const void *value);
 /* Look up a key in the dictionary and return the associated
    value. NULL is returned if the key is not found in the dictionary.
    All key comparisons are case insensitive. */
-const void *dict_get(DICT *dict,const char *key); 
+const void *dict_get(DICT *dict,const char *key);
 
 /* Delete a key-value association from the dictionary.
    All key comparisons are case insensitive. */
