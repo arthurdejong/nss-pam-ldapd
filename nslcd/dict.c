@@ -90,6 +90,9 @@ DICT *dict_new(void)
 int dict_put(DICT *dict,const char *key,void *value)
 {
   struct dict_entry *entry;
+  /* ignore setting of value to NULL */
+  if (value==NULL)
+    return 0; /* probably do dict_del(dict,key) */
   entry=dict_entry_find(dict,key);
   if (entry==NULL)
   {
@@ -97,12 +100,12 @@ int dict_put(DICT *dict,const char *key,void *value)
     entry=dict_entry_new(key);
     if (entry==NULL)
       return -1;
+    /* insert entry in list */
+    entry->next=dict->head;
+    dict->head=entry;
   }
   /* set value */
   entry->value=value;
-  /* insert entry in list */
-  entry->next=dict->head;
-  dict->head=entry;
   return 0;
 }
 
