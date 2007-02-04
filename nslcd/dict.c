@@ -31,7 +31,7 @@
 
 struct dict_entry {
   const char *key;
-  const void *value;
+  void *value;
   struct dict_entry *next;
 };
 
@@ -87,7 +87,7 @@ DICT *dict_new(void)
   return dict;
 }
 
-int dict_put(DICT *dict,const char *key,const void *value)
+int dict_put(DICT *dict,const char *key,void *value)
 {
   struct dict_entry *entry;
   entry=dict_entry_find(dict,key);
@@ -106,7 +106,7 @@ int dict_put(DICT *dict,const char *key,const void *value)
   return 0;
 }
 
-const void *dict_get(DICT *dict,const char *key)
+void *dict_get(DICT *dict,const char *key)
 {
   struct dict_entry *entry;
   entry=dict_entry_find(dict,key);
@@ -138,7 +138,7 @@ void dict_values_first(DICT *dict)
   dict->ptr=dict->head;
 }
 
-const void *dict_values_next(DICT *dict)
+void *dict_values_next(DICT *dict)
 {
   struct dict_entry *ptr;
   ptr=dict->ptr;

@@ -38,12 +38,12 @@ DICT *dict_new(void);
    This function returns non-0 in case of memory allocation
    errors. If the key was previously in use the value
    is replaced. All key comparisons are case insensitive. */
-int dict_put(DICT *dict,const char *key,const void *value);
+int dict_put(DICT *dict,const char *key,void *value);
 
 /* Look up a key in the dictionary and return the associated
    value. NULL is returned if the key is not found in the dictionary.
    All key comparisons are case insensitive. */
-const void *dict_get(DICT *dict,const char *key);
+void *dict_get(DICT *dict,const char *key);
 
 /* Delete a key-value association from the dictionary.
    All key comparisons are case insensitive. */
@@ -61,6 +61,6 @@ void dict_values_first(DICT *dict);
 /* Function for looping over all dictionary values.
    This returns a stored value. NULL is returned when all
    stored values have been returned. */
-const void *dict_values_next(DICT *dict);
+void *dict_values_next(DICT *dict);
 
 #endif /* _DICT_H */
