@@ -10,7 +10,7 @@
    http://ch.tudelft.nl/~arthur/nss-ldapd/
 
    Copyright (C) 1997-2006 Luke Howard
-   Copyright (C) 2006 West Consulting
+   Copyright (C) 2006, 2007 West Consulting
    Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
@@ -272,7 +272,7 @@ shadow (shadowAccount)
 using Microsoft Active Directory
 --------------------------------
 
-When using Microsoft Active Directory server (tipically on Microsoft Windows
+When using Microsoft Active Directory server (typically on Microsoft Windows
 2000) some changes need to be made to the nss-ldapd.conf configuration file.
 The default configuration file has some commented out attribute mappings for
 such a setup.
