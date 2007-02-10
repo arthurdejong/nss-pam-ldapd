@@ -33,7 +33,6 @@
 #include <strings.h>
 #endif
 #include <stdio.h>
-#include <syslog.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/time.h>
@@ -272,7 +271,7 @@ do_bind (LDAP * ld, int timelimit, const char *dn, const char *pw,
               rc = LDAP_UNAVAILABLE;
             }
           /* Notify if we failed. */
-          syslog (LOG_AUTHPRIV | LOG_ERR, "nss_ldap: could not connect to any LDAP server as %s - %s",
+          log_log(LOG_ERR,"could not connect to any LDAP server as %s - %s",
                           dn, ldap_err2string (rc));
           log_log(LOG_DEBUG,"<== do_bind");
 
@@ -705,7 +704,7 @@ do_close (void)
 #else
       sd = __session.ls_conn->ld_sb.sb_sd;
 #endif /* LDAP_OPT_DESC */
-      syslog (LOG_AUTHPRIV | LOG_INFO, "nss_ldap: closing connection %p fd %d",
+      log_log(LOG_INFO,"closing connection %p fd %d",
               (void *)__session.ls_conn, sd);
 #endif /* DEBUG */
 
@@ -1203,8 +1202,8 @@ do_open (void)
   if (rc != LDAP_SUCCESS)
     {
       /* log actual LDAP error code */
-      syslog (LOG_AUTHPRIV | LOG_INFO,
-              "nss_ldap: failed to bind to LDAP server %s: %s",
+      log_log(LOG_INFO,
+              "failed to bind to LDAP server %s: %s",
               nslcd_cfg->ldc_uris[__session.ls_current_uri],
               ldap_err2string (rc));
       stat = do_map_error (rc);
@@ -1288,7 +1287,7 @@ do_result (struct ent_context * ctx, int all)
             {
               rc = LDAP_UNAVAILABLE;
             }
-          syslog (LOG_AUTHPRIV | LOG_ERR, "nss_ldap: could not get LDAP result - %s",
+          log_log(LOG_ERR,"could not get LDAP result - %s",
                   ldap_err2string (rc));
           stat = NSS_STATUS_UNAVAIL;
           break;
@@ -1318,8 +1317,7 @@ do_result (struct ent_context * ctx, int all)
                 {
                   stat = NSS_STATUS_UNAVAIL;
                   ldap_abandon (__session.ls_conn, ctx->ec_msgid);
-                  syslog (LOG_AUTHPRIV | LOG_ERR,
-                          "nss_ldap: could not get LDAP result - %s",
+                  log_log(LOG_ERR,"could not get LDAP result - %s",
                           ldap_err2string (rc));
                 }
               else if (resultControls != NULL)
@@ -1701,15 +1699,14 @@ do_with_reconnect (const char *base, int scope,
           else if (backoff < nslcd_cfg->ldc_reconnect_maxsleeptime)
             backoff *= 2;
 
-          syslog (LOG_AUTHPRIV | LOG_INFO,
-                  "nss_ldap: reconnecting to LDAP server (sleeping %d seconds)...",
+          log_log(LOG_INFO,"reconnecting to LDAP server (sleeping %d seconds)...",
                   backoff);
           (void) sleep (backoff);
         }
       else if (tries > 1)
         {
           /* Don't sleep, reconnect immediately. */
-          syslog (LOG_AUTHPRIV | LOG_INFO, "nss_ldap: reconnecting to LDAP server...");
+          log_log(LOG_INFO,"reconnecting to LDAP server...");
         }
 
       /* For each "try", attempt to connect to all specified URIs */
@@ -1770,12 +1767,10 @@ do_with_reconnect (const char *base, int scope,
   switch (stat)
     {
     case NSS_STATUS_UNAVAIL:
-      syslog (LOG_AUTHPRIV | LOG_ERR, "nss_ldap: could not search LDAP server - %s",
-              ldap_err2string (rc));
+      log_log(LOG_ERR,"could not search LDAP server - %s",ldap_err2string(rc));
       break;
     case NSS_STATUS_TRYAGAIN:
-      syslog (LOG_AUTHPRIV | LOG_ERR,
-              "nss_ldap: could not %s %sconnect to LDAP server - %s",
+      log_log(LOG_ERR,"could not %s %sconnect to LDAP server - %s",
               hard ? "hard" : "soft", tries ? "re" : "",
               ldap_err2string (rc));
       stat = NSS_STATUS_UNAVAIL;
@@ -1789,11 +1784,10 @@ do_with_reconnect (const char *base, int scope,
             uri = "(null)";
 
           if (tries)
-            syslog (LOG_AUTHPRIV | LOG_INFO,
-              "nss_ldap: reconnected to LDAP server %s after %d attempt%s",
+            log_log(LOG_INFO,"reconnected to LDAP server %s after %d attempt%s",
               uri, tries, (tries == 1) ? "" : "s");
           else
-            syslog (LOG_AUTHPRIV | LOG_INFO, "nss_ldap: reconnected to LDAP server %s", uri);
+            log_log(LOG_INFO,"reconnected to LDAP server %s", uri);
         }
       time (&__session.ls_timestamp);
       break;

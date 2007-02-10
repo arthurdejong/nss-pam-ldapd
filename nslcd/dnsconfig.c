@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <sys/param.h>
 #include <netdb.h>
-#include <syslog.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <resolv.h>

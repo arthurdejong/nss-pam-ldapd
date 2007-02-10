@@ -30,7 +30,6 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <string.h>
-#include <syslog.h>
 #ifdef HAVE_LBER_H
 #include <lber.h>
 #endif

@@ -34,7 +34,6 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <netdb.h>
-#include <syslog.h>
 #include <string.h>
 #include <fcntl.h>
 #include <assert.h>

@@ -42,7 +42,6 @@
 
 #include <netdb.h>
 #include <netinet/in.h>
-#include <syslog.h>
 
 #include <nss.h>
 #include <ldap.h>
