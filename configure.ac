@@ -222,7 +222,11 @@ AC_CHECK_FUNCS(ether_ntoa)
 AC_CHECK_FUNCS(setgroups)
 
 # checks for types
+AC_C_CONST
 AC_TYPE_SIGNAL
+AC_TYPE_MODE_T
+AC_TYPE_SIZE_T
+AC_TYPE_UID_T
 
 # check for support for the __thread keyword
 AC_CACHE_CHECK([whether $CC supports '__thread'], [mn_cv_c___thread_supported],
