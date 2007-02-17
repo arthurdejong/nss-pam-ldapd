@@ -67,7 +67,7 @@ AC_ARG_ENABLE(debug,
 AC_ARG_ENABLE(warnings,
               AS_HELP_STRING([--enable-warnings],
                              [enable extra compiler warnings (gcc)]),
-              [if test "x$enableval" != "no" ; then CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations" ; fi])
+              [if test "x$enableval" != "no" ; then CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations -Wunused -Wformat=2 -Wswitch-default -Wswitch-enum -Wfloat-equal -Wdeclaration-after-statement -Wextra -Wpointer-arith -Wbad-function-cast -Wunreachable-code -Wredundant-decls -Wredundant-decls" ; fi])
 
 dnl
 dnl --enable-paged-results is now deprecated; if this option is set,
