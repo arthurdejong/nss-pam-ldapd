@@ -153,7 +153,7 @@ static enum nss_status read_hostent_nextonempty(
   do
   {
     /* read a host entry */
-    retv=read_hostent(fp,AF_INET,result,buffer,buflen,errnop,h_errnop);
+    retv=read_hostent(fp,af,result,buffer,buflen,errnop,h_errnop);
     /* check result */
     if (retv!=NSS_STATUS_SUCCESS)
       return retv;

@@ -360,7 +360,7 @@ static enum nss_status do_parse_list(char *values,char ***valptr,
 #ifdef HAVE_STRTOK_R
   char *tok_r;
 #endif /* HAVE_STRTOK_R */
-  int valcount;
+  size_t valcount;
 
   int buflen = *pbuflen;
   char *buffer = *pbuffer;

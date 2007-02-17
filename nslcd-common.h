@@ -250,7 +250,7 @@ static void debug_dump(const void *ptr,size_t size)
   /* allocate room for *char[num] */ \
   BUF_ALLOC(fp,arr,char *,tmpint32); \
   /* read all the strings */ \
-  for (tmp2int32=0;tmp2int32<(num);tmp2int32++) \
+  for (tmp2int32=0;tmp2int32<(int32_t)(num);tmp2int32++) \
   { \
     READ_STRING_BUF(fp,(arr)[tmp2int32]); \
   }
