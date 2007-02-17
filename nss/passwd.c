@@ -28,6 +28,7 @@
 
 #include "prototypes.h"
 #include "common.h"
+#include "compat/attrs.h"
 
 static enum nss_status read_passwd(
         FILE *fp,struct passwd *result,
@@ -63,7 +64,7 @@ enum nss_status _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffe
 static __thread FILE *pwentfp;
 
 /* open a connection to the nslcd and write the request */
-enum nss_status _nss_ldap_setpwent(int stayopen)
+enum nss_status _nss_ldap_setpwent(int UNUSED(stayopen))
 {
   NSS_SETENT(pwentfp,NSLCD_ACTION_PASSWD_ALL);
 }

@@ -28,6 +28,7 @@
 
 #include "prototypes.h"
 #include "common.h"
+#include "compat/attrs.h"
 
 static enum nss_status read_etherent(
         FILE *fp,struct etherent *result,
@@ -63,7 +64,7 @@ enum nss_status _nss_ldap_getntohost_r(
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *etherentfp;
 
-enum nss_status _nss_ldap_setetherent(int stayopen)
+enum nss_status _nss_ldap_setetherent(int UNUSED(stayopen))
 {
   NSS_SETENT(etherentfp,NSLCD_ACTION_ETHER_ALL);
 }

@@ -28,6 +28,7 @@ NSS_LDAP_NSS_VERSIONED = libnss_ldap.so.$(NSS_VERS)
 
 nss_ldap_so_SOURCES = common.c common.h prototypes.h \
                       ../nslcd.h ../nslcd-common.h \
+                      ../compat/attrs.h \
                       aliases.c ethers.c group.c hosts.c netgroup.c \
                       networks.c passwd.c protocols.c rpc.c services.c \
                       shadow.c

@@ -30,6 +30,7 @@
 #include <arpa/inet.h>
 
 #include "nss/prototypes.h"
+#include "compat/attrs.h"
 
 static char *nssstatus(enum nss_status retv)
 {
@@ -59,7 +60,7 @@ static void printalias(struct aliasent *alias)
 }
 
 /* the main program... */
-int main(int argc,char *argv[])
+int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
   struct aliasent aliasresult;
   char buffer[1024];

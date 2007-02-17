@@ -23,6 +23,8 @@
 #ifndef _DICT_H
 #define _DICT_H
 
+#include "compat/attrs.h"
+
 /*
    These functions provide a mapping between a case insensitive
    string and a pointer.
@@ -31,7 +33,8 @@ typedef struct dictionary DICT;
 
 /* Create a new instance of a dictionary. Returns NULL
    in case of memory allocation errors. */
-DICT *dict_new(void);
+DICT *dict_new(void)
+  LIKE_MALLOC MUST_USE;
 
 /* Add a relation in the dictionary. The key is duplicated
    and can be reused by the caller. The pointer is just stored.
@@ -43,7 +46,8 @@ int dict_put(DICT *dict,const char *key,void *value);
 /* Look up a key in the dictionary and return the associated
    value. NULL is returned if the key is not found in the dictionary.
    All key comparisons are case insensitive. */
-void *dict_get(DICT *dict,const char *key);
+void *dict_get(DICT *dict,const char *key)
+  MUST_USE;
 
 /* Delete a key-value association from the dictionary.
    All key comparisons are case insensitive. */
@@ -61,6 +65,7 @@ void dict_values_first(DICT *dict);
 /* Function for looping over all dictionary values.
    This returns a stored value. NULL is returned when all
    stored values have been returned. */
-void *dict_values_next(DICT *dict);
+void *dict_values_next(DICT *dict)
+  MUST_USE;
 
 #endif /* _DICT_H */

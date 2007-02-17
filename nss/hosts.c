@@ -28,6 +28,7 @@
 
 #include "prototypes.h"
 #include "common.h"
+#include "compat/attrs.h"
 
 /* Redifine some ERROR_OUT macros as we also want to set h_errnop. */
 
@@ -219,7 +220,7 @@ enum nss_status _nss_ldap_gethostbyaddr_r(
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *hostentfp;
 
-enum nss_status _nss_ldap_sethostent(int stayopen)
+enum nss_status _nss_ldap_sethostent(int UNUSED(stayopen))
 {
   /* temporary storage for h_errno
      (used in NSS_SETENT error handling) */

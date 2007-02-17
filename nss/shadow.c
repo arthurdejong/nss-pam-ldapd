@@ -28,6 +28,7 @@
 
 #include "prototypes.h"
 #include "common.h"
+#include "compat/attrs.h"
 
 static enum nss_status read_spwd(
         FILE *fp,struct spwd *result,
@@ -57,7 +58,7 @@ enum nss_status _nss_ldap_getspnam_r(const char *name,struct spwd *result,char *
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *spentfp;
 
-enum nss_status _nss_ldap_setspent(int stayopen)
+enum nss_status _nss_ldap_setspent(int UNUSED(stayopen))
 {
   NSS_SETENT(spentfp,NSLCD_ACTION_SHADOW_ALL);
 }

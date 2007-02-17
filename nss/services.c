@@ -28,6 +28,7 @@
 
 #include "prototypes.h"
 #include "common.h"
+#include "compat/attrs.h"
 
 static enum nss_status read_servent(
         FILE *fp,struct servent *result,
@@ -63,7 +64,7 @@ enum nss_status _nss_ldap_getservbyport_r(int port,const char *protocol,struct s
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *protoentfp;
 
-enum nss_status _nss_ldap_setservent(int stayopen)
+enum nss_status _nss_ldap_setservent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL);
 }

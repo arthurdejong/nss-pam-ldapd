@@ -28,6 +28,7 @@
 
 #include "prototypes.h"
 #include "common.h"
+#include "compat/attrs.h"
 
 static enum nss_status read_group(
         FILE *fp,struct group *result,
@@ -42,6 +43,7 @@ static enum nss_status read_group(
   return NSS_STATUS_SUCCESS;
 }
 
+#ifdef REENABLE_WHEN_WORKING
 /* read all group entries from the stream and add
    gids of these groups to the list */
 static enum nss_status read_gids(
@@ -77,6 +79,7 @@ static enum nss_status read_gids(
   /* return the proper status code */
   return (res==NSLCD_RESULT_NOTFOUND)?NSS_STATUS_SUCCESS:nslcd2nss(res);
 }
+#endif /* REENABLE_WHEN_WORKING */
 
 enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop)
 {
@@ -122,7 +125,7 @@ enum nss_status _nss_ldap_initgroups_dyn(
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *grentfp;
 
-enum nss_status _nss_ldap_setgrent(int stayopen)
+enum nss_status _nss_ldap_setgrent(int UNUSED(stayopen))
 {
   NSS_SETENT(grentfp,NSLCD_ACTION_GROUP_ALL);
 }

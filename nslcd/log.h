@@ -1,7 +1,7 @@
 /*
    log.h - definitions of logging funtions
 
-   Copyright (C) 2002, 2003 Arthur de Jong
+   Copyright (C) 2002, 2003, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@
 
 
 #include <syslog.h>
+#include "compat/attrs.h"
 
 
 /* set loglevel when no logging is configured */
@@ -49,12 +50,14 @@ void log_startlogging(void);
 
 
 /* log the given message using the configured logging method */
-void log_log(int pri,const char *format, ...);
+void log_log(int pri,const char *format, ...)
+  LIKE_PRINTF(2,3);
 
 
 /* return the syslog loglevel represented by the string
    return -1 on unknown */
-int log_getloglevel(const char *lvl);
+int log_getloglevel(const char *lvl)
+  MUST_USE;
 
 
 #endif /* not _LOG_H */

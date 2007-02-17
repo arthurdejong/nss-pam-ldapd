@@ -49,6 +49,7 @@
 #include "nslcd.h"
 #include "log.h"
 #include "common.h"
+#include "compat/attrs.h"
 
 
 /* the definition of the environment */
@@ -487,7 +488,7 @@ static void install_sighandler(int signum,RETSIGTYPE (*handler) (int))
   }
 }
 
-static void *worker(void *arg)
+static void *worker(void UNUSED(*arg))
 {
   /* start waiting for incoming connections */
   while (nslcd_exitsignal==0)

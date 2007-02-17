@@ -27,9 +27,10 @@
 #include <assert.h>
 
 #include "../../nslcd/dict.h"
+#include "compat/attrs.h"
 
 /* the main program... */
-int main(int argc,char *argv[])
+int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
   DICT *dict;
   void *ret;

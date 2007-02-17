@@ -28,6 +28,7 @@
 
 #include "ldap-nss.h"
 #include "dict.h"
+#include "compat/attrs.h"
 
 /* maximum number of URIs */
 #define NSS_LDAP_CONFIG_URI_MAX         31
@@ -161,10 +162,13 @@ extern struct ldap_config *nslcd_cfg;
 #define NSS_LDAP_FLAGS_RFC2307BIS               0x0004
 #define NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT   0x0008
 
-int _nss_ldap_test_config_flag(unsigned int flag);
+int _nss_ldap_test_config_flag(unsigned int flag)
+  MUST_USE;
 
-int cfg_init(void);
+int cfg_init(void)
+  MUST_USE;
 
-enum nss_status _nss_ldap_add_uri (struct ldap_config *result, const char *uri,char **buffer, size_t *buflen);
+enum nss_status _nss_ldap_add_uri (struct ldap_config *result, const char *uri,char **buffer, size_t *buflen)
+  MUST_USE;
 
 #endif /* _CFG_H */

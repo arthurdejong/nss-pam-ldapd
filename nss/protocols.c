@@ -28,6 +28,7 @@
 
 #include "prototypes.h"
 #include "common.h"
+#include "compat/attrs.h"
 
 static enum nss_status read_protoent(
         FILE *fp,struct protoent *result,
@@ -58,7 +59,7 @@ enum nss_status _nss_ldap_getprotobynumber_r(int number,struct protoent *result,
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *protoentfp;
 
-enum nss_status _nss_ldap_setprotoent(int stayopen)
+enum nss_status _nss_ldap_setprotoent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp,NSLCD_ACTION_PROTOCOL_ALL);
 }

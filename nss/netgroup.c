@@ -29,6 +29,7 @@
 
 #include "prototypes.h"
 #include "common.h"
+#include "compat/attrs.h"
 
 /* we redifine this here because we need to return NSS_STATUS_RETURN
    if we have sucessfully read some entries */
@@ -126,7 +127,7 @@ enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,char *buffer,s
   NSS_GETENT(netgrentfp,read_netgrent(netgrentfp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_endnetgrent(struct __netgrent *result)
+enum nss_status _nss_ldap_endnetgrent(struct __netgrent UNUSED(* result))
 {
   NSS_ENDENT(netgrentfp);
 }

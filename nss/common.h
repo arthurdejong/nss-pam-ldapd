@@ -28,14 +28,17 @@
 
 #include "nslcd.h"
 #include "nslcd-common.h"
+#include "compat/attrs.h"
 
 /* This function maps an nslcd return code (as defined in nslcd.h)
    to an nss code (as defined in nss.h). */
-enum nss_status nslcd2nss(int code);
+enum nss_status nslcd2nss(int code)
+  PURE MUST_USE;
 
 /* returns a socket to the server or NULL on error (see errno),
    socket should be closed with fclose() */
-FILE *nslcd_client_open(void);
+FILE *nslcd_client_open(void)
+  MUST_USE;
 
 /* These are macors for performing common operations in the nslcd
    request/response protocol, they are an extension for client

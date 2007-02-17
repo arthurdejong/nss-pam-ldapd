@@ -28,6 +28,7 @@
 
 #include "prototypes.h"
 #include "common.h"
+#include "compat/attrs.h"
 
 static enum nss_status read_rpcent(
         FILE *fp,struct rpcent *result,
@@ -58,7 +59,7 @@ enum nss_status _nss_ldap_getrpcbynumber_r(int number,struct rpcent *result,char
 /* thread-local file pointer to an ongoing request */
 static __thread FILE *protoentfp;
 
-enum nss_status _nss_ldap_setrpcent(int stayopen)
+enum nss_status _nss_ldap_setrpcent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp,NSLCD_ACTION_RPC_ALL);
 }
