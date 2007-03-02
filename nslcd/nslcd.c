@@ -286,7 +286,7 @@ static int open_socket(void)
   }
 
   /* set permissions of socket so anybody can do requests */
-  if (chmod(NSLCD_SOCKET,0666))
+  if (fchmod(sock,0666))
   {
     log_log(LOG_ERR,"fctnl(F_SETFL,O_NONBLOCK) failed: %s",strerror(errno));
     if (close(sock))
