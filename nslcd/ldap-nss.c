@@ -1750,16 +1750,6 @@ do_with_reconnect (const char *base, int scope,
           if (nslcd_cfg->ldc_reconnect_pol == LP_RECONNECT_SOFT)
             hard = 0;
 
-          /*
-           * If the file /lib/init/rw/libnss-ldap.bind_policy_soft exists,
-           * then ignore the actual bind_policy definition and use the
-           * soft semantics.  This file should only exist during early
-           * boot and late shutdown, points at which the networking or
-           * the LDAP server itself are likely to be unavailable anyway.
-           */
-          if (access("/lib/init/rw/libnss-ldap.bind_policy_soft",R_OK) == 0)
-              hard = 0;
-
           ++tries;
         }
     }
