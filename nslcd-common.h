@@ -65,7 +65,7 @@ static void debug_dump(const void *ptr,size_t size)
 #define WRITE(fp,ptr,size) \
   DEBUG_PRINT("WRITE       : var="__STRING(ptr)" size=%d",(int)size); \
   DEBUG_DUMP(ptr,size); \
-  if (fwrite(ptr,size,1,fp)<1) \
+  if (fwrite(ptr,(size_t)size,(size_t)1,fp)<(size_t)1) \
   { \
     DEBUG_PRINT("WRITE       : var="__STRING(ptr)" error: %s",strerror(errno)); \
     ERROR_OUT_WRITEERROR(fp); \
@@ -133,7 +133,7 @@ static void debug_dump(const void *ptr,size_t size)
    */
 
 #define READ(fp,ptr,size) \
-  if (fread(ptr,size,1,fp)<1) \
+  if (fread(ptr,(size_t)size,(size_t)1,fp)<(size_t)1) \
   { \
     DEBUG_PRINT("READ       : var="__STRING(ptr)" error: %s",strerror(errno)); \
     ERROR_OUT_READERROR(fp); \
@@ -189,11 +189,11 @@ static void debug_dump(const void *ptr,size_t size)
   /* align to the specified type width */ \
   BUF_ALIGN(fp,type); \
   /* check that we have enough room */ \
-  BUF_CHECK(fp,(num)*sizeof(type)); \
+  BUF_CHECK(fp,(size_t)(num)*sizeof(type)); \
   /* store the pointer */ \
   (ptr)=(type *)BUF_CUR; \
   /* reserve the space */ \
-  BUF_SKIP((num)*sizeof(type));
+  BUF_SKIP((size_t)(num)*sizeof(type));
 
 /* read string in the buffer (using buffer, buflen and bufptr)
    and store the actual location of the string in field */

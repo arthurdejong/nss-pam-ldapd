@@ -37,7 +37,7 @@
 
 /* translates a nsklcd return code (as defined in nslcd.h) to
    a nss code (as defined in nss.h) */
-enum nss_status nslcd2nss(int code)
+enum nss_status nslcd2nss(int32_t code)
 {
   switch (code)
   {
@@ -62,15 +62,15 @@ FILE *nslcd_client_open()
   addr.sun_family=AF_UNIX;
   strcpy(addr.sun_path,NSLCD_SOCKET);
   /* connect to the socket */
-  if (connect(sock,(struct sockaddr *)&addr,sizeof(struct sockaddr_un))<0)
+  if (connect(sock,(struct sockaddr *)&addr,(socklen_t)sizeof(struct sockaddr_un))<0)
   {
-    close(sock);
+    (void)close(sock);
     return NULL;
   }
   /* create a stream object */
   if ((fp=fdopen(sock,"w+"))==NULL)
   {
-    close(sock);
+    (void)close(sock);
     return NULL;
   }
   /* return the stream */

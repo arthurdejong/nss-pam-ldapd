@@ -70,7 +70,7 @@ static int nslcd_serversocket=-1;
 
 /* thread ids of all running threads */
 #define NUM_THREADS 5
-pthread_t nslcd_threads[NUM_THREADS];
+static pthread_t nslcd_threads[NUM_THREADS];
 
 
 /* display version information */
@@ -122,16 +122,16 @@ static void parse_cmdline(int argc,char *argv[])
       break;
     case 'h': /*     --help         display this help and exit */
       display_usage(stdout,argv[0]);
-      exit(0);
+      exit(EXIT_SUCCESS);
     case 'V': /*     --version      output version information and exit */
       display_version(stdout);
-      exit(0);
+      exit(EXIT_SUCCESS);
     case ':': /* missing required parameter */
     case '?': /* unknown option character or extraneous parameter */
     default:
       fprintf(stderr,"Try `%s --help' for more information.\n",
               argv[0]);
-      exit(1);
+      exit(EXIT_FAILURE);
     }
   }
   /* check for remaining arguments */
@@ -141,7 +141,7 @@ static void parse_cmdline(int argc,char *argv[])
             argv[0],argv[optind]);
     fprintf(stderr,"Try `%s --help' for more information.\n",
             argv[0]);
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 }
 
@@ -209,8 +209,10 @@ static RETSIGTYPE sigexit_handler(int signum)
   nslcd_exitsignal=signum;
   /* cancel all running threads */
   for (i=0;i<NUM_THREADS;i++)
-    pthread_cancel(nslcd_threads[i]);
-
+    if (pthread_cancel(nslcd_threads[i]))
+    {
+      log_log(LOG_WARNING,"failed to stop thread %d (ignored): %s",i,strerror(errno));
+    }
 }
 
 
@@ -251,7 +253,7 @@ static int open_socket(void)
   if ( (sock=socket(PF_UNIX,SOCK_STREAM,0))<0 )
   {
     log_log(LOG_ERR,"cannot create socket: %s",strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   /* remove existing named socket */
@@ -273,7 +275,7 @@ static int open_socket(void)
             strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   /* close the file descriptor on exit */
@@ -282,16 +284,16 @@ static int open_socket(void)
     log_log(LOG_ERR,"fctnl(F_SETFL,O_NONBLOCK) failed: %s",strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   /* set permissions of socket so anybody can do requests */
-  if (fchmod(sock,0666))
+  if (fchmod(sock,(mode_t)0666))
   {
     log_log(LOG_ERR,"fctnl(F_SETFL,O_NONBLOCK) failed: %s",strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   /* start listening for connections */
@@ -300,7 +302,7 @@ static int open_socket(void)
     log_log(LOG_ERR,"listen() failed: %s",strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   /* we're done */
@@ -314,7 +316,7 @@ static int read_header(FILE *fp,int32_t *action)
   int32_t tmpint32;
   /* read the protocol version */
   READ_TYPE(fp,tmpint32,int32_t);
-  if (tmpint32 != NSLCD_VERSION)
+  if (tmpint32 != (int32_t)NSLCD_VERSION)
   {
     log_log(LOG_DEBUG,"wrong nslcd version id (%d)",(int)tmpint32);
     return -1;
@@ -333,8 +335,13 @@ static void handleconnection(int sock)
   struct ucred client;
   int32_t action;
 
+  /* initialize client information (in case getsockopt() breaks) */
+  client.pid=(pid_t)0;
+  client.uid=(uid_t)-1;
+  client.gid=(gid_t)-1;
+
   /* look up process information from client */
-  alen=sizeof(struct ucred);
+  alen=(socklen_t)sizeof(struct ucred);
   if (getsockopt(sock,SOL_SOCKET,SO_PEERCRED,&client,&alen) < 0)
   {
     log_log(LOG_ERR,"getsockopt(SO_PEERCRED) failed: %s",strerror(errno));
@@ -351,57 +358,57 @@ static void handleconnection(int sock)
   if ((fp=fdopen(sock,"w+"))==NULL)
   {
     log_log(LOG_WARNING,"cannot create stream for writing: %s",strerror(errno));
-    close(sock);
+    (void)close(sock);
     return;
   }
 
   /* read request */
   if (read_header(fp,&action))
   {
-    fclose(fp);
+    (void)fclose(fp);
     return;
   }
 
   /* handle request */
   switch (action)
   {
-    case NSLCD_ACTION_ALIAS_BYNAME:     nslcd_alias_byname(fp); break;
-    case NSLCD_ACTION_ALIAS_ALL:        nslcd_alias_all(fp); break;
-    case NSLCD_ACTION_ETHER_BYNAME:     nslcd_ether_byname(fp); break;
-    case NSLCD_ACTION_ETHER_BYETHER:    nslcd_ether_byether(fp); break;
-    case NSLCD_ACTION_ETHER_ALL:        nslcd_ether_all(fp); break;
-    case NSLCD_ACTION_GROUP_BYNAME:     nslcd_group_byname(fp); break;
-    case NSLCD_ACTION_GROUP_BYGID:      nslcd_group_bygid(fp); break;
-    case NSLCD_ACTION_GROUP_BYMEMBER:   nslcd_group_bymember(fp); break;
-    case NSLCD_ACTION_GROUP_ALL:        nslcd_group_all(fp); break;
-    case NSLCD_ACTION_HOST_BYNAME:      nslcd_host_byname(fp); break;
-    case NSLCD_ACTION_HOST_BYADDR:      nslcd_host_byaddr(fp); break;
-    case NSLCD_ACTION_HOST_ALL:         nslcd_host_all(fp); break;
-    case NSLCD_ACTION_NETGROUP_BYNAME:  nslcd_netgroup_byname(fp); break;
-    case NSLCD_ACTION_NETWORK_BYNAME:   nslcd_network_byname(fp); break;
-    case NSLCD_ACTION_NETWORK_BYADDR:   nslcd_network_byaddr(fp); break;
-    case NSLCD_ACTION_NETWORK_ALL:      nslcd_network_all(fp); break;
-    case NSLCD_ACTION_PASSWD_BYNAME:    nslcd_passwd_byname(fp); break;
-    case NSLCD_ACTION_PASSWD_BYUID:     nslcd_passwd_byuid(fp); break;
-    case NSLCD_ACTION_PASSWD_ALL:       nslcd_passwd_all(fp); break;
-    case NSLCD_ACTION_PROTOCOL_BYNAME:  nslcd_protocol_byname(fp); break;
-    case NSLCD_ACTION_PROTOCOL_BYNUMBER:nslcd_protocol_bynumber(fp); break;
-    case NSLCD_ACTION_PROTOCOL_ALL:     nslcd_protocol_all(fp); break;
-    case NSLCD_ACTION_RPC_BYNAME:       nslcd_rpc_byname(fp); break;
-    case NSLCD_ACTION_RPC_BYNUMBER:     nslcd_rpc_bynumber(fp); break;
-    case NSLCD_ACTION_RPC_ALL:          nslcd_rpc_all(fp); break;
-    case NSLCD_ACTION_SERVICE_BYNAME:   nslcd_service_byname(fp); break;
-    case NSLCD_ACTION_SERVICE_BYNUMBER: nslcd_service_bynumber(fp); break;
-    case NSLCD_ACTION_SERVICE_ALL:      nslcd_service_all(fp); break;
-    case NSLCD_ACTION_SHADOW_BYNAME:    nslcd_shadow_byname(fp); break;
-    case NSLCD_ACTION_SHADOW_ALL:       nslcd_shadow_all(fp); break;
+    case NSLCD_ACTION_ALIAS_BYNAME:     (void)nslcd_alias_byname(fp); break;
+    case NSLCD_ACTION_ALIAS_ALL:        (void)nslcd_alias_all(fp); break;
+    case NSLCD_ACTION_ETHER_BYNAME:     (void)nslcd_ether_byname(fp); break;
+    case NSLCD_ACTION_ETHER_BYETHER:    (void)nslcd_ether_byether(fp); break;
+    case NSLCD_ACTION_ETHER_ALL:        (void)nslcd_ether_all(fp); break;
+    case NSLCD_ACTION_GROUP_BYNAME:     (void)nslcd_group_byname(fp); break;
+    case NSLCD_ACTION_GROUP_BYGID:      (void)nslcd_group_bygid(fp); break;
+    case NSLCD_ACTION_GROUP_BYMEMBER:   (void)nslcd_group_bymember(fp); break;
+    case NSLCD_ACTION_GROUP_ALL:        (void)nslcd_group_all(fp); break;
+    case NSLCD_ACTION_HOST_BYNAME:      (void)nslcd_host_byname(fp); break;
+    case NSLCD_ACTION_HOST_BYADDR:      (void)nslcd_host_byaddr(fp); break;
+    case NSLCD_ACTION_HOST_ALL:         (void)nslcd_host_all(fp); break;
+    case NSLCD_ACTION_NETGROUP_BYNAME:  (void)nslcd_netgroup_byname(fp); break;
+    case NSLCD_ACTION_NETWORK_BYNAME:   (void)nslcd_network_byname(fp); break;
+    case NSLCD_ACTION_NETWORK_BYADDR:   (void)nslcd_network_byaddr(fp); break;
+    case NSLCD_ACTION_NETWORK_ALL:      (void)nslcd_network_all(fp); break;
+    case NSLCD_ACTION_PASSWD_BYNAME:    (void)nslcd_passwd_byname(fp); break;
+    case NSLCD_ACTION_PASSWD_BYUID:     (void)nslcd_passwd_byuid(fp); break;
+    case NSLCD_ACTION_PASSWD_ALL:       (void)nslcd_passwd_all(fp); break;
+    case NSLCD_ACTION_PROTOCOL_BYNAME:  (void)nslcd_protocol_byname(fp); break;
+    case NSLCD_ACTION_PROTOCOL_BYNUMBER:(void)nslcd_protocol_bynumber(fp); break;
+    case NSLCD_ACTION_PROTOCOL_ALL:     (void)nslcd_protocol_all(fp); break;
+    case NSLCD_ACTION_RPC_BYNAME:       (void)nslcd_rpc_byname(fp); break;
+    case NSLCD_ACTION_RPC_BYNUMBER:     (void)nslcd_rpc_bynumber(fp); break;
+    case NSLCD_ACTION_RPC_ALL:          (void)nslcd_rpc_all(fp); break;
+    case NSLCD_ACTION_SERVICE_BYNAME:   (void)nslcd_service_byname(fp); break;
+    case NSLCD_ACTION_SERVICE_BYNUMBER: (void)nslcd_service_bynumber(fp); break;
+    case NSLCD_ACTION_SERVICE_ALL:      (void)nslcd_service_all(fp); break;
+    case NSLCD_ACTION_SHADOW_BYNAME:    (void)nslcd_shadow_byname(fp); break;
+    case NSLCD_ACTION_SHADOW_ALL:       (void)nslcd_shadow_all(fp); break;
     default:
       log_log(LOG_WARNING,"invalid request id: %d",(int)action);
       break;
   }
 
   /* we're done with the request */
-  fclose(fp);
+  (void)fclose(fp);
   return;
 }
 
@@ -457,17 +464,17 @@ static void write_pidfile(const char *filename)
     if ((fp=fopen(filename,"w"))==NULL)
     {
       log_log(LOG_ERR,"cannot open pid file (%s): %s",filename,strerror(errno));
-      exit(1);
+      exit(EXIT_FAILURE);
     }
     if (fprintf(fp,"%d\n",(int)getpid())<=0)
     {
       log_log(LOG_ERR,"error writing pid file (%s)",filename);
-      exit(1);
+      exit(EXIT_FAILURE);
     }
     if (fclose(fp))
     {
       log_log(LOG_ERR,"error writing pid file (%s): %s",filename,strerror(errno));
-      exit(1);
+      exit(EXIT_FAILURE);
     }
   }
 }
@@ -484,7 +491,7 @@ static void install_sighandler(int signum,RETSIGTYPE (*handler) (int))
   if (sigaction(signum,&act,NULL)!=0)
   {
     log_log(LOG_ERR,"error installing signal handler for '%s': %s",signame(signum),strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 }
 
@@ -503,8 +510,8 @@ static void *worker(void UNUSED(*arg))
 /* the main program... */
 int main(int argc,char *argv[])
 {
-  gid_t mygid=-1;
-  uid_t myuid=-1;
+  gid_t mygid=(gid_t)-1;
+  uid_t myuid=(uid_t)-1;
   int i;
 
   /* parse the command line */
@@ -526,11 +533,11 @@ int main(int argc,char *argv[])
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
   {
     log_log(LOG_ERR,"unable to daemonize: %s",strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   /* set default mode for pidfile and socket */
-  umask(0022);
+  (void)umask((mode_t)0022);
 
   /* intilialize logging */
   if (!nslcd_debugging)
@@ -538,7 +545,11 @@ int main(int argc,char *argv[])
   log_log(LOG_INFO,"version %s starting",VERSION);
 
   /* install handler to close stuff off on exit and log notice */
-  atexit(exithandler);
+  if (atexit(exithandler))
+  {
+    log_log(LOG_ERR,"atexit() failed: %s",strerror(errno));
+    exit(EXIT_FAILURE);
+  }
 
   /* write pidfile */
   write_pidfile(NSLCD_PIDFILE);
@@ -566,7 +577,7 @@ int main(int argc,char *argv[])
   if (prctl(PR_SET_KEEPCAPS,1))
   {
     log_log(LOG_ERR,"cannot prctl(PR_SET_KEEPCAPS,1): %s",strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   log_log(LOG_DEBUG,"debug: prctl(PR_SET_KEEPCAPS,1) done");
   /* dump the current capabilities */
@@ -581,7 +592,7 @@ int main(int argc,char *argv[])
     if (setgid(mygid)!=0)
     {
       log_log(LOG_ERR,"cannot setgid(%d): %s",(int)mygid,strerror(errno));
-      exit(1);
+      exit(EXIT_FAILURE);
     }
     log_log(LOG_DEBUG,"debug: setgid(%d) done",mygid);
   }
@@ -592,7 +603,7 @@ int main(int argc,char *argv[])
     if (setuid(myuid)!=0)
     {
       log_log(LOG_ERR,"cannot setuid(%d): %s",(int)myuid,strerror(errno));
-      exit(1);
+      exit(EXIT_FAILURE);
     }
     log_log(LOG_DEBUG,"debug: setuid(%d) done",myuid);
   }
@@ -602,7 +613,7 @@ int main(int argc,char *argv[])
   if (cap_set_proc(mycapabilities)!=0)
   {
     log_log(LOG_ERR,"cannot cap_set_proc(%s): %s",cap_to_text(mycapabilities,NULL),strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   log_log(LOG_DEBUG,"debug: cap_set_proc(%2) done",cap_to_text(mycapabilities,NULL));
   /* we no longer need this so we should free it */
@@ -632,7 +643,7 @@ int main(int argc,char *argv[])
     if (pthread_create(&nslcd_threads[i],NULL,worker,NULL))
     {
       log_log(LOG_ERR,"unable to start worker thread %d: %s",i,strerror(errno));
-      exit(1);
+      exit(EXIT_FAILURE);
     }
   }
 
@@ -642,7 +653,7 @@ int main(int argc,char *argv[])
     if (pthread_join(nslcd_threads[i],NULL))
     {
       log_log(LOG_ERR,"unable to wait for worker thread %d: %s",i,strerror(errno));
-      exit(1);
+      exit(EXIT_FAILURE);
     }
   }
 
@@ -653,5 +664,5 @@ int main(int argc,char *argv[])
                  signame(nslcd_exitsignal),nslcd_exitsignal);
   }
 
-  return 1;
+  return EXIT_FAILURE;
 }

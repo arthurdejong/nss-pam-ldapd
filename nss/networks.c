@@ -40,7 +40,7 @@
 
 #undef ERROR_OUT_READERROR
 #define ERROR_OUT_READERROR(fp) \
-  fclose(fp); \
+  (void)fclose(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
   *h_errnop=NO_RECOVERY; \
@@ -48,7 +48,7 @@
 
 #undef ERROR_OUT_BUFERROR
 #define ERROR_OUT_BUFERROR(fp) \
-  fclose(fp); \
+  (void)fclose(fp); \
   fp=NULL; \
   *errnop=ERANGE; \
   *h_errnop=TRY_AGAIN; \
@@ -60,7 +60,7 @@
 
 #undef ERROR_OUT_NOSUCCESS
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
-  fclose(fp); \
+  (void)fclose(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
   *h_errnop=HOST_NOT_FOUND; \
@@ -94,7 +94,7 @@ static enum nss_status read_netent(
     {
       /* read address and translate to host byte order */
       READ_TYPE(fp,tmpint32,int32_t);
-      result->n_net=ntohl(tmpint32);
+      result->n_net=ntohl((uint32_t)tmpint32);
       /* signal that we've read a proper entry */
       retv=NSS_STATUS_SUCCESS;
       /* don't return here to not upset the stream */

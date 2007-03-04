@@ -50,12 +50,12 @@ static enum nss_status read_gids(
         FILE *fp,long int *start,long int *size,
         gid_t **groupsp,long int limit,int *errnop)
 {
-  int32_t res=NSLCD_RESULT_SUCCESS;
+  int32_t res=(int32_t)NSLCD_RESULT_SUCCESS;
   int32_t tmpint32,tmp2int32,tmp3int32;
   gid_t gid;
   int num=0;
   /* loop over results */
-  while (res==NSLCD_RESULT_SUCCESS)
+  while (res==(int32_t)NSLCD_RESULT_SUCCESS)
   {
     /* skip group name */
     SKIP_STRING(fp);
@@ -77,7 +77,7 @@ static enum nss_status read_gids(
     READ_TYPE(fp,res,int32_t);
   }
   /* return the proper status code */
-  return (res==NSLCD_RESULT_NOTFOUND)?NSS_STATUS_SUCCESS:nslcd2nss(res);
+  return (res==(int32_t)NSLCD_RESULT_NOTFOUND)?NSS_STATUS_SUCCESS:nslcd2nss(res);
 }
 #endif /* REENABLE_WHEN_WORKING */
 

@@ -40,9 +40,6 @@ void _nss_ldap_init_attributes(const char ***attrtab);
 extern char _nss_ldap_filt_getaliasbyname[];
 extern char _nss_ldap_filt_getaliasent[];
 
-/* boot parameters */
-extern char _nss_ldap_filt_getbootparamsbyname[];
-
 /* MAC address mappings */
 extern char _nss_ldap_filt_gethostton[];
 extern char _nss_ldap_filt_getntohost[];
@@ -95,7 +92,6 @@ extern char _nss_ldap_filt_getspent[];
 
 /* netgroups */
 extern char _nss_ldap_filt_getnetgrent[];
-extern char _nss_ldap_filt_innetgr[];
 
 /**
  * Initialize attribute vector table indexed by map

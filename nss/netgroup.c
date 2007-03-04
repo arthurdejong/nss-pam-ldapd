@@ -35,7 +35,7 @@
    if we have sucessfully read some entries */
 #undef ERROR_OUT_NOSUCCESS
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
-  fclose(fp); \
+  (void)fclose(fp); \
   fp=NULL; \
   if (result->first) \
   { \

@@ -68,7 +68,7 @@ static void log_addlogging_fp(FILE *fp,int loglevel)
   {
     fprintf(stderr,"malloc() failed: %s",strerror(errno));
     /* since this is done during initialisation it's best to bail out */
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   tmp->fp=fp;
   tmp->loglevel=loglevel;
@@ -92,7 +92,7 @@ void log_addlogging_file(const char *filename,int loglevel)
   if (fp==NULL)
   {
     log_log(LOG_ERR,"cannot open logfile (%s) for appending: %s",filename,strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   log_addlogging_fp(fp,loglevel);
 }

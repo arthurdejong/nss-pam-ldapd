@@ -40,7 +40,7 @@ static enum nss_status read_servent(
   READ_STRINGLIST_NULLTERM(fp,result->s_aliases);
   /* store port number in network byte order */
   READ_TYPE(fp,tmpint32,int32_t);
-  result->s_port=ntohs(tmpint32);
+  result->s_port=ntohs((uint16_t)tmpint32);
   READ_STRING_BUF(fp,result->s_proto);
   /* we're done */
   return NSS_STATUS_SUCCESS;

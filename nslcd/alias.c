@@ -44,10 +44,13 @@
 #include "log.h"
 
 static enum nss_status _nss_ldap_parse_alias(
-        LDAPMessage *e,struct ldap_state *pvt,void *result,
+        LDAPMessage *e,struct ldap_state UNUSED(*pvt),void *result,
         char *buffer,size_t buflen)
 {
-
+  /* FIXME: fix following problem:
+            if the entry has multiple cn fields we may end up
+            sending the wrong cn, we should return the requested
+            CN instead, otherwise write an entry for each cn */
   struct aliasent *alias=(struct aliasent *)result;
   enum nss_status stat;
 
@@ -60,7 +63,7 @@ static enum nss_status _nss_ldap_parse_alias(
   return stat;
 }
 
-static int write_alias(LDAPMessage *e,struct ldap_state *pvt,FILE *fp)
+static int write_alias(LDAPMessage *e,struct ldap_state UNUSED(*pvt),FILE *fp)
 {
   int stat;
   if ((stat=_nss_ldap_write_rndvalue(fp,e,ATM(LM_ALIASES,cn)))!=NSLCD_RESULT_SUCCESS)

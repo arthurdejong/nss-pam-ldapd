@@ -99,8 +99,8 @@ enum nss_status _nss_ldap_getaliasent_r(struct aliasent *result,char *buffer,siz
 enum nss_status _nss_ldap_endaliasent(void);
 
 /* ethers - ethernet numbers */
-enum nss_status _nss_ldap_gethostton_r(const char *name,struct etherent *resut,char *buffer,size_t buflen,int *errnop);
-enum nss_status _nss_ldap_getntohost_r(const struct ether_addr *addr,struct etherent *eth,char *buffer,size_t buflen,int *errnop);
+enum nss_status _nss_ldap_gethostton_r(const char *name,struct etherent *result,char *buffer,size_t buflen,int *errnop);
+enum nss_status _nss_ldap_getntohost_r(const struct ether_addr *addr,struct etherent *result,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_setetherent(int stayopen);
 enum nss_status _nss_ldap_getetherent_r(struct etherent *result,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_endetherent(void);

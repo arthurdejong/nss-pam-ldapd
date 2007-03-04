@@ -331,21 +331,21 @@ enum nss_status _nss_ldap_search_s (const struct ldap_args * args,   /* IN */
                                enum ldap_map_selector sel, /* IN */
                                const char **user_attrs, /* IN */
                                int sizelimit,   /* IN */
-                               LDAPMessage ** pRes /* OUT */ );
+                               LDAPMessage ** res /* OUT */ );
 
 /*
  * Emulate X.500 read operation.
  */
 enum nss_status _nss_ldap_read (const char *dn, /* IN */
                            const char **attributes,     /* IN */
-                           LDAPMessage ** pRes /* OUT */ );
+                           LDAPMessage ** res /* OUT */ );
 
 /*
  * extended enumeration routine; uses asynchronous API.
  * Caller must have acquired the global mutex
  */
 enum nss_status _nss_ldap_getent_ex (struct ldap_args * args, /* IN */
-                                struct ent_context ** key,   /* IN/OUT */
+                                struct ent_context ** ctx,   /* IN/OUT */
                                 void *result,   /* IN/OUT */
                                 char *buffer,   /* IN */
                                 size_t buflen,  /* IN */
@@ -359,7 +359,7 @@ enum nss_status _nss_ldap_getent_ex (struct ldap_args * args, /* IN */
  * common enumeration routine; uses asynchronous API.
  * Acquires the global mutex
  */
-enum nss_status _nss_ldap_getent (struct ent_context ** key, /* IN/OUT */
+enum nss_status _nss_ldap_getent (struct ent_context ** ctx, /* IN/OUT */
                              void *result,      /* IN/OUT */
                              char *buffer,      /* IN */
                              size_t buflen,     /* IN */
@@ -386,8 +386,8 @@ enum nss_status _nss_ldap_assign_attrvals (LDAPMessage * e,     /* IN */
                                       const char *attr, /* IN */
                                       const char *omitvalue,    /* IN */
                                       char ***valptr,   /* OUT */
-                                      char **buffer,    /* IN/OUT */
-                                      size_t * buflen,  /* IN/OUT */
+                                      char **pbuffer,    /* IN/OUT */
+                                      size_t * pbuflen,  /* IN/OUT */
                                       size_t * pvalcount /* OUT */ );
 
 
@@ -411,15 +411,11 @@ int has_objectclass(LDAPMessage *entry,const char *objectclass);
 int _nss_ldap_shadow_date(const char *val);
 void _nss_ldap_shadow_handle_flag(struct spwd *sp);
 
-enum nss_status _nss_ldap_map_get(enum ldap_map_selector sel,
-                                  enum ldap_map_type map,
-                                  const char *key, const char **value);
-
-const char *_nss_ldap_map_at (enum ldap_map_selector sel, const char *pChar2);
+const char *_nss_ldap_map_at (enum ldap_map_selector sel, const char *attribute);
 const char *_nss_ldap_unmap_at (enum ldap_map_selector sel, const char *attribute);
 
-const char *_nss_ldap_map_oc (enum ldap_map_selector sel, const char *pChar);
-const char *_nss_ldap_unmap_oc (enum ldap_map_selector sel, const char *pChar);
+const char *_nss_ldap_map_oc (enum ldap_map_selector sel, const char *objectclass);
+const char *_nss_ldap_unmap_oc (enum ldap_map_selector sel, const char *objectclass);
 
 enum nss_status _nss_ldap_init (void);
 

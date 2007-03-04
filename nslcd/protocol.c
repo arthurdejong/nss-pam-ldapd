@@ -54,7 +54,7 @@
 #include "log.h"
 
 static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
-                       struct ldap_state *pvt,
+                       struct ldap_state UNUSED(*pvt),
                        void *result, char *buffer, size_t buflen)
 {
 

@@ -50,6 +50,11 @@
 #include "log.h"
 #include "cfg.h"
 
+/* FIXME: fix following problem:
+          if the entry has multiple cn fields we may end up
+          sending the wrong cn, we should return the requested
+          cn instead, otherwise write an entry for each cn */
+
 struct name_list
 {
   char *name;
@@ -1175,7 +1180,7 @@ int nslcd_group_byname(FILE *fp)
   if (1024<LDAP_NSS_BUFLEN_GROUP)
   {
     log_log(LOG_CRIT,"allocated buffer in nslcd_group_byname() too small");
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   /* do the LDAP request */
   LA_INIT(a);
@@ -1213,7 +1218,7 @@ int nslcd_group_bygid(FILE *fp)
   if (1024<LDAP_NSS_BUFLEN_GROUP)
   {
     log_log(LOG_CRIT,"allocated buffer in nslcd_group_byname() too small");
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   /* do the LDAP request */
   LA_INIT(a);

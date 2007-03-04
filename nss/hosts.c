@@ -40,7 +40,7 @@
 
 #undef ERROR_OUT_READERROR
 #define ERROR_OUT_READERROR(fp) \
-  fclose(fp); \
+  (void)fclose(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
   *h_errnop=NO_RECOVERY; \
@@ -48,7 +48,7 @@
 
 #undef ERROR_OUT_BUFERROR
 #define ERROR_OUT_BUFERROR(fp) \
-  fclose(fp); \
+  (void)fclose(fp); \
   fp=NULL; \
   *errnop=ERANGE; \
   *h_errnop=TRY_AGAIN; \
@@ -60,7 +60,7 @@
 
 #undef ERROR_OUT_NOSUCCESS
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
-  fclose(fp); \
+  (void)fclose(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
   *h_errnop=HOST_NOT_FOUND; \
@@ -75,7 +75,8 @@ static enum nss_status read_hostent(
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  int numaddr,i;
+  int32_t numaddr;
+  int i;
   int readaf;
   size_t bufptr=0;
   /* read the host entry */
@@ -88,7 +89,7 @@ static enum nss_status read_hostent(
   /* allocate memory for array */
   /* Note: this may allocate too much memory (e.g. also for
            address records of other address families) but
-           this is an easy way to do it */
+           this is a simple way to do it */
   BUF_ALLOC(fp,result->h_addr_list,char *,numaddr+1);
   /* go through the address list and filter on af */
   i=0;
@@ -134,7 +135,7 @@ static enum nss_status read_hostent_erronempty(
   {
     *errnop=ENOENT;
     *h_errnop=NO_ADDRESS;
-    fclose(fp);
+    (void)fclose(fp);
     return NSS_STATUS_NOTFOUND;
   }
   return NSS_STATUS_SUCCESS;

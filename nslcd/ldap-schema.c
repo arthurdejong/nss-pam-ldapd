@@ -57,9 +57,6 @@
 char _nss_ldap_filt_getaliasbyname[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getaliasent[LDAP_FILT_MAXSIZ];
 
-/* boot parameters */
-char _nss_ldap_filt_getbootparamsbyname[LDAP_FILT_MAXSIZ];
-
 /* MAC address mappings */
 char _nss_ldap_filt_gethostton[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getntohost[LDAP_FILT_MAXSIZ];
@@ -126,11 +123,6 @@ _nss_ldap_init_filters ()
             ATM (LM_ALIASES, cn), "%s");
   snprintf (_nss_ldap_filt_getaliasent, LDAP_FILT_MAXSIZ,
             "(%s=%s)", AT (objectClass), OC (nisMailAlias));
-
-  /* boot parameters */
-  snprintf (_nss_ldap_filt_getbootparamsbyname, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", AT (objectClass), OC (bootableDevice),
-            ATM (LM_BOOTPARAMS, cn), "%d");
 
   /* MAC address mappings */
   snprintf (_nss_ldap_filt_gethostton, LDAP_FILT_MAXSIZ,
@@ -242,8 +234,6 @@ _nss_ldap_init_filters ()
   snprintf (_nss_ldap_filt_getnetgrent, LDAP_FILT_MAXSIZ,
             "(&(%s=%s)(%s=%s))", AT (objectClass), OC (nisNetgroup),
             ATM (LM_NETGROUP, cn), "%s");
-  snprintf (_nss_ldap_filt_innetgr, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", AT (objectClass), OC (nisNetgroup), AT (memberNisNetgroup), "%s");
 
 }
 

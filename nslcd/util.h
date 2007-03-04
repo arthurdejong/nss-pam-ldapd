@@ -32,7 +32,7 @@
  */
 enum nss_status _nss_ldap_getrdnvalue(LDAPMessage *entry,
                                   const char *rdntype,
-                                  char **rval, char **buf, size_t * len);
+                                  char **rval, char **buffer, size_t * buflen);
 
 int _nss_ldap_write_rndvalue(FILE *fp,LDAPMessage *entry,const char *rdntype);
 
@@ -40,13 +40,13 @@ int _nss_ldap_write_rndvalue(FILE *fp,LDAPMessage *entry,const char *rdntype);
  * map a distinguished name to a login name, or group entry
  */
 enum nss_status _nss_ldap_dn2uid (const char *dn,
-                             char **uid, char **buf, size_t * len,
+                             char **uid, char **buffer, size_t * buflen,
                              int *pIsNestedGroup, LDAPMessage ** pRes);
 
 /*
  * Escape '*' in a string for use as a filter
  */
 
-int _nss_ldap_escape_string(const char *str,char *buf,size_t buflen);
+int _nss_ldap_escape_string(const char *src,char *buffer,size_t buflen);
 
 #endif /* _LDAP_NSS_LDAP_UTIL_H */

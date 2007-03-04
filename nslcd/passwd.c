@@ -78,6 +78,11 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
                     struct ldap_state * pvt,
                     void *result, char *buffer, size_t buflen)
 {
+  /* FIXME: fix following problem:
+            if the entry has multiple uid fields we may end up
+            sending the wrong uid, we should return the requested
+            uid instead, otherwise write an entry for each uid
+            (maybe also for uidNumber) */
   struct passwd *pw = (struct passwd *) result;
   char *uid, *gid;
   enum nss_status stat;

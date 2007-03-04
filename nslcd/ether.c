@@ -75,6 +75,10 @@ struct ether
 #ifdef NEW
 static int write_ether(LDAPMessage *e,struct ldap_state *pvt,FILE *fp)
 {
+  /* FIXME: fix following problem:
+            if the entry has multiple cn fields we may end up
+            sending the wrong cn, we should return the requested
+            CN instead, otherwise write an entry for each cn */
   int stat;
   char buffer[1024];
   /* write NSLCD_STRING(ETHER_NAME) */
@@ -95,7 +99,7 @@ static int write_ether(LDAPMessage *e,struct ldap_state *pvt,FILE *fp)
 
 static enum nss_status
 _nss_ldap_parse_ether (LDAPMessage * e,
-                       struct ldap_state * pvt,
+                       struct ldap_state UNUSED(*pvt),
                        void *result, char *buffer, size_t buflen)
 {
   struct ether *ether = (struct ether *) result;

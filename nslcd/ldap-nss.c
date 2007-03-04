@@ -118,8 +118,8 @@ static int __sigaction_retval = -1;
 static void (*__sigpipe_handler) (int) = SIG_DFL;
 #endif /* HAVE_SIGACTION */
 
-static const char *_nss_ldap_map_ov (const char *pChar);
-static const char *_nss_ldap_map_df (const char *pChar);
+static const char *_nss_ldap_map_ov (const char *attribute);
+static const char *_nss_ldap_map_df (const char *attribute);
 static const char *_nss_ldap_locate_userpassword (char **vals);
 
 /*
@@ -3032,6 +3032,11 @@ _nss_ldap_shadow_handle_flag (struct spwd *sp)
 }
 #endif /* HAVE_SHADOW_H */
 
+static enum nss_status
+_nss_ldap_map_get (enum ldap_map_selector sel,
+                   enum ldap_map_type type,
+                   const char *from, const char **to);
+
 const char *
 _nss_ldap_map_at (enum ldap_map_selector sel, const char *attribute)
 {
@@ -3096,7 +3101,7 @@ _nss_ldap_map_df (const char *attribute)
   return value;
 }
 
-enum nss_status
+static enum nss_status
 _nss_ldap_map_get (enum ldap_map_selector sel,
                    enum ldap_map_type type,
                    const char *from, const char **to)
