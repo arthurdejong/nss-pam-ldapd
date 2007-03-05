@@ -62,3 +62,26 @@ deb: distdir
 # target for generating the ChangeLog file
 changelog:
 	svn2cl -i
+
+flawfinder.html:
+	flawfinder --quiet --html --context --followdotdir . > $@
+
+pscan.txt:
+	find . -name '*.[ch]' -print0 | \
+	  xargs -0 pscan -w > $@
+
+rats.html:
+	rats --quiet --html --context . > $@
+
+splint.txt:
+	-env LARCH_PATH=/usr/share/splint/lib/ \
+	    LCLIMPORTDIR=/usr/share/splint/imports/ \
+	    splint -checks \
+	           -warnposix +showsummary +showalluses +hints -namechecks \
+	           -globstate \
+	           -I. -I$(srcdir) -I$(top_builddir) $(DEFS) -D_REENTRANT -DDEBUG \
+	           -D__signed__=signed -D__thread= -D__gnuc_va_list=__ptr_t \
+	           -Dkrb5_int32=int32_t -Dkrb5_ui_4=uint32_t  \
+	           *.[ch] nss/*.[ch] nslcd/*.[ch] > $@ 2>&1
+
+.PHONY: flawfinder.html pscan.txt rats.html splint.txt
