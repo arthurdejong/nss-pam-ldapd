@@ -24,6 +24,21 @@ will be automatically integrated. Some notes:
 * contributions will be acknowledged in the AUTHORS file
 
 
+BUILD DEPENDENCIES
+==================
+
+For building svn snapshots the following tools are needed:
+
+* autoconf (2.61 is used but 2.59 is minimal)
+* automake 1.9 (1.9.6 is used, considering switching to 1.10)
+* check (0.9.4 is used)
+
+and of course the usual build tools (gcc/make/etc). To build the svn snapshot
+run the autogen.sh shell script to build the configure script. When developing
+patches please use --enable-warnings with configure and don't introduce too
+many new warnings.
+
+
 THE COMMUNICATIONS PROTOCOL
 ===========================
 
@@ -49,6 +64,7 @@ A new versioning schema was chosen over the nss_ldap release schema. The
 schema is a simple major.minor numbering starting with 0.1. Until a 1.0
 release is made the code will be considered work in progress. The interfaces
 may change and features may be added and removed.
+
 
 GENERAL DESIGN
 ==============
@@ -102,6 +118,7 @@ nslcd_FUNCION(...)
   This functions fills in the correct parameters from the request. This
   function should generate a response object [TODO: response objects can be
   large]
+
 
 SECURITY NOTES
 ==============
