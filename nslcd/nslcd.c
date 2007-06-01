@@ -211,6 +211,7 @@ static RETSIGTYPE sigexit_handler(int signum)
   for (i=0;i<NUM_THREADS;i++)
     if (pthread_cancel(nslcd_threads[i]))
     {
+      /* TODO: figure out if we can actually log from within a signal handler */
       log_log(LOG_WARNING,"failed to stop thread %d (ignored): %s",i,strerror(errno));
     }
 }
@@ -648,6 +649,10 @@ int main(int argc,char *argv[])
   }
 
   /* wait for all threads to die */
+  /* BUG: this causes problems if for some reason we want to exit but one
+          of our threads hangs (e.g. has one of the LDAP locks)
+     Other than that it may be a good idea to keep this thread more or less alive
+     to do general house keeping things (e.g. checking signals etc) */
   for (i=0;i<NUM_THREADS;i++)
   {
     if (pthread_join(nslcd_threads[i],NULL))
