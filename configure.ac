@@ -26,9 +26,9 @@ Copyright (C) 2006 West Consulting
 Copyright (C) 2006, 2007 Arthur de Jong
 
 This configure script is derived from configure.ac which is free software;
-you can redistribute it and/or modify it under the terms of the GNU Library
+you can redistribute it and/or modify it under the terms of the GNU Lesser
 General Public License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version. See the
+version 2.1 of the License, or (at your option) any later version. See the
 configure.ac file for more details.])
 
 # initialize and set version and bugreport address

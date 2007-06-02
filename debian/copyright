@@ -33,7 +33,7 @@ Davide Puricelli (evo), Sami Haahtinen and Stephen Frost.
   /usr/share/common-licenses/LGPL-2.1.
 
 The following files are also contain other copyright holders (apart from to
-autoconf/automake stuff) and are also covered by the GNU Library General
+autoconf/automake stuff) and are also covered by the GNU Lesser General
 Public License:
 
 debian/po/ca.po:  Copyright (C) 2004 Free Software Foundation, Inc.
