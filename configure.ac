@@ -233,10 +233,10 @@ AC_CACHE_CHECK([whether $CC supports '__thread'], [mn_cv_c___thread_supported],
                [AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[static __thread i;]], []),
                        [mn_cv_c___thread_supported=yes],
                        [mn_cv_c___thread_supported=no])])
- 	if test $mn_cv_c___thread_supported != yes
- 	then
-       	      AC_MSG_ERROR([$CC does not support '__thread' keyword])
- 	fi
+if test $mn_cv_c___thread_supported != yes
+then
+  AC_MSG_ERROR([$CC does not support '__thread' keyword])
+fi
 
 # check for support for the struct ether_addr structure
 AC_MSG_CHECKING(for struct ether_addr)

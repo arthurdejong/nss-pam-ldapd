@@ -366,7 +366,7 @@ changes from 212 to 213
 
 * fix netgroup compilation error when debugging is enabled
 * support GSS-API for setting ccache name
-* initgroups() should require user to be a POSIX account	
+* initgroups() should require user to be a POSIX account
 * define LOGNAME_MAX for HP-UX
 * do not use sigprocmask() - this blocks rather than disabling signals
 * SASL version check fix from Howard Chu
@@ -693,7 +693,7 @@ changes from 170 to 171
 changes from 169 to 170
 -----------------------
 
-* use _nss_ldap_getrdnvalue() for determining canonical	 group name
+* use _nss_ldap_getrdnvalue() for determining canonical group name
 
 
 changes from 168 to 169

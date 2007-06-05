@@ -37,10 +37,10 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   static char *value1="value1";
   static char *value2="value2";
   static char *replace2="replace2";
-  
+
   /* initialize */
   dict=dict_new();
-  
+
   /* store some entries */
   dict_put(dict,"key1",value1);
   dict_put(dict,"key2",value2);
