@@ -40,7 +40,7 @@
 
 #undef ERROR_OUT_READERROR
 #define ERROR_OUT_READERROR(fp) \
-  (void)fclose(fp); \
+  (void)tio_close(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
   *h_errnop=NO_RECOVERY; \
@@ -48,7 +48,7 @@
 
 #undef ERROR_OUT_BUFERROR
 #define ERROR_OUT_BUFERROR(fp) \
-  (void)fclose(fp); \
+  (void)tio_close(fp); \
   fp=NULL; \
   *errnop=ERANGE; \
   *h_errnop=TRY_AGAIN; \
@@ -60,7 +60,7 @@
 
 #undef ERROR_OUT_NOSUCCESS
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
-  (void)fclose(fp); \
+  (void)tio_close(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
   *h_errnop=HOST_NOT_FOUND; \
@@ -71,7 +71,7 @@
    it will an empty entry if no addresses in the address family
    were available */
 static enum nss_status read_hostent(
-        FILE *fp,int af,struct hostent *result,
+        TFILE *fp,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
@@ -118,7 +118,7 @@ static enum nss_status read_hostent(
    if the read address list does not contain any addresses for the
    specified address familiy */
 static enum nss_status read_hostent_erronempty(
-        FILE *fp,int af,struct hostent *result,
+        TFILE *fp,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   enum nss_status retv;
@@ -135,7 +135,7 @@ static enum nss_status read_hostent_erronempty(
   {
     *errnop=ENOENT;
     *h_errnop=NO_ADDRESS;
-    (void)fclose(fp);
+    (void)tio_close(fp);
     return NSS_STATUS_NOTFOUND;
   }
   return NSS_STATUS_SUCCESS;
@@ -145,7 +145,7 @@ static enum nss_status read_hostent_erronempty(
    next address if the address list does not contain any addresses for the
    specified address familiy */
 static enum nss_status read_hostent_nextonempty(
-        FILE *fp,int af,struct hostent *result,
+        TFILE *fp,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   int32_t tmpint32;
@@ -219,7 +219,7 @@ enum nss_status _nss_ldap_gethostbyaddr_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *hostentfp;
+static __thread TFILE *hostentfp;
 
 enum nss_status _nss_ldap_sethostent(int UNUSED(stayopen))
 {

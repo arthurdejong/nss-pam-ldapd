@@ -31,7 +31,7 @@
 #include "compat/attrs.h"
 
 static enum nss_status read_group(
-        FILE *fp,struct group *result,
+        TFILE *fp,struct group *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
@@ -47,7 +47,7 @@ static enum nss_status read_group(
 /* read all group entries from the stream and add
    gids of these groups to the list */
 static enum nss_status read_gids(
-        FILE *fp,long int *start,long int *size,
+        TFILE *fp,long int *start,long int *size,
         gid_t **groupsp,long int limit,int *errnop)
 {
   int32_t res=(int32_t)NSLCD_RESULT_SUCCESS;
@@ -123,7 +123,7 @@ enum nss_status _nss_ldap_initgroups_dyn(
 #endif /* REENABLE_WHEN_WORKING */
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *grentfp;
+static __thread TFILE *grentfp;
 
 enum nss_status _nss_ldap_setgrent(int UNUSED(stayopen))
 {

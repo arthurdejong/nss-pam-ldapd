@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -73,7 +73,7 @@ struct ether
 };
 
 #ifdef NEW
-static int write_ether(LDAPMessage *e,struct ldap_state *pvt,FILE *fp)
+static int write_ether(LDAPMessage *e,struct ldap_state *pvt,TFILE *fp)
 {
   /* FIXME: fix following problem:
             if the entry has multiple cn fields we may end up
@@ -129,7 +129,7 @@ _nss_ldap_parse_ether (LDAPMessage * e,
 #define ETHER_NAME            result.e_name
 #define ETHER_ADDR            result.e_addr
 
-int nslcd_ether_byname(FILE *fp)
+int nslcd_ether_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
@@ -162,7 +162,7 @@ int nslcd_ether_byname(FILE *fp)
   return 0;
 }
 
-int nslcd_ether_byether(FILE *fp)
+int nslcd_ether_byether(TFILE *fp)
 {
   int32_t tmpint32;
   struct ether_addr addr;
@@ -197,7 +197,7 @@ int nslcd_ether_byether(FILE *fp)
   return 0;
 }
 
-int nslcd_ether_all(FILE *fp)
+int nslcd_ether_all(TFILE *fp)
 {
   int32_t tmpint32;
   static struct ent_context *ether_context;

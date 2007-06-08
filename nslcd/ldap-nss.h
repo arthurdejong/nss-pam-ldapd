@@ -47,6 +47,7 @@
 #include <ldap.h>
 
 #include "ldap-schema.h"
+#include "common/tio.h"
 
 #ifndef LDAP_FILT_MAXSIZ
 #define LDAP_FILT_MAXSIZ 1024
@@ -259,7 +260,7 @@ struct ent_context
 typedef enum nss_status (*parser_t) (LDAPMessage *, struct ldap_state *, void *,
                                 char *, size_t);
 
-typedef int (*NEWparser_t)(LDAPMessage *e,struct ldap_state *pvt,FILE *fp);
+typedef int (*NEWparser_t)(LDAPMessage *e,struct ldap_state *pvt,TFILE *fp);
 
 /*
  * Portable locking macro.

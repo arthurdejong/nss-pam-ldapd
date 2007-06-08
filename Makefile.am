@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006 Arthur de Jong
+# Copyright (C) 2006, 2007 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-SUBDIRS = nss nslcd tests
+SUBDIRS = common nss nslcd tests
 
 dist_man_MANS = nss-ldapd.conf.5 nslcd.8
 

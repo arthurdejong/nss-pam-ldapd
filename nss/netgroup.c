@@ -35,7 +35,7 @@
    if we have sucessfully read some entries */
 #undef ERROR_OUT_NOSUCCESS
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
-  (void)fclose(fp); \
+  (void)tio_close(fp); \
   fp=NULL; \
   if (result->first) \
   { \
@@ -47,7 +47,7 @@
 
 /* function for reading a single result entry */
 static enum nss_status read_netgrent(
-        FILE *fp,struct __netgrent *result,
+        TFILE *fp,struct __netgrent *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32;
@@ -96,7 +96,7 @@ static enum nss_status read_netgrent(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *netgrentfp;
+static __thread TFILE *netgrentfp;
 
 enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *result)
 {

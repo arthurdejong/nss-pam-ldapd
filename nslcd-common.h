@@ -3,7 +3,7 @@
                     protocol streams
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -65,7 +65,7 @@ static void debug_dump(const void *ptr,size_t size)
 #define WRITE(fp,ptr,size) \
   DEBUG_PRINT("WRITE       : var="__STRING(ptr)" size=%d",(int)size); \
   DEBUG_DUMP(ptr,size); \
-  if (fwrite(ptr,(size_t)size,(size_t)1,fp)<(size_t)1) \
+  if (tio_write(fp,ptr,(size_t)size)) \
   { \
     DEBUG_PRINT("WRITE       : var="__STRING(ptr)" error: %s",strerror(errno)); \
     ERROR_OUT_WRITEERROR(fp); \
@@ -93,7 +93,7 @@ static void debug_dump(const void *ptr,size_t size)
   }
 
 #define WRITE_FLUSH(fp) \
-  if (fflush(fp)<0) \
+  if (tio_flush(fp)<0) \
   { \
     DEBUG_PRINT("WRITE_FLUSH : error: %s",strerror(errno)); \
     ERROR_OUT_WRITEERROR(fp); \
@@ -133,7 +133,7 @@ static void debug_dump(const void *ptr,size_t size)
    */
 
 #define READ(fp,ptr,size) \
-  if (fread(ptr,(size_t)size,(size_t)1,fp)<(size_t)1) \
+  if (tio_read(fp,ptr,(size_t)size)) \
   { \
     DEBUG_PRINT("READ       : var="__STRING(ptr)" error: %s",strerror(errno)); \
     ERROR_OUT_READERROR(fp); \
@@ -276,12 +276,11 @@ static void debug_dump(const void *ptr,size_t size)
 #define SKIP(fp,sz) \
   DEBUG_PRINT("READ       : skip %d bytes",(int)(sz)); \
   /* read (skip) the specified number of bytes */ \
-  while ((sz)-->0) \
-    if (fgetc(fp)==EOF) \
-    { \
-      DEBUG_PRINT("READ       : skip error: %s",strerror(errno)); \
-      ERROR_OUT_READERROR(fp); \
-    }
+  if (tio_skip(fp,sz)) \
+  { \
+    DEBUG_PRINT("READ       : skip error: %s",strerror(errno)); \
+    ERROR_OUT_READERROR(fp); \
+  }
 
 /* read a string from the stream but don't do anything with the result */
 #define SKIP_STRING(fp) \

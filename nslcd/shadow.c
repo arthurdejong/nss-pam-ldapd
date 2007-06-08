@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -119,7 +119,7 @@ static enum nss_status _nss_ldap_parse_sp(LDAPMessage *e,
 #define SHADOW_EXPIRE         result.sp_expire
 #define SHADOW_FLAG           result.sp_flag
 
-int nslcd_shadow_byname(FILE *fp)
+int nslcd_shadow_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
@@ -151,7 +151,7 @@ int nslcd_shadow_byname(FILE *fp)
   return 0;
 }
 
-int nslcd_shadow_all(FILE *fp)
+int nslcd_shadow_all(TFILE *fp)
 {
   int32_t tmpint32;
   static struct ent_context *shadow_context;

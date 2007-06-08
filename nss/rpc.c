@@ -31,7 +31,7 @@
 #include "compat/attrs.h"
 
 static enum nss_status read_rpcent(
-        FILE *fp,struct rpcent *result,
+        TFILE *fp,struct rpcent *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
@@ -57,7 +57,7 @@ enum nss_status _nss_ldap_getrpcbynumber_r(int number,struct rpcent *result,char
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *protoentfp;
+static __thread TFILE *protoentfp;
 
 enum nss_status _nss_ldap_setrpcent(int UNUSED(stayopen))
 {

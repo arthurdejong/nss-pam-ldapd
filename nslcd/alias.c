@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -63,7 +63,7 @@ static enum nss_status _nss_ldap_parse_alias(
   return stat;
 }
 
-static int write_alias(LDAPMessage *e,struct ldap_state UNUSED(*pvt),FILE *fp)
+static int write_alias(LDAPMessage *e,struct ldap_state UNUSED(*pvt),TFILE *fp)
 {
   int stat;
   if ((stat=_nss_ldap_write_rndvalue(fp,e,ATM(LM_ALIASES,cn)))!=NSLCD_RESULT_SUCCESS)
@@ -80,7 +80,7 @@ static int write_alias(LDAPMessage *e,struct ldap_state UNUSED(*pvt),FILE *fp)
 #define ALIAS_NAME            result.alias_name
 #define ALIAS_RCPTS           result.alias_members
 
-int nslcd_alias_byname(FILE *fp)
+int nslcd_alias_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
@@ -102,7 +102,7 @@ int nslcd_alias_byname(FILE *fp)
   return 0;
 }
 
-int nslcd_alias_all(FILE *fp)
+int nslcd_alias_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32;
   static struct ent_context *alias_context;

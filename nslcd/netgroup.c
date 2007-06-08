@@ -8,7 +8,7 @@
    Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -283,7 +283,7 @@ out:
   return stat;
 }
 
-int nslcd_netgroup_byname(FILE *fp)
+int nslcd_netgroup_byname(TFILE *fp)
 {
 
   int32_t tmpint32;

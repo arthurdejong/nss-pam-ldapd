@@ -2,7 +2,7 @@
    common.c - common functions for NSS lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@
 
 #include "nslcd.h"
 #include "common.h"
+#include "common/tio.h"
 
 /* translates a nsklcd return code (as defined in nslcd.h) to
    a nss code (as defined in nss.h) */
@@ -50,11 +51,12 @@ enum nss_status nslcd2nss(int32_t code)
 
 /* returns a socket to the server or NULL on error (see errno),
    socket should be closed with fclose() */
-FILE *nslcd_client_open()
+TFILE *nslcd_client_open()
 {
   int sock;
   struct sockaddr_un addr;
-  FILE *fp;
+  struct timeval readtimeout,writetimeout;
+  TFILE *fp;
   /* create a socket */
   if ( (sock=socket(PF_UNIX,SOCK_STREAM,0))<0 )
     return NULL;
@@ -67,8 +69,13 @@ FILE *nslcd_client_open()
     (void)close(sock);
     return NULL;
   }
+  /* set the timeouts */
+  readtimeout.tv_sec=2; /* looking up stuff may take some time */
+  readtimeout.tv_usec=0;
+  writetimeout.tv_sec=1; /* nslcd could be loaded with requests */
+  writetimeout.tv_usec=500000;
   /* create a stream object */
-  if ((fp=fdopen(sock,"w+"))==NULL)
+  if ((fp=tio_fdopen(sock,&readtimeout,&writetimeout))==NULL)
   {
     (void)close(sock);
     return NULL;

@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -59,7 +59,7 @@
 #endif
 
 /* write a single host entry to the stream */
-static int write_hostent(FILE *fp,struct hostent *result)
+static int write_hostent(TFILE *fp,struct hostent *result)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   int numaddr,i;
@@ -244,7 +244,7 @@ _nss_ldap_parse_hostv6 (LDAPMessage * e,
 }
 #endif
 
-int nslcd_host_byname(FILE *fp)
+int nslcd_host_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
@@ -279,7 +279,7 @@ int nslcd_host_byname(FILE *fp)
   return 0;
 }
 
-int nslcd_host_byaddr(FILE *fp)
+int nslcd_host_byaddr(TFILE *fp)
 {
   int32_t tmpint32;
   int af;
@@ -336,7 +336,7 @@ int nslcd_host_byaddr(FILE *fp)
   return 0;
 }
 
-int nslcd_host_all(FILE *fp)
+int nslcd_host_all(TFILE *fp)
 {
   int32_t tmpint32;
   static struct ent_context *host_context;

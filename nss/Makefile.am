@@ -34,7 +34,7 @@ nss_ldap_so_SOURCES = common.c common.h prototypes.h \
                       shadow.c
 nss_ldap_so_LDFLAGS = -shared -Wl,-soname,$(NSS_LDAP_NSS_VERSIONED) \
                       -Wl,--version-script,\$(srcdir)/exports.linux
-nss_ldap_so_LDADD = @nss_ldap_so_LIBS@
+nss_ldap_so_LDADD = @nss_ldap_so_LIBS@ ../common/libtio.a
 
 EXTRA_DIST = exports.linux
 

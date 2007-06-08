@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -1162,7 +1162,7 @@ static enum nss_status group_bymember(const char *user, long int *start,
 #define GROUP_GID             result.gr_gid
 #define GROUP_MEMBERS         result.gr_mem
 
-int nslcd_group_byname(FILE *fp)
+int nslcd_group_byname(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   char name[256];
@@ -1200,7 +1200,7 @@ int nslcd_group_byname(FILE *fp)
   return 0;
 }
 
-int nslcd_group_bygid(FILE *fp)
+int nslcd_group_bygid(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   gid_t gid;
@@ -1238,7 +1238,7 @@ int nslcd_group_bygid(FILE *fp)
   return 0;
 }
 
-int nslcd_group_bymember(FILE *fp)
+int nslcd_group_bymember(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
@@ -1294,7 +1294,7 @@ int nslcd_group_bymember(FILE *fp)
   return 0;
 }
 
-int nslcd_group_all(FILE *fp)
+int nslcd_group_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   struct ent_context *gr_context=NULL;

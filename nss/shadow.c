@@ -31,7 +31,7 @@
 #include "compat/attrs.h"
 
 static enum nss_status read_spwd(
-        FILE *fp,struct spwd *result,
+        TFILE *fp,struct spwd *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32;
@@ -56,7 +56,7 @@ enum nss_status _nss_ldap_getspnam_r(const char *name,struct spwd *result,char *
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *spentfp;
+static __thread TFILE *spentfp;
 
 enum nss_status _nss_ldap_setspent(int UNUSED(stayopen))
 {

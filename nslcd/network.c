@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -57,7 +57,7 @@
 #endif /* HAVE_USERSEC_H */
 
 /* write a single network entry to the stream */
-static int write_netent(FILE *fp,struct netent *result)
+static int write_netent(TFILE *fp,struct netent *result)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   /* write the network name */
@@ -108,7 +108,7 @@ _nss_ldap_parse_net (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_network_byname(FILE *fp)
+int nslcd_network_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
@@ -138,7 +138,7 @@ int nslcd_network_byname(FILE *fp)
   return 0;
 }
 
-int nslcd_network_byaddr(FILE *fp)
+int nslcd_network_byaddr(TFILE *fp)
 {
   int32_t tmpint32;
   int af;
@@ -205,7 +205,7 @@ int nslcd_network_byaddr(FILE *fp)
   return 0;
 }
 
-int nslcd_network_all(FILE *fp)
+int nslcd_network_all(TFILE *fp)
 {
   int32_t tmpint32;
   static struct ent_context *net_context;

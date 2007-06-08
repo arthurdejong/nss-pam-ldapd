@@ -2,7 +2,7 @@
    nslcd.c - ldap local connection daemon
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -312,7 +312,7 @@ static int open_socket(void)
 
 /* read the version information and action from the stream
    this function returns the read action in location pointer to by action */
-static int read_header(FILE *fp,int32_t *action)
+static int read_header(TFILE *fp,int32_t *action)
 {
   int32_t tmpint32;
   /* read the protocol version */
@@ -331,10 +331,11 @@ static int read_header(FILE *fp,int32_t *action)
    this function closes the socket */
 static void handleconnection(int sock)
 {
-  FILE *fp;
+  TFILE *fp;
   socklen_t alen;
   struct ucred client;
   int32_t action;
+  struct timeval readtimeout,writetimeout;
 
   /* initialize client information (in case getsockopt() breaks) */
   client.pid=(pid_t)0;
@@ -355,8 +356,13 @@ static void handleconnection(int sock)
   log_log(LOG_DEBUG,"connection from pid=%d uid=%d gid=%d",
                     (int)client.pid,(int)client.uid,(int)client.gid);
 
+  /* set the timeouts */
+  readtimeout.tv_sec=0; /* clients should send there request quickly */
+  readtimeout.tv_usec=500000;
+  writetimeout.tv_sec=5; /* clients could be taking some time to process the results */
+  writetimeout.tv_usec=0;
   /* create a stream object */
-  if ((fp=fdopen(sock,"w+"))==NULL)
+  if ((fp=tio_fdopen(sock,&readtimeout,&writetimeout))==NULL)
   {
     log_log(LOG_WARNING,"cannot create stream for writing: %s",strerror(errno));
     (void)close(sock);
@@ -366,7 +372,7 @@ static void handleconnection(int sock)
   /* read request */
   if (read_header(fp,&action))
   {
-    (void)fclose(fp);
+    (void)tio_close(fp);
     return;
   }
 
@@ -409,7 +415,7 @@ static void handleconnection(int sock)
   }
 
   /* we're done with the request */
-  (void)fclose(fp);
+  (void)tio_close(fp);
   return;
 }
 
@@ -653,6 +659,8 @@ int main(int argc,char *argv[])
           of our threads hangs (e.g. has one of the LDAP locks)
      Other than that it may be a good idea to keep this thread more or less alive
      to do general house keeping things (e.g. checking signals etc) */
+  /* it is also better to always do thread_cancel() here instead of in the signal
+     handler */
   for (i=0;i<NUM_THREADS;i++)
   {
     if (pthread_join(nslcd_threads[i],NULL))

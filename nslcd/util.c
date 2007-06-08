@@ -498,7 +498,7 @@ _nss_ldap_getrdnvalue (LDAPMessage * entry,
   return status;
 }
 
-int _nss_ldap_write_rndvalue(FILE *fp,LDAPMessage *entry,const char *rdntype)
+int _nss_ldap_write_rndvalue(TFILE *fp,LDAPMessage *entry,const char *rdntype)
 {
   char *dn;
   int status=456;

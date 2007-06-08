@@ -31,7 +31,7 @@
 #include "compat/attrs.h"
 
 static enum nss_status read_passwd(
-        FILE *fp,struct passwd *result,
+        TFILE *fp,struct passwd *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32;
@@ -61,7 +61,7 @@ enum nss_status _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffe
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *pwentfp;
+static __thread TFILE *pwentfp;
 
 /* open a connection to the nslcd and write the request */
 enum nss_status _nss_ldap_setpwent(int UNUSED(stayopen))

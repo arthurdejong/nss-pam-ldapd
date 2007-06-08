@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -93,7 +93,7 @@ static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
 #define PROTOCOL_ALIASES      result.p_aliases
 #define PROTOCOL_NUMBER       result.p_proto
 
-int nslcd_protocol_byname(FILE *fp)
+int nslcd_protocol_byname(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   char name[256];
@@ -126,7 +126,7 @@ int nslcd_protocol_byname(FILE *fp)
   return 0;
 }
 
-int nslcd_protocol_bynumber(FILE *fp)
+int nslcd_protocol_bynumber(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   int protocol;
@@ -159,7 +159,7 @@ int nslcd_protocol_bynumber(FILE *fp)
   return 0;
 }
 
-int nslcd_protocol_all(FILE *fp)
+int nslcd_protocol_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   static struct ent_context *protocol_context;

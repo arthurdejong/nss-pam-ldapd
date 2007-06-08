@@ -40,7 +40,7 @@
 
 #undef ERROR_OUT_READERROR
 #define ERROR_OUT_READERROR(fp) \
-  (void)fclose(fp); \
+  (void)tio_close(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
   *h_errnop=NO_RECOVERY; \
@@ -48,7 +48,7 @@
 
 #undef ERROR_OUT_BUFERROR
 #define ERROR_OUT_BUFERROR(fp) \
-  (void)fclose(fp); \
+  (void)tio_close(fp); \
   fp=NULL; \
   *errnop=ERANGE; \
   *h_errnop=TRY_AGAIN; \
@@ -60,7 +60,7 @@
 
 #undef ERROR_OUT_NOSUCCESS
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
-  (void)fclose(fp); \
+  (void)tio_close(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
   *h_errnop=HOST_NOT_FOUND; \
@@ -69,7 +69,7 @@
 /* read a single network entry from the stream, ignoring entries
    that are not AF_INET (IPv4), result is stored in result */
 static enum nss_status read_netent(
-        FILE *fp,struct netent *result,
+        TFILE *fp,struct netent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
@@ -131,7 +131,7 @@ enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int af,struct netent *res
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *netentfp;
+static __thread TFILE *netentfp;
 
 enum nss_status _nss_ldap_setnetent(int UNUSED(stayopen))
 {

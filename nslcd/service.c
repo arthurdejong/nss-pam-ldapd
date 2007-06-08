@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -67,7 +67,7 @@
 #define SERVICE_PROTOCOL      result->s_proto
 
 /* write a single host entry to the stream */
-static int write_servent(FILE *fp,struct servent *result)
+static int write_servent(TFILE *fp,struct servent *result)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   NSLCD_SERVICE;
@@ -189,7 +189,7 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_service_byname(FILE *fp)
+int nslcd_service_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256],protocol[256];
@@ -224,7 +224,7 @@ int nslcd_service_byname(FILE *fp)
   return 0;
 }
 
-int nslcd_service_bynumber(FILE *fp)
+int nslcd_service_bynumber(TFILE *fp)
 {
   int32_t tmpint32;
   int number;
@@ -260,7 +260,7 @@ int nslcd_service_bynumber(FILE *fp)
   return 0;
 }
 
-int nslcd_service_all(FILE *fp)
+int nslcd_service_all(TFILE *fp)
 {
   int32_t tmpint32;
   static struct ent_context *serv_context;

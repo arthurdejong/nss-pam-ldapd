@@ -31,7 +31,7 @@
 #include "compat/attrs.h"
 
 static enum nss_status read_etherent(
-        FILE *fp,struct etherent *result,
+        TFILE *fp,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32;
@@ -62,7 +62,7 @@ enum nss_status _nss_ldap_getntohost_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *etherentfp;
+static __thread TFILE *etherentfp;
 
 enum nss_status _nss_ldap_setetherent(int UNUSED(stayopen))
 {

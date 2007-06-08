@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -175,7 +175,7 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
 #define PASSWD_SHELL  result.pw_shell
 
 /* the caller should take care of opening and closing the stream */
-int nslcd_passwd_byname(FILE *fp)
+int nslcd_passwd_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
@@ -207,7 +207,7 @@ int nslcd_passwd_byname(FILE *fp)
   return 0;
 }
 
-int nslcd_passwd_byuid(FILE *fp)
+int nslcd_passwd_byuid(TFILE *fp)
 {
   int32_t tmpint32;
   uid_t uid;
@@ -239,7 +239,7 @@ int nslcd_passwd_byuid(FILE *fp)
   return 0;
 }
 
-int nslcd_passwd_all(FILE *fp)
+int nslcd_passwd_all(TFILE *fp)
 {
   int32_t tmpint32;
   /* these are here for now until we rewrite the LDAP code */

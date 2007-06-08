@@ -30,7 +30,7 @@
 #include "common.h"
 
 static enum nss_status read_aliasent(
-        FILE *fp,struct aliasent *result,
+        TFILE *fp,struct aliasent *result,
         char *buffer,size_t buflen,int *errnop)
 {
   int32_t tmpint32,tmp2int32;
@@ -54,7 +54,7 @@ enum nss_status _nss_ldap_getaliasbyname_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread FILE *aliasentfp;
+static __thread TFILE *aliasentfp;
 
 enum nss_status _nss_ldap_setaliasent(void)
 {

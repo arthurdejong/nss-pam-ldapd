@@ -2577,7 +2577,7 @@ _nss_ldap_getbyname (struct ldap_args * args,
   return stat;
 }
 
-static int NEW_do_parse_s(struct ent_context *ctx,FILE *fp,NEWparser_t parser)
+static int NEW_do_parse_s(struct ent_context *ctx,TFILE *fp,NEWparser_t parser)
 {
   int parseStat=NSLCD_RESULT_NOTFOUND;
   LDAPMessage *e=NULL;
@@ -2625,7 +2625,7 @@ static int NEW_do_parse_s(struct ent_context *ctx,FILE *fp,NEWparser_t parser)
 
 int _nss_ldap_searchbyname(
         struct ldap_args *args,const char *filterprot,
-        enum ldap_map_selector sel,FILE *fp,NEWparser_t parser)
+        enum ldap_map_selector sel,TFILE *fp,NEWparser_t parser)
 {
   int stat;
   struct ent_context ctx;
@@ -2766,7 +2766,7 @@ _nss_ldap_assign_attrvals (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-int _nss_ldap_write_attrvals(FILE *fp,LDAPMessage *e,const char *attr)
+int _nss_ldap_write_attrvals(TFILE *fp,LDAPMessage *e,const char *attr)
 {
   char **vals;
   int valcount;

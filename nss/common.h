@@ -29,14 +29,15 @@
 #include "nslcd.h"
 #include "nslcd-common.h"
 #include "compat/attrs.h"
+#include "common/tio.h"
 
 /* This function maps an nslcd return code (as defined in nslcd.h)
    to an nss code (as defined in nss.h). */
 enum nss_status nslcd2nss(int32_t code);
 
 /* returns a socket to the server or NULL on error (see errno),
-   socket should be closed with fclose() */
-FILE *nslcd_client_open(void)
+   socket should be closed with tio_close() */
+TFILE *nslcd_client_open(void)
   MUST_USE;
 
 /* These are macors for performing common operations in the nslcd
@@ -80,9 +81,9 @@ FILE *nslcd_client_open(void)
   *errnop=ENOENT; \
   return (errno==EAGAIN)?NSS_STATUS_TRYAGAIN:NSS_STATUS_UNAVAIL;
 
-/* Macro is called to handle errors on fread(). */
+/* Macro is called to handle errors on read operations. */
 #define ERROR_OUT_READERROR(fp) \
-  (void)fclose(fp); \
+  (void)tio_close(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
   return NSS_STATUS_UNAVAIL;
@@ -93,12 +94,12 @@ FILE *nslcd_client_open(void)
    Something more inteligent (e.g. ungetting the read data from
    the stream) should be implemented. */
 #define ERROR_OUT_BUFERROR(fp) \
-  (void)fclose(fp); \
+  (void)tio_close(fp); \
   fp=NULL; \
   *errnop=ERANGE; \
   return NSS_STATUS_TRYAGAIN;
 
-/* This macro is called if there was a problem with an fwrite()
+/* This macro is called if there was a problem with a write
    operation. */
 #define ERROR_OUT_WRITEERROR(fp) \
   ERROR_OUT_READERROR(fp)
@@ -106,7 +107,7 @@ FILE *nslcd_client_open(void)
 /* This macro is called if the read status code is not
    NSLCD_RESULT_SUCCESS. */
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
-  (void)fclose(fp); \
+  (void)tio_close(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
   return nslcd2nss(retv);
@@ -125,7 +126,7 @@ FILE *nslcd_client_open(void)
    errno to return. This macro should be called through some of
    the customized ones below. */
 #define NSS_BYGEN(action,param,readfn) \
-  FILE *fp; \
+  TFILE *fp; \
   int32_t tmpint32; \
   enum nss_status retv; \
   /* open socket and write request */ \
@@ -140,7 +141,7 @@ FILE *nslcd_client_open(void)
   retv=readfn; \
   /* close socket and we're done */ \
   if (retv==NSS_STATUS_SUCCESS) \
-    (void)fclose(fp); \
+    (void)tio_close(fp); \
   return retv;
 
 /* This macro can be used to generate a get..byname() function
@@ -168,7 +169,7 @@ FILE *nslcd_client_open(void)
   errnop=&errnocp; \
   /* close the existing stream if it is still open */ \
   if (fp!=NULL) \
-    (void)fclose(fp); \
+    (void)tio_close(fp); \
   /* open a new stream and write the request */ \
   OPEN_SOCK(fp); \
   WRITE_REQUEST(fp,action); \
@@ -201,7 +202,7 @@ FILE *nslcd_client_open(void)
 #define NSS_ENDENT(fp) \
   if (fp!=NULL) \
   { \
-    (void)fclose(fp); \
+    (void)tio_close(fp); \
     fp=NULL; \
   } \
   return NSS_STATUS_SUCCESS;

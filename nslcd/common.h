@@ -3,7 +3,7 @@
    This file is part of the nss-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -26,8 +26,8 @@
 
 #include "nslcd.h"
 #include "nslcd-common.h"
+#include "common/tio.h"
 #include "compat/attrs.h"
-
 
 /* translates a nss code (as defined in nss.h) to a
    nslcd return code (as defined in nslcd.h) */
@@ -57,35 +57,35 @@ int nss2nslcd(enum nss_status code)
 
 /* these are the different functions that handle the database
    specific actions, see nslcd.h for the action descriptions */
-int nslcd_alias_byname(FILE *fp);
-int nslcd_alias_all(FILE *fp);
-int nslcd_ether_byname(FILE *fp);
-int nslcd_ether_byether(FILE *fp);
-int nslcd_ether_all(FILE *fp);
-int nslcd_group_byname(FILE *fp);
-int nslcd_group_bygid(FILE *fp);
-int nslcd_group_bymember(FILE *fp);
-int nslcd_group_all(FILE *fp);
-int nslcd_host_byname(FILE *fp);
-int nslcd_host_byaddr(FILE *fp);
-int nslcd_host_all(FILE *fp);
-int nslcd_netgroup_byname(FILE *fp);
-int nslcd_network_byname(FILE *fp);
-int nslcd_network_byaddr(FILE *fp);
-int nslcd_network_all(FILE *fp);
-int nslcd_passwd_byname(FILE *fp);
-int nslcd_passwd_byuid(FILE *fp);
-int nslcd_passwd_all(FILE *fp);
-int nslcd_protocol_byname(FILE *fp);
-int nslcd_protocol_bynumber(FILE *fp);
-int nslcd_protocol_all(FILE *fp);
-int nslcd_rpc_byname(FILE *fp);
-int nslcd_rpc_bynumber(FILE *fp);
-int nslcd_rpc_all(FILE *fp);
-int nslcd_service_byname(FILE *fp);
-int nslcd_service_bynumber(FILE *fp);
-int nslcd_service_all(FILE *fp);
-int nslcd_shadow_byname(FILE *fp);
-int nslcd_shadow_all(FILE *fp);
+int nslcd_alias_byname(TFILE *fp);
+int nslcd_alias_all(TFILE *fp);
+int nslcd_ether_byname(TFILE *fp);
+int nslcd_ether_byether(TFILE *fp);
+int nslcd_ether_all(TFILE *fp);
+int nslcd_group_byname(TFILE *fp);
+int nslcd_group_bygid(TFILE *fp);
+int nslcd_group_bymember(TFILE *fp);
+int nslcd_group_all(TFILE *fp);
+int nslcd_host_byname(TFILE *fp);
+int nslcd_host_byaddr(TFILE *fp);
+int nslcd_host_all(TFILE *fp);
+int nslcd_netgroup_byname(TFILE *fp);
+int nslcd_network_byname(TFILE *fp);
+int nslcd_network_byaddr(TFILE *fp);
+int nslcd_network_all(TFILE *fp);
+int nslcd_passwd_byname(TFILE *fp);
+int nslcd_passwd_byuid(TFILE *fp);
+int nslcd_passwd_all(TFILE *fp);
+int nslcd_protocol_byname(TFILE *fp);
+int nslcd_protocol_bynumber(TFILE *fp);
+int nslcd_protocol_all(TFILE *fp);
+int nslcd_rpc_byname(TFILE *fp);
+int nslcd_rpc_bynumber(TFILE *fp);
+int nslcd_rpc_all(TFILE *fp);
+int nslcd_service_byname(TFILE *fp);
+int nslcd_service_bynumber(TFILE *fp);
+int nslcd_service_all(TFILE *fp);
+int nslcd_shadow_byname(TFILE *fp);
+int nslcd_shadow_all(TFILE *fp);
 
 #endif /* not _SERVER_COMMON_H */

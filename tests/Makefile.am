@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-SUBDIRS = dict
+SUBDIRS = dict tio
 
 noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                   test_netgroup test_networks test_passwd test_protocols \
@@ -27,7 +27,8 @@ noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
 # the following enables verbose protocol debugging information to be dumped
 #AM_CFLAGS=-DDEBUG_PROT -DDEBUG_PROT_DUMP
 
-common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h
+common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h \
+                 ../common/tio.c ../common/tio.h
 
 test_aliases_SOURCES = test_aliases.c ../nss/aliases.c $(common_SOURCES)
 test_ethers_SOURCES = test_ethers.c ../nss/ethers.c $(common_SOURCES)
