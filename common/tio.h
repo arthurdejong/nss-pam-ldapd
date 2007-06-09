@@ -23,7 +23,7 @@
 /*
 
    Add some documentation here.
-   
+
    the SIGPIPE signal should be ignored
 
 */
