@@ -20,3 +20,4 @@
 noinst_LIBRARIES = libtio.a
 
 libtio_a_SOURCES = tio.c tio.h
+libtio_a_CFLAGS = -fPIC
