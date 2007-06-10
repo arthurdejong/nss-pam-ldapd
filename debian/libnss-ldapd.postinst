@@ -57,6 +57,9 @@ cfg_disable()
   return 0
 }
 
+# editing nsswitch.conf seems to be ok
+# http://lists.debian.org/debian-devel/2007/02/msg00076.html
+
 # check to see if name is configured to do lookups through
 # LDAP and enable if not
 nss_enable()
