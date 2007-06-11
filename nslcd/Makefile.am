@@ -31,7 +31,6 @@ nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
                 pagectrl.c pagectrl.h \
                 util.c util.h \
                 cfg.c cfg.h \
-                dict.c dict.h \
                 alias.c ether.c group.c host.c netgroup.c network.c \
                 passwd.c protocol.c rpc.c service.c shadow.c
-nslcd_LDADD = @nslcd_LIBS@ ../common/libtio.a
+nslcd_LDADD = @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a

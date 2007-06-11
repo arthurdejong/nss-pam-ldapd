@@ -27,7 +27,7 @@
 #define _CFG_H
 
 #include "ldap-nss.h"
-#include "dict.h"
+#include "common/dict.h"
 #include "compat/attrs.h"
 
 /* maximum number of URIs */

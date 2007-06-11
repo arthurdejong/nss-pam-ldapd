@@ -26,7 +26,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../../nslcd/dict.h"
+#include "common/dict.h"
 #include "compat/attrs.h"
 
 /* the main program... */

@@ -17,7 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-noinst_LIBRARIES = libtio.a
+noinst_LIBRARIES = libtio.a libdict.a
 
 libtio_a_SOURCES = tio.c tio.h
 libtio_a_CFLAGS = -fPIC
+
+libdict_a_SOURCES = dict.c dict.h

@@ -19,5 +19,5 @@
 
 noinst_PROGRAMS = test_dict
 
-test_dict_SOURCES = test_dict.c ../../nslcd/dict.h
-test_dict_LDADD = ../../nslcd/dict.o
+test_dict_SOURCES = test_dict.c ../../common/dict.h
+test_dict_LDADD = ../../common/dict.o
