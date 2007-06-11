@@ -1,3 +1,360 @@
+2007-06-11 18:40  arthur
+
+	* [r279] common/Makefile.am, common/dict.c, common/dict.h,
+	  nslcd/Makefile.am, nslcd/cfg.h, nslcd/dict.c, nslcd/dict.h,
+	  tests/dict/Makefile.am, tests/dict/test_dict.c: move dict into
+	  the common directory
+
+2007-06-11 18:34  arthur
+
+	* [r278] nss-ldapd.conf.5: add a note about the status of this
+	  manual page
+
+2007-06-10 16:58  arthur
+
+	* [r277] common/Makefile.am: compile tio module with -fPIC because
+	  it is used in the NSS shared library
+
+2007-06-10 16:50  arthur
+
+	* [r276] debian/libnss-ldapd.postinst: add note about modifying
+	  /etc/nsswitch.conf in postinst
+
+2007-06-09 17:35  arthur
+
+	* [r275] Makefile.am: have better rules to generate ChangeLog
+
+2007-06-09 16:54  arthur
+
+	* [r274] common/tio.h: remove some trailing spaces
+
+2007-06-09 16:50  arthur
+
+	* [r273] nss-ldapd.conf.5: add proper copyright header
+
+2007-06-08 22:57  arthur
+
+	* [r272] Makefile.am, common, common/Makefile.am, common/tio.c,
+	  common/tio.h, configure.ac, nslcd-common.h, nslcd/Makefile.am,
+	  nslcd/alias.c, nslcd/common.h, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/ldap-nss.c, nslcd/ldap-nss.h,
+	  nslcd/netgroup.c, nslcd/network.c, nslcd/nslcd.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c,
+	  nslcd/util.c, nslcd/util.h, nss/Makefile.am, nss/aliases.c,
+	  nss/common.c, nss/common.h, nss/ethers.c, nss/group.c,
+	  nss/hosts.c, nss/netgroup.c, nss/networks.c, nss/passwd.c,
+	  nss/protocols.c, nss/rpc.c, nss/services.c, nss/shadow.c,
+	  tests/Makefile.am, tests/tio, tests/tio/Makefile.am,
+	  tests/tio/test_tio.c: implement our own stdio-like library that
+	  handles IO with a simple configurable timeout mechanism with
+	  buffering
+
+2007-06-05 21:48  arthur
+
+	* [r271] NEWS, README, configure.ac, tests/dict/test_dict.c: some
+	  remaining tabs to spaces and trim trailing spaces
+
+2007-06-02 15:28  arthur
+
+	* [r270] configure.ac, debian/copyright: fix some remaining
+	  references to the GNU Library General Public License
+
+2007-06-01 21:40  arthur
+
+	* [r269] nslcd/nslcd.c: add some comments describing some problems
+	  that this code may have
+
+2007-05-20 16:25  arthur
+
+	* [r268] HACKING: add a section on build dependencies
+
+2007-05-13 19:52  arthur
+
+	* [r267] config.guess, config.sub: include updated files
+
+2007-03-05 22:42  arthur
+
+	* [r266] ., Makefile.am: include some targets to tun flawfinder,
+	  pscan, rats and splint
+
+2007-03-04 20:03  arthur
+
+	* [r265] nslcd-common.h, nslcd/alias.c, nslcd/ether.c,
+	  nslcd/group.c, nslcd/ldap-nss.c, nslcd/ldap-nss.h,
+	  nslcd/ldap-schema.c, nslcd/ldap-schema.h, nslcd/log.c,
+	  nslcd/nslcd.c, nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c,
+	  nslcd/shadow.c, nslcd/util.c, nslcd/util.h, nss/common.c,
+	  nss/common.h, nss/group.c, nss/hosts.c, nss/netgroup.c,
+	  nss/networks.c, nss/prototypes.h, nss/services.c: code
+	  improvements by making type casts explicit, flagging ignored
+	  return values, renames and flagging of parameters and some
+	  miscelanious improvements (thanks to gcc warnings, splint, rats
+	  and flawfinder)
+
+2007-03-02 21:17  arthur
+
+	* [r264] nslcd/ldap-nss.c: remove runtime checking for existance of
+	  /lib/init/rw/libnss-ldap.bind_policy_soft
+
+2007-03-02 20:40  arthur
+
+	* [r263] nss-ldapd.conf: add missing attribute mapping for AD
+
+2007-03-02 20:37  arthur
+
+	* [r262] nslcd/nslcd.c: do chmod on file descriptor instead of on
+	  file name
+
+2007-02-17 12:08  arthur
+
+	* [r251] nslcd-common.h, nslcd/cfg.c, nss/hosts.c: fix a few bugs
+	  found thanks to the new warnings
+
+2007-02-17 12:07  arthur
+
+	* [r250] compat, compat/attrs.h, nslcd/cfg.h, nslcd/common.h,
+	  nslcd/dict.h, nslcd/log.h, nslcd/nslcd.c, nss/Makefile.am,
+	  nss/common.h, nss/ethers.c, nss/group.c, nss/hosts.c,
+	  nss/netgroup.c, nss/networks.c, nss/passwd.c, nss/protocols.c,
+	  nss/rpc.c, nss/services.c, nss/shadow.c, tests/dict/test_dict.c,
+	  tests/test_aliases.c: add gcc attributes to some functions and
+	  parameters
+
+2007-02-17 12:00  arthur
+
+	* [r249] configure.ac: add some extra type checks and worarounds
+
+2007-02-17 12:00  arthur
+
+	* [r248] configure.ac: add extra compiler warnings
+
+2007-02-10 08:13  arthur
+
+	* [r240] nslcd/dnsconfig.c, nslcd/ldap-nss.c, nslcd/ldap-nss.h,
+	  nslcd/ldap-schema.c, nslcd/util.c: replace syslog calls to calls
+	  with our own logging module
+
+2007-02-06 22:27  arthur
+
+	* [r237] README: fix a typo and update copyright info
+
+2007-02-04 22:42  arthur
+
+	* [r236] configure.ac, tests/Makefile.am, tests/dict,
+	  tests/dict/Makefile.am, tests/dict/test_dict.c: add simple test
+	  for dict module
+
+2007-02-04 22:31  arthur
+
+	* [r235] nslcd/dict.c: fix list corruption bug in dict_put() and
+	  ignore setting value to NULL
+
+2007-02-04 22:30  arthur
+
+	* [r234] nslcd/dict.c, nslcd/dict.h: don't store const void * as
+	  value, just void *
+
+2007-02-01 22:12  arthur
+
+	* [r233] nslcd/util.c, nslcd/util.h: declare old dict functions
+	  static as thay are only used from within util.c
+
+2007-02-01 22:03  arthur
+
+	* [r232] nslcd/dict.h, nslcd/ldap-nss.h: trim trailing whitespace
+
+2007-02-01 21:51  arthur
+
+	* [r231] nslcd/Makefile.am, nslcd/cfg.c, nslcd/cfg.h, nslcd/dict.c,
+	  nslcd/dict.h, nslcd/ldap-nss.c, nslcd/util.c, nslcd/util.h: add
+	  new dictionary module and use it for the attribute mapping stuff
+
+2007-02-01 21:13  arthur
+
+	* [r230] nslcd/Makefile.am, nslcd/log.c, nslcd/xmalloc.c,
+	  nslcd/xmalloc.h: get rid of xmalloc.[ch]
+
+2007-01-17 22:40  arthur
+
+	* [r229] nss/Makefile.am: no longer install libc-versioned symlink
+	  and hardcode nss soname because we will likely need to change our
+	  code if the ABI changes
+
+2007-01-17 22:23  arthur
+
+	* [r228] debian/rules: in Debian package install NSS files in
+	  /usr/lib instead of /lib
+
+2007-01-17 22:16  arthur
+
+	* [r227] nss/aliases.c, nss/common.h, nss/ethers.c, nss/group.c,
+	  nss/hosts.c, nss/netgroup.c, nss/networks.c, nss/passwd.c,
+	  nss/protocols.c, nss/rpc.c, nss/services.c, nss/shadow.c: ensure
+	  that all NSS functions can be generated by the marcos in common.h
+	  and spell out the read_..() function for every type
+
+2007-01-17 21:54  arthur
+
+	* [r226] debian/copyright: indent license blubs and include license
+	  information for nslcd/resolve.[ch]
+
+2007-01-17 21:53  arthur
+
+	* [r225] nslcd.h: add a little bit more documentation
+
+2007-01-17 16:10  arthur
+
+	* [r224] nslcd/cfg.c: remove a const where it really wasn't
+
+2007-01-17 16:03  arthur
+
+	* [r223] nslcd/cfg.c, nslcd/cfg.h, nslcd/group.c, nslcd/ldap-nss.c,
+	  nslcd/util.c, nslcd/util.h: move most config code into cfg.c,
+	  clean up dictornary stuff in util.c and do some more smaller
+	  restructuring
+
+2007-01-17 15:35  arthur
+
+	* [r222] nslcd/group.c, nslcd/ldap-nss.h, nslcd/util.c,
+	  nslcd/util.h: move name_list stuff to group.c as that is the only
+	  place it's used at the moment
+
+2007-01-17 15:29  arthur
+
+	* [r221] nslcd/netgroup.c: replace __netgrent with mynetgrent
+	  removing the fields that are not used
+
+2007-01-17 13:16  arthur
+
+	* [r220] nslcd/Makefile.am, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/ldap-nss.c, nslcd/ldap-nss.h, nslcd/ldap-schema.h,
+	  nslcd/util.c, nslcd/util.h: first step to split out all
+	  configuration stuff into separate file
+
+2007-01-17 12:51  arthur
+
+	* [r219] nslcd/ldap-nss.c, nslcd/ldap-nss.h: get rid of more code
+	  that would check if the socket was changed from under us by our
+	  caller
+
+2007-01-17 12:14  arthur
+
+	* [r218] nslcd/ldap-nss.c: get rid of rebinding-on-fork() logic as
+	  our threading model is very predictable
+
+2007-01-10 22:50  arthur
+
+	* [r217] nslcd/netgroup.c: write a final result code of
+	  NSLCD_RESULT_NOTFOUND for netgroup lookups
+
+2007-01-10 22:48  arthur
+
+	* [r216] nss/netgroup.c, nss/prototypes.h: fix netgroup lookups so
+	  that _nss_ldap_getnetgrent_r() returns NSS_STATUS_RETURN if there
+	  are no more entries to return but there was a first entry
+
+2007-01-09 21:21  arthur
+
+	* [r215] COPYING, Makefile.am, README, configure.ac,
+	  debian/copyright, debian/libnss-ldapd.nslcd.init, nslcd-common.h,
+	  nslcd.8, nslcd.h, nslcd/Makefile.am, nslcd/alias.c,
+	  nslcd/common.c, nslcd/common.h, nslcd/dnsconfig.c,
+	  nslcd/dnsconfig.h, nslcd/ether.c, nslcd/group.c, nslcd/host.c,
+	  nslcd/ldap-nss.c, nslcd/ldap-nss.h, nslcd/ldap-schema.c,
+	  nslcd/ldap-schema.h, nslcd/log.c, nslcd/log.h, nslcd/netgroup.c,
+	  nslcd/network.c, nslcd/nslcd.c, nslcd/pagectrl.c,
+	  nslcd/pagectrl.h, nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c,
+	  nslcd/service.c, nslcd/shadow.c, nslcd/util.c, nslcd/util.h,
+	  nslcd/xmalloc.c, nslcd/xmalloc.h, nss/Makefile.am, nss/aliases.c,
+	  nss/common.c, nss/common.h, nss/ethers.c, nss/group.c,
+	  nss/hosts.c, nss/netgroup.c, nss/networks.c, nss/passwd.c,
+	  nss/protocols.c, nss/prototypes.h, nss/rpc.c, nss/services.c,
+	  nss/shadow.c, tests/Makefile.am, tests/test_aliases.c,
+	  tests/test_ethers.c, tests/test_group.c, tests/test_hosts.c,
+	  tests/test_netgroup.c, tests/test_networks.c,
+	  tests/test_passwd.c, tests/test_protocols.c, tests/test_rpc.c,
+	  tests/test_services.c, tests/test_shadow.c: change license from
+	  GNU Library General Public License v.2 to GNU Lesser General
+	  Public License v.2.1 with permission from Luke Howard
+
+2007-01-08 22:26  arthur
+
+	* [r214] nss/netgroup.c, nss/prototypes.h: use our own thread-local
+	  file pointer for doing requests instead of misusing the data
+	  field in the __netgrent struct
+
+2007-01-08 16:04  arthur
+
+	* [r213] debian/control: add a provide line for libnss-ldap so we
+	  can seamlessly replace it (it should provide the same
+	  functionality)
+
+2007-01-08 15:42  arthur
+
+	* [r212] debian/libnss-ldapd.postinst: only modify nsswitch
+	  databases we support, leave everything else alone (e.g.
+	  automount)
+
+2007-01-02 08:06  arthur
+
+	* [r211] debian/libnss-ldapd.nslcd.init: change description in init
+	  script
+
+2006-12-31 10:05  arthur
+
+	* [r210] nslcd-common.h: if the string to write is NULL, write an
+	  empty string
+
+2006-12-31 10:03  arthur
+
+	* [r209] nslcd-common.h: ensure that all arrays that are allocated
+	  in the buffer are now aligned to the pointer size
+
+2006-12-31 10:02  arthur
+
+	* [r208] nslcd-common.h, nss/hosts.c: extract some more common
+	  macros
+
+2006-12-30 10:50  arthur
+
+	* [r207] nslcd/ldap-nss.c, tests/test_group.c: get rid of a few
+	  warnings
+
+2006-12-29 10:46  arthur
+
+	* [r206] config.sub: update to newer version again (got lost in
+	  r205)
+
+2006-12-29 10:04  arthur
+
+	* [r205] config.sub, nslcd/group.c, nslcd/ldap-nss.c,
+	  nslcd/ldap-nss.h, nslcd/util.c: get rid of debug() function and
+	  call log_log() instead
+
+2006-12-27 09:48  arthur
+
+	* [r204] nslcd-common.h, nslcd/alias.c, nslcd/common.h,
+	  nslcd/ether.c, nslcd/group.c, nslcd/host.c, nslcd/netgroup.c,
+	  nslcd/network.c, nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c,
+	  nslcd/service.c, nslcd/shadow.c: do not allocate new memory with
+	  malloc() for each request with a string parameter but use a
+	  buffer allocated on the stack instead (this simplifies free()-ing
+	  the buffer(s) in case of problems)
+
+2006-12-25 20:30  arthur
+
+	* [r203] nslcd/dnsconfig.c, nslcd/group.c, nslcd/ldap-nss.c,
+	  nslcd/ldap-nss.h, nslcd/passwd.c, nslcd/util.c, nslcd/util.h: get
+	  rid of NSS_BUFSIZ, rename _nss_ldap_oc_check() to
+	  has_objectclass(), redo _nss_ldap_escape_string() with simpler
+	  logic and slightly different signature and redid layout of some
+	  code
+
+2006-12-23 11:50  arthur
+
+	* [r201] ChangeLog, NEWS, TODO, configure.ac, debian/changelog: get
+	  files ready for 0.1 release
+
 2006-12-22 23:23  arthur
 
 	* [r200] nslcd.8: fix name of configuration file and update date
@@ -36,1511 +393,1179 @@
 
 2006-12-21 19:04  arthur
 
-	* [r194] libnss_ldapd, .: change trunk location in repository to
-	  match package name
+	* [r194] .: change trunk location in repository to match package
+	  name
 
 2006-12-21 10:12  arthur
 
-	* [r193] libnss_ldapd/server/alias.c,
-	  libnss_ldapd/server/dnsconfig.c, libnss_ldapd/server/dnsconfig.h,
-	  libnss_ldapd/server/ether.c, libnss_ldapd/server/group.c,
-	  libnss_ldapd/server/host.c, libnss_ldapd/server/ldap-nss.c,
-	  libnss_ldapd/server/ldap-nss.h,
-	  libnss_ldapd/server/ldap-schema.c,
-	  libnss_ldapd/server/ldap-schema.h, libnss_ldapd/server/log.c,
-	  libnss_ldapd/server/log.h, libnss_ldapd/server/netgroup.c,
-	  libnss_ldapd/server/network.c, libnss_ldapd/server/pagectrl.c,
-	  libnss_ldapd/server/pagectrl.h, libnss_ldapd/server/passwd.c,
-	  libnss_ldapd/server/protocol.c, libnss_ldapd/server/rpc.c,
-	  libnss_ldapd/server/service.c, libnss_ldapd/server/shadow.c,
-	  libnss_ldapd/server/util.c, libnss_ldapd/server/util.h,
-	  libnss_ldapd/server/xmalloc.c, libnss_ldapd/server/xmalloc.h:
-	  normalize copyright headers
+	* [r193] server/alias.c, server/dnsconfig.c, server/dnsconfig.h,
+	  server/ether.c, server/group.c, server/host.c, server/ldap-nss.c,
+	  server/ldap-nss.h, server/ldap-schema.c, server/ldap-schema.h,
+	  server/log.c, server/log.h, server/netgroup.c, server/network.c,
+	  server/pagectrl.c, server/pagectrl.h, server/passwd.c,
+	  server/protocol.c, server/rpc.c, server/service.c,
+	  server/shadow.c, server/util.c, server/util.h, server/xmalloc.c,
+	  server/xmalloc.h: normalize copyright headers
 
 2006-12-20 11:51  arthur
 
-	* [r192] libnss_ldapd/debian/copyright: update copyright file with
-	  current copyright information
+	* [r192] debian/copyright: update copyright file with current
+	  copyright information
 
 2006-12-20 11:34  arthur
 
-	* [r191] libnss_ldapd/Makefile.am, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/server/Makefile.am, libnss_ldapd/tests/Makefile.am:
-	  properly capitalize company name
+	* [r191] Makefile.am, nss/Makefile.am, server/Makefile.am,
+	  tests/Makefile.am: properly capitalize company name
 
 2006-12-20 11:10  arthur
 
-	* [r190] libnss_ldapd/README: fix wrapping
+	* [r190] README: fix wrapping
 
 2006-12-20 11:08  arthur
 
-	* [r189] libnss_ldapd/README: integrate remaining parts in
-	  documentation
+	* [r189] README: integrate remaining parts in documentation
 
 2006-12-20 09:14  arthur
 
-	* [r188] libnss_ldapd/Makefile.am,
-	  libnss_ldapd/debian/libnss-ldapd.examples: ship nss-ldapd.conf as
-	  an example in the Debian package
+	* [r188] Makefile.am, debian/libnss-ldapd.examples: ship
+	  nss-ldapd.conf as an example in the Debian package
 
 2006-12-19 22:31  arthur
 
-	* [r187] libnss_ldapd, libnss_ldapd/debian/changelog,
-	  libnss_ldapd/debian/control: change Debian source package name to
-	  nss-ldapd
+	* [r187] ., debian/changelog, debian/control: change Debian source
+	  package name to nss-ldapd
 
 2006-12-19 22:28  arthur
 
-	* [r186] libnss_ldapd/Makefile.am: do not try to ship gone
-	  README.Debian but do ship new HACKING
+	* [r186] Makefile.am: do not try to ship gone README.Debian but do
+	  ship new HACKING
 
 2006-12-19 15:04  arthur
 
-	* [r185] libnss_ldapd/nss-ldapd.conf: get rid of pam stuff
+	* [r185] nss-ldapd.conf: get rid of pam stuff
 
 2006-12-19 15:03  arthur
 
-	* [r184] libnss_ldapd/HACKING, libnss_ldapd/NEWS,
-	  libnss_ldapd/README, libnss_ldapd/TODO: first step at improving
+	* [r184] HACKING, NEWS, README, TODO: first step at improving
 	  documentation
 
 2006-12-19 15:02  arthur
 
-	* [r183] libnss_ldapd/configure.ac, libnss_ldapd/debian/changelog:
-	  change version number to 0.1
+	* [r183] configure.ac, debian/changelog: change version number to
+	  0.1
 
 2006-12-19 14:03  arthur
 
-	* [r182] libnss_ldapd/debian/libnss-ldapd.postinst: change some
-	  tests with grep to be correct, add some comments and improve
-	  import of old configuration file
+	* [r182] debian/libnss-ldapd.postinst: change some tests with grep
+	  to be correct, add some comments and improve import of old
+	  configuration file
 
 2006-12-19 13:55  arthur
 
-	* [r181] libnss_ldapd/debian/README.Debian: the README.Debian does
-	  not contain any more relevant information
+	* [r181] debian/README.Debian: the README.Debian does not contain
+	  any more relevant information
 
 2006-12-19 12:10  arthur
 
-	* [r180] libnss_ldapd/server/nslcd.c: add TODO
+	* [r180] server/nslcd.c: add TODO
 
 2006-12-19 11:53  arthur
 
-	* [r179] libnss_ldapd/Makefile.am, libnss_ldapd/configure.ac,
-	  libnss_ldapd/debian/libnss-ldapd.config,
-	  libnss_ldapd/debian/libnss-ldapd.nslcd.init,
-	  libnss_ldapd/debian/libnss-ldapd.postinst,
-	  libnss_ldapd/debian/libnss-ldapd.postrm,
-	  libnss_ldapd/debian/rules, libnss_ldapd/ldap.conf,
-	  libnss_ldapd/nss-ldapd.conf, libnss_ldapd/nss-ldapd.conf.5,
-	  libnss_ldapd/nss_ldap.5: change default configuration file name
-	  to /etc/nss-ldapd.conf
+	* [r179] Makefile.am, configure.ac, debian/libnss-ldapd.config,
+	  debian/libnss-ldapd.nslcd.init, debian/libnss-ldapd.postinst,
+	  debian/libnss-ldapd.postrm, debian/rules, ldap.conf,
+	  nss-ldapd.conf, nss-ldapd.conf.5, nss_ldap.5: change default
+	  configuration file name to /etc/nss-ldapd.conf
 
 2006-12-18 22:34  arthur
 
-	* [r178] libnss_ldapd/Makefile.am, libnss_ldapd/nslcd.8: add
-	  initial nslcd manual page
+	* [r178] Makefile.am, nslcd.8: add initial nslcd manual page
 
 2006-12-18 22:31  arthur
 
-	* [r177] libnss_ldapd/server/nslcd.c: output of --help no longer
-	  shows --config option (which isn't there)
+	* [r177] server/nslcd.c: output of --help no longer shows --config
+	  option (which isn't there)
 
 2006-12-18 22:30  arthur
 
-	* [r176] libnss_ldapd/configure.ac: change name of package also in
-	  configure
+	* [r176] configure.ac: change name of package also in configure
 
 2006-12-18 21:54  arthur
 
-	* [r175] libnss_ldapd/debian/libnss-ldapd.config: handle cases
-	  where commands in backticks return an error code
+	* [r175] debian/libnss-ldapd.config: handle cases where commands in
+	  backticks return an error code
 
 2006-12-18 21:32  arthur
 
-	* [r174] libnss_ldapd/nss/hosts.c: only set h_errno to error value
-	  on problems and change the returned value in some cases
+	* [r174] nss/hosts.c: only set h_errno to error value on problems
+	  and change the returned value in some cases
 
 2006-12-17 22:30  arthur
 
-	* [r173] libnss_ldapd/debian/libnss-ldapd.nslcd.init: report
-	  process id in status
+	* [r173] debian/libnss-ldapd.nslcd.init: report process id in
+	  status
 
 2006-12-17 11:19  arthur
 
-	* [r172] libnss_ldapd/configure.ac, libnss_ldapd/debian/changelog,
-	  libnss_ldapd/debian/libnss-ldapd.config,
-	  libnss_ldapd/debian/libnss-ldapd.nslcd.init,
-	  libnss_ldapd/debian/libnss-ldapd.postinst,
-	  libnss_ldapd/nss/common.h, libnss_ldapd/server/nslcd.c,
-	  libnss_ldapd/tests/test_networks.c: remove trailing spaces
+	* [r172] configure.ac, debian/changelog,
+	  debian/libnss-ldapd.config, debian/libnss-ldapd.nslcd.init,
+	  debian/libnss-ldapd.postinst, nss/common.h, server/nslcd.c,
+	  tests/test_networks.c: remove trailing spaces
 
 2006-12-17 11:18  arthur
 
-	* [r171] libnss_ldapd/nss/prototypes.h: add note about glibc manual
+	* [r171] nss/prototypes.h: add note about glibc manual
 
 2006-12-17 11:14  arthur
 
-	* [r170] libnss_ldapd/nss/Makefile.am: fix comment as to installing
-	  libraries
+	* [r170] nss/Makefile.am: fix comment as to installing libraries
 
 2006-12-17 11:13  arthur
 
-	* [r169] libnss_ldapd/debian/control: add a snippet to the package
-	  description as to what the main differences to libnss-ldap are
+	* [r169] debian/control: add a snippet to the package description
+	  as to what the main differences to libnss-ldap are
 
 2006-12-17 07:27  arthur
 
-	* [r168] libnss_ldapd/debian/rules: move the nss libraries to /lib
-	  instead of /usr/lib
+	* [r168] debian/rules: move the nss libraries to /lib instead of
+	  /usr/lib
 
 2006-12-17 07:26  arthur
 
-	* [r167] libnss_ldapd/debian/rules: remove some unneeded configure
-	  options
+	* [r167] debian/rules: remove some unneeded configure options
 
 2006-12-16 22:17  arthur
 
-	* [r166] libnss_ldapd/Makefile.am,
-	  libnss_ldapd/debian/libnss-ldapd.lintian-overrides,
-	  libnss_ldapd/debian/rules: fix some lintian warnings regarding
-	  shared libraries with an override file and generating shlibs for
-	  now
+	* [r166] Makefile.am, debian/libnss-ldapd.lintian-overrides,
+	  debian/rules: fix some lintian warnings regarding shared
+	  libraries with an override file and generating shlibs for now
 
 2006-12-16 22:15  arthur
 
-	* [r165] libnss_ldapd/debian/rules: fix configuration file manual
-	  page name
+	* [r165] debian/rules: fix configuration file manual page name
 
 2006-12-16 22:13  arthur
 
-	* [r164] libnss_ldapd/debian/libnss-ldapd.templates,
-	  libnss_ldapd/debian/po/ca.po, libnss_ldapd/debian/po/cs.po,
-	  libnss_ldapd/debian/po/da.po, libnss_ldapd/debian/po/de.po,
-	  libnss_ldapd/debian/po/es.po, libnss_ldapd/debian/po/fr.po,
-	  libnss_ldapd/debian/po/ja.po, libnss_ldapd/debian/po/nl.po,
-	  libnss_ldapd/debian/po/pt_BR.po, libnss_ldapd/debian/po/ru.po,
-	  libnss_ldapd/debian/po/sv.po,
-	  libnss_ldapd/debian/po/templates.pot,
-	  libnss_ldapd/debian/po/vi.po: end every short description line
-	  with a colon (and run debconf-updatepo) (thanks lintian)
+	* [r164] debian/libnss-ldapd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fr.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt_BR.po, debian/po/ru.po,
+	  debian/po/sv.po, debian/po/templates.pot, debian/po/vi.po: end
+	  every short description line with a colon (and run
+	  debconf-updatepo) (thanks lintian)
 
 2006-12-16 22:11  arthur
 
-	* [r163] libnss_ldapd/server/nslcd.c: set correct permissions on
-	  socket creation and remove socket and pidfile on exit
+	* [r163] server/nslcd.c: set correct permissions on socket creation
+	  and remove socket and pidfile on exit
 
 2006-12-16 21:52  arthur
 
-	* [r162] libnss_ldapd/nss/exports.linux, libnss_ldapd/nss/group.c,
-	  libnss_ldapd/nss/prototypes.h, libnss_ldapd/tests/test_group.c:
-	  remove _nss_ldap_initgroups_dyn() from interface for now because
-	  it is currently not working
+	* [r162] nss/exports.linux, nss/group.c, nss/prototypes.h,
+	  tests/test_group.c: remove _nss_ldap_initgroups_dyn() from
+	  interface for now because it is currently not working
 
 2006-12-16 17:39  arthur
 
-	* [r161] libnss_ldapd/configure.ac: fix configure --help strings to
-	  be more consistent and list default values
+	* [r161] configure.ac: fix configure --help strings to be more
+	  consistent and list default values
 
 2006-12-16 16:40  arthur
 
-	* [r160] libnss_ldapd/Makefile.am: fix debian files to ship and
-	  split off those files into a separate variable
+	* [r160] Makefile.am: fix debian files to ship and split off those
+	  files into a separate variable
 
 2006-12-16 16:38  arthur
 
-	* [r159] libnss_ldapd/debian/po/POTFILES.in,
-	  libnss_ldapd/debian/po/ca.po, libnss_ldapd/debian/po/cs.po,
-	  libnss_ldapd/debian/po/da.po, libnss_ldapd/debian/po/de.po,
-	  libnss_ldapd/debian/po/es.po, libnss_ldapd/debian/po/fr.po,
-	  libnss_ldapd/debian/po/ja.po, libnss_ldapd/debian/po/nl.po,
-	  libnss_ldapd/debian/po/pt_BR.po, libnss_ldapd/debian/po/ru.po,
-	  libnss_ldapd/debian/po/sv.po,
-	  libnss_ldapd/debian/po/templates.pot,
-	  libnss_ldapd/debian/po/vi.po: update po and pot files based on
-	  current templates
+	* [r159] debian/po/POTFILES.in, debian/po/ca.po, debian/po/cs.po,
+	  debian/po/da.po, debian/po/de.po, debian/po/es.po,
+	  debian/po/fr.po, debian/po/ja.po, debian/po/nl.po,
+	  debian/po/pt_BR.po, debian/po/ru.po, debian/po/sv.po,
+	  debian/po/templates.pot, debian/po/vi.po: update po and pot files
+	  based on current templates
 
 2006-12-16 16:35  arthur
 
-	* [r158] libnss_ldapd/debian/config,
-	  libnss_ldapd/debian/libnss-ldapd.config,
-	  libnss_ldapd/debian/libnss-ldapd.postinst,
-	  libnss_ldapd/debian/libnss-ldapd.postrm,
-	  libnss_ldapd/debian/libnss-ldapd.templates,
-	  libnss_ldapd/debian/rules, libnss_ldapd/debian/templates: redid
-	  Debian packaging: on installation a search is done for any
+	* [r158] debian/config, debian/libnss-ldapd.config,
+	  debian/libnss-ldapd.postinst, debian/libnss-ldapd.postrm,
+	  debian/libnss-ldapd.templates, debian/rules, debian/templates:
+	  redid Debian packaging: on installation a search is done for any
 	  reasonable configuration information (existing nss_ldap config,
 	  hostname info, etc), configuring nsswitch.conf is also done and
 	  all files in the debian directory have more logical names
 
 2006-12-16 16:25  arthur
 
-	* [r157] libnss_ldapd/Makefile.am,
-	  libnss_ldapd/debian/libnss-ldapd.nslcd.init,
-	  libnss_ldapd/debian/rules: ship an init script for starting nslcd
+	* [r157] Makefile.am, debian/libnss-ldapd.nslcd.init, debian/rules:
+	  ship an init script for starting nslcd
 
 2006-12-14 10:34  arthur
 
-	* [r156] libnss_ldapd/AUTHORS: fix format of AUTHORS file and
-	  include new authors
+	* [r156] AUTHORS: fix format of AUTHORS file and include new
+	  authors
 
 2006-12-14 10:33  arthur
 
-	* [r155] libnss_ldapd/ANNOUNCE, libnss_ldapd/README: include
-	  ANNOUNCE document in README
+	* [r155] ANNOUNCE, README: include ANNOUNCE document in README
 
 2006-12-14 10:32  arthur
 
-	* [r154] libnss_ldapd/ChangeLog, libnss_ldapd/NEWS: rename
-	  ChangeLog to NEWS and change formatting of file to follow common
-	  format
+	* [r154] ChangeLog, NEWS: rename ChangeLog to NEWS and change
+	  formatting of file to follow common format
 
 2006-12-13 16:07  arthur
 
-	* [r153] libnss_ldapd/NEWS, libnss_ldapd/TODO: NEWS looks more like
-	  a TODO
+	* [r153] NEWS, TODO: NEWS looks more like a TODO
 
 2006-12-08 21:58  arthur
 
-	* [r152] libnss_ldapd/Makefile.am, libnss_ldapd/debian/changelog,
-	  libnss_ldapd/debian/control,
-	  libnss_ldapd/debian/libnss-ldapd.postinst,
-	  libnss_ldapd/debian/rules: clean up Debian packaging a bit
+	* [r152] Makefile.am, debian/changelog, debian/control,
+	  debian/libnss-ldapd.postinst, debian/rules: clean up Debian
+	  packaging a bit
 
 2006-12-08 21:45  arthur
 
-	* [r151] libnss_ldapd/tests/ldaptest.pl,
-	  libnss_ldapd/tests/nsswitch.test, libnss_ldapd/tests/testd.c,
-	  libnss_ldapd/tests/testgr.c, libnss_ldapd/tests/testnss.c,
-	  libnss_ldapd/tests/testpw.c, libnss_ldapd/tests/testpw3.c,
-	  libnss_ldapd/tests/testpw4.c, libnss_ldapd/tests/testpw5.c,
-	  libnss_ldapd/tests/testpw6.c: get rid of old test code (most of
-	  it should be covered by the new test code)
+	* [r151] tests/ldaptest.pl, tests/nsswitch.test, tests/testd.c,
+	  tests/testgr.c, tests/testnss.c, tests/testpw.c, tests/testpw3.c,
+	  tests/testpw4.c, tests/testpw5.c, tests/testpw6.c: get rid of old
+	  test code (most of it should be covered by the new test code)
 
 2006-12-08 19:40  arthur
 
-	* [r150] libnss_ldapd: ignore generated debuild files
+	* [r150] .: ignore generated debuild files
 
 2006-12-08 19:37  arthur
 
-	* [r149] libnss_ldapd/debian/po/ca.po,
-	  libnss_ldapd/debian/po/cs.po, libnss_ldapd/debian/po/da.po,
-	  libnss_ldapd/debian/po/de.po, libnss_ldapd/debian/po/es.po,
-	  libnss_ldapd/debian/po/fr.po, libnss_ldapd/debian/po/ja.po,
-	  libnss_ldapd/debian/po/nl.po, libnss_ldapd/debian/po/pt_BR.po,
-	  libnss_ldapd/debian/po/ru.po, libnss_ldapd/debian/po/sv.po,
-	  libnss_ldapd/debian/po/templates.pot,
-	  libnss_ldapd/debian/po/vi.po, libnss_ldapd/debian/templates: do
-	  not make default values translatable
+	* [r149] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fr.po,
+	  debian/po/ja.po, debian/po/nl.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po, debian/templates: do not make default values
+	  translatable
 
 2006-12-08 19:31  arthur
 
-	* [r148] libnss_ldapd/nss/common.c: fix indentation
+	* [r148] nss/common.c: fix indentation
 
 2006-12-08 19:31  arthur
 
-	* [r147] libnss_ldapd/README,
-	  libnss_ldapd/debian/LDAP-Permissions.txt,
-	  libnss_ldapd/debian/examples,
-	  libnss_ldapd/debian/libnss-ldapd.docs: get rid of more
-	  documentation in an attempt to include all useful documentation
-	  in one place
+	* [r147] README, debian/LDAP-Permissions.txt, debian/examples,
+	  debian/libnss-ldapd.docs: get rid of more documentation in an
+	  attempt to include all useful documentation in one place
 
 2006-12-08 19:04  arthur
 
-	* [r146] libnss_ldapd/Makefile.am, libnss_ldapd/README,
-	  libnss_ldapd/doc: reasonable configuration information (existing
-	  nss_ldap config, parts in top-level README
+	* [r146] Makefile.am, README, doc: reasonable configuration
+	  information (existing nss_ldap config, parts in top-level README
 
 2006-12-08 18:37  arthur
 
-	* [r145] libnss_ldapd/configure.ac, libnss_ldapd/nslcd.h: specify
-	  socket and pidfile location with configure script
+	* [r145] configure.ac, nslcd.h: specify socket and pidfile location
+	  with configure script
 
 2006-12-08 17:17  arthur
 
-	* [r144] libnss_ldapd/debian/po/ca.po,
-	  libnss_ldapd/debian/po/cs.po, libnss_ldapd/debian/po/da.po,
-	  libnss_ldapd/debian/po/de.po, libnss_ldapd/debian/po/es.po,
-	  libnss_ldapd/debian/po/fr.po, libnss_ldapd/debian/po/ja.po,
-	  libnss_ldapd/debian/po/nl.po, libnss_ldapd/debian/po/pt_BR.po,
-	  libnss_ldapd/debian/po/ru.po, libnss_ldapd/debian/po/sv.po,
-	  libnss_ldapd/debian/po/templates.pot,
-	  libnss_ldapd/debian/po/vi.po: run debconf-updatepo to get pot and
-	  po files in a consistent state
+	* [r144] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fr.po,
+	  debian/po/ja.po, debian/po/nl.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po: run debconf-updatepo to get pot and po files in
+	  a consistent state
 
 2006-12-08 16:26  arthur
 
-	* [r143] libnss_ldapd/debian/control: get rid of cdbs build
-	  dependency
+	* [r143] debian/control: get rid of cdbs build dependency
 
 2006-12-07 12:18  arthur
 
-	* [r142] libnss_ldapd/debian, libnss_ldapd/debian/README.Debian,
-	  libnss_ldapd/debian/changelog, libnss_ldapd/debian/control,
-	  libnss_ldapd/debian/libnss-ldap.dirs,
-	  libnss_ldapd/debian/libnss-ldap.init,
-	  libnss_ldapd/debian/libnss-ldap.install,
-	  libnss_ldapd/debian/libnss-ldap.links,
-	  libnss_ldapd/debian/libnss-ldap.postinst,
-	  libnss_ldapd/debian/libnss-ldap.postrm,
-	  libnss_ldapd/debian/libnss-ldapd.docs,
-	  libnss_ldapd/debian/libnss-ldapd.postinst,
-	  libnss_ldapd/debian/libnss-ldapd.postrm,
-	  libnss_ldapd/debian/rules: initial step to get working Debian
-	  packaging
+	* [r142] debian, debian/README.Debian, debian/changelog,
+	  debian/control, debian/libnss-ldap.dirs, debian/libnss-ldap.init,
+	  debian/libnss-ldap.install, debian/libnss-ldap.links,
+	  debian/libnss-ldap.postinst, debian/libnss-ldap.postrm,
+	  debian/libnss-ldapd.docs, debian/libnss-ldapd.postinst,
+	  debian/libnss-ldapd.postrm, debian/rules: initial step to get
+	  working Debian packaging
 
 2006-12-05 22:26  arthur
 
-	* [r141] libnss_ldapd/Makefile.am, libnss_ldapd/compile,
-	  libnss_ldapd/config.sub, libnss_ldapd/configure.ac,
-	  libnss_ldapd/nss/Makefile.am, libnss_ldapd/server/Makefile.am:
-	  clean up build scripts to only link nslcd to OpenSSL and to
-	  cleanly create a nss_ldap.so file
+	* [r141] Makefile.am, compile, config.sub, configure.ac,
+	  nss/Makefile.am, server/Makefile.am: clean up build scripts to
+	  only link nslcd to OpenSSL and to cleanly create a nss_ldap.so
+	  file
 
 2006-12-05 22:25  arthur
 
-	* [r140] libnss_ldapd/server/ldap-nss.c,
-	  libnss_ldapd/server/ldap-nss.h: get rid of
+	* [r140] server/ldap-nss.c, server/ldap-nss.h: get rid of
 	  _nss_ldap_get_ld_errno() which wasn't used
 
 2006-12-03 17:18  arthur
 
-	* [r139] libnss_ldapd/server/nslcd.c: fix logging levels and remove
-	  some commented out code
+	* [r139] server/nslcd.c: fix logging levels and remove some
+	  commented out code
 
 2006-12-03 17:17  arthur
 
-	* [r138] libnss_ldapd/server/ldap-nss.c,
-	  libnss_ldapd/server/ldap-schema.c, libnss_ldapd/server/passwd.c:
+	* [r138] server/ldap-nss.c, server/ldap-schema.c, server/passwd.c:
 	  get rid of some more unneeded code
 
 2006-12-03 17:16  arthur
 
-	* [r137] libnss_ldapd/tests/Makefile.am: split out common files
-	  into own variable and disable (comment out) protocol debugging
+	* [r137] tests/Makefile.am: split out common files into own
+	  variable and disable (comment out) protocol debugging
 
 2006-12-03 17:15  arthur
 
-	* [r136] libnss_ldapd/nss/exports.linux: regenerate from
-	  prototypes.h
+	* [r136] nss/exports.linux: regenerate from prototypes.h
 
 2006-11-30 17:52  arthur
 
-	* [r135] libnss_ldapd/server/Makefile.am,
-	  libnss_ldapd/server/alias.c, libnss_ldapd/server/common.h,
-	  libnss_ldapd/server/ether.c, libnss_ldapd/server/group.c,
-	  libnss_ldapd/server/host.c, libnss_ldapd/server/ldap-nss.c,
-	  libnss_ldapd/server/netgroup.c, libnss_ldapd/server/network.c,
-	  libnss_ldapd/server/nslcd-server.c,
-	  libnss_ldapd/server/nslcd-server.h, libnss_ldapd/server/nslcd.c,
-	  libnss_ldapd/server/passwd.c, libnss_ldapd/server/protocol.c,
-	  libnss_ldapd/server/rpc.c, libnss_ldapd/server/service.c,
-	  libnss_ldapd/server/shadow.c, libnss_ldapd/server/util.c:
-	  implement a simple threading solution and move code from
-	  nslcd-server.c to nslcd.c
+	* [r135] server/Makefile.am, server/alias.c, server/common.h,
+	  server/ether.c, server/group.c, server/host.c, server/ldap-nss.c,
+	  server/netgroup.c, server/network.c, server/nslcd-server.c,
+	  server/nslcd-server.h, server/nslcd.c, server/passwd.c,
+	  server/protocol.c, server/rpc.c, server/service.c,
+	  server/shadow.c, server/util.c: implement a simple threading
+	  solution and move code from nslcd-server.c to nslcd.c
 
 2006-11-28 16:21  arthur
 
-	* [r134] libnss_ldapd/nslcd.h, libnss_ldapd/nss/aliases.c,
-	  libnss_ldapd/nss/ethers.c, libnss_ldapd/nss/group.c,
-	  libnss_ldapd/nss/passwd.c, libnss_ldapd/nss/protocols.c,
-	  libnss_ldapd/nss/rpc.c, libnss_ldapd/nss/services.c,
-	  libnss_ldapd/nss/shadow.c, libnss_ldapd/server/alias.c,
-	  libnss_ldapd/server/ether.c, libnss_ldapd/server/group.c,
-	  libnss_ldapd/server/passwd.c, libnss_ldapd/server/protocol.c,
-	  libnss_ldapd/server/rpc.c, libnss_ldapd/server/service.c,
-	  libnss_ldapd/server/shadow.c: rename LDF_ marcos to NSLCD_ macros
-	  to have a single namespace
+	* [r134] nslcd.h, nss/aliases.c, nss/ethers.c, nss/group.c,
+	  nss/passwd.c, nss/protocols.c, nss/rpc.c, nss/services.c,
+	  nss/shadow.c, server/alias.c, server/ether.c, server/group.c,
+	  server/passwd.c, server/protocol.c, server/rpc.c,
+	  server/service.c, server/shadow.c: rename LDF_ marcos to NSLCD_
+	  macros to have a single namespace
 
 2006-11-28 15:44  arthur
 
-	* [r133] libnss_ldapd/server: ignore generated nslcd binary
+	* [r133] server: ignore generated nslcd binary
 
 2006-11-28 15:44  arthur
 
-	* [r132] libnss_ldapd/configure.ac: look for nslcd.h now since
-	  nslcd.c has been moved into the server directory
+	* [r132] configure.ac: look for nslcd.h now since nslcd.c has been
+	  moved into the server directory
 
 2006-11-28 10:59  arthur
 
-	* [r131] libnss_ldapd, libnss_ldapd/Makefile.am,
-	  libnss_ldapd/configure.ac, libnss_ldapd/exports.linux,
-	  libnss_ldapd/log.c, libnss_ldapd/log.h,
-	  libnss_ldapd/nslcd-common.h, libnss_ldapd/nslcd-server.c,
-	  libnss_ldapd/nslcd-server.h, libnss_ldapd/nslcd.c,
-	  libnss_ldapd/nss/Makefile.am, libnss_ldapd/nss/exports.linux,
-	  libnss_ldapd/server, libnss_ldapd/server/Makefile.am,
-	  libnss_ldapd/server/log.c, libnss_ldapd/server/log.h,
-	  libnss_ldapd/server/nslcd-server.c,
-	  libnss_ldapd/server/nslcd-server.h, libnss_ldapd/server/nslcd.c,
-	  libnss_ldapd/server/xmalloc.c, libnss_ldapd/server/xmalloc.h,
-	  libnss_ldapd/testnss.c, libnss_ldapd/tests,
-	  libnss_ldapd/tests/Makefile.am,
-	  libnss_ldapd/tests/test_aliases.c,
-	  libnss_ldapd/tests/test_ethers.c,
-	  libnss_ldapd/tests/test_group.c, libnss_ldapd/tests/test_hosts.c,
-	  libnss_ldapd/tests/test_netgroup.c,
-	  libnss_ldapd/tests/test_networks.c,
-	  libnss_ldapd/tests/test_passwd.c,
-	  libnss_ldapd/tests/test_protocols.c,
-	  libnss_ldapd/tests/test_rpc.c,
-	  libnss_ldapd/tests/test_services.c,
-	  libnss_ldapd/tests/test_shadow.c, libnss_ldapd/tests/testnss.c,
-	  libnss_ldapd/xmalloc.c, libnss_ldapd/xmalloc.h: get as many files
-	  from the root directory as possible, moving all server related
-	  code to the server directory and moving and splitting the test
-	  code to the tests directory
+	* [r131] ., Makefile.am, configure.ac, exports.linux, log.c, log.h,
+	  nslcd-common.h, nslcd-server.c, nslcd-server.h, nslcd.c,
+	  nss/Makefile.am, nss/exports.linux, server, server/Makefile.am,
+	  server/log.c, server/log.h, server/nslcd-server.c,
+	  server/nslcd-server.h, server/nslcd.c, server/xmalloc.c,
+	  server/xmalloc.h, testnss.c, tests, tests/Makefile.am,
+	  tests/test_aliases.c, tests/test_ethers.c, tests/test_group.c,
+	  tests/test_hosts.c, tests/test_netgroup.c, tests/test_networks.c,
+	  tests/test_passwd.c, tests/test_protocols.c, tests/test_rpc.c,
+	  tests/test_services.c, tests/test_shadow.c, tests/testnss.c,
+	  xmalloc.c, xmalloc.h: get as many files from the root directory
+	  as possible, moving all server related code to the server
+	  directory and moving and splitting the test code to the tests
+	  directory
 
 2006-11-28 09:59  arthur
 
-	* [r130] libnss_ldapd/nslcd-server.c, libnss_ldapd/nss/networks.c,
-	  libnss_ldapd/server/network.c, libnss_ldapd/testnss.c: implement
-	  network name lookups on server side plus some fixes on the client
-	  side
+	* [r130] nslcd-server.c, nss/networks.c, server/network.c,
+	  testnss.c: implement network name lookups on server side plus
+	  some fixes on the client side
 
 2006-11-28 09:54  arthur
 
-	* [r129] libnss_ldapd/nslcd-server.c, libnss_ldapd/server/common.c:
-	  include config.h as first statement
+	* [r129] nslcd-server.c, server/common.c: include config.h as first
+	  statement
 
 2006-11-28 09:45  arthur
 
-	* [r128] libnss_ldapd/nslcd-common.h: implement more detailed
-	  protocol logging (dumping the actual byte values read and
-	  written)
+	* [r128] nslcd-common.h: implement more detailed protocol logging
+	  (dumping the actual byte values read and written)
 
 2006-11-27 09:59  arthur
 
-	* [r127] libnss_ldapd/Makefile.am, libnss_ldapd/nslcd-client.c,
-	  libnss_ldapd/nslcd-client.h, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/aliases.c, libnss_ldapd/nss/common.c,
-	  libnss_ldapd/nss/common.h, libnss_ldapd/nss/ethers.c,
-	  libnss_ldapd/nss/group.c, libnss_ldapd/nss/hosts.c,
-	  libnss_ldapd/nss/netgroup.c, libnss_ldapd/nss/networks.c,
-	  libnss_ldapd/nss/passwd.c, libnss_ldapd/nss/protocols.c,
-	  libnss_ldapd/nss/rpc.c, libnss_ldapd/nss/services.c,
-	  libnss_ldapd/nss/shadow.c: get rid of nslcd-client.{c,h} and move
-	  it to nss/common.{c,h}, this ensures that all code that is needed
-	  for the nss part is in the nss directory
+	* [r127] Makefile.am, nslcd-client.c, nslcd-client.h,
+	  nss/Makefile.am, nss/aliases.c, nss/common.c, nss/common.h,
+	  nss/ethers.c, nss/group.c, nss/hosts.c, nss/netgroup.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/rpc.c,
+	  nss/services.c, nss/shadow.c: get rid of nslcd-client.{c,h} and
+	  move it to nss/common.{c,h}, this ensures that all code that is
+	  needed for the nss part is in the nss directory
 
 2006-11-27 09:05  arthur
 
-	* [r126] libnss_ldapd/server/host.c, libnss_ldapd/server/rpc.c: fix
-	  typos
+	* [r126] server/host.c, server/rpc.c: fix typos
 
 2006-11-26 22:36  arthur
 
-	* [r125] libnss_ldapd/server/Makefile.am,
-	  libnss_ldapd/server/dnsconfig.c, libnss_ldapd/server/dnsconfig.h,
-	  libnss_ldapd/server/ether.c, libnss_ldapd/server/group.c,
-	  libnss_ldapd/server/ldap-nss.c, libnss_ldapd/server/ldap-nss.h,
-	  libnss_ldapd/server/ldap-parse.h,
-	  libnss_ldapd/server/ldap-schema.c,
-	  libnss_ldapd/server/ldap-schema.h, libnss_ldapd/server/network.c,
-	  libnss_ldapd/server/passwd.c, libnss_ldapd/server/util.c,
-	  libnss_ldapd/server/util.h: clean up header files
+	* [r125] server/Makefile.am, server/dnsconfig.c,
+	  server/dnsconfig.h, server/ether.c, server/group.c,
+	  server/ldap-nss.c, server/ldap-nss.h, server/ldap-parse.h,
+	  server/ldap-schema.c, server/ldap-schema.h, server/network.c,
+	  server/passwd.c, server/util.c, server/util.h: clean up header
+	  files
 
 2006-11-26 12:01  arthur
 
-	* [r124] libnss_ldapd/doc/autofs-4.1.3-lookup-nssldap.patch,
-	  libnss_ldapd/doc/lookup_nssldap.c, libnss_ldapd/ldap.conf,
-	  libnss_ldapd/nslcd-server.c, libnss_ldapd/nslcd-server.h,
-	  libnss_ldapd/nslcd.h, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/automount.c, libnss_ldapd/nss/prototypes.h,
-	  libnss_ldapd/server/Makefile.am, libnss_ldapd/server/automount.c,
-	  libnss_ldapd/server/ldap-nss.h,
-	  libnss_ldapd/server/ldap-schema.c,
-	  libnss_ldapd/server/ldap-schema.h, libnss_ldapd/server/rpc.c,
-	  libnss_ldapd/server/util.c, libnss_ldapd/server/util.h: get rid
-	  of automount map information lookups through NSS as this is not
-	  used (at least not with glibc), autofs-ldap looks up the
-	  information on it's own (but does parse /etc/nsswitch.conf)
+	* [r124] doc/autofs-4.1.3-lookup-nssldap.patch,
+	  doc/lookup_nssldap.c, ldap.conf, nslcd-server.c, nslcd-server.h,
+	  nslcd.h, nss/Makefile.am, nss/automount.c, nss/prototypes.h,
+	  server/Makefile.am, server/automount.c, server/ldap-nss.h,
+	  server/ldap-schema.c, server/ldap-schema.h, server/rpc.c,
+	  server/util.c, server/util.h: get rid of automount map
+	  information lookups through NSS as this is not used (at least not
+	  with glibc), autofs-ldap looks up the information on it's own
+	  (but does parse /etc/nsswitch.conf)
 
 2006-11-25 10:56  arthur
 
-	* [r123] libnss_ldapd/nslcd-server.c, libnss_ldapd/nss/services.c,
-	  libnss_ldapd/server/service.c, libnss_ldapd/testnss.c: implement
-	  server end of service name lookup and fix client end to translate
-	  between host and network byte order and to also pass protocol in
-	  request
+	* [r123] nslcd-server.c, nss/services.c, server/service.c,
+	  testnss.c: implement server end of service name lookup and fix
+	  client end to translate between host and network byte order and
+	  to also pass protocol in request
 
 2006-11-25 10:55  arthur
 
-	* [r122] libnss_ldapd/nslcd-common.h: fix bug that always causes a
+	* [r122] nslcd-common.h: fix bug that always causes a
 	  READ_STRING_ALLOC to read to a variable called name
 
 2006-11-25 10:09  arthur
 
-	* [r121] libnss_ldapd/nslcd-server.c, libnss_ldapd/server/rpc.c,
-	  libnss_ldapd/testnss.c: implement rpc service on server side
+	* [r121] nslcd-server.c, server/rpc.c, testnss.c: implement rpc
+	  service on server side
 
 2006-11-25 10:09  arthur
 
-	* [r120] libnss_ldapd/server/host.c: get rid of superfluous test
+	* [r120] server/host.c: get rid of superfluous test
 
 2006-11-25 10:08  arthur
 
-	* [r119] libnss_ldapd/server/protocol.c: only flush the stream
-	  after writing all records
+	* [r119] server/protocol.c: only flush the stream after writing all
+	  records
 
 2006-11-25 09:16  arthur
 
-	* [r118] libnss_ldapd/nslcd-server.c,
-	  libnss_ldapd/server/protocol.c, libnss_ldapd/testnss.c: implement
+	* [r118] nslcd-server.c, server/protocol.c, testnss.c: implement
 	  protocol handling (server side)
 
 2006-11-25 09:16  arthur
 
-	* [r117] libnss_ldapd/nslcd.h, libnss_ldapd/nss/netgroup.c,
-	  libnss_ldapd/nss/prototypes.h: trip trailing whitespace
+	* [r117] nslcd.h, nss/netgroup.c, nss/prototypes.h: trip trailing
+	  whitespace
 
 2006-11-25 08:07  arthur
 
-	* [r116] libnss_ldapd/nslcd-common.h: include stdio for definitions
-	  of fread(), fwrite() etc
+	* [r116] nslcd-common.h: include stdio for definitions of fread(),
+	  fwrite() etc
 
 2006-11-24 11:10  arthur
 
-	* [r115] libnss_ldapd/nslcd-server.c, libnss_ldapd/server/host.c,
-	  libnss_ldapd/testnss.c: implement server end of host name lookups
-	  (without IPv6 support sofar)
+	* [r115] nslcd-server.c, server/host.c, testnss.c: implement server
+	  end of host name lookups (without IPv6 support sofar)
 
 2006-11-24 11:03  arthur
 
-	* [r114] libnss_ldapd/nss/hosts.c: fix problem with allocated array
-	  for storing addresses, properly set h_errnop and check empty
-	  address (only addresses of other address family) in nss
-	  functions, not in read_hostent()
+	* [r114] nss/hosts.c: fix problem with allocated array for storing
+	  addresses, properly set h_errnop and check empty address (only
+	  addresses of other address family) in nss functions, not in
+	  read_hostent()
 
 2006-11-24 10:58  arthur
 
-	* [r113] libnss_ldapd/nslcd-common.h: make protocol logging a
-	  little more readable and do not use fseek() in streams because
-	  that is not supported
+	* [r113] nslcd-common.h: make protocol logging a little more
+	  readable and do not use fseek() in streams because that is not
+	  supported
 
 2006-11-22 13:16  arthur
 
-	* [r112] libnss_ldapd/server/alias.c, libnss_ldapd/server/ether.c,
-	  libnss_ldapd/server/group.c, libnss_ldapd/server/passwd.c,
-	  libnss_ldapd/server/shadow.c: only flush the stream after writing
-	  all records (not every time) and more logging consistency
+	* [r112] server/alias.c, server/ether.c, server/group.c,
+	  server/passwd.c, server/shadow.c: only flush the stream after
+	  writing all records (not every time) and more logging consistency
 
 2006-11-22 12:18  arthur
 
-	* [r111] libnss_ldapd/nslcd-server.c, libnss_ldapd/server/shadow.c,
-	  libnss_ldapd/testnss.c: implement server end of shadow lookups
+	* [r111] nslcd-server.c, server/shadow.c, testnss.c: implement
+	  server end of shadow lookups
 
 2006-11-22 12:17  arthur
 
-	* [r110] libnss_ldapd/server/alias.c, libnss_ldapd/server/passwd.c:
-	  make logging a little bit more consistent
+	* [r110] server/alias.c, server/passwd.c: make logging a little bit
+	  more consistent
 
 2006-11-22 11:45  arthur
 
-	* [r109] libnss_ldapd/server/netgroup.c: add extra copyright
-	  information (the exact same code was seen in glibc)
+	* [r109] server/netgroup.c: add extra copyright information (the
+	  exact same code was seen in glibc)
 
 2006-11-21 16:45  arthur
 
-	* [r108] libnss_ldapd/nslcd-server.c, libnss_ldapd/nslcd.h,
-	  libnss_ldapd/nss/netgroup.c, libnss_ldapd/server/netgroup.c,
-	  libnss_ldapd/testnss.c: implement netgroup lookups, including
-	  test code
+	* [r108] nslcd-server.c, nslcd.h, nss/netgroup.c,
+	  server/netgroup.c, testnss.c: implement netgroup lookups,
+	  including test code
 
 2006-11-19 15:49  arthur
 
-	* [r107] libnss_ldapd/nslcd.h: include a note about encoding of
-	  strings
+	* [r107] nslcd.h: include a note about encoding of strings
 
 2006-11-19 15:38  arthur
 
-	* [r106] libnss_ldapd/nslcd-server.c, libnss_ldapd/server/ether.c:
-	  implement nslcd_ether_*() functions
+	* [r106] nslcd-server.c, server/ether.c: implement nslcd_ether_*()
+	  functions
 
 2006-11-19 15:37  arthur
 
-	* [r105] libnss_ldapd/nslcd-server.c, libnss_ldapd/nslcd-server.h:
-	  create prototypes for all server methods
+	* [r105] nslcd-server.c, nslcd-server.h: create prototypes for all
+	  server methods
 
 2006-11-19 15:36  arthur
 
-	* [r104] libnss_ldapd/nss/ethers.c: write contents of ethernet
-	  address not pointer
+	* [r104] nss/ethers.c: write contents of ethernet address not
+	  pointer
 
 2006-11-19 08:57  arthur
 
-	* [r103] libnss_ldapd/server/group.c: add missing semicolon
+	* [r103] server/group.c: add missing semicolon
 
 2006-11-19 08:55  arthur
 
-	* [r102] libnss_ldapd/nslcd-common.h: add more verbose protocol
-	  logging, including logging of errors
+	* [r102] nslcd-common.h: add more verbose protocol logging,
+	  including logging of errors
 
 2006-11-19 08:54  arthur
 
-	* [r101] libnss_ldapd, libnss_ldapd/debian, libnss_ldapd/doc,
-	  libnss_ldapd/nss, libnss_ldapd/server, libnss_ldapd/tests: ignore
-	  stale nfs files
+	* [r101] ., debian, doc, nss, server, tests: ignore stale nfs files
 
 2006-11-19 08:51  arthur
 
-	* [r100] libnss_ldapd/nss/common.h: fix bug: the readfn() function
-	  was executed twice
+	* [r100] nss/common.h: fix bug: the readfn() function was executed
+	  twice
 
 2006-11-18 08:12  arthur
 
-	* [r99] libnss_ldapd/server/group.c,
-	  libnss_ldapd/server/netgroup.c: some layout changes
+	* [r99] server/group.c, server/netgroup.c: some layout changes
 
 2006-11-18 08:09  arthur
 
-	* [r98] libnss_ldapd/nslcd.h: include changes to handle protocol,
-	  rpc, service and netgroup nslcd calls
+	* [r98] nslcd.h: include changes to handle protocol, rpc, service
+	  and netgroup nslcd calls
 
 2006-11-17 22:59  arthur
 
-	* [r97] libnss_ldapd/nss/Makefile.am, libnss_ldapd/nss/netgroup.c,
-	  libnss_ldapd/nss/prototypes.h: implement netgroup lookups
+	* [r97] nss/Makefile.am, nss/netgroup.c, nss/prototypes.h:
+	  implement netgroup lookups
 
 2006-11-17 22:55  arthur
 
-	* [r96] libnss_ldapd/nss/aliases.c, libnss_ldapd/nss/automount.c,
-	  libnss_ldapd/nss/common.h, libnss_ldapd/nss/ethers.c,
-	  libnss_ldapd/nss/group.c, libnss_ldapd/nss/hosts.c,
-	  libnss_ldapd/nss/networks.c, libnss_ldapd/nss/passwd.c,
-	  libnss_ldapd/nss/protocols.c, libnss_ldapd/nss/rpc.c,
-	  libnss_ldapd/nss/services.c, libnss_ldapd/nss/shadow.c: do some
+	* [r96] nss/aliases.c, nss/automount.c, nss/common.h, nss/ethers.c,
+	  nss/group.c, nss/hosts.c, nss/networks.c, nss/passwd.c,
+	  nss/protocols.c, nss/rpc.c, nss/services.c, nss/shadow.c: do some
 	  refactoring in the generated code and add some documentation on
 	  generated code in comments in common.h
 
 2006-11-16 13:06  arthur
 
-	* [r95] libnss_ldapd/nss/Makefile.am, libnss_ldapd/nss/services.c:
-	  implement reading of services entities
+	* [r95] nss/Makefile.am, nss/services.c: implement reading of
+	  services entities
 
 2006-11-16 12:57  arthur
 
-	* [r94] libnss_ldapd/nss/Makefile.am, libnss_ldapd/nss/rpc.c:
-	  implement reading of rpc entities
+	* [r94] nss/Makefile.am, nss/rpc.c: implement reading of rpc
+	  entities
 
 2006-11-16 12:51  arthur
 
-	* [r93] libnss_ldapd/nss/Makefile.am, libnss_ldapd/nss/protocols.c:
-	  implement reading of protocol entities
+	* [r93] nss/Makefile.am, nss/protocols.c: implement reading of
+	  protocol entities
 
 2006-11-16 12:50  arthur
 
-	* [r92] libnss_ldapd/nss/aliases.c, libnss_ldapd/nss/common.h,
-	  libnss_ldapd/nss/ethers.c, libnss_ldapd/nss/group.c,
-	  libnss_ldapd/nss/hosts.c, libnss_ldapd/nss/networks.c,
-	  libnss_ldapd/nss/passwd.c, libnss_ldapd/nss/shadow.c: switch to a
-	  simpler and more compact framework to generate methods (one
+	* [r92] nss/aliases.c, nss/common.h, nss/ethers.c, nss/group.c,
+	  nss/hosts.c, nss/networks.c, nss/passwd.c, nss/shadow.c: switch
+	  to a simpler and more compact framework to generate methods (one
 	  reader function to deserialize a struct from the stream and
 	  auto-generated functions)
 
 2006-11-15 15:06  arthur
 
-	* [r91] libnss_ldapd/nslcd.h, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/networks.c, libnss_ldapd/nss/prototypes.h:
+	* [r91] nslcd.h, nss/Makefile.am, nss/networks.c, nss/prototypes.h:
 	  implement network information lookups through NSS
 
 2006-11-15 11:00  arthur
 
-	* [r90] libnss_ldapd/nss/hosts.c: properly filter out empty
-	  returned address records and return NOTFOUND for entries without
-	  addresses in our address family
+	* [r90] nss/hosts.c: properly filter out empty returned address
+	  records and return NOTFOUND for entries without addresses in our
+	  address family
 
 2006-11-14 14:41  arthur
 
-	* [r89] libnss_ldapd/xmalloc.h: add xxmalloc() macro to simply
-	  allocate a structure of a certain type
+	* [r89] xmalloc.h: add xxmalloc() macro to simply allocate a
+	  structure of a certain type
 
 2006-11-14 14:40  arthur
 
-	* [r88] libnss_ldapd/nslcd.h, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/automount.c, libnss_ldapd/nss/prototypes.h:
-	  implement automounter maps lookups
+	* [r88] nslcd.h, nss/Makefile.am, nss/automount.c,
+	  nss/prototypes.h: implement automounter maps lookups
 
 2006-11-14 14:40  arthur
 
-	* [r87] libnss_ldapd/nss/common.h: just close the stream in case of
-	  problems instead of calling endent()
+	* [r87] nss/common.h: just close the stream in case of problems
+	  instead of calling endent()
 
 2006-11-11 15:38  arthur
 
-	* [r86] libnss_ldapd/server/group.c: include some other functions
-	  into lookup functions to increase readability
+	* [r86] server/group.c: include some other functions into lookup
+	  functions to increase readability
 
 2006-11-11 15:16  arthur
 
-	* [r85] libnss_ldapd/server/Makefile.am,
-	  libnss_ldapd/server/alias.c, libnss_ldapd/server/aliases.c,
-	  libnss_ldapd/server/automount.c, libnss_ldapd/server/common.c,
-	  libnss_ldapd/server/common.h, libnss_ldapd/server/ether.c,
-	  libnss_ldapd/server/ethers.c, libnss_ldapd/server/group.c,
-	  libnss_ldapd/server/host.c, libnss_ldapd/server/hosts.c,
-	  libnss_ldapd/server/ldap-nss.c, libnss_ldapd/server/ldap-nss.h,
-	  libnss_ldapd/server/ldap-parse.h,
-	  libnss_ldapd/server/ldap-schema.c,
-	  libnss_ldapd/server/ldap-schema.h,
-	  libnss_ldapd/server/netgroup.c, libnss_ldapd/server/network.c,
-	  libnss_ldapd/server/networks.c, libnss_ldapd/server/passwd.c,
-	  libnss_ldapd/server/protocol.c, libnss_ldapd/server/protocols.c,
-	  libnss_ldapd/server/rpc.c, libnss_ldapd/server/service.c,
-	  libnss_ldapd/server/services.c, libnss_ldapd/server/shadow.c,
-	  libnss_ldapd/server/util.c, libnss_ldapd/server/util.h: fix
-	  naming and copyright headers
+	* [r85] server/Makefile.am, server/alias.c, server/aliases.c,
+	  server/automount.c, server/common.c, server/common.h,
+	  server/ether.c, server/ethers.c, server/group.c, server/host.c,
+	  server/hosts.c, server/ldap-nss.c, server/ldap-nss.h,
+	  server/ldap-parse.h, server/ldap-schema.c, server/ldap-schema.h,
+	  server/netgroup.c, server/network.c, server/networks.c,
+	  server/passwd.c, server/protocol.c, server/protocols.c,
+	  server/rpc.c, server/service.c, server/services.c,
+	  server/shadow.c, server/util.c, server/util.h: fix naming and
+	  copyright headers
 
 2006-11-11 14:02  arthur
 
-	* [r84] libnss_ldapd/server/aliases.c,
-	  libnss_ldapd/server/ldap-nss.c, libnss_ldapd/server/ldap-nss.h,
-	  libnss_ldapd/server/util.c, libnss_ldapd/server/util.h: simplify
-	  some functions to pass file pointer around instead of struct and
-	  buffer (initially only for alias_byname())
+	* [r84] server/aliases.c, server/ldap-nss.c, server/ldap-nss.h,
+	  server/util.c, server/util.h: simplify some functions to pass
+	  file pointer around instead of struct and buffer (initially only
+	  for alias_byname())
 
 2006-11-11 07:17  arthur
 
-	* [r83] libnss_ldapd/server/ldap-nss.h: some reformatting
+	* [r83] server/ldap-nss.h: some reformatting
 
 2006-11-10 15:36  arthur
 
-	* [r82] libnss_ldapd/nslcd.h, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/aliases.c, libnss_ldapd/nss/ethers.c,
-	  libnss_ldapd/nss/exports.h, libnss_ldapd/nss/group.c,
-	  libnss_ldapd/nss/hosts.c, libnss_ldapd/nss/passwd.c,
-	  libnss_ldapd/nss/prototypes.h, libnss_ldapd/nss/shadow.c,
-	  libnss_ldapd/testnss.c: rename nss/exports.h to nss/prototypes.h
+	* [r82] nslcd.h, nss/Makefile.am, nss/aliases.c, nss/ethers.c,
+	  nss/exports.h, nss/group.c, nss/hosts.c, nss/passwd.c,
+	  nss/prototypes.h, nss/shadow.c, testnss.c: rename nss/exports.h
+	  to nss/prototypes.h
 
 2006-11-10 15:31  arthur
 
-	* [r81] libnss_ldapd/nss/exports.h, libnss_ldapd/nss/group.c,
-	  libnss_ldapd/nss/hosts.c, libnss_ldapd/nss/passwd.c,
-	  libnss_ldapd/nss/shadow.c: switch to using prototypes that are
-	  defined in glibc 2.3.6
+	* [r81] nss/exports.h, nss/group.c, nss/hosts.c, nss/passwd.c,
+	  nss/shadow.c: switch to using prototypes that are defined in
+	  glibc 2.3.6
 
 2006-11-10 13:56  arthur
 
-	* [r80] libnss_ldapd/nslcd.h, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/shadow.c, libnss_ldapd/testnss.c: implement
-	  NSS-side shadow lookups (plus test code)
+	* [r80] nslcd.h, nss/Makefile.am, nss/shadow.c, testnss.c:
+	  implement NSS-side shadow lookups (plus test code)
 
 2006-11-10 13:08  arthur
 
-	* [r79] libnss_ldapd/nslcd.h, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/ethers.c, libnss_ldapd/nss/exports.h,
-	  libnss_ldapd/testnss.c: implement NSS-side ethers database
-	  lookups plus test code
+	* [r79] nslcd.h, nss/Makefile.am, nss/ethers.c, nss/exports.h,
+	  testnss.c: implement NSS-side ethers database lookups plus test
+	  code
 
 2006-11-10 12:44  arthur
 
-	* [r78] libnss_ldapd/nss/exports.h, libnss_ldapd/nss/hosts.c,
-	  libnss_ldapd/testnss.c: add test code for host database and add
-	  const to function definition
+	* [r78] nss/exports.h, nss/hosts.c, testnss.c: add test code for
+	  host database and add const to function definition
 
 2006-11-10 11:51  arthur
 
-	* [r77] libnss_ldapd/nss/aliases.c, libnss_ldapd/nss/group.c,
-	  libnss_ldapd/nss/hosts.c: use better names for our thread-local
-	  file pointer
+	* [r77] nss/aliases.c, nss/group.c, nss/hosts.c: use better names
+	  for our thread-local file pointer
 
 2006-11-07 21:18  arthur
 
-	* [r76] libnss_ldapd/server/aliases.c: expand some marcos and
-	  combine some code
+	* [r76] server/aliases.c: expand some marcos and combine some code
 
 2006-11-07 21:06  arthur
 
-	* [r75] libnss_ldapd/server/passwd.c: expand some marcos and
-	  combine some code
+	* [r75] server/passwd.c: expand some marcos and combine some code
 
 2006-11-05 23:14  arthur
 
-	* [r74] libnss_ldapd/nslcd-common.h, libnss_ldapd/testnss.c: add
-	  proper copyright headers
+	* [r74] nslcd-common.h, testnss.c: add proper copyright headers
 
 2006-11-05 23:05  arthur
 
-	* [r73] libnss_ldapd/nslcd-server.c, libnss_ldapd/nslcd-server.h,
-	  libnss_ldapd/server/group.c, libnss_ldapd/testnss.c: implement
-	  group functions in server but currently group_bymember() does not
-	  work
+	* [r73] nslcd-server.c, nslcd-server.h, server/group.c, testnss.c:
+	  implement group functions in server but currently
+	  group_bymember() does not work
 
 2006-11-05 22:57  arthur
 
-	* [r72] libnss_ldapd/nslcd-common.h: remove testing stuff
+	* [r72] nslcd-common.h: remove testing stuff
 
 2006-11-05 22:57  arthur
 
-	* [r71] libnss_ldapd/nslcd-common.h: fix some variable usage bugs
-	  in READ_* marcos and change protocol debugging marcos to not use
-	  variadic arguments
+	* [r71] nslcd-common.h: fix some variable usage bugs in READ_*
+	  marcos and change protocol debugging marcos to not use variadic
+	  arguments
 
 2006-11-04 13:05  arthur
 
-	* [r70] libnss_ldapd/Makefile.am, libnss_ldapd/certutil,
-	  libnss_ldapd/doc/nsswitch.ldap, libnss_ldapd/nsswitch.ldap:
+	* [r70] Makefile.am, certutil, doc/nsswitch.ldap, nsswitch.ldap:
 	  reorganize (and get rid of) some files
 
 2006-11-03 22:03  arthur
 
-	* [r69] libnss_ldapd/nslcd.h, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/hosts.c: implement initial host database lookups
-	  NSS-side
+	* [r69] nslcd.h, nss/Makefile.am, nss/hosts.c: implement initial
+	  host database lookups NSS-side
 
 2006-11-03 22:01  arthur
 
-	* [r68] libnss_ldapd/nslcd-common.h: make SKIP more consistent with
-	  READ
+	* [r68] nslcd-common.h: make SKIP more consistent with READ
 
 2006-11-03 19:07  arthur
 
-	* [r67] libnss_ldapd/nslcd-server.c: clean struct sockaddr_un
-	  structure before usage
+	* [r67] nslcd-server.c: clean struct sockaddr_un structure before
+	  usage
 
 2006-11-03 13:55  arthur
 
-	* [r66] libnss_ldapd/nslcd-common.h, libnss_ldapd/nss/group.c: fix
-	  bogus reuse of tmpint32, introducing tmp3int32
+	* [r66] nslcd-common.h, nss/group.c: fix bogus reuse of tmpint32,
+	  introducing tmp3int32
 
 2006-11-03 13:46  arthur
 
-	* [r65] libnss_ldapd/nslcd-common.h: split buffer management macros
-	  into separate macros
+	* [r65] nslcd-common.h: split buffer management macros into
+	  separate macros
 
 2006-11-03 12:37  arthur
 
-	* [r64] libnss_ldapd/nslcd-common.h, libnss_ldapd/nslcd.h,
-	  libnss_ldapd/nss/aliases.c, libnss_ldapd/nss/group.c,
-	  libnss_ldapd/server/aliases.c: rename LOOP to STRINGLIST as that
-	  is currently the only supported format
+	* [r64] nslcd-common.h, nslcd.h, nss/aliases.c, nss/group.c,
+	  server/aliases.c: rename LOOP to STRINGLIST as that is currently
+	  the only supported format
 
 2006-11-03 12:09  arthur
 
-	* [r63] libnss_ldapd/nslcd-common.h, libnss_ldapd/nss/group.c: add
-	  _nss_ldap_initgroups_dyn() function
+	* [r63] nslcd-common.h, nss/group.c: add _nss_ldap_initgroups_dyn()
+	  function
 
 2006-11-03 10:06  arthur
 
-	* [r62] libnss_ldapd/nslcd-common.h, libnss_ldapd/nss/aliases.c,
-	  libnss_ldapd/nss/common.h, libnss_ldapd/nss/group.c,
-	  libnss_ldapd/nss/passwd.c: make loop macros common, create macros
-	  for expanding {set,get,end}ent() functions and implement
+	* [r62] nslcd-common.h, nss/aliases.c, nss/common.h, nss/group.c,
+	  nss/passwd.c: make loop macros common, create macros for
+	  expanding {set,get,end}ent() functions and implement
 	  {set,get,end}aliasent
 
 2006-11-03 10:03  arthur
 
-	* [r61] libnss_ldapd/nslcd.h: small documentation fixes
+	* [r61] nslcd.h: small documentation fixes
 
 2006-11-03 10:03  arthur
 
-	* [r60] libnss_ldapd/nslcd-server.h: implement nslcd_alias_all()
-	  server-side
+	* [r60] nslcd-server.h: implement nslcd_alias_all() server-side
 
 2006-11-03 10:02  arthur
 
-	* [r59] libnss_ldapd/nslcd-server.c, libnss_ldapd/server/aliases.c:
-	  implement nslcd_alias_all() server-side
+	* [r59] nslcd-server.c, server/aliases.c: implement
+	  nslcd_alias_all() server-side
 
 2006-11-03 10:02  arthur
 
-	* [r58] libnss_ldapd/server/group.c: get rid of some more unneeded
-	  code
+	* [r58] server/group.c: get rid of some more unneeded code
 
 2006-11-02 14:17  arthur
 
-	* [r57] libnss_ldapd/server/aliases.c,
-	  libnss_ldapd/server/passwd.c: some small fixes
+	* [r57] server/aliases.c, server/passwd.c: some small fixes
 
 2006-11-02 14:13  arthur
 
-	* [r56] libnss_ldapd/nslcd-client.h, libnss_ldapd/nslcd-server.c,
-	  libnss_ldapd/nslcd-server.h, libnss_ldapd/nslcd.h,
-	  libnss_ldapd/nss/aliases.c, libnss_ldapd/nss/common.c,
-	  libnss_ldapd/nss/passwd.c, libnss_ldapd/server/aliases.c,
-	  libnss_ldapd/server/common.c, libnss_ldapd/server/passwd.c:
-	  rename some constants and switch to a more sane naming scheme
+	* [r56] nslcd-client.h, nslcd-server.c, nslcd-server.h, nslcd.h,
+	  nss/aliases.c, nss/common.c, nss/passwd.c, server/aliases.c,
+	  server/common.c, server/passwd.c: rename some constants and
+	  switch to a more sane naming scheme
 
 2006-11-02 13:58  arthur
 
-	* [r55] libnss_ldapd/nss/exports.h: we only need to export
+	* [r55] nss/exports.h: we only need to export
 	  _nss_ldap_initgroups_dyn(), not _nss_ldap_initgroups()
 
 2006-11-02 12:08  arthur
 
-	* [r54] libnss_ldapd/nslcd-client.h, libnss_ldapd/nss/aliases.c,
-	  libnss_ldapd/nss/group.c, libnss_ldapd/nss/passwd.c: rename
-	  READ_RESPONSE() macro to READ_RESPONSE_CODE()
+	* [r54] nslcd-client.h, nss/aliases.c, nss/group.c, nss/passwd.c:
+	  rename READ_RESPONSE() macro to READ_RESPONSE_CODE()
 
 2006-11-01 22:48  arthur
 
-	* [r53] libnss_ldapd/nslcd.h, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/group.c, libnss_ldapd/testnss.c: implement NSS
-	  side of getgrnam(), getgrgid() and {set,get,end}grent()
+	* [r53] nslcd.h, nss/Makefile.am, nss/group.c, testnss.c: implement
+	  NSS side of getgrnam(), getgrgid() and {set,get,end}grent()
 
 2006-11-01 14:05  arthur
 
-	* [r52] libnss_ldapd/nss/aliases.c, libnss_ldapd/nss/common.h,
-	  libnss_ldapd/nss/passwd.c: always set *errnop correctly
+	* [r52] nss/aliases.c, nss/common.h, nss/passwd.c: always set
+	  *errnop correctly
 
 2006-11-01 13:13  arthur
 
-	* [r51] libnss_ldapd/CVSVersionInfo.txt, libnss_ldapd/Makefile.am:
-	  get rid of CVSVersionInfo.txt
+	* [r51] CVSVersionInfo.txt, Makefile.am: get rid of
+	  CVSVersionInfo.txt
 
 2006-11-01 12:58  arthur
 
-	* [r50] libnss_ldapd/nslcd.c: prevent recursive hostname lookups
-	  through ldap
+	* [r50] nslcd.c: prevent recursive hostname lookups through ldap
 
 2006-11-01 12:32  arthur
 
-	* [r49] libnss_ldapd/Makefile.am: add some files to EXTRA_DIST
+	* [r49] Makefile.am: add some files to EXTRA_DIST
 
 2006-11-01 12:19  arthur
 
-	* [r48] libnss_ldapd/nslcd-server.c, libnss_ldapd/nslcd.h,
-	  libnss_ldapd/server/common.c, libnss_ldapd/server/group.c,
-	  libnss_ldapd/server/passwd.c: get rid of some trailing spaces
+	* [r48] nslcd-server.c, nslcd.h, server/common.c, server/group.c,
+	  server/passwd.c: get rid of some trailing spaces
 
 2006-11-01 12:19  arthur
 
-	* [r47] libnss_ldapd/nslcd.c: ignore SIGPIPE and get rid of some
-	  trailing spaces
+	* [r47] nslcd.c: ignore SIGPIPE and get rid of some trailing spaces
 
 2006-11-01 12:18  arthur
 
-	* [r46] libnss_ldapd/testnss.c: only print result on success and
-	  errors on failure
+	* [r46] testnss.c: only print result on success and errors on
+	  failure
 
 2006-11-01 12:17  arthur
 
-	* [r45] libnss_ldapd/server/common.h: do not close the server-side
-	  stream as the main dispatcher will close it
+	* [r45] server/common.h: do not close the server-side stream as the
+	  main dispatcher will close it
 
 2006-11-01 12:13  arthur
 
-	* [r44] libnss_ldapd/nss/passwd.c: implement
-	  _nss_ldap_{set,get,end}pwent() functions with thread-local opened
-	  file
+	* [r44] nss/passwd.c: implement _nss_ldap_{set,get,end}pwent()
+	  functions with thread-local opened file
 
 2006-11-01 12:08  arthur
 
-	* [r43] libnss_ldapd/nss/common.h: also set file pointer to NULL
-	  when closing a stream to properly handle reuse of stream
+	* [r43] nss/common.h: also set file pointer to NULL when closing a
+	  stream to properly handle reuse of stream
 
 2006-11-01 12:04  arthur
 
-	* [r42] libnss_ldapd/log.c: prefix debugging messages with DEBUG
+	* [r42] log.c: prefix debugging messages with DEBUG
 
 2006-11-01 12:04  arthur
 
-	* [r41] libnss_ldapd/configure.ac: look for different file in
-	  source directory, improve --enable-debug option and add checking
-	  for __thread keyword
+	* [r41] configure.ac: look for different file in source directory,
+	  improve --enable-debug option and add checking for __thread
+	  keyword
 
 2006-11-01 12:02  arthur
 
-	* [r40] libnss_ldapd/nslcd-common.h: do not try to read and write
-	  zero length strings and add protocol debugging option
+	* [r40] nslcd-common.h: do not try to read and write zero length
+	  strings and add protocol debugging option
 
 2006-11-01 09:23  arthur
 
-	* [r39] libnss_ldapd/Makefile.am, libnss_ldapd/dnsconfig.c,
-	  libnss_ldapd/dnsconfig.h, libnss_ldapd/ldap-nss.c,
-	  libnss_ldapd/ldap-nss.h, libnss_ldapd/ldap-parse.h,
-	  libnss_ldapd/ldap-schema.c, libnss_ldapd/ldap-schema.h,
-	  libnss_ldapd/nslcd.c, libnss_ldapd/pagectrl.c,
-	  libnss_ldapd/pagectrl.h, libnss_ldapd/resolve.c,
-	  libnss_ldapd/resolve.h, libnss_ldapd/server/Makefile.am,
-	  libnss_ldapd/server/dnsconfig.c, libnss_ldapd/server/dnsconfig.h,
-	  libnss_ldapd/server/ldap-nss.c, libnss_ldapd/server/ldap-nss.h,
-	  libnss_ldapd/server/ldap-parse.h,
-	  libnss_ldapd/server/ldap-schema.c,
-	  libnss_ldapd/server/ldap-schema.h,
-	  libnss_ldapd/server/pagectrl.c, libnss_ldapd/server/pagectrl.h,
-	  libnss_ldapd/server/resolve.c, libnss_ldapd/server/resolve.h,
-	  libnss_ldapd/server/util.c, libnss_ldapd/server/util.h,
-	  libnss_ldapd/util.c, libnss_ldapd/util.h: move some remaining
-	  files into the server/ directory
+	* [r39] Makefile.am, dnsconfig.c, dnsconfig.h, ldap-nss.c,
+	  ldap-nss.h, ldap-parse.h, ldap-schema.c, ldap-schema.h, nslcd.c,
+	  pagectrl.c, pagectrl.h, resolve.c, resolve.h, server/Makefile.am,
+	  server/dnsconfig.c, server/dnsconfig.h, server/ldap-nss.c,
+	  server/ldap-nss.h, server/ldap-parse.h, server/ldap-schema.c,
+	  server/ldap-schema.h, server/pagectrl.c, server/pagectrl.h,
+	  server/resolve.c, server/resolve.h, server/util.c, server/util.h,
+	  util.c, util.h: move some remaining files into the server/
+	  directory
 
 2006-10-31 14:18  arthur
 
-	* [r38] libnss_ldapd/nslcd-common.h, libnss_ldapd/nslcd-server.c,
-	  libnss_ldapd/nslcd-server.h, libnss_ldapd/nslcd.h,
-	  libnss_ldapd/nss/aliases.c, libnss_ldapd/server/aliases.c,
-	  libnss_ldapd/server/passwd.c, libnss_ldapd/testnss.c: implement
-	  reading of alias information through getaliasbyname()
+	* [r38] nslcd-common.h, nslcd-server.c, nslcd-server.h, nslcd.h,
+	  nss/aliases.c, server/aliases.c, server/passwd.c, testnss.c:
+	  implement reading of alias information through getaliasbyname()
 
 2006-10-31 12:46  arthur
 
-	* [r37] libnss_ldapd/nss/aliases.c, libnss_ldapd/nss/common.c,
-	  libnss_ldapd/nss/common.h, libnss_ldapd/nss/exports.h,
-	  libnss_ldapd/nss/passwd.c: make code consistent by adding
-	  headers, removing trailing whitespace and proper ifdefs for
-	  header files
+	* [r37] nss/aliases.c, nss/common.c, nss/common.h, nss/exports.h,
+	  nss/passwd.c: make code consistent by adding headers, removing
+	  trailing whitespace and proper ifdefs for header files
 
 2006-10-31 12:19  arthur
 
-	* [r36] libnss_ldapd: ignore more files
+	* [r36] .: ignore more files
 
 2006-10-31 12:18  arthur
 
-	* [r35] libnss_ldapd/nslcd-common.h: add header file defining read
-	  and write macros
+	* [r35] nslcd-common.h: add header file defining read and write
+	  macros
 
 2006-10-31 12:17  arthur
 
-	* [r34] libnss_ldapd/nslcd-client.c, libnss_ldapd/nslcd-client.h,
-	  libnss_ldapd/nslcd-server.c, libnss_ldapd/nslcd-server.h,
-	  libnss_ldapd/nslcd.h, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/common.c, libnss_ldapd/nss/common.h,
-	  libnss_ldapd/nss/passwd.c, libnss_ldapd/server/common.h,
-	  libnss_ldapd/server/passwd.c, libnss_ldapd/testnss.c: clear up
-	  protocol macros while implementing getpwuid() and
-	  {set,get,end}pwent() functions (last not yet on NSS side)
+	* [r34] nslcd-client.c, nslcd-client.h, nslcd-server.c,
+	  nslcd-server.h, nslcd.h, nss/Makefile.am, nss/common.c,
+	  nss/common.h, nss/passwd.c, server/common.h, server/passwd.c,
+	  testnss.c: clear up protocol macros while implementing getpwuid()
+	  and {set,get,end}pwent() functions (last not yet on NSS side)
 
 2006-10-31 10:08  arthur
 
-	* [r33] libnss_ldapd/nslcd.h: document protocol a little better
+	* [r33] nslcd.h: document protocol a little better
 
 2006-10-30 16:21  arthur
 
-	* [r32] libnss_ldapd/Makefile.am, libnss_ldapd/nslcd-client.c,
-	  libnss_ldapd/nslcd-client.h, libnss_ldapd/nslcd-server.c,
-	  libnss_ldapd/nslcd-server.h, libnss_ldapd/nslcd.c,
-	  libnss_ldapd/nslcd.h, libnss_ldapd/testnss.c: get first working
-	  version of end-to-end test of nss call using simple test program
+	* [r32] Makefile.am, nslcd-client.c, nslcd-client.h,
+	  nslcd-server.c, nslcd-server.h, nslcd.c, nslcd.h, testnss.c: get
+	  first working version of end-to-end test of nss call using simple
+	  test program
 
 2006-10-30 16:16  arthur
 
-	* [r31] libnss_ldapd/Makefile.am, libnss_ldapd/configure.ac: add
-	  server directory
+	* [r31] Makefile.am, configure.ac: add server directory
 
 2006-10-30 16:15  arthur
 
-	* [r30] libnss_ldapd/nss/passwd.c: get rid of some empty lines
+	* [r30] nss/passwd.c: get rid of some empty lines
 
 2006-10-30 15:37  arthur
 
-	* [r29] libnss_ldapd/server, libnss_ldapd/server/Makefile.am,
-	  libnss_ldapd/server/common.c, libnss_ldapd/server/common.h,
-	  libnss_ldapd/server/passwd.c: implement simple password lookup
-	  with nslcd_getpwnam() function
+	* [r29] server, server/Makefile.am, server/common.c,
+	  server/common.h, server/passwd.c: implement simple password
+	  lookup with nslcd_getpwnam() function
 
 2006-10-30 13:44  arthur
 
-	* [r28] libnss_ldapd/nss/common.h, libnss_ldapd/nss/passwd.c:
-	  return read data in struct and fix some marcos
+	* [r28] nss/common.h, nss/passwd.c: return read data in struct and
+	  fix some marcos
 
 2006-10-30 13:40  arthur
 
-	* [r27] libnss_ldapd/nss/Makefile.am: do not build libnss_ldap.so
-	  in this directory, only build nss object functions
+	* [r27] nss/Makefile.am: do not build libnss_ldap.so in this
+	  directory, only build nss object functions
 
 2006-10-25 21:48  arthur
 
-	* [r26] libnss_ldapd/configure.ac, libnss_ldapd/nss: build nss
-	  directory
+	* [r26] configure.ac, nss: build nss directory
 
 2006-10-25 15:22  arthur
 
-	* [r25] libnss_ldapd/ldap-alias.c, libnss_ldapd/ldap-automount.c,
-	  libnss_ldapd/ldap-ethers.c, libnss_ldapd/ldap-grp.c,
-	  libnss_ldapd/ldap-hosts.c, libnss_ldapd/ldap-netgrp.c,
-	  libnss_ldapd/ldap-network.c, libnss_ldapd/ldap-proto.c,
-	  libnss_ldapd/ldap-pwd.c, libnss_ldapd/ldap-rpc.c,
-	  libnss_ldapd/ldap-service.c, libnss_ldapd/ldap-spwd.c,
-	  libnss_ldapd/server, libnss_ldapd/server/aliases.c,
-	  libnss_ldapd/server/automount.c, libnss_ldapd/server/ethers.c,
-	  libnss_ldapd/server/group.c, libnss_ldapd/server/hosts.c,
-	  libnss_ldapd/server/netgroup.c, libnss_ldapd/server/networks.c,
-	  libnss_ldapd/server/passwd.c, libnss_ldapd/server/protocols.c,
-	  libnss_ldapd/server/rpc.c, libnss_ldapd/server/services.c,
-	  libnss_ldapd/server/shadow.c: move ldap server code into separate
-	  directory
+	* [r25] ldap-alias.c, ldap-automount.c, ldap-ethers.c, ldap-grp.c,
+	  ldap-hosts.c, ldap-netgrp.c, ldap-network.c, ldap-proto.c,
+	  ldap-pwd.c, ldap-rpc.c, ldap-service.c, ldap-spwd.c, server,
+	  server/aliases.c, server/automount.c, server/ethers.c,
+	  server/group.c, server/hosts.c, server/netgroup.c,
+	  server/networks.c, server/passwd.c, server/protocols.c,
+	  server/rpc.c, server/services.c, server/shadow.c: move ldap
+	  server code into separate directory
 
 2006-10-25 15:11  arthur
 
-	* [r24] libnss_ldapd/Makefile.am, libnss_ldapd/nslcd-client.c,
-	  libnss_ldapd/nslcd-client.h, libnss_ldapd/nslcd.h,
-	  libnss_ldapd/nss, libnss_ldapd/nss/Makefile.am,
-	  libnss_ldapd/nss/aliases.c, libnss_ldapd/nss/common.c,
-	  libnss_ldapd/nss/common.h, libnss_ldapd/nss/exports.h,
-	  libnss_ldapd/nss/passwd.c: add some basic minimal NSS code that
+	* [r24] Makefile.am, nslcd-client.c, nslcd-client.h, nslcd.h, nss,
+	  nss/Makefile.am, nss/aliases.c, nss/common.c, nss/common.h,
+	  nss/exports.h, nss/passwd.c: add some basic minimal NSS code that
 	  can be generated from macros
 
 2006-10-23 12:03  arthur
 
-	* [r23] libnss_ldapd, libnss_ldapd/Makefile.am,
-	  libnss_ldapd/configure.ac, libnss_ldapd/log.c,
-	  libnss_ldapd/log.h, libnss_ldapd/nslcd-client.c,
-	  libnss_ldapd/nslcd-client.h, libnss_ldapd/nslcd-server.c,
-	  libnss_ldapd/nslcd-server.h, libnss_ldapd/nslcd.c,
-	  libnss_ldapd/nslcd.h, libnss_ldapd/xmalloc.c,
-	  libnss_ldapd/xmalloc.h: implemented basic client/server setup
-	  with a thin client comminicating with a local server over a
-	  socket (initial version of code, much needs to be done)
+	* [r23] ., Makefile.am, configure.ac, log.c, log.h, nslcd-client.c,
+	  nslcd-client.h, nslcd-server.c, nslcd-server.h, nslcd.c, nslcd.h,
+	  xmalloc.c, xmalloc.h: implemented basic client/server setup with
+	  a thin client comminicating with a local server over a socket
+	  (initial version of code, much needs to be done)
 
 2006-10-23 12:02  arthur
 
-	* [r22] libnss_ldapd/ldap-grp.c, libnss_ldapd/ldap-parse.h:
-	  rearrange functions in more logical order
+	* [r22] ldap-grp.c, ldap-parse.h: rearrange functions in more
+	  logical order
 
 2006-10-23 12:01  arthur
 
-	* [r21] libnss_ldapd/ldap-nss.h: align comments
+	* [r21] ldap-nss.h: align comments
 
 2006-10-23 11:26  arthur
 
-	* [r20] libnss_ldapd/ldap-pwd.c: export function
-	  _nss_ldap_parse_pw()
+	* [r20] ldap-pwd.c: export function _nss_ldap_parse_pw()
 
 2006-10-17 14:13  arthur
 
-	* [r19] libnss_ldapd/Makefile.am, libnss_ldapd/dnsconfig.c,
-	  libnss_ldapd/dnsconfig.h, libnss_ldapd/ldap-alias.c,
-	  libnss_ldapd/ldap-automount.c, libnss_ldapd/ldap-ethers.c,
-	  libnss_ldapd/ldap-grp.c, libnss_ldapd/ldap-hosts.c,
-	  libnss_ldapd/ldap-netgrp.c, libnss_ldapd/ldap-network.c,
-	  libnss_ldapd/ldap-nss.c, libnss_ldapd/ldap-nss.h,
-	  libnss_ldapd/ldap-parse.h, libnss_ldapd/ldap-proto.c,
-	  libnss_ldapd/ldap-pwd.c, libnss_ldapd/ldap-rpc.c,
-	  libnss_ldapd/ldap-schema.c, libnss_ldapd/ldap-schema.h,
-	  libnss_ldapd/ldap-service.c, libnss_ldapd/ldap-spwd.c,
-	  libnss_ldapd/ltf.c, libnss_ldapd/ltf.h, libnss_ldapd/pagectrl.c,
-	  libnss_ldapd/pagectrl.h, libnss_ldapd/resolve.c,
-	  libnss_ldapd/resolve.h, libnss_ldapd/util.c: get rid of ltf files
-	  (which contain NPL licenced code btw) clean up includes and
-	  general small code cleanups
+	* [r19] Makefile.am, dnsconfig.c, dnsconfig.h, ldap-alias.c,
+	  ldap-automount.c, ldap-ethers.c, ldap-grp.c, ldap-hosts.c,
+	  ldap-netgrp.c, ldap-network.c, ldap-nss.c, ldap-nss.h,
+	  ldap-parse.h, ldap-proto.c, ldap-pwd.c, ldap-rpc.c,
+	  ldap-schema.c, ldap-schema.h, ldap-service.c, ldap-spwd.c, ltf.c,
+	  ltf.h, pagectrl.c, pagectrl.h, resolve.c, resolve.h, util.c: get
+	  rid of ltf files (which contain NPL licenced code btw) clean up
+	  includes and general small code cleanups
 
 2006-10-17 13:40  arthur
 
-	* [r18] libnss_ldapd/.cvsignore: get rid of this file
+	* [r18] .cvsignore: get rid of this file
 
 2006-10-16 15:02  arthur
 
-	* [r17] libnss_ldapd/Makefile.am, libnss_ldapd/dnsconfig.c,
-	  libnss_ldapd/dnsconfig.h, libnss_ldapd/ldap-alias.c,
-	  libnss_ldapd/ldap-automount.c, libnss_ldapd/ldap-ethers.c,
-	  libnss_ldapd/ldap-grp.c, libnss_ldapd/ldap-hosts.c,
-	  libnss_ldapd/ldap-netgrp.c, libnss_ldapd/ldap-network.c,
-	  libnss_ldapd/ldap-nss.c, libnss_ldapd/ldap-nss.h,
-	  libnss_ldapd/ldap-parse.h, libnss_ldapd/ldap-proto.c,
-	  libnss_ldapd/ldap-pwd.c, libnss_ldapd/ldap-rpc.c,
-	  libnss_ldapd/ldap-schema.h, libnss_ldapd/ldap-service.c,
-	  libnss_ldapd/ldap-spwd.c, libnss_ldapd/ltf.c,
-	  libnss_ldapd/nss_common.h, libnss_ldapd/nss_ldap.spec,
-	  libnss_ldapd/util.c, libnss_ldapd/util.h: some more cleanups,
-	  expanding some MACROs and typedefs and get rid of some more code
+	* [r17] Makefile.am, dnsconfig.c, dnsconfig.h, ldap-alias.c,
+	  ldap-automount.c, ldap-ethers.c, ldap-grp.c, ldap-hosts.c,
+	  ldap-netgrp.c, ldap-network.c, ldap-nss.c, ldap-nss.h,
+	  ldap-parse.h, ldap-proto.c, ldap-pwd.c, ldap-rpc.c,
+	  ldap-schema.h, ldap-service.c, ldap-spwd.c, ltf.c, nss_common.h,
+	  nss_ldap.spec, util.c, util.h: some more cleanups, expanding some
+	  MACROs and typedefs and get rid of some more code
 
 2006-10-15 10:48  arthur
 
-	* [r16] libnss_ldapd/configure.ac: add --enable-warnings option for
-	  extra compiler warnings
+	* [r16] configure.ac: add --enable-warnings option for extra
+	  compiler warnings
 
 2006-10-12 13:00  arthur
 
-	* [r15] libnss_ldapd/Makefile.am, libnss_ldapd/exports.solaris,
-	  libnss_ldapd/ldap-alias.c, libnss_ldapd/ldap-alias.h,
-	  libnss_ldapd/ldap-automount.c, libnss_ldapd/ldap-automount.h,
-	  libnss_ldapd/ldap-bp.c, libnss_ldapd/ldap-bp.h,
-	  libnss_ldapd/ldap-ethers.c, libnss_ldapd/ldap-ethers.h,
-	  libnss_ldapd/ldap-grp.c, libnss_ldapd/ldap-grp.h,
-	  libnss_ldapd/ldap-hosts.c, libnss_ldapd/ldap-hosts.h,
-	  libnss_ldapd/ldap-netgrp.c, libnss_ldapd/ldap-netgrp.h,
-	  libnss_ldapd/ldap-network.c, libnss_ldapd/ldap-network.h,
-	  libnss_ldapd/ldap-proto.c, libnss_ldapd/ldap-proto.h,
-	  libnss_ldapd/ldap-pwd.c, libnss_ldapd/ldap-pwd.h,
-	  libnss_ldapd/ldap-rpc.c, libnss_ldapd/ldap-rpc.h,
-	  libnss_ldapd/ldap-service.c, libnss_ldapd/ldap-service.h,
-	  libnss_ldapd/ldap-spwd.c, libnss_ldapd/ldap-spwd.h: get rid of
-	  some unnecessary header files (and a c file)
+	* [r15] Makefile.am, exports.solaris, ldap-alias.c, ldap-alias.h,
+	  ldap-automount.c, ldap-automount.h, ldap-bp.c, ldap-bp.h,
+	  ldap-ethers.c, ldap-ethers.h, ldap-grp.c, ldap-grp.h,
+	  ldap-hosts.c, ldap-hosts.h, ldap-netgrp.c, ldap-netgrp.h,
+	  ldap-network.c, ldap-network.h, ldap-proto.c, ldap-proto.h,
+	  ldap-pwd.c, ldap-pwd.h, ldap-rpc.c, ldap-rpc.h, ldap-service.c,
+	  ldap-service.h, ldap-spwd.c, ldap-spwd.h: get rid of some
+	  unnecessary header files (and a c file)
 
 2006-10-12 12:34  arthur
 
-	* [r14] libnss_ldapd/ANNOUNCE, libnss_ldapd/AUTHORS,
-	  libnss_ldapd/COPYING, libnss_ldapd/ChangeLog,
-	  libnss_ldapd/Makefile.am, libnss_ldapd/NEWS, libnss_ldapd/README,
-	  libnss_ldapd/certutil, libnss_ldapd/configure.ac,
-	  libnss_ldapd/dnsconfig.c, libnss_ldapd/dnsconfig.h,
-	  libnss_ldapd/ldap-alias.c, libnss_ldapd/ldap-alias.h,
-	  libnss_ldapd/ldap-automount.c, libnss_ldapd/ldap-automount.h,
-	  libnss_ldapd/ldap-bp.c, libnss_ldapd/ldap-bp.h,
-	  libnss_ldapd/ldap-ethers.c, libnss_ldapd/ldap-ethers.h,
-	  libnss_ldapd/ldap-grp.c, libnss_ldapd/ldap-grp.h,
-	  libnss_ldapd/ldap-hosts.c, libnss_ldapd/ldap-hosts.h,
-	  libnss_ldapd/ldap-netgrp.c, libnss_ldapd/ldap-netgrp.h,
-	  libnss_ldapd/ldap-network.c, libnss_ldapd/ldap-network.h,
-	  libnss_ldapd/ldap-nss.c, libnss_ldapd/ldap-nss.h,
-	  libnss_ldapd/ldap-parse.h, libnss_ldapd/ldap-proto.c,
-	  libnss_ldapd/ldap-proto.h, libnss_ldapd/ldap-pwd.c,
-	  libnss_ldapd/ldap-pwd.h, libnss_ldapd/ldap-rpc.c,
-	  libnss_ldapd/ldap-rpc.h, libnss_ldapd/ldap-schema.c,
-	  libnss_ldapd/ldap-schema.h, libnss_ldapd/ldap-service.c,
-	  libnss_ldapd/ldap-service.h, libnss_ldapd/ldap-spwd.c,
-	  libnss_ldapd/ldap-spwd.h, libnss_ldapd/ldap.conf,
-	  libnss_ldapd/ltf.c, libnss_ldapd/ltf.h,
-	  libnss_ldapd/nss_common.h, libnss_ldapd/nss_ldap.5,
-	  libnss_ldapd/nss_ldap.spec, libnss_ldapd/pagectrl.c,
-	  libnss_ldapd/pagectrl.h, libnss_ldapd/resolve.c,
-	  libnss_ldapd/resolve.h, libnss_ldapd/util.c, libnss_ldapd/util.h:
+	* [r14] ANNOUNCE, AUTHORS, COPYING, ChangeLog, Makefile.am, NEWS,
+	  README, certutil, configure.ac, dnsconfig.c, dnsconfig.h,
+	  ldap-alias.c, ldap-alias.h, ldap-automount.c, ldap-automount.h,
+	  ldap-bp.c, ldap-bp.h, ldap-ethers.c, ldap-ethers.h, ldap-grp.c,
+	  ldap-grp.h, ldap-hosts.c, ldap-hosts.h, ldap-netgrp.c,
+	  ldap-netgrp.h, ldap-network.c, ldap-network.h, ldap-nss.c,
+	  ldap-nss.h, ldap-parse.h, ldap-proto.c, ldap-proto.h, ldap-pwd.c,
+	  ldap-pwd.h, ldap-rpc.c, ldap-rpc.h, ldap-schema.c, ldap-schema.h,
+	  ldap-service.c, ldap-service.h, ldap-spwd.c, ldap-spwd.h,
+	  ldap.conf, ltf.c, ltf.h, nss_common.h, nss_ldap.5, nss_ldap.spec,
+	  pagectrl.c, pagectrl.h, resolve.c, resolve.h, util.c, util.h:
 	  remove trailing spaces
 
 2006-10-12 12:32  arthur
 
-	* [r13] libnss_ldapd/ANNOUNCE, libnss_ldapd/AUTHORS,
-	  libnss_ldapd/Makefile.am, libnss_ldapd/NEWS, libnss_ldapd/README,
-	  libnss_ldapd/certutil, libnss_ldapd/configure.ac,
-	  libnss_ldapd/dnsconfig.c, libnss_ldapd/dnsconfig.h,
-	  libnss_ldapd/exports.aix, libnss_ldapd/exports.hpux,
-	  libnss_ldapd/exports.linux, libnss_ldapd/exports.solaris,
-	  libnss_ldapd/ldap-alias.c, libnss_ldapd/ldap-alias.h,
-	  libnss_ldapd/ldap-automount.c, libnss_ldapd/ldap-automount.h,
-	  libnss_ldapd/ldap-bp.c, libnss_ldapd/ldap-bp.h,
-	  libnss_ldapd/ldap-ethers.c, libnss_ldapd/ldap-ethers.h,
-	  libnss_ldapd/ldap-grp.c, libnss_ldapd/ldap-grp.h,
-	  libnss_ldapd/ldap-hosts.c, libnss_ldapd/ldap-hosts.h,
-	  libnss_ldapd/ldap-netgrp.c, libnss_ldapd/ldap-netgrp.h,
-	  libnss_ldapd/ldap-network.c, libnss_ldapd/ldap-network.h,
-	  libnss_ldapd/ldap-nss.c, libnss_ldapd/ldap-nss.h,
-	  libnss_ldapd/ldap-parse.h, libnss_ldapd/ldap-proto.c,
-	  libnss_ldapd/ldap-proto.h, libnss_ldapd/ldap-pwd.c,
-	  libnss_ldapd/ldap-rpc.c, libnss_ldapd/ldap-rpc.h,
-	  libnss_ldapd/ldap-schema.c, libnss_ldapd/ldap-schema.h,
-	  libnss_ldapd/ldap-service.c, libnss_ldapd/ldap-service.h,
-	  libnss_ldapd/ldap-spwd.c, libnss_ldapd/ldap-spwd.h,
-	  libnss_ldapd/ldap.conf, libnss_ldapd/ltf.c,
-	  libnss_ldapd/nsswitch.ldap, libnss_ldapd/pagectrl.c,
-	  libnss_ldapd/resolve.c, libnss_ldapd/resolve.h,
-	  libnss_ldapd/util.c, libnss_ldapd/util.h: some more small
-	  cleanups of code for non-supported systems and convert tabs to
-	  spaces
+	* [r13] ANNOUNCE, AUTHORS, Makefile.am, NEWS, README, certutil,
+	  configure.ac, dnsconfig.c, dnsconfig.h, exports.aix,
+	  exports.hpux, exports.linux, exports.solaris, ldap-alias.c,
+	  ldap-alias.h, ldap-automount.c, ldap-automount.h, ldap-bp.c,
+	  ldap-bp.h, ldap-ethers.c, ldap-ethers.h, ldap-grp.c, ldap-grp.h,
+	  ldap-hosts.c, ldap-hosts.h, ldap-netgrp.c, ldap-netgrp.h,
+	  ldap-network.c, ldap-network.h, ldap-nss.c, ldap-nss.h,
+	  ldap-parse.h, ldap-proto.c, ldap-proto.h, ldap-pwd.c, ldap-rpc.c,
+	  ldap-rpc.h, ldap-schema.c, ldap-schema.h, ldap-service.c,
+	  ldap-service.h, ldap-spwd.c, ldap-spwd.h, ldap.conf, ltf.c,
+	  nsswitch.ldap, pagectrl.c, resolve.c, resolve.h, util.c, util.h:
+	  some more small cleanups of code for non-supported systems and
+	  convert tabs to spaces
 
 2006-10-12 12:29  arthur
 
-	* [r12] libnss_ldapd/configure.ac: include templates from
-	  acconfig.h into configure.ac
+	* [r12] configure.ac: include templates from acconfig.h into
+	  configure.ac
 
 2006-10-12 11:38  arthur
 
-	* [r11] libnss_ldapd/debian/rules: set as executable
+	* [r11] debian/rules: set as executable
 
 2006-10-12 11:01  arthur
 
-	* [r10] libnss_ldapd/Makefile.am, libnss_ldapd/aix_authmeth.c,
-	  libnss_ldapd/dnsconfig.c, libnss_ldapd/dnsconfig.h,
-	  libnss_ldapd/irs-grp.c, libnss_ldapd/irs-hosts.c,
-	  libnss_ldapd/irs-netgrp.c, libnss_ldapd/irs-network.c,
-	  libnss_ldapd/irs-nss.c, libnss_ldapd/irs-nss.h,
-	  libnss_ldapd/irs-proto.c, libnss_ldapd/irs-pwd.c,
-	  libnss_ldapd/irs-service.c, libnss_ldapd/irs.h,
-	  libnss_ldapd/ldap-alias.c, libnss_ldapd/ldap-alias.h,
-	  libnss_ldapd/ldap-automount.c, libnss_ldapd/ldap-automount.h,
-	  libnss_ldapd/ldap-bp.c, libnss_ldapd/ldap-bp.h,
-	  libnss_ldapd/ldap-ethers.c, libnss_ldapd/ldap-ethers.h,
-	  libnss_ldapd/ldap-grp.c, libnss_ldapd/ldap-grp.h,
-	  libnss_ldapd/ldap-hosts.c, libnss_ldapd/ldap-hosts.h,
-	  libnss_ldapd/ldap-netgrp.c, libnss_ldapd/ldap-netgrp.h,
-	  libnss_ldapd/ldap-network.c, libnss_ldapd/ldap-network.h,
-	  libnss_ldapd/ldap-nss.c, libnss_ldapd/ldap-nss.h,
-	  libnss_ldapd/ldap-parse.h, libnss_ldapd/ldap-proto.c,
-	  libnss_ldapd/ldap-proto.h, libnss_ldapd/ldap-pwd.c,
-	  libnss_ldapd/ldap-pwd.h, libnss_ldapd/ldap-rpc.c,
-	  libnss_ldapd/ldap-rpc.h, libnss_ldapd/ldap-schema.c,
-	  libnss_ldapd/ldap-schema.h, libnss_ldapd/ldap-service.c,
-	  libnss_ldapd/ldap-service.h, libnss_ldapd/ldap-sldap.c,
-	  libnss_ldapd/ldap-sldap.h, libnss_ldapd/ldap-spwd.c,
-	  libnss_ldapd/ldap-spwd.h, libnss_ldapd/ltf.c, libnss_ldapd/ltf.h,
-	  libnss_ldapd/nss_common.h, libnss_ldapd/nss_dbdefs.h,
-	  libnss_ldapd/nss_ldap.5, libnss_ldapd/pagectrl.c,
-	  libnss_ldapd/pagectrl.h, libnss_ldapd/resolve.c,
-	  libnss_ldapd/resolve.h, libnss_ldapd/snprintf.c,
-	  libnss_ldapd/snprintf.h, libnss_ldapd/util.c,
-	  libnss_ldapd/util.h: first round of cleanups, all non-glibc NSS
-	  stuff has been removed, because we are going to do some major
-	  restructuring it will not likely remain valid anyway and we can
-	  always re-add it later
+	* [r10] Makefile.am, aix_authmeth.c, dnsconfig.c, dnsconfig.h,
+	  irs-grp.c, irs-hosts.c, irs-netgrp.c, irs-network.c, irs-nss.c,
+	  irs-nss.h, irs-proto.c, irs-pwd.c, irs-service.c, irs.h,
+	  ldap-alias.c, ldap-alias.h, ldap-automount.c, ldap-automount.h,
+	  ldap-bp.c, ldap-bp.h, ldap-ethers.c, ldap-ethers.h, ldap-grp.c,
+	  ldap-grp.h, ldap-hosts.c, ldap-hosts.h, ldap-netgrp.c,
+	  ldap-netgrp.h, ldap-network.c, ldap-network.h, ldap-nss.c,
+	  ldap-nss.h, ldap-parse.h, ldap-proto.c, ldap-proto.h, ldap-pwd.c,
+	  ldap-pwd.h, ldap-rpc.c, ldap-rpc.h, ldap-schema.c, ldap-schema.h,
+	  ldap-service.c, ldap-service.h, ldap-sldap.c, ldap-sldap.h,
+	  ldap-spwd.c, ldap-spwd.h, ltf.c, ltf.h, nss_common.h,
+	  nss_dbdefs.h, nss_ldap.5, pagectrl.c, pagectrl.h, resolve.c,
+	  resolve.h, snprintf.c, snprintf.h, util.c, util.h: first round of
+	  cleanups, all non-glibc NSS stuff has been removed, because we
+	  are going to do some major restructuring it will not likely
+	  remain valid anyway and we can always re-add it later
 
 2006-10-12 08:00  arthur
 
-	* [r9] libnss_ldapd/CVSVersionInfo.txt, libnss_ldapd/ChangeLog,
-	  libnss_ldapd/NEWS, libnss_ldapd/aix_authmeth.c,
-	  libnss_ldapd/certutil, libnss_ldapd/dnsconfig.c,
-	  libnss_ldapd/dnsconfig.h,
-	  libnss_ldapd/doc/autofs-4.1.3-lookup-nssldap.patch,
-	  libnss_ldapd/doc/lookup_nssldap.c, libnss_ldapd/exports.linux,
-	  libnss_ldapd/exports.solaris, libnss_ldapd/irs-grp.c,
-	  libnss_ldapd/irs-hosts.c, libnss_ldapd/irs-netgrp.c,
-	  libnss_ldapd/irs-network.c, libnss_ldapd/irs-nss.c,
-	  libnss_ldapd/irs-nss.h, libnss_ldapd/irs-proto.c,
-	  libnss_ldapd/irs-pwd.c, libnss_ldapd/irs-service.c,
-	  libnss_ldapd/irs.h, libnss_ldapd/ldap-alias.c,
-	  libnss_ldapd/ldap-alias.h, libnss_ldapd/ldap-automount.c,
-	  libnss_ldapd/ldap-automount.h, libnss_ldapd/ldap-bp.c,
-	  libnss_ldapd/ldap-bp.h, libnss_ldapd/ldap-ethers.c,
-	  libnss_ldapd/ldap-ethers.h, libnss_ldapd/ldap-grp.c,
-	  libnss_ldapd/ldap-grp.h, libnss_ldapd/ldap-hosts.c,
-	  libnss_ldapd/ldap-hosts.h, libnss_ldapd/ldap-netgrp.c,
-	  libnss_ldapd/ldap-netgrp.h, libnss_ldapd/ldap-network.c,
-	  libnss_ldapd/ldap-network.h, libnss_ldapd/ldap-nss.c,
-	  libnss_ldapd/ldap-nss.h, libnss_ldapd/ldap-parse.h,
-	  libnss_ldapd/ldap-proto.c, libnss_ldapd/ldap-proto.h,
-	  libnss_ldapd/ldap-pwd.c, libnss_ldapd/ldap-pwd.h,
-	  libnss_ldapd/ldap-rpc.c, libnss_ldapd/ldap-rpc.h,
-	  libnss_ldapd/ldap-schema.c, libnss_ldapd/ldap-schema.h,
-	  libnss_ldapd/ldap-service.c, libnss_ldapd/ldap-service.h,
-	  libnss_ldapd/ldap-sldap.c, libnss_ldapd/ldap-sldap.h,
-	  libnss_ldapd/ldap-spwd.c, libnss_ldapd/ldap-spwd.h,
-	  libnss_ldapd/ldap.conf, libnss_ldapd/ltf.c, libnss_ldapd/ltf.h,
-	  libnss_ldapd/nss_common.h, libnss_ldapd/nss_dbdefs.h,
-	  libnss_ldapd/nss_ldap.5, libnss_ldapd/nsswitch.ldap,
-	  libnss_ldapd/pagectrl.c, libnss_ldapd/pagectrl.h,
-	  libnss_ldapd/resolve.c, libnss_ldapd/resolve.h,
-	  libnss_ldapd/snprintf.c, libnss_ldapd/snprintf.h,
-	  libnss_ldapd/tests/nsswitch.test, libnss_ldapd/tests/testpw.c,
-	  libnss_ldapd/tests/testpw4.c, libnss_ldapd/tests/testpw5.c,
-	  libnss_ldapd/tests/testpw6.c, libnss_ldapd/util.c,
-	  libnss_ldapd/util.h: add keyword expansion (svn:keywords) to all
-	  files containing keywords
+	* [r9] CVSVersionInfo.txt, ChangeLog, NEWS, aix_authmeth.c,
+	  certutil, dnsconfig.c, dnsconfig.h,
+	  doc/autofs-4.1.3-lookup-nssldap.patch, doc/lookup_nssldap.c,
+	  exports.linux, exports.solaris, irs-grp.c, irs-hosts.c,
+	  irs-netgrp.c, irs-network.c, irs-nss.c, irs-nss.h, irs-proto.c,
+	  irs-pwd.c, irs-service.c, irs.h, ldap-alias.c, ldap-alias.h,
+	  ldap-automount.c, ldap-automount.h, ldap-bp.c, ldap-bp.h,
+	  ldap-ethers.c, ldap-ethers.h, ldap-grp.c, ldap-grp.h,
+	  ldap-hosts.c, ldap-hosts.h, ldap-netgrp.c, ldap-netgrp.h,
+	  ldap-network.c, ldap-network.h, ldap-nss.c, ldap-nss.h,
+	  ldap-parse.h, ldap-proto.c, ldap-proto.h, ldap-pwd.c, ldap-pwd.h,
+	  ldap-rpc.c, ldap-rpc.h, ldap-schema.c, ldap-schema.h,
+	  ldap-service.c, ldap-service.h, ldap-sldap.c, ldap-sldap.h,
+	  ldap-spwd.c, ldap-spwd.h, ldap.conf, ltf.c, ltf.h, nss_common.h,
+	  nss_dbdefs.h, nss_ldap.5, nsswitch.ldap, pagectrl.c, pagectrl.h,
+	  resolve.c, resolve.h, snprintf.c, snprintf.h,
+	  tests/nsswitch.test, tests/testpw.c, tests/testpw4.c,
+	  tests/testpw5.c, tests/testpw6.c, util.c, util.h: add keyword
+	  expansion (svn:keywords) to all files containing keywords
 
 2006-10-12 07:50  arthur
 
-	* [r8] libnss_ldapd/Makefile.am, libnss_ldapd/configure.ac: add
-	  West to copyrights notice
+	* [r8] Makefile.am, configure.ac: add West to copyrights notice
 
 2006-10-11 14:00  arthur
 
-	* [r7] libnss_ldapd/INSTALL: install newer version from automake
+	* [r7] INSTALL: install newer version from automake
 
 2006-10-11 13:58  arthur
 
-	* [r6] libnss_ldapd/Makefile.am, libnss_ldapd/acconfig.h,
-	  libnss_ldapd/aclocal.m4, libnss_ldapd/autogen.sh,
-	  libnss_ldapd/config.guess, libnss_ldapd/config.h.in,
-	  libnss_ldapd/config.sub, libnss_ldapd/configure.ac,
-	  libnss_ldapd/configure.in, libnss_ldapd/depcomp,
-	  libnss_ldapd/install-sh, libnss_ldapd/missing,
-	  libnss_ldapd/mkinstalldirs, libnss_ldapd/stamp-h,
-	  libnss_ldapd/stamp-h.in: first step in cleaning up build process
+	* [r6] Makefile.am, acconfig.h, aclocal.m4, autogen.sh,
+	  config.guess, config.h.in, config.sub, configure.ac,
+	  configure.in, depcomp, install-sh, missing, mkinstalldirs,
+	  stamp-h, stamp-h.in: first step in cleaning up build process
 	  (switch to newer autoconf/automake and remove generated files
 	  from version control)
 
 2006-10-11 13:52  arthur
 
-	* [r5] libnss_ldapd, libnss_ldapd/Makefile.in,
-	  libnss_ldapd/configure: remove some files from version control
-	  and add more ignores
+	* [r5] ., Makefile.in, configure: remove some files from version
+	  control and add more ignores
 
 2006-10-11 13:44  arthur
 
-	* [r4] libnss_ldapd, libnss_ldapd/debian: ignore some generated
-	  files
+	* [r4] ., debian: ignore some generated files
 
 2006-10-11 13:37  arthur
 
-	* [r3] libnss_ldapd: branch off latest Debian version
+	* [r3] .: branch off latest Debian version
 
 2006-10-11 13:37  arthur
 
-	* [r2] libnss_ldap_251-5.2, libnss_ldap_251-5.2/Makefile.am,
-	  libnss_ldap_251-5.2/Makefile.in, libnss_ldap_251-5.2/aclocal.m4,
-	  libnss_ldap_251-5.2/configure, libnss_ldap_251-5.2/configure.in,
-	  libnss_ldap_251-5.2/debian,
-	  libnss_ldap_251-5.2/debian/LDAP-Permissions.txt,
-	  libnss_ldap_251-5.2/debian/README.Debian,
-	  libnss_ldap_251-5.2/debian/changelog,
-	  libnss_ldap_251-5.2/debian/compat,
-	  libnss_ldap_251-5.2/debian/config,
-	  libnss_ldap_251-5.2/debian/control,
-	  libnss_ldap_251-5.2/debian/copyright,
-	  libnss_ldap_251-5.2/debian/examples,
-	  libnss_ldap_251-5.2/debian/examples/groups.ldif,
-	  libnss_ldap_251-5.2/debian/examples/people.ldif,
-	  libnss_ldap_251-5.2/debian/libnss-ldap.dirs,
-	  libnss_ldap_251-5.2/debian/libnss-ldap.init,
-	  libnss_ldap_251-5.2/debian/libnss-ldap.install,
-	  libnss_ldap_251-5.2/debian/libnss-ldap.links,
-	  libnss_ldap_251-5.2/debian/libnss-ldap.postinst,
-	  libnss_ldap_251-5.2/debian/libnss-ldap.postrm,
-	  libnss_ldap_251-5.2/debian/po,
-	  libnss_ldap_251-5.2/debian/po/POTFILES.in,
-	  libnss_ldap_251-5.2/debian/po/ca.po,
-	  libnss_ldap_251-5.2/debian/po/cs.po,
-	  libnss_ldap_251-5.2/debian/po/da.po,
-	  libnss_ldap_251-5.2/debian/po/de.po,
-	  libnss_ldap_251-5.2/debian/po/es.po,
-	  libnss_ldap_251-5.2/debian/po/fr.po,
-	  libnss_ldap_251-5.2/debian/po/ja.po,
-	  libnss_ldap_251-5.2/debian/po/nl.po,
-	  libnss_ldap_251-5.2/debian/po/pt_BR.po,
-	  libnss_ldap_251-5.2/debian/po/ru.po,
-	  libnss_ldap_251-5.2/debian/po/sv.po,
-	  libnss_ldap_251-5.2/debian/po/templates.pot,
-	  libnss_ldap_251-5.2/debian/po/vi.po,
-	  libnss_ldap_251-5.2/debian/rules,
-	  libnss_ldap_251-5.2/debian/templates,
-	  libnss_ldap_251-5.2/ldap-nss.c, libnss_ldap_251-5.2/ldap-nss.h,
-	  libnss_ldap_251-5.2/ldap-pwd.c, libnss_ldap_251-5.2/ldap.conf,
-	  libnss_ldap_251-5.2/stamp-h: import Debian release 251-5.2
+	* [r2] ., Makefile.am, Makefile.in, aclocal.m4, configure,
+	  configure.in, debian, debian/LDAP-Permissions.txt,
+	  debian/README.Debian, debian/changelog, debian/compat,
+	  debian/config, debian/control, debian/copyright, debian/examples,
+	  debian/examples/groups.ldif, debian/examples/people.ldif,
+	  debian/libnss-ldap.dirs, debian/libnss-ldap.init,
+	  debian/libnss-ldap.install, debian/libnss-ldap.links,
+	  debian/libnss-ldap.postinst, debian/libnss-ldap.postrm,
+	  debian/po, debian/po/POTFILES.in, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fr.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt_BR.po, debian/po/ru.po,
+	  debian/po/sv.po, debian/po/templates.pot, debian/po/vi.po,
+	  debian/rules, debian/templates, ldap-nss.c, ldap-nss.h,
+	  ldap-pwd.c, ldap.conf, stamp-h: import Debian release 251-5.2
 
 2006-10-11 13:34  arthur
 
-	* [r1] nss_ldap-251, nss_ldap-251/.cvsignore,
-	  nss_ldap-251/ANNOUNCE, nss_ldap-251/AUTHORS,
-	  nss_ldap-251/COPYING, nss_ldap-251/CVSVersionInfo.txt,
-	  nss_ldap-251/ChangeLog, nss_ldap-251/INSTALL,
-	  nss_ldap-251/Makefile.am, nss_ldap-251/Makefile.in,
-	  nss_ldap-251/NEWS, nss_ldap-251/README, nss_ldap-251/acconfig.h,
-	  nss_ldap-251/aclocal.m4, nss_ldap-251/aix_authmeth.c,
-	  nss_ldap-251/autogen.sh, nss_ldap-251/certutil,
-	  nss_ldap-251/config.guess, nss_ldap-251/config.h.in,
-	  nss_ldap-251/config.sub, nss_ldap-251/configure,
-	  nss_ldap-251/configure.in, nss_ldap-251/depcomp,
-	  nss_ldap-251/dnsconfig.c, nss_ldap-251/dnsconfig.h,
-	  nss_ldap-251/doc, nss_ldap-251/doc/README.AIX,
-	  nss_ldap-251/doc/README.HPUX, nss_ldap-251/doc/README.IRS,
-	  nss_ldap-251/doc/README.SFU, nss_ldap-251/doc/README.paged,
-	  nss_ldap-251/doc/SolarisInstallNotes.txt,
-	  nss_ldap-251/doc/autofs-4.1.3-lookup-nssldap.patch,
-	  nss_ldap-251/doc/lookup_nssldap.c, nss_ldap-251/exports.aix,
-	  nss_ldap-251/exports.hpux, nss_ldap-251/exports.linux,
-	  nss_ldap-251/exports.solaris, nss_ldap-251/install-sh,
-	  nss_ldap-251/irs-grp.c, nss_ldap-251/irs-hosts.c,
-	  nss_ldap-251/irs-netgrp.c, nss_ldap-251/irs-network.c,
-	  nss_ldap-251/irs-nss.c, nss_ldap-251/irs-nss.h,
-	  nss_ldap-251/irs-proto.c, nss_ldap-251/irs-pwd.c,
-	  nss_ldap-251/irs-service.c, nss_ldap-251/irs.h,
-	  nss_ldap-251/ldap-alias.c, nss_ldap-251/ldap-alias.h,
-	  nss_ldap-251/ldap-automount.c, nss_ldap-251/ldap-automount.h,
-	  nss_ldap-251/ldap-bp.c, nss_ldap-251/ldap-bp.h,
-	  nss_ldap-251/ldap-ethers.c, nss_ldap-251/ldap-ethers.h,
-	  nss_ldap-251/ldap-grp.c, nss_ldap-251/ldap-grp.h,
-	  nss_ldap-251/ldap-hosts.c, nss_ldap-251/ldap-hosts.h,
-	  nss_ldap-251/ldap-netgrp.c, nss_ldap-251/ldap-netgrp.h,
-	  nss_ldap-251/ldap-network.c, nss_ldap-251/ldap-network.h,
-	  nss_ldap-251/ldap-nss.c, nss_ldap-251/ldap-nss.h,
-	  nss_ldap-251/ldap-parse.h, nss_ldap-251/ldap-proto.c,
-	  nss_ldap-251/ldap-proto.h, nss_ldap-251/ldap-pwd.c,
-	  nss_ldap-251/ldap-pwd.h, nss_ldap-251/ldap-rpc.c,
-	  nss_ldap-251/ldap-rpc.h, nss_ldap-251/ldap-schema.c,
-	  nss_ldap-251/ldap-schema.h, nss_ldap-251/ldap-service.c,
-	  nss_ldap-251/ldap-service.h, nss_ldap-251/ldap-sldap.c,
-	  nss_ldap-251/ldap-sldap.h, nss_ldap-251/ldap-spwd.c,
-	  nss_ldap-251/ldap-spwd.h, nss_ldap-251/ldap.conf,
-	  nss_ldap-251/ltf.c, nss_ldap-251/ltf.h, nss_ldap-251/missing,
-	  nss_ldap-251/mkinstalldirs, nss_ldap-251/nss_common.h,
-	  nss_ldap-251/nss_dbdefs.h, nss_ldap-251/nss_ldap.5,
-	  nss_ldap-251/nss_ldap.spec, nss_ldap-251/nsswitch.ldap,
-	  nss_ldap-251/pagectrl.c, nss_ldap-251/pagectrl.h,
-	  nss_ldap-251/resolve.c, nss_ldap-251/resolve.h,
-	  nss_ldap-251/snprintf.c, nss_ldap-251/snprintf.h,
-	  nss_ldap-251/stamp-h.in, nss_ldap-251/tests,
-	  nss_ldap-251/tests/ldaptest.pl, nss_ldap-251/tests/nsswitch.test,
-	  nss_ldap-251/tests/testd.c, nss_ldap-251/tests/testgr.c,
-	  nss_ldap-251/tests/testpw.c, nss_ldap-251/tests/testpw3.c,
-	  nss_ldap-251/tests/testpw4.c, nss_ldap-251/tests/testpw5.c,
-	  nss_ldap-251/tests/testpw6.c, nss_ldap-251/util.c,
-	  nss_ldap-251/util.h: import release 251 of nss-ldap
+	* [r1] ., .cvsignore, ANNOUNCE, AUTHORS, COPYING,
+	  CVSVersionInfo.txt, ChangeLog, INSTALL, Makefile.am, Makefile.in,
+	  NEWS, README, acconfig.h, aclocal.m4, aix_authmeth.c, autogen.sh,
+	  certutil, config.guess, config.h.in, config.sub, configure,
+	  configure.in, depcomp, dnsconfig.c, dnsconfig.h, doc,
+	  doc/README.AIX, doc/README.HPUX, doc/README.IRS, doc/README.SFU,
+	  doc/README.paged, doc/SolarisInstallNotes.txt,
+	  doc/autofs-4.1.3-lookup-nssldap.patch, doc/lookup_nssldap.c,
+	  exports.aix, exports.hpux, exports.linux, exports.solaris,
+	  install-sh, irs-grp.c, irs-hosts.c, irs-netgrp.c, irs-network.c,
+	  irs-nss.c, irs-nss.h, irs-proto.c, irs-pwd.c, irs-service.c,
+	  irs.h, ldap-alias.c, ldap-alias.h, ldap-automount.c,
+	  ldap-automount.h, ldap-bp.c, ldap-bp.h, ldap-ethers.c,
+	  ldap-ethers.h, ldap-grp.c, ldap-grp.h, ldap-hosts.c,
+	  ldap-hosts.h, ldap-netgrp.c, ldap-netgrp.h, ldap-network.c,
+	  ldap-network.h, ldap-nss.c, ldap-nss.h, ldap-parse.h,
+	  ldap-proto.c, ldap-proto.h, ldap-pwd.c, ldap-pwd.h, ldap-rpc.c,
+	  ldap-rpc.h, ldap-schema.c, ldap-schema.h, ldap-service.c,
+	  ldap-service.h, ldap-sldap.c, ldap-sldap.h, ldap-spwd.c,
+	  ldap-spwd.h, ldap.conf, ltf.c, ltf.h, missing, mkinstalldirs,
+	  nss_common.h, nss_dbdefs.h, nss_ldap.5, nss_ldap.spec,
+	  nsswitch.ldap, pagectrl.c, pagectrl.h, resolve.c, resolve.h,
+	  snprintf.c, snprintf.h, stamp-h.in, tests, tests/ldaptest.pl,
+	  tests/nsswitch.test, tests/testd.c, tests/testgr.c,
+	  tests/testpw.c, tests/testpw3.c, tests/testpw4.c,
+	  tests/testpw5.c, tests/testpw6.c, util.c, util.h: import release
+	  251 of nss-ldap
 

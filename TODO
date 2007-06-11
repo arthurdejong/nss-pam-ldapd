@@ -4,21 +4,19 @@ probably before we can call this stable
 * split out configuration part into own source file
 * clean up and refactor ldap server code
 * FIXME: strerror() is not reentrant
-* align stuff in buffer (e.g. arrays of pointers)
 * resolve.[ch] has license: BSD WITH ADVERTISING CLAUSE - LGPL problem?
 * get rootbindpw in Debian package working again
 * rewrite nss-ldapd.conf(5) manual page
+* error out quickly when the LDAP server is down
 
 other items
 -----------
-* another way to prevent deadlocks is to pass some flag from nsldc to nss_ldap
-  (this however will not work if nscd is used)
 * set up connection to LDAP server before making NSLCD mechanism available
   (e.g. before creating socket)
-* Debian packaging: maybe remove stuff from /etc/nsswitch.conf on purge
+* Debian packaging: maybe remove stuff from /etc/nsswitch.conf on remove or
+  purge (maybe prompt?)
 * support ipv6 in name (host address) lookups
 * support ipv6 in LDAP connections (investigate if OpenLDAP supports it)
-* set up a compat directory where we can have compatibility wrappers
 * probably disable rootbinddn for now and document the fact that you should
   use libpam-ldap for authentication without exposing the passwords through
   LDAP
@@ -30,15 +28,14 @@ other items
 * support netmasks (check README also)
 * add a warning somewhere as to when the NSS functions are available
 * reserve some threads in the server for root users
-* check FSF address
 * add sanity checking code (e.g. not too large buffer allocation and checking
   that host, user, etc do not contain funky characters) in all server modules
 * implement running under a different uid/gid (maybe chroot jail)
-* probably switch version numbering scheme back to three numbers with a 1.0.0
-  release
 * think of a way to preserve the case-sensitive nature of NSS (while
   maintaining the case insensitive LDAP)
 * maybe remove dh_makeshlibs from debian/rules (probably not needed)
-* maybe move library to /usr/lib
 * include a generic init script
-* debconf: see if we can read shared values as default in case of missing config
+* log some statistics: "passwd=100 shadow=10 host=20 rpc=10" (10 req/minute)
+* get debconf template translations from BTS
+* in the server: once the request is done pass the flushing of the buffers to
+  a separate thread so our workers are available to handle new requests

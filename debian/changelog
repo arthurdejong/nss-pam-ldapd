@@ -1,3 +1,24 @@
+nss-ldapd (0.2) unstable; urgency=low
+
+  * fixes to the netgroup lookup code
+  * more simplifications and improvements in the code almost 5% code reduction
+    (compared to release 0.1) and 37% reduction in gcc warnings (from 443 in
+    251 to 389 in 0.1 and 244 in 0.2)
+  * a lot of code improvements thanks to flawfinder, more gcc warnings, splint
+    and rats
+  * license change from GNU Library General Public License to GNU Lesser
+    General Public License (with the permission of Luke Howard)
+  * fix logging code to be cleaner and always use our own logging module
+  * a start has been made to make the code more testable and initial work to
+    set up a testing framework
+  * implemented a timeout mechanism in the communication between the NSS part
+    and the nslcd server part
+  * install NSS library files in /usr/lib instead of /lib (they won't work
+    without /usr anyway)
+  * fixed debian/copyright file to include information on all files
+
+ -- Arthur de Jong <adejong@debian.org>  Sun, 10 Jun 2007 01:27:52 +0200
+
 nss-ldapd (0.1) unstable; urgency=low
 
   * initial release of nss-ldapd (should be functional but not yet stable
