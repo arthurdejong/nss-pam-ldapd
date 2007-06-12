@@ -191,7 +191,7 @@ _nss_ldap_parse_host (LDAPMessage * e,
         continue;
 
 #else
-      unsigned long haddr;
+      in_addr_t haddr;
       haddr = inet_addr (addresses[i]);
 #endif
 
@@ -364,7 +364,8 @@ int nslcd_host_all(TFILE *fp)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    write_hostent(fp,&result);
+    if (write_hostent(fp,&result))
+      return -1;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
