@@ -53,6 +53,7 @@ static struct dict_entry *dict_entry_new(const char *key)
     return NULL;
   }
   entry->value=NULL;
+  entry->next=NULL;
   return entry;
 }
 

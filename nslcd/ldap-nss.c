@@ -43,12 +43,7 @@
 #include <sys/un.h>
 #endif
 #include <netinet/in.h>
-#ifdef HAVE_LBER_H
-#include <lber.h>
-#endif
-#ifdef HAVE_LDAP_H
 #include <ldap.h>
-#endif
 #ifdef HAVE_LDAP_SSL_H
 #include <ldap_ssl.h>
 #endif
@@ -2060,16 +2055,14 @@ _nss_ldap_read (const char *dn, const char **attributes, LDAPMessage ** res)
  * Simple wrapper around ldap_get_values(). Requires that
  * session is already established.
  */
-char **
-_nss_ldap_get_values (LDAPMessage * e, const char *attr)
+char **_nss_ldap_get_values(LDAPMessage *e,const char *attr)
 {
-  if (__session.ls_state != LS_CONNECTED_TO_DSA)
-    {
-      return NULL;
-    }
-  assert (__session.ls_conn != NULL);
-
-  return ldap_get_values (__session.ls_conn, e, (char *) attr);
+  if (__session.ls_state!=LS_CONNECTED_TO_DSA)
+  {
+    return NULL;
+  }
+  assert(__session.ls_conn!=NULL);
+  return ldap_get_values(__session.ls_conn,e,attr);
 }
 
 /*
@@ -2697,7 +2690,7 @@ _nss_ldap_assign_attrvals (LDAPMessage * e,
       return NSS_STATUS_UNAVAIL;
     }
 
-  vals = ldap_get_values (__session.ls_conn, e, (char *) attr);
+  vals=ldap_get_values(__session.ls_conn,e,attr);
 
   valcount = (vals == NULL) ? 0 : ldap_count_values (vals);
   if (bytesleft (buffer, buflen, char *) < (valcount + 1) * sizeof (char *))
@@ -2778,7 +2771,7 @@ int _nss_ldap_write_attrvals(TFILE *fp,LDAPMessage *e,const char *attr)
   if (__session.ls_conn==NULL)
     return NSLCD_RESULT_UNAVAIL;
   /* get the values and the number of values */
-  vals=ldap_get_values(__session.ls_conn,e,(char *)attr);
+  vals=ldap_get_values(__session.ls_conn,e,attr);
   valcount=(vals==NULL)?0:ldap_count_values(vals);
   /* write number of entries */
   WRITE_INT32(fp,valcount);
@@ -2827,7 +2820,7 @@ _nss_ldap_assign_attrval (LDAPMessage * e,
       return NSS_STATUS_UNAVAIL;
     }
 
-  vals = ldap_get_values (__session.ls_conn, e, (char *) attr);
+  vals=ldap_get_values(__session.ls_conn,e,attr);
   if (vals == NULL)
     {
       def = _nss_ldap_map_df(attr);
@@ -2941,7 +2934,7 @@ _nss_ldap_assign_userpassword (LDAPMessage * e,
       return NSS_STATUS_UNAVAIL;
     }
 
-  vals=ldap_get_values(__session.ls_conn,e,(char *)attr);
+  vals=ldap_get_values(__session.ls_conn,e,attr);
   pwd=_nss_ldap_locate_userpassword(vals);
 
   vallen=strlen(pwd);

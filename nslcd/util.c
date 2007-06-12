@@ -229,9 +229,9 @@ dn2uid_cache_put (const char *dn, const char *uid)
         }
     }
 
-  key.data = (void *) dn;
+  key.data = (const void *) dn;
   key.size = strlen (dn);
-  val.data = (void *) uid;
+  val.data = (const void *) uid;
   val.size = strlen (uid);
 
   status = old_dict_put (__cache, &key, &val);
@@ -255,7 +255,7 @@ dn2uid_cache_get (const char *dn, char **uid, char **buffer, size_t * buflen)
       return NSS_STATUS_NOTFOUND;
     }
 
-  key.data = (void *) dn;
+  key.data = (const void *) dn;
   key.size = strlen (dn);
 
   status = old_dict_get (__cache, 0, &key, &val);
@@ -272,7 +272,7 @@ dn2uid_cache_get (const char *dn, char **uid, char **buffer, size_t * buflen)
     }
 
   *uid = *buffer;
-  memcpy (*uid, (char *) val.data, val.size);
+  memcpy (*uid, (const char *) val.data, val.size);
   (*uid)[val.size] = '\0';
   *buffer += val.size + 1;
   *buflen -= val.size + 1;

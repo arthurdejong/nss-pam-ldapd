@@ -301,15 +301,15 @@ init_sp_attributes (const char ***sp_attrs)
 
   (*sp_attrs) = __sp_attrs;
 
-  (*sp_attrs)[0] = (char *) ATM (LM_SHADOW, uid);
-  (*sp_attrs)[1] = (char *) ATM (LM_SHADOW, userPassword);
-  (*sp_attrs)[2] = (char *) AT (shadowLastChange);
-  (*sp_attrs)[3] = (char *) AT (shadowMax);
-  (*sp_attrs)[4] = (char *) AT (shadowMin);
-  (*sp_attrs)[5] = (char *) AT (shadowWarning);
-  (*sp_attrs)[6] = (char *) AT (shadowInactive);
-  (*sp_attrs)[7] = (char *) AT (shadowExpire);
-  (*sp_attrs)[8] = (char *) AT (shadowFlag);
+  (*sp_attrs)[0] = ATM (LM_SHADOW, uid);
+  (*sp_attrs)[1] = ATM (LM_SHADOW, userPassword);
+  (*sp_attrs)[2] = AT (shadowLastChange);
+  (*sp_attrs)[3] = AT (shadowMax);
+  (*sp_attrs)[4] = AT (shadowMin);
+  (*sp_attrs)[5] = AT (shadowWarning);
+  (*sp_attrs)[6] = AT (shadowInactive);
+  (*sp_attrs)[7] = AT (shadowExpire);
+  (*sp_attrs)[8] = AT (shadowFlag);
   (*sp_attrs)[9] = NULL;
 }
 
@@ -321,12 +321,12 @@ init_grp_attributes (const char ***grp_attrs)
 
   (*grp_attrs) = __grp_attrs;
 
-  (*grp_attrs)[i++] = (char *) ATM (LM_GROUP, cn);
-  (*grp_attrs)[i++] = (char *) ATM (LM_GROUP, userPassword);
-  (*grp_attrs)[i++] = (char *) AT (memberUid);
+  (*grp_attrs)[i++] = ATM (LM_GROUP, cn);
+  (*grp_attrs)[i++] = ATM (LM_GROUP, userPassword);
+  (*grp_attrs)[i++] = AT (memberUid);
   if (_nss_ldap_test_config_flag (NSS_LDAP_FLAGS_RFC2307BIS))
-    (*grp_attrs)[i++] = (char *) AT (uniqueMember);
-  (*grp_attrs)[i++] = (char *) ATM (LM_GROUP, gidNumber);
+    (*grp_attrs)[i++] = AT (uniqueMember);
+  (*grp_attrs)[i++] = ATM (LM_GROUP, gidNumber);
   (*grp_attrs)[i] = NULL;
 }
 
@@ -337,8 +337,8 @@ init_hosts_attributes (const char ***hosts_attrs)
 
   (*hosts_attrs) = __hosts_attrs;
 
-  (*hosts_attrs)[0] = (char *) ATM (LM_HOSTS, cn);
-  (*hosts_attrs)[1] = (char *) AT (ipHostNumber);
+  (*hosts_attrs)[0] = ATM (LM_HOSTS, cn);
+  (*hosts_attrs)[1] = AT (ipHostNumber);
   (*hosts_attrs)[2] = NULL;
 }
 
