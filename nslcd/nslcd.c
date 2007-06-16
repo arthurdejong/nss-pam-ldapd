@@ -289,9 +289,9 @@ static int open_socket(void)
   }
 
   /* set permissions of socket so anybody can do requests */
-  if (fchmod(sock,(mode_t)0666))
+  if (chmod(NSLCD_SOCKET,(mode_t)0666))
   {
-    log_log(LOG_ERR,"fctnl(F_SETFL,O_NONBLOCK) failed: %s",strerror(errno));
+    log_log(LOG_ERR,"chmod(0666) failed: %s",strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     exit(EXIT_FAILURE);
