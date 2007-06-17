@@ -22,10 +22,10 @@
 aclocal-1.9 -I m4
 
 # generate config.h.in from configure.ac
-autoheader --warnings=all
+autoheader --warnings=all --force
 
 # generate Makefile.in from Makefile.am and configure.ac
 automake-1.9 --warnings=all --add-missing --copy --force-missing
 
 # generate configure from configure.ac
-autoconf --warnings=all
+autoconf --warnings=all --force
