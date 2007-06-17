@@ -1,3 +1,14 @@
+nss-ldapd (0.2.1) unstable; urgency=low
+
+  * fix permissions of server socket (this fixes a problem where non-root
+    users were unable to do lookups)
+  * fix configure script to properly check for pthread support
+  * small code improvements
+  * general build system cleanups
+  * add more information to debian/copyright
+
+ -- Arthur de Jong <adejong@debian.org>  Sun, 17 Jun 2007 18:30:00 +0200
+
 nss-ldapd (0.2) unstable; urgency=low
 
   * fixes to the netgroup lookup code

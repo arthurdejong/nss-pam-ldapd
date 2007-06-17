@@ -1,3 +1,13 @@
+changes from 0.2 to 0.2.1
+-------------------------
+
+* fix permissions of server socket (this fixes a problem where non-root users
+  were unable to do lookups)
+* fix configure script to properly check for pthread support
+* small code improvements
+* general build system cleanups
+
+
 changes from 0.1 to 0.2
 -----------------------
 

@@ -1,3 +1,59 @@
+2007-06-17 14:05  arthur
+
+	* [r293] Makefile.am: do proper wildcard expansion
+
+2007-06-17 14:05  arthur
+
+	* [r292] Makefile.am, nss/Makefile.am: add proper support for make
+	  uninstall
+
+2007-06-17 13:31  arthur
+
+	* [r291] autogen.sh: force regeneration of all files
+
+2007-06-17 13:27  arthur
+
+	* [r290] Makefile.am, autogen.sh, configure.ac: include stuff from
+	  the m4 directory automatically
+
+2007-06-17 13:20  arthur
+
+	* [r289] common/Makefile.am, nslcd/Makefile.am, nss/Makefile.am,
+	  tests/Makefile.am, tests/dict/Makefile.am, tests/tio/Makefile.am:
+	  support building outside the source directory
+
+2007-06-17 12:43  arthur
+
+	* [r288] Makefile.am, configure.ac, debian/copyright, m4,
+	  m4/acx_pthread.m4, nslcd/Makefile.am: use the ACX_PTHREAD macro
+	  to check for platform independant pthread support and required
+	  options
+
+2007-06-17 12:35  arthur
+
+	* [r287] debian/copyright: further clarification of use of
+	  autoconf/automake code
+
+2007-06-16 23:10  arthur
+
+	* [r286] nslcd/nslcd.c: change fchmod() into chmod() since fchmod()
+	  has undifined behaviour on named sockets (fails silently)
+
+2007-06-12 09:09  arthur
+
+	* [r285] common/dict.c, nslcd/ldap-nss.c, nslcd/ldap-schema.c,
+	  nslcd/util.c: fix casts of types where needed
+
+2007-06-12 09:06  arthur
+
+	* [r284] nslcd/host.c: fix type of host address and handle errors
+	  in writing hostent
+
+2007-06-11 18:44  arthur
+
+	* [r280] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  nss-ldapd.conf.5: get files ready for 0.2 release
+
 2007-06-11 18:40  arthur
 
 	* [r279] common/Makefile.am, common/dict.c, common/dict.h,
