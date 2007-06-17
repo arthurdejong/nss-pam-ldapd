@@ -33,11 +33,11 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/libnss-ldapd.templates \
                debian/libnss-ldapd.postinst \
                debian/libnss-ldapd.postrm \
-               debian/po/*.po debian/po/templates.pot \
+               $(wildcard debian/po/*.po) debian/po/templates.pot \
                debian/po/POTFILES.in
 
 EXTRA_DIST = nss-ldapd.conf nslcd.h nslcd-common.h \
-             m4/*.m4 HACKING $(DEBIAN_FILES)
+             $(wildcard m4/*.m4) HACKING $(DEBIAN_FILES)
 
 ACLOCAL_AMFLAGS = -I config -I m4
 
