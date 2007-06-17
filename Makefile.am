@@ -39,6 +39,8 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
 EXTRA_DIST = nss-ldapd.conf nslcd.h nslcd-common.h \
              m4/*.m4 HACKING $(DEBIAN_FILES)
 
+ACLOCAL_AMFLAGS = -I config -I m4
+
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
 
 install-data-local: install-ldap_conf

@@ -19,7 +19,7 @@
   cp -f /usr/share/automake-1.9/INSTALL INSTALL
 
 # generate aclocal.m4 from configure.ac
-aclocal-1.9
+aclocal-1.9 -I m4
 
 # generate config.h.in from configure.ac
 autoheader --warnings=all

@@ -271,7 +271,6 @@ LIBS="$nslcd_LIBS"
 save_CFLAGS="$CFLAGS"
 
 # check threading stuff
-m4_sinclude(m4/acx_pthread.m4)
 ACX_PTHREAD(,AC_MSG_ERROR([no support for pthreads]))
 AC_CHECK_FUNCS(pthread_atfork)
 
