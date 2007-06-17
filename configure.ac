@@ -147,12 +147,6 @@ AC_ARG_WITH(ngroups,
 AC_DEFINE_UNQUOTED(LDAP_NSS_NGROUPS,$ldap_nss_ngroups,[Maximum number of group members in static buffer.])
 
 
-case "$target_os" in
-freebsd*) CPPFLAGS="$CPPFLAGS -DPIC -D_REENTRANT" ;;
-aix*) CPPFLAGS="$CPPFLAGS -D_THREAD_SAFE" ;;
-*) CPPFLAGS="$CPPFLAGS -D_REENTRANT" ;;
-esac
-
 # checks for availability of header files
 AC_CHECK_HEADERS(lber.h)
 AC_CHECK_HEADERS(ldap.h,,AC_MSG_ERROR([could not locate <ldap.h>]))
@@ -216,7 +210,6 @@ AC_CHECK_FUNCS(dn_expand)
 AC_CHECK_FUNCS(snprintf)
 AC_CHECK_FUNCS(gethostbyname)
 AC_CHECK_FUNCS(nsdispatch)
-AC_CHECK_FUNCS(pthread_atfork)
 AC_CHECK_FUNCS(ether_aton)
 AC_CHECK_FUNCS(ether_ntoa)
 AC_CHECK_FUNCS(setgroups)
@@ -275,6 +268,15 @@ AC_CHECK_TYPE(struct sockaddr_storage,,
 # checks for LDAP library
 save_LIBS="$LIBS"
 LIBS="$nslcd_LIBS"
+save_CFLAGS="$CFLAGS"
+
+# check threading stuff
+m4_sinclude(m4/acx_pthread.m4)
+ACX_PTHREAD(,AC_MSG_ERROR([no support for pthreads]))
+AC_CHECK_FUNCS(pthread_atfork)
+
+LIBS="$PTHREAD_LIBS $LIBS"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 
 AC_CHECK_LIB(gssapi, gss_krb5_ccache_name,[LIBS="-lgssapi $LIBS" found_gssapi_lib=yes],,$LIBS)
 if test -z "$found_gssapi_lib"; then
@@ -323,6 +325,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <ldap.h>]], [[ldap_set_rebind_proc(0, 0, 0);]])],[nss_ldap_cv_ldap_set_rebind_proc=3],[nss_ldap_cv_ldap_set_rebind_proc=2]) ])
 AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS, $nss_ldap_cv_ldap_set_rebind_proc,[Define to the number of arguments to ldap_set_rebindproc.])
 
+CFLAGS="$save_CFLAGS"
 nslcd_LIBS="$LIBS"
 LIBS="$save_LIBS"
 
