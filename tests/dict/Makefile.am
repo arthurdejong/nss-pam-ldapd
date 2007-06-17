@@ -19,5 +19,7 @@
 
 noinst_PROGRAMS = test_dict
 
+AM_CPPFLAGS=-I$(top_srcdir)
+
 test_dict_SOURCES = test_dict.c ../../common/dict.h
 test_dict_LDADD = ../../common/dict.o

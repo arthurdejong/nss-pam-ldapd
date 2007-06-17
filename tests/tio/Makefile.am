@@ -19,6 +19,8 @@
 
 noinst_PROGRAMS = test_tio
 
+AM_CPPFLAGS=-I$(top_srcdir)
+
 test_tio_SOURCES = test_tio.c ../../common/tio.h ../../common/tio.c
 #test_tio_LDADD = ../../common/libtio.a
 test_tio_CFLAGS = -pthread

@@ -20,6 +20,8 @@
 # 02110-1301 USA
 
 noinst_PROGRAMS = nss_ldap.so
+
+AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = -fPIC
 
 # determin version numbers to use in installed files

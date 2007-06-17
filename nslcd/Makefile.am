@@ -19,6 +19,8 @@
 # 02110-1301 USA
 
 sbin_PROGRAMS = nslcd
+
+AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = $(PTHREAD_CFLAGS)
 
 nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \

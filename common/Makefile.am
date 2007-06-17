@@ -19,6 +19,8 @@
 
 noinst_LIBRARIES = libtio.a libdict.a
 
+AM_CPPFLAGS=-I$(top_srcdir)
+
 libtio_a_SOURCES = tio.c tio.h
 libtio_a_CFLAGS = -fPIC
 

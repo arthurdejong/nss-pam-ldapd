@@ -24,6 +24,7 @@ noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                   test_netgroup test_networks test_passwd test_protocols \
                   test_rpc test_services test_shadow
 
+AM_CPPFLAGS=-I$(top_srcdir)
 # the following enables verbose protocol debugging information to be dumped
 #AM_CFLAGS=-DDEBUG_PROT -DDEBUG_PROT_DUMP
 
