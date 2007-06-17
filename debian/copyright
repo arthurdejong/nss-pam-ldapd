@@ -32,14 +32,21 @@ Davide Puricelli (evo), Sami Haahtinen and Stephen Frost.
   the GNU Lesser General Public License can be found in
   /usr/share/common-licenses/LGPL-2.1.
 
-The following files are also contain other copyright holders (apart from to
-autoconf/automake stuff) and are also covered by the GNU Lesser General
-Public License:
+The following files are also contain other copyright holders and are also
+covered by the GNU Lesser General Public License:
 
 debian/po/ca.po:  Copyright (C) 2004 Free Software Foundation, Inc.
 debian/po/vi.po:  Copyright (C) 2005 Free Software Foundation, Inc.
 nslcd/netgroup.c: Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
 nslcd/pagectrl.c: Copyright (C) 2002 Max Caines, All Rights Reserved.
+
+The distribution includes code from the Autoconf and Automake suites. This
+code is either licensed under the GNU General Public License with the extra
+permission to use it in a configure script under the licensing terms of that
+configure script or gives unlimited permission to copy and/or distribute it
+with or without modifications. The code is
+  Copyright (C) 1996-2006 Free Software Foundation, Inc.
+(years aggregated).
 
 The files nslcd/resolve.c and nslcd/resolve.h include the following copyright
 statement:
