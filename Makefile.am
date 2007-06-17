@@ -44,6 +44,7 @@ ACLOCAL_AMFLAGS = -I config -I m4
 NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
 
 install-data-local: install-ldap_conf
+uninstall-local: uninstall-ldap_conf
 
 # install a default configuration file if it is not already there
 install-ldap_conf:
@@ -52,6 +53,8 @@ install-ldap_conf:
 	else \
 	  $(INSTALL_DATA) -D $(srcdir)/nss-ldapd.conf $(DESTDIR)$(NSS_LDAP_PATH_CONF); \
 	fi
+uninstall-ldap_conf:
+	-rm -f $(DESTDIR)$(NSS_LDAP_PATH_CONF)
 
 # target for easily creating a Debian package
 # the find is an ugly hack to fix a bug if being built on an nfs filesystem

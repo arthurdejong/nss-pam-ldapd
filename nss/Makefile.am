@@ -41,7 +41,10 @@ nss_ldap_so_LDADD = @nss_ldap_so_LIBS@ ../common/libtio.a
 EXTRA_DIST = exports.linux
 
 install-exec-local: install-nss_ldap_so
+uninstall-local: uninstall-nss_ldap_so
 
 # install libnss_ldap.so.2
 install-nss_ldap_so: nss_ldap.so
 	$(INSTALL_PROGRAM) -D nss_ldap.so $(DESTDIR)$(libdir)/$(NSS_LDAP_NSS_VERSIONED)
+uninstall-nss_ldap_so:
+	-rm -f $(DESTDIR)$(libdir)/$(NSS_LDAP_NSS_VERSIONED)
