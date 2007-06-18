@@ -289,6 +289,10 @@ static int open_socket(void)
   }
 
   /* set permissions of socket so anybody can do requests */
+  /* Note: we use chmod() here instead of fchmod() because
+     fchmod does not work on sockets
+     http://www.opengroup.org/onlinepubs/009695399/functions/fchmod.html
+     http://lkml.org/lkml/2005/5/16/11 */
   if (chmod(NSLCD_SOCKET,(mode_t)0666))
   {
     log_log(LOG_ERR,"chmod(0666) failed: %s",strerror(errno));
