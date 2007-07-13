@@ -123,7 +123,7 @@ enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,
 
 /* Note: the af parameter is ignored and is assumed to be AF_INET */
 /* TODO: implement handling of af parameter */
-enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int af,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
+enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int UNUSED(af),struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
             addr=htonl(addr);WRITE_ADDRESS(fp,AF_INET,4,&addr),
