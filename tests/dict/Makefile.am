@@ -17,7 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-noinst_PROGRAMS = test_dict
+TESTS = test_dict
+
+check_PROGRAMS = test_dict
 
 AM_CPPFLAGS=-I$(top_srcdir)
 

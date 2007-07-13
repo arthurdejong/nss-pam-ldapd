@@ -17,7 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-noinst_PROGRAMS = test_tio
+TESTS = test_tio
+
+check_PROGRAMS = test_tio
 
 AM_CPPFLAGS=-I$(top_srcdir)
 
