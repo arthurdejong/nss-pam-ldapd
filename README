@@ -96,6 +96,14 @@ Currently the following name databases are supported:
   aliases, ethers, group, hosts, netgroup, networks, passwd, protocols, rpc,
   services and shadow
 
+Note that for when using IPv6 hosts entries, the addresses in the LDAP
+directory must be in their preferred form. The same is true for mac addresses
+for the ethers database. Otherwise the address->entry lookups will not work.
+For more details see
+  http://ldap.akbkhome.com/index.php/attribute/ipHostNumber.html
+and
+  http://ldap.akbkhome.com/index.php/attribute/macAddress.html
+
 automounter map lookups (which are also defined in /etc/nsswitch.conf) are not
 supported because the NSS interface is not used for these. The common autofs
 implementation currently uses it's own method for getting the maps from LDAP.
