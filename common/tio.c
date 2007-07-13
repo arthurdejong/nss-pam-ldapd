@@ -273,6 +273,10 @@ int tio_flush(TFILE *fp)
   /* check write buffer presence */
   if (fp->writebuffer==NULL)
     return 0;
+/*
+FIXME: we have a race condition here (setting and restoring the signal mask), this is a critical region that should be locked
+*/
+
   /* set up sigaction */
   memset(&act,0,sizeof(struct sigaction));
   act.sa_handler=SIG_IGN;
@@ -312,7 +316,7 @@ int tio_flush(TFILE *fp)
 int tio_write(TFILE *fp, const void *buf, size_t count)
 {
   size_t fr;
-  uint8_t *ptr=(const uint8_t *)buf;
+  const uint8_t *ptr=(const uint8_t *)buf;
   /* ensure that we have a write buffer */
   if (fp->writebuffer==NULL)
   {
