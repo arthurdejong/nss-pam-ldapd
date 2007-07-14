@@ -1,0 +1,201 @@
+# translation of nss-ldapd to Portuguese
+# Copyright (C) 2007 Américo Monteiro
+# Released under the same license as the nss-ldapd package
+# Américo Monteiro <a_monteiro@netcabo.pt>, 2007.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: nss-ldapd 0.2.1\n"
+"Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
+"POT-Creation-Date: 2006-12-16 22:46+0100\n"
+"PO-Revision-Date: 2007-07-13 18:15+0100\n"
+"Last-Translator: Américo Monteiro <a_monteiro@netcabo.pt>\n"
+"Language-Team: Portuguese <traduz@debianpt.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid "LDAP server Uniform Resource Identifier:"
+msgstr "Uniform Resource Identifier (URI) do servidor LDAP:"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid ""
+"Please enter the URI of the LDAP server used. This is a string in the form "
+"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
+"port number is optional."
+msgstr ""
+"Por favor insira o URI do servidor LDAP a usar. Esta é uma sequência no "
+"formato ldap://<nome da máquina ou IP>:<porto>/, ldaps:// ou ldapi:// "
+"podem também ser usados. O número do porto é opcional."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid ""
+"Note: It is usually a good idea to use an IP address; this reduces risks of "
+"failure in the event name service is unavailable."
+msgstr ""
+"Nota: Geralmente é boa ideia usar um endereço IP; isto reduz riscos de falhas "
+"na eventualidade do serviço de nomes não estar disponível."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid "Multiple URIs can be be specified by separating them with spaces."
+msgstr "Podem ser especificados múltiplos URIs, separando-os com espaços."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid "LDAP server search base:"
+msgstr "Base de busca do servidor LDAP:"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"Please enter the distinguished name of the LDAP search base.  Many sites use "
+"the components of their domain names for this purpose.  For example, the "
+"domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
+"name of the search base."
+msgstr ""
+"Por favor insira o nome distinto da base de busca LDAP. Muitos sítios usam "
+"componentes dos seus nomes de domínio para este propósito. Por exemplo, o "
+"domínio \"exemplo.net\" deverá usar \"dc=exemplo,dc=net\" como nome distinto "
+"da base de busca."
+
+#. Type: select
+#. Description
+#: ../libnss-ldapd.templates:3001
+msgid "LDAP version to use:"
+msgstr "Versão LDAP a usar:"
+
+#. Type: select
+#. Description
+#: ../libnss-ldapd.templates:3001
+msgid ""
+"Please enter which version of the LDAP protocol is to use.  It is usually a "
+"good idea to set this to highest available version number."
+msgstr ""
+"Por favor indique qual a versão de protocolo LDAP vai ser usada. Normalmente "
+"é boa ideia regular isto para a versão mais recente disponível."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:4001
+msgid "LDAP database user:"
+msgstr "Utilizador da base de dados LDAP:"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:4001
+msgid ""
+"If the LDAP database requires a login for normal lookups, enter the name of "
+"the account that will be used here. Leave empty otherwise."
+msgstr ""
+"Se a base de dados LDAP requerer autenticação para buscas normais, "
+"indique aqui o nome da conta que vai ser usada. "
+"Em caso contrário, deixe o campo vazio."
+
+#. Type: string
+#. Description
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:4001 ../libnss-ldapd.templates:6001
+msgid "This value should be specified as a DN (distinguished name)."
+msgstr "Este valor deve ser especificado como um nome distinto (DN)."
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid "LDAP user password:"
+msgstr "Password de utilizador LDAP:"
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr ""
+"Indique a password que vai ser usada para autenticação na "
+"base de dados LDAP."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid "LDAP account for root:"
+msgstr "Conta de administrador (root) LDAP:"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"This account will be used for nss requests with root privileges. This can be "
+"used to give root processes more information (e.g. users' shadow entries or "
+"group passwords)."
+msgstr ""
+"Esta conta será usada para pedidos nss com privilégios de administrador. "
+"Isto pode ser usado para dar aos processos de administrador mais informação "
+"(ex. entradas escondidas de utilizadores ou passwords de grupos)."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid "Leave this empty to not do anything special for root lookups."
+msgstr ""
+"Deixe este campo vazio para não fazer nada de especial "
+"para buscas de administrador."
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:7001
+msgid "LDAP root account password:"
+msgstr "Password da conta de administrador (root) LDAP:"
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:7001
+msgid ""
+"Enter the password that will be used to log in to the LDAP database when the "
+"root process does lookups."
+msgstr ""
+"Indique a password que será usada para autenticação na base de "
+"dados LDAP, quando processos de administrador fazem buscas."
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:8001
+msgid "Name services to configure:"
+msgstr "Nomes de serviços para configurar:"
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:8001
+msgid ""
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
+"examples/nsswitch.ldap which can be used as an example for your nsswitch "
+"setup."
+msgstr ""
+"Para este pacote funcionar, você precisa modificar o seu /etc/nsswitch.conf "
+"para usar a fonte de dados LDAP. Existe um ficheiro exemplo em "
+"/usr/share/doc/libnss-ldap/examples/nsswitch.ldap que pode ser usado como "
+"exemplo para a sua configuração do nsswitch."
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:8001
+msgid ""
+"You can also select the services that should be enabled or disabled for LDAP "
+"lookups. New LDAP lookups will be added as last option. Be sure to review "
+"these changes."
+msgstr ""
+"Você também pode seleccionar os serviços que deverão estar activos ou "
+"inactivos para buscas LDAP. Novas buscas LDAP serão adicionadas como "
+"últimas opções. Certifique-se de rever estas alterações."
+

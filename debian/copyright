@@ -36,6 +36,7 @@ The following files are also contain other copyright holders and are also
 covered by the GNU Lesser General Public License:
 
 debian/po/ca.po:  Copyright (C) 2004 Free Software Foundation, Inc.
+debian/po/pt.po:  Copyright (C) 2007 Américo Monteiro
 debian/po/vi.po:  Copyright (C) 2005 Free Software Foundation, Inc.
 nslcd/netgroup.c: Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
 nslcd/pagectrl.c: Copyright (C) 2002 Max Caines, All Rights Reserved.
