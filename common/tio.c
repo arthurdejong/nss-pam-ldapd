@@ -41,8 +41,8 @@
 struct tio_buffer {
   uint8_t *buffer;
   /* the size is TIO_BUFFERSIZE */
-  size_t len; /* the number of bytes used in the buffer */
-  int start; /* the start of the buffer */
+  size_t len; /* the number of bytes used in the buffer (from the start) */
+  int start; /* the start of the buffer (space before the start is unused) */
 };
 
 /* structure that holds all the state for files */
@@ -302,10 +302,14 @@ FIXME: we have a race condition here (setting and restoring the signal mask), th
     if ((rv==0)||((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN)))
       return -1; /* something went wrong with the write */
     /* skip the written part in the buffer */
-    fp->writebuffer->len-=rv;
+    if (rv>0)
+    {
+      fp->writebuffer->start+=rv;
+      fp->writebuffer->len-=rv;
 #ifdef DEBUG_TIO_STATS
-    fp->byteswritten+=rv;
+      fp->byteswritten+=rv;
 #endif /* DEBUG_TIO_STATS */
+    }
   }
   /* clear buffer and we're done */
   fp->writebuffer->start=0;
@@ -332,17 +336,20 @@ int tio_write(TFILE *fp, const void *buf, size_t count)
     if (count <= fr)
     {
       /* the data fits in the buffer */
-      memcpy(fp->writebuffer->buffer+fp->writebuffer->start+fp->writebuffer->len,buf,count);
+      memcpy(fp->writebuffer->buffer+fp->writebuffer->start+fp->writebuffer->len,ptr,count);
       fp->writebuffer->len+=count;
       return 0;
     }
-    /* fill the buffer */
-    memcpy(fp->writebuffer->buffer+fp->writebuffer->start+fp->writebuffer->len,buf,fr);
-    fp->writebuffer->len+=fr;
-    ptr+=fr;
-    count-=fr;
+    else if (fr >= 0)
+    {
+      /* fill the buffer */
+      memcpy(fp->writebuffer->buffer+fp->writebuffer->start+fp->writebuffer->len,ptr,fr);
+      fp->writebuffer->len+=fr;
+      ptr+=fr;
+      count-=fr;
+    }
     /* write the buffer to the stream */
-    if (tio_flush(fp)<0)
+    if (tio_flush(fp))
       return -1;
   }
   return 0;
