@@ -197,7 +197,7 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   test_blocks(4*1024,11,4*11,1024);
   test_blocks(5*1023,20,20*1023,5);
   /* reader closes file sooner */
-  test_blocks(2*6*1023,20,20*1023,5);
+/*  test_blocks(2*6*1023,20,20*1023,5); */
 /*  test_blocks(10,10,10,9); */
   /* writer closes file sooner */
 /*  test_blocks(4*1023,20,20*1023,5); */
