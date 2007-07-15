@@ -340,7 +340,7 @@ int tio_write(TFILE *fp, const void *buf, size_t count)
       fp->writebuffer->len+=count;
       return 0;
     }
-    else if (fr >= 0)
+    else if (fr > 0)
     {
       /* fill the buffer */
       memcpy(fp->writebuffer->buffer+fp->writebuffer->start+fp->writebuffer->len,ptr,fr);
