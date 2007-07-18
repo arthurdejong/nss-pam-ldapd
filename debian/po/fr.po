@@ -161,7 +161,7 @@ msgstr ""
 #: ../libnss-ldapd.templates:6001
 msgid "Leave this empty to not do anything special for root lookups."
 msgstr ""
-"N'indiquez rien si aucun identification particulière n'est nécessaire pour "
+"N'indiquez rien si aucune identification particulière n'est nécessaire pour "
 "les requêtes superutilisateur."
 
 #. Type: password
