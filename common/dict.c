@@ -91,11 +91,13 @@ DICT *dict_new(void)
 int dict_put(DICT *dict,const char *key,void *value)
 {
   struct dict_entry *entry;
-  /* ignore setting of value to NULL */
-  if (value==NULL)
-    return 0; /* probably do dict_del(dict,key) */
   entry=dict_entry_find(dict,key);
-  if (entry==NULL)
+  if ((entry==NULL)&&(value==NULL))
+  {
+    /* the key didn't exist, no point in creating one */
+    return 0;
+  }
+  else if (entry==NULL)
   {
     /* create new entry and insert it in the list */
     entry=dict_entry_new(key);

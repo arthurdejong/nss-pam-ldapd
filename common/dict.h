@@ -51,7 +51,7 @@ void *dict_get(DICT *dict,const char *key)
 
 /* Delete a key-value association from the dictionary.
    All key comparisons are case insensitive. */
-/*void dict_del(LEGACYDICT *dict,const char *key);*/
+/*void dict_del(DICT *dict,const char *key);*/
 
 /* Remove the dictionary from memory. All allocated storage
    for the dictionary and the keys is freed. */

@@ -56,6 +56,11 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   assert(ret==dict);
   ret=dict_get(dict,"key4");
   assert(ret==NULL);
+  
+  /* remove a key */
+  dict_put(dict,"kEy3",NULL);
+  ret=dict_get(dict,"keY3");
+  assert(ret==NULL);
 
   /* free dictionary */
   dict_free(dict);
