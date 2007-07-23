@@ -148,7 +148,15 @@ void *dict_values_next(DICT *dict)
 {
   struct dict_entry *ptr;
   ptr=dict->ptr;
-  if (dict->ptr!=NULL)
-    dict->ptr=dict->ptr->next;
-  return ptr;
+  /* search until we get a non-NULL value */
+  while ((ptr!=NULL)&&(ptr->value==NULL))
+    ptr=ptr->next;
+  /* we went through the whole list */
+  if (ptr==NULL)
+  {
+    dict->ptr=NULL;
+    return NULL;
+  }
+  dict->ptr=ptr->next;
+  return ptr->value;
 }
