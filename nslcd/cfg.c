@@ -36,7 +36,6 @@
 #include "ldap-nss.h"
 #include "util.h"
 #include "log.h"
-#include "dnsconfig.h"
 
 struct ldap_config *nslcd_cfg=NULL;
 
@@ -97,7 +96,6 @@ struct ldap_config *nslcd_cfg=NULL;
 
 #define NSS_LDAP_KEY_PAGED_RESULTS      "nss_paged_results"
 #define NSS_LDAP_KEY_SCHEMA             "nss_schema"
-#define NSS_LDAP_KEY_SRV_DOMAIN         "nss_srv_domain"
 #define NSS_LDAP_KEY_CONNECT_POLICY     "nss_connect_policy"
 
 /*
@@ -154,7 +152,6 @@ static enum nss_status _nss_ldap_init_config(struct ldap_config *result)
   result->ldc_idle_timelimit = 0;
   result->ldc_reconnect_pol = LP_RECONNECT_HARD_OPEN;
   result->ldc_sasl_secprops = NULL;
-  result->ldc_srv_domain = NULL;
   result->ldc_logdir = NULL;
   result->ldc_debug = 0;
   result->ldc_pagesize = LDAP_PAGESIZE;
@@ -880,10 +877,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
               result->ldc_flags &= ~(NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT);
             }
         }
-      else if (!strcasecmp (k, NSS_LDAP_KEY_SRV_DOMAIN))
-        {
-          t = &result->ldc_srv_domain;
-        }
       else
         {
           /*
@@ -981,11 +974,6 @@ int cfg_init(void)
     configbufp=configbuf;
     configbuflen=sizeof(configbuf);
     retv=_nss_ldap_readconfig(&nslcd_cfg,&configbufp,&configbuflen);
-    if (retv==NSS_STATUS_NOTFOUND)
-    {
-      /* config was read but no host information specified; try DNS */
-      retv=_nss_ldap_mergeconfigfromdns(nslcd_cfg,&configbufp,&configbuflen);
-    }
     if (retv!=NSS_STATUS_SUCCESS)
     {
       log_log(LOG_DEBUG,"cfg_init() failed to read config");

@@ -114,8 +114,6 @@ struct ldap_config
   int ldc_reconnect_maxconntries;
   /* sasl security */
   char *ldc_sasl_secprops;
-  /* DNS SRV RR domain */
-  char *ldc_srv_domain;
   /* directory for debug files */
   char *ldc_logdir;
   /* LDAP debug level */
