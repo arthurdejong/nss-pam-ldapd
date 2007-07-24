@@ -46,7 +46,6 @@
 #include <nss.h>
 #include <ldap.h>
 
-#include "ldap-schema.h"
 #include "common/tio.h"
 
 #ifndef LDAP_FILT_MAXSIZ

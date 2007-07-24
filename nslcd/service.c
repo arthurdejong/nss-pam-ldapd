@@ -56,6 +56,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 /* macros for expanding the NSLCD_SERVICE macro */
 #define NSLCD_STRING(field)     WRITE_STRING(fp,field)
@@ -93,7 +94,7 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
         {
           /* non-deterministic behaviour is ok */
           stat =
-            _nss_ldap_assign_attrval (e, AT (ipServiceProtocol),
+            _nss_ldap_assign_attrval (e, attmap_service_ipServiceProtocol,
                                       &service->s_proto, &buffer, &buflen);
           if (stat != NSS_STATUS_SUCCESS)
             {
@@ -117,7 +118,7 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
     }
   else
     {
-      char **vals = _nss_ldap_get_values (e, AT (ipServiceProtocol));
+      char **vals = _nss_ldap_get_values (e, attmap_service_ipServiceProtocol);
       int len;
       if (vals == NULL)
         {
@@ -161,7 +162,7 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
     }
 
   stat =
-    _nss_ldap_getrdnvalue (e, ATM (LM_SERVICES, cn), &service->s_name,
+    _nss_ldap_getrdnvalue (e, attmap_service_cn, &service->s_name,
                            &buffer, &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     {
@@ -169,7 +170,7 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
     }
 
   stat =
-    _nss_ldap_assign_attrvals (e, ATM (LM_SERVICES, cn), service->s_name,
+    _nss_ldap_assign_attrvals (e, attmap_service_cn, service->s_name,
                                &service->s_aliases, &buffer, &buflen, NULL);
   if (stat != NSS_STATUS_SUCCESS)
     {
@@ -177,7 +178,7 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
     }
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (ipServicePort), &port, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_service_ipServicePort, &port, &buffer,
                               &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     {

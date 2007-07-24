@@ -56,6 +56,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 /* macros for expanding the NSLCD_RPC macro */
 #define NSLCD_STRING(field)     WRITE_STRING(fp,field)
@@ -83,13 +84,13 @@ static enum nss_status _nss_ldap_parse_rpc (LDAPMessage * e,
   enum nss_status stat;
 
   stat =
-    _nss_ldap_getrdnvalue (e, ATM (LM_RPC, cn), &rpc->r_name, &buffer,
+    _nss_ldap_getrdnvalue (e, attmap_rpc_cn, &rpc->r_name, &buffer,
                            &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (oncRpcNumber), &number, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_rpc_oncRpcNumber, &number, &buffer,
                               &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
@@ -97,7 +98,7 @@ static enum nss_status _nss_ldap_parse_rpc (LDAPMessage * e,
   rpc->r_number = atol (number);
 
   stat =
-    _nss_ldap_assign_attrvals (e, ATM (LM_RPC, cn), rpc->r_name,
+    _nss_ldap_assign_attrvals (e, attmap_rpc_cn, rpc->r_name,
                                &rpc->r_aliases, &buffer, &buflen, NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;

@@ -50,6 +50,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 #if defined(HAVE_USERSEC_H)
 #define MAXALIASES 35
@@ -86,13 +87,13 @@ _nss_ldap_parse_net (LDAPMessage * e,
   /* IPv6 support ? XXX */
   network->n_addrtype = AF_INET;
 
-  stat = _nss_ldap_assign_attrval (e, ATM (LM_NETWORKS, cn), &network->n_name,
+  stat = _nss_ldap_assign_attrval (e, attmap_network_cn, &network->n_name,
                                    &buffer, &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (ipNetworkNumber), &tmp, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_network_ipNetworkNumber, &tmp, &buffer,
                               &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
@@ -100,7 +101,7 @@ _nss_ldap_parse_net (LDAPMessage * e,
   network->n_net = inet_network (tmp);
 
   stat =
-    _nss_ldap_assign_attrvals (e, ATM (LM_NETWORKS, cn), network->n_name,
+    _nss_ldap_assign_attrvals (e, attmap_network_cn, network->n_name,
                                &network->n_aliases, &buffer, &buflen, NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;

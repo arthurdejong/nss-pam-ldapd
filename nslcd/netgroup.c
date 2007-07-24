@@ -52,6 +52,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 /* A netgroup can consist of names of other netgroups.  We have to
    track which netgroups were read and which still have to be read.  */
@@ -233,10 +234,10 @@ _nss_ldap_load_netgr (LDAPMessage * e,
       switch (attr)
         {
         case 1:
-          vals = _nss_ldap_get_values (e, AT (nisNetgroupTriple));
+          vals = _nss_ldap_get_values (e, attmap_netgroup_nisNetgroupTriple);
           break;
         default:
-          vals = _nss_ldap_get_values (e, AT (memberNisNetgroup));
+          vals = _nss_ldap_get_values (e, attmap_netgroup_memberNisNetgroup);
           break;
         }
 

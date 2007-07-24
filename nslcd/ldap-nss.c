@@ -79,6 +79,8 @@
 #include "pagectrl.h"
 #include "common.h"
 #include "log.h"
+#include "ldap-schema.h"
+#include "attmap.h"
 
 /* how many messages to retrieve results for */
 #ifndef LDAP_MSG_ONE
@@ -2975,7 +2977,7 @@ int has_objectclass(LDAPMessage *entry,const char *objectclass)
   ld=__session.ls_conn;
   if (ld==NULL)
     return 0;
-  vals=ldap_get_values(ld,entry,AT(objectClass));
+  vals=ldap_get_values(ld,entry,attmap_objectClass);
   if (vals==NULL)
     return 0;
   for (i=0;vals[i]!=NULL;i++)

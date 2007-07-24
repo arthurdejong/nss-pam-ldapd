@@ -48,6 +48,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 #ifndef UID_NOBODY
 #define UID_NOBODY      (-2)
@@ -106,14 +107,14 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
   else
     {
       stat =
-        _nss_ldap_assign_userpassword (e, ATM (LM_PASSWD, userPassword),
+        _nss_ldap_assign_userpassword (e, attmap_passwd_userPassword,
                                        &pw->pw_passwd, &buffer, &buflen);
       if (stat != NSS_STATUS_SUCCESS)
         return stat;
     }
 
   stat =
-    _nss_ldap_assign_attrval (e, ATM (LM_PASSWD, uid), &pw->pw_name, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_passwd_uid, &pw->pw_name, &buffer,
                               &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
@@ -121,7 +122,7 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
   tmp = tmpbuf;
   tmplen = sizeof (tmpbuf) - 1;
   stat =
-    _nss_ldap_assign_attrval (e, AT (uidNumber), &uid, &tmp, &tmplen);
+    _nss_ldap_assign_attrval (e, attmap_passwd_uidNumber, &uid, &tmp, &tmplen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
   pw->pw_uid = (*uid == '\0') ? UID_NOBODY : (uid_t) atol (uid);
@@ -129,33 +130,33 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
   tmp = tmpbuf;
   tmplen = sizeof (tmpbuf) - 1;
   stat =
-    _nss_ldap_assign_attrval (e, ATM (LM_PASSWD, gidNumber), &gid, &tmp,
+    _nss_ldap_assign_attrval (e, attmap_passwd_gidNumber, &gid, &tmp,
                               &tmplen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
   pw->pw_gid = (*gid == '\0') ? GID_NOBODY : (gid_t) atol (gid);
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (gecos), &pw->pw_gecos, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_passwd_gecos, &pw->pw_gecos, &buffer,
                               &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     {
       pw->pw_gecos = NULL;
       stat =
-        _nss_ldap_assign_attrval (e, ATM (LM_PASSWD, cn), &pw->pw_gecos,
+        _nss_ldap_assign_attrval (e, attmap_passwd_cn, &pw->pw_gecos,
                                   &buffer, &buflen);
       if (stat != NSS_STATUS_SUCCESS)
         return stat;
     }
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (homeDirectory), &pw->pw_dir, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_passwd_homeDirectory, &pw->pw_dir, &buffer,
                               &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     (void) _nss_ldap_assign_emptystring (&pw->pw_dir, &buffer, &buflen);
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (loginShell), &pw->pw_shell, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_passwd_loginShell, &pw->pw_shell, &buffer,
                               &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     (void) _nss_ldap_assign_emptystring (&pw->pw_shell, &buffer, &buflen);

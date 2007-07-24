@@ -94,31 +94,10 @@ extern char _nss_ldap_filt_getspent[];
 extern char _nss_ldap_filt_getnetgrent[];
 
 /**
- * Initialize attribute vector table indexed by map
- * selector (eg. LM_PASSWD) relative to an "ldap_config"
- */
-
-
-
-
-/**
- * Lookup (potentially mapped)
- * objectclass/attribute.
- */
-/* these functions are defined in ldap-nss.[ch] */
-#define OC(oc)                   _nss_ldap_map_oc(LM_NONE, OC##_##oc)
-#define OCM(map, at)             _nss_ldap_map_oc(map, AT##_##at)
-#define AT(at)                   _nss_ldap_map_at(LM_NONE, AT##_##at)
-#define ATM(map, at)             _nss_ldap_map_at(map, AT##_##at)
-
-/**
  * Common attributes, not from RFC 2307.
  */
 #define AT_objectClass            "objectClass"
 #define AT_cn                     "cn"
-#define AT_description            "description"
-#define AT_l                      "l"
-#define AT_manager                "manager"
 
 /**
  * Vendor-specific attributes and object classes.

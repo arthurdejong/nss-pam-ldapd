@@ -54,6 +54,8 @@
 #include "common.h"
 #include "log.h"
 #include "cfg.h"
+#include "ldap-schema.h"
+#include "attmap.h"
 
 
 static void *__cache = NULL;
@@ -297,9 +299,9 @@ enum nss_status _nss_ldap_dn2uid(const char *dn,char **uid,char **buffer,
       const char *attrs[4];
       LDAPMessage *res;
 
-      attrs[0] = ATM (LM_PASSWD, uid);
-      attrs[1] = ATM (LM_GROUP, uniqueMember);
-      attrs[2] = AT (objectClass);
+      attrs[0] = attmap_passwd_uid;
+      attrs[1] = attmap_group_uniqueMember;
+      attrs[2] = attmap_objectClass;
       attrs[3] = NULL;
 
       if (_nss_ldap_read (dn, attrs, &res) == NSS_STATUS_SUCCESS)
@@ -307,7 +309,7 @@ enum nss_status _nss_ldap_dn2uid(const char *dn,char **uid,char **buffer,
           LDAPMessage *e = _nss_ldap_first_entry (res);
           if (e != NULL)
             {
-              if (has_objectclass(e,OC(posixGroup)))
+              if (has_objectclass(e,attmap_group_objectClass))
                 {
                   *pIsNestedGroup = 1;
                   *pRes = res;
@@ -316,7 +318,7 @@ enum nss_status _nss_ldap_dn2uid(const char *dn,char **uid,char **buffer,
                 }
 
               status =
-                _nss_ldap_assign_attrval (e, ATM (LM_PASSWD, uid), uid,
+                _nss_ldap_assign_attrval (e, attmap_passwd_uid, uid,
                                           buffer, buflen);
               if (status == NSS_STATUS_SUCCESS)
                 dn2uid_cache_put (dn, *uid);

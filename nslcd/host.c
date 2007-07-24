@@ -53,6 +53,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 #ifndef MAXALIASES
 #define MAXALIASES 35
@@ -105,19 +106,19 @@ _nss_ldap_parse_host (LDAPMessage * e,
 
   *addressbuf = *buffer = '\0';
 
-  stat = _nss_ldap_assign_attrval (e, ATM (LM_HOSTS, cn), &host->h_name,
+  stat = _nss_ldap_assign_attrval (e, attmap_host_cn, &host->h_name,
                                    &buffer, &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
-    _nss_ldap_assign_attrvals (e, ATM (LM_HOSTS, cn), host->h_name,
+    _nss_ldap_assign_attrvals (e, attmap_host_cn, host->h_name,
                                &host->h_aliases, &buffer, &buflen, NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
-    _nss_ldap_assign_attrvals (e, AT (ipHostNumber), NULL, &addresses,
+    _nss_ldap_assign_attrvals (e, attmap_host_ipHostNumber, NULL, &addresses,
                                &p_addressbuf, &addresslen, &addresscount);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;

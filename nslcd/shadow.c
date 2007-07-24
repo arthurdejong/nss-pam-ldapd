@@ -48,6 +48,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 static enum nss_status _nss_ldap_parse_sp(LDAPMessage *e,
                     struct ldap_state UNUSED(*pvt),
@@ -58,47 +59,47 @@ static enum nss_status _nss_ldap_parse_sp(LDAPMessage *e,
   char *tmp = NULL;
 
   stat =
-    _nss_ldap_assign_userpassword (e, ATM (LM_SHADOW, userPassword),
+    _nss_ldap_assign_userpassword (e, attmap_shadow_userPassword,
                                    &sp->sp_pwdp, &buffer, &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
-    _nss_ldap_assign_attrval (e, ATM (LM_SHADOW, uid), &sp->sp_namp, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_shadow_uid, &sp->sp_namp, &buffer,
                               &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (shadowLastChange), &tmp, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_shadow_shadowLastChange, &tmp, &buffer,
                               &buflen);
   sp->sp_lstchg = (stat == NSS_STATUS_SUCCESS) ? _nss_ldap_shadow_date (tmp) : -1;
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (shadowMax), &tmp, &buffer, &buflen);
+    _nss_ldap_assign_attrval (e, attmap_shadow_shadowMax, &tmp, &buffer, &buflen);
   sp->sp_max = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (shadowMin), &tmp, &buffer, &buflen);
+    _nss_ldap_assign_attrval (e, attmap_shadow_shadowMin, &tmp, &buffer, &buflen);
   sp->sp_min = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (shadowWarning), &tmp, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_shadow_shadowWarning, &tmp, &buffer,
                               &buflen);
   sp->sp_warn = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (shadowInactive), &tmp, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_shadow_shadowInactive, &tmp, &buffer,
                               &buflen);
   sp->sp_inact = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (shadowExpire), &tmp, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_shadow_shadowExpire, &tmp, &buffer,
                               &buflen);
   sp->sp_expire = (stat == NSS_STATUS_SUCCESS) ? _nss_ldap_shadow_date (tmp) : -1;
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (shadowFlag), &tmp, &buffer, &buflen);
+    _nss_ldap_assign_attrval (e, attmap_shadow_shadowFlag, &tmp, &buffer, &buflen);
   sp->sp_flag = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : 0;
 
   _nss_ldap_shadow_handle_flag(sp);

@@ -52,6 +52,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
                        struct ldap_state UNUSED(*pvt),
@@ -63,13 +64,13 @@ static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
   enum nss_status stat;
 
   stat =
-    _nss_ldap_getrdnvalue (e, ATM (LM_PROTOCOLS, cn), &proto->p_name,
+    _nss_ldap_getrdnvalue (e, attmap_protocol_cn, &proto->p_name,
                            &buffer, &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
-    _nss_ldap_assign_attrval (e, AT (ipProtocolNumber), &number, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_protocol_ipProtocolNumber, &number, &buffer,
                               &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
@@ -77,7 +78,7 @@ static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
   proto->p_proto = atoi (number);
 
   stat =
-    _nss_ldap_assign_attrvals (e, ATM (LM_PROTOCOLS, cn), proto->p_name,
+    _nss_ldap_assign_attrvals (e, attmap_protocol_cn, proto->p_name,
                                &proto->p_aliases, &buffer, &buflen, NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;

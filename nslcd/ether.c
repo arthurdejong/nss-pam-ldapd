@@ -59,6 +59,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 #ifndef HAVE_STRUCT_ETHER_ADDR
 struct ether_addr {
@@ -82,13 +83,13 @@ static int write_ether(LDAPMessage *e,struct ldap_state *pvt,TFILE *fp)
   int stat;
   char buffer[1024];
   /* write NSLCD_STRING(ETHER_NAME) */
-  stat=_nss_ldap_write_attrval(fp,e,ATM(LM_ETHERS,cn));
+  stat=_nss_ldap_write_attrval(fp,e,attmap_ether_cn);
   if (stat!=NSLCD_RESULT_SUCCESS)
     return stat;
   /* write NSLCD_TYPE(ETHER_ADDR,u_int8_t[6]) */
-  stat=_nss_ldap_write_attrval_ether(fp,e,AT(macAddress));
+  stat=_nss_ldap_write_attrval_ether(fp,e,attmap_ether_macAddress);
 
-  stat = _nss_ldap_assign_attrval (e, AT (macAddress), &saddr,
+  stat = _nss_ldap_assign_attrval (e, attmap_ether_macAddress, &saddr,
                                    &buffer, &buflen);
   if (stat != NSS_STATUS_SUCCESS || ((addr = ether_aton (saddr)) == NULL))
     return NSS_STATUS_NOTFOUND;
@@ -107,12 +108,12 @@ _nss_ldap_parse_ether (LDAPMessage * e,
   enum nss_status stat;
   struct ether_addr *addr;
 
-  stat = _nss_ldap_assign_attrval (e, ATM (LM_ETHERS, cn),
+  stat = _nss_ldap_assign_attrval (e, attmap_ether_cn,
                                    &ether->e_name, &buffer, &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat = _nss_ldap_assign_attrval (e, AT (macAddress), &saddr,
+  stat = _nss_ldap_assign_attrval (e, attmap_ether_macAddress, &saddr,
                                    &buffer, &buflen);
 
   if (stat != NSS_STATUS_SUCCESS || ((addr = ether_aton (saddr)) == NULL))

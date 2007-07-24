@@ -42,6 +42,7 @@
 #include "util.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 static enum nss_status _nss_ldap_parse_alias(
         LDAPMessage *e,struct ldap_state UNUSED(*pvt),void *result,
@@ -54,11 +55,11 @@ static enum nss_status _nss_ldap_parse_alias(
   struct aliasent *alias=(struct aliasent *)result;
   enum nss_status stat;
 
-  stat=_nss_ldap_getrdnvalue(e,ATM(LM_ALIASES,cn),&alias->alias_name,&buffer,&buflen);
+  stat=_nss_ldap_getrdnvalue(e,attmap_alias_cn,&alias->alias_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat=_nss_ldap_assign_attrvals(e,AT(rfc822MailMember),NULL,&alias->alias_members,&buffer,&buflen,&alias->alias_members_len);
+  stat=_nss_ldap_assign_attrvals(e,attmap_alias_rfc822MailMember,NULL,&alias->alias_members,&buffer,&buflen,&alias->alias_members_len);
 
   return stat;
 }
@@ -66,9 +67,9 @@ static enum nss_status _nss_ldap_parse_alias(
 static int write_alias(LDAPMessage *e,struct ldap_state UNUSED(*pvt),TFILE *fp)
 {
   int stat;
-  if ((stat=_nss_ldap_write_rndvalue(fp,e,ATM(LM_ALIASES,cn)))!=NSLCD_RESULT_SUCCESS)
+  if ((stat=_nss_ldap_write_rndvalue(fp,e,attmap_alias_cn))!=NSLCD_RESULT_SUCCESS)
     return stat;
-  if ((stat=_nss_ldap_write_attrvals(fp,e,AT(rfc822MailMember)))!=NSLCD_RESULT_SUCCESS)
+  if ((stat=_nss_ldap_write_attrvals(fp,e,attmap_alias_rfc822MailMember))!=NSLCD_RESULT_SUCCESS)
     return stat;
   return NSLCD_RESULT_SUCCESS;
 }

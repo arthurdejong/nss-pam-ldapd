@@ -49,6 +49,7 @@
 #include "common.h"
 #include "log.h"
 #include "cfg.h"
+#include "attmap.h"
 
 /* FIXME: fix following problem:
           if the entry has multiple cn fields we may end up
@@ -388,7 +389,7 @@ do_parse_group_members (LDAPMessage * e,
   int start, end = 0;
   char *groupdn = NULL;
 
-  uniquemember_attr = ATM (LM_GROUP, uniqueMember);
+  uniquemember_attr = attmap_group_uniqueMember;
 
   uniquemember_attrs[0] = uniquemember_attr;
   uniquemember_attrs[1] = NULL;
@@ -437,7 +438,7 @@ do_parse_group_members (LDAPMessage * e,
           groupMembersCount += ldap_count_values (dnValues);
         }
 
-      uidValues = _nss_ldap_get_values (e, ATM (LM_GROUP, memberUid));
+      uidValues = _nss_ldap_get_values (e, attmap_group_memberUid);
       if (uidValues != NULL)
         {
           groupMembersCount += ldap_count_values (uidValues);
@@ -662,7 +663,7 @@ _nss_ldap_parse_gr (LDAPMessage * e,
   struct name_list *knownGroups = NULL;
 
   stat =
-    _nss_ldap_assign_attrval (e, ATM (LM_GROUP, gidNumber), &gid, &buffer,
+    _nss_ldap_assign_attrval (e, attmap_group_gidNumber, &gid, &buffer,
                               &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
@@ -673,13 +674,13 @@ _nss_ldap_parse_gr (LDAPMessage * e,
                                                               10);
 
   stat =
-    _nss_ldap_getrdnvalue (e, ATM (LM_GROUP, cn), &gr->gr_name, &buffer,
+    _nss_ldap_getrdnvalue (e, attmap_group_cn, &gr->gr_name, &buffer,
                            &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
-    _nss_ldap_assign_userpassword (e, ATM (LM_GROUP, userPassword),
+    _nss_ldap_assign_userpassword (e, attmap_group_userPassword,
                                    &gr->gr_passwd, &buffer, &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
@@ -714,7 +715,7 @@ _nss_ldap_parse_gr (LDAPMessage * e,
   else
     {
       stat =
-        _nss_ldap_assign_attrvals (e, ATM (LM_GROUP, memberUid), NULL,
+        _nss_ldap_assign_attrvals (e, attmap_group_memberUid, NULL,
                                    &gr->gr_mem, &buffer, &buflen, NULL);
     }
 
@@ -736,7 +737,7 @@ do_parse_initgroups (LDAPMessage * e,
   gid_t gid;
   ldap_initgroups_args_t *lia = (ldap_initgroups_args_t *) result;
 
-  values = _nss_ldap_get_values (e, ATM (LM_GROUP, gidNumber));
+  values = _nss_ldap_get_values (e, attmap_group_gidNumber);
   if (values == NULL)
     {
       /* invalid group; skip it */
@@ -842,7 +843,7 @@ do_parse_initgroups_nested (LDAPMessage * e,
        * Now add the GIDs of any groups of which this group is
        * a member.
        */
-      values = _nss_ldap_get_values (e, ATM (LM_GROUP, memberOf));
+      values = _nss_ldap_get_values (e, attmap_group_memberOf);
       if (values != NULL)
         {
           lia->depth++;
@@ -891,7 +892,7 @@ static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
   if (_nss_ldap_namelist_find (lia->known_groups, dn))
     return NSS_STATUS_NOTFOUND;
 
-  gidnumber_attrs[0] = ATM (LM_GROUP, gidNumber);
+  gidnumber_attrs[0] = attmap_group_gidNumber;
   gidnumber_attrs[1] = NULL;
 
   LA_INIT (a);
@@ -962,8 +963,8 @@ static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroup
       return NSS_STATUS_NOTFOUND;
     }
 
-  gidnumber_attrs[0] = ATM (LM_GROUP, gidNumber);
-  gidnumber_attrs[1] = ATM (LM_GROUP, memberOf);
+  gidnumber_attrs[0] = attmap_group_gidNumber;
+  gidnumber_attrs[1] = attmap_group_memberOf;
   gidnumber_attrs[2] = NULL;
 
   LA_INIT (a);
@@ -1070,8 +1071,8 @@ static enum nss_status group_bymember(const char *user, long int *start,
       LA_STRING2 (a) = LA_STRING (a);
       LA_TYPE (a) = LA_TYPE_STRING_AND_STRING;
 
-      gidnumber_attrs[0] = ATM (LM_GROUP, gidNumber);
-      gidnumber_attrs[1] = ATM (LM_GROUP, memberOf);
+      gidnumber_attrs[0] = attmap_group_gidNumber;
+      gidnumber_attrs[1] = attmap_group_memberOf;
       gidnumber_attrs[2] = NULL;
 
       map = LM_PASSWD;
@@ -1109,7 +1110,7 @@ static enum nss_status group_bymember(const char *user, long int *start,
           filter = _nss_ldap_filt_getgroupsbymember;
         }
 
-      gidnumber_attrs[0] = ATM (LM_GROUP, gidNumber);
+      gidnumber_attrs[0] = attmap_group_gidNumber;
       gidnumber_attrs[1] = NULL;
     }
 

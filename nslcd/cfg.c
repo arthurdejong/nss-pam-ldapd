@@ -36,6 +36,7 @@
 #include "ldap-nss.h"
 #include "util.h"
 #include "log.h"
+#include "ldap-schema.h"
 
 struct ldap_config *nslcd_cfg=NULL;
 
