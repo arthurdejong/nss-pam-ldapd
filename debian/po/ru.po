@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap_211-4\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2006-12-16 22:46+0100\n"
+"POT-Creation-Date: 2007-07-24 08:43+0200\n"
 "PO-Revision-Date: 2003-11-19 15:00+0500\n"
 "Last-Translator: Ilgiz Kalmetev <translator@ilgiz.pp.ru>\n"
 "Language-Team: russian <debian-russian@lists.debian.org>\n"
@@ -170,26 +170,31 @@ msgstr ""
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:8001
-#, fuzzy
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
-"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
-"examples/nsswitch.ldap which can be used as an example for your nsswitch "
-"setup."
+"the ldap datasource."
 msgstr ""
-"Чтобы этот пакет заработал: Вам надо отредактировать файл /etc/nsswitch."
-"conf, чтобы он использовал ldap-источники. Пример настройки nsswitch есть в /"
-"usr/share/doc/libnss-ldap/examples/nsswitch.ldap, его можно взять за основу "
-"Вашей настройки."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:8001
 msgid ""
-"You can also select the services that should be enabled or disabled for LDAP "
-"lookups. New LDAP lookups will be added as last option. Be sure to review "
-"these changes."
+"You can select the services that should be enabled or disabled for LDAP "
+"lookups. The new LDAP lookups will be added as last option. Be sure to "
+"review these changes."
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
+#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
+#~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
+#~ "your nsswitch setup."
+#~ msgstr ""
+#~ "Чтобы этот пакет заработал: Вам надо отредактировать файл /etc/nsswitch."
+#~ "conf, чтобы он использовал ldap-источники. Пример настройки nsswitch есть "
+#~ "в /usr/share/doc/libnss-ldap/examples/nsswitch.ldap, его можно взять за "
+#~ "основу Вашей настройки."
 
 #  Template: libnss-ldap/confperm
 #  ddtp-prioritize: 56

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2006-12-16 22:46+0100\n"
+"POT-Creation-Date: 2007-07-24 08:43+0200\n"
 "PO-Revision-Date: 2003-08-08 23:07+0100\n"
 "Last-Translator: Bart Cornelis <cobaco@linux.be>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -179,26 +179,31 @@ msgstr ""
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:8001
-#, fuzzy
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
-"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
-"examples/nsswitch.ldap which can be used as an example for your nsswitch "
-"setup."
+"the ldap datasource."
 msgstr ""
-"Opdat dit pakket zou werken dient u uw /etc/nsswitch.conf bestand aan te "
-"passen om de ldap databron te gebruiken. Er is een voorbeeldbestand te "
-"vinden in /usr/share/doc/libnss-ldap/examples/nsswitch.ldap , u kunt dit "
-"gebruiken als een startpunt."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:8001
 msgid ""
-"You can also select the services that should be enabled or disabled for LDAP "
-"lookups. New LDAP lookups will be added as last option. Be sure to review "
-"these changes."
+"You can select the services that should be enabled or disabled for LDAP "
+"lookups. The new LDAP lookups will be added as last option. Be sure to "
+"review these changes."
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
+#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
+#~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
+#~ "your nsswitch setup."
+#~ msgstr ""
+#~ "Opdat dit pakket zou werken dient u uw /etc/nsswitch.conf bestand aan te "
+#~ "passen om de ldap databron te gebruiken. Er is een voorbeeldbestand te "
+#~ "vinden in /usr/share/doc/libnss-ldap/examples/nsswitch.ldap , u kunt dit "
+#~ "gebruiken als een startpunt."
 
 #~ msgid "distinguished name of the search base"
 #~ msgstr "onderscheiden naam van de zoek basis"

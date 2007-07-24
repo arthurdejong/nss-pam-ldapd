@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.2.1\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2006-12-16 22:46+0100\n"
+"POT-Creation-Date: 2007-07-24 08:43+0200\n"
 "PO-Revision-Date: 2007-07-13 18:15+0100\n"
 "Last-Translator: Américo Monteiro <a_monteiro@netcabo.pt>\n"
 "Language-Team: Portuguese <traduz@debianpt.org>\n"
@@ -31,8 +31,8 @@ msgid ""
 "port number is optional."
 msgstr ""
 "Por favor insira o URI do servidor LDAP a usar. Esta é uma sequência no "
-"formato ldap://<nome da máquina ou IP>:<porto>/, ldaps:// ou ldapi:// "
-"podem também ser usados. O número do porto é opcional."
+"formato ldap://<nome da máquina ou IP>:<porto>/, ldaps:// ou ldapi:// podem "
+"também ser usados. O número do porto é opcional."
 
 #. Type: string
 #. Description
@@ -41,8 +41,8 @@ msgid ""
 "Note: It is usually a good idea to use an IP address; this reduces risks of "
 "failure in the event name service is unavailable."
 msgstr ""
-"Nota: Geralmente é boa ideia usar um endereço IP; isto reduz riscos de falhas "
-"na eventualidade do serviço de nomes não estar disponível."
+"Nota: Geralmente é boa ideia usar um endereço IP; isto reduz riscos de "
+"falhas na eventualidade do serviço de nomes não estar disponível."
 
 #. Type: string
 #. Description
@@ -99,9 +99,9 @@ msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
 msgstr ""
-"Se a base de dados LDAP requerer autenticação para buscas normais, "
-"indique aqui o nome da conta que vai ser usada. "
-"Em caso contrário, deixe o campo vazio."
+"Se a base de dados LDAP requerer autenticação para buscas normais, indique "
+"aqui o nome da conta que vai ser usada. Em caso contrário, deixe o campo "
+"vazio."
 
 #. Type: string
 #. Description
@@ -122,8 +122,7 @@ msgstr "Password de utilizador LDAP:"
 #: ../libnss-ldapd.templates:5001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr ""
-"Indique a password que vai ser usada para autenticação na "
-"base de dados LDAP."
+"Indique a password que vai ser usada para autenticação na base de dados LDAP."
 
 #. Type: string
 #. Description
@@ -148,8 +147,8 @@ msgstr ""
 #: ../libnss-ldapd.templates:6001
 msgid "Leave this empty to not do anything special for root lookups."
 msgstr ""
-"Deixe este campo vazio para não fazer nada de especial "
-"para buscas de administrador."
+"Deixe este campo vazio para não fazer nada de especial para buscas de "
+"administrador."
 
 #. Type: password
 #. Description
@@ -164,8 +163,8 @@ msgid ""
 "Enter the password that will be used to log in to the LDAP database when the "
 "root process does lookups."
 msgstr ""
-"Indique a password que será usada para autenticação na base de "
-"dados LDAP, quando processos de administrador fazem buscas."
+"Indique a password que será usada para autenticação na base de dados LDAP, "
+"quando processos de administrador fazem buscas."
 
 #. Type: multiselect
 #. Description
@@ -178,24 +177,33 @@ msgstr "Nomes de serviços para configurar:"
 #: ../libnss-ldapd.templates:8001
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
-"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
-"examples/nsswitch.ldap which can be used as an example for your nsswitch "
-"setup."
+"the ldap datasource."
 msgstr ""
-"Para este pacote funcionar, você precisa modificar o seu /etc/nsswitch.conf "
-"para usar a fonte de dados LDAP. Existe um ficheiro exemplo em "
-"/usr/share/doc/libnss-ldap/examples/nsswitch.ldap que pode ser usado como "
-"exemplo para a sua configuração do nsswitch."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:8001
+#, fuzzy
+#| msgid ""
+#| "You can also select the services that should be enabled or disabled for "
+#| "LDAP lookups. New LDAP lookups will be added as last option. Be sure to "
+#| "review these changes."
 msgid ""
-"You can also select the services that should be enabled or disabled for LDAP "
-"lookups. New LDAP lookups will be added as last option. Be sure to review "
-"these changes."
+"You can select the services that should be enabled or disabled for LDAP "
+"lookups. The new LDAP lookups will be added as last option. Be sure to "
+"review these changes."
 msgstr ""
 "Você também pode seleccionar os serviços que deverão estar activos ou "
-"inactivos para buscas LDAP. Novas buscas LDAP serão adicionadas como "
-"últimas opções. Certifique-se de rever estas alterações."
+"inactivos para buscas LDAP. Novas buscas LDAP serão adicionadas como últimas "
+"opções. Certifique-se de rever estas alterações."
 
+#~ msgid ""
+#~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
+#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
+#~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
+#~ "your nsswitch setup."
+#~ msgstr ""
+#~ "Para este pacote funcionar, você precisa modificar o seu /etc/nsswitch."
+#~ "conf para usar a fonte de dados LDAP. Existe um ficheiro exemplo em /usr/"
+#~ "share/doc/libnss-ldap/examples/nsswitch.ldap que pode ser usado como "
+#~ "exemplo para a sua configuração do nsswitch."

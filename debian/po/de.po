@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap_220-1_de\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2006-12-16 22:46+0100\n"
+"POT-Creation-Date: 2007-07-24 08:43+0200\n"
 "PO-Revision-Date: 2004-11-12 21:55+0100\n"
 "Last-Translator: Erik Schanze <mail@erikschanze.de>\n"
 "Language-Team: German <debian-l10n-german@lists.debian.org>\n"
@@ -181,31 +181,36 @@ msgstr "Geben Sie das Passwort für das Login zur LDAP-Datenbank ein."
 msgid "Name services to configure:"
 msgstr ""
 
-#
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:8001
-#, fuzzy
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
-"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
-"examples/nsswitch.ldap which can be used as an example for your nsswitch "
-"setup."
+"the ldap datasource."
 msgstr ""
-"Damit dieses Paket arbeitet, müssen Sie Ihre Datei /etc/nsswitch.conf für "
-"die ldap-Datenquelle anpassen.  Es gibt eine Beispieldatei unter /usr/share/"
-"doc/libnss-ldap/examples/nsswitch.ldap, die als Beispiel für Ihr nsswitch-"
-"Setup verwendet kann oder mit der Ihr aktuelles Setup überschrieben werden "
-"kann."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:8001
 msgid ""
-"You can also select the services that should be enabled or disabled for LDAP "
-"lookups. New LDAP lookups will be added as last option. Be sure to review "
-"these changes."
+"You can select the services that should be enabled or disabled for LDAP "
+"lookups. The new LDAP lookups will be added as last option. Be sure to "
+"review these changes."
 msgstr ""
+
+#
+#, fuzzy
+#~ msgid ""
+#~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
+#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
+#~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
+#~ "your nsswitch setup."
+#~ msgstr ""
+#~ "Damit dieses Paket arbeitet, müssen Sie Ihre Datei /etc/nsswitch.conf für "
+#~ "die ldap-Datenquelle anpassen.  Es gibt eine Beispieldatei unter /usr/"
+#~ "share/doc/libnss-ldap/examples/nsswitch.ldap, die als Beispiel für Ihr "
+#~ "nsswitch-Setup verwendet kann oder mit der Ihr aktuelles Setup "
+#~ "überschrieben werden kann."
 
 #  Template: shared/ldapns/base-dn
 #  ddtp-prioritize: 56

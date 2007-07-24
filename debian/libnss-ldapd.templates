@@ -66,10 +66,8 @@ Type: multiselect
 Choices: aliases, ethers, group, hosts, netgroup, networks, passwd, protocols, rpc, services, shadow
 _Description: Name services to configure:
  For this package to work, you need to modify your /etc/nsswitch.conf to
- use the ldap datasource.  There is an example file at
- /usr/share/doc/libnss-ldap/examples/nsswitch.ldap which can be used as an
- example for your nsswitch setup.
+ use the ldap datasource.
  .
- You can also select the services that should be enabled or disabled
- for LDAP lookups. New LDAP lookups will be added as last option.
+ You can select the services that should be enabled or disabled
+ for LDAP lookups. The new LDAP lookups will be added as last option.
  Be sure to review these changes.

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap_203-1\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2006-12-16 22:46+0100\n"
+"POT-Creation-Date: 2007-07-24 08:43+0200\n"
 "PO-Revision-Date: 2003-03-08 11:39+0300\n"
 "Last-Translator: André Luís Lopes <andrelop@ig.com.br>\n"
 "Language-Team: Debian-BR Project <debian-l10n-portuguese@lists.debian.org>\n"
@@ -176,27 +176,32 @@ msgstr ""
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:8001
-#, fuzzy
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
-"the ldap datasource.  There is an example file at /usr/share/doc/libnss-ldap/"
-"examples/nsswitch.ldap which can be used as an example for your nsswitch "
-"setup."
+"the ldap datasource."
 msgstr ""
-"Para que este pacote funcione, você precisa modificar seu arquivo /etc/"
-"nsswitch.conf para usar a fonte de dados ldap. Existe um arquivo de exemplo "
-"em /usr/share/doc/libnss-ldap/examples/nsswitch.ldap que pode ser usado como "
-"um exemplo para a sua configuração do nsswitch ou que pode ser copiado "
-"sobrepondo sua configuração atual."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:8001
 msgid ""
-"You can also select the services that should be enabled or disabled for LDAP "
-"lookups. New LDAP lookups will be added as last option. Be sure to review "
-"these changes."
+"You can select the services that should be enabled or disabled for LDAP "
+"lookups. The new LDAP lookups will be added as last option. Be sure to "
+"review these changes."
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
+#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
+#~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
+#~ "your nsswitch setup."
+#~ msgstr ""
+#~ "Para que este pacote funcione, você precisa modificar seu arquivo /etc/"
+#~ "nsswitch.conf para usar a fonte de dados ldap. Existe um arquivo de "
+#~ "exemplo em /usr/share/doc/libnss-ldap/examples/nsswitch.ldap que pode ser "
+#~ "usado como um exemplo para a sua configuração do nsswitch ou que pode ser "
+#~ "copiado sobrepondo sua configuração atual."
 
 #~ msgid "distinguished name of the search base"
 #~ msgstr "O nome distinto (dn) da base de procura."
