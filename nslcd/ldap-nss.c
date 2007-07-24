@@ -3044,34 +3044,12 @@ _nss_ldap_map_at (enum ldap_map_selector sel, const char *attribute)
 }
 
 const char *
-_nss_ldap_unmap_at (enum ldap_map_selector sel, const char *attribute)
-{
-  const char *mapped = NULL;
-  enum nss_status stat;
-
-  stat = _nss_ldap_map_get (sel, MAP_ATTRIBUTE_REVERSE, attribute, &mapped);
-
-  return (stat == NSS_STATUS_SUCCESS) ? mapped : attribute;
-}
-
-const char *
 _nss_ldap_map_oc (enum ldap_map_selector sel, const char *objectclass)
 {
   const char *mapped = NULL;
   enum nss_status stat;
 
   stat = _nss_ldap_map_get (sel, MAP_OBJECTCLASS, objectclass, &mapped);
-
-  return (stat == NSS_STATUS_SUCCESS) ? mapped : objectclass;
-}
-
-const char *
-_nss_ldap_unmap_oc (enum ldap_map_selector sel, const char *objectclass)
-{
-  const char *mapped = NULL;
-  enum nss_status stat;
-
-  stat = _nss_ldap_map_get (sel, MAP_OBJECTCLASS_REVERSE, objectclass, &mapped);
 
   return (stat == NSS_STATUS_SUCCESS) ? mapped : objectclass;
 }

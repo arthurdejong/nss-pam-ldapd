@@ -254,7 +254,6 @@ init_pwd_attributes (const char ***pwd_attrs)
   (*pwd_attrs)[i++] = attmap_passwd_homeDirectory;
   (*pwd_attrs)[i++] = attmap_passwd_loginShell;
   (*pwd_attrs)[i++] = attmap_passwd_gecos;
-  (*pwd_attrs)[i++] = "description";
   (*pwd_attrs)[i++] = attmap_objectClass;
   (*pwd_attrs)[i] = NULL;
 }

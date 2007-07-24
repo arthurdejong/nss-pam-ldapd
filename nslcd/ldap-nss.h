@@ -412,10 +412,8 @@ int _nss_ldap_shadow_date(const char *val);
 void _nss_ldap_shadow_handle_flag(struct spwd *sp);
 
 const char *_nss_ldap_map_at (enum ldap_map_selector sel, const char *attribute);
-const char *_nss_ldap_unmap_at (enum ldap_map_selector sel, const char *attribute);
 
 const char *_nss_ldap_map_oc (enum ldap_map_selector sel, const char *objectclass);
-const char *_nss_ldap_unmap_oc (enum ldap_map_selector sel, const char *objectclass);
 
 enum nss_status _nss_ldap_init (void);
 
