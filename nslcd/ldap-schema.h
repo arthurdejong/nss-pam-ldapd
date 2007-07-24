@@ -98,10 +98,14 @@ extern char _nss_ldap_filt_getnetgrent[];
  * selector (eg. LM_PASSWD) relative to an "ldap_config"
  */
 
+
+
+
 /**
  * Lookup (potentially mapped)
  * objectclass/attribute.
  */
+/* these functions are defined in ldap-nss.[ch] */
 #define OC(oc)                   _nss_ldap_map_oc(LM_NONE, OC##_##oc)
 #define OCM(map, at)             _nss_ldap_map_oc(map, AT##_##at)
 #define AT(at)                   _nss_ldap_map_at(LM_NONE, AT##_##at)
@@ -241,24 +245,6 @@ extern char _nss_ldap_filt_getnetgrent[];
 #define AT_memberNisNetgroup      "memberNisNetgroup"
 
 /*
- * ( nisSchema.2.09 NAME 'nisMap' SUP top STRUCTURAL
- *   DESC 'A generic abstraction of a NIS map'
- *   MUST nisMapName
- *   MAY description )
- */
-#define OC_nisMap                 "nisMap"
-#define AT_nisMapName             "nisNapName"
-
-/*
- * ( nisSchema.2.10 NAME 'nisObject' SUP top STRUCTURAL
- *   DESC 'An entry in a NIS map'
- *   MUST ( cn $ nisMapEntry $ nisMapName )
- *   MAY description )
- */
-#define OC_nisObject              "nisObject"
-#define AT_nisMapEntry            "nisMapEntry"
-
-/*
  * ( nisSchema.2.11 NAME 'ieee802Device' SUP top AUXILIARY
  *   DESC 'A device with a MAC address; device SHOULD be
  *         used as a structural class'
@@ -266,16 +252,6 @@ extern char _nss_ldap_filt_getnetgrent[];
  */
 #define OC_ieee802Device          "ieee802Device"
 #define AT_macAddress             "macAddress"
-
-/*
- * ( nisSchema.2.12 NAME 'bootableDevice' SUP top AUXILIARY
- *   DESC 'A device with boot parameters; device SHOULD be
- *         used as a structural class'
- *   MAY ( bootFile $ bootParameter ) )
- */
-#define OC_bootableDevice         "bootableDevice"
-#define AT_bootFile               "bootFile"
-#define AT_bootParameter          "bootParameter"
 
 /*
  * Map names
@@ -290,7 +266,6 @@ extern char _nss_ldap_filt_getnetgrent[];
 #define MP_rpc                    "rpc"
 #define MP_ethers                 "ethers"
 #define MP_netmasks               "netmasks"
-#define MP_bootparams             "bootparams"
 #define MP_aliases                "aliases"
 #define MP_netgroup               "netgroup"
 

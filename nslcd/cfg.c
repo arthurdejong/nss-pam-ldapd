@@ -262,8 +262,6 @@ static enum ldap_map_selector _nss_ldap_str2selector(const char *key)
     sel = LM_ETHERS;
   else if (!strcasecmp (key, MP_netmasks))
     sel = LM_NETMASKS;
-  else if (!strcasecmp (key, MP_bootparams))
-    sel = LM_BOOTPARAMS;
   else if (!strcasecmp (key, MP_aliases))
     sel = LM_ALIASES;
   else if (!strcasecmp (key, MP_netgroup))

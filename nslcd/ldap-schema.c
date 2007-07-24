@@ -237,42 +237,6 @@ _nss_ldap_init_filters ()
 
 }
 
-static void init_pwd_attributes (const char ***pwd_attrs);
-static void init_sp_attributes (const char ***sp_attrs);
-static void init_grp_attributes (const char ***grp_attrs);
-static void init_hosts_attributes (const char ***hosts_attrs);
-static void init_services_attributes (const char ***services_attrs);
-static void init_network_attributes (const char ***network_attrs);
-static void init_proto_attributes (const char ***proto_attrs);
-static void init_rpc_attributes (const char ***rpc_attrs);
-static void init_ethers_attributes (const char ***ethers_attrs);
-static void init_bp_attributes (const char ***bp_attrs);
-static void init_alias_attributes (const char ***alias_attrs);
-static void init_netgrp_attributes (const char ***netgrp_attrs);
-
-/**
- * attribute table initialization routines
- */
-void
-_nss_ldap_init_attributes (const char ***attrtab)
-{
-  init_pwd_attributes (&attrtab[LM_PASSWD]);
-  init_sp_attributes (&attrtab[LM_SHADOW]);
-  init_grp_attributes (&attrtab[LM_GROUP]);
-  init_hosts_attributes (&attrtab[LM_HOSTS]);
-  init_services_attributes (&attrtab[LM_SERVICES]);
-  init_network_attributes (&attrtab[LM_NETWORKS]);
-  init_proto_attributes (&attrtab[LM_PROTOCOLS]);
-  init_rpc_attributes (&attrtab[LM_RPC]);
-  init_ethers_attributes (&attrtab[LM_ETHERS]);
-  init_network_attributes (&attrtab[LM_NETMASKS]);
-  init_bp_attributes (&attrtab[LM_BOOTPARAMS]);
-  init_alias_attributes (&attrtab[LM_ALIASES]);
-  init_netgrp_attributes (&attrtab[LM_NETGROUP]);
-
-  attrtab[LM_NONE] = NULL;
-}
-
 static void
 init_pwd_attributes (const char ***pwd_attrs)
 {
@@ -405,18 +369,6 @@ init_ethers_attributes (const char ***ethers_attrs)
 }
 
 static void
-init_bp_attributes (const char ***bp_attrs)
-{
-  static const char *__bp_attrs[ATTRTAB_SIZE + 1];
-
-  (*bp_attrs) = __bp_attrs;
-
-  (*bp_attrs)[0] = ATM (LM_BOOTPARAMS, cn);
-  (*bp_attrs)[1] = AT (bootParameter);
-  (*bp_attrs)[2] = NULL;
-}
-
-static void
 init_alias_attributes (const char ***alias_attrs)
 {
   static const char *__alias_attrs[ATTRTAB_SIZE + 1];
@@ -440,3 +392,27 @@ init_netgrp_attributes (const char ***netgrp_attrs)
   (*netgrp_attrs)[2] = AT (memberNisNetgroup);
   (*netgrp_attrs)[3] = NULL;
 }
+
+/**
+ * attribute table initialization routines
+ */
+void
+_nss_ldap_init_attributes (const char ***attrtab)
+{
+  init_pwd_attributes (&attrtab[LM_PASSWD]);
+  init_sp_attributes (&attrtab[LM_SHADOW]);
+  init_grp_attributes (&attrtab[LM_GROUP]);
+  init_hosts_attributes (&attrtab[LM_HOSTS]);
+  init_services_attributes (&attrtab[LM_SERVICES]);
+  init_network_attributes (&attrtab[LM_NETWORKS]);
+  init_proto_attributes (&attrtab[LM_PROTOCOLS]);
+  init_rpc_attributes (&attrtab[LM_RPC]);
+  init_ethers_attributes (&attrtab[LM_ETHERS]);
+  init_network_attributes (&attrtab[LM_NETMASKS]);
+  init_alias_attributes (&attrtab[LM_ALIASES]);
+  init_netgrp_attributes (&attrtab[LM_NETGROUP]);
+
+  attrtab[LM_NONE] = NULL;
+}
+
+
