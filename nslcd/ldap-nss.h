@@ -408,9 +408,6 @@ enum nss_status _nss_ldap_assign_userpassword (LDAPMessage * e, /* IN */
    return 0 for false, not-0 for true */
 int has_objectclass(LDAPMessage *entry,const char *objectclass);
 
-int _nss_ldap_shadow_date(const char *val);
-void _nss_ldap_shadow_handle_flag(struct spwd *sp);
-
 const char *_nss_ldap_map_at (enum ldap_map_selector sel, const char *attribute);
 
 const char *_nss_ldap_map_oc (enum ldap_map_selector sel, const char *objectclass);

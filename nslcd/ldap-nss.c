@@ -2992,41 +2992,6 @@ int has_objectclass(LDAPMessage *entry,const char *objectclass)
   return 0;
 }
 
-#ifdef HAVE_SHADOW_H
-int
-_nss_ldap_shadow_date (const char *val)
-{
-  int date;
-
-  if (nslcd_cfg->ldc_shadow_type == LS_AD_SHADOW)
-    {
-      date = atoll (val) / 864000000000LL - 134774LL;
-      date = (date > 99999) ? 99999 : date;
-    }
-  else
-    {
-      date = atol (val);
-    }
-
-  return date;
-}
-
-#ifndef UF_DONT_EXPIRE_PASSWD
-#define UF_DONT_EXPIRE_PASSWD 0x10000
-#endif
-
-void
-_nss_ldap_shadow_handle_flag (struct spwd *sp)
-{
-  if (nslcd_cfg->ldc_shadow_type == LS_AD_SHADOW)
-    {
-      if (sp->sp_flag & UF_DONT_EXPIRE_PASSWD)
-        sp->sp_max = 99999;
-      sp->sp_flag = 0;
-    }
-}
-#endif /* HAVE_SHADOW_H */
-
 static enum nss_status
 _nss_ldap_map_get (enum ldap_map_selector sel,
                    enum ldap_map_type type,
