@@ -52,10 +52,6 @@
 #define LDAP_FILT_MAXSIZ 1024
 #endif /* not LDAP_FILT_MAXSIZ */
 
-#ifndef LDAPS_PORT
-#define LDAPS_PORT 636
-#endif /* not LDAPS_PORT */
-
 #ifdef __GNUC__
 #define alignof(ptr) __alignof__(ptr)
 #elif defined(HAVE_ALIGNOF_H)
@@ -88,25 +84,9 @@ enum ldap_map_selector
   LM_PROTOCOLS,
   LM_RPC,
   LM_ETHERS,
-  LM_NETMASKS,
-  LM_BOOTPARAMS,
   LM_ALIASES,
   LM_NETGROUP,
   LM_NONE
-};
-
-enum ldap_userpassword_selector
-{
-  LU_RFC2307_USERPASSWORD,
-  LU_RFC3112_AUTHPASSWORD,
-  LU_OTHER_PASSWORD
-};
-
-enum ldap_shadow_selector
-{
-  LS_RFC2307_SHADOW,
-  LS_AD_SHADOW,
-  LS_OTHER_SHADOW
 };
 
 /*
@@ -124,13 +104,6 @@ struct ldap_service_search_descriptor
   /* next */
   struct ldap_service_search_descriptor *lsd_next;
 };
-
-#include "cfg.h"
-
-#if defined(__GLIBC__) && __GLIBC_MINOR__ > 1
-#else
-#define ss_family sa_family
-#endif /* __GLIBC__ */
 
 enum ldap_session_state
 {
@@ -162,20 +135,14 @@ enum ldap_args_types
   LA_TYPE_STRING_AND_STRING,
   LA_TYPE_NUMBER_AND_STRING,
   LA_TYPE_TRIPLE,
-  LA_TYPE_STRING_LIST_OR,
-  LA_TYPE_STRING_LIST_AND,
-  LA_TYPE_NONE
+  LA_TYPE_STRING_LIST_OR
 };
 
 enum ldap_map_type
 {
   MAP_ATTRIBUTE = 0,
   MAP_OBJECTCLASS,
-  MAP_OVERRIDE,
-  MAP_DEFAULT,
-  MAP_ATTRIBUTE_REVERSE,
-  MAP_OBJECTCLASS_REVERSE, /* XXX not used yet? */
-  MAP_MAX = MAP_OBJECTCLASS_REVERSE
+  MAP_MAX = MAP_OBJECTCLASS
 };
 
 struct ldap_args
@@ -225,7 +192,7 @@ struct ldap_args
  * or per-subsystem/per-thread, depending on the OS). State is the state
  * of a particular lookup, and is only concerned with resolving and enumerating
  * services. State is represented as instances of struct ldap_state; context as
- * instances of struct ent_context. The latter contains the former.
+ * instances of struct ent_context. The context contains the state.
  */
 struct ldap_state
 {
@@ -332,6 +299,12 @@ enum nss_status _nss_ldap_search_s (const struct ldap_args * args,   /* IN */
                                const char **user_attrs, /* IN */
                                int sizelimit,   /* IN */
                                LDAPMessage ** res /* OUT */ );
+
+
+int _nss_ldap_searchbyname(
+        struct ldap_args *args,const char *filterprot,
+        enum ldap_map_selector sel,TFILE *fp,NEWparser_t parser);
+
 
 /*
  * Emulate X.500 read operation.

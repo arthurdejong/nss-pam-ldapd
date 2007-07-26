@@ -47,12 +47,23 @@ enum ldap_reconnect_policy
   LP_RECONNECT_SOFT
 };
 
+enum ldap_userpassword_selector
+{
+  LU_RFC2307_USERPASSWORD,
+  LU_RFC3112_AUTHPASSWORD,
+  LU_OTHER_PASSWORD
+};
+
+enum ldap_shadow_selector
+{
+  LS_RFC2307_SHADOW,
+  LS_AD_SHADOW
+};
+
 struct ldap_config
 {
   /* NULL terminated list of URIs */
   char *ldc_uris[NSS_LDAP_CONFIG_URI_MAX + 1];
-  /* default port, if not specified in URI */
-  int ldc_port;
   /* base DN, eg. dc=gnu,dc=org */
   char *ldc_base;
   /* scope for searches */
@@ -114,8 +125,6 @@ struct ldap_config
   int ldc_reconnect_maxconntries;
   /* sasl security */
   char *ldc_sasl_secprops;
-  /* directory for debug files */
-  char *ldc_logdir;
   /* LDAP debug level */
   int ldc_debug;
   int ldc_pagesize;
@@ -124,7 +133,7 @@ struct ldap_config
   char *ldc_krb5_ccname;
 #endif /* CONFIGURE_KRB5_CCNAME */
   /* attribute/objectclass maps relative to this config */
-  DICT *ldc_maps[LM_NONE + 1][6]; /* must match MAP_MAX */
+  DICT *ldc_maps[LM_NONE + 1][MAP_MAX];
   /* is userPassword "userPassword" or not? ie. do we need {crypt} to be stripped */
   enum ldap_userpassword_selector ldc_password_type;
   /* Use active directory time offsets? */
@@ -132,8 +141,6 @@ struct ldap_config
   /* attribute table for ldap search requensts */
   const char **ldc_attrtab[LM_NONE + 1];
   unsigned int ldc_flags;
-  /* last modification time */
-  time_t ldc_mtime;
   char **ldc_initgroups_ignoreusers;
 };
 

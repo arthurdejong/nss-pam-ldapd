@@ -37,6 +37,7 @@
 #include "util.h"
 #include "log.h"
 #include "ldap-schema.h"
+#include "cfg.h"
 
 struct ldap_config *nslcd_cfg=NULL;
 
@@ -55,12 +56,8 @@ struct ldap_config *nslcd_cfg=NULL;
 
 #define NSS_LDAP_KEY_MAP_ATTRIBUTE      "nss_map_attribute"
 #define NSS_LDAP_KEY_MAP_OBJECTCLASS    "nss_map_objectclass"
-#define NSS_LDAP_KEY_SET_OVERRIDE       "nss_override_attribute_value"
-#define NSS_LDAP_KEY_SET_DEFAULT        "nss_default_attribute_value"
-#define NSS_LDAP_KEY_HOST               "host"
 #define NSS_LDAP_KEY_SCOPE              "scope"
 #define NSS_LDAP_KEY_BASE               "base"
-#define NSS_LDAP_KEY_PORT               "port"
 #define NSS_LDAP_KEY_BINDDN             "binddn"
 #define NSS_LDAP_KEY_BINDPW             "bindpw"
 #define NSS_LDAP_KEY_USESASL            "use_sasl"
@@ -83,7 +80,6 @@ struct ldap_config *nslcd_cfg=NULL;
 #ifdef CONFIGURE_KRB5_CCNAME
 #define NSS_LDAP_KEY_KRB5_CCNAME        "krb5_ccname"
 #endif /* CONFIGURE_KRB5_CCNAME */
-#define NSS_LDAP_KEY_LOGDIR             "logdir"
 #define NSS_LDAP_KEY_DEBUG              "debug"
 #define NSS_LDAP_KEY_PAGESIZE           "pagesize"
 #define NSS_LDAP_KEY_INITGROUPS         "nss_initgroups"
@@ -153,7 +149,6 @@ static enum nss_status _nss_ldap_init_config(struct ldap_config *result)
   result->ldc_idle_timelimit = 0;
   result->ldc_reconnect_pol = LP_RECONNECT_HARD_OPEN;
   result->ldc_sasl_secprops = NULL;
-  result->ldc_logdir = NULL;
   result->ldc_debug = 0;
   result->ldc_pagesize = LDAP_PAGESIZE;
 #ifdef CONFIGURE_KRB5_CCNAME
@@ -225,35 +220,6 @@ _nss_ldap_add_uri (struct ldap_config *result, const char *uri,
 }
 
 static enum nss_status
-do_add_hosts (struct ldap_config *result, char *hosts,
-              char **buffer, size_t *buflen)
-{
-  /* Add a space separated list of hosts */
-  char *p;
-  enum nss_status status = NSS_STATUS_SUCCESS;
-
-  for (p = hosts; p != NULL; )
-    {
-      char b[NSS_LDAP_CONFIG_BUFSIZ];
-      char *q = strchr (p, ' ');
-
-      if (q != NULL)
-        *q = '\0';
-
-      snprintf (b, sizeof(b), "ldap://%s", p);
-
-      status = _nss_ldap_add_uri (result, b, buffer, buflen);
-
-      p = (q != NULL) ? ++q : NULL;
-
-      if (status != NSS_STATUS_SUCCESS)
-        break;
-    }
-
-  return status;
-}
-
-static enum nss_status
 do_add_uris (struct ldap_config *result, char *uris,
              char **buffer, size_t *buflen)
 {
@@ -300,8 +266,6 @@ static enum ldap_map_selector _nss_ldap_str2selector(const char *key)
     sel = LM_RPC;
   else if (!strcasecmp (key, MP_ethers))
     sel = LM_ETHERS;
-  else if (!strcasecmp (key, MP_netmasks))
-    sel = LM_NETMASKS;
   else if (!strcasecmp (key, MP_aliases))
     sel = LM_ALIASES;
   else if (!strcasecmp (key, MP_netgroup))
@@ -339,8 +303,6 @@ static enum nss_status _nss_ldap_map_put(
         config->ldc_shadow_type=LS_RFC2307_SHADOW;
       else if (strcasecmp (to,"pwdLastSet")==0)
         config->ldc_shadow_type=LS_AD_SHADOW;
-      else
-        config->ldc_shadow_type=LS_OTHER_SHADOW;
     }
   }
   assert(sel <= LM_NONE);
@@ -348,18 +310,6 @@ static enum nss_status _nss_ldap_map_put(
   assert(map!=NULL);
   if (dict_put(map,from,to))
     return NSS_STATUS_TRYAGAIN;
-  if (type==MAP_ATTRIBUTE)
-  {
-    map = config->ldc_maps[sel][MAP_ATTRIBUTE_REVERSE];
-    if (dict_put(map,to,from))
-      return NSS_STATUS_TRYAGAIN;
-  }
-  else if (type==MAP_OBJECTCLASS)
-  {
-    map = config->ldc_maps[sel][MAP_OBJECTCLASS_REVERSE];
-    if (dict_put(map,to,from))
-      return NSS_STATUS_TRYAGAIN;
-  }
   return NSS_STATUS_SUCCESS;
 }
 
@@ -541,7 +491,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
   char b[NSS_LDAP_CONFIG_BUFSIZ];
   enum nss_status status = NSS_STATUS_SUCCESS;
   struct ldap_config *result;
-  struct stat statbuf;
 
   if (bytesleft (*buffer, *buflen, struct ldap_config *) < sizeof (struct ldap_config))
   {
@@ -563,11 +512,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
     {
       return NSS_STATUS_UNAVAIL;
     }
-
-  if (fstat(fileno (fp), &statbuf) == 0)
-      result->ldc_mtime = statbuf.st_mtime;
-  else
-      result->ldc_mtime = 0;
 
   while (fgets (b, sizeof (b), fp) != NULL)
     {
@@ -619,12 +563,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
           break;
         }
 
-      if (!strcasecmp (k, NSS_LDAP_KEY_HOST))
-        {
-          status = do_add_hosts (result, v, buffer, buflen);
-          if (status != NSS_STATUS_SUCCESS)
-            break;
-        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_URI))
         {
           status = do_add_uris (result, v, buffer, buflen);
@@ -705,10 +643,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
               result->ldc_deref = LDAP_DEREF_ALWAYS;
             }
         }
-      else if (!strcasecmp (k, NSS_LDAP_KEY_PORT))
-        {
-          result->ldc_port = atoi (v);
-        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_SSL))
         {
           if (!strcasecmp (v, "on") || !strcasecmp (v, "yes")
@@ -785,10 +719,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
         {
           t = &result->ldc_sasl_secprops;
         }
-      else if (!strcasecmp (k, NSS_LDAP_KEY_LOGDIR))
-        {
-          t = &result->ldc_logdir;
-        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_DEBUG))
         {
           result->ldc_debug = atoi (v);
@@ -849,16 +779,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
                              strlen (NSS_LDAP_KEY_MAP_OBJECTCLASS)))
         {
           do_parse_map_statement (result, v, MAP_OBJECTCLASS);
-        }
-      else if (!strncasecmp (k, NSS_LDAP_KEY_SET_OVERRIDE,
-                             strlen (NSS_LDAP_KEY_SET_OVERRIDE)))
-        {
-          do_parse_map_statement (result, v, MAP_OVERRIDE);
-        }
-      else if (!strncasecmp (k, NSS_LDAP_KEY_SET_DEFAULT,
-                             strlen (NSS_LDAP_KEY_SET_DEFAULT)))
-        {
-          do_parse_map_statement (result, v, MAP_DEFAULT);
         }
       else if (!strcasecmp (k, NSS_LDAP_KEY_INITGROUPS))
         {
@@ -978,18 +898,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
       else if (!result->ldc_rootusesasl)
         {
           result->ldc_rootbinddn = NULL;
-        }
-    }
-
-  if (result->ldc_port == 0)
-    {
-      if (result->ldc_ssl_on == SSL_LDAPS)
-        {
-          result->ldc_port = LDAPS_PORT;
-        }
-      else
-        {
-          result->ldc_port = LDAP_PORT;
         }
     }
 

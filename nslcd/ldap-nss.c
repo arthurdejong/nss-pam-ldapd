@@ -80,6 +80,7 @@
 #include "common.h"
 #include "log.h"
 #include "ldap-schema.h"
+#include "cfg.h"
 #include "attmap.h"
 
 /* how many messages to retrieve results for */
@@ -115,18 +116,10 @@ static int __sigaction_retval = -1;
 static void (*__sigpipe_handler) (int) = SIG_DFL;
 #endif /* HAVE_SIGACTION */
 
-static const char *_nss_ldap_map_ov (const char *attribute);
-static const char *_nss_ldap_map_df (const char *attribute);
-static const char *_nss_ldap_locate_userpassword (char **vals);
-
 /*
  * Global LDAP session.
  */
-static struct ldap_session __session = { NULL, 0, LS_UNINITIALIZED };
-
-#ifdef LBER_OPT_LOG_PRINT_FILE
-static FILE *__debugfile;
-#endif /* LBER_OPT_LOG_PRINT_FILE */
+static struct ldap_session __session = { NULL, 0, LS_UNINITIALIZED, 0 };
 
 #ifdef HAVE_LDAPSSL_CLIENT_INIT
 static int __ssl_initialized = 0;
@@ -714,7 +707,7 @@ do_close (void)
 }
 
 static enum nss_status
-do_init_session (LDAP ** ld, const char *uri, int defport)
+do_init_session (LDAP ** ld, const char *uri)
 {
   int rc;
   int ldaps;
@@ -731,14 +724,6 @@ do_init_session (LDAP ** ld, const char *uri, int defport)
     }
 
 #ifdef HAVE_LDAP_INITIALIZE
-  if (p == NULL &&
-      ((ldaps && defport != LDAPS_PORT) || (!ldaps && defport != LDAP_PORT)))
-    {
-      /* No port specified in URI and non-default port specified */
-      snprintf (uribuf, sizeof (uribuf), "%s:%d", uri, defport);
-      uri = uribuf;
-    }
-
   rc = ldap_initialize (ld, uri);
 #else
   if (strncasecmp (uri, "ldap://", sizeof ("ldap://") - 1) != 0)
@@ -841,21 +826,6 @@ do_init (void)
 #ifdef HAVE_LDAP_SET_OPTION
   if (nslcd_cfg->ldc_debug)
     {
-#ifdef LBER_OPT_LOG_PRINT_FILE
-      if (nslcd_cfg->ldc_logdir && !__debugfile)
-        {
-          char namebuf[PATH_MAX];
-
-          snprintf (namebuf, sizeof (namebuf), "%s/ldap.%d", nslcd_cfg->ldc_logdir,
-                    (int) getpid ());
-          __debugfile = fopen (namebuf, "a");
-
-          if (__debugfile != NULL)
-            {
-              ber_set_option (NULL, LBER_OPT_LOG_PRINT_FILE, __debugfile);
-            }
-        }
-#endif /* LBER_OPT_LOG_PRINT_FILE */
 #ifdef LBER_OPT_DEBUG_LEVEL
       if (nslcd_cfg->ldc_debug)
         {
@@ -889,8 +859,7 @@ do_init (void)
   assert (nslcd_cfg->ldc_uris[__session.ls_current_uri] != NULL);
 
   stat = do_init_session (&__session.ls_conn,
-                          nslcd_cfg->ldc_uris[__session.ls_current_uri],
-                          nslcd_cfg->ldc_port);
+                          nslcd_cfg->ldc_uris[__session.ls_current_uri]);
   if (stat != NSS_STATUS_SUCCESS)
     {
       log_log(LOG_DEBUG,"<== do_init (failed to initialize LDAP session)");
@@ -1464,7 +1433,6 @@ _nss_ldap_ent_context_release (struct ent_context * ctx)
  */
 static enum nss_status
 do_aggregate_filter (const char **values,
-                     enum ldap_args_types type,
                      const char *filterprot, char *bufptr, size_t buflen)
 {
   const char **valueP;
@@ -1472,7 +1440,7 @@ do_aggregate_filter (const char **values,
   assert (buflen > sizeof ("(|)"));
 
   bufptr[0] = '(';
-  bufptr[1] = (type == LA_TYPE_STRING_LIST_AND) ? '&' : '|';
+  bufptr[1] = '|';
 
   bufptr += 2;
   buflen -= 2;
@@ -1525,7 +1493,7 @@ do_filter (const struct ldap_args *args, const char *filterprot,
 
   *dynamicUserBuf = NULL;
 
-  if (args != NULL && args->la_type != LA_TYPE_NONE)
+  if (args != NULL)
     {
       /* choose what to use for temporary storage */
 
@@ -1577,11 +1545,9 @@ do_filter (const struct ldap_args *args, const char *filterprot,
                     args->la_arg1.la_number, buf1);
           break;
         case LA_TYPE_STRING_LIST_OR:
-        case LA_TYPE_STRING_LIST_AND:
           do
             {
               stat = do_aggregate_filter (args->la_arg1.la_string_list,
-                                          args->la_type,
                                           filterprot, filterBufP, filterSiz);
               if (stat == NSS_STATUS_TRYAGAIN)
                 {
@@ -2795,27 +2761,6 @@ _nss_ldap_assign_attrval (LDAPMessage * e,
 {
   char **vals;
   int vallen;
-  const char *ovr, *def;
-
-  ovr = _nss_ldap_map_ov(attr);
-  if (ovr != NULL)
-    {
-      vallen = strlen (ovr);
-      if (*buflen < (size_t) (vallen + 1))
-        {
-          return NSS_STATUS_TRYAGAIN;
-        }
-
-      *valptr = *buffer;
-
-      strncpy (*valptr, ovr, vallen);
-      (*valptr)[vallen] = '\0';
-
-      *buffer += vallen + 1;
-      *buflen -= vallen + 1;
-
-      return NSS_STATUS_SUCCESS;
-    }
 
   if (__session.ls_conn == NULL)
     {
@@ -2825,29 +2770,7 @@ _nss_ldap_assign_attrval (LDAPMessage * e,
   vals=ldap_get_values(__session.ls_conn,e,attr);
   if (vals == NULL)
     {
-      def = _nss_ldap_map_df(attr);
-      if (def != NULL)
-        {
-          vallen = strlen (def);
-          if (*buflen < (size_t) (vallen + 1))
-            {
-              return NSS_STATUS_TRYAGAIN;
-            }
-
-          *valptr = *buffer;
-
-          strncpy (*valptr, def, vallen);
-          (*valptr)[vallen] = '\0';
-
-          *buffer += vallen + 1;
-          *buflen -= vallen + 1;
-
-          return NSS_STATUS_SUCCESS;
-        }
-      else
-        {
-          return NSS_STATUS_NOTFOUND;
-        }
+      return NSS_STATUS_NOTFOUND;
     }
 
   vallen = strlen (*vals);
@@ -2870,8 +2793,7 @@ _nss_ldap_assign_attrval (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-const char *
-_nss_ldap_locate_userpassword (char **vals)
+static const char *_nss_ldap_locate_userpassword (char **vals)
 {
   const char *token = NULL;
   size_t token_length = 0;
@@ -3019,26 +2941,6 @@ _nss_ldap_map_oc (enum ldap_map_selector sel, const char *objectclass)
   return (stat == NSS_STATUS_SUCCESS) ? mapped : objectclass;
 }
 
-const char *
-_nss_ldap_map_ov (const char *attribute)
-{
-  const char *value = NULL;
-
-  _nss_ldap_map_get (LM_NONE, MAP_OVERRIDE, attribute, &value);
-
-  return value;
-}
-
-const char *
-_nss_ldap_map_df (const char *attribute)
-{
-  const char *value = NULL;
-
-  _nss_ldap_map_get (LM_NONE, MAP_DEFAULT, attribute, &value);
-
-  return value;
-}
-
 static enum nss_status
 _nss_ldap_map_get (enum ldap_map_selector sel,
                    enum ldap_map_type type,
@@ -3073,186 +2975,3 @@ struct ldap_proxy_bind_args
   char *binddn;
   const char *bindpw;
 };
-
-#if LDAP_SET_REBIND_PROC_ARGS < 3
-static struct ldap_proxy_bind_args __proxy_args = { NULL, NULL };
-#endif
-
-#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
-#if LDAP_SET_REBIND_PROC_ARGS == 3
-static int
-do_proxy_rebind (LDAP * ld, LDAP_CONST char *url, ber_tag_t request,
-                 ber_int_t msgid, void *arg)
-#else
-static int
-do_proxy_rebind (LDAP * ld, LDAP_CONST char *url, int request,
-                 ber_int_t msgid)
-#endif
-{
-  int timelimit;
-#if LDAP_SET_REBIND_PROC_ARGS == 3
-  struct ldap_proxy_bind_args *who = (struct ldap_proxy_bind_args *) arg;
-#else
-  struct ldap_proxy_bind_args *who = &__proxy_args;
-#endif
-
-  timelimit = nslcd_cfg->ldc_bind_timelimit;
-
-  return do_bind (ld, timelimit, who->binddn, who->bindpw, 0);
-}
-#else
-#if LDAP_SET_REBIND_PROC_ARGS == 3
-static int
-do_proxy_rebind (LDAP * ld, char **whop, char **credp, int *methodp,
-                 int freeit, void *arg)
-#elif LDAP_SET_REBIND_PROC_ARGS == 2
-static int
-do_proxy_rebind (LDAP * ld, char **whop, char **credp, int *methodp,
-                 int freeit)
-#endif
-{
-#if LDAP_SET_REBIND_PROC_ARGS == 3
-  struct ldap_proxy_bind_args *who = (struct ldap_proxy_bind_args *) arg;
-#else
-  struct ldap_proxy_bind_args *who = &__proxy_args;
-#endif
-  if (freeit)
-    {
-      if (*whop != NULL)
-        free (*whop);
-      if (*credp != NULL)
-        free (*credp);
-    }
-
-  *whop = who->binddn ? strdup (who->binddn) : NULL;
-  *credp = who->bindpw ? strdup (who->bindpw) : NULL;
-
-  *methodp = LDAP_AUTH_SIMPLE;
-
-  return LDAP_SUCCESS;
-}
-#endif
-
-static enum nss_status
-_nss_ldap_proxy_bind (const char *user, const char *password)
-{
-  struct ldap_args args;
-  LDAPMessage *res, *e;
-  enum nss_status stat;
-  int rc;
-#if LDAP_SET_REBIND_PROC_ARGS == 3
-  struct ldap_proxy_bind_args proxy_args_buf;
-  struct ldap_proxy_bind_args *proxy_args = &proxy_args_buf;
-#else
-  struct ldap_proxy_bind_args *proxy_args = &__proxy_args;
-#endif
-
-  log_log(LOG_DEBUG,"==> _nss_ldap_proxy_bind");
-
-  LA_INIT (args);
-  LA_TYPE (args) = LA_TYPE_STRING;
-  LA_STRING (args) = user;
-
-  /*
-   * Binding with an empty password will always work, so don't let
-   * the user in if they try that.
-   */
-  if (password == NULL || password[0] == '\0')
-    {
-      log_log(LOG_DEBUG,"<== _nss_ldap_proxy_bind (empty password not permitted)");
-      /* XXX overload */
-      return NSS_STATUS_TRYAGAIN;
-    }
-
-  _nss_ldap_enter ();
-
-  stat = _nss_ldap_search_s (&args, _nss_ldap_filt_getpwnam,
-                             LM_PASSWD, NULL, 1, &res);
-  if (stat == NSS_STATUS_SUCCESS)
-    {
-      e = _nss_ldap_first_entry (res);
-      if (e != NULL)
-        {
-          proxy_args->binddn = _nss_ldap_get_dn (e);
-          proxy_args->bindpw = password;
-
-          if (proxy_args->binddn != NULL)
-            {
-              /* Use our special rebind procedure. */
-#if LDAP_SET_REBIND_PROC_ARGS == 3
-              ldap_set_rebind_proc (__session.ls_conn, do_proxy_rebind, NULL);
-#elif LDAP_SET_REBIND_PROC_ARGS == 2
-              ldap_set_rebind_proc (__session.ls_conn, do_proxy_rebind);
-#endif
-
-              log_log(LOG_DEBUG,":== _nss_ldap_proxy_bind: %s", proxy_args->binddn);
-
-              rc = do_bind (__session.ls_conn,
-                            nslcd_cfg->ldc_bind_timelimit,
-                            proxy_args->binddn, proxy_args->bindpw, 0);
-              switch (rc)
-                {
-                case LDAP_INVALID_CREDENTIALS:
-                  /* XXX overload */
-                  stat = NSS_STATUS_TRYAGAIN;
-                  break;
-                case LDAP_NO_SUCH_OBJECT:
-                  stat = NSS_STATUS_NOTFOUND;
-                  break;
-                case LDAP_SUCCESS:
-                  stat = NSS_STATUS_SUCCESS;
-                  break;
-                default:
-                  stat = NSS_STATUS_UNAVAIL;
-                  break;
-                }
-              /*
-               * Close the connection, don't want to continue
-               * being bound as this user or using this rebind proc.
-               */
-              do_close ();
-              ldap_memfree (proxy_args->binddn);
-            }
-          else
-            {
-              stat = NSS_STATUS_NOTFOUND;
-            }
-          proxy_args->binddn = NULL;
-          proxy_args->bindpw = NULL;
-        }
-      else
-        {
-          stat = NSS_STATUS_NOTFOUND;
-        }
-      ldap_msgfree (res);
-    }
-
-  _nss_ldap_leave ();
-
-  log_log(LOG_DEBUG,"<== _nss_ldap_proxy_bind");
-
-  return stat;
-}
-
-static const char **
-_nss_ldap_get_attributes (enum ldap_map_selector sel)
-{
-  const char **attrs = NULL;
-
-  log_log(LOG_DEBUG,"==> _nss_ldap_get_attributes");
-
-  if (sel < LM_NONE)
-    {
-      if (do_init () != NSS_STATUS_SUCCESS)
-        {
-          log_log(LOG_DEBUG,"<== _nss_ldap_get_attributes (init failed)");
-          return NULL;
-        }
-
-      attrs = nslcd_cfg->ldc_attrtab[sel];
-    }
-
-  log_log(LOG_DEBUG,"<== _nss_ldap_get_attributes");
-
-  return attrs;
-}

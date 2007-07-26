@@ -46,6 +46,7 @@
 #include "ldap-schema.h"
 #include "util.h"
 #include "attmap.h"
+#include "cfg.h"
 
 /* max number of attributes per object class */
 #define ATTRTAB_SIZE    15
@@ -407,7 +408,6 @@ _nss_ldap_init_attributes (const char ***attrtab)
   init_proto_attributes (&attrtab[LM_PROTOCOLS]);
   init_rpc_attributes (&attrtab[LM_RPC]);
   init_ethers_attributes (&attrtab[LM_ETHERS]);
-  init_network_attributes (&attrtab[LM_NETMASKS]);
   init_alias_attributes (&attrtab[LM_ALIASES]);
   init_netgrp_attributes (&attrtab[LM_NETGROUP]);
 
