@@ -166,7 +166,4 @@ int _nss_ldap_test_config_flag(unsigned int flag)
 int cfg_init(void)
   MUST_USE;
 
-enum nss_status _nss_ldap_add_uri (struct ldap_config *result, const char *uri,char **buffer, size_t *buflen)
-  MUST_USE;
-
 #endif /* _CFG_H */

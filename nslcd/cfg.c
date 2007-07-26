@@ -186,6 +186,45 @@ static enum nss_status _nss_ldap_init_config(struct ldap_config *result)
 }
 
 static enum nss_status
+_nss_ldap_add_uri (struct ldap_config *result, const char *uri,
+                   char **buffer, size_t *buflen)
+{
+  /* add a single URI to the list of URIs in the configuration */
+  int i;
+  size_t uri_len;
+
+  log_log(LOG_DEBUG,"==> _nss_ldap_add_uri");
+
+  for (i = 0; result->ldc_uris[i] != NULL; i++)
+    ;
+
+  if (i == NSS_LDAP_CONFIG_URI_MAX)
+    {
+      log_log(LOG_DEBUG,"<== _nss_ldap_add_uri: maximum number of URIs exceeded");
+      return NSS_STATUS_UNAVAIL;
+    }
+
+  assert (i < NSS_LDAP_CONFIG_URI_MAX);
+
+  uri_len = strlen (uri);
+
+  if (*buflen < uri_len + 1)
+    return NSS_STATUS_TRYAGAIN;
+
+  memcpy (*buffer, uri, uri_len + 1);
+
+  result->ldc_uris[i] = *buffer;
+  result->ldc_uris[i + 1] = NULL;
+
+  *buffer += uri_len + 1;
+  *buflen -= uri_len + 1;
+
+  log_log(LOG_DEBUG,"<== _nss_ldap_add_uri: added URI %s", uri);
+
+  return NSS_STATUS_SUCCESS;
+}
+
+static enum nss_status
 do_add_hosts (struct ldap_config *result, char *hosts,
               char **buffer, size_t *buflen)
 {
@@ -980,43 +1019,4 @@ int cfg_init(void)
     }
   }
   return 0;
-}
-
-enum nss_status
-_nss_ldap_add_uri (struct ldap_config *result, const char *uri,
-                   char **buffer, size_t *buflen)
-{
-  /* add a single URI to the list of URIs in the configuration */
-  int i;
-  size_t uri_len;
-
-  log_log(LOG_DEBUG,"==> _nss_ldap_add_uri");
-
-  for (i = 0; result->ldc_uris[i] != NULL; i++)
-    ;
-
-  if (i == NSS_LDAP_CONFIG_URI_MAX)
-    {
-      log_log(LOG_DEBUG,"<== _nss_ldap_add_uri: maximum number of URIs exceeded");
-      return NSS_STATUS_UNAVAIL;
-    }
-
-  assert (i < NSS_LDAP_CONFIG_URI_MAX);
-
-  uri_len = strlen (uri);
-
-  if (*buflen < uri_len + 1)
-    return NSS_STATUS_TRYAGAIN;
-
-  memcpy (*buffer, uri, uri_len + 1);
-
-  result->ldc_uris[i] = *buffer;
-  result->ldc_uris[i + 1] = NULL;
-
-  *buffer += uri_len + 1;
-  *buflen -= uri_len + 1;
-
-  log_log(LOG_DEBUG,"<== _nss_ldap_add_uri: added URI %s", uri);
-
-  return NSS_STATUS_SUCCESS;
 }
