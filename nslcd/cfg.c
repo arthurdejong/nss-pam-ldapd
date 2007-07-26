@@ -55,8 +55,7 @@ struct ldap_config *nslcd_cfg=NULL;
 #define LDAP_NSS_MAXSLEEPTIME    64     /* maximum seconds to sleep */
 #define LDAP_NSS_MAXCONNTRIES    2      /* reconnect attempts before sleeping */
 
-#define NSS_LDAP_KEY_MAP_ATTRIBUTE      "nss_map_attribute"
-#define NSS_LDAP_KEY_MAP_OBJECTCLASS    "nss_map_objectclass"
+#define NSS_LDAP_KEY_MAP                "map"
 #define NSS_LDAP_KEY_SCOPE              "scope"
 #define NSS_LDAP_KEY_BASE               "base"
 #define NSS_LDAP_KEY_BINDDN             "binddn"
@@ -263,48 +262,37 @@ static enum ldap_map_selector _nss_ldap_str2selector(const char *key)
   return sel;
 }
 
+/* this function modifies the statement argument passed */
 static enum nss_status do_parse_map_statement(
-                struct ldap_config *cfg,char *statement,
-                enum ldap_map_type type)
+                struct ldap_config *cfg,char *statement)
 {
   char *key,*val;
-  enum ldap_map_selector sel=LM_NONE;
-  char *p;
   const char **var;
   key=(char *)statement;
   val=key;
+  /* search for the end of the key */
   while (*val!=' '&&*val!='\t')
     val++;
   *(val++)='\0';
+  /* search for the end of the value */
   while (*val==' '||*val=='\t')
     val++;
-  p=strchr(key,':');
-  if (p!=NULL)
+  /* special handling for some attribute mappings */
+  if (strcasecmp(key,"passwd.userPassword")==0)
   {
-    *p='\0';
-    sel=_nss_ldap_str2selector(key);
-    key=++p;
+    if (strcasecmp(val,"userPassword")==0)
+      cfg->ldc_password_type=LU_RFC2307_USERPASSWORD;
+    else if (strcasecmp (val,"authPassword")==0)
+      cfg->ldc_password_type=LU_RFC3112_AUTHPASSWORD;
+    else
+      cfg->ldc_password_type=LU_OTHER_PASSWORD;
   }
-  
-  if (type==MAP_ATTRIBUTE)
+  else if (strcasecmp(key,"shadow.shadowLastChange")==0)
   {
-    /* special handling for attribute mapping */
-    if (strcasecmp(key,"passwd.userPassword")==0)
-    {
-      if (strcasecmp(val,"userPassword")==0)
-        cfg->ldc_password_type=LU_RFC2307_USERPASSWORD;
-      else if (strcasecmp (val,"authPassword")==0)
-        cfg->ldc_password_type=LU_RFC3112_AUTHPASSWORD;
-      else
-        cfg->ldc_password_type=LU_OTHER_PASSWORD;
-    }
-    else if (strcasecmp(key,"shadow.shadowLastChange")==0)
-    {
-      if (strcasecmp(val,"shadowLastChange")==0)
-        cfg->ldc_shadow_type=LS_RFC2307_SHADOW;
-      else if (strcasecmp (val,"pwdLastSet")==0)
-        cfg->ldc_shadow_type=LS_AD_SHADOW;
-    }
+    if (strcasecmp(val,"shadowLastChange")==0)
+      cfg->ldc_shadow_type=LS_RFC2307_SHADOW;
+    else if (strcasecmp (val,"pwdLastSet")==0)
+      cfg->ldc_shadow_type=LS_AD_SHADOW;
   }
   var=attmap_get_var(key);
   if (var==NULL)
@@ -313,9 +301,8 @@ static enum nss_status do_parse_map_statement(
   /* check if the value actually changed */
   if (strcmp(*var,val)!=0)
   {
-    /* Note: we have a memory leak here if a single mapping is
-             changed multiple times in one config
-             (deemed not a problem) */
+    /* Note: we have a memory leak here if a single mapping is changed
+             multiple times in one config (deemed not a problem) */
     *var=strdup(val);
     if (*var==NULL)
       /* memory allocation failed */
@@ -753,15 +740,10 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
         {
           t = &result->ldc_tls_randfile;
         }
-      else if (!strncasecmp (k, NSS_LDAP_KEY_MAP_ATTRIBUTE,
-                             strlen (NSS_LDAP_KEY_MAP_ATTRIBUTE)))
+      else if (!strncasecmp (k, NSS_LDAP_KEY_MAP,
+                             strlen (NSS_LDAP_KEY_MAP)))
         {
-          do_parse_map_statement (result, v, MAP_ATTRIBUTE);
-        }
-      else if (!strncasecmp (k, NSS_LDAP_KEY_MAP_OBJECTCLASS,
-                             strlen (NSS_LDAP_KEY_MAP_OBJECTCLASS)))
-        {
-          do_parse_map_statement (result, v, MAP_OBJECTCLASS);
+          do_parse_map_statement (result, v);
         }
       else if (!strcasecmp (k, NSS_LDAP_KEY_INITGROUPS))
         {
