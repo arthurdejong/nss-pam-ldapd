@@ -2914,57 +2914,6 @@ int has_objectclass(LDAPMessage *entry,const char *objectclass)
   return 0;
 }
 
-static enum nss_status
-_nss_ldap_map_get (enum ldap_map_selector sel,
-                   enum ldap_map_type type,
-                   const char *from, const char **to);
-
-const char *
-_nss_ldap_map_at (enum ldap_map_selector sel, const char *attribute)
-{
-  const char *mapped = NULL;
-  enum nss_status stat;
-
-  stat = _nss_ldap_map_get (sel, MAP_ATTRIBUTE, attribute, &mapped);
-
-  return (stat == NSS_STATUS_SUCCESS) ? mapped : attribute;
-}
-
-const char *
-_nss_ldap_map_oc (enum ldap_map_selector sel, const char *objectclass)
-{
-  const char *mapped = NULL;
-  enum nss_status stat;
-
-  stat = _nss_ldap_map_get (sel, MAP_OBJECTCLASS, objectclass, &mapped);
-
-  return (stat == NSS_STATUS_SUCCESS) ? mapped : objectclass;
-}
-
-static enum nss_status
-_nss_ldap_map_get (enum ldap_map_selector sel,
-                   enum ldap_map_type type,
-                   const char *from, const char **to)
-{
-  DICT *map;
-  if (_nss_ldap_map_get == NULL || sel > LM_NONE || type > MAP_MAX)
-    return NSS_STATUS_NOTFOUND;
-  map=nslcd_cfg->ldc_maps[sel][type];
-  if (map!=NULL)
-  {
-    *to=(const char *)dict_get(map,from);
-    if ((*to==NULL) && (sel!=LM_NONE))
-    {
-      map=nslcd_cfg->ldc_maps[LM_NONE][type];
-      if (map!=NULL)
-        *to=(const char *)dict_get(map,from);
-    }
-  }
-  if (*to==NULL)
-    return NSS_STATUS_NOTFOUND;
-  return NSS_STATUS_SUCCESS;
-}
-
 /*
  * Proxy bind support for AIX. Very simple, but should do
  * the job.

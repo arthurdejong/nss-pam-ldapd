@@ -38,6 +38,7 @@
 #include "log.h"
 #include "ldap-schema.h"
 #include "cfg.h"
+#include "attmap.h"
 
 struct ldap_config *nslcd_cfg=NULL;
 
@@ -111,9 +112,8 @@ int _nss_ldap_test_config_flag(unsigned int flag)
          (nslcd_cfg->ldc_flags&flag);
 }
 
-static enum nss_status _nss_ldap_init_config(struct ldap_config *result)
+static void _nss_ldap_init_config(struct ldap_config *result)
 {
-  int i, j;
 
   memset (result, 0, sizeof (*result));
 
@@ -166,18 +166,6 @@ static enum nss_status _nss_ldap_init_config(struct ldap_config *result)
   result->ldc_reconnect_maxsleeptime = LDAP_NSS_MAXSLEEPTIME;
   result->ldc_reconnect_maxconntries = LDAP_NSS_MAXCONNTRIES;
   result->ldc_initgroups_ignoreusers = NULL;
-
-  for (i=0;i<=LM_NONE;i++)
-  {
-    for (j=0;j<=MAP_MAX;j++)
-    {
-      result->ldc_maps[i][j]=dict_new();
-      if (result->ldc_maps[i][j] == NULL)
-        return NSS_STATUS_UNAVAIL;
-    }
-  }
-
-  return NSS_STATUS_SUCCESS;
 }
 
 static enum nss_status
@@ -275,44 +263,6 @@ static enum ldap_map_selector _nss_ldap_str2selector(const char *key)
   return sel;
 }
 
-static enum nss_status _nss_ldap_map_put(
-                struct ldap_config *config,
-                enum ldap_map_selector sel,
-                enum ldap_map_type type,
-                const char *from,
-                const char *to)
-{
-  DICT *map;
-  /* we do some special handling for attribute type mapping to do some
-     basic detection of what kind of LDAP server we're talking to */
-  if (type==MAP_ATTRIBUTE)
-  {
-    /* special handling for attribute mapping */
-    if (strcasecmp(from,"userPassword")==0)
-    {
-      if (strcasecmp(to,"userPassword")==0)
-        config->ldc_password_type=LU_RFC2307_USERPASSWORD;
-      else if (strcasecmp (to,"authPassword")==0)
-        config->ldc_password_type=LU_RFC3112_AUTHPASSWORD;
-      else
-        config->ldc_password_type=LU_OTHER_PASSWORD;
-    }
-    else if (strcasecmp(from,"shadowLastChange")==0)
-    {
-      if (strcasecmp(to,"shadowLastChange")==0)
-        config->ldc_shadow_type=LS_RFC2307_SHADOW;
-      else if (strcasecmp (to,"pwdLastSet")==0)
-        config->ldc_shadow_type=LS_AD_SHADOW;
-    }
-  }
-  assert(sel <= LM_NONE);
-  map=config->ldc_maps[sel][type];
-  assert(map!=NULL);
-  if (dict_put(map,from,to))
-    return NSS_STATUS_TRYAGAIN;
-  return NSS_STATUS_SUCCESS;
-}
-
 static enum nss_status do_parse_map_statement(
                 struct ldap_config *cfg,char *statement,
                 enum ldap_map_type type)
@@ -320,6 +270,7 @@ static enum nss_status do_parse_map_statement(
   char *key,*val;
   enum ldap_map_selector sel=LM_NONE;
   char *p;
+  const char **var;
   key=(char *)statement;
   val=key;
   while (*val!=' '&&*val!='\t')
@@ -334,7 +285,43 @@ static enum nss_status do_parse_map_statement(
     sel=_nss_ldap_str2selector(key);
     key=++p;
   }
-  return _nss_ldap_map_put(cfg,sel,type,key,val);
+  
+  if (type==MAP_ATTRIBUTE)
+  {
+    /* special handling for attribute mapping */
+    if (strcasecmp(key,"passwd.userPassword")==0)
+    {
+      if (strcasecmp(val,"userPassword")==0)
+        cfg->ldc_password_type=LU_RFC2307_USERPASSWORD;
+      else if (strcasecmp (val,"authPassword")==0)
+        cfg->ldc_password_type=LU_RFC3112_AUTHPASSWORD;
+      else
+        cfg->ldc_password_type=LU_OTHER_PASSWORD;
+    }
+    else if (strcasecmp(key,"shadow.shadowLastChange")==0)
+    {
+      if (strcasecmp(val,"shadowLastChange")==0)
+        cfg->ldc_shadow_type=LS_RFC2307_SHADOW;
+      else if (strcasecmp (val,"pwdLastSet")==0)
+        cfg->ldc_shadow_type=LS_AD_SHADOW;
+    }
+  }
+  var=attmap_get_var(key);
+  if (var==NULL)
+    /* the used mapping key was unknown */
+    return NSS_STATUS_NOTFOUND;
+  /* check if the value actually changed */
+  if (strcmp(*var,val)!=0)
+  {
+    /* Note: we have a memory leak here if a single mapping is
+             changed multiple times in one config
+             (deemed not a problem) */
+    *var=strdup(val);
+    if (*var==NULL)
+      /* memory allocation failed */
+      return NSS_STATUS_TRYAGAIN;
+  }
+  return NSS_STATUS_SUCCESS;
 }
 
 /* parse a comma-separated list */
@@ -501,11 +488,7 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
   *buffer += sizeof (struct ldap_config);
   *buflen -= sizeof (struct ldap_config);
 
-  status = _nss_ldap_init_config(result);
-  if (status != NSS_STATUS_SUCCESS)
-    {
-      return NSS_STATUS_SUCCESS;
-    }
+  _nss_ldap_init_config(result);
 
   fp = fopen (NSS_LDAP_PATH_CONF, "r");
   if (fp == NULL)

@@ -53,6 +53,7 @@
 #include "common.h"
 #include "log.h"
 #include "attmap.h"
+#include "ldap-schema.h"
 
 static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
                        struct ldap_state UNUSED(*pvt),

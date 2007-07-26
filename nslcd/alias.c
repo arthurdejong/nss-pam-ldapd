@@ -43,6 +43,7 @@
 #include "common.h"
 #include "log.h"
 #include "attmap.h"
+#include "ldap-schema.h"
 
 static enum nss_status _nss_ldap_parse_alias(
         LDAPMessage *e,struct ldap_state UNUSED(*pvt),void *result,

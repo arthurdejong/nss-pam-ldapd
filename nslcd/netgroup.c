@@ -53,6 +53,7 @@
 #include "common.h"
 #include "log.h"
 #include "attmap.h"
+#include "ldap-schema.h"
 
 /* A netgroup can consist of names of other netgroups.  We have to
    track which netgroups were read and which still have to be read.  */

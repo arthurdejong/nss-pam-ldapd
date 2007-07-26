@@ -51,6 +51,7 @@
 #include "common.h"
 #include "log.h"
 #include "attmap.h"
+#include "ldap-schema.h"
 
 #if defined(HAVE_USERSEC_H)
 #define MAXALIASES 35

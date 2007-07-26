@@ -50,6 +50,7 @@
 #include "log.h"
 #include "cfg.h"
 #include "attmap.h"
+#include "ldap-schema.h"
 
 /* FIXME: fix following problem:
           if the entry has multiple cn fields we may end up

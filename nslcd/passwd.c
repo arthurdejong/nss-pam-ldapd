@@ -49,6 +49,7 @@
 #include "common.h"
 #include "log.h"
 #include "attmap.h"
+#include "ldap-schema.h"
 
 #ifndef UID_NOBODY
 #define UID_NOBODY      (-2)

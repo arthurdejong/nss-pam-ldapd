@@ -50,6 +50,7 @@
 #include "log.h"
 #include "attmap.h"
 #include "cfg.h"
+#include "ldap-schema.h"
 
 static int
 _nss_ldap_shadow_date (const char *val)

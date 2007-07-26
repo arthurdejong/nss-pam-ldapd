@@ -60,6 +60,7 @@
 #include "common.h"
 #include "log.h"
 #include "attmap.h"
+#include "ldap-schema.h"
 
 #ifndef HAVE_STRUCT_ETHER_ADDR
 struct ether_addr {

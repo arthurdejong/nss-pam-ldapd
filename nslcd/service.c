@@ -57,6 +57,7 @@
 #include "common.h"
 #include "log.h"
 #include "attmap.h"
+#include "ldap-schema.h"
 
 /* macros for expanding the NSLCD_SERVICE macro */
 #define NSLCD_STRING(field)     WRITE_STRING(fp,field)

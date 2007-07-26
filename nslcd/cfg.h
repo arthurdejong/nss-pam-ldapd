@@ -132,8 +132,6 @@ struct ldap_config
   /* krb5 ccache name */
   char *ldc_krb5_ccname;
 #endif /* CONFIGURE_KRB5_CCNAME */
-  /* attribute/objectclass maps relative to this config */
-  DICT *ldc_maps[LM_NONE + 1][MAP_MAX];
   /* is userPassword "userPassword" or not? ie. do we need {crypt} to be stripped */
   enum ldap_userpassword_selector ldc_password_type;
   /* Use active directory time offsets? */

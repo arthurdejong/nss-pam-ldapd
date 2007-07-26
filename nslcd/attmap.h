@@ -26,78 +26,9 @@
 
 /* What follows is a list of attribute names per database. */
 
-#include <ldap-schema.h>
+/* TODO: replace the objectClass name mapping with filter definitions */
 
-#define attmap_objectClass             _nss_ldap_map_at(LM_NONE,AT_objectClass)
-
-#define attmap_alias_objectClass       _nss_ldap_map_oc(LM_NONE,OC_nisMailAlias)
-#define attmap_alias_cn                _nss_ldap_map_at(LM_ALIASES,AT_cn)
-#define attmap_alias_rfc822MailMember  _nss_ldap_map_at(LM_NONE,AT_rfc822MailMember)
-
-#define attmap_ether_objectClass       _nss_ldap_map_oc(LM_NONE,OC_ieee802Device)
-#define attmap_ether_cn                _nss_ldap_map_at(LM_ETHERS,AT_cn)
-#define attmap_ether_macAddress        _nss_ldap_map_at(LM_NONE,AT_macAddress)
-
-#define attmap_group_objectClass       _nss_ldap_map_oc(LM_NONE,OC_posixGroup)
-#define attmap_group_cn                _nss_ldap_map_at(LM_GROUP,AT_cn)
-#define attmap_group_userPassword      _nss_ldap_map_at(LM_GROUP,AT_userPassword)
-#define attmap_group_gidNumber         _nss_ldap_map_at(LM_GROUP,AT_gidNumber)
-#define attmap_group_memberUid         _nss_ldap_map_at(LM_GROUP,AT_memberUid)
-#define attmap_group_uniqueMember      _nss_ldap_map_at(LM_GROUP,AT_uniqueMember)
-#define attmap_group_memberOf          _nss_ldap_map_at(LM_GROUP,AT_memberOf)
-
-#define attmap_host_objectClass        _nss_ldap_map_oc(LM_NONE,OC_ipHost)
-#define attmap_host_cn                 _nss_ldap_map_at(LM_HOSTS,AT_cn)
-#define attmap_host_ipHostNumber       _nss_ldap_map_at(LM_NONE,AT_ipHostNumber)
-
-#define attmap_netgroup_objectClass       _nss_ldap_map_oc(LM_NONE,OC_nisNetgroup)
-#define attmap_netgroup_cn                _nss_ldap_map_at(LM_NETGROUP,AT_cn)
-#define attmap_netgroup_nisNetgroupTriple _nss_ldap_map_at(LM_NONE,AT_nisNetgroupTriple)
-#define attmap_netgroup_memberNisNetgroup _nss_ldap_map_at(LM_NONE,AT_memberNisNetgroup)
-
-#define attmap_network_objectClass     _nss_ldap_map_oc(LM_NONE,OC_ipNetwork)
-#define attmap_network_cn              _nss_ldap_map_at(LM_NETWORKS,AT_cn)
-#define attmap_network_ipNetworkNumber _nss_ldap_map_at(LM_NONE,AT_ipNetworkNumber)
-
-#define attmap_passwd_objectClass      _nss_ldap_map_oc(LM_NONE,OC_posixAccount) 
-#define attmap_passwd_uid              _nss_ldap_map_at(LM_PASSWD,AT_uid)
-#define attmap_passwd_userPassword     _nss_ldap_map_at(LM_PASSWD,AT_userPassword)
-#define attmap_passwd_uidNumber        _nss_ldap_map_at(LM_NONE,AT_uidNumber)
-#define attmap_passwd_gidNumber        _nss_ldap_map_at(LM_PASSWD,AT_gidNumber)
-#define attmap_passwd_gecos            _nss_ldap_map_at(LM_NONE,AT_gecos)
-#define attmap_passwd_cn               _nss_ldap_map_at(LM_PASSWD,AT_cn)
-#define attmap_passwd_homeDirectory    _nss_ldap_map_at(LM_NONE,AT_homeDirectory)
-#define attmap_passwd_loginShell       _nss_ldap_map_at(LM_NONE,AT_loginShell)
-
-#define attmap_protocol_objectClass      _nss_ldap_map_oc(LM_NONE,OC_ipProtocol)
-#define attmap_protocol_cn               _nss_ldap_map_at(LM_PROTOCOLS,AT_cn)
-#define attmap_protocol_ipProtocolNumber _nss_ldap_map_at(LM_NONE,AT_ipProtocolNumber)
-
-#define attmap_rpc_objectClass         _nss_ldap_map_oc(LM_NONE,OC_oncRpc)
-#define attmap_rpc_cn                  _nss_ldap_map_at(LM_RPC,AT_cn)
-#define attmap_rpc_oncRpcNumber        _nss_ldap_map_at(LM_NONE,AT_oncRpcNumber)
-
-#define attmap_service_objectClass       _nss_ldap_map_oc(LM_NONE,OC_ipService)
-#define attmap_service_cn                _nss_ldap_map_at(LM_SERVICES,AT_cn)
-#define attmap_service_ipServicePort     _nss_ldap_map_at(LM_NONE,AT_ipServicePort)
-#define attmap_service_ipServiceProtocol _nss_ldap_map_at(LM_NONE,AT_ipServiceProtocol)
-
-#define attmap_shadow_objectClass      _nss_ldap_map_oc(LM_NONE,OC_shadowAccount)
-#define attmap_shadow_uid              _nss_ldap_map_at(LM_SHADOW,AT_uid)
-#define attmap_shadow_userPassword     _nss_ldap_map_at(LM_SHADOW,AT_userPassword)
-#define attmap_shadow_shadowLastChange _nss_ldap_map_at(LM_NONE,AT_shadowLastChange)
-#define attmap_shadow_shadowMin        _nss_ldap_map_at(LM_NONE,AT_shadowMin)
-#define attmap_shadow_shadowMax        _nss_ldap_map_at(LM_NONE,AT_shadowMax)
-#define attmap_shadow_shadowWarning    _nss_ldap_map_at(LM_NONE,AT_shadowWarning)
-#define attmap_shadow_shadowInactive   _nss_ldap_map_at(LM_NONE,AT_shadowInactive)
-#define attmap_shadow_shadowExpire     _nss_ldap_map_at(LM_NONE,AT_shadowExpire)
-#define attmap_shadow_shadowFlag       _nss_ldap_map_at(LM_NONE,AT_shadowFlag)
-
-
-#ifdef NEW_DISABLED_FOR_NOW
-
-/* This is new code to be put in place as new attribute mapping stuff.
-   This will just use strings that may be replaced elsewhere. */
+extern const char *attmap_objectClass;
 
 /**
  * Vendor-specific attributes and object classes.
@@ -132,7 +63,8 @@ extern const char *attmap_group_cn;
 extern const char *attmap_group_userPassword;
 extern const char *attmap_group_gidNumber;
 extern const char *attmap_group_memberUid;
-/* probably also support uniqueMember and memberOf attributes */
+extern const char *attmap_group_uniqueMember;
+extern const char *attmap_group_memberOf;
 
 /*
  * ( nisSchema.2.6 NAME 'ipHost' SUP top AUXILIARY
@@ -153,7 +85,7 @@ extern const char *attmap_host_ipHostNumber;
  *   MAY ( nisNetgroupTriple $ memberNisNetgroup $ description ) )
  */
 extern const char *attmap_netgroup_objectClass;
-/*extern const char *attmap_netgroup_cn;*/
+extern const char *attmap_netgroup_cn;
 extern const char *attmap_netgroup_nisNetgroupTriple;
 extern const char *attmap_netgroup_memberNisNetgroup;
 
@@ -244,6 +176,9 @@ extern const char *attmap_shadow_shadowInactive;
 extern const char *attmap_shadow_shadowExpire;
 extern const char *attmap_shadow_shadowFlag;
 
-#endif /* NEW_DISABLED_FOR_NOW */
+/* return a reference to the attribute mapping varoan;e forthe specified name
+   the name is the name after the attmap_... variables above with the
+   underscode replaced by a dot (e.g passwd.homeDirectory) */
+const char **attmap_get_var(const char *name);
 
 #endif /* not _ATTMAP_H */
