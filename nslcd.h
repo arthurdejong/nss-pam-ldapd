@@ -137,7 +137,7 @@
   NSLCD_STRINGLIST(RPC_ALIASES) \
   NSLCD_INT32(RPC_NUMBER)
 
-/* for transferring struct servent informatio */
+/* for transferring struct servent information */
 #define NSLCD_SERVICE \
   NSLCD_STRING(SERVICE_NAME) \
   NSLCD_STRINGLIST(SERVICE_ALIASES) \
