@@ -68,6 +68,17 @@
 #define SERVICE_NUMBER        htons(result->s_port)
 #define SERVICE_PROTOCOL      result->s_proto
 
+/* the attributes to request with searches */
+static const char *attlst[4];
+
+static void attlst_init(void)
+{
+  attlst[0] = attmap_service_cn;
+  attlst[1] = attmap_service_ipServicePort;
+  attlst[2] = attmap_service_ipServiceProtocol;
+  attlst[3] = NULL;
+}
+
 /* write a single host entry to the stream */
 static int write_servent(TFILE *fp,struct servent *result)
 {
@@ -214,9 +225,10 @@ int nslcd_service_byname(TFILE *fp)
   LA_STRING(a)=name;
   LA_TYPE(a)=(strlen(protocol)==0)?LA_TYPE_STRING:LA_TYPE_STRING_AND_STRING;
   LA_STRING2(a)=protocol;
+  attlst_init();
   retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,
                  ((strlen(protocol)==0)?_nss_ldap_filt_getservbyname:_nss_ldap_filt_getservbynameproto),
-                 LM_SERVICES,_nss_ldap_parse_serv));
+                 LM_SERVICES,attlst,_nss_ldap_parse_serv));
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -250,9 +262,10 @@ int nslcd_service_bynumber(TFILE *fp)
   LA_NUMBER(a)=number;
   LA_TYPE(a)=(strlen(protocol)==0)?LA_TYPE_NUMBER:LA_TYPE_NUMBER_AND_STRING;
   LA_STRING2(a)=protocol;
+  attlst_init();
   retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,
                  ((strlen(protocol)==0)?_nss_ldap_filt_getservbyport:_nss_ldap_filt_getservbyportproto),
-                 LM_SERVICES,_nss_ldap_parse_serv));
+                 LM_SERVICES,attlst,_nss_ldap_parse_serv));
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -280,7 +293,8 @@ int nslcd_service_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&serv_context)==NULL)
     return -1;
   /* loop over all results */
-  while ((retv=nss2nslcd(_nss_ldap_getent(&serv_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getservent,LM_SERVICES,_nss_ldap_parse_serv)))==NSLCD_RESULT_SUCCESS)
+  attlst_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&serv_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getservent,LM_SERVICES,attlst,_nss_ldap_parse_serv)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

@@ -112,6 +112,18 @@ static enum nss_status ng_chase (const char *dn, ldap_initgroups_args_t * lia);
 
 static enum nss_status ng_chase_backlink (const char ** membersOf, ldap_initgroups_args_t * lia);
 
+/* the attributes to request with searches */
+static const char *attlst[6];
+
+static void attlst_init(void)
+{
+  attlst[0] = attmap_group_cn;
+  attlst[1] = attmap_group_userPassword;
+  attlst[2] = attmap_group_memberUid;
+  attlst[3] = attmap_group_uniqueMember;
+  attlst[4] = attmap_group_gidNumber;
+  attlst[5] = NULL;
+}
 
 /*
  * Add a nested netgroup or group to the namelist
@@ -383,16 +395,12 @@ do_parse_group_members (LDAPMessage * e,
   char **groupMembers;
   size_t groupMembersCount, i;
   char **valiter;
-  /* support for range retrieval */
-  const char *uniquemember_attr;
   const char *uniquemember_attrs[2];
   LDAPMessage *res = NULL;
   int start, end = 0;
   char *groupdn = NULL;
 
-  uniquemember_attr = attmap_group_uniqueMember;
-
-  uniquemember_attrs[0] = uniquemember_attr;
+  uniquemember_attrs[0] = attmap_group_uniqueMember;
   uniquemember_attrs[1] = NULL;
 
   if (*depth > LDAP_NSS_MAXGR_DEPTH)
@@ -433,7 +441,7 @@ do_parse_group_members (LDAPMessage * e,
 
       groupMembersCount = 0;    /* number of members in this group */
 
-      (void) do_get_range_values (e, uniquemember_attrs[0], &start, &end, &dnValues);
+      (void) do_get_range_values (e, attmap_group_uniqueMember, &start, &end, &dnValues);
       if (dnValues != NULL)
         {
           groupMembersCount += ldap_count_values (dnValues);
@@ -562,12 +570,12 @@ do_parse_group_members (LDAPMessage * e,
       /* Get next range for Active Directory compat */
       if (end != -1)
         {
-          stat = do_construct_range_attribute (uniquemember_attr,
+          stat = do_construct_range_attribute (attmap_group_uniqueMember,
                                                end + 1,
                                                -1,
                                                buffer,
                                                buflen,
-                                               &uniquemember_attrs[0]);
+                                               uniquemember_attrs);
           if (stat == NSS_STATUS_SUCCESS)
             {
               if (dnValues != NULL)
@@ -1188,7 +1196,8 @@ int nslcd_group_byname(TFILE *fp)
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrnam,LM_GROUP,_nss_ldap_parse_gr));
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrnam,LM_GROUP,attlst,_nss_ldap_parse_gr));
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYNAME);
@@ -1226,7 +1235,8 @@ int nslcd_group_bygid(TFILE *fp)
   LA_INIT(a);
   LA_NUMBER(a)=gid;
   LA_TYPE(a)=LA_TYPE_NUMBER;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrgid,LM_GROUP,_nss_ldap_parse_gr));
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrgid,LM_GROUP,attlst,_nss_ldap_parse_gr));
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYGID);
@@ -1314,7 +1324,8 @@ int nslcd_group_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&gr_context)==NULL)
     return -1;
   /* loop over all results */
-  while ((retv=nss2nslcd(_nss_ldap_getent(&gr_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrent,LM_GROUP,_nss_ldap_parse_gr)))==NSLCD_RESULT_SUCCESS)
+  attlst_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&gr_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrent,LM_GROUP,attlst,_nss_ldap_parse_gr)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

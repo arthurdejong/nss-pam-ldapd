@@ -60,6 +60,16 @@
 #define MAXALIASES 35
 #endif
 
+/* the attributes to request with searches */
+static const char *attlst[3];
+
+static void attlst_init(void)
+{
+  attlst[0] = attmap_host_cn;
+  attlst[1] = attmap_host_ipHostNumber;
+  attlst[2] = NULL;
+}
+
 /* write a single host entry to the stream */
 static int write_hostent(TFILE *fp,struct hostent *result)
 {
@@ -266,7 +276,8 @@ int nslcd_host_byname(TFILE *fp)
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostbyname,LM_HOSTS,
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostbyname,LM_HOSTS,attlst,
 #ifdef INET6
                      (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4));
 #else
@@ -323,7 +334,8 @@ int nslcd_host_byaddr(TFILE *fp)
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostbyaddr,LM_HOSTS,
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostbyaddr,LM_HOSTS,attlst,
 #ifdef INET6
                      (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4));
 #else
@@ -356,7 +368,9 @@ int nslcd_host_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&host_context)==NULL)
     return -1;
   /* loop over all results */
+  attlst_init();
   while ((retv=nss2nslcd(_nss_ldap_getent(&host_context,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostent,LM_HOSTS,
+                                          attlst,
 #ifdef INET6
                              (_res.options&RES_USE_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4
 #else

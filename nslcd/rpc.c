@@ -67,6 +67,16 @@
 #define RPC_ALIASES           result->r_aliases
 #define RPC_NUMBER            result->r_number
 
+/* the attributes to request with searches */
+static const char *attlst[3];
+
+static void attlst_init(void)
+{
+  attlst[0] = attmap_rpc_cn;
+  attlst[1] = attmap_rpc_oncRpcNumber;
+  attlst[2] = NULL;
+}
+
 /* write a single rpc entry to the stream */
 static int write_rpcent(TFILE *fp,struct rpcent *result)
 {
@@ -128,7 +138,8 @@ int nslcd_rpc_byname(TFILE *fp)
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcbyname,LM_RPC,_nss_ldap_parse_rpc));
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcbyname,LM_RPC,attlst,_nss_ldap_parse_rpc));
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -159,7 +170,8 @@ int nslcd_rpc_bynumber(TFILE *fp)
   LA_INIT(a);
   LA_NUMBER(a)=number;
   LA_TYPE(a)=LA_TYPE_NUMBER;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcbynumber,LM_RPC,_nss_ldap_parse_rpc));
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcbynumber,LM_RPC,attlst,_nss_ldap_parse_rpc));
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -187,7 +199,8 @@ int nslcd_rpc_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&rpc_context)==NULL)
     return -1;
   /* loop over all results */
-  while ((retv=nss2nslcd(_nss_ldap_getent(&rpc_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcent,LM_RPC,_nss_ldap_parse_rpc)))==NSLCD_RESULT_SUCCESS)
+  attlst_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&rpc_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcent,LM_RPC,attlst,_nss_ldap_parse_rpc)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

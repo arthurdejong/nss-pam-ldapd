@@ -52,6 +52,23 @@
 #include "cfg.h"
 #include "ldap-schema.h"
 
+/* the attributes to request with searches */
+static const char *attlst[10];
+
+static void attlst_init(void)
+{
+  attlst[0] = attmap_shadow_uid;
+  attlst[1] = attmap_shadow_userPassword;
+  attlst[2] = attmap_shadow_shadowLastChange;
+  attlst[3] = attmap_shadow_shadowMax;
+  attlst[4] = attmap_shadow_shadowMin;
+  attlst[5] = attmap_shadow_shadowWarning;
+  attlst[6] = attmap_shadow_shadowInactive;
+  attlst[7] = attmap_shadow_shadowExpire;
+  attlst[8] = attmap_shadow_shadowFlag;
+  attlst[9] = NULL;
+}
+
 static int
 _nss_ldap_shadow_date (const char *val)
 {
@@ -175,7 +192,8 @@ int nslcd_shadow_byname(TFILE *fp)
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getspnam,LM_SHADOW,_nss_ldap_parse_sp));
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getspnam,LM_SHADOW,attlst,_nss_ldap_parse_sp));
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -205,7 +223,8 @@ int nslcd_shadow_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&shadow_context)==NULL)
     return -1;
   /* loop over all results */
-  while ((retv=nss2nslcd(_nss_ldap_getent(&shadow_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getspent,LM_SHADOW,_nss_ldap_parse_sp)))==NSLCD_RESULT_SUCCESS)
+  attlst_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&shadow_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getspent,LM_SHADOW,attlst,_nss_ldap_parse_sp)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

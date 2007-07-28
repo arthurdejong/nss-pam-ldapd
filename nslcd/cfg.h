@@ -136,8 +136,6 @@ struct ldap_config
   enum ldap_userpassword_selector ldc_password_type;
   /* Use active directory time offsets? */
   enum ldap_shadow_selector ldc_shadow_type;
-  /* attribute table for ldap search requensts */
-  const char **ldc_attrtab[LM_NONE + 1];
   unsigned int ldc_flags;
   char **ldc_initgroups_ignoreusers;
 };

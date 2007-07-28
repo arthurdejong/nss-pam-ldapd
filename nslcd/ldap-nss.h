@@ -296,14 +296,14 @@ char *_nss_ldap_next_attribute (LDAPMessage * entry, BerElement *ber);
 enum nss_status _nss_ldap_search_s (const struct ldap_args * args,   /* IN */
                                const char *filterprot,  /* IN */
                                enum ldap_map_selector sel, /* IN */
-                               const char **user_attrs, /* IN */
+                               const char **attrs, /* IN */
                                int sizelimit,   /* IN */
                                LDAPMessage ** res /* OUT */ );
 
 
 int _nss_ldap_searchbyname(
         struct ldap_args *args,const char *filterprot,
-        enum ldap_map_selector sel,TFILE *fp,NEWparser_t parser);
+        enum ldap_map_selector sel,const char **attrs,TFILE *fp,NEWparser_t parser);
 
 
 /*
@@ -325,7 +325,7 @@ enum nss_status _nss_ldap_getent_ex (struct ldap_args * args, /* IN */
                                 int *errnop,    /* OUT */
                                 const char *filterprot, /* IN */
                                 enum ldap_map_selector sel,        /* IN */
-                                const char **user_attrs, /* IN */
+                                const char **attrs, /* IN */
                                 parser_t parser /* IN */ );
 
 /*
@@ -339,6 +339,7 @@ enum nss_status _nss_ldap_getent (struct ent_context ** ctx, /* IN/OUT */
                              int *errnop,       /* OUT */
                              const char *filterprot,    /* IN */
                              enum ldap_map_selector sel,   /* IN */
+                             const char **attrs, /* IN */
                              parser_t parser /* IN */ );
 
 /*
@@ -351,6 +352,7 @@ enum nss_status _nss_ldap_getbyname (struct ldap_args * args,        /* IN/OUT *
                                 int *errnop,    /* OUT */
                                 const char *filterprot, /* IN */
                                 enum ldap_map_selector sel,        /* IN */
+                                const char **attrs, /* IN */
                                 parser_t parser /* IN */ );
 
 
@@ -380,10 +382,6 @@ enum nss_status _nss_ldap_assign_userpassword (LDAPMessage * e, /* IN */
 /* check that the entry has the specified objectclass
    return 0 for false, not-0 for true */
 int has_objectclass(LDAPMessage *entry,const char *objectclass);
-
-const char *_nss_ldap_map_at (enum ldap_map_selector sel, const char *attribute);
-
-const char *_nss_ldap_map_oc (enum ldap_map_selector sel, const char *objectclass);
 
 enum nss_status _nss_ldap_init (void);
 

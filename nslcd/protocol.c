@@ -55,6 +55,16 @@
 #include "attmap.h"
 #include "ldap-schema.h"
 
+/* the attributes to request with searches */
+static const char *attlst[3];
+
+static void attlst_init(void)
+{
+  attlst[0] = attmap_protocol_cn;
+  attlst[1] = attmap_protocol_ipProtocolNumber;
+  attlst[2] = NULL;
+}
+
 static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
                        struct ldap_state UNUSED(*pvt),
                        void *result, char *buffer, size_t buflen)
@@ -116,7 +126,8 @@ int nslcd_protocol_byname(TFILE *fp)
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotobyname,LM_PROTOCOLS,_nss_ldap_parse_proto));
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotobyname,LM_PROTOCOLS,attlst,_nss_ldap_parse_proto));
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -149,7 +160,8 @@ int nslcd_protocol_bynumber(TFILE *fp)
   LA_INIT(a);
   LA_NUMBER(a)=protocol;
   LA_TYPE(a)=LA_TYPE_NUMBER;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotobynumber,LM_PROTOCOLS,_nss_ldap_parse_proto));
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotobynumber,LM_PROTOCOLS,attlst,_nss_ldap_parse_proto));
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -179,7 +191,8 @@ int nslcd_protocol_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&protocol_context)==NULL)
     return -1;
   /* loop over all results */
-  while ((retv=nss2nslcd(_nss_ldap_getent(&protocol_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotoent,LM_PROTOCOLS,_nss_ldap_parse_proto)))==NSLCD_RESULT_SUCCESS)
+  attlst_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&protocol_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotoent,LM_PROTOCOLS,attlst,_nss_ldap_parse_proto)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

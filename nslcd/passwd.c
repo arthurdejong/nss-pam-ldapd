@@ -59,6 +59,22 @@
 #define GID_NOBODY     UID_NOBODY
 #endif
 
+/* the attributes to request with searches */
+static const char *attlst[10];
+
+static void attlst_init(void)
+{
+  attlst[0] = attmap_passwd_uid;
+  attlst[1] = attmap_passwd_userPassword;
+  attlst[2] = attmap_passwd_uidNumber;
+  attlst[3] = attmap_passwd_gidNumber;
+  attlst[4] = attmap_passwd_cn;
+  attlst[5] = attmap_passwd_homeDirectory;
+  attlst[6] = attmap_passwd_loginShell;
+  attlst[7] = attmap_passwd_gecos;
+  attlst[8] = attmap_objectClass;
+  attlst[9] = NULL;
+}
 
 static inline enum nss_status _nss_ldap_assign_emptystring(
                char **valptr, char **buffer, size_t * buflen)
@@ -195,7 +211,8 @@ int nslcd_passwd_byname(TFILE *fp)
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwnam,LM_PASSWD,_nss_ldap_parse_pw));
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwnam,LM_PASSWD,attlst,_nss_ldap_parse_pw));
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYNAME);
@@ -227,7 +244,8 @@ int nslcd_passwd_byuid(TFILE *fp)
   LA_INIT(a);
   LA_NUMBER(a)=uid;
   LA_TYPE(a)=LA_TYPE_NUMBER;
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwuid,LM_PASSWD,_nss_ldap_parse_pw));
+  attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwuid,LM_PASSWD,attlst,_nss_ldap_parse_pw));
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);
@@ -259,7 +277,8 @@ int nslcd_passwd_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&pw_context)==NULL)
     return -1;
   /* go over results */
-  while ((retv=nss2nslcd(_nss_ldap_getent(&pw_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwent,LM_PASSWD,_nss_ldap_parse_pw)))==NSLCD_RESULT_SUCCESS)
+  attlst_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&pw_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwent,LM_PASSWD,attlst,_nss_ldap_parse_pw)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
