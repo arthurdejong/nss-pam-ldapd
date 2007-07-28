@@ -176,7 +176,7 @@ extern const char *attmap_shadow_shadowInactive;
 extern const char *attmap_shadow_shadowExpire;
 extern const char *attmap_shadow_shadowFlag;
 
-/* return a reference to the attribute mapping varoan;e forthe specified name
+/* return a reference to the attribute mapping variable for the specified name
    the name is the name after the attmap_... variables above with the
    underscode replaced by a dot (e.g passwd.homeDirectory) */
 const char **attmap_get_var(const char *name);
