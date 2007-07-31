@@ -19,9 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-SUBDIRS = common nss nslcd tests
-
-dist_man_MANS = nss-ldapd.conf.5 nslcd.8
+SUBDIRS = common nss nslcd man tests
 
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/copyright debian/rules \

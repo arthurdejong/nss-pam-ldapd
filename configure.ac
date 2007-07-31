@@ -53,6 +53,14 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
+# Checks for tool to convert docbook to man
+AC_PATH_PROGS(DOCBOOK2X_MAN, docbook2x-man)
+if test "x${DOCBOOK2X_MAN}" = x
+then
+  AC_MSG_WARN([docbook2x-man not found: not generating man pages])
+fi
+AM_CONDITIONAL([GENMAN], [test "x${DOCBOOK2X_MAN}" != x])
+
 # start with default options
 nss_ldap_so_LIBS=
 nslcd_LIBS=
@@ -332,5 +340,5 @@ AC_SUBST(nss_ldap_so_LIBS)
 AC_SUBST(nslcd_LIBS)
 
 # generate files
-AC_CONFIG_FILES([Makefile common/Makefile nss/Makefile nslcd/Makefile tests/Makefile tests/dict/Makefile tests/tio/Makefile])
+AC_CONFIG_FILES([Makefile common/Makefile nss/Makefile nslcd/Makefile man/Makefile tests/Makefile tests/dict/Makefile tests/tio/Makefile])
 AC_OUTPUT
