@@ -122,6 +122,25 @@ too hard.
 The server part of the code is however still being refactored and cleaned up
 and the LDAP part is still subject to change and simplification.
 
+unsupported features
+--------------------
+
+Since nss-ldapd was forked from nss_ldap most of the features that came with
+nss_ldap are available. However, not all features have extensively tested yet
+and may cause problems.
+
+- attribute mapping should work but did not receive adequate testing
+- attribute value default and overrides are not supported and may be removed
+  in a coming release (but may reappear some day if requested)
+- the manual page for nss-ldap.conf is horribly outdated and includes
+  incorrect information
+- paged results support is untested
+- SSL/TLS support is untested but will be tested when the core code stabilizes
+- the configuration file formats will change
+
+In general, development is ongoing and a lot has to be cleaned up. The focus
+is to have the functionality that is present be well tested and supported.
+
 
 INSTALLATION
 ============
@@ -152,10 +171,10 @@ When doing LDAP searches against a Microsoft Active Directory database, the
 search results are divided into "chunks". A standard "ldap_search" against an
 untweaked AD returns a maximum of 1000 entries. To get more than that, either
 paging needs to be enabled or the page size needs to be increased in the
-server. Enableing paging is obviously the cleaner solution.
+server. Enabling paging is obviously the cleaner solution.
 
 The page size requested is 1000 entries, and is currently not configurable.
-However, this should be fine in most setups.
+However, this should be fine in most set-ups.
 
 Because of the way the page control is used, any LDAPv3 server that does not
 implement paging should simply ignore it and return entries as normal;
@@ -224,30 +243,30 @@ This paragraph describes the mapping between the NSS lookups and the LDAP
 database. The mapping may be modified by changeging the nss-ldapd.conf
 configuration file. See the nss-ldapd.conf(5) manual page for details.
 
-aliases (nisMailAlias)
+aliases (objectClass=nisMailAlias)
   cn                - alias name
   rfc822MailMember  - members
-ethers (ieee802Device)
+ethers (objectClass=ieee802Device)
   cn                - host name
   macAddress        - ethernet address
-group (posixGroup)
+group (objectClass=posixGroup)
   cn                - group name
   userPassword      - should be readable by rootbinddn only
   memberUid         - members
   uniqueMember      - members
   gidNumber         - gid
-hosts (ipHost)
+hosts (objectClass=ipHost)
   cn                - host name (and aliases)
   ipHostNumber      - addresses
-netgroup (nisNetgroup)
+netgroup (objectClass=nisNetgroup)
   cn                - netgroup name
   nisNetgroupTriple - triplets describing netgroup entries
   memberNisNetgroup - reference to other netgroup
-networks (ipNetwork)
+networks (objectClass=ipNetwork)
   cn                - network name
   ipNetworkNumber   - network address
   ipNetmaskNumber   - network netmask
-passwd (posixAccount)
+passwd (objectClass=posixAccount)
   uid               - account name
   userPassword      - should be readable by rootbinddn only
   uidNumber         - uid
@@ -256,17 +275,17 @@ passwd (posixAccount)
   homeDirectory     - home directory
   loginShell        - shell
   gecos             - gecos
-protocols (ipProtocol)
+protocols (objectClass=ipProtocol)
   cn                - protocol name
   ipProtocolNumber  - protocol number
 rpc (oncRpc)
   cn                - rpc name
   oncRpcNumber      - rpc number
-services (ipService)
+services (objectClass=ipService)
   cn                - service name
   ipServicePort     - service port
   ipServiceProtocol - service protocol
-shadow (shadowAccount)
+shadow (objectClass=shadowAccount)
   uid               - use name
   userPassword      - should be readable by rootbinddn only
   shadowLastChange  - last change of password
