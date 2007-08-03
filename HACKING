@@ -8,7 +8,7 @@ CONTRIBUTING TO NSS-LDAPD
 Contributions to nss-ldapd are most welcome. However not all contributions
 will be automatically integrated. Some notes:
 
-* for enhancements it is a good idea to send an email first
+* for large changes it is a good idea to send an email first
 * send your patches in unified diff (diff -u) format
 * try to use the svn version of the software to develop the patch
 * clearly state which problem you're trying to solve and how this is
@@ -17,11 +17,11 @@ will be automatically integrated. Some notes:
 * patches will be integrated on a best-effort bases
 * please test the patch and include information on testing with the patch
   (platforms tested, etc)
+* contributions will be acknowledged in the AUTHORS file
 * include a copyright statement in the patched code if you feel the
   contribution is significant enough (e.g. more than a few lines)
 * when including third-party code, retain copyright information (copyright
   holder and license) and ensure that the license is LGPL compatible
-* contributions will be acknowledged in the AUTHORS file
 
 
 BUILD DEPENDENCIES
@@ -30,13 +30,68 @@ BUILD DEPENDENCIES
 For building svn snapshots the following tools are needed:
 
 * autoconf (2.61 is used but 2.59 is minimal)
-* automake 1.9 (1.9.6 is used, considering switching to 1.10)
+* automake (1.9.6 is used, considering switching to 1.10)
 * check (0.9.4 is used)
 
 and of course the usual build tools (gcc/make/etc). To build the svn snapshot
 run the autogen.sh shell script to build the configure script. When developing
 patches please use --enable-warnings with configure and don't introduce too
-many new warnings.
+many new warnings. For building the manual pages docbook2x is used.
+
+
+RELEASE VERSIONING
+==================
+
+A new versioning scheme was chosen over the nss_ldap release scheme. The
+scheme is a simple major.minor numbering starting with 0.1. Until a 1.0
+release is made the code will be considered work in progress. The interfaces
+may change and features may be added and removed.
+
+
+GENERAL DESIGN
+==============
+
+The basic design splits the functionality in two parts. The NSS part
+interfaces with libc and translates the NSS requests into simple generic
+requests (e.g. "get user with name test", "get group with gid 101" or "get all
+shadow entries"). Translating these requests into LDAP requests is then the
+job of the daemon (nslcd) so that the NSS part won't have to know anything
+about LDAP (in fact replacing it with another lookup method is very simple).
+
+                nslcd  -> OpenLDAP -> LDAP server
+                  ^
+    libc NSS -> libnss_ldap.so
+
+design goals
+------------
+* make it as simple as possible
+* design as specified above
+* simpler configuration and semantics
+* simpler, clearer and completer documentation
+* split source code into directories (src, src/hacks, src/aix, src/irs, etc)
+* get rid of unneeded code and complexity
+* split complexity in two parts (LDAP interface in server, NSS interface in
+  library)
+* have a stable, easily maintainable piece of quality software
+
+
+NSS PART
+========
+
+The NSS part is implemented in files in the nss directory. The functions are
+split into files according to the database they support. All functions look
+like:
+
+_nss_ldap_FUNCTION_r(...)
+  This function opens the connection to the nslcd (with a time-out) builds the
+  correct data structures and does a request (write()) to the nslcd waiting
+  for an answer (again with a time-out)
+
+Currently a number of macros are used to build most of the function bodies for
+these functions. A more elegant solution is welcome.
+
+http://mirrors.usc.edu/pub/gnu/Manuals/glibc-2.2.3/html_chapter/libc_28.html#SEC596
+http://www.gnu.org/software/libc/manual/html_node/index.html
 
 
 THE COMMUNICATIONS PROTOCOL
@@ -53,59 +108,8 @@ changing the protocol requires manual checking in the relevant source files in
 both the nss and the nslcd directories.
 
 If the protocol is changed in an incompatible way the protocol version should
-be incremented in nslcd.h. There is currently no versioning schema available
+be incremented in nslcd.h. There is currently no versioning scheme available
 for this.
-
-
-RELEASE VERSIONING
-==================
-
-A new versioning schema was chosen over the nss_ldap release schema. The
-schema is a simple major.minor numbering starting with 0.1. Until a 1.0
-release is made the code will be considered work in progress. The interfaces
-may change and features may be added and removed.
-
-
-GENERAL DESIGN
-==============
-
-The basic design splits the functionality in two parts. The NSS part
-interfaces with libc and translates the NSS requests into simple generic
-requests (e.g. "get user with name test", "get group with gid 101" or "get all
-shadow entries"). Translating these requests into LDAP requests is then the
-job of the daemon so that the NSS part won't have to know anything about LDAP
-(in fact replacing it with another lookup method is very simple).
-
-                nslcd  -> OpenLDAP -> LDAP server
-                  ^
-    libc NSS -> libnss_ldap.so
-
-design goals
-------------
-* make it as simple as possible (focus on simplicity)
-* design as specified above
-* simpler configuration and semantics
-* simpler, clearer and completer documentation
-* split source code into directories (src, src/hacks, src/aix, src/irs, etc)
-* get rid of unneeded code and complexity
-* split complexity in two parts (LDAP interface in server, NSS interface in
-  library)
-
-
-NSS PART
-========
-
-all requests go:
-
-_nss_ldap_FUNCTION_r(...)
-  This function opens the connection to the nslcd (with some timeout and retry
-  mechanism) builds the correct data structures and does a request (write())
-  to the nslcd waiting for an answer (again with a timeout and retry
-  mechanism) [some helper functions should be available for opening the socket
-  and performing the write/read combo]
-
-http://mirrors.usc.edu/pub/gnu/Manuals/glibc-2.2.3/html_chapter/libc_28.html#SEC596
-http://www.gnu.org/software/libc/manual/html_node/index.html
 
 
 SERVER PART
@@ -116,8 +120,7 @@ the database specific functions.
 
 nslcd_FUNCION(...)
   This functions fills in the correct parameters from the request. This
-  function should generate a response object [TODO: response objects can be
-  large]
+  function should generate a response object (or more).
 
 
 SECURITY NOTES

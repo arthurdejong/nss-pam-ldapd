@@ -72,6 +72,8 @@ The most practical improvements of nss-ldapd over nss_ldap are:
   using nscd)
 * hostname lookups should now be deadlock-free because the LDAP server name
   lookup no longer uses the ldap method
+* the setup is easier to debug because loggin on the server component can be
+  enabled without affecting "normal" processes
 
 This package runs a local daemon that will be enabled during the boot process.
 This daemon will handle connections to the LDAP server and accept NSS requests
@@ -130,6 +132,7 @@ nss_ldap are available. However, not all features have extensively tested yet
 and may cause problems.
 
 - attribute mapping should work but did not receive adequate testing
+  (but the configuration syntax has changed)
 - attribute value default and overrides are not supported and may be removed
   in a coming release (but may reappear some day if requested)
 - the manual page for nss-ldap.conf is horribly outdated and includes
