@@ -42,8 +42,6 @@
 
 struct ldap_config *nslcd_cfg=NULL;
 
-#define LDAP_PAGESIZE 1000
-
 /*
  * Timeouts for reconnecting code. Similar to rebind
  * logic in Darwin NetInfo. Some may find sleeping
@@ -91,7 +89,6 @@ struct ldap_config *nslcd_cfg=NULL;
 #define NSS_LDAP_KEY_RECONNECT_MAXSLEEPTIME     "nss_reconnect_maxsleeptime"
 #define NSS_LDAP_KEY_RECONNECT_MAXCONNTRIES     "nss_reconnect_maxconntries"
 
-#define NSS_LDAP_KEY_PAGED_RESULTS      "nss_paged_results"
 #define NSS_LDAP_KEY_SCHEMA             "nss_schema"
 #define NSS_LDAP_KEY_CONNECT_POLICY     "nss_connect_policy"
 
@@ -149,7 +146,7 @@ static void _nss_ldap_init_config(struct ldap_config *result)
   result->ldc_reconnect_pol = LP_RECONNECT_HARD_OPEN;
   result->ldc_sasl_secprops = NULL;
   result->ldc_debug = 0;
-  result->ldc_pagesize = LDAP_PAGESIZE;
+  result->ldc_pagesize = 0;
 #ifdef CONFIGURE_KRB5_CCNAME
   result->ldc_krb5_ccname = NULL;
 #endif /* CONFIGURE_KRB5_CCNAME */
@@ -157,9 +154,6 @@ static void _nss_ldap_init_config(struct ldap_config *result)
 #ifdef RFC2307BIS
   result->ldc_flags |= NSS_LDAP_FLAGS_RFC2307BIS;
 #endif /* RFC2307BIS */
-#ifdef PAGE_RESULTS
-  result->ldc_flags |= NSS_LDAP_FLAGS_PAGED_RESULTS;
-#endif /* PAGE_RESULTS */
   result->ldc_reconnect_tries = LDAP_NSS_TRIES;
   result->ldc_reconnect_sleeptime = LDAP_NSS_SLEEPTIME;
   result->ldc_reconnect_maxsleeptime = LDAP_NSS_MAXSLEEPTIME;
@@ -765,19 +759,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
           else if (!strcasecmp (v, "rfc2307"))
             {
               result->ldc_flags &= ~(NSS_LDAP_FLAGS_RFC2307BIS);
-            }
-        }
-      else if (!strcasecmp (k, NSS_LDAP_KEY_PAGED_RESULTS))
-        {
-          if (!strcasecmp (v, "on")
-              || !strcasecmp (v, "yes")
-              || !strcasecmp (v, "true"))
-            {
-              result->ldc_flags |= NSS_LDAP_FLAGS_PAGED_RESULTS;
-            }
-          else
-            {
-              result->ldc_flags &= ~(NSS_LDAP_FLAGS_PAGED_RESULTS);
             }
         }
       else if (!strcasecmp (k, NSS_LDAP_KEY_INITGROUPS_IGNOREUSERS))

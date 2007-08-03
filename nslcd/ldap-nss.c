@@ -116,6 +116,29 @@ static int __sigaction_retval = -1;
 static void (*__sigpipe_handler) (int) = SIG_DFL;
 #endif /* HAVE_SIGACTION */
 
+enum ldap_session_state
+{
+  LS_UNINITIALIZED = -1,
+  LS_INITIALIZED,
+  LS_CONNECTED_TO_DSA
+};
+
+/*
+ * convenient wrapper around pointer into global config list, and a
+ * connection to an LDAP server.
+ */
+struct ldap_session
+{
+  /* the connection */
+  LDAP *ls_conn;
+  /* timestamp of last activity */
+  time_t ls_timestamp;
+  /* has session been connected? */
+  enum ldap_session_state ls_state;
+  /* index into ldc_uris: currently connected DSA */
+  int ls_current_uri;
+};
+
 /*
  * Global LDAP session.
  */
@@ -1804,7 +1827,7 @@ do_search (const char *base, int scope,
   log_log(LOG_DEBUG,"==> do_search");
 
 #ifdef HAVE_LDAP_SEARCH_EXT
-  if (_nss_ldap_test_config_flag (NSS_LDAP_FLAGS_PAGED_RESULTS))
+  if (nslcd_cfg->ldc_pagesize>0)
     {
       rc = ldap_create_page_control (__session.ls_conn,
                                      nslcd_cfg->ldc_pagesize,

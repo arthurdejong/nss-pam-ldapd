@@ -143,23 +143,9 @@ struct ldap_config
 extern struct ldap_config *nslcd_cfg;
 
 /*
- * There are a number of means of obtaining configuration information.
- *
- * (a) DHCP (Cf draft-hedstrom-dhc-ldap-00.txt)
- * (b) a configuration file (/etc/ldap.conf) **
- * (c) a coldstart file & subsequent referrals from the LDAP server
- * (d) a custom LDAP bind protocol
- * (e) DNS **
- *
- * This should be opaque to the rest of the library.
- * ** implemented
- */
-
-/*
  * Flags that are exposed via _nss_ldap_test_config_flag()
  */
 #define NSS_LDAP_FLAGS_INITGROUPS_BACKLINK      0x0001
-#define NSS_LDAP_FLAGS_PAGED_RESULTS            0x0002
 #define NSS_LDAP_FLAGS_RFC2307BIS               0x0004
 #define NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT   0x0008
 

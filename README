@@ -161,25 +161,6 @@ The last step (make install) should install the libnss_ldap.so.* file and the
 daemon (nslcd). The boot process needs to be manually modified to start the
 daemon at the right time.
 
-paged results
--------------
-
-The --enable-paged-results configure option implements handling of paged
-results from the LDAP server in accordance with RFC2696.
-
-When doing LDAP searches against a Microsoft Active Directory database, the
-search results are divided into "chunks". A standard "ldap_search" against an
-untweaked AD returns a maximum of 1000 entries. To get more than that, either
-paging needs to be enabled or the page size needs to be increased in the
-server. Enabling paging is obviously the cleaner solution.
-
-The page size requested is 1000 entries, and is currently not configurable.
-However, this should be fine in most set-ups.
-
-Because of the way the page control is used, any LDAPv3 server that does not
-implement paging should simply ignore it and return entries as normal;
-however, this has not been fully tested yet.
-
 
 CONFIGURATION
 =============

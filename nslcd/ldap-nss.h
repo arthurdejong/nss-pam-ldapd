@@ -36,13 +36,8 @@
 #include <time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#ifdef HAVE_SHADOW_H
-#include <shadow.h>
-#endif
-
 #include <netdb.h>
 #include <netinet/in.h>
-
 #include <nss.h>
 #include <ldap.h>
 
@@ -89,10 +84,6 @@ enum ldap_map_selector
   LM_NONE
 };
 
-/*
- * POSIX profile information (not used yet)
- * see draft-joslin-config-schema-00.txt
- */
 struct ldap_service_search_descriptor
 {
   /* search base, qualified */
@@ -103,29 +94,6 @@ struct ldap_service_search_descriptor
   char *lsd_filter;
   /* next */
   struct ldap_service_search_descriptor *lsd_next;
-};
-
-enum ldap_session_state
-{
-  LS_UNINITIALIZED = -1,
-  LS_INITIALIZED,
-  LS_CONNECTED_TO_DSA
-};
-
-/*
- * convenient wrapper around pointer into global config list, and a
- * connection to an LDAP server.
- */
-struct ldap_session
-{
-  /* the connection */
-  LDAP *ls_conn;
-  /* timestamp of last activity */
-  time_t ls_timestamp;
-  /* has session been connected? */
-  enum ldap_session_state ls_state;
-  /* index into ldc_uris: currently connected DSA */
-  int ls_current_uri;
 };
 
 enum ldap_args_types

@@ -185,7 +185,7 @@
        is used instead.
       </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
     <varlistentry>
      <term><option>rootbindpw</option> <emphasis remap="I">PASSWORD</emphasis></term>
@@ -592,21 +592,15 @@
      </varlistentry>
 
     <varlistentry>
-     <term><emphasis remap="B">nss_paged_results &lt;yes|no&gt;</emphasis></term>
+     <term><option>pagesize</option> <emphasis remap="I">NUMBER</emphasis></term>
      <listitem>
-      <para>Enables support for paged results.</para>
+      <para>
+       Set this to a number greater than 0 to enable handling of paged
+       results from the LDAP server in accordance with RFC2696.
+       The default (0) is to not request paged results.
+      </para>
      </listitem>
     </varlistentry>
-
-    <varlistentry>
-     <term><emphasis remap="B">pagesize &lt;pagesize&gt;</emphasis></term>
-     <listitem>
-      <para>When paged results are enabled (see above), specifies the number of
-      entries to return in a single page. The default is 1000.</para>
-     </listitem>
-    </varlistentry>
-
-TODO: combine the above two options
 
      <varlistentry>
      <term><emphasis remap="B">nss_schema &lt;rfc2307bis|rfc2307&gt;</emphasis></term>

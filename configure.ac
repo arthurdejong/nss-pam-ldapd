@@ -78,18 +78,6 @@ AC_ARG_ENABLE(warnings,
               [if test "x$enableval" != "no" ; then CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations -Wunused -Wformat=2 -Wswitch-default -Wswitch-enum -Wfloat-equal -Wdeclaration-after-statement -Wextra -Wpointer-arith -Wbad-function-cast -Wunreachable-code -Wredundant-decls -Wredundant-decls" ; fi])
 
 dnl
-dnl --enable-paged-results is now deprecated; if this option is set,
-dnl then paged results will be enabled by default. However, it can
-dnl now always be enabled at runtime (as long as the underlying LDAP
-dnl library supports ldap_search_ext()) with the nss_paged_results
-dnl keyword. See nss_ldap(5) for more information
-dnl
-AC_ARG_ENABLE(paged-results,
-              AS_HELP_STRING([--enable-paged-results],
-                             [use paged results control by default]),
-              [AC_DEFINE(PAGE_RESULTS,1,[Define to enable paged results control.])])
-
-dnl
 dnl XXX TODO make configurable-krb5-ccname-* configurable at runtime
 dnl
 AC_ARG_ENABLE(configurable-krb5-ccname-env,
