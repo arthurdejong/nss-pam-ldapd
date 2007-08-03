@@ -137,7 +137,6 @@ struct ldap_config
   /* Use active directory time offsets? */
   enum ldap_shadow_selector ldc_shadow_type;
   unsigned int ldc_flags;
-  char **ldc_initgroups_ignoreusers;
 };
 
 extern struct ldap_config *nslcd_cfg;
@@ -145,7 +144,6 @@ extern struct ldap_config *nslcd_cfg;
 /*
  * Flags that are exposed via _nss_ldap_test_config_flag()
  */
-#define NSS_LDAP_FLAGS_INITGROUPS_BACKLINK      0x0001
 #define NSS_LDAP_FLAGS_RFC2307BIS               0x0004
 #define NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT   0x0008
 

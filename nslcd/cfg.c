@@ -80,8 +80,6 @@ struct ldap_config *nslcd_cfg=NULL;
 #endif /* CONFIGURE_KRB5_CCNAME */
 #define NSS_LDAP_KEY_DEBUG              "debug"
 #define NSS_LDAP_KEY_PAGESIZE           "pagesize"
-#define NSS_LDAP_KEY_INITGROUPS         "nss_initgroups"
-#define NSS_LDAP_KEY_INITGROUPS_IGNOREUSERS     "nss_initgroups_ignoreusers"
 
 /* more reconnect policy fine-tuning */
 #define NSS_LDAP_KEY_RECONNECT_TRIES            "nss_reconnect_tries"
@@ -158,7 +156,6 @@ static void _nss_ldap_init_config(struct ldap_config *result)
   result->ldc_reconnect_sleeptime = LDAP_NSS_SLEEPTIME;
   result->ldc_reconnect_maxsleeptime = LDAP_NSS_MAXSLEEPTIME;
   result->ldc_reconnect_maxconntries = LDAP_NSS_MAXCONNTRIES;
-  result->ldc_initgroups_ignoreusers = NULL;
 }
 
 static enum nss_status
@@ -302,70 +299,6 @@ static enum nss_status do_parse_map_statement(
       /* memory allocation failed */
       return NSS_STATUS_TRYAGAIN;
   }
-  return NSS_STATUS_SUCCESS;
-}
-
-/* parse a comma-separated list */
-static enum nss_status do_parse_list(char *values,char ***valptr,
-               char **pbuffer,size_t *pbuflen)
-{
-  char *s, **p;
-#ifdef HAVE_STRTOK_R
-  char *tok_r;
-#endif /* HAVE_STRTOK_R */
-  size_t valcount;
-
-  int buflen = *pbuflen;
-  char *buffer = *pbuffer;
-
-  /* comma separated list of values to ignore on initgroups() */
-  for (valcount = 1, s = values; *s != '\0'; s++)
-    {
-      if (*s == ',')
-        valcount++;
-    }
-
-  if (bytesleft (buffer, buflen, char *) < (valcount + 1) * sizeof (char *))
-    {
-      return NSS_STATUS_UNAVAIL;
-    }
-
-  align (buffer, buflen, char *);
-  p = *valptr = (char **) buffer;
-
-  buffer += (valcount + 1) * sizeof (char *);
-  buflen -= (valcount + 1) * sizeof (char *);
-
-#ifdef HAVE_STRTOK_R
-  for (s = strtok_r(values, ",", &tok_r); s != NULL;
-       s = strtok_r(NULL, ",", &tok_r))
-#else /* HAVE_STRTOK_R */
-  for (s = strtok(values, ","); s != NULL; s = strtok(NULL, ","))
-#endif /* not HAVE_STRTOK_R */
-    {
-      int vallen;
-      char *elt = NULL;
-
-      vallen = strlen (s);
-      if (buflen < (size_t) (vallen + 1))
-        {
-          return NSS_STATUS_UNAVAIL;
-        }
-
-      /* copy this value into the next block of buffer space */
-      elt = buffer;
-      buffer += vallen + 1;
-      buflen -= vallen + 1;
-
-      strncpy (elt, s, vallen);
-      elt[vallen] = '\0';
-      *p++ = elt;
-    }
-
-  *p = NULL;
-  *pbuffer = buffer;
-  *pbuflen = buflen;
-
   return NSS_STATUS_SUCCESS;
 }
 
@@ -739,17 +672,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
         {
           do_parse_map_statement (result, v);
         }
-      else if (!strcasecmp (k, NSS_LDAP_KEY_INITGROUPS))
-        {
-          if (!strcasecmp (v, "backlink"))
-            {
-              result->ldc_flags |= NSS_LDAP_FLAGS_INITGROUPS_BACKLINK;
-            }
-          else
-            {
-              result->ldc_flags &= ~(NSS_LDAP_FLAGS_INITGROUPS_BACKLINK);
-            }
-        }
       else if (!strcasecmp (k, NSS_LDAP_KEY_SCHEMA))
         {
           if (!strcasecmp (v, "rfc2307bis"))
@@ -759,15 +681,6 @@ static enum nss_status _nss_ldap_readconfig(struct ldap_config ** presult, char 
           else if (!strcasecmp (v, "rfc2307"))
             {
               result->ldc_flags &= ~(NSS_LDAP_FLAGS_RFC2307BIS);
-            }
-        }
-      else if (!strcasecmp (k, NSS_LDAP_KEY_INITGROUPS_IGNOREUSERS))
-        {
-          status = do_parse_list (v, &result->ldc_initgroups_ignoreusers,
-                                buffer, buflen);
-          if (status == NSS_STATUS_UNAVAIL)
-            {
-              break;
             }
         }
       else if (!strcasecmp (k, NSS_LDAP_KEY_CONNECT_POLICY))

@@ -1014,21 +1014,6 @@ static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroup
   return stat;
 }
 
-static int _nss_ldap_test_initgroups_ignoreuser(const char *user)
-{
-  char **p;
-  if (nslcd_cfg == NULL)
-    return 0;
-  if (nslcd_cfg->ldc_initgroups_ignoreusers == NULL)
-    return 0;
-  for (p = nslcd_cfg->ldc_initgroups_ignoreusers; *p != NULL; p++)
-  {
-    if (strcmp (*p, user) == 0)
-      return 1;
-  }
-  return 0;
-}
-
 static enum nss_status group_bymember(const char *user, long int *start,
                           long int *size, long int limit,
                           int *errnop)
@@ -1065,63 +1050,39 @@ static enum nss_status group_bymember(const char *user, long int *start,
       return stat;
     }
 
-  if (_nss_ldap_test_initgroups_ignoreuser (LA_STRING (a)))
+  if (_nss_ldap_test_config_flag (NSS_LDAP_FLAGS_RFC2307BIS))
     {
-      log_log(LOG_DEBUG,"<== group_bymember (user ignored)");
-      _nss_ldap_leave ();
-      return NSS_STATUS_NOTFOUND;
-    }
-
-  lia.backlink = _nss_ldap_test_config_flag (NSS_LDAP_FLAGS_INITGROUPS_BACKLINK);
-
-  if (lia.backlink != 0)
-    {
-      filter = _nss_ldap_filt_getpwnam_groupsbymember;
-      LA_STRING2 (a) = LA_STRING (a);
-      LA_TYPE (a) = LA_TYPE_STRING_AND_STRING;
-
-      gidnumber_attrs[0] = attmap_group_gidNumber;
-      gidnumber_attrs[1] = attmap_group_memberOf;
-      gidnumber_attrs[2] = NULL;
-
-      map = LM_PASSWD;
+      /* lookup the user's DN. */
+      stat = _nss_ldap_search_s (&a, _nss_ldap_filt_getpwnam, LM_PASSWD,
+                                 no_attrs, 1, &res);
+      if (stat == NSS_STATUS_SUCCESS)
+        {
+          e = _nss_ldap_first_entry (res);
+          if (e != NULL)
+            {
+              userdn = _nss_ldap_get_dn (e);
+            }
+          ldap_msgfree (res);
+        }
     }
   else
     {
-      if (_nss_ldap_test_config_flag (NSS_LDAP_FLAGS_RFC2307BIS))
-        {
-          /* lookup the user's DN. */
-          stat = _nss_ldap_search_s (&a, _nss_ldap_filt_getpwnam, LM_PASSWD,
-                                     no_attrs, 1, &res);
-          if (stat == NSS_STATUS_SUCCESS)
-            {
-              e = _nss_ldap_first_entry (res);
-              if (e != NULL)
-                {
-                  userdn = _nss_ldap_get_dn (e);
-                }
-              ldap_msgfree (res);
-            }
-        }
-      else
-        {
-          userdn = NULL;
-        }
-
-      if (userdn != NULL)
-        {
-          LA_STRING2 (a) = userdn;
-          LA_TYPE (a) = LA_TYPE_STRING_AND_STRING;
-          filter = _nss_ldap_filt_getgroupsbymemberanddn;
-        }
-      else
-        {
-          filter = _nss_ldap_filt_getgroupsbymember;
-        }
-
-      gidnumber_attrs[0] = attmap_group_gidNumber;
-      gidnumber_attrs[1] = NULL;
+      userdn = NULL;
     }
+
+  if (userdn != NULL)
+    {
+      LA_STRING2 (a) = userdn;
+      LA_TYPE (a) = LA_TYPE_STRING_AND_STRING;
+      filter = _nss_ldap_filt_getgroupsbymemberanddn;
+    }
+  else
+    {
+      filter = _nss_ldap_filt_getgroupsbymember;
+    }
+
+  gidnumber_attrs[0] = attmap_group_gidNumber;
+  gidnumber_attrs[1] = NULL;
 
   if (_nss_ldap_ent_context_init_locked(&ctx)==NULL)
     {
