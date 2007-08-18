@@ -1515,16 +1515,16 @@ do_filter (const struct ldap_args *args, const char *filterprot,
     {
       /* choose what to use for temporary storage */
 
-      if (sd != NULL && sd->lsd_filter != NULL)
-        {
-          filterBufP = filterBuf;
-          filterSiz = sizeof (filterBuf);
-        }
+      if (sd!=NULL&&sd->lsd_filter!=NULL)
+      {
+        filterBufP=filterBuf;
+        filterSiz=sizeof(filterBuf);
+      }
       else
-        {
-          filterBufP = userBuf;
-          filterSiz = userBufSiz;
-        }
+      {
+        filterBufP=userBuf;
+        filterSiz=userBufSiz;
+      }
 
       switch (args->la_type)
         {
@@ -1589,7 +1589,7 @@ do_filter (const struct ldap_args *args, const char *filterprot,
       /*
        * This code really needs to be cleaned up.
        */
-      if (sd != NULL && sd->lsd_filter != NULL)
+      if ((sd!=NULL) && (sd->lsd_filter!=NULL))
         {
           size_t filterBufPLen = strlen (filterBufP);
 
@@ -1602,7 +1602,7 @@ do_filter (const struct ldap_args *args, const char *filterprot,
               char *oldDynamicUserBuf = *dynamicUserBuf;
               size_t dynamicUserBufSiz;
 
-              dynamicUserBufSiz = filterBufPLen + strlen (sd->lsd_filter) +
+              dynamicUserBufSiz = filterBufPLen + strlen(sd->lsd_filter) +
                 sizeof ("())");
               *dynamicUserBuf = malloc (dynamicUserBufSiz);
               if (*dynamicUserBuf == NULL)
@@ -1630,7 +1630,7 @@ do_filter (const struct ldap_args *args, const char *filterprot,
   else
     {
       /* no arguments, probably an enumeration filter */
-      if (sd != NULL && sd->lsd_filter != NULL)
+      if ((sd!=NULL) && (sd->lsd_filter!=NULL))
         {
           snprintf (userBuf, userBufSiz, "(&%s(%s))",
                     filterprot, sd->lsd_filter);
@@ -2162,20 +2162,10 @@ enum nss_status _nss_ldap_search_s(
 next:
     if (sd!=NULL)
     {
-      if (sd->lsd_base[strlen(sd->lsd_base)-1]==',')
-      {
-        /* is relative */
-        snprintf(sdBase,sizeof(sdBase),"%s%s", sd->lsd_base,nslcd_cfg->ldc_base);
-        base=sdBase;
-      }
-      else
-      {
+      if (sd->lsd_base!=NULL)
         base=sd->lsd_base;
-      }
       if (sd->lsd_scope!=-1)
-      {
         scope=sd->lsd_scope;
-      }
     }
   }
   /* this may allocate dynamicFilterBuf */
@@ -2263,25 +2253,12 @@ _nss_ldap_search (const struct ldap_args * args,
       *csd = sd;
 
       if (sd != NULL)
-        {
-          size_t len = strlen (sd->lsd_base);
-          if (sd->lsd_base[len - 1] == ',')
-            {
-              /* is relative */
-              snprintf (sdBase, sizeof (sdBase), "%s%s", sd->lsd_base,
-                        nslcd_cfg->ldc_base);
-              base = sdBase;
-            }
-          else
-            {
-              base = sd->lsd_base;
-            }
-
-          if (sd->lsd_scope != -1)
-            {
-              scope = sd->lsd_scope;
-            }
-        }
+      {
+        if (sd->lsd_base!=NULL)
+          base=sd->lsd_base;
+        if (sd->lsd_scope!=-1)
+          scope=sd->lsd_scope;
+      }
     }
 
   stat =
@@ -2329,29 +2306,17 @@ do_next_page (const struct ldap_args * args,
       base = args->la_base;
     }
 
-  if (sel < LM_NONE)
+  if (sel<LM_NONE)
+  {
+    sd=nslcd_cfg->ldc_sds[sel];
+    if (sd!=NULL)
     {
-      sd = nslcd_cfg->ldc_sds[sel];
-      if (sd != NULL)
-        {
-          size_t len = strlen (sd->lsd_base);
-          if (sd->lsd_base[len - 1] == ',')
-            {
-              snprintf (sdBase, sizeof (sdBase), "%s%s", sd->lsd_base,
-                        nslcd_cfg->ldc_base);
-              base = sdBase;
-            }
-          else
-            {
-              base = sd->lsd_base;
-            }
-
-          if (sd->lsd_scope != -1)
-            {
-              scope = sd->lsd_scope;
-            }
-        }
+      if (sd->lsd_base!=NULL)
+        base=sd->lsd_base;
+      if (sd->lsd_scope!=-1)
+        scope=sd->lsd_scope;
     }
+  }
 
   stat =
     do_filter (args, filterprot, sd, filterBuf, sizeof (filterBuf),
@@ -2926,14 +2891,3 @@ int has_objectclass(LDAPMessage *entry,const char *objectclass)
   ldap_value_free(vals);
   return 0;
 }
-
-/*
- * Proxy bind support for AIX. Very simple, but should do
- * the job.
- */
-
-struct ldap_proxy_bind_args
-{
-  char *binddn;
-  const char *bindpw;
-};
