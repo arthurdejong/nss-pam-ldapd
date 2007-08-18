@@ -60,7 +60,7 @@ stop)
                     --pidfile $NSLCD_PIDFILE \
                     --name nslcd
   log_end_msg $?
-  [ -n "$PIDFILE" ] && rm -f $NSLCD_PIDFILE
+  [ -n "$NSLCD_PIDFILE" ] && rm -f $NSLCD_PIDFILE
   ;;
 restart|force-reload)
   [ -d "$NSLCD_STATEDIR" ] || mkdir "$NSLCD_STATEDIR"
@@ -68,7 +68,7 @@ restart|force-reload)
   start-stop-daemon --stop --quiet --retry 10 \
                     --pidfile $NSLCD_PIDFILE \
                     --name nslcd
-  [ -n "$PIDFILE" ] && rm -f $NSLCD_PIDFILE
+  [ -n "$NSLCD_PIDFILE" ] && rm -f $NSLCD_PIDFILE
   start-stop-daemon --start \
                     --pidfile $NSLCD_PIDFILE \
                     --startas $NSLCD_BIN
