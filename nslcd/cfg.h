@@ -63,82 +63,90 @@ enum ldap_shadow_selector
 struct ldap_config
 {
   /* NULL terminated list of URIs */
-  char *ldc_uris[NSS_LDAP_CONFIG_URI_MAX + 1];
+  char *ldc_uris[NSS_LDAP_CONFIG_URI_MAX+1];
+  /* protocol version */
+  int ldc_version;
+  /* bind DN */
+  char *ldc_binddn;
+  /* bind cred */
+  char *ldc_bindpw;
+  /* bind DN for root processes */
+  char *ldc_rootbinddn;
+  /* bind cred for root processes */
+  char *ldc_rootbindpw;
+  /* sasl auth id */
+  char *ldc_saslid;
+  /* shadow sasl auth id */
+  char *ldc_rootsaslid;
+  /* sasl security */
+  char *ldc_sasl_secprops;
+  /* do we use sasl when binding? */
+  int ldc_usesasl;
+  /* do we use sasl for root? */
+  int ldc_rootusesasl;
+#ifdef CONFIGURE_KRB5_CCNAME
+  /* krb5 ccache name */
+  char *ldc_krb5_ccname;
+#endif /* CONFIGURE_KRB5_CCNAME */
   /* base DN, eg. dc=gnu,dc=org */
   char *ldc_base;
   /* scope for searches */
   int ldc_scope;
   /* dereference aliases/links */
   int ldc_deref;
-  /* bind DN */
-  char *ldc_binddn;
-  /* bind cred */
-  char *ldc_bindpw;
-  /* do we use sasl when binding? */
-  int ldc_usesasl;
-  /* sasl auth id */
-  char *ldc_saslid;
-  /* shadow bind DN */
-  char *ldc_rootbinddn;
-  /* shadow bind cred */
-  char *ldc_rootbindpw;
-  /* do we use sasl for root? */
-  int ldc_rootusesasl;
-  /* shadow sasl auth id */
-  char *ldc_rootsaslid;
-  /* protocol version */
-  int ldc_version;
+  /* Chase referrals */
+  int ldc_referrals;
+  /* naming contexts */
+  struct ldap_service_search_descriptor *ldc_sds[LM_NONE];
   /* search timelimit */
   int ldc_timelimit;
   /* bind timelimit */
   int ldc_bind_timelimit;
+  /* reconnect policy */
+  enum ldap_reconnect_policy ldc_reconnect_pol;
+  /* for nss_connect_policy and nss_schema */
+  unsigned int ldc_flags;
+  /* idle timeout */
+  time_t ldc_idle_timelimit;
   /* SSL enabled */
   enum ldap_ssl_options ldc_ssl_on;
   /* SSL certificate path */
   char *ldc_sslpath;
-  /* Chase referrals */
-  int ldc_referrals;
-  int ldc_restart;
-  /* naming contexts */
-  struct ldap_service_search_descriptor *ldc_sds[LM_NONE];
   /* tls check peer */
   int ldc_tls_checkpeer;
-  /* tls ca certificate file */
-  char *ldc_tls_cacertfile;
   /* tls ca certificate dir */
   char *ldc_tls_cacertdir;
+  /* tls ca certificate file */
+  char *ldc_tls_cacertfile;
+  /* tls randfile */
+  char *ldc_tls_randfile;
   /* tls ciphersuite */
   char *ldc_tls_ciphers;
   /* tls certificate */
   char *ldc_tls_cert;
   /* tls key */
   char *ldc_tls_key;
-  /* tls randfile */
-  char *ldc_tls_randfile;
-  /* idle timeout */
-  time_t ldc_idle_timelimit;
-  /* reconnect policy */
-  enum ldap_reconnect_policy ldc_reconnect_pol;
+  /* whether the LDAP library should restart the select(2) system call when interrupted */
+  int ldc_restart;
+  /* set to a greater than 0 to enable handling of paged results with the specified size */
+  int ldc_pagesize;
+  /* undocumented settings */
   int ldc_reconnect_tries;
   int ldc_reconnect_sleeptime;
   int ldc_reconnect_maxsleeptime;
   int ldc_reconnect_maxconntries;
-  /* sasl security */
-  char *ldc_sasl_secprops;
   /* LDAP debug level */
   int ldc_debug;
-  int ldc_pagesize;
-#ifdef CONFIGURE_KRB5_CCNAME
-  /* krb5 ccache name */
-  char *ldc_krb5_ccname;
-#endif /* CONFIGURE_KRB5_CCNAME */
-  /* is userPassword "userPassword" or not? ie. do we need {crypt} to be stripped */
+  /* is userPassword "userPassword" or not? ie. do we need {crypt} to be stripped
+     (silently set when mapping is done) TODO: replace this with some runtime detection */
   enum ldap_userpassword_selector ldc_password_type;
-  /* Use active directory time offsets? */
+  /* Use active directory time offsets?
+     (silently set when mapping is done) TODO: replace this with some runtime detection */
   enum ldap_shadow_selector ldc_shadow_type;
-  unsigned int ldc_flags;
 };
 
+/* this is a pointer to the global configuration, it should be available
+   once cfg_init() was called */
 extern struct ldap_config *nslcd_cfg;
 
 /*
@@ -150,7 +158,9 @@ extern struct ldap_config *nslcd_cfg;
 int _nss_ldap_test_config_flag(unsigned int flag)
   MUST_USE;
 
-int cfg_init(void)
-  MUST_USE;
+/* Initialize the configuration in nslcd_cfg. This method
+   will read the default configuration file and call exit()
+   if an error occurs. */
+void cfg_init(void);
 
 #endif /* _CFG_H */

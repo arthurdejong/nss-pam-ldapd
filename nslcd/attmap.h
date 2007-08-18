@@ -23,6 +23,7 @@
 #ifndef _ATTMAP_H
 #define _ATTMAP_H 1
 
+#include "ldap-nss.h"
 
 /* What follows is a list of attribute names per database. */
 
@@ -179,6 +180,6 @@ extern const char *attmap_shadow_shadowFlag;
 /* return a reference to the attribute mapping variable for the specified name
    the name is the name after the attmap_... variables above with the
    underscode replaced by a dot (e.g passwd.homeDirectory) */
-const char **attmap_get_var(const char *name);
+const char **attmap_get_var(enum ldap_map_selector map,const char *name);
 
 #endif /* not _ATTMAP_H */

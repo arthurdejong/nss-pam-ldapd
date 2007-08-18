@@ -92,20 +92,4 @@ extern char _nss_ldap_filt_getspent[];
 /* netgroups */
 extern char _nss_ldap_filt_getnetgrent[];
 
-/*
- * Map names
- */
-#define MP_passwd                 "passwd"
-#define MP_shadow                 "shadow"
-#define MP_group                  "group"
-#define MP_hosts                  "hosts"
-#define MP_services               "services"
-#define MP_networks               "networks"
-#define MP_protocols              "protocols"
-#define MP_rpc                    "rpc"
-#define MP_ethers                 "ethers"
-#define MP_netmasks               "netmasks"
-#define MP_aliases                "aliases"
-#define MP_netgroup               "netgroup"
-
 #endif /* _LDAP_NSS_LDAP_LDAP_SCHEMA_H */

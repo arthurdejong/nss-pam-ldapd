@@ -107,14 +107,6 @@ AC_ARG_WITH(ldap-conf-file,
 AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_CONF,"$NSS_LDAP_PATH_CONF",[Path to LDAP configuration file.])
 AC_SUBST(NSS_LDAP_PATH_CONF)
 
-AC_ARG_WITH(ldap-secret-file,
-            AS_HELP_STRING([--with-ldap-secret-file=PATH],
-                           [path to LDAP root secret file @<:@/etc/nss-ldapd.secret@:>@]),
-            [ NSS_LDAP_PATH_ROOTPASSWD="$with_ldap_secret_file" ],
-            [ NSS_LDAP_PATH_ROOTPASSWD="/etc/nss-ldapd.secret" ])
-AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_ROOTPASSWD,"$NSS_LDAP_PATH_ROOTPASSWD",[Path to LDAP root secret file.])
-AC_SUBST(NSS_LDAP_PATH_ROOTPASSWD)
-
 AC_ARG_WITH(nslcd-pidfile,
             AS_HELP_STRING([--with-nslcd-pidfile=PATH],
                            [path to pidfile @<:@/var/run/nslcd/nslcd.pid@:>@]),

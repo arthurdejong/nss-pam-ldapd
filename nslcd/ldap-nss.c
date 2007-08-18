@@ -798,10 +798,6 @@ do_init (void)
 
   log_log(LOG_DEBUG,"==> do_init");
 
-  /* Initialize schema and LDAP handle (but do not connect) */
-  cfg_init();
-  /* FIXME: if config was reloaded, do_close() and set __session.ls_current_uri=0 */
-
   if (__session.ls_state == LS_CONNECTED_TO_DSA)
     {
       time_t current_time;

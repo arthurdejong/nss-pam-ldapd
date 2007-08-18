@@ -48,6 +48,7 @@
 
 #include "nslcd.h"
 #include "log.h"
+#include "cfg.h"
 #include "common.h"
 #include "compat/attrs.h"
 
@@ -540,6 +541,10 @@ int main(int argc,char *argv[])
   if (__nss_configure_lookup("hosts","files dns"))
     log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
 
+  /* read configuration file */
+  cfg_init();
+  nslcd_cfg->ldc_debug=nslcd_debugging;
+
   /* daemonize */
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
   {
@@ -551,7 +556,7 @@ int main(int argc,char *argv[])
   (void)umask((mode_t)0022);
 
   /* intilialize logging */
-  if (!nslcd_debugging)
+  if (!nslcd_cfg->ldc_debug)
     log_startlogging();
   log_log(LOG_INFO,"version %s starting",VERSION);
 

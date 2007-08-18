@@ -177,92 +177,92 @@ const char *attmap_shadow_shadowInactive   = "shadowInactive";
 const char *attmap_shadow_shadowExpire     = "shadowExpire";
 const char *attmap_shadow_shadowFlag       = "shadowFlag";
 
-const char **attmap_get_var(const char *name)
+const char **attmap_get_var(enum ldap_map_selector map,const char *name)
 {
-  if (strncasecmp(name,"alias.",6)==0)
+  if (map==LM_ALIASES)
   {
-    if (strcasecmp(name+6,"objectClass")==0)       return &attmap_alias_objectClass;
-    if (strcasecmp(name+6,"cn")==0)                return &attmap_alias_cn;
-    if (strcasecmp(name+6,"rfc822MailMember")==0)  return &attmap_alias_rfc822MailMember;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_alias_objectClass;
+    if (strcasecmp(name,"cn")==0)                return &attmap_alias_cn;
+    if (strcasecmp(name,"rfc822MailMember")==0)  return &attmap_alias_rfc822MailMember;
   }
-  else if (strncasecmp(name,"ether.",6)==0)
+  else if (map==LM_ETHERS)
   {
-    if (strcasecmp(name+6,"objectClass")==0)       return &attmap_ether_objectClass;
-    if (strcasecmp(name+6,"cn")==0)                return &attmap_ether_cn;
-    if (strcasecmp(name+6,"macAddress")==0)        return &attmap_ether_macAddress;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_ether_objectClass;
+    if (strcasecmp(name,"cn")==0)                return &attmap_ether_cn;
+    if (strcasecmp(name,"macAddress")==0)        return &attmap_ether_macAddress;
   }
-  else if (strncasecmp(name,"group.",6)==0)
+  else if (map==LM_GROUP)
   {
-    if (strcasecmp(name+6,"objectClass")==0)       return &attmap_group_objectClass;
-    if (strcasecmp(name+6,"cn")==0)                return &attmap_group_cn;
-    if (strcasecmp(name+6,"userPassword")==0)      return &attmap_group_userPassword;
-    if (strcasecmp(name+6,"gidNumber")==0)         return &attmap_group_gidNumber;
-    if (strcasecmp(name+6,"memberUid")==0)         return &attmap_group_memberUid;
-    if (strcasecmp(name+6,"uniqueMember")==0)      return &attmap_group_uniqueMember;
-    if (strcasecmp(name+6,"memberOf")==0)          return &attmap_group_memberOf;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_group_objectClass;
+    if (strcasecmp(name,"cn")==0)                return &attmap_group_cn;
+    if (strcasecmp(name,"userPassword")==0)      return &attmap_group_userPassword;
+    if (strcasecmp(name,"gidNumber")==0)         return &attmap_group_gidNumber;
+    if (strcasecmp(name,"memberUid")==0)         return &attmap_group_memberUid;
+    if (strcasecmp(name,"uniqueMember")==0)      return &attmap_group_uniqueMember;
+    if (strcasecmp(name,"memberOf")==0)          return &attmap_group_memberOf;
   }
-  else if (strncasecmp(name,"host.",5)==0)
+  else if (map==LM_HOSTS)
   {
-    if (strcasecmp(name+5,"objectClass")==0)       return &attmap_host_objectClass;
-    if (strcasecmp(name+5,"cn")==0)                return &attmap_host_cn;
-    if (strcasecmp(name+5,"ipHostNumber")==0)      return &attmap_host_ipHostNumber;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_host_objectClass;
+    if (strcasecmp(name,"cn")==0)                return &attmap_host_cn;
+    if (strcasecmp(name,"ipHostNumber")==0)      return &attmap_host_ipHostNumber;
   }
-  else if (strncasecmp(name,"netgroup.",9)==0)
+  else if (map==LM_NETGROUP)
   {
-    if (strcasecmp(name+9,"objectClass")==0)       return &attmap_netgroup_objectClass;
-    if (strcasecmp(name+9,"cn")==0)                return &attmap_netgroup_cn;
-    if (strcasecmp(name+9,"nisNetgroupTriple")==0) return &attmap_netgroup_nisNetgroupTriple;
-    if (strcasecmp(name+9,"memberNisNetgroup")==0) return &attmap_netgroup_memberNisNetgroup;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_netgroup_objectClass;
+    if (strcasecmp(name,"cn")==0)                return &attmap_netgroup_cn;
+    if (strcasecmp(name,"nisNetgroupTriple")==0) return &attmap_netgroup_nisNetgroupTriple;
+    if (strcasecmp(name,"memberNisNetgroup")==0) return &attmap_netgroup_memberNisNetgroup;
   }
-  else if (strncasecmp(name,"network.",8)==0)
+  else if (map==LM_NETWORKS)
   {
-    if (strcasecmp(name+8,"objectClass")==0)       return &attmap_network_objectClass;
-    if (strcasecmp(name+8,"cn")==0)                return &attmap_network_cn;
-    if (strcasecmp(name+8,"ipNetworkNumber")==0)   return &attmap_network_ipNetworkNumber;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_network_objectClass;
+    if (strcasecmp(name,"cn")==0)                return &attmap_network_cn;
+    if (strcasecmp(name,"ipNetworkNumber")==0)   return &attmap_network_ipNetworkNumber;
   }
-  else if (strncasecmp(name,"passwd.",7)==0)
+  else if (map==LM_PASSWD)
   {
-    if (strcasecmp(name+7,"objectClass")==0)       return &attmap_passwd_objectClass;
-    if (strcasecmp(name+7,"uid")==0)               return &attmap_passwd_uid;
-    if (strcasecmp(name+7,"userPassword")==0)      return &attmap_passwd_userPassword;
-    if (strcasecmp(name+7,"uidNumber")==0)         return &attmap_passwd_uidNumber;
-    if (strcasecmp(name+7,"gidNumber")==0)         return &attmap_passwd_gidNumber;
-    if (strcasecmp(name+7,"gecos")==0)             return &attmap_passwd_gecos;
-    if (strcasecmp(name+7,"cn")==0)                return &attmap_passwd_cn;
-    if (strcasecmp(name+7,"homeDirectory")==0)     return &attmap_passwd_homeDirectory;
-    if (strcasecmp(name+7,"loginShell")==0)        return &attmap_passwd_loginShell;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_passwd_objectClass;
+    if (strcasecmp(name,"uid")==0)               return &attmap_passwd_uid;
+    if (strcasecmp(name,"userPassword")==0)      return &attmap_passwd_userPassword;
+    if (strcasecmp(name,"uidNumber")==0)         return &attmap_passwd_uidNumber;
+    if (strcasecmp(name,"gidNumber")==0)         return &attmap_passwd_gidNumber;
+    if (strcasecmp(name,"gecos")==0)             return &attmap_passwd_gecos;
+    if (strcasecmp(name,"cn")==0)                return &attmap_passwd_cn;
+    if (strcasecmp(name,"homeDirectory")==0)     return &attmap_passwd_homeDirectory;
+    if (strcasecmp(name,"loginShell")==0)        return &attmap_passwd_loginShell;
   }
-  else if (strncasecmp(name,"protocol.",9)==0)
+  else if (map==LM_PROTOCOLS)
   {
-    if (strcasecmp(name+9,"objectClass")==0)       return &attmap_protocol_objectClass;
-    if (strcasecmp(name+9,"cn")==0)                return &attmap_protocol_cn;
-    if (strcasecmp(name+9,"ipProtocolNumber")==0)  return &attmap_protocol_ipProtocolNumber;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_protocol_objectClass;
+    if (strcasecmp(name,"cn")==0)                return &attmap_protocol_cn;
+    if (strcasecmp(name,"ipProtocolNumber")==0)  return &attmap_protocol_ipProtocolNumber;
   }
-  else if (strncasecmp(name,"rpc.",4)==0)
+  else if (map==LM_RPC)
   {
-    if (strcasecmp(name+9,"objectClass")==0)       return &attmap_rpc_objectClass;
-    if (strcasecmp(name+9,"cn")==0)                return &attmap_rpc_cn;
-    if (strcasecmp(name+9,"oncRpcNumber")==0)      return &attmap_rpc_oncRpcNumber;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_rpc_objectClass;
+    if (strcasecmp(name,"cn")==0)                return &attmap_rpc_cn;
+    if (strcasecmp(name,"oncRpcNumber")==0)      return &attmap_rpc_oncRpcNumber;
   }
-  else if (strncasecmp(name,"service.",8)==0)
+  else if (map==LM_SERVICES)
   {
-    if (strcasecmp(name+8,"objectClass")==0)       return &attmap_service_objectClass;
-    if (strcasecmp(name+8,"cn")==0)                return &attmap_service_cn;
-    if (strcasecmp(name+8,"ipServicePort")==0)     return &attmap_service_ipServicePort;
-    if (strcasecmp(name+8,"ipServiceProtocol")==0) return &attmap_service_ipServiceProtocol;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_service_objectClass;
+    if (strcasecmp(name,"cn")==0)                return &attmap_service_cn;
+    if (strcasecmp(name,"ipServicePort")==0)     return &attmap_service_ipServicePort;
+    if (strcasecmp(name,"ipServiceProtocol")==0) return &attmap_service_ipServiceProtocol;
   }
-  else if (strncasecmp(name,"shadow.",7)==0)
+  else if (map==LM_SHADOW)
   {
-    if (strcasecmp(name+7,"objectClass")==0)       return &attmap_shadow_objectClass;
-    if (strcasecmp(name+7,"uid")==0)               return &attmap_shadow_uid;
-    if (strcasecmp(name+7,"userPassword")==0)      return &attmap_shadow_userPassword;
-    if (strcasecmp(name+7,"shadowLastChange")==0)  return &attmap_shadow_shadowLastChange;
-    if (strcasecmp(name+7,"shadowMin")==0)         return &attmap_shadow_shadowMin;
-    if (strcasecmp(name+7,"shadowMax")==0)         return &attmap_shadow_shadowMax;
-    if (strcasecmp(name+7,"shadowWarning")==0)     return &attmap_shadow_shadowWarning;
-    if (strcasecmp(name+7,"shadowInactive")==0)    return &attmap_shadow_shadowInactive;
-    if (strcasecmp(name+7,"shadowExpire")==0)      return &attmap_shadow_shadowExpire;
-    if (strcasecmp(name+7,"shadowFlag")==0)        return &attmap_shadow_shadowFlag;
+    if (strcasecmp(name,"objectClass")==0)       return &attmap_shadow_objectClass;
+    if (strcasecmp(name,"uid")==0)               return &attmap_shadow_uid;
+    if (strcasecmp(name,"userPassword")==0)      return &attmap_shadow_userPassword;
+    if (strcasecmp(name,"shadowLastChange")==0)  return &attmap_shadow_shadowLastChange;
+    if (strcasecmp(name,"shadowMin")==0)         return &attmap_shadow_shadowMin;
+    if (strcasecmp(name,"shadowMax")==0)         return &attmap_shadow_shadowMax;
+    if (strcasecmp(name,"shadowWarning")==0)     return &attmap_shadow_shadowWarning;
+    if (strcasecmp(name,"shadowInactive")==0)    return &attmap_shadow_shadowInactive;
+    if (strcasecmp(name,"shadowExpire")==0)      return &attmap_shadow_shadowExpire;
+    if (strcasecmp(name,"shadowFlag")==0)        return &attmap_shadow_shadowFlag;
   }
   return NULL;
 }

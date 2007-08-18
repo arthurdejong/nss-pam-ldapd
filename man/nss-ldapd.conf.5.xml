@@ -21,7 +21,7 @@
    You should have received a copy of the GNU Lesser General Public
    License along with this library; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110\-1301 USA
+   02110-1301 USA
 -->
 
 <refentry id="nssldapdconf5">
@@ -201,6 +201,7 @@
    </variablelist>
   </refsect2>
 
+<!-- DO NOT DOCUMENT FOR NOW BECAUSE IT'S NOT SUPPORTED
   <refsect2 id='sasl_authentication_options'>
    <title>SASL authentication options</title>
    <variablelist>
@@ -214,7 +215,7 @@
      </varlistentry>
 
      <varlistentry>
-     <term><emphasis remap="B">rootsasl_auth_id &lt;authid&gt;</emphasis></term>
+     <term><emphasis remap="B">rootsasl_authid &lt;authid&gt;</emphasis></term>
      <listitem>
    <para>Specifies the authorization identity to be used when performing SASL
    authentication as root (when the effective user ID is zero).</para>
@@ -232,7 +233,7 @@
      </varlistentry>
 
      <varlistentry>
-     <term><emphasis remap="B">rootuse_sasl &lt;yes|no&gt;</emphasis></term>
+     <term><emphasis remap="B"><opional>root</opional>use_sasl &lt;yes|no&gt;</emphasis></term>
      <listitem>
    <para>Specifies whether SASL authentication should be used when the effective
    user ID is zero.</para>
@@ -241,7 +242,9 @@
 
    </variablelist>
   </refsect2>
+-->
 
+<!-- DO NOT DOCUMENT FOR NOW BECAUSE IT'S NOT SUPPORTED
   <refsect2 id='kerberos_authentication_options'>
    <title>Kerberos authentication options</title>
    <variablelist>
@@ -258,132 +261,117 @@
 
    </variablelist>
   </refsect2>
+-->
 
   <refsect2 id='search_mapping_options'>
    <title>Search/mapping options</title>
    <variablelist>
 
-     <varlistentry>
-     <term><emphasis remap="B">base &lt;base&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>base</option>
+           <optional><emphasis remap="I">MAP</emphasis></optional>
+           <emphasis remap="I">DN</emphasis></term>
      <listitem>
-   <para>Specifies the default base distinguished name (DN) to use for searches.</para>
+      <para>
+       Specifies the base distinguished name (<acronym>DN</acronym>)
+       to use as search base.
+       A global search base may be specified or a MAP-specific one.
+       If no MAP-specific search base is defined the global one is used.
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
-     <term><emphasis remap="B">scope &lt;sub|one|base&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>scope</option>
+           <optional><emphasis remap="I">MAP</emphasis></optional>
+           sub<optional>tree</optional>|one<optional>level</optional>|base</term>
      <listitem>
-   <para>Specifies the search scope (subtree, one level or base object). The
-   default scope is subtree; base scope is almost never useful for
-   nameservice lookups.</para>
+      <para>
+       Specifies the search scope (subtree, one level or base object).
+       The default scope is subtree; base scope is almost never useful for
+       nameservice lookups.
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
-     <term><emphasis remap="B">deref &lt;never|searching|finding|always&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>deref</option> never|searching|finding|always</term>
      <listitem>
-   <para>Specifies the policy for dereferencing aliases. The default policy is
-   to never dereference aliases.</para>
+      <para>
+       Specifies the policy for dereferencing aliases.
+       The default policy is to never dereference aliases.
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
-     <term><emphasis remap="B">referrals &lt;yes|no&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>referrals</option> yes|no</term>
      <listitem>
-   <para>Specifies whether automatic referral chasing should be enabled. The
-   default behaviour is specifed by the
-   <emphasis remap="I">LDAP</emphasis>
-   client library.</para>
+      <para>
+       Specifies whether automatic referral chasing should be enabled.
+       The default behaviour is to chase referrals.
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
-     <term><emphasis remap="B">nss_base_&lt;map&gt; &lt;basedn?scope?filter&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>filter</option>
+           <emphasis remap="I">MAP</emphasis>
+           <emphasis remap="I">FILTER</emphasis></term>
      <listitem>
-   <para>Specify the search base, scope and filter to be used for specific
-   maps. (Note that
-   <emphasis remap="B">map</emphasis>
-   forms part of the configuration file keyword and is one of
-   passwd, shadow, group, hosts, services, networks, protocols,
-   rpc, ethers, netmasks, bootparams, aliases and netgroup.)
-   The syntax of
-   <emphasis remap="B">basedn</emphasis>
-   and
-   <emphasis remap="B">scope</emphasis>
-   are the same as for the configuration file options of the same
-   name, with the addition of being able to omit the trailing suffix
-   of the base DN (in which case the global base DN will be appended
-   instead).  The
-   <emphasis remap="B">filter</emphasis>
-   is a search filter to be added to the default search filter for a
-   specific map, such that the effective filter is the logical
-   intersection of the two. The base DN, scope and filter are separated
-   with literal question marks (?) as given above; this is for
-   compatibility with the DUA configuration profile schema and the
-   <emphasis remap="B">ldapprofile</emphasis>
-   tool. This option may be specified multiple times.</para>
+      <para>
+       The <emphasis remap="I">FILTER</emphasis>
+       is an <acronym>LDAP</acronym> search filter to use for a
+       specific map.
+       The default filter is a basic search on the
+       objectClass for the map (e.g. <code>(objectClass=posixAccount)</code>).
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
-     <term><emphasis remap="B">nss_map_attribute &lt;from_attribute&gt; &lt;to_attribute&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>map</option>
+           <emphasis remap="I">MAP</emphasis>
+           <emphasis remap="I">ATTRIBUTE</emphasis>
+           <emphasis remap="I">NEWATTRIBUTE</emphasis></term>
      <listitem>
-   <para>This option may be specified multiple times, and directs
-   <emphasis remap="B">nss_ldap</emphasis>
-   to use the attribute
-   <emphasis remap="B">to_attribute</emphasis>
-   instead of the RFC 2307 attribute
-   <emphasis remap="B">from_attribute</emphasis>
-   in all lookups.
-   If
-   <emphasis remap="B">nss_ldap</emphasis>
-   was built without schema mapping support, then this option
-   is ignored.</para>
+      <para>
+       This option allows for custom attributes to be looked up instead of
+       the default RFC 2307 attributes that are used.
+       The <emphasis remap="I">MAP</emphasis> may be one of
+       the supported maps below.
+       The <emphasis remap="I">ATTRIBUTE</emphasis> is the one as
+       used in <acronym>RFC</acronym> 2307 (e.g. <code>userPassword</code>,
+       <code>ipProtocolNumber</code> or <code>macAddress</code>).
+       The <emphasis remap="I">NEWATTRIBUTE</emphasis> may be any attribute
+       as it is available in the directory.
+<!--
+       If the <emphasis remap="I">NEWATTRIBUTE</emphasis> is presented in
+       quotes (") the specfied value will be used instead of looking up the
+       value in the directory.
+       Specifies a value to use for the specified attribute in preference
+       to that contained in the actual entry.
+-->
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
-     <term><emphasis remap="B">nss_map_objectclass &lt;from_objectclass&gt; &lt;to_objectclass&gt;</emphasis></term>
+<!--
+    <varlistentry>
+     <term><option>default</option> <emphasis remap="I">MAP.ATTRIBUTE</emphasis> "<emphasis remap="I">VALUE</emphasis>"</term>
      <listitem>
-   <para>This option may be specified multiple times, and directs
-   <emphasis remap="B">nss_ldap</emphasis>
-   to use the object class
-   <emphasis remap="B">to_objectclass</emphasis>
-   instead of the RFC 2307 object class
-   <emphasis remap="B">from_objectclass</emphasis>
-   in all lookups.
-   If
-   <emphasis remap="B">nss_ldap</emphasis>
-   was built without schema mapping support, then this option
-   is ignored.</para>
+      <para>
+       Specifies the default value to use for entries that lack the
+       specified attribute.
+       Use the specified <emphasis remap="I">VALUE</emphasis> if the
+       lookup in the directory for the specified attribute would not return
+       any data.
+       Note that if the <acronym>LDAP</acronym> server returns an empty string
+       for the attribute an empty string is returned.
+      </para>
      </listitem>
-     </varlistentry>
-
-     <varlistentry>
-     <term><emphasis remap="B">nss_default_attribute_value &lt;attribute&gt; &lt;value&gt;</emphasis></term>
-     <listitem>
-   <para>Specifies the default value to use for entries that lack the
-   specified attribute. This option may be specified multiple times,
-   for different attributes.
-   If
-   <emphasis remap="B">nss_ldap</emphasis>
-   was built without schema mapping support, then this option
-   is ignored.</para>
-     </listitem>
-     </varlistentry>
-
-     <varlistentry>
-     <term><emphasis remap="B">nss_override_attribute_value &lt;attribute&gt; &lt;value&gt;</emphasis></term>
-     <listitem>
-   <para>Specifies a value to use for the specified attribute in preference
-   to that contained in the actual entry. This option may be specified
-   multiple times, for different attributes.
-   If
-   <emphasis remap="B">nss_ldap</emphasis>
-   was built without schema mapping support, then this option
-   is ignored.</para>
-     </listitem>
-     </varlistentry>
+    </varlistentry>
+-->
 
    </variablelist>
   </refsect2>
@@ -392,68 +380,68 @@
    <title>Timing/reconnect options</title>
    <variablelist>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">timelimit &lt;timelimit&gt;</emphasis></term>
      <listitem>
-   <para>Specifies the time limit (in seconds) to use when performing searches. A value
-   of zero (0), which is the default, is to wait indefinitely for
-   searches to be completed.</para>
+      <para>Specifies the time limit (in seconds) to use when performing searches. A value
+      of zero (0), which is the default, is to wait indefinitely for
+      searches to be completed.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">bind_timelimit &lt;timelimit&gt;</emphasis></term>
      <listitem>
-   <para>Specifies the time limit (in seconds) to use when connecting to the directory
-   server. This is distinct from the time limit specified in
-   <emphasis remap="B">timelimit</emphasis>
-   and affects the initial server connection only. (Server connections
-   are otherwise cached.) Only some
-   <emphasis remap="I">LDAP</emphasis>
-   client libraries have the underlying functionality necessary to
-   support this option. The default bind timelimit is 30 seconds.</para>
+      <para>Specifies the time limit (in seconds) to use when connecting to the directory
+      server. This is distinct from the time limit specified in
+      <emphasis remap="B">timelimit</emphasis>
+      and affects the initial server connection only. (Server connections
+      are otherwise cached.) Only some
+      <acronym>LDAP</acronym>
+      client libraries have the underlying functionality necessary to
+      support this option. The default bind timelimit is 30 seconds.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">bind_policy &lt;hard_open|hard_init|soft&gt;</emphasis></term>
      <listitem>
-   <para>Specifies the policy to use for reconnecting to an unavailable
-   <emphasis remap="I">LDAP</emphasis>
-   server. The default is
-   <emphasis remap="B">hard_open,</emphasis>
-   which reconnects if opening the connection to the directory server
-   failed. By contrast,
-   <emphasis remap="B">hard_init</emphasis>
-   reconnects if initializing the connection failed. Initializing may not
-   actually contact the directory server, and it is possible that a
-   malformed configuration file will trigger reconnection. If
-   <emphasis remap="B">soft</emphasis>
-   is specified, then
-   <emphasis remap="B">nss_ldap</emphasis>
-   will return immediately on server failure. All "hard" reconnect
-   policies block with exponential backoff before retrying.</para>
+      <para>Specifies the policy to use for reconnecting to an unavailable
+      <acronym>LDAP</acronym>
+      server. The default is
+      <emphasis remap="B">hard_open,</emphasis>
+      which reconnects if opening the connection to the directory server
+      failed. By contrast,
+      <emphasis remap="B">hard_init</emphasis>
+      reconnects if initializing the connection failed. Initializing may not
+      actually contact the directory server, and it is possible that a
+      malformed configuration file will trigger reconnection. If
+      <emphasis remap="B">soft</emphasis>
+      is specified, then
+      <emphasis remap="B">nss_ldap</emphasis>
+      will return immediately on server failure. All "hard" reconnect
+      policies block with exponential backoff before retrying.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">nss_connect_policy &lt;persist|oneshot&gt;</emphasis></term>
      <listitem>
-   <para>Determines whether nss_ldap persists connections. The default
-   is for the connection to the LDAP server to remain open after
-   the first request.</para>
+      <para>Determines whether nss_ldap persists connections. The default
+      is for the connection to the LDAP server to remain open after
+      the first request.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">idle_timelimit &lt;timelimit&gt;</emphasis></term>
      <listitem>
-   <para>Specifies the time (in seconds) after which
-   <emphasis remap="B">nss_ldap</emphasis>
-   will close connections to the directory server. The default is not to
-   time out connections.</para>
+      <para>Specifies the time (in seconds) after which
+      <emphasis remap="B">nss_ldap</emphasis>
+      will close connections to the directory server. The default is not to
+      time out connections.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
    </variablelist>
   </refsect2>
@@ -462,89 +450,87 @@
    <title>SSL/TLS options</title>
    <variablelist>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">ssl &lt;on|off|start_tls&gt;</emphasis></term>
      <listitem>
-   <para>Specifies whether to use SSL/TLS or not (the default is not to). If
-   <emphasis remap="B">start_tls</emphasis>
-   is specified then StartTLS is used rather than raw LDAP over SSL.
-   Not all
-   <emphasis remap="I">LDAP</emphasis>
-   client libraries support both SSL and StartTLS, and all related
-   configuration options.</para>
+      <para>Specifies whether to use SSL/TLS or not (the default is not to). If
+      <emphasis remap="B">start_tls</emphasis>
+      is specified then StartTLS is used rather than raw LDAP over SSL.
+      Not all <acronym>LDAP</acronym> client libraries support both SSL
+      and StartTLS, and all related configuration options.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">sslpath &lt;cert7_path&gt;</emphasis></term>
      <listitem>
-   <para>For the Netscape and Mozilla
-   <emphasis remap="I">LDAP</emphasis>
-   client libraries only, this specifies the path to the X.509
-   certificate database.</para>
+      <para>For the Netscape and Mozilla
+      <acronym>LDAP</acronym>
+      client libraries only, this specifies the path to the X.509
+      certificate database.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">tls_checkpeer &lt;yes|no&gt;</emphasis></term>
      <listitem>
-   <para>Specifies whether to require and verify the server certificate
-   or not, when using SSL/TLS with the OpenLDAP client library.
-   The default is to use the default behaviour of the client
-   library; for OpenLDAP 2.0 and earlier it is "no", for OpenLDAP
-   2.1 and later it is "yes". At least one of
-   <emphasis remap="B">tls_cacertdir</emphasis>
-   and
-   <emphasis remap="B">tls_cacertfile</emphasis>
-   is required if peer verification is enabled.</para>
+      <para>Specifies whether to require and verify the server certificate
+      or not, when using SSL/TLS with the OpenLDAP client library.
+      The default is to use the default behaviour of the client
+      library; for OpenLDAP 2.0 and earlier it is "no", for OpenLDAP
+      2.1 and later it is "yes". At least one of
+      <emphasis remap="B">tls_cacertdir</emphasis>
+      and
+      <emphasis remap="B">tls_cacertfile</emphasis>
+      is required if peer verification is enabled.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">tls_cacertdir &lt;certificate_dir&gt;</emphasis></term>
      <listitem>
-   <para>Specifies the directory containing X.509 certificates for peer
-   authentication.</para>
+      <para>Specifies the directory containing X.509 certificates for peer
+      authentication.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">tls_cacertfile &lt;certificate_file&gt;</emphasis></term>
      <listitem>
-   <para>Specifies the path to the X.509 certificate for peer authentication.</para>
+      <para>Specifies the path to the X.509 certificate for peer authentication.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">tls_randfile &lt;entropy_file&gt;</emphasis></term>
      <listitem>
-   <para>Specifies the path to an entropy source.</para>
+      <para>Specifies the path to an entropy source.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">tls_ciphers &lt;ciphers&gt;</emphasis></term>
      <listitem>
-   <para>Specifies the ciphers to use for TLS. See your TLS implementation's
-   documentation for further information.</para>
+      <para>Specifies the ciphers to use for TLS. See your TLS implementation's
+      documentation for further information.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">tls_cert &lt;certificate_file&gt;</emphasis></term>
      <listitem>
-   <para>Specifies the path to the file containing the local certificate for
-   client TLS authentication.</para>
+      <para>Specifies the path to the file containing the local certificate for
+      client TLS authentication.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
+    <varlistentry>
      <term><emphasis remap="B">tls_key &lt;key_file&gt;</emphasis></term>
      <listitem>
-   <para>Specifies the path to the file containing the private key for client
-   TLS authentication.</para>
+      <para>Specifies the path to the file containing the private key for client
+      TLS authentication.</para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
    </variablelist>
   </refsect2>
@@ -563,31 +549,6 @@
    <emphasis remap="B">select(2)</emphasis>
    system call when interrupted. This feature is not supported by all
    client libraries.</para>
-     </listitem>
-     </varlistentry>
-
-     <varlistentry>
-     <term><emphasis remap="B">logdir &lt;directory&gt;</emphasis></term>
-     <listitem>
-   <para>Specifies the directory used for logging by the
-   <emphasis remap="I">LDAP</emphasis>
-   client library. This feature is not supported by all client
-   libraries.</para>
-     </listitem>
-     </varlistentry>
-
-     <varlistentry>
-     <term><emphasis remap="B">debug &lt;level&gt;</emphasis></term>
-     <listitem>
-   <para>Specifies the debug level used for logging by the
-   <emphasis remap="I">LDAP</emphasis>
-   client library. This feature is not supported by all client
-   libraries, and does not apply to the
-   <emphasis remap="B">nss_ldap</emphasis>
-   and
-   <emphasis remap="B">pam_ldap</emphasis>
-   modules themselves (debugging, if any, is configured separately
-   and usually at compile time).</para>
      </listitem>
      </varlistentry>
 
@@ -614,38 +575,65 @@
 
 TODO: remove the above option and always support mulitple schema checking based on the contenst of the directory
 
-     <varlistentry>
-     <term><emphasis remap="B">nss_initgroups &lt;backlink&gt;</emphasis></term>
-     <listitem>
-   <para>This option directs the
-   <emphasis remap="B">nss_ldap</emphasis>
-   implementation of
-   <emphasis remap="B">initgroups(3)</emphasis>
-   to determine a user's group membership by reading the memberOf
-   attribute of their directory entry (and of any nested groups),
-   rather than querying on uniqueMember. This may provide increased
-   performance with certain directory servers that have peculiar
-   indexing configurations.
-   If RFC2307bis support is disabled, then this option is ignored.</para>
-     </listitem>
-     </varlistentry>
-
-     <varlistentry>
-     <term><emphasis remap="B">nss_initgroups_ignoreusers &lt;user1,user2,...,userN&gt;</emphasis></term>
-     <listitem>
-   <para>This option directs the
-   <emphasis remap="B">nss_ldap</emphasis>
-   implementation of
-   <emphasis remap="B">initgroups(3)</emphasis>
-   to return NSS_STATUS_NOTFOUND if called with a listed users as
-   its argument.</para>
-     </listitem>
-     </varlistentry>
 
    </variablelist>
   </refsect2>
 -->
 
+ </refsect1>
+
+ <refsect1 id="maps">
+  <title>Supported maps</title>
+  <para>
+   The following maps are supported. They are referenced as
+   <emphasis remap="I">MAP</emphasis> withthe options.
+  </para>
+  <variablelist remap="TP">
+   <varlistentry>
+    <term>alias(es)</term>
+    <listitem><para>Mail aliases (ignored by most mail servers).</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>ether(s)</term>
+    <listitem><para>Ethernet numbers (mac addresses).</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>group</term>
+    <listitem><para>Posix groups.</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>host(s)</term>
+    <listitem><para>Host names.</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>netgroup</term>
+    <listitem><para>Host and user groups used for access control.</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>network(s)</term>
+    <listitem><para>Network numbers.</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>passwd</term>
+    <listitem><para>Posix users.</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>protocol(s)</term>
+    <listitem><para>Protocol definitions (like in <filename>/etc/protocols</filename>).</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>rpc</term>
+    <listitem><para>Remote procedure call names and numbers.</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>service(s)</term>
+    <listitem><para>Network service names and numbers.</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>shadow</term>
+    <listitem><para>Shadow user password information.</para></listitem>
+   </varlistentry>
+  </variablelist>
  </refsect1>
 
  <refsect1 id="files">
