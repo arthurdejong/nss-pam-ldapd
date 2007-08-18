@@ -8,8 +8,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap_211-4_da\n"
-"Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-07-24 08:43+0200\n"
+"Report-Msgid-Bugs-To: adejong@debian.org\n"
+"POT-Creation-Date: 2007-08-18 22:53+0200\n"
 "PO-Revision-Date: 2004-02-28 18:38+0100\n"
 "Last-Translator: Claus Hindsgaul <claus_h@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -38,12 +38,25 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "Note: It is usually a good idea to use an IP address; this reduces risks "
+#| "of failure in the event name service is unavailable."
 msgid ""
-"Note: It is usually a good idea to use an IP address; this reduces risks of "
-"failure in the event name service is unavailable."
+"When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
+"address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
 "Bemærk: Det er normalt en god idé at bruge en IP-adresse: det reducerer "
 "risikoen for fejl hvis navneservicen ikke er tilgængelig."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+#, no-c-format
+msgid ""
+"When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
+"ldapi://%2fvar%2frun%2fldapi_sock/)"
+msgstr ""
 
 #. Type: string
 #. Description

@@ -2,12 +2,15 @@ Template: libnss-ldapd/ldap-uris
 Type: string
 Default: ldap://127.0.0.1/
 _Description: LDAP server Uniform Resource Identifier:
- Please enter the URI of the LDAP server used. This is a string in the
- form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also
- be used. The port number is optional.
+ Please enter the URI of the LDAP server used. This is a string in the form
+ ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The
+ port number is optional.
  .
- Note: It is usually a good idea to use an IP address; this reduces risks
- of failure in the event name service is unavailable.
+ When useing the ldap or ldaps schemes it is usually a good idea to use an IP
+ address; this reduces the risk of failure when name services are unavailable.
+ .
+ When using the ldapi scheme, %2f should be used to escape slashes
+ (e.g. ldapi://%2fvar%2frun%2fldapi_sock/)
  .
  Multiple URIs can be be specified by separating them with spaces.
 
