@@ -18,7 +18,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-SUBDIRS = dict tio
+TESTS = test_dict test_tio
+
+check_PROGRAMS = test_dict test_tio
 
 noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                   test_netgroup test_networks test_passwd test_protocols \
@@ -27,6 +29,14 @@ noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
 AM_CPPFLAGS=-I$(top_srcdir)
 # the following enables verbose protocol debugging information to be dumped
 #AM_CFLAGS=-DDEBUG_PROT -DDEBUG_PROT_DUMP
+
+test_dict_SOURCES = test_dict.c ../common/dict.h
+test_dict_LDADD = ../common/dict.o
+
+test_tio_SOURCES = test_tio.c ../common/tio.h ../common/tio.c
+#test_tio_LDADD = ../common/libtio.a
+test_tio_CFLAGS = -pthread
+test_tio_LDFLAGS = -pthread
 
 common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h \
                  ../common/tio.c ../common/tio.h
