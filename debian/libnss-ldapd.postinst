@@ -109,36 +109,9 @@ create_config()
 {
   if [ ! -e "$CONFFILE" ]
   then
-    if [ -f /etc/libnss-ldap.conf ]
-    then
-      # begin the file by some information as to where it came from
-      cat > "$CONFFILE" << EOM
-# $CONFFILE
-# nss-ldapd configuration file. See nss-ldapd.conf(5)
-# for details.
-#
-# This file was based on existing configuration files
-# /etc/libnss-ldap.conf and /etc/libnss-ldap.secret
-
-EOM
-      # copy the existing config in place, getting rid
-      # of the silly #DEBCONF# lines
-      egrep -v '(###DEBCONF###|configuration of this file will be done by debconf|dpkg-reconfigure)' \
-        < /etc/libnss-ldap.conf \
-        >> "$CONFFILE"
-      # also append the secret file if it is present
-      if [ -f /etc/libnss-ldap.secret ]
-      then
-        echo "rootbindpw `cat /etc/libnss-ldap.secret`" >> "$CONFFILE"
-      fi
-      # disable options that are no longer supported
-      cfg_disable host
-      cfg_disable port
-    else
-      # fall back to generating a simple configuration file
-      # from this simple template
-      # TODO: improve this template
-      cat > "$CONFFILE" << EOM
+    # create a simple configuration file from this template
+    # TODO: improve this template
+    cat > "$CONFFILE" << EOM
 # $CONFFILE
 # nss-ldapd configuration file. See nss-ldapd.conf(5)
 # for details.
@@ -164,7 +137,6 @@ rootbindpw verysecret
 #scope sub
 
 EOM
-    fi
   fi
   # we're done
   return 0
