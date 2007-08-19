@@ -162,14 +162,17 @@ then
     cfg_set binddn "$RET"
     db_get libnss-ldapd/ldap-bindpw
     cfg_set bindpw "$RET"
-    # remove password from database
-    db_set libnss-ldapd/ldap-bindpw ""
   else
     # no binddn/pw, disable options
     cfg_disable binddn
-    cfg_disable bindpw
-    # FIXME: remove password value from config
+    if grep -i -q "^bindpw " $CONFFILE
+    then
+      cfg_set bindpw "*removed*"
+      cfg_disable bindpw
+    fi
   fi
+  # remove password from database
+  db_set libnss-ldapd/ldap-bindpw ""
   # set root bind dn/pw
   db_get libnss-ldapd/ldap-rootbinddn
   if [ -n "$RET" ]
@@ -177,14 +180,17 @@ then
     cfg_set rootbinddn "$RET"
     db_get libnss-ldapd/ldap-rootbindpw
     cfg_set rootbindpw "$RET"
-    # remove password from database
-    db_set libnss-ldapd/ldap-rootbindpw ""
   else
     # no binddn/pw, disable options
     cfg_disable rootbinddn
-    cfg_disable rootbindpw
-    # FIXME: remove password value from config
+    if grep -i -q "^rootbindpw " $CONFFILE
+    then
+      cfg_set rootbindpw "*removed*"
+      cfg_disable rootbindpw
+    fi
   fi
+  # remove password from database
+  db_set libnss-ldapd/ldap-rootbindpw ""
   # modify /etc/nsswitch.conf
   db_get libnss-ldapd/nsswitch
   enablenss=`echo "$RET" | sed 's/,//g'`
