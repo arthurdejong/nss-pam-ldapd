@@ -2,19 +2,19 @@
 # Copyright (C) 2007 Américo Monteiro
 # Released under the same license as the nss-ldapd package
 # Américo Monteiro <a_monteiro@netcabo.pt>, 2007.
-#
+# 
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.2.1\n"
+"Project-Id-Version: nss-ldapd 0.3\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
 "POT-Creation-Date: 2007-08-19 11:09+0200\n"
-"PO-Revision-Date: 2007-07-13 18:15+0100\n"
+"PO-Revision-Date: 2007-08-19 14:06+0100\n"
 "Last-Translator: Américo Monteiro <a_monteiro@netcabo.pt>\n"
 "Language-Team: Portuguese <traduz@debianpt.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
 
 #. Type: string
 #. Description
@@ -37,16 +37,13 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Note: It is usually a good idea to use an IP address; this reduces risks "
-#| "of failure in the event name service is unavailable."
 msgid ""
 "When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
-"Nota: Geralmente é boa ideia usar um endereço IP; isto reduz riscos de "
-"falhas na eventualidade do serviço de nomes não estar disponível."
+"Geralmente é boa ideia usar um endereço IP quando se usa o ldap ou "
+"esquemasdo ldap; isto reduz riscos de falhas quando o serviço de nomes não "
+"está disponível."
 
 #. Type: string
 #. Description
@@ -56,6 +53,8 @@ msgid ""
 "When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
 "ldapi://%2fvar%2frun%2fldapi_sock/)"
 msgstr ""
+"Quando se usa o esquema ldapi, %2f deverá ser usado para substituir barras "
+"(ex. ldapi://%2fvar%2frun%2fldapi_sock/)"
 
 #. Type: string
 #. Description
@@ -176,42 +175,17 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
+"Para que este pacote funcione, você precisa de modificar o seu /etc/nsswitch."
+"conf para usar a fonte de dados ldap."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:7001
-#, fuzzy
-#| msgid ""
-#| "You can also select the services that should be enabled or disabled for "
-#| "LDAP lookups. New LDAP lookups will be added as last option. Be sure to "
-#| "review these changes."
 msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
 msgstr ""
-"Você também pode seleccionar os serviços que deverão estar activos ou "
-"inactivos para buscas LDAP. Novas buscas LDAP serão adicionadas como últimas "
-"opções. Certifique-se de rever estas alterações."
-
-#~ msgid "LDAP version to use:"
-#~ msgstr "Versão LDAP a usar:"
-
-#~ msgid ""
-#~ "Please enter which version of the LDAP protocol is to use.  It is usually "
-#~ "a good idea to set this to highest available version number."
-#~ msgstr ""
-#~ "Por favor indique qual a versão de protocolo LDAP vai ser usada. "
-#~ "Normalmente é boa ideia regular isto para a versão mais recente "
-#~ "disponível."
-
-#~ msgid ""
-#~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
-#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
-#~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
-#~ "your nsswitch setup."
-#~ msgstr ""
-#~ "Para este pacote funcionar, você precisa modificar o seu /etc/nsswitch."
-#~ "conf para usar a fonte de dados LDAP. Existe um ficheiro exemplo em /usr/"
-#~ "share/doc/libnss-ldap/examples/nsswitch.ldap que pode ser usado como "
-#~ "exemplo para a sua configuração do nsswitch."
+"Você pode seleccionar os serviços que deverão estar activos ou inactivos "
+"para buscas LDAP. Novas buscas LDAP serão adicionadas como últimas opções."
+"Certifique-se de rever estas alterações."
