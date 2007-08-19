@@ -231,13 +231,9 @@ then
   # TODO: create backups of /etc/nsswitch.conf and configfile
   #       (probably store orig in tmpfile and if diff install it
   #       as backup)
-fi
-
-# restart nscd to pick up changes in nsswitch.conf
-# (other processes will have to be restarted manually)
-if [ -s /usr/sbin/nscd ]
-then
-  if [ `pidof -s nscd` ]
+  # restart nscd to pick up changes in nsswitch.conf
+  # (other processes will have to be restarted manually)
+  if [ -s /usr/sbin/nscd ] && [ `pidof -s nscd` ]
   then
     if which invoke-rc.d >/dev/null 2>&1
     then
