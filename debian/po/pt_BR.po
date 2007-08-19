@@ -14,7 +14,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap_203-1\n"
-"Report-Msgid-Bugs-To: adejong@debian.org\n"
+"Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
 "POT-Creation-Date: 2007-08-19 11:09+0200\n"
 "PO-Revision-Date: 2003-03-08 11:39+0300\n"
 "Last-Translator: André Luís Lopes <andrelop@ig.com.br>\n"
