@@ -287,3 +287,12 @@ When using Microsoft Active Directory server (typically on Microsoft Windows
 2000) some changes need to be made to the nss-ldapd.conf configuration file.
 The default configuration file has some commented out attribute mappings for
 such a setup.
+
+MISC NOTES
+==========
+
+Most values in the NSS databases are considered case-sensitive (e.g. the user
+"Foo" is a different user from "foo"). Values in an LDAP database are however
+case-insensitive. This may cause problems in some corner cases, especially
+when nscd is used for caching. For example when doing a lookup for the user
+"Foo" the user "foo" will be returned if it exists in the database.
