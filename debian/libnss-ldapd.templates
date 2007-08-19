@@ -23,14 +23,6 @@ _Description: LDAP server search base:
  the domain "example.net" would use "dc=example,dc=net" as the
  distinguished name of the search base.
 
-Template: libnss-ldapd/ldap-version
-Type: select
-Choices: 3, 2
-Default: 3
-_Description: LDAP version to use:
- Please enter which version of the LDAP protocol is to use.  It is
- usually a good idea to set this to highest available version number.
-
 Template: libnss-ldapd/ldap-binddn
 Type: string
 Default:

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap_211-4_da\n"
 "Report-Msgid-Bugs-To: adejong@debian.org\n"
-"POT-Creation-Date: 2007-08-18 22:53+0200\n"
+"POT-Creation-Date: 2007-08-19 11:09+0200\n"
 "PO-Revision-Date: 2004-02-28 18:38+0100\n"
 "Last-Translator: Claus Hindsgaul <claus_h@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -86,6 +86,100 @@ msgstr ""
 "Angiv det skelnede navn på LDAP-søgebasen. Mange sites bruge dele af deres "
 "domænenavn til dette formål. For eksempel ville domænet \"eksempel.dk\" "
 "bruge \"dc=eksempel,dc=dk\" som det skelnede navn på søgebasen."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:3001
+#, fuzzy
+msgid "LDAP database user:"
+msgstr "upriviligeret databasebruger"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:3001
+msgid ""
+"If the LDAP database requires a login for normal lookups, enter the name of "
+"the account that will be used here. Leave empty otherwise."
+msgstr ""
+
+#. Type: string
+#. Description
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:3001 ../libnss-ldapd.templates:5001
+msgid "This value should be specified as a DN (distinguished name)."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:4001
+msgid "LDAP user password:"
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:4001
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr "Angiv den adgangskode, der skal bruges til at logge på LDAP-databasen."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid "LDAP account for root:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid ""
+"This account will be used for nss requests with root privileges. This can be "
+"used to give root processes more information (e.g. users' shadow entries or "
+"group passwords)."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid "Leave this empty to not do anything special for root lookups."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid "LDAP root account password:"
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:6001
+#, fuzzy
+msgid ""
+"Enter the password that will be used to log in to the LDAP database when the "
+"root process does lookups."
+msgstr "Angiv den adgangskode, der skal bruges til at logge på LDAP-databasen."
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:7001
+msgid "Name services to configure:"
+msgstr ""
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:7001
+msgid ""
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource."
+msgstr ""
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:7001
+msgid ""
+"You can select the services that should be enabled or disabled for LDAP "
+"lookups. The new LDAP lookups will be added as last option. Be sure to "
+"review these changes."
+msgstr ""
 
 #  Template: libnss-ldap/confperm
 #  ddtp-prioritize: 56
@@ -207,118 +301,18 @@ msgstr ""
 #  Template: shared/ldapns/ldap_version
 #  ddtp-prioritize: 56
 #
-#. Type: select
-#. Description
-#: ../libnss-ldapd.templates:3001
 #, fuzzy
-msgid "LDAP version to use:"
-msgstr "LDAP-version der skal bruges"
+#~ msgid "LDAP version to use:"
+#~ msgstr "LDAP-version der skal bruges"
 
 #
-#. Type: select
-#. Description
-#: ../libnss-ldapd.templates:3001
 #, fuzzy
-msgid ""
-"Please enter which version of the LDAP protocol is to use.  It is usually a "
-"good idea to set this to highest available version number."
-msgstr ""
-"Angiv hvilken version af LDAP-protokollen, som ldapns skal bruge. Det er "
-"normalt en god idé at sætte den til det højest mulige versionsnummer."
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:4001
-#, fuzzy
-msgid "LDAP database user:"
-msgstr "upriviligeret databasebruger"
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:4001
-msgid ""
-"If the LDAP database requires a login for normal lookups, enter the name of "
-"the account that will be used here. Leave empty otherwise."
-msgstr ""
-
-#. Type: string
-#. Description
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:4001 ../libnss-ldapd.templates:6001
-msgid "This value should be specified as a DN (distinguished name)."
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid "LDAP user password:"
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr "Angiv den adgangskode, der skal bruges til at logge på LDAP-databasen."
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid "LDAP account for root:"
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid ""
-"This account will be used for nss requests with root privileges. This can be "
-"used to give root processes more information (e.g. users' shadow entries or "
-"group passwords)."
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid "Leave this empty to not do anything special for root lookups."
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:7001
-msgid "LDAP root account password:"
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:7001
-#, fuzzy
-msgid ""
-"Enter the password that will be used to log in to the LDAP database when the "
-"root process does lookups."
-msgstr "Angiv den adgangskode, der skal bruges til at logge på LDAP-databasen."
-
-#. Type: multiselect
-#. Description
-#: ../libnss-ldapd.templates:8001
-msgid "Name services to configure:"
-msgstr ""
-
-#. Type: multiselect
-#. Description
-#: ../libnss-ldapd.templates:8001
-msgid ""
-"For this package to work, you need to modify your /etc/nsswitch.conf to use "
-"the ldap datasource."
-msgstr ""
-
-#. Type: multiselect
-#. Description
-#: ../libnss-ldapd.templates:8001
-msgid ""
-"You can select the services that should be enabled or disabled for LDAP "
-"lookups. The new LDAP lookups will be added as last option. Be sure to "
-"review these changes."
-msgstr ""
+#~ msgid ""
+#~ "Please enter which version of the LDAP protocol is to use.  It is usually "
+#~ "a good idea to set this to highest available version number."
+#~ msgstr ""
+#~ "Angiv hvilken version af LDAP-protokollen, som ldapns skal bruge. Det er "
+#~ "normalt en god idé at sætte den til det højest mulige versionsnummer."
 
 #, fuzzy
 #~ msgid ""

@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldapd 0.1.0\n"
 "Report-Msgid-Bugs-To: adejong@debian.org\n"
-"POT-Creation-Date: 2007-08-18 22:53+0200\n"
+"POT-Creation-Date: 2007-08-19 11:09+0200\n"
 "PO-Revision-Date: 2007-07-11 11:51+0200\n"
 "Last-Translator: Cyril Brulebois <cyril.brulebois@enst-bretagne.fr\n"
 "Language-Team: French <debian-l10n-french@lists.debian.org\n"
@@ -95,31 +95,15 @@ msgstr ""
 "domaine à cette fin. Par exemple, le domaine « exemple.net » utiliserait "
 "« dc=exemple,dc=net »."
 
-#. Type: select
-#. Description
-#: ../libnss-ldapd.templates:3001
-msgid "LDAP version to use:"
-msgstr "Version du protocole LDAP :"
-
-#. Type: select
-#. Description
-#: ../libnss-ldapd.templates:3001
-msgid ""
-"Please enter which version of the LDAP protocol is to use.  It is usually a "
-"good idea to set this to highest available version number."
-msgstr ""
-"Veuillez indiquer la version du protocole LDAP à utiliser. Il est conseillé "
-"d'utiliser la version la plus récente."
-
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:4001
+#: ../libnss-ldapd.templates:3001
 msgid "LDAP database user:"
 msgstr "Utilisateur de la base LDAP :"
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:4001
+#: ../libnss-ldapd.templates:3001
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
@@ -132,19 +116,19 @@ msgstr ""
 #. Description
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:4001 ../libnss-ldapd.templates:6001
+#: ../libnss-ldapd.templates:3001 ../libnss-ldapd.templates:5001
 msgid "This value should be specified as a DN (distinguished name)."
 msgstr "Cette valeur doit être un nom distingué (« DN »)."
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:4001
 msgid "LDAP user password:"
 msgstr "Mot de passe de l'utilisateur LDAP :"
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr ""
 "Veuillez indiquer le mot de passe à utiliser pour s'identifier sur la base "
@@ -152,13 +136,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:6001
+#: ../libnss-ldapd.templates:5001
 msgid "LDAP account for root:"
 msgstr "Identifiant LDAP du superutilisateur :"
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:6001
+#: ../libnss-ldapd.templates:5001
 msgid ""
 "This account will be used for nss requests with root privileges. This can be "
 "used to give root processes more information (e.g. users' shadow entries or "
@@ -171,7 +155,7 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:6001
+#: ../libnss-ldapd.templates:5001
 msgid "Leave this empty to not do anything special for root lookups."
 msgstr ""
 "N'indiquez rien si aucune identification particulière n'est nécessaire pour "
@@ -179,13 +163,13 @@ msgstr ""
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:6001
 msgid "LDAP root account password:"
 msgstr "Mot de passe du superutilisateur LDAP :"
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:6001
 msgid ""
 "Enter the password that will be used to log in to the LDAP database when the "
 "root process does lookups."
@@ -195,13 +179,13 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:8001
+#: ../libnss-ldapd.templates:7001
 msgid "Name services to configure:"
 msgstr "Services de nom à configurer :"
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:8001
+#: ../libnss-ldapd.templates:7001
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
@@ -209,7 +193,7 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:8001
+#: ../libnss-ldapd.templates:7001
 #, fuzzy
 #| msgid ""
 #| "You can also select the services that should be enabled or disabled for "
@@ -224,6 +208,16 @@ msgstr ""
 "désactivés pour les requêtes LDAP. Les nouvelles requêtes LDAP seront "
 "ajoutées comme dernière option. Il est important de bien contrôler ces "
 "modifications."
+
+#~ msgid "LDAP version to use:"
+#~ msgstr "Version du protocole LDAP :"
+
+#~ msgid ""
+#~ "Please enter which version of the LDAP protocol is to use.  It is usually "
+#~ "a good idea to set this to highest available version number."
+#~ msgstr ""
+#~ "Veuillez indiquer la version du protocole LDAP à utiliser. Il est "
+#~ "conseillé d'utiliser la version la plus récente."
 
 #~ msgid ""
 #~ "For this package to work, you need to modify your /etc/nsswitch.conf to "

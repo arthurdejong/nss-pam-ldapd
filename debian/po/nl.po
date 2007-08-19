@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: adejong@debian.org\n"
-"POT-Creation-Date: 2007-08-18 22:53+0200\n"
+"POT-Creation-Date: 2007-08-19 11:09+0200\n"
 "PO-Revision-Date: 2003-08-08 23:07+0100\n"
 "Last-Translator: Bart Cornelis <cobaco@linux.be>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -89,35 +89,16 @@ msgstr ""
 "Bijvoorbeeld: de domein naam\"voorbeeld.net\" zou gebruik maken van "
 "\"dc=voorbeeld,dc=net\" als de onderscheiden naam van de zoek basis."
 
-#. Type: select
-#. Description
-#: ../libnss-ldapd.templates:3001
-#, fuzzy
-msgid "LDAP version to use:"
-msgstr "Te gebruiken LDAP versie"
-
-#. Type: select
-#. Description
-#: ../libnss-ldapd.templates:3001
-#, fuzzy
-msgid ""
-"Please enter which version of the LDAP protocol is to use.  It is usually a "
-"good idea to set this to highest available version number."
-msgstr ""
-"Gelieve de door ldapns te gebruiken versie van het LDAP protocol in te "
-"voeren. Gewoonlijk is het een goed idee om dit op het hoogst beschikbare "
-"nummer in te stellen."
-
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:4001
+#: ../libnss-ldapd.templates:3001
 #, fuzzy
 msgid "LDAP database user:"
 msgstr "niet bevoorrechte database gebruiker"
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:4001
+#: ../libnss-ldapd.templates:3001
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
@@ -127,19 +108,19 @@ msgstr ""
 #. Description
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:4001 ../libnss-ldapd.templates:6001
+#: ../libnss-ldapd.templates:3001 ../libnss-ldapd.templates:5001
 msgid "This value should be specified as a DN (distinguished name)."
 msgstr ""
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:4001
 msgid "LDAP user password:"
 msgstr ""
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr ""
 "Voer het wachtwoord in dat gebruikt zal worden om op de LDAP database aan te "
@@ -147,13 +128,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:6001
+#: ../libnss-ldapd.templates:5001
 msgid "LDAP account for root:"
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:6001
+#: ../libnss-ldapd.templates:5001
 msgid ""
 "This account will be used for nss requests with root privileges. This can be "
 "used to give root processes more information (e.g. users' shadow entries or "
@@ -162,19 +143,19 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:6001
+#: ../libnss-ldapd.templates:5001
 msgid "Leave this empty to not do anything special for root lookups."
 msgstr ""
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:6001
 msgid "LDAP root account password:"
 msgstr ""
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:6001
 #, fuzzy
 msgid ""
 "Enter the password that will be used to log in to the LDAP database when the "
@@ -185,13 +166,13 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:8001
+#: ../libnss-ldapd.templates:7001
 msgid "Name services to configure:"
 msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:8001
+#: ../libnss-ldapd.templates:7001
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
@@ -199,12 +180,25 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:8001
+#: ../libnss-ldapd.templates:7001
 msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
 msgstr ""
+
+#, fuzzy
+#~ msgid "LDAP version to use:"
+#~ msgstr "Te gebruiken LDAP versie"
+
+#, fuzzy
+#~ msgid ""
+#~ "Please enter which version of the LDAP protocol is to use.  It is usually "
+#~ "a good idea to set this to highest available version number."
+#~ msgstr ""
+#~ "Gelieve de door ldapns te gebruiken versie van het LDAP protocol in te "
+#~ "voeren. Gewoonlijk is het een goed idee om dit op het hoogst beschikbare "
+#~ "nummer in te stellen."
 
 #, fuzzy
 #~ msgid ""

@@ -150,7 +150,7 @@ uri ldap://localhost/
 base dc=example,dc=net
 
 # The LDAP protocol version to use.
-ldap_version 3
+#ldap_version 3
 
 # The DN to bind with for normal lookups.
 binddn cn=annonymous,dc=example,dc=net
@@ -183,9 +183,6 @@ then
   # set search base
   db_get libnss-ldapd/ldap-base
   cfg_set base "$RET"
-  # set ldap version
-  db_get libnss-ldapd/ldap-version
-  cfg_set ldap_version "$RET"
   # set bind dn/pw
   db_get libnss-ldapd/ldap-binddn
   if [ -n "$RET" ]
