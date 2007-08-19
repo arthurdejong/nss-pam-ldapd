@@ -18,9 +18,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-TESTS = test_dict test_tio
+TESTS = test_dict test_tio test_cfg
 
-check_PROGRAMS = test_dict test_tio
+check_PROGRAMS = test_dict test_tio test_cfg
 
 noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                   test_netgroup test_networks test_passwd test_protocols \
@@ -37,6 +37,9 @@ test_tio_SOURCES = test_tio.c ../common/tio.h ../common/tio.c
 #test_tio_LDADD = ../common/libtio.a
 test_tio_CFLAGS = -pthread
 test_tio_LDFLAGS = -pthread
+
+test_cfg_SOURCES = test_cfg.c
+test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o
 
 common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h \
                  ../common/tio.c ../common/tio.h
