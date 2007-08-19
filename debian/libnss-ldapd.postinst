@@ -9,35 +9,21 @@ cfg_set()
 {
   parameter=$1
   value=$2
-  commented=0
-  notthere=0
   # check if the parameter is defined
-  grep -i -q "^$parameter " $CONFFILE || notthere=1
-  if [ "$notthere" = "1" ]
+  replace=`sed -n 's/^\('"$parameter"'\)[[:space:]]*[^[:space:]]*[[:space:]]*$/\1/ip' "$CONFFILE" | head -n 1`
+  if [ -z "$replace" ]
   then
     # check if the parameter is commented out
-    if grep -i -q "^#$parameter" $CONFFILE
-    then
-      notthere=0
-      commented=1
-    fi
+    replace=`sed -n 's/^\(#[[:space:]]*'"$parameter"'\)[[:space:]]*[^[:space:]]*[[:space:]]*$/\1/ip' "$CONFFILE" | head -n 1`
   fi
   # decide what to do
-  if [ "$notthere" = "1" ]
+  if [ -z "$replace" ]
   then
     # just append a new line
     echo "$parameter $value" >> $CONFFILE
   else
-    # TODO: check if the option is already defined with the value we need
-    # replace the existing option
-    replacestring="$parameter"
-    if [ "$commented" = "1" ]
-    then
-      replacestring="# *$parameter"
-    fi
-    # this works as long as any option is specified only once
-    # FIXME: also work when option is commented out on multiple lines
-    sed -i 's%^'"$replacestring"' .*$%'"$parameter $value"'%i' "$CONFFILE"
+    # replace the first occurrence of the parameter
+    sed -i '1,\%^'"$replace"' .*$% s%^'"$replace"' .*$%'"$parameter $value"'%i' "$CONFFILE"
   fi
   # we're done
   return 0
@@ -47,12 +33,8 @@ cfg_set()
 cfg_disable()
 {
   parameter=$1
-  # TODO add an option to also remove the option value
-  #      (for passwords)
-  if grep -i -q "^$parameter " $CONFFILE
-  then
-    sed -i 's%^\('"$parameter"'.*\)$%#\1%i' "$CONFFILE"
-  fi
+  # comment out the option
+  sed -i 's/^\('"$parameter"'[[:space:]]*[^[:space:]]*\)[[:space:]]*$/#\1/i' "$CONFFILE"
   # we're done
   return 0
 }
