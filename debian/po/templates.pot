@@ -6,7 +6,7 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: libnss-ldapd 0.3\n"
+"Project-Id-Version: nss-ldapd 0.3\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
 "POT-Creation-Date: 2007-08-19 11:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
