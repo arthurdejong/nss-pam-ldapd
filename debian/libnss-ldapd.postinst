@@ -23,7 +23,7 @@ cfg_set()
     echo "$parameter $value" >> $CONFFILE
   else
     # replace the first occurrence of the parameter
-    sed -i '1,\%^'"$replace"' .*$% s%^'"$replace"' .*$%'"$parameter $value"'%i' "$CONFFILE"
+    sed -i '1,\|^'"$replace"' .*$| s|^'"$replace"' .*$|'"$parameter $value"'|i' "$CONFFILE"
   fi
   # we're done
   return 0
