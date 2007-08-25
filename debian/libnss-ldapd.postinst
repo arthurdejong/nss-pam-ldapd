@@ -7,14 +7,16 @@ CONFFILE="/etc/nss-ldapd.conf"
 # set an option in the configuration file to the specified value
 cfg_set()
 {
-  parameter=$1
-  value=$2
+  parameter="$1"
+  value="$2"
+  # make matching of spaces better in parameter
+  param_re=`echo "$parameter" | sed -s 's#[[:space:]][[:space:]]*#[[:space:]][[:space:]]*#g'`
   # check if the parameter is defined
-  replace=`sed -n 's/^\('"$parameter"'\)[[:space:]]*[^[:space:]]*[[:space:]]*$/\1/ip' "$CONFFILE" | head -n 1`
+  replace=`sed -n 's/^\('"$param_re"'\)[[:space:]]*\([^[:space:]]*\|".*"\)[[:space:]]*$/\1/ip' "$CONFFILE" | head -n 1`
   if [ -z "$replace" ]
   then
     # check if the parameter is commented out
-    replace=`sed -n 's/^\(#[[:space:]]*'"$parameter"'\)[[:space:]]*[^[:space:]]*[[:space:]]*$/\1/ip' "$CONFFILE" | head -n 1`
+    replace=`sed -n 's/^\(#[[:space:]]*'"$param_re"'\)[[:space:]]*\([^[:space:]]*\|".*"\)[[:space:]]*$/\1/ip' "$CONFFILE" | head -n 1`
   fi
   # decide what to do
   if [ -z "$replace" ]
@@ -22,8 +24,11 @@ cfg_set()
     # just append a new line
     echo "$parameter $value" >> $CONFFILE
   else
+    # ($replace will not have have any funky characters, neither will $parameter)
+    # escape value
+    value=`echo "$value" | sed -s 's#\\\#\\\\\\\#g;s#|#\\\|#g;s#&#\\\&#g'`
     # replace the first occurrence of the parameter
-    sed -i '1,\|^'"$replace"' .*$| s|^'"$replace"' .*$|'"$parameter $value"'|i' "$CONFFILE"
+    sed -i '1,\|^'"$replace"' .*$| s|^\('"$replace"'\) .*$|\1 '"$value"'|i' "$CONFFILE"
   fi
   # we're done
   return 0
@@ -32,9 +37,11 @@ cfg_set()
 # disable an option in the configuration file by commenting it out
 cfg_disable()
 {
-  parameter=$1
+  parameter="$1"
+  # make matching of spaces better in parameter
+  param_re=`echo "$parameter" | sed -s 's#[[:space:]][[:space:]]*#[[:space:]][[:space:]]*#g'`
   # comment out the option
-  sed -i 's/^\('"$parameter"'[[:space:]]*[^[:space:]]*\)[[:space:]]*$/#\1/i' "$CONFFILE"
+  sed -i 's/^\('"$param_re"'[[:space:]]*[^[:space:]]*\)[[:space:]]*$/#\1/i' "$CONFFILE"
   # we're done
   return 0
 }
@@ -46,7 +53,7 @@ cfg_disable()
 # LDAP and enable if not
 nss_enable()
 {
-  name=$1
+  name="$1"
   if ! grep -q '^'$name':.*ldap.*' /etc/nsswitch.conf
   then
     echo "/etc/nsswitch.conf: enable LDAP lookups for $name" >&2
@@ -66,7 +73,7 @@ nss_enable()
 # remove NSS lookups though LDAP for the specified service
 nss_disable()
 {
-  name=$1
+  name="$1"
   # these functions also remove the lookup result handling part
   # of the ldap entry (see nsswitch.conf(5))
   if grep -q '^'$name':.*ldap.*' /etc/nsswitch.conf
