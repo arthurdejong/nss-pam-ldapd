@@ -88,7 +88,8 @@ splint.txt:
 	           -globstate \
 	           -I. -I$(srcdir) -I$(top_builddir) $(DEFS) -D_REENTRANT -DDEBUG \
 	           -D__signed__=signed -D__thread= -D__gnuc_va_list=__ptr_t \
-	           -Dkrb5_int32=int32_t -Dkrb5_ui_4=uint32_t  \
+	           -Dkrb5_int32=int32_t -Dkrb5_ui_4=uint32_t \
+	           -D__u16=uint16_t -D__u32=uint32_t \
 	           *.[ch] nss/*.[ch] nslcd/*.[ch] > $@ 2>&1
 
 .PHONY: flawfinder.html pscan.txt rats.html splint.txt
