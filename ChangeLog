@@ -1,3 +1,355 @@
+2007-08-26 14:51  arthur
+
+	* [r365] Makefile.am: workaround for problems splint has in parsing
+	  system header files
+
+2007-08-26 14:05  arthur
+
+	* [r364] nslcd/cfg.h, nslcd/ldap-nss.h: move enum ldap_map_selector
+	  and struct ldap_service_search_descriptor from ldap-nss.h to
+	  cfg.h
+
+2007-08-25 13:21  arthur
+
+	* [r363] debian/libnss-ldapd.postinst: fix handling of configfile
+	  values with spaces and symbols that could cause problems with sed
+
+2007-08-25 11:52  arthur
+
+	* [r362] debian/libnss-ldapd.postinst: change regular expression
+	  boundry to | instead of % because it is less likely to appear
+	  with normal use
+
+2007-08-25 11:51  arthur
+
+	* [r361] debian/libnss-ldapd.config: clear password informating in
+	  Debconf database if binddn is not used
+
+2007-08-19 15:38  arthur
+
+	* [r360] tests, tests/Makefile.am, tests/test_cfg.c: add some
+	  checks for the configuration module
+
+2007-08-19 14:26  arthur
+
+	* [r359] configure.ac, tests/Makefile.am, tests/dict,
+	  tests/test_dict.c, tests/test_tio.c, tests/tio: move dict and tio
+	  tests into the tests directory
+
+2007-08-19 14:12  arthur
+
+	* [r358] debian/po/pt.po: include updated Portugese translation by
+	  Américo Monteiro <a_monteiro@netcabo.pt>
+
+2007-08-19 14:11  arthur
+
+	* [r357] debian/po/templates.pot: change Project-Id-Version project
+	  name
+
+2007-08-19 14:09  arthur
+
+	* [r356] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fr.po,
+	  debian/po/ja.po, debian/po/nl.po, debian/po/pt.po,
+	  debian/po/pt_BR.po, debian/po/ru.po, debian/po/sv.po,
+	  debian/po/templates.pot, debian/po/vi.po: update
+	  Project-Id-Version and Report-Msgid-Bugs-To headers
+
+2007-08-19 14:08  arthur
+
+	* [r355] debian/copyright, m4/acx_pthread.m4: include newer version
+	  of acx_pthread.m4
+
+2007-08-19 13:28  arthur
+
+	* [r354] README: add a note about case-sensitivity of NSS and LDAP
+	  databases
+
+2007-08-19 11:19  arthur
+
+	* [r353] debian/libnss-ldapd.config, debian/libnss-ldapd.postinst:
+	  fix some bugs in mangling of configfile and be more cautious
+	  about replacing values (only replace first occurrence and only
+	  match options with the correct number of options)
+
+2007-08-19 11:00  arthur
+
+	* [r352] debian/libnss-ldapd.postinst: remove passwords from
+	  configfile if the [root]binddn option was removed and always
+	  unset the passwd in the debconf database
+
+2007-08-19 10:54  arthur
+
+	* [r351] config.guess, config.sub: include updated files
+
+2007-08-19 09:22  arthur
+
+	* [r350] debian/libnss-ldapd.postinst: no longer use
+	  /etc/libnss-ldap.conf as a basis for creating a new configuration
+	  file since the syntax is no longer compatible
+
+2007-08-19 09:16  arthur
+
+	* [r349] debian/libnss-ldapd.postinst: only restart nscd on
+	  configure
+
+2007-08-19 09:11  arthur
+
+	* [r348] debian/libnss-ldapd.config, debian/libnss-ldapd.postinst,
+	  debian/libnss-ldapd.templates, debian/po/ca.po, debian/po/cs.po,
+	  debian/po/da.po, debian/po/de.po, debian/po/es.po,
+	  debian/po/fr.po, debian/po/ja.po, debian/po/nl.po,
+	  debian/po/pt.po, debian/po/pt_BR.po, debian/po/ru.po,
+	  debian/po/sv.po, debian/po/templates.pot, debian/po/vi.po: remove
+	  the ldap-version question as it should be unneeded in the most
+	  common installations (where it needs to be set the whole config
+	  is likely te need tweaking)
+
+2007-08-18 20:56  arthur
+
+	* [r347] debian/libnss-ldapd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fr.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po: rephrase the uri question and add some more
+	  pointers on how to specify the value
+
+2007-08-18 20:47  arthur
+
+	* [r346] debian/libnss-ldapd.nslcd.init: change remaining reference
+	  to $PIDFILE into $NSLCD_PIDFILE
+
+2007-08-18 20:11  arthur
+
+	* [r345] nslcd/ldap-nss.c: fix a couple of uses of per-map bases
+	  that could be NULL and remove the ldap_proxy_bind_args that
+	  wasn't used anywhere
+
+2007-08-18 19:37  arthur
+
+	* [r344] man/nslcd.8.xml: replace remaining \- with -
+
+2007-08-18 19:35  arthur
+
+	* [r343] configure.ac, man/nss-ldapd.conf.5.xml, nslcd/attmap.c,
+	  nslcd/attmap.h, nslcd/cfg.c, nslcd/cfg.h, nslcd/ldap-nss.c,
+	  nslcd/ldap-schema.h, nslcd/nslcd.c, nss-ldapd.conf: rewrite
+	  configuration file handling to be simpler and more consistent,
+	  this does mean that the syntax of the configfile has changed from
+	  the PADL one and that some options were removed (also update
+	  manual page and sample config file to reflect changes)
+
+2007-08-03 08:13  arthur
+
+	* [r342] nslcd/cfg.c, nslcd/cfg.h, nslcd/group.c: remove
+	  nss_initgroups and nss_initgroups_ignoreusers configfile options
+
+2007-08-03 07:21  arthur
+
+	* [r341] HACKING, README: documentation improvements
+
+2007-08-03 07:20  arthur
+
+	* [r340] README, configure.ac, man/nss-ldapd.conf.5.xml,
+	  nslcd/cfg.c, nslcd/cfg.h, nslcd/ldap-nss.c, nslcd/ldap-nss.h:
+	  remove --enable-paged-results configure option and now always do
+	  runtime configuration, remove nss_paged_results configfile option
+	  and use pagesize option to specify usage of paging or not
+
+2007-08-02 21:59  arthur
+
+	* [r339] README: some spelling fixes, added a section on
+	  unsupported features and rephrased default LDAP schema
+	  objectclasses as filters
+
+2007-07-31 13:54  arthur
+
+	* [r338] Makefile.am, configure.ac, debian/control, man,
+	  man/Makefile.am, man/nslcd.8.xml, man/nss-ldapd.conf.5.xml,
+	  nslcd.8, nss-ldapd.conf.5: switch to using docbook for manual
+	  pages, use docbook2x-man for generating the manual pages and
+	  update the nss-ldapd.conf manual page slightly
+
+2007-07-28 16:20  arthur
+
+	* [r337] nslcd/alias.c, nslcd/cfg.h, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/ldap-nss.c, nslcd/ldap-nss.h,
+	  nslcd/ldap-schema.c, nslcd/ldap-schema.h, nslcd/netgroup.c,
+	  nslcd/network.c, nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c,
+	  nslcd/service.c, nslcd/shadow.c: define the list of attributes to
+	  look up in searches in the service modules instead of in
+	  ldap-schema
+
+2007-07-28 14:57  arthur
+
+	* [r336] nslcd/attmap.h: fix typo in comment
+
+2007-07-27 09:54  arthur
+
+	* [r334] nslcd.h: fix typo
+
+2007-07-26 20:11  arthur
+
+	* [r332] nslcd/cfg.c, nslcd/ldap-schema.h: remove some more old
+	  mapping stuff and change configuration file keyword to map with
+	  the new syntax
+
+2007-07-26 19:34  arthur
+
+	* [r331] nslcd/alias.c, nslcd/attmap.c, nslcd/attmap.h,
+	  nslcd/cfg.c, nslcd/cfg.h, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/ldap-nss.c, nslcd/netgroup.c,
+	  nslcd/network.c, nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c,
+	  nslcd/service.c, nslcd/shadow.c: switch to the new attribute
+	  mapping code
+
+2007-07-26 16:00  arthur
+
+	* [r330] nslcd/cfg.c, nslcd/cfg.h, nslcd/ldap-nss.c,
+	  nslcd/ldap-nss.h, nslcd/ldap-schema.c: get rid of default and
+	  override attribute value mappings and remove host and port
+	  configuration options
+
+2007-07-26 11:58  arthur
+
+	* [r329] nslcd/ldap-nss.c, nslcd/ldap-nss.h, nslcd/shadow.c: move
+	  some shadow specific functions to shadow.c
+
+2007-07-26 11:57  arthur
+
+	* [r328] nslcd/cfg.c, nslcd/cfg.h: make function
+	  _nss_ldap_add_uri() static
+
+2007-07-24 15:36  arthur
+
+	* [r327] nslcd/ldap-nss.c, nslcd/ldap-nss.h, nslcd/ldap-schema.c:
+	  remove some more unused code
+
+2007-07-24 13:38  arthur
+
+	* [r326] nslcd/Makefile.am, nslcd/alias.c, nslcd/attmap.c,
+	  nslcd/attmap.h, nslcd/cfg.c, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/ldap-nss.c, nslcd/ldap-nss.h,
+	  nslcd/ldap-schema.c, nslcd/ldap-schema.h, nslcd/netgroup.c,
+	  nslcd/network.c, nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c,
+	  nslcd/service.c, nslcd/shadow.c, nslcd/util.c: switch to a new
+	  interface for doing attribute mapping, splitting the attribute
+	  mapping stuff into a separate file
+
+2007-07-24 10:13  arthur
+
+	* [r325] nslcd/cfg.c, nslcd/ldap-schema.c, nslcd/ldap-schema.h: get
+	  rid of some unused attribute mappings and a small reorganisation
+	  of code
+
+2007-07-24 06:52  arthur
+
+	* [r324] debian/libnss-ldapd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fr.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po: rephrase nsswitch.conf question and removed
+	  reference to example file we don't ship
+
+2007-07-24 06:40  arthur
+
+	* [r323] debian/copyright, nslcd/Makefile.am, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/dnsconfig.c, nslcd/dnsconfig.h,
+	  nslcd/resolve.c, nslcd/resolve.h, nss-ldapd.conf.5: get rid of
+	  dnsconfig stuff since that probably didn't work anyway and it
+	  cleans up some stuff
+
+2007-07-23 20:24  arthur
+
+	* [r315] common/dict.c, tests/dict/test_dict.c: fix a serious bug
+	  in dict_values_next() that would return map pointers instead of
+	  values and write a test for it
+
+2007-07-23 15:23  arthur
+
+	* [r314] debian/rules: use stricter distclean run in clean target
+	  as suggested by lintian
+
+2007-07-23 14:42  arthur
+
+	* [r313] common/dict.c, common/dict.h, tests/dict/test_dict.c: add
+	  support for removing entries from a DICT by setting the value to
+	  NULL (this does not free any memory)
+
+2007-07-21 14:04  arthur
+
+	* [r310] AUTHORS: include translater of debconf templates to French
+
+2007-07-18 07:12  arthur
+
+	* [r309] debian/po/fr.po: typo fix by Cyril Brulebois
+	  <cyril.brulebois@enst-bretagne.fr>
+
+2007-07-16 19:29  arthur
+
+	* [r308] debian/po/fr.po: update French (fr) translation of debconf
+	  templates by Cyril Brulebois <cyril.brulebois@enst-bretagne.fr>
+
+2007-07-15 21:40  arthur
+
+	* [r307] tests/tio/test_tio.c: disable test that will always fail
+
+2007-07-15 21:37  arthur
+
+	* [r306] common/tio.c: fix typo
+
+2007-07-15 21:35  arthur
+
+	* [r305] common/tio.c: fix bug with buffer magic in writing code
+
+2007-07-14 09:33  arthur
+
+	* [r304] AUTHORS, debian/copyright, debian/po/pt.po: add Portuguese
+	  (pt) translation of debconf templates by Américo Monteiro
+	  <a_monteiro@netcabo.pt>
+
+2007-07-13 09:45  arthur
+
+	* [r303] tests/dict/Makefile.am, tests/tio/Makefile.am: do the
+	  simple unit tests at make check time
+
+2007-07-13 09:31  arthur
+
+	* [r302] Makefile.am: don't include config diretory which we don't
+	  use
+
+2007-07-13 08:44  arthur
+
+	* [r301] common/tio.c: add const and add FIXME about a to-be-fixed
+	  race condition
+
+2007-07-13 08:42  arthur
+
+	* [r300] nss/networks.c: flag the address family parameter as
+	  unused
+
+2007-07-13 08:26  arthur
+
+	* [r299] README: add notes about format of host and ethers entries
+	  in LDAP database
+
+2007-07-13 08:17  arthur
+
+	* [r298] debian/control: add XS-Vcs-Svn and XS-Vcs-Browser as
+	  specified in #391023
+
+2007-06-18 08:46  arthur
+
+	* [r297] nslcd/nslcd.c: add comment explaining the use of chmod()
+	  over fchmod()
+
+2007-06-17 16:48  arthur
+
+	* [r294] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  nss-ldapd.conf.5: get files ready for 0.2.1 release
+
 2007-06-17 14:05  arthur
 
 	* [r293] Makefile.am: do proper wildcard expansion

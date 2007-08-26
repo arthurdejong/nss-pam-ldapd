@@ -1,41 +1,38 @@
 probably before we can call this stable
 ---------------------------------------
 * implement _nss_ldap_initgroups_dyn()
-* split out configuration part into own source file
 * clean up and refactor ldap server code
-* FIXME: strerror() is not reentrant
-* resolve.[ch] has license: BSD WITH ADVERTISING CLAUSE - LGPL problem?
-* get rootbindpw in Debian package working again
-* rewrite nss-ldapd.conf(5) manual page
+* fix usage of strerror() as it is not thread safe
 * error out quickly when the LDAP server is down
+* fix race condition when setting signal mask in common/tio.c
+* find problem with reachability of LDAP server
+* fix usage of filter configfile keyword
 
 other items
 -----------
-* set up connection to LDAP server before making NSLCD mechanism available
-  (e.g. before creating socket)
+* set up (test) connection to LDAP server before creating socket
 * Debian packaging: maybe remove stuff from /etc/nsswitch.conf on remove or
   purge (maybe prompt?)
-* support ipv6 in name (host address) lookups
-* support ipv6 in LDAP connections (investigate if OpenLDAP supports it)
-* probably disable rootbinddn for now and document the fact that you should
-  use libpam-ldap for authentication without exposing the passwords through
-  LDAP
-* redo the attribute mapping stuff
+* support IPv6 in name (host address) lookups
+* support IPv6 in LDAP connections (investigate if OpenLDAP supports it)
+* probably document that you should use libpam-ldap for authentication without
+  exposing the passwords through NSS
 * make a test suite (instructions for setting up environment (server), LDIF
   file, nsswitch.conf and nss-ldapd.conf)
-* support bootparams (check README also)
-* support publickey (check README also)
-* support netmasks (check README also)
-* add a warning somewhere as to when the NSS functions are available
-* reserve some threads in the server for root users
+* write more unit tests
+* maybe support bootparams (check README also)
+* maybe support publickey (check README also)
+* maybe support netmasks (check README also)
+* reserve some threads in the server for root users (probably set up
+  connection pools)
 * add sanity checking code (e.g. not too large buffer allocation and checking
   that host, user, etc do not contain funky characters) in all server modules
 * implement running under a different uid/gid (maybe chroot jail)
-* think of a way to preserve the case-sensitive nature of NSS (while
-  maintaining the case insensitive LDAP)
 * maybe remove dh_makeshlibs from debian/rules (probably not needed)
 * include a generic init script
 * log some statistics: "passwd=100 shadow=10 host=20 rpc=10" (10 req/minute)
-* get debconf template translations from BTS
 * in the server: once the request is done pass the flushing of the buffers to
   a separate thread so our workers are available to handle new requests
+* reconfigure or upgrade of Debian package should restart nslcd instead of
+  stop and later on start
+* fix a problem with spaces in DNs in configfile

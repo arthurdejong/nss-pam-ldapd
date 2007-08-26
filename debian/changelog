@@ -1,3 +1,31 @@
+nss-ldapd (0.3) unstable; urgency=low
+
+  * added XS-Vcs-Svn and XS-Vcs-Browser as specified in #391023
+  * improved manual pages and use docbook2x-man for generating them
+  * a bug in the communication buffer handling code was fixed
+  * a bug in the dictionary code was fixed (code not yet in use)
+  * a fix for the init script that used a wrong pidfile
+  * configuration file handling code was rewritten to better maintainable
+  * some configuration file options have changed which means that
+    compatibility with the nss_ldap configuration file is lost
+  * configuration syntax is now documented in the nss-ldapd.conf(5) manual
+    page
+  * support for dnsconfig was removed
+  * the configuration file no longer supports using multiple search bases
+  * removed nss_initgroups and nss_initgroups_ignoreusers options
+  * removed --enable-paged-results configure option and use pagesize
+    configuration file option to specify usage of paging at runtime
+  * added Portuguese debconf translation by Américo Monteiro
+    (closes: #433039)
+  * Debian package configuration improvements and simplifications
+  * use docbook2x-man for generating manual pages
+  * miscellaneous documentation improvements including improved manual pages
+  * general code reorganisation and clean-ups to achieve another 9% code
+    reduction relative to 0.2.1 release (more than 40% relative to nss_ldap)
+  * SASL, Kerberos and SSL/TLS support remain untested
+
+ -- Arthur de Jong <adejong@debian.org>  Sun, 26 Aug 2007 19:00:00 +0200
+
 nss-ldapd (0.2.1) unstable; urgency=low
 
   * fix permissions of server socket (this fixes a problem where non-root
