@@ -42,6 +42,7 @@
 #include <ldap.h>
 
 #include "common/tio.h"
+#include "cfg.h"
 
 #ifndef LDAP_FILT_MAXSIZ
 #define LDAP_FILT_MAXSIZ 1024
@@ -66,35 +67,6 @@
 /* worst case */
 #define bytesleft(ptr, blen, TYPE) \
   ( (blen < alignof(TYPE)) ? 0 : (blen - alignof(TYPE) + 1))
-
-/* selectors for different maps */
-enum ldap_map_selector
-{
-  LM_PASSWD,
-  LM_SHADOW,
-  LM_GROUP,
-  LM_HOSTS,
-  LM_SERVICES,
-  LM_NETWORKS,
-  LM_PROTOCOLS,
-  LM_RPC,
-  LM_ETHERS,
-  LM_ALIASES,
-  LM_NETGROUP,
-  LM_NONE
-};
-
-struct ldap_service_search_descriptor
-{
-  /* search base, qualified */
-  char *lsd_base;
-  /* scope */
-  int lsd_scope;
-  /* filter */
-  char *lsd_filter;
-  /* next */
-  struct ldap_service_search_descriptor *lsd_next;
-};
 
 enum ldap_args_types
 {

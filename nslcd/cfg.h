@@ -26,7 +26,6 @@
 #ifndef _CFG_H
 #define _CFG_H
 
-#include "ldap-nss.h"
 #include "common/dict.h"
 #include "compat/attrs.h"
 
@@ -58,6 +57,35 @@ enum ldap_shadow_selector
 {
   LS_RFC2307_SHADOW,
   LS_AD_SHADOW
+};
+
+/* selectors for different maps */
+enum ldap_map_selector
+{
+  LM_PASSWD,
+  LM_SHADOW,
+  LM_GROUP,
+  LM_HOSTS,
+  LM_SERVICES,
+  LM_NETWORKS,
+  LM_PROTOCOLS,
+  LM_RPC,
+  LM_ETHERS,
+  LM_ALIASES,
+  LM_NETGROUP,
+  LM_NONE
+};
+
+struct ldap_service_search_descriptor
+{
+  /* search base, qualified */
+  char *lsd_base;
+  /* scope */
+  int lsd_scope;
+  /* filter */
+  char *lsd_filter;
+  /* next */
+  struct ldap_service_search_descriptor *lsd_next;
 };
 
 struct ldap_config
