@@ -17,9 +17,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-if GENMAN
-
 dist_man_MANS = nss-ldapd.conf.5 nslcd.8
+
+EXTRA_DIST = nss-ldapd.conf.5.xml nslcd.8.xml
+
+if GENMAN
 
 %: %.xml
 	$(DOCBOOK2X_MAN) \
