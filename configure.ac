@@ -52,6 +52,7 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+AM_PROG_CC_C_O
 
 # Checks for tool to convert docbook to man
 AC_PATH_PROGS(DOCBOOK2X_MAN, docbook2x-man)
