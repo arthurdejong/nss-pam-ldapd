@@ -75,13 +75,13 @@ struct ether
 };
 
 /* the attributes to request with searches */
-static const char *attlst[3];
+static const char *ether_attlst[3];
 
-static void attlst_init(void)
+static void ether_attlst_init(void)
 {
-  attlst[0] = attmap_ether_cn;
-  attlst[1] = attmap_ether_macAddress;
-  attlst[2] = NULL;
+  ether_attlst[0]=attmap_ether_cn;
+  ether_attlst[1]=attmap_ether_macAddress;
+  ether_attlst[2]=NULL;
 }
 
 static enum nss_status
@@ -137,8 +137,8 @@ int nslcd_ether_byname(TFILE *fp)
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostton,LM_ETHERS,attlst,_nss_ldap_parse_ether));
+  ether_attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostton,LM_ETHERS,ether_attlst,_nss_ldap_parse_ether));
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -173,8 +173,8 @@ int nslcd_ether_byether(TFILE *fp)
             and we're looking for 1:0:e:... (leading zeros) */
   LA_STRING(a)=ether_ntoa(&addr);
   LA_TYPE(a)=LA_TYPE_STRING;
-  attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getntohost,LM_ETHERS,attlst,_nss_ldap_parse_ether));
+  ether_attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getntohost,LM_ETHERS,ether_attlst,_nss_ldap_parse_ether));
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -204,8 +204,8 @@ int nslcd_ether_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&ether_context)==NULL)
     return -1;
   /* loop over all results */
-  attlst_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&ether_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getetherent,LM_ETHERS,attlst,_nss_ldap_parse_ether)))==NSLCD_RESULT_SUCCESS)
+  ether_attlst_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&ether_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getetherent,LM_ETHERS,ether_attlst,_nss_ldap_parse_ether)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

@@ -53,20 +53,20 @@
 #include "ldap-schema.h"
 
 /* the attributes to request with searches */
-static const char *attlst[10];
+static const char *shadow_attlst[10];
 
-static void attlst_init(void)
+static void shadow_attlst_init(void)
 {
-  attlst[0] = attmap_shadow_uid;
-  attlst[1] = attmap_shadow_userPassword;
-  attlst[2] = attmap_shadow_shadowLastChange;
-  attlst[3] = attmap_shadow_shadowMax;
-  attlst[4] = attmap_shadow_shadowMin;
-  attlst[5] = attmap_shadow_shadowWarning;
-  attlst[6] = attmap_shadow_shadowInactive;
-  attlst[7] = attmap_shadow_shadowExpire;
-  attlst[8] = attmap_shadow_shadowFlag;
-  attlst[9] = NULL;
+  shadow_attlst[0]=attmap_shadow_uid;
+  shadow_attlst[1]=attmap_shadow_userPassword;
+  shadow_attlst[2]=attmap_shadow_shadowLastChange;
+  shadow_attlst[3]=attmap_shadow_shadowMax;
+  shadow_attlst[4]=attmap_shadow_shadowMin;
+  shadow_attlst[5]=attmap_shadow_shadowWarning;
+  shadow_attlst[6]=attmap_shadow_shadowInactive;
+  shadow_attlst[7]=attmap_shadow_shadowExpire;
+  shadow_attlst[8]=attmap_shadow_shadowFlag;
+  shadow_attlst[9]=NULL;
 }
 
 static int
@@ -192,8 +192,8 @@ int nslcd_shadow_byname(TFILE *fp)
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getspnam,LM_SHADOW,attlst,_nss_ldap_parse_sp));
+  shadow_attlst_init();
+  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getspnam,LM_SHADOW,shadow_attlst,_nss_ldap_parse_sp));
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -223,8 +223,8 @@ int nslcd_shadow_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&shadow_context)==NULL)
     return -1;
   /* loop over all results */
-  attlst_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&shadow_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getspent,LM_SHADOW,attlst,_nss_ldap_parse_sp)))==NSLCD_RESULT_SUCCESS)
+  shadow_attlst_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&shadow_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getspent,LM_SHADOW,shadow_attlst,_nss_ldap_parse_sp)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

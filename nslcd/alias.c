@@ -46,13 +46,13 @@
 #include "ldap-schema.h"
 
 /* the attributes to request with searches */
-static const char *attlst[3];
+static const char *alias_attlst[3];
 
-static void attlst_init(void)
+static void alias_attlst_init(void)
 {
-  attlst[0] = attmap_alias_cn;
-  attlst[1] = attmap_alias_rfc822MailMember;
-  attlst[2] = NULL;
+  attlst[0]=attmap_alias_cn;
+  attlst[1]=attmap_alias_rfc822MailMember;
+  attlst[2]=NULL;
 }
 
 static enum nss_status _nss_ldap_parse_alias(
@@ -108,8 +108,8 @@ int nslcd_alias_byname(TFILE *fp)
   LA_INIT(a);
   LA_STRING(a)=name;
   LA_TYPE(a)=LA_TYPE_STRING;
-  attlst_init();
-  _nss_ldap_searchbyname(&a,_nss_ldap_filt_getaliasbyname,LM_ALIASES,attlst,fp,write_alias);
+  alias_attlst_init();
+  _nss_ldap_searchbyname(&a,_nss_ldap_filt_getaliasbyname,LM_ALIASES,alias_attlst,fp,write_alias);
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -133,8 +133,8 @@ int nslcd_alias_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&alias_context)==NULL)
     return -1;
   /* loop over all results */
-  attlst_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&alias_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getaliasent,LM_ALIASES,attlst,_nss_ldap_parse_alias)))==NSLCD_RESULT_SUCCESS)
+  alias_attlst_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&alias_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getaliasent,LM_ALIASES,alias_attlst,_nss_ldap_parse_alias)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
