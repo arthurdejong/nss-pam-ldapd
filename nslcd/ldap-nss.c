@@ -109,13 +109,6 @@ NSS_LDAP_DEFINE_LOCK (__lock);
 #define LS_INIT(state)  do { state.ls_type = LS_TYPE_INDEX; state.ls_retry = 0; state.ls_info.ls_index = -1; } while (0)
 
 
-#ifdef HAVE_SIGACTION
-static struct sigaction __stored_handler;
-static int __sigaction_retval = -1;
-#else
-static void (*__sigpipe_handler) (int) = SIG_DFL;
-#endif /* HAVE_SIGACTION */
-
 enum ldap_session_state
 {
   LS_UNINITIALIZED = -1,
@@ -587,85 +580,25 @@ do_rebind (LDAP * ld, char **whop, char **credp, int *methodp, int freeit)
 }
 #endif
 
-static void
-_nss_ldap_block_sigpipe (void)
-{
-#ifdef HAVE_SIGACTION
-  struct sigaction new_handler;
-
-  memset (&new_handler, 0, sizeof (new_handler));
-#if 0
-  /* XXX need to test for sa_sigaction, not on all platforms */
-  new_handler.sa_sigaction = NULL;
-#endif
-  new_handler.sa_handler = SIG_IGN;
-  sigemptyset (&new_handler.sa_mask);
-  new_handler.sa_flags = 0;
-#endif /* HAVE_SIGACTION */
-
-  /*
-   * Patch for Debian Bug 130006:
-   * ignore SIGPIPE for all LDAP operations.
-   *
-   * The following bug was reintroduced in nss_ldap-213 and is fixed here:
-   * http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=84344
-   *
-   * See:
-   * http://www.gnu.org/software/libc/manual/html_node/Signal-and-Sigaction.html
-   * for more details.
-   */
-#ifdef HAVE_SIGACTION
-  __sigaction_retval = sigaction (SIGPIPE, &new_handler, &__stored_handler);
-#elif defined(HAVE_SIGSET)
-  __sigpipe_handler = sigset (SIGPIPE, SIG_IGN);
-#else
-  __sigpipe_handler = signal (SIGPIPE, SIG_IGN);
-#endif /* HAVE_SIGSET */
-}
-
-static void
-_nss_ldap_unblock_sigpipe (void)
-{
-#ifdef HAVE_SIGACTION
-  if (__sigaction_retval == 0)
-    (void) sigaction (SIGPIPE, &__stored_handler, NULL);
-#else
-  if (__sigpipe_handler != SIG_ERR && __sigpipe_handler != SIG_IGN)
-    {
-#ifdef HAVE_SIGSET
-      (void) sigset (SIGPIPE, __sigpipe_handler);
-#else
-      (void) signal (SIGPIPE, __sigpipe_handler);
-#endif /* HAVE_SIGSET */
-    }
-#endif /* HAVE_SIGACTION */
-}
-
 /*
- * Acquires global lock, blocks SIGPIPE.
+ * Acquires global lock.
  */
 void
 _nss_ldap_enter (void)
 {
   log_log(LOG_DEBUG,"==> _nss_ldap_enter");
-
   NSS_LDAP_LOCK (__lock);
-  _nss_ldap_block_sigpipe();
-
   log_log(LOG_DEBUG,"<== _nss_ldap_enter");
 }
 
 /*
- * Releases global mutex, releases SIGPIPE.
+ * Releases global mutex.
  */
 void
 _nss_ldap_leave (void)
 {
   log_log(LOG_DEBUG,"==> _nss_ldap_leave");
-
-  _nss_ldap_unblock_sigpipe();
   NSS_LDAP_UNLOCK (__lock);
-
   log_log(LOG_DEBUG,"<== _nss_ldap_leave");
 }
 
