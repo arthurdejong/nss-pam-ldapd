@@ -23,13 +23,12 @@ EXTRA_DIST = nss-ldapd.conf.5.xml nslcd.8.xml
 
 if GENMAN
 
+MAINTAINERCLEANFILES = $(dist_man_MANS)
+
 %: %.xml
 	$(DOCBOOK2X_MAN) \
 	  --string-param header-3='$(RELEASE_MONTH)' \
 	  --string-param header-4='Version $(VERSION)' \
 	  $<
-
-clean-local:
-	-rm -f $(dist_man_MANS)
 
 endif
