@@ -1017,7 +1017,6 @@ static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
 
 static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroups_args_t * lia)
 {
-  struct ldap_args a;
   enum nss_status stat;
   struct ent_context *ctx=NULL;
   const char *gidnumber_attrs[3];
@@ -1062,16 +1061,14 @@ static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroup
   gidnumber_attrs[1] = attmap_group_memberOf;
   gidnumber_attrs[2] = NULL;
 
-  LA_INIT (a);
-  LA_STRING_LIST (a) = filteredMembersOf;
-  LA_TYPE (a) = LA_TYPE_STRING_LIST_OR;
-
   if (_nss_ldap_ent_context_init_locked (&ctx) == NULL)
     {
       free (filteredMembersOf);
       return NSS_STATUS_UNAVAIL;
     }
 
+  /* FIXME: the search filter is wrong here, we should figure out what it's
+            supposed to be */
   stat=_nss_ldap_getent_ex(&ctx,lia,NULL,0,&erange,
                            NULL,"(distinguishedName=%s)",gidnumber_attrs,
                            LM_GROUP,do_parse_initgroups_nested);
