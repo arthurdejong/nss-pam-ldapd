@@ -3,7 +3,7 @@
    This file is part of the nss-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,26 @@
 
 #include "config.h"
 
+#include <stdio.h>
+#include <stdarg.h>
+
 #include "nslcd.h"
 #include "common.h"
+
+/* simple wrapper around snptintf() to return non-0 in case
+   of any failure (but always keep string 0-terminated) */
+int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
+{
+  int res;
+  va_list ap;
+  /* do snprintf */
+  va_start(ap,format);
+  res=vsnprintf(buffer,buflen,format,ap);
+  /* NULL-terminate the string just to be on the safe side */
+  buffer[buflen-1]='\0';
+  /* check if the string was completely written */
+  return ((res<0)||(((size_t)res)>=buflen));
+}
 
 /* translates a nslcd return code (as defined in nslcd.h) to
    a nss code (as defined in nss.h) */

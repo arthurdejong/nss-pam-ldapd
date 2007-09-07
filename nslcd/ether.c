@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
-#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <net/if.h>
@@ -77,6 +76,47 @@ struct ether
 /* the attributes to request with searches */
 static const char *ether_attlst[3];
 
+/* create a search filter for searching an ethernet address
+   by name, return -1 on errors */
+static int mkfilter_ether_byname(const char *name,
+                                 char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if(myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                   "(&(%s=%s)(%s=%s))",
+                   attmap_objectClass,attmap_ether_objectClass,
+                   attmap_ether_cn,buf2);
+}
+
+static int mkfilter_ether_byether(const struct ether_addr *addr,
+                                  char *buffer,size_t buflen)
+{
+  char buf2[20];
+  /* transform into string */
+  if (ether_ntoa_r(addr,buf2)==NULL)
+    return -1;
+  /* FIXME: this has a bug when the directory has 01:00:0e:...
+            and we're looking for 1:0:e:... (leading zeros) */
+  /* there should be no characters that need escaping */
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                   "(&(%s=%s)(%s=%s))",
+                   attmap_objectClass,attmap_ether_objectClass,
+                   attmap_ether_macAddress,buf2);
+}
+
+static int mkfilter_ether_all(char *buffer,size_t buflen)
+{
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                   "(%s=%s)",
+                   attmap_objectClass,attmap_ether_objectClass);
+}
+
 static void ether_attlst_init(void)
 {
   ether_attlst[0]=attmap_ether_cn;
@@ -120,7 +160,7 @@ int nslcd_ether_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
-  struct ldap_args a;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct ether result;
   char buffer[1024];
@@ -134,11 +174,10 @@ int nslcd_ether_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_ETHER_BYNAME);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_ether_byname(name,filter,sizeof(filter));
   ether_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostton,LM_ETHERS,ether_attlst,_nss_ldap_parse_ether));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_ETHERS,
+                           NULL,filter,ether_attlst,_nss_ldap_parse_ether);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -154,7 +193,7 @@ int nslcd_ether_byether(TFILE *fp)
 {
   int32_t tmpint32;
   struct ether_addr addr;
-  struct ldap_args a;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct ether result;
   char buffer[1024];
@@ -168,13 +207,10 @@ int nslcd_ether_byether(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_ETHER_BYETHER);
   /* do the LDAP request */
-  LA_INIT(a);
-  /* FIXME: this has a bug when the directory has 01:00:0e:...
-            and we're looking for 1:0:e:... (leading zeros) */
-  LA_STRING(a)=ether_ntoa(&addr);
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_ether_byether(&addr,filter,sizeof(filter));
   ether_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getntohost,LM_ETHERS,ether_attlst,_nss_ldap_parse_ether));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_ETHERS,
+                           NULL,filter,ether_attlst,_nss_ldap_parse_ether);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)

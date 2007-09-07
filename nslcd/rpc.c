@@ -70,6 +70,37 @@
 /* the attributes to request with searches */
 static const char *rpc_attlst[3];
 
+static int mkfilter_rpc_byname(const char *name,
+                               char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if (myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%s))",
+                    attmap_objectClass,attmap_rpc_objectClass,
+                    attmap_rpc_cn,buf2);
+}
+
+static int mkfilter_rpc_bynumber(int number,
+                                 char *buffer,size_t buflen)
+{
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%d))",
+                    attmap_objectClass,attmap_rpc_objectClass,
+                    attmap_rpc_oncRpcNumber,number);
+}
+
+static int mkfilter_rpc_all(char *buffer,size_t buflen)
+{
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(%s=%s)",
+                    attmap_objectClass,attmap_rpc_objectClass);
+}
+
 static void rpc_attlst_init(void)
 {
   rpc_attlst[0]=attmap_rpc_cn;
@@ -121,7 +152,7 @@ int nslcd_rpc_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
-  struct ldap_args a;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct rpcent result;
   char buffer[1024];
@@ -135,11 +166,10 @@ int nslcd_rpc_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_RPC_BYNAME);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_rpc_byname(name,filter,sizeof(filter));
   rpc_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcbyname,LM_RPC,rpc_attlst,_nss_ldap_parse_rpc));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_RPC,
+                           NULL,filter,rpc_attlst,_nss_ldap_parse_rpc);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -153,7 +183,7 @@ int nslcd_rpc_bynumber(TFILE *fp)
 {
   int32_t tmpint32;
   int number;
-  struct ldap_args a;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct rpcent result;
   char buffer[1024];
@@ -167,11 +197,10 @@ int nslcd_rpc_bynumber(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_RPC_BYNUMBER);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_NUMBER(a)=number;
-  LA_TYPE(a)=LA_TYPE_NUMBER;
+  mkfilter_rpc_bynumber(number,filter,sizeof(filter));
   rpc_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getrpcbynumber,LM_RPC,rpc_attlst,_nss_ldap_parse_rpc));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_RPC,
+                           NULL,filter,rpc_attlst,_nss_ldap_parse_rpc);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)

@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -56,62 +56,37 @@
  */
 
 /* rfc822 mail aliases */
-char _nss_ldap_filt_getaliasbyname[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getaliasent[LDAP_FILT_MAXSIZ];
 
 /* MAC address mappings */
-char _nss_ldap_filt_gethostton[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getntohost[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getetherent[LDAP_FILT_MAXSIZ];
 
 /* groups */
-char _nss_ldap_filt_getgrnam[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getgrgid[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getgrent[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getgroupsbymemberanddn[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getgroupsbydn[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getpwnam_groupsbymember[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getgroupsbymember[LDAP_FILT_MAXSIZ];
 
 /* IP hosts */
-char _nss_ldap_filt_gethostbyname[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_gethostbyaddr[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_gethostent[LDAP_FILT_MAXSIZ];
 
 /* IP networks */
-char _nss_ldap_filt_getnetbyname[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getnetbyaddr[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getnetent[LDAP_FILT_MAXSIZ];
 
 /* IP protocols */
-char _nss_ldap_filt_getprotobyname[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getprotobynumber[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getprotoent[LDAP_FILT_MAXSIZ];
 
 /* users */
-char _nss_ldap_filt_getpwnam[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getpwuid[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getpwent[LDAP_FILT_MAXSIZ];
 
 /* RPCs */
-char _nss_ldap_filt_getrpcbyname[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getrpcbynumber[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getrpcent[LDAP_FILT_MAXSIZ];
 
 /* IP services */
-char _nss_ldap_filt_getservbyname[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getservbynameproto[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getservbyport[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_getservbyportproto[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getservent[LDAP_FILT_MAXSIZ];
 
 /* shadow users */
-char _nss_ldap_filt_getspnam[LDAP_FILT_MAXSIZ];
 char _nss_ldap_filt_getspent[LDAP_FILT_MAXSIZ];
-
-/* netgroups */
-char _nss_ldap_filt_getnetgrent[LDAP_FILT_MAXSIZ];
-char _nss_ldap_filt_innetgr[LDAP_FILT_MAXSIZ];
 
 /**
  * lookup filter initialization
@@ -120,29 +95,14 @@ void
 _nss_ldap_init_filters ()
 {
   /* rfc822 mail aliases */
-  snprintf (_nss_ldap_filt_getaliasbyname, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_alias_objectClass,
-            attmap_alias_cn, "%s");
   snprintf (_nss_ldap_filt_getaliasent, LDAP_FILT_MAXSIZ,
             "(%s=%s)", attmap_objectClass, attmap_alias_objectClass);
 
   /* MAC address mappings */
-  snprintf (_nss_ldap_filt_gethostton, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_ether_objectClass,
-            attmap_ether_cn, "%s");
-  snprintf (_nss_ldap_filt_getntohost, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_ether_objectClass, attmap_ether_macAddress,
-            "%s");
   snprintf (_nss_ldap_filt_getetherent, LDAP_FILT_MAXSIZ, "(%s=%s)",
             attmap_objectClass, attmap_ether_objectClass);
 
   /* groups */
-  snprintf (_nss_ldap_filt_getgrnam, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_group_objectClass,
-            attmap_group_cn, "%s");
-  snprintf (_nss_ldap_filt_getgrgid, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_group_objectClass,
-            attmap_group_gidNumber, "%d");
   snprintf (_nss_ldap_filt_getgrent, LDAP_FILT_MAXSIZ, "(&(%s=%s))",
             attmap_objectClass, attmap_group_objectClass);
   snprintf (_nss_ldap_filt_getgroupsbymemberanddn, LDAP_FILT_MAXSIZ,
@@ -151,91 +111,37 @@ _nss_ldap_init_filters ()
   snprintf (_nss_ldap_filt_getgroupsbydn, LDAP_FILT_MAXSIZ,
             "(&(%s=%s)(%s=%s))",
             attmap_objectClass, attmap_group_objectClass, attmap_group_uniqueMember, "%s");
-  snprintf (_nss_ldap_filt_getpwnam_groupsbymember, LDAP_FILT_MAXSIZ,
-            "(|(&(%s=%s)(%s=%s))(&(%s=%s)(%s=%s)))",
-            attmap_objectClass, attmap_group_objectClass, attmap_group_memberUid, "%s",
-            attmap_objectClass, attmap_passwd_objectClass, attmap_passwd_uid, "%s");
   snprintf (_nss_ldap_filt_getgroupsbymember, LDAP_FILT_MAXSIZ,
             "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_group_objectClass, attmap_group_memberUid,
             "%s");
 
   /* IP hosts */
-  snprintf (_nss_ldap_filt_gethostbyname, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_host_objectClass, attmap_host_cn,
-            "%s");
-  snprintf (_nss_ldap_filt_gethostbyaddr, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_host_objectClass, attmap_host_ipHostNumber,
-            "%s");
   snprintf (_nss_ldap_filt_gethostent, LDAP_FILT_MAXSIZ, "(%s=%s)",
             attmap_objectClass, attmap_host_objectClass);
 
   /* IP networks */
-  snprintf (_nss_ldap_filt_getnetbyname, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_network_objectClass,
-            attmap_network_cn, "%s");
-  snprintf (_nss_ldap_filt_getnetbyaddr, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_network_objectClass,
-            attmap_network_ipNetworkNumber, "%s");
   snprintf (_nss_ldap_filt_getnetent, LDAP_FILT_MAXSIZ, "(%s=%s)",
             attmap_objectClass, attmap_network_objectClass);
 
   /* IP protocols */
-  snprintf (_nss_ldap_filt_getprotobyname, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_protocol_objectClass,
-            attmap_protocol_cn, "%s");
-  snprintf (_nss_ldap_filt_getprotobynumber, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_protocol_objectClass,
-            attmap_protocol_ipProtocolNumber, "%d");
   snprintf (_nss_ldap_filt_getprotoent, LDAP_FILT_MAXSIZ, "(%s=%s)",
             attmap_objectClass, attmap_protocol_objectClass);
 
   /* users */
-  snprintf (_nss_ldap_filt_getpwnam, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_passwd_objectClass,
-            attmap_passwd_uid, "%s");
-  snprintf (_nss_ldap_filt_getpwuid, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))",
-            attmap_objectClass, attmap_passwd_objectClass, attmap_passwd_uidNumber, "%d");
   snprintf (_nss_ldap_filt_getpwent, LDAP_FILT_MAXSIZ,
             "(%s=%s)", attmap_objectClass, attmap_passwd_objectClass);
 
   /* RPCs */
-  snprintf (_nss_ldap_filt_getrpcbyname, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_rpc_objectClass, attmap_rpc_cn, "%s");
-  snprintf (_nss_ldap_filt_getrpcbynumber, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_rpc_objectClass, attmap_rpc_oncRpcNumber,
-            "%d");
   snprintf (_nss_ldap_filt_getrpcent, LDAP_FILT_MAXSIZ, "(%s=%s)",
             attmap_objectClass, attmap_rpc_objectClass);
 
   /* IP services */
-  snprintf (_nss_ldap_filt_getservbyname, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_service_objectClass, attmap_service_cn,
-            "%s");
-  snprintf (_nss_ldap_filt_getservbynameproto, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s)(%s=%s))",
-            attmap_objectClass, attmap_service_objectClass, attmap_service_cn, "%s", attmap_service_ipServiceProtocol,
-            "%s");
-  snprintf (_nss_ldap_filt_getservbyport, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_service_objectClass, attmap_service_ipServicePort,
-            "%d");
-  snprintf (_nss_ldap_filt_getservbyportproto, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s)(%s=%s))", attmap_objectClass, attmap_service_objectClass,
-            attmap_service_ipServicePort, "%d", attmap_service_ipServiceProtocol, "%s");
   snprintf (_nss_ldap_filt_getservent, LDAP_FILT_MAXSIZ, "(%s=%s)",
             attmap_objectClass, attmap_service_objectClass);
 
   /* shadow users */
-  snprintf (_nss_ldap_filt_getspnam, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_shadow_objectClass,
-            attmap_shadow_uid, "%s");
   snprintf (_nss_ldap_filt_getspent, LDAP_FILT_MAXSIZ,
             "(%s=%s)", attmap_objectClass, attmap_shadow_objectClass);
-
-  /* netgroups */
-  snprintf (_nss_ldap_filt_getnetgrent, LDAP_FILT_MAXSIZ,
-            "(&(%s=%s)(%s=%s))", attmap_objectClass, attmap_netgroup_objectClass,
-            attmap_netgroup_cn, "%s");
 
 }
 

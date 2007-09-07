@@ -233,18 +233,14 @@ char *_nss_ldap_next_attribute (LDAPMessage * entry, BerElement *ber);
 /*
  * Synchronous search cover (caller acquires lock).
  */
-enum nss_status _nss_ldap_search_s (const struct ldap_args * args,   /* IN */
-                               const char *filterprot,  /* IN */
-                               enum ldap_map_selector sel, /* IN */
-                               const char **attrs, /* IN */
-                               int sizelimit,   /* IN */
-                               LDAPMessage ** res /* OUT */ );
-
+enum nss_status _nss_ldap_search_s(
+        const char *base,const char *filter,
+        enum ldap_map_selector sel,
+        const char **attrs,int sizelimit,LDAPMessage **res);
 
 int _nss_ldap_searchbyname(
-        struct ldap_args *args,const char *filterprot,
+        const char *base,const char *filter,
         enum ldap_map_selector sel,const char **attrs,TFILE *fp,NEWparser_t parser);
-
 
 /*
  * Emulate X.500 read operation.
@@ -285,16 +281,11 @@ enum nss_status _nss_ldap_getent (struct ent_context ** ctx, /* IN/OUT */
 /*
  * common lookup routine; uses synchronous API.
  */
-enum nss_status _nss_ldap_getbyname (struct ldap_args * args,        /* IN/OUT */
-                                void *result,   /* IN/OUT */
-                                char *buffer,   /* IN */
-                                size_t buflen,  /* IN */
-                                int *errnop,    /* OUT */
-                                const char *filterprot, /* IN */
-                                enum ldap_map_selector sel,        /* IN */
-                                const char **attrs, /* IN */
-                                parser_t parser /* IN */ );
-
+int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,
+                        int *errnop, enum ldap_map_selector sel,
+                        const char *base, const char *filter,
+                        const char **attrs,
+                        parser_t parser);
 
 /* parsing utility functions */
 enum nss_status _nss_ldap_assign_attrvals (LDAPMessage * e,     /* IN */

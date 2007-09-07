@@ -117,6 +117,20 @@ struct mynetgrent
 /* the attributes to request with searches */
 static const char *netgroup_attlst[4];
 
+static int mkfilter_netgroup_byname(const char *name,
+                                    char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if (myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%s))",
+                    attmap_objectClass,attmap_netgroup_objectClass,
+                    attmap_netgroup_cn,buf2);
+}
+
 static void netgroup_attlst_init(void)
 {
   netgroup_attlst[0]=attmap_netgroup_cn;
@@ -302,11 +316,11 @@ int nslcd_netgroup_byname(TFILE *fp)
   int32_t tmpint32;
   static struct ent_context *netgroup_context=NULL;
   char name[256];
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct mynetgrent result;
   char buffer[1024];
   int errnop;
-  struct ldap_args a;
   enum nss_status stat=NSS_STATUS_SUCCESS;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
@@ -319,13 +333,13 @@ int nslcd_netgroup_byname(TFILE *fp)
   result.data=result.cursor=NULL;
   result.data_size = 0;
   /* do initial ldap request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_netgroup_byname(name,filter,sizeof(filter));
   netgroup_attlst_init();
-  stat=_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getnetgrent,LM_NETGROUP,netgroup_attlst,_nss_ldap_load_netgr);
+  if (_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_NETGROUP,
+                          NULL,filter,netgroup_attlst,_nss_ldap_load_netgr))
+    return -1;
   if (_nss_ldap_ent_context_init(&netgroup_context)==NULL)
-     return -1;
+    return -1;
   /* loop over all results */
   while ((stat=_nss_ldap_parse_netgr(&result,buffer,1024))==NSS_STATUS_SUCCESS)
   {

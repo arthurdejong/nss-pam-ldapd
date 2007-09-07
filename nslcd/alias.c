@@ -48,11 +48,37 @@
 /* the attributes to request with searches */
 static const char *alias_attlst[3];
 
+/* create a search filter for searching an alias by name,
+   return -1 on errors */
+static int mkfilter_alias_byname(const char *name,
+                                 char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if (myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%s))",
+                    attmap_objectClass,attmap_alias_objectClass,
+                    attmap_alias_cn,buf2);
+}
+
+/* create a search filter for enumerating all aliases,
+   return -1 on errors */
+static int mkfilter_alias_all(char *buffer,size_t buflen)
+{
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(%s=%s)",
+                    attmap_objectClass,attmap_alias_objectClass);
+}
+
 static void alias_attlst_init(void)
 {
-  attlst[0]=attmap_alias_cn;
-  attlst[1]=attmap_alias_rfc822MailMember;
-  attlst[2]=NULL;
+  alias_attlst[0]=attmap_alias_cn;
+  alias_attlst[1]=attmap_alias_rfc822MailMember;
+  alias_attlst[2]=NULL;
 }
 
 static enum nss_status _nss_ldap_parse_alias(
@@ -96,7 +122,7 @@ int nslcd_alias_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
-  struct ldap_args a;
+  char filter[1024];
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
@@ -105,11 +131,9 @@ int nslcd_alias_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_ALIAS_BYNAME);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_alias_byname(name,filter,sizeof(filter));
   alias_attlst_init();
-  _nss_ldap_searchbyname(&a,_nss_ldap_filt_getaliasbyname,LM_ALIASES,alias_attlst,fp,write_alias);
+  _nss_ldap_searchbyname(NULL,filter,LM_ALIASES,alias_attlst,fp,write_alias);
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;

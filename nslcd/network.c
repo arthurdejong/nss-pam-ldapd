@@ -61,6 +61,43 @@
 /* the attributes to request with searches */
 static const char *network_attlst[3];
 
+/* create a search filter for searching a network entry
+   by name, return -1 on errors */
+static int mkfilter_network_byname(const char *name,
+                                   char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if (myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%s))",
+                    attmap_objectClass,attmap_network_objectClass,
+                    attmap_network_cn,buf2);
+}
+
+static int mkfilter_network_byaddr(const char *name,
+                                   char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if (myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%s))",
+                    attmap_objectClass,attmap_network_objectClass,
+                    attmap_network_ipNetworkNumber,buf2);
+}
+
+static int mkfilter_network_all(char *buffer,size_t buflen)
+{
+  return mysnprintf(buffer,buflen,
+                    "(%s=%s)",
+                    attmap_objectClass,attmap_network_objectClass);
+}
+
 static void network_attlst_init(void)
 {
   network_attlst[0]=attmap_network_cn;
@@ -124,7 +161,7 @@ int nslcd_network_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
-  struct ldap_args a;
+  char filter[1024];
   int retv;
   struct netent result;
   char buffer[1024];
@@ -137,11 +174,10 @@ int nslcd_network_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_NETWORK_BYNAME);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_network_byname(name,filter,sizeof(filter));
   network_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getnetbyname,LM_NETWORKS,network_attlst,_nss_ldap_parse_net));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_NETWORKS,
+                           NULL,filter,network_attlst,_nss_ldap_parse_net);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -157,7 +193,7 @@ int nslcd_network_byaddr(TFILE *fp)
   int af;
   int len;
   char addr[64],name[1024];
-  struct ldap_args a;
+  char filter[1024];
   int retv=456;
   struct netent result;
   char buffer[1024];
@@ -189,17 +225,15 @@ int nslcd_network_byaddr(TFILE *fp)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_NETWORK_BYADDR);
-  /* prepare the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
   /* do requests until we find a result */
   /* TODO: probably do more sofisticated queries */
   while (retv==456)
   {
     /* do the request */
+    mkfilter_network_byaddr(name,filter,sizeof(filter));
     network_attlst_init();
-    retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getnetbyaddr,LM_NETWORKS,network_attlst,_nss_ldap_parse_net));
+    retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_NETWORKS,
+                             NULL,filter,network_attlst,_nss_ldap_parse_net);
     /* if no entry was found, retry with .0 stripped from the end */
     if ((retv==NSLCD_RESULT_NOTFOUND) &&
         (strlen(name)>2) &&

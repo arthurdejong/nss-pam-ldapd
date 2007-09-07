@@ -63,6 +63,43 @@
 /* the attributes to request with searches */
 static const char *host_attlst[3];
 
+/* create a search filter for searching a host entry
+   by name, return -1 on errors */
+static int mkfilter_host_byname(const char *name,
+                                char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if (myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%s))",
+                    attmap_objectClass,attmap_host_objectClass,
+                    attmap_host_cn,buf2);
+}
+
+static int mkfilter_host_byaddr(const char *name,
+                                char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if (myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%s))",
+                    attmap_objectClass,attmap_host_objectClass,
+                    attmap_host_ipHostNumber,buf2);
+}
+
+static int mkfilter_host_all(char *buffer,size_t buflen)
+{
+  return mysnprintf(buffer,buflen,
+                    "(%s=%s)",
+                    attmap_objectClass,attmap_host_objectClass);
+}
+
 static void host_attlst_init(void)
 {
   host_attlst[0]=attmap_host_cn;
@@ -260,7 +297,7 @@ int nslcd_host_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
-  struct ldap_args a;
+  char filter[1024];
   int retv;
   struct hostent result;
   char buffer[1024];
@@ -273,15 +310,14 @@ int nslcd_host_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_HOST_BYNAME);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_host_byname(name,filter,sizeof(filter));
   host_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostbyname,LM_HOSTS,host_attlst,
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_HOSTS,
+                           NULL,filter,host_attlst,
 #ifdef INET6
-                     (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4));
+                           (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4);
 #else
-                     _nss_ldap_parse_hostv4));
+                           _nss_ldap_parse_hostv4);
 #endif
   /* write the response */
   WRITE_INT32(fp,retv);
@@ -298,7 +334,7 @@ int nslcd_host_byaddr(TFILE *fp)
   int af;
   int len;
   char addr[64],name[1024];
-  struct ldap_args a;
+  char filter[1024];
   int retv;
   struct hostent result;
   char buffer[1024];
@@ -331,15 +367,14 @@ int nslcd_host_byaddr(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_HOST_BYADDR);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_host_byaddr(name,filter,sizeof(filter));
   host_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostbyaddr,LM_HOSTS,host_attlst,
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_HOSTS,
+                           NULL,filter,host_attlst,
 #ifdef INET6
-                     (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4));
+                           (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4);
 #else
-                     _nss_ldap_parse_hostv4));
+                           _nss_ldap_parse_hostv4);
 #endif
   /* write the response */
   WRITE_INT32(fp,retv);

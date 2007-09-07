@@ -1435,6 +1435,9 @@ do_filter (const struct ldap_args *args, const char *filterprot,
            struct ldap_service_search_descriptor *sd, char *userBuf,
            size_t userBufSiz, char **dynamicUserBuf, const char **retFilter)
 {
+
+  /* sd is the map-specific search descriptor as specified in the config */
+
   char buf1[LDAP_FILT_MAXSIZ], buf2[LDAP_FILT_MAXSIZ];
   char *filterBufP, filterBuf[LDAP_FILT_MAXSIZ];
   size_t filterSiz;
@@ -1596,7 +1599,7 @@ do_with_reconnect (const char *base, int scope,
   enum nss_status stat = NSS_STATUS_UNAVAIL;
   int maxtries;
 
-  log_log(LOG_DEBUG,"==> do_with_reconnect");
+  log_log(LOG_DEBUG,"==> do_with_reconnect (base=\"%s\", scope=%d, filter=\"%s\")",base,scope,filter);
 
   /* caller must successfully call do_init() first */
   assert (nslcd_cfg != NULL);
@@ -2061,33 +2064,29 @@ _nss_ldap_next_attribute (LDAPMessage * entry, BerElement * ber)
  * Assumes caller holds lock.
  */
 enum nss_status _nss_ldap_search_s(
-        const struct ldap_args *args,
-        const char *filterprot,enum ldap_map_selector sel,
+        const char *base,const char *filter,
+        enum ldap_map_selector sel,
         const char **attrs,int sizelimit,LDAPMessage **res)
 {
-  char sdBase[LDAP_FILT_MAXSIZ];
-  const char *base=NULL;
-  char filterBuf[LDAP_FILT_MAXSIZ],*dynamicFilterBuf=NULL;
-  const char *filter;
   int scope;
   enum nss_status stat;
   struct ldap_service_search_descriptor *sd=NULL;
-  log_log(LOG_DEBUG,"==> _nss_ldap_search_s");
+  log_log(LOG_DEBUG,"==> _nss_ldap_search_s (base=\"%s\", filter=\"%s\")",base,filter);
   /* initilize session */
   if ((stat=do_init())!=NSS_STATUS_SUCCESS)
   {
     log_log(LOG_DEBUG,"<== _nss_ldap_search_s");
     return stat;
   }
-  /* Set some reasonable defaults. */
-  base=nslcd_cfg->ldc_base;
-  scope=nslcd_cfg->ldc_scope;
   /* if args includes a base, use that */
-  if (args!=NULL&&args->la_base!=NULL)
+  if (base!=NULL)
   {
     sel=LM_NONE;
-    base=args->la_base;
   }
+  /* Set some reasonable defaults. */
+  if (base==NULL)
+    base=nslcd_cfg->ldc_base;
+  scope=nslcd_cfg->ldc_scope;
   if (sel<LM_NONE)
   {
     /* get search descriptor */
@@ -2101,18 +2100,12 @@ next:
         scope=sd->lsd_scope;
     }
   }
-  /* this may allocate dynamicFilterBuf */
-  stat=do_filter(args,filterprot,sd,filterBuf,sizeof(filterBuf),&dynamicFilterBuf,&filter);
-  if (stat!=NSS_STATUS_SUCCESS)
-    return stat;
+
+
   stat=do_with_reconnect(
           base,scope,filter,attrs,
           sizelimit,res,(search_func_t)do_search_s);
-  if (dynamicFilterBuf!=NULL)
-  {
-    free(dynamicFilterBuf);
-    dynamicFilterBuf=NULL;
-  }
+
   /* If no entry was returned, try the next search descriptor. */
   if (sd != NULL && sd->lsd_next != NULL)
   {
@@ -2137,7 +2130,6 @@ _nss_ldap_search (const struct ldap_args * args,
                   const char **attrs, int sizelimit, int *msgid,
                   struct ldap_service_search_descriptor ** csd)
 {
-  char sdBase[LDAP_FILT_MAXSIZ];
   const char *base = NULL;
   char filterBuf[LDAP_FILT_MAXSIZ], *dynamicFilterBuf = NULL;
   const char *filter;
@@ -2218,7 +2210,6 @@ do_next_page (const struct ldap_args * args,
               const char **attrs, int sizelimit, int *msgid,
               struct berval *pCookie)
 {
-  char sdBase[LDAP_FILT_MAXSIZ];
   const char *base = NULL;
   char filterBuf[LDAP_FILT_MAXSIZ], *dynamicFilterBuf = NULL;
   const char *filter;
@@ -2402,30 +2393,30 @@ next:
  * General match function.
  * Locks mutex.
  */
-enum nss_status
-_nss_ldap_getbyname (struct ldap_args * args,
-                     void *result, char *buffer, size_t buflen, int
-                     *errnop, const char *filterprot,
-                     enum ldap_map_selector sel, const char **attrs,
-                     parser_t parser)
+int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,
+                        int *errnop, enum ldap_map_selector sel,
+                        const char *base, const char *filter,
+                        const char **attrs,
+                        parser_t parser)
 {
+
   enum nss_status stat = NSS_STATUS_NOTFOUND;
   struct ent_context ctx;
 
-  _nss_ldap_enter ();
+  _nss_ldap_enter();
 
-  log_log(LOG_DEBUG,"==> _nss_ldap_getbyname");
+  log_log(LOG_DEBUG,"==> _nss_ldap_getbyname (base=\"%s\", filter=\"%s\"",base,filter);
 
-  ctx.ec_msgid = -1;
-  ctx.ec_cookie = NULL;
+  ctx.ec_msgid=-1;
+  ctx.ec_cookie=NULL;
 
-  stat = _nss_ldap_search_s (args, filterprot, sel, attrs, 1, &ctx.ec_res);
-  if (stat != NSS_STATUS_SUCCESS)
-    {
-      _nss_ldap_leave ();
-      log_log(LOG_DEBUG,"<== _nss_ldap_getbyname");
-      return stat;
-    }
+  stat=_nss_ldap_search_s(base,filter,sel,attrs,1,&ctx.ec_res);
+  if (stat!=NSS_STATUS_SUCCESS)
+  {
+    _nss_ldap_leave ();
+    log_log(LOG_DEBUG,"<== _nss_ldap_getbyname");
+    return nss2nslcd(stat);
+  }
 
   /*
    * we pass this along for the benefit of the services parser,
@@ -2433,20 +2424,20 @@ _nss_ldap_getbyname (struct ldap_args * args,
    * we only pass the second argument along, as that's what we need
    * in services.
    */
-  LS_INIT (ctx.ec_state);
-  ctx.ec_state.ls_type = LS_TYPE_KEY;
-  ctx.ec_state.ls_info.ls_key = args->la_arg2.la_string;
+  LS_INIT(ctx.ec_state);
+  ctx.ec_state.ls_type=LS_TYPE_KEY;
+  ctx.ec_state.ls_info.ls_key=NULL /*was: args->la_arg2.la_string*/;
 
-  stat = do_parse_s (&ctx, result, buffer, buflen, errnop, parser);
+  stat=do_parse_s(&ctx,result,buffer,buflen,errnop,parser);
 
-  _nss_ldap_ent_context_release (&ctx);
+  _nss_ldap_ent_context_release(&ctx);
 
   log_log(LOG_DEBUG,"<== _nss_ldap_getbyname");
 
   /* moved unlock here to avoid race condition bug #49 */
-  _nss_ldap_leave ();
+  _nss_ldap_leave();
 
-  return stat;
+  return nss2nslcd(stat);
 }
 
 static int NEW_do_parse_s(struct ent_context *ctx,TFILE *fp,NEWparser_t parser)
@@ -2496,7 +2487,7 @@ static int NEW_do_parse_s(struct ent_context *ctx,TFILE *fp,NEWparser_t parser)
 
 
 int _nss_ldap_searchbyname(
-        struct ldap_args *args,const char *filterprot,
+        const char *base,const char *filter,
         enum ldap_map_selector sel,const char **attrs,TFILE *fp,NEWparser_t parser)
 {
   int stat;
@@ -2508,7 +2499,7 @@ int _nss_ldap_searchbyname(
   ctx.ec_msgid=-1;
   ctx.ec_cookie=NULL;
 
-  stat=nss2nslcd(_nss_ldap_search_s(args,filterprot,sel,attrs,1,&ctx.ec_res));
+  stat=nss2nslcd(_nss_ldap_search_s(base,filter,sel,attrs,1,&ctx.ec_res));
   /* write the result code */
   WRITE_INT32(fp,stat);
   /* bail on nothing found */
@@ -2517,15 +2508,6 @@ int _nss_ldap_searchbyname(
     _nss_ldap_leave();
     return 1;
   }
-  /*
-   * we pass this along for the benefit of the services parser,
-   * which uses it to figure out which protocol we really wanted.
-   * we only pass the second argument along, as that's what we need
-   * in services.
-   */
-  LS_INIT(ctx.ec_state);
-  ctx.ec_state.ls_type=LS_TYPE_KEY;
-  ctx.ec_state.ls_info.ls_key=args->la_arg2.la_string;
   /* call the parser for the result */
   stat=NEW_do_parse_s(&ctx,fp,parser);
 

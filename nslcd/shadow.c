@@ -55,6 +55,27 @@
 /* the attributes to request with searches */
 static const char *shadow_attlst[10];
 
+static int mkfilter_shadow_byname(const char *name,
+                                  char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if(myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%s))",
+                    attmap_objectClass,attmap_shadow_objectClass,
+                    attmap_shadow_uid,buf2);
+}
+
+static int mkfilter_shadow_all(char *buffer,size_t buflen)
+{
+  return mysnprintf(buffer,buflen,
+                    "(%s=%s)",
+                    attmap_objectClass,attmap_shadow_objectClass);
+}
+
 static void shadow_attlst_init(void)
 {
   shadow_attlst[0]=attmap_shadow_uid;
@@ -176,7 +197,7 @@ int nslcd_shadow_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
-  struct ldap_args a;
+  char filter[1024];
   int retv;
   struct spwd result;
   char buffer[1024];
@@ -189,11 +210,10 @@ int nslcd_shadow_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_SHADOW_BYNAME);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_shadow_byname(name,filter,sizeof(filter));
   shadow_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getspnam,LM_SHADOW,shadow_attlst,_nss_ldap_parse_sp));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_SHADOW,
+                           NULL,filter,shadow_attlst,_nss_ldap_parse_sp);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)

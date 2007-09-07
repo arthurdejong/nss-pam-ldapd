@@ -62,6 +62,42 @@
 /* the attributes to request with searches */
 static const char *passwd_attlst[10];
 
+/* create a search filter for searching a passwd entry
+   by name, return -1 on errors */
+int mkfilter_passwd_byname(const char *name,
+                                  char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if(myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%s))",
+                    attmap_objectClass,attmap_passwd_objectClass,
+                    attmap_passwd_uid,buf2);
+}
+
+/* create a search filter for searching a passwd entry
+   by uid, return -1 on errors */
+static int mkfilter_passwd_byuid(uid_t uid,
+                                 char *buffer,size_t buflen)
+{
+  return snprintf(buffer,buflen,
+                  "(&(%s=%s)(%s=%d))",
+                  attmap_objectClass,attmap_passwd_objectClass,
+                  attmap_passwd_uidNumber,uid);
+}
+
+/* create a search filter for enumerating all passwd
+   entries, return -1 on errors */
+static int mkfilter_passwd_all(char *buffer,size_t buflen)
+{
+  return mysnprintf(buffer,buflen,
+                    "(%s=%s)",
+                    attmap_objectClass,attmap_passwd_objectClass);
+}
+
 static void passwd_attlst_init(void)
 {
   passwd_attlst[0]=attmap_passwd_uid;
@@ -197,22 +233,21 @@ int nslcd_passwd_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256];
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct passwd result;
   char buffer[1024];
   int errnop;
   int retv;
-  struct ldap_args a;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
   log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_passwd_byname(name,filter,sizeof(filter));
   passwd_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwnam,LM_PASSWD,passwd_attlst,_nss_ldap_parse_pw));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_PASSWD,
+                           NULL,filter,passwd_attlst,_nss_ldap_parse_pw);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYNAME);
@@ -233,19 +268,18 @@ int nslcd_passwd_byuid(TFILE *fp)
   /* these are here for now until we rewrite the LDAP code */
   struct passwd result;
   char buffer[1024];
+  char filter[1024];
   int errnop;
   int retv;
-  struct ldap_args a;
   /* read request parameters */
   READ_TYPE(fp,uid,uid_t);
   /* log call */
   log_log(LOG_DEBUG,"nslcd_passwd_byuid(%d)",(int)uid);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_NUMBER(a)=uid;
-  LA_TYPE(a)=LA_TYPE_NUMBER;
+  mkfilter_passwd_byuid(uid,filter,sizeof(filter));
   passwd_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwuid,LM_PASSWD,passwd_attlst,_nss_ldap_parse_pw));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_PASSWD,
+                           NULL,filter,passwd_attlst,_nss_ldap_parse_pw);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);

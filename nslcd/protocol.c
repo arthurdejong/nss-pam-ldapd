@@ -58,6 +58,40 @@
 /* the attributes to request with searches */
 static const char *protocol_attlst[3];
 
+static int mkfilter_protocol_byname(const char *name,
+                                    char *buffer,size_t buflen)
+{
+  char buf2[1024];
+  /* escape attribute */
+  if (myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  /* build filter */
+  return mysnprintf(buffer,buflen,
+                    "(&(%s=%s)(%s=%s))",
+                    attmap_objectClass,attmap_protocol_objectClass,
+                    attmap_protocol_cn,buf2);
+}
+
+/* create a search filter for searching a protocol entry
+   by uid, return -1 on errors */
+static int mkfilter_protocol_bynumber(int protocol,
+                                      char *buffer,size_t buflen)
+{
+  return snprintf(buffer,buflen,
+                  "(&(%s=%s)(%s=%d))",
+                  attmap_objectClass,attmap_protocol_objectClass,
+                  attmap_protocol_ipProtocolNumber,protocol);
+}
+
+/* create a search filter for enumerating all protocol
+   entries, return -1 on errors */
+static int mkfilter_protocol_all(char *buffer,size_t buflen)
+{
+  return mysnprintf(buffer,buflen,
+                    "(%s=%s)",
+                    attmap_objectClass,attmap_protocol_objectClass);
+}
+
 static void protocol_attlst_init(void)
 {
   protocol_attlst[0]=attmap_protocol_cn;
@@ -109,7 +143,7 @@ int nslcd_protocol_byname(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   char name[256];
-  struct ldap_args a;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct protoent result;
   char buffer[1024];
@@ -123,11 +157,10 @@ int nslcd_protocol_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_BYNAME);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=LA_TYPE_STRING;
+  mkfilter_protocol_byname(name,filter,sizeof(filter));
   protocol_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotobyname,LM_PROTOCOLS,protocol_attlst,_nss_ldap_parse_proto));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_PROTOCOLS,
+                           NULL,filter,protocol_attlst,_nss_ldap_parse_proto);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -143,7 +176,7 @@ int nslcd_protocol_bynumber(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   int protocol;
-  struct ldap_args a;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct protoent result;
   char buffer[1024];
@@ -157,11 +190,10 @@ int nslcd_protocol_bynumber(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_BYNUMBER);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_NUMBER(a)=protocol;
-  LA_TYPE(a)=LA_TYPE_NUMBER;
+  mkfilter_protocol_bynumber(protocol,filter,sizeof(filter));
   protocol_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotobynumber,LM_PROTOCOLS,protocol_attlst,_nss_ldap_parse_proto));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_PROTOCOLS,
+                           NULL,filter,protocol_attlst,_nss_ldap_parse_proto);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)

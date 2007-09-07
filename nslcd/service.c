@@ -71,6 +71,61 @@
 /* the attributes to request with searches */
 static const char *service_attlst[4];
 
+static int mkfilter_service_byname(const char *name,
+                                   const char *protocol,
+                                   char *buffer,size_t buflen)
+{
+  char buf2[1024],buf3[1024];
+  /* escape attributes */
+  if (myldap_escape(name,buf2,sizeof(buf2)))
+    return -1;
+  if (*protocol!='\0')
+    if (myldap_escape(protocol,buf3,sizeof(buf3)))
+      return -1;
+  /* build filter */
+  if (*protocol!='\0')
+    return mysnprintf(buffer,buflen,
+                      "(&(%s=%s)(%s=%s)(%s=%s))",
+                      attmap_objectClass,attmap_service_objectClass,
+                      attmap_service_cn,buf2,
+                      attmap_service_ipServiceProtocol,buf3);
+  else
+    return mysnprintf(buffer,buflen,
+                      "(&(%s=%s)(%s=%s))",
+                      attmap_objectClass,attmap_service_objectClass,
+                      attmap_service_cn,buf2);
+}
+
+static int mkfilter_service_bynumber(int number,
+                                     const char *protocol,
+                                     char *buffer,size_t buflen)
+{
+  char buf3[1024];
+  /* escape attribute */
+  if (*protocol!='\0')
+    if (myldap_escape(protocol,buf3,sizeof(buf3)))
+      return -1;
+  /* build filter */
+  if (*protocol!='\0')
+    return mysnprintf(buffer,buflen,
+                      "(&(%s=%s)(%s=%d)(%s=%s))",
+                      attmap_objectClass,attmap_service_objectClass,
+                      attmap_service_ipServicePort,number,
+                      attmap_service_ipServiceProtocol,buf3);
+  else
+    return mysnprintf(buffer,buflen,
+                      "(&(%s=%s)(%s=%d))",
+                      attmap_objectClass,attmap_service_objectClass,
+                      attmap_service_ipServicePort,number);
+}
+
+static int mkfilter_service_all(char *buffer,size_t buflen)
+{
+  return mysnprintf(buffer,buflen,
+                    "(%s=%s)",
+                    attmap_objectClass,attmap_service_objectClass);
+}
+
 static void service_attlst_init(void)
 {
   service_attlst[0]=attmap_service_cn;
@@ -206,7 +261,7 @@ int nslcd_service_byname(TFILE *fp)
 {
   int32_t tmpint32;
   char name[256],protocol[256];
-  struct ldap_args a;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct servent result;
   char buffer[1024];
@@ -221,14 +276,10 @@ int nslcd_service_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_SERVICE_BYNAME);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_STRING(a)=name;
-  LA_TYPE(a)=(strlen(protocol)==0)?LA_TYPE_STRING:LA_TYPE_STRING_AND_STRING;
-  LA_STRING2(a)=protocol;
+  mkfilter_service_byname(name,protocol,filter,sizeof(filter));
   service_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,
-                 ((strlen(protocol)==0)?_nss_ldap_filt_getservbyname:_nss_ldap_filt_getservbynameproto),
-                 LM_SERVICES,service_attlst,_nss_ldap_parse_serv));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_SERVICES,
+                          NULL,filter,service_attlst,_nss_ldap_parse_serv);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -243,7 +294,7 @@ int nslcd_service_bynumber(TFILE *fp)
   int32_t tmpint32;
   int number;
   char protocol[256];
-  struct ldap_args a;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct servent result;
   char buffer[1024];
@@ -258,14 +309,10 @@ int nslcd_service_bynumber(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_SERVICE_BYNUMBER);
   /* do the LDAP request */
-  LA_INIT(a);
-  LA_NUMBER(a)=number;
-  LA_TYPE(a)=(strlen(protocol)==0)?LA_TYPE_NUMBER:LA_TYPE_NUMBER_AND_STRING;
-  LA_STRING2(a)=protocol;
+  mkfilter_service_bynumber(number,protocol,filter,sizeof(filter));
   service_attlst_init();
-  retv=nss2nslcd(_nss_ldap_getbyname(&a,&result,buffer,1024,&errnop,
-                 ((strlen(protocol)==0)?_nss_ldap_filt_getservbyport:_nss_ldap_filt_getservbyportproto),
-                 LM_SERVICES,service_attlst,_nss_ldap_parse_serv));
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_SERVICES,
+                           NULL,filter,service_attlst,_nss_ldap_parse_serv);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)

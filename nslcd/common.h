@@ -54,6 +54,10 @@ int nss2nslcd(enum nss_status code)
   log_log(LOG_WARNING,"client supplied argument too large"); \
   return -1;
 
+/* a simple wrapper around snprintf,
+   returns 0 if ok, -1 on error */
+int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
+  LIKE_PRINTF(3,4);
 
 /* these are the different functions that handle the database
    specific actions, see nslcd.h for the action descriptions */
@@ -87,5 +91,8 @@ int nslcd_service_bynumber(TFILE *fp);
 int nslcd_service_all(TFILE *fp);
 int nslcd_shadow_byname(TFILE *fp);
 int nslcd_shadow_all(TFILE *fp);
+
+int mkfilter_passwd_byname(const char *name,
+                           char *buffer,size_t buflen);
 
 #endif /* not _SERVER_COMMON_H */

@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006 Arthur de Jong
+   Copyright (C) 2006, 2007 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,60 +36,36 @@ void _nss_ldap_init_filters(void);
  */
 
 /* rfc822 mail aliases */
-extern char _nss_ldap_filt_getaliasbyname[];
 extern char _nss_ldap_filt_getaliasent[];
 
 /* MAC address mappings */
-extern char _nss_ldap_filt_gethostton[];
-extern char _nss_ldap_filt_getntohost[];
 extern char _nss_ldap_filt_getetherent[];
 
 /* groups */
-extern char _nss_ldap_filt_getgrnam[];
-extern char _nss_ldap_filt_getgrgid[];
 extern char _nss_ldap_filt_getgrent[];
 extern char _nss_ldap_filt_getgroupsbymemberanddn[];
 extern char _nss_ldap_filt_getgroupsbydn[];
-extern char _nss_ldap_filt_getpwnam_groupsbymember[];
 extern char _nss_ldap_filt_getgroupsbymember[];
 
 /* IP hosts */
-extern char _nss_ldap_filt_gethostbyname[];
-extern char _nss_ldap_filt_gethostbyaddr[];
 extern char _nss_ldap_filt_gethostent[];
 
 /* IP networks */
-extern char _nss_ldap_filt_getnetbyname[];
-extern char _nss_ldap_filt_getnetbyaddr[];
 extern char _nss_ldap_filt_getnetent[];
 
 /* IP protocols */
-extern char _nss_ldap_filt_getprotobyname[];
-extern char _nss_ldap_filt_getprotobynumber[];
 extern char _nss_ldap_filt_getprotoent[];
 
 /* users */
-extern char _nss_ldap_filt_getpwnam[];
-extern char _nss_ldap_filt_getpwuid[];
 extern char _nss_ldap_filt_getpwent[];
 
 /* RPCs */
-extern char _nss_ldap_filt_getrpcbyname[];
-extern char _nss_ldap_filt_getrpcbynumber[];
 extern char _nss_ldap_filt_getrpcent[];
 
 /* IP services */
-extern char _nss_ldap_filt_getservbyname[];
-extern char _nss_ldap_filt_getservbynameproto[];
-extern char _nss_ldap_filt_getservbyport[];
-extern char _nss_ldap_filt_getservbyportproto[];
 extern char _nss_ldap_filt_getservent[];
 
 /* shadow users */
-extern char _nss_ldap_filt_getspnam[];
 extern char _nss_ldap_filt_getspent[];
-
-/* netgroups */
-extern char _nss_ldap_filt_getnetgrent[];
 
 #endif /* _LDAP_NSS_LDAP_LDAP_SCHEMA_H */

@@ -51,4 +51,7 @@ enum nss_status _nss_ldap_dn2uid (const char *dn,
 
 int _nss_ldap_escape_string(const char *src,char *buffer,size_t buflen);
 
+/* foreward compatibility hack */
+#define myldap_escape _nss_ldap_escape_string
+
 #endif /* _LDAP_NSS_LDAP_UTIL_H */
