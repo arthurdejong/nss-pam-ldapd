@@ -312,7 +312,6 @@ out:
 int nslcd_netgroup_byname(TFILE *fp)
 {
   int32_t tmpint32;
-  struct ent_context *netgroup_context=NULL;
   char name[256];
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
@@ -335,8 +334,6 @@ int nslcd_netgroup_byname(TFILE *fp)
   netgroup_attrs_init();
   if (_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_NETGROUP,
                           NULL,filter,netgroup_attrs,_nss_ldap_load_netgr))
-    return -1;
-  if (_nss_ldap_ent_context_init(&netgroup_context)==NULL)
     return -1;
   /* loop over all results */
   while ((stat=_nss_ldap_parse_netgr(&result,buffer,1024))==NSS_STATUS_SUCCESS)
@@ -370,10 +367,6 @@ int nslcd_netgroup_byname(TFILE *fp)
     free(result.data);
   /* write the final result code */
   WRITE_INT32(fp,NSLCD_RESULT_NOTFOUND);
-  /* we're done */
-  _nss_ldap_enter();
-  _nss_ldap_ent_context_release(netgroup_context);
-  _nss_ldap_leave();
   return 0;
 }
 

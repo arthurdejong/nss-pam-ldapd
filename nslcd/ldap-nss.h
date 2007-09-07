@@ -147,23 +147,22 @@ void _nss_ldap_enter (void);
 void _nss_ldap_leave (void);
 
 /*
- * _nss_ldap_ent_context_init() is called for each getXXent() call
- * This will acquire the global mutex.
- */
-struct ent_context *_nss_ldap_ent_context_init (struct ent_context **);
-
-/*
  * _nss_ldap_ent_context_init_locked() has the same behaviour
  * as above, except it assumes that the caller has acquired
  * the lock
  */
-
-struct ent_context *_nss_ldap_ent_context_init_locked (struct ent_context **);
+void _nss_ldap_ent_context_init_locked(struct ent_context *context);
 
 /*
- * _nss_ldap_ent_context_release() is used to manually free a context
+ * _nss_ldap_ent_context_init() is called for each getXXent() call
+ * This will acquire the global mutex.
  */
-void _nss_ldap_ent_context_release (struct ent_context *);
+void _nss_ldap_ent_context_init(struct ent_context *context);
+
+/*
+ * _nss_ldap_ent_context_cleanup() is used to manually free a context
+ */
+void _nss_ldap_ent_context_cleanup (struct ent_context *);
 
 /*
  * these are helper functions for ldap-grp.c only on Solaris
@@ -198,8 +197,8 @@ enum nss_status _nss_ldap_read (const char *dn, /* IN */
  * extended enumeration routine; uses asynchronous API.
  * Caller must have acquired the global mutex
  */
-enum nss_status _nss_ldap_getent_ex (
-                                struct ent_context ** ctx,   /* IN/OUT */
+enum nss_status _nss_ldap_getent_locked (
+                                struct ent_context *context,   /* IN/OUT */
                                 void *result,   /* IN/OUT */
                                 char *buffer,   /* IN */
                                 size_t buflen,  /* IN */
@@ -214,7 +213,7 @@ enum nss_status _nss_ldap_getent_ex (
  * common enumeration routine; uses asynchronous API.
  * Acquires the global mutex
  */
-int _nss_ldap_getent(struct ent_context ** ctx, /* IN/OUT */
+int _nss_ldap_getent(struct ent_context *context, /* IN/OUT */
                      void *result,      /* IN/OUT */
                      char *buffer,      /* IN */
                      size_t buflen,     /* IN */

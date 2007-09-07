@@ -666,7 +666,6 @@ do_init_session (LDAP ** ld, const char *uri)
 {
   int rc;
   int ldaps;
-  char uribuf[1024];
   char *p;
   enum nss_status stat;
 
@@ -1137,32 +1136,11 @@ do_open (void)
 }
 
 /*
- * This function initializes an enumeration context, acquiring
- * the global mutex.
- *
- * It could be done from the default constructor, under Solaris, but we
- * delay it until the setXXent() function is called.
- */
-struct ent_context *
-_nss_ldap_ent_context_init (struct ent_context ** pctx)
-{
-  struct ent_context *ctx;
-
-  _nss_ldap_enter ();
-
-  ctx = _nss_ldap_ent_context_init_locked (pctx);
-
-  _nss_ldap_leave ();
-
-  return ctx;
-}
-
-/*
  * Wrapper around ldap_result() to skip over search references
  * and deal transparently with the last entry.
  */
 static enum nss_status
-do_result (struct ent_context * ctx, int all)
+do_result (struct ent_context *context, int all)
 {
   int rc = LDAP_UNAVAILABLE;
   enum nss_status stat = NSS_STATUS_TRYAGAIN;
@@ -1183,15 +1161,15 @@ do_result (struct ent_context * ctx, int all)
 
   do
     {
-      if (ctx->ec_res != NULL)
-        {
-          ldap_msgfree (ctx->ec_res);
-          ctx->ec_res = NULL;
-        }
+      if (context->ec_res!=NULL)
+      {
+        ldap_msgfree(context->ec_res);
+        context->ec_res=NULL;
+      }
 
       rc =
-        ldap_result (__session.ls_conn, ctx->ec_msgid, all, tvp,
-                     &ctx->ec_res);
+        ldap_result (__session.ls_conn, context->ec_msgid, all, tvp,
+                     &(context->ec_res));
       switch (rc)
         {
         case -1:
@@ -1218,19 +1196,19 @@ do_result (struct ent_context * ctx, int all)
             {
 #ifdef LDAP_MORE_RESULTS_TO_RETURN
               int parserc;
-              /* NB: this frees ctx->ec_res */
+              /* NB: this frees context->ec_res */
               LDAPControl **resultControls = NULL;
 
-              ctx->ec_cookie = NULL;
+              context->ec_cookie = NULL;
 
               parserc =
-                ldap_parse_result (__session.ls_conn, ctx->ec_res, &rc, NULL,
+                ldap_parse_result (__session.ls_conn, context->ec_res, &rc, NULL,
                                    NULL, NULL, &resultControls, 1);
               if (parserc != LDAP_SUCCESS
                   && parserc != LDAP_MORE_RESULTS_TO_RETURN)
                 {
                   stat = NSS_STATUS_UNAVAIL;
-                  ldap_abandon (__session.ls_conn, ctx->ec_msgid);
+                  ldap_abandon (__session.ls_conn, context->ec_msgid);
                   log_log(LOG_ERR,"could not get LDAP result - %s",
                           ldap_err2string (rc));
                 }
@@ -1239,7 +1217,7 @@ do_result (struct ent_context * ctx, int all)
                   /* See if there are any more pages to come */
                   parserc = ldap_parse_page_control (__session.ls_conn,
                                                      resultControls, NULL,
-                                                     &(ctx->ec_cookie));
+                                                     &(context->ec_cookie));
                   ldap_controls_free (resultControls);
                   stat = NSS_STATUS_NOTFOUND;
                 }
@@ -1250,8 +1228,8 @@ do_result (struct ent_context * ctx, int all)
 #else
               stat = NSS_STATUS_NOTFOUND;
 #endif /* LDAP_MORE_RESULTS_TO_RETURN */
-              ctx->ec_res = NULL;
-              ctx->ec_msgid = -1;
+              context->ec_res = NULL;
+              context->ec_msgid = -1;
             }
           break;
         default:
@@ -1274,106 +1252,65 @@ do_result (struct ent_context * ctx, int all)
 }
 
 /*
+ * This function initializes an enumeration context, acquiring
+ * the global mutex.
+ *
+ * It could be done from the default constructor, under Solaris, but we
+ * delay it until the setXXent() function is called.
+ */
+void _nss_ldap_ent_context_init(struct ent_context *context)
+{
+  _nss_ldap_enter();
+  _nss_ldap_ent_context_init_locked(context);
+  _nss_ldap_leave();
+}
+
+/*
  * This function initializes an enumeration context.
  *
  * It could be done from the default constructor, under Solaris, but we
  * delay it until the setXXent() function is called.
  */
-struct ent_context *
-_nss_ldap_ent_context_init_locked(struct ent_context **pctx)
+void _nss_ldap_ent_context_init_locked(struct ent_context *context)
 {
-  struct ent_context *ctx;
-
-  log_log(LOG_DEBUG,"==> _nss_ldap_ent_context_init_locked");
-
-  ctx = *pctx;
-
-  if (ctx == NULL)
-  {
-    ctx=(struct ent_context *)malloc(sizeof(struct ent_context));
-    if (ctx == NULL)
-    {
-      log_log(LOG_DEBUG,"<== _nss_ldap_ent_context_init_locked");
-      return NULL;
-    }
-    *pctx = ctx;
-  }
-  else
-    {
-      if (ctx->ec_res != NULL)
-        {
-          ldap_msgfree (ctx->ec_res);
-        }
-      if (ctx->ec_cookie != NULL)
-        {
-          ber_bvfree (ctx->ec_cookie);
-        }
-      if (ctx->ec_msgid > -1 && do_result (ctx, LDAP_MSG_ONE) == NSS_STATUS_SUCCESS)
-        {
-          ldap_abandon (__session.ls_conn, ctx->ec_msgid);
-        }
-    }
-
-  ctx->ec_cookie = NULL;
-  ctx->ec_res = NULL;
-  ctx->ec_msgid = -1;
-  ctx->ec_sd = NULL;
-
-  LS_INIT (ctx->ec_state);
-
-  log_log(LOG_DEBUG,"<== _nss_ldap_ent_context_init_locked");
-
-  return ctx;
+  /* TODO: find out why we need to have aquired a lock for this */
+  context->ec_cookie=NULL;
+  context->ec_res=NULL;
+  context->ec_msgid=-1;
+  context->ec_sd=NULL;
+  LS_INIT(context->ec_state);
 }
 
 /*
  * Clears a given context; we require the caller
  * to acquire the lock.
  */
-void
-_nss_ldap_ent_context_release (struct ent_context * ctx)
+void _nss_ldap_ent_context_cleanup(struct ent_context *context)
 {
-  log_log(LOG_DEBUG,"==> _nss_ldap_ent_context_release");
-
-  if (ctx == NULL)
-    {
-      log_log(LOG_DEBUG,"<== _nss_ldap_ent_context_release");
-      return;
-    }
-
-  if (ctx->ec_res != NULL)
-    {
-      ldap_msgfree (ctx->ec_res);
-      ctx->ec_res = NULL;
-    }
-
-  /*
-   * Abandon the search if there were more results to fetch.
-   */
-  if (ctx->ec_msgid > -1 && do_result (ctx, LDAP_MSG_ONE) == NSS_STATUS_SUCCESS)
-    {
-      ldap_abandon (__session.ls_conn, ctx->ec_msgid);
-      ctx->ec_msgid = -1;
-    }
-
-  if (ctx->ec_cookie != NULL)
-    {
-      ber_bvfree (ctx->ec_cookie);
-      ctx->ec_cookie = NULL;
-    }
-
-  ctx->ec_sd = NULL;
-
-  LS_INIT (ctx->ec_state);
-
-  if (_nss_ldap_test_config_flag (NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT))
-    {
-      do_close ();
-    }
-
-  log_log(LOG_DEBUG,"<== _nss_ldap_ent_context_release");
-
-  return;
+  if (context==NULL)
+    return;
+  /* free read messages */
+  if (context->ec_res!=NULL)
+  {
+    ldap_msgfree(context->ec_res);
+    context->ec_res=NULL;
+  }
+  /* abandon the search if there were more results to fetch */
+  if ((context->ec_msgid>-1)&&(do_result(context,LDAP_MSG_ONE)==NSS_STATUS_SUCCESS))
+  {
+    ldap_abandon(__session.ls_conn,context->ec_msgid);
+    context->ec_msgid=-1;
+  }
+  /* clean up cookie */
+  if (context->ec_cookie!=NULL)
+  {
+    ber_bvfree(context->ec_cookie);
+    context->ec_cookie=NULL;
+  }
+  context->ec_sd=NULL;
+  LS_INIT(context->ec_state);
+  if (_nss_ldap_test_config_flag(NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT))
+    do_close ();
 }
 
 /*
@@ -1624,7 +1561,7 @@ do_map_errno (enum nss_status status, int *errnop)
  * correctly or there is an exceptional condition.
  */
 static enum nss_status
-do_parse (struct ent_context * ctx, void *result, char
+do_parse (struct ent_context *context, void *result, char
           *buffer, size_t buflen, int *errnop, parser_t parser)
 {
   enum nss_status parseStat = NSS_STATUS_NOTFOUND;
@@ -1642,11 +1579,11 @@ do_parse (struct ent_context * ctx, void *result, char
     {
       enum nss_status resultStat = NSS_STATUS_SUCCESS;
 
-      if (ctx->ec_state.ls_retry == 0 &&
-          (ctx->ec_state.ls_type == LS_TYPE_KEY
-           || ctx->ec_state.ls_info.ls_index == -1))
+      if ((context->ec_state.ls_retry==0) &&
+          ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
+            (context->ec_state.ls_info.ls_index==-1) ))
         {
-          resultStat = do_result (ctx, LDAP_MSG_ONE);
+          resultStat=do_result(context,LDAP_MSG_ONE);
         }
 
       if (resultStat != NSS_STATUS_SUCCESS)
@@ -1665,20 +1602,19 @@ do_parse (struct ent_context * ctx, void *result, char
        * find one which is parseable, or exhaust avialable
        * entries, whichever is first.
        */
-      parseStat = parser (ctx->ec_res, &ctx->ec_state, result,
-                          buffer, buflen);
+      parseStat=parser(context->ec_res,&(context->ec_state),result,buffer,buflen);
 
       /* hold onto the state if we're out of memory XXX */
-      ctx->ec_state.ls_retry = (parseStat == NSS_STATUS_TRYAGAIN && buffer != NULL ? 1 : 0);
+      context->ec_state.ls_retry = (parseStat == NSS_STATUS_TRYAGAIN && buffer != NULL ? 1 : 0);
 
       /* free entry is we're moving on */
-      if (ctx->ec_state.ls_retry == 0 &&
-          (ctx->ec_state.ls_type == LS_TYPE_KEY
-           || ctx->ec_state.ls_info.ls_index == -1))
+      if ((context->ec_state.ls_retry==0) &&
+          ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
+            (context->ec_state.ls_info.ls_index==-1) ))
         {
           /* we don't need the result anymore, ditch it. */
-          ldap_msgfree (ctx->ec_res);
-          ctx->ec_res = NULL;
+          ldap_msgfree(context->ec_res);
+          context->ec_res=NULL;
         }
     }
   while (parseStat == NSS_STATUS_NOTFOUND);
@@ -1694,7 +1630,7 @@ do_parse (struct ent_context * ctx, void *result, char
  * Parse, fetching reuslts from chain instead of server.
  */
 static enum nss_status
-do_parse_s (struct ent_context * ctx, void *result, char
+do_parse_s (struct ent_context *context, void *result, char
             *buffer, size_t buflen, int *errnop, parser_t parser)
 {
   enum nss_status parseStat = NSS_STATUS_NOTFOUND;
@@ -1711,12 +1647,12 @@ do_parse_s (struct ent_context * ctx, void *result, char
    */
   do
     {
-      if (ctx->ec_state.ls_retry == 0 &&
-          (ctx->ec_state.ls_type == LS_TYPE_KEY
-           || ctx->ec_state.ls_info.ls_index == -1))
+      if ((context->ec_state.ls_retry==0) &&
+          ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
+            (context->ec_state.ls_info.ls_index==-1) ))
         {
           if (e == NULL)
-            e = ldap_first_entry (__session.ls_conn, ctx->ec_res);
+            e = ldap_first_entry (__session.ls_conn, context->ec_res);
           else
             e = ldap_next_entry (__session.ls_conn, e);
         }
@@ -1737,10 +1673,10 @@ do_parse_s (struct ent_context * ctx, void *result, char
        * find one which is parseable, or exhaust avialable
        * entries, whichever is first.
        */
-      parseStat = parser (e, &ctx->ec_state, result, buffer, buflen);
+      parseStat=parser(e,&(context->ec_state),result,buffer,buflen);
 
       /* hold onto the state if we're out of memory XXX */
-      ctx->ec_state.ls_retry = (parseStat == NSS_STATUS_TRYAGAIN && buffer != NULL ? 1 : 0);
+      context->ec_state.ls_retry=(parseStat==NSS_STATUS_TRYAGAIN)&&(buffer!=NULL);
     }
   while (parseStat == NSS_STATUS_NOTFOUND);
 
@@ -2015,7 +1951,7 @@ do_next_page (const char *base,const char *filter,const char **attrs,
  * Locks mutex.
  */
 int
-_nss_ldap_getent(struct ent_context **ctx,
+_nss_ldap_getent(struct ent_context *context,
                  void *result,char *buffer,size_t buflen,int *errnop,
                  const char *base,const char *filter,
                  const char **attrs, enum ldap_map_selector sel, parser_t parser)
@@ -2027,7 +1963,7 @@ _nss_ldap_getent(struct ent_context **ctx,
    * of the context.
    */
   _nss_ldap_enter();
-  status=nss2nslcd(_nss_ldap_getent_ex(ctx,result,
+  status=nss2nslcd(_nss_ldap_getent_locked(context,result,
                              buffer,buflen,
                              errnop,base,filter,attrs,sel,parser));
   _nss_ldap_leave();
@@ -2039,73 +1975,53 @@ _nss_ldap_getent(struct ent_context **ctx,
  * Caller holds global mutex
  */
 enum nss_status
-_nss_ldap_getent_ex(struct ent_context **ctx,
+_nss_ldap_getent_locked(struct ent_context *context,
                     void *result,char *buffer,size_t buflen,int *errnop,
                     const char *base,const char *filter,
                     const char **attrs,
                     enum ldap_map_selector sel,parser_t parser)
 {
   enum nss_status stat = NSS_STATUS_SUCCESS;
-
-  log_log(LOG_DEBUG,"==> _nss_ldap_getent_ex (base=\"%s\", filter=\"%s\")",base,filter);
-
-  if (*ctx == NULL || (*ctx)->ec_msgid < 0)
-  {
-    /*
-     * implicitly call setent() if this is the first time
-     * or there is no active search
-     */
-    if (_nss_ldap_ent_context_init_locked (ctx) == NULL)
-    {
-      log_log(LOG_DEBUG,"<== _nss_ldap_getent_ex");
-      return NSS_STATUS_UNAVAIL;
-    }
-  }
-
+  int msgid;
+  log_log(LOG_DEBUG,"==> _nss_ldap_getent_locked (base=\"%s\", filter=\"%s\")",base,filter);
 next:
-  /*
-   * If ctx->ec_msgid < 0, then we haven't searched yet. Let's do it!
-   */
-  if ((*ctx)->ec_msgid < 0)
+  /* if context->ec_msgid < 0, then we haven't searched yet */
+  if (context->ec_msgid<0)
   {
-    int msgid;
-
     stat=_nss_ldap_search(base,filter,attrs,sel,
-                          LDAP_NO_LIMIT,&msgid,&(*ctx)->ec_sd);
+                          LDAP_NO_LIMIT,&msgid,&(context->ec_sd));
     if (stat != NSS_STATUS_SUCCESS)
     {
-      log_log(LOG_DEBUG,"<== _nss_ldap_getent_ex");
+      log_log(LOG_DEBUG,"<== _nss_ldap_getent_locked");
       return stat;
     }
-
-    (*ctx)->ec_msgid = msgid;
+    context->ec_msgid=msgid;
   }
 
-  stat = do_parse(*ctx, result, buffer, buflen, errnop, parser);
+  stat=do_parse(context,result,buffer,buflen,errnop,parser);
 
-  if (stat == NSS_STATUS_NOTFOUND)
+  if (stat==NSS_STATUS_NOTFOUND)
   {
     /* Is there another page of results? */
-    if ((*ctx)->ec_cookie != NULL && (*ctx)->ec_cookie->bv_len != 0)
+    if ((context->ec_cookie!=NULL)&&(context->ec_cookie->bv_len!=0))
     {
-      int msgid;
       stat=do_next_page(base,filter,attrs,sel,LDAP_NO_LIMIT,&msgid,
-                        (*ctx)->ec_cookie);
+                        context->ec_cookie);
       if (stat!=NSS_STATUS_SUCCESS)
       {
-        log_log(LOG_DEBUG,"<== _nss_ldap_getent_ex");
+        log_log(LOG_DEBUG,"<== _nss_ldap_getent_locked");
         return stat;
       }
-      (*ctx)->ec_msgid=msgid;
-      stat=do_parse(*ctx,result,buffer,buflen,errnop,parser);
+      context->ec_msgid=msgid;
+      stat=do_parse(context,result,buffer,buflen,errnop,parser);
     }
   }
-  if (stat == NSS_STATUS_NOTFOUND && (*ctx)->ec_sd != NULL)
+  if ((stat==NSS_STATUS_NOTFOUND)&&(context->ec_sd!=NULL))
   {
-    (*ctx)->ec_msgid = -1;
+    context->ec_msgid = -1;
     goto next;
   }
-  log_log(LOG_DEBUG,"<== _nss_ldap_getent_ex");
+  log_log(LOG_DEBUG,"<== _nss_ldap_getent_locked");
   return stat;
 }
 
@@ -2121,16 +2037,15 @@ int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,
 {
 
   enum nss_status stat = NSS_STATUS_NOTFOUND;
-  struct ent_context ctx;
+  struct ent_context context;
 
   _nss_ldap_enter();
 
   log_log(LOG_DEBUG,"==> _nss_ldap_getbyname (base=\"%s\", filter=\"%s\"",base,filter);
 
-  ctx.ec_msgid=-1;
-  ctx.ec_cookie=NULL;
+  _nss_ldap_ent_context_init_locked(&context);
 
-  stat=_nss_ldap_search_s(base,filter,sel,attrs,1,&ctx.ec_res);
+  stat=_nss_ldap_search_s(base,filter,sel,attrs,1,&context.ec_res);
   if (stat!=NSS_STATUS_SUCCESS)
   {
     _nss_ldap_leave ();
@@ -2144,13 +2059,13 @@ int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,
    * we only pass the second argument along, as that's what we need
    * in services.
    */
-  LS_INIT(ctx.ec_state);
-  ctx.ec_state.ls_type=LS_TYPE_KEY;
-  ctx.ec_state.ls_info.ls_key=NULL /*was: args->la_arg2.la_string*/;
+  LS_INIT(context.ec_state);
+  context.ec_state.ls_type=LS_TYPE_KEY;
+  context.ec_state.ls_info.ls_key=NULL /*was: args->la_arg2.la_string*/;
 
-  stat=do_parse_s(&ctx,result,buffer,buflen,errnop,parser);
+  stat=do_parse_s(&context,result,buffer,buflen,errnop,parser);
 
-  _nss_ldap_ent_context_release(&ctx);
+  _nss_ldap_ent_context_cleanup(&context);
 
   log_log(LOG_DEBUG,"<== _nss_ldap_getbyname");
 
@@ -2160,7 +2075,7 @@ int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,
   return nss2nslcd(stat);
 }
 
-static int NEW_do_parse_s(struct ent_context *ctx,TFILE *fp,NEWparser_t parser)
+static int NEW_do_parse_s(struct ent_context *context,TFILE *fp,NEWparser_t parser)
 {
   int parseStat=NSLCD_RESULT_NOTFOUND;
   LDAPMessage *e=NULL;
@@ -2173,12 +2088,12 @@ static int NEW_do_parse_s(struct ent_context *ctx,TFILE *fp,NEWparser_t parser)
    */
   do
   {
-    if (ctx->ec_state.ls_retry == 0 &&
-        (ctx->ec_state.ls_type == LS_TYPE_KEY
-         || ctx->ec_state.ls_info.ls_index == -1))
+    if ((context->ec_state.ls_retry==0) &&
+        ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
+          (context->ec_state.ls_info.ls_index==-1) ))
     {
       if (e == NULL)
-        e = ldap_first_entry (__session.ls_conn, ctx->ec_res);
+        e = ldap_first_entry (__session.ls_conn,context->ec_res);
       else
         e = ldap_next_entry (__session.ls_conn, e);
     }
@@ -2197,9 +2112,9 @@ static int NEW_do_parse_s(struct ent_context *ctx,TFILE *fp,NEWparser_t parser)
      * find one which is parseable, or exhaust avialable
      * entries, whichever is first.
      */
-    parseStat=parser(e,&ctx->ec_state,fp);
+    parseStat=parser(e,&context->ec_state,fp);
     /* hold onto the state if we're out of memory XXX */
-    ctx->ec_state.ls_retry=0;
+    context->ec_state.ls_retry=0;
   }
   while (parseStat==NSLCD_RESULT_NOTFOUND);
   return parseStat;
@@ -2211,15 +2126,14 @@ int _nss_ldap_searchbyname(
         enum ldap_map_selector sel,const char **attrs,TFILE *fp,NEWparser_t parser)
 {
   int stat;
-  struct ent_context ctx;
+  struct ent_context context;
   int32_t tmpint32;
 
   _nss_ldap_enter();
 
-  ctx.ec_msgid=-1;
-  ctx.ec_cookie=NULL;
+  _nss_ldap_ent_context_init_locked(&context);
 
-  stat=nss2nslcd(_nss_ldap_search_s(base,filter,sel,attrs,1,&ctx.ec_res));
+  stat=nss2nslcd(_nss_ldap_search_s(base,filter,sel,attrs,1,&context.ec_res));
   /* write the result code */
   WRITE_INT32(fp,stat);
   /* bail on nothing found */
@@ -2229,9 +2143,9 @@ int _nss_ldap_searchbyname(
     return 1;
   }
   /* call the parser for the result */
-  stat=NEW_do_parse_s(&ctx,fp,parser);
+  stat=NEW_do_parse_s(&context,fp,parser);
 
-  _nss_ldap_ent_context_release(&ctx);
+  _nss_ldap_ent_context_cleanup(&context);
 
   /* moved unlock here to avoid race condition bug #49 */
   _nss_ldap_leave();

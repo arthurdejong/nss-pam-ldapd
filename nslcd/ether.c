@@ -225,7 +225,7 @@ int nslcd_ether_all(TFILE *fp)
 {
   int32_t tmpint32;
   char filter[1024];
-  struct ent_context *ether_context=NULL;
+  struct ent_context context;
   /* these are here for now until we rewrite the LDAP code */
   struct ether result;
   char buffer[1024];
@@ -237,12 +237,11 @@ int nslcd_ether_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_ETHER_ALL);
   /* initialize context */
-  if (_nss_ldap_ent_context_init(&ether_context)==NULL)
-    return -1;
+  _nss_ldap_ent_context_init(&context);
   /* loop over all results */
   mkfilter_ether_all(filter,sizeof(filter));
   ether_attrs_init();
-  while ((retv=_nss_ldap_getent(&ether_context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
                                 NULL,filter,ether_attrs,LM_ETHERS,_nss_ldap_parse_ether))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
@@ -254,7 +253,7 @@ int nslcd_ether_all(TFILE *fp)
   WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_enter();
-  _nss_ldap_ent_context_release(ether_context);
+  _nss_ldap_ent_context_cleanup(&context);
   _nss_ldap_leave();
   /* we're done */
   return 0;

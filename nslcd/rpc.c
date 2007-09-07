@@ -212,7 +212,7 @@ int nslcd_rpc_bynumber(TFILE *fp)
 int nslcd_rpc_all(TFILE *fp)
 {
   int32_t tmpint32;
-  struct ent_context *rpc_context=NULL;
+  struct ent_context context;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct rpcent result;
@@ -225,12 +225,11 @@ int nslcd_rpc_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_RPC_ALL);
   /* initialize context */
-  if (_nss_ldap_ent_context_init(&rpc_context)==NULL)
-    return -1;
+  _nss_ldap_ent_context_init(&context);
   /* loop over all results */
   mkfilter_rpc_all(filter,sizeof(filter));
   rpc_attrs_init();
-  while ((retv=_nss_ldap_getent(&rpc_context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
                                 NULL,filter,rpc_attrs,LM_RPC,_nss_ldap_parse_rpc))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
@@ -243,7 +242,7 @@ int nslcd_rpc_all(TFILE *fp)
   WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_enter();
-  _nss_ldap_ent_context_release(rpc_context);
+  _nss_ldap_ent_context_cleanup(&context);
   _nss_ldap_leave();
   /* we're done */
   return 0;

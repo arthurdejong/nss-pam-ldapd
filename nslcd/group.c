@@ -174,7 +174,7 @@ static int mkfilter_group_bymember(const char *user,
                                             char *buffer,size_t buflen)
 {
   char buf2[1024];
-  const char *userdn;
+  char *userdn;
   char buf3[1024];
   /* escape attribute */
   if(myldap_escape(user,buf2,sizeof(buf2)))
@@ -982,7 +982,7 @@ static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
 {
   char filter[1024];
   enum nss_status stat;
-  struct ent_context *ctx=NULL;
+  struct ent_context context;
   const char *gidnumber_attrs[2];
   int erange;
 
@@ -995,22 +995,16 @@ static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
   gidnumber_attrs[0]=attmap_group_gidNumber;
   gidnumber_attrs[1]=NULL;
 
-  if (_nss_ldap_ent_context_init_locked(&ctx)==NULL)
-  {
-    return NSS_STATUS_UNAVAIL;
-  }
+  _nss_ldap_ent_context_init_locked(&context);
   mkfilter_getgroupsbydn(dn,filter,sizeof(filter));
-  stat=_nss_ldap_getent_ex(&ctx,lia,NULL,0,&erange,
+  stat=_nss_ldap_getent_locked(&context,lia,NULL,0,&erange,
                            NULL,filter,gidnumber_attrs,
                            LM_GROUP,do_parse_initgroups_nested);
 
   if (stat==NSS_STATUS_SUCCESS)
-  {
     stat=_nss_ldap_namelist_push(&lia->known_groups,dn);
-  }
 
-  _nss_ldap_ent_context_release(ctx);
-  free(ctx);
+  _nss_ldap_ent_context_cleanup(&context);
 
   return stat;
 }
@@ -1018,7 +1012,7 @@ static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
 static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroups_args_t * lia)
 {
   enum nss_status stat;
-  struct ent_context *ctx=NULL;
+  struct ent_context context;
   const char *gidnumber_attrs[3];
   const char **memberP;
   const char **filteredMembersOf; /* remove already traversed groups */
@@ -1061,15 +1055,10 @@ static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroup
   gidnumber_attrs[1] = attmap_group_memberOf;
   gidnumber_attrs[2] = NULL;
 
-  if (_nss_ldap_ent_context_init_locked (&ctx) == NULL)
-    {
-      free (filteredMembersOf);
-      return NSS_STATUS_UNAVAIL;
-    }
-
+  _nss_ldap_ent_context_init_locked(&context);
   /* FIXME: the search filter is wrong here, we should figure out what it's
             supposed to be */
-  stat=_nss_ldap_getent_ex(&ctx,lia,NULL,0,&erange,
+  stat=_nss_ldap_getent_locked(&context,lia,NULL,0,&erange,
                            NULL,"(distinguishedName=%s)",gidnumber_attrs,
                            LM_GROUP,do_parse_initgroups_nested);
 
@@ -1090,8 +1079,7 @@ static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroup
 
   free (filteredMembersOf);
 
-  _nss_ldap_ent_context_release (ctx);
-  free (ctx);
+  _nss_ldap_ent_context_cleanup(&context);
 
   return stat;
 }
@@ -1103,7 +1091,7 @@ static int group_bymember(const char *user, long int *start,
   ldap_initgroups_args_t lia;
   char filter[1024];
   enum nss_status stat;
-  struct ent_context *ctx=NULL;
+  struct ent_context context;
   const char *gidnumber_attrs[3];
   log_log(LOG_DEBUG,"==> group_bymember (user=%s)",user);
   lia.depth = 0;
@@ -1120,18 +1108,12 @@ static int group_bymember(const char *user, long int *start,
   mkfilter_group_bymember(user,filter,sizeof(filter));
   gidnumber_attrs[0] = attmap_group_gidNumber;
   gidnumber_attrs[1] = NULL;
-  if (_nss_ldap_ent_context_init_locked(&ctx)==NULL)
-  {
-    log_log(LOG_DEBUG,"<== group_bymember (ent_context_init failed)");
-    _nss_ldap_leave ();
-    return -1;
-  }
-  stat=_nss_ldap_getent_ex(&ctx,(void *)&lia,NULL,0,errnop,
+  _nss_ldap_ent_context_init_locked(&context);
+  stat=_nss_ldap_getent_locked(&context,(void *)&lia,NULL,0,errnop,
                            NULL,filter,gidnumber_attrs,
                            LM_GROUP,do_parse_initgroups_nested);
   _nss_ldap_namelist_destroy(&lia.known_groups);
-  _nss_ldap_ent_context_release(ctx);
-  free(ctx);
+  _nss_ldap_ent_context_cleanup(&context);
   _nss_ldap_leave();
   if ((stat!=NSS_STATUS_SUCCESS)&&(stat!=NSS_STATUS_NOTFOUND))
   {
@@ -1286,7 +1268,7 @@ int nslcd_group_bymember(TFILE *fp)
 int nslcd_group_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  struct ent_context *gr_context=NULL;
+  struct ent_context context;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct group result;
@@ -1299,12 +1281,11 @@ int nslcd_group_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_ALL);
   /* initialize context */
-  if (_nss_ldap_ent_context_init(&gr_context)==NULL)
-    return -1;
+  _nss_ldap_ent_context_init(&context);
   /* loop over all results */
   mkfilter_group_all(filter,sizeof(filter));
   group_attrs_init();
-  while ((retv=_nss_ldap_getent(&gr_context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
                                 NULL,filter,group_attrs,LM_GROUP,_nss_ldap_parse_gr))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
@@ -1316,7 +1297,7 @@ int nslcd_group_all(TFILE *fp)
   WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_enter();
-  _nss_ldap_ent_context_release(gr_context);
+  _nss_ldap_ent_context_cleanup(&context);
   _nss_ldap_leave();
   /* we're done */
   return 0;

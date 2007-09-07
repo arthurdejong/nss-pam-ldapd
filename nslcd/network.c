@@ -255,7 +255,7 @@ int nslcd_network_byaddr(TFILE *fp)
 int nslcd_network_all(TFILE *fp)
 {
   int32_t tmpint32;
-  struct ent_context *net_context=NULL;
+  struct ent_context context;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct netent result;
@@ -268,12 +268,11 @@ int nslcd_network_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_NETWORK_ALL);
   /* initialize context */
-  if (_nss_ldap_ent_context_init(&net_context)==NULL)
-    return -1;
+  _nss_ldap_ent_context_init(&context);
   /* loop over all results */
   mkfilter_network_all(filter,sizeof(filter));
   network_attrs_init();
-  while ((retv=_nss_ldap_getent(&net_context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
                                 NULL,filter,network_attrs,LM_NETWORKS,_nss_ldap_parse_net))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
@@ -286,7 +285,7 @@ int nslcd_network_all(TFILE *fp)
   WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_enter();
-  _nss_ldap_ent_context_release(net_context);
+  _nss_ldap_ent_context_cleanup(&context);
   _nss_ldap_leave();
   /* we're done */
   return 0;

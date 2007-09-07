@@ -207,7 +207,7 @@ int nslcd_protocol_bynumber(TFILE *fp)
 int nslcd_protocol_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  struct ent_context *protocol_context=NULL;
+  struct ent_context context;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct protoent result;
@@ -220,12 +220,11 @@ int nslcd_protocol_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_ALL);
   /* initialize context */
-  if (_nss_ldap_ent_context_init(&protocol_context)==NULL)
-    return -1;
+  _nss_ldap_ent_context_init(&context);
   /* loop over all results */
   mkfilter_protocol_all(filter,sizeof(filter));
   protocol_attrs_init();
-  while ((retv=_nss_ldap_getent(&protocol_context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
                                 NULL,filter,protocol_attrs,LM_PROTOCOLS,_nss_ldap_parse_proto))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
@@ -238,7 +237,7 @@ int nslcd_protocol_all(TFILE *fp)
   WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_enter();
-  _nss_ldap_ent_context_release(protocol_context);
+  _nss_ldap_ent_context_cleanup(&context);
   _nss_ldap_leave();
   /* we're done */
   return 0;
