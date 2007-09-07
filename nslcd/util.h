@@ -48,7 +48,6 @@ enum nss_status _nss_ldap_dn2uid (const char *dn,
 /*
  * Escape '*' in a string for use as a filter
  */
-
 int _nss_ldap_escape_string(const char *src,char *buffer,size_t buflen);
 
 /* foreward compatibility hack */

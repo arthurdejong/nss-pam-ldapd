@@ -387,7 +387,7 @@ int nslcd_host_byaddr(TFILE *fp)
 int nslcd_host_all(TFILE *fp)
 {
   int32_t tmpint32;
-  struct ent_context *host_context;
+  struct ent_context *host_context=NULL;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct hostent result;

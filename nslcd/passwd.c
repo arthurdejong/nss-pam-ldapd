@@ -295,7 +295,7 @@ int nslcd_passwd_byuid(TFILE *fp)
 int nslcd_passwd_all(TFILE *fp)
 {
   int32_t tmpint32;
-  struct ent_context *passwd_context = NULL;
+  struct ent_context *passwd_context=NULL;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct passwd result;

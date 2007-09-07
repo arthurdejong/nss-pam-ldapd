@@ -255,7 +255,7 @@ int nslcd_network_byaddr(TFILE *fp)
 int nslcd_network_all(TFILE *fp)
 {
   int32_t tmpint32;
-  struct ent_context *net_context;
+  struct ent_context *net_context=NULL;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct netent result;

@@ -227,7 +227,7 @@ int nslcd_shadow_byname(TFILE *fp)
 int nslcd_shadow_all(TFILE *fp)
 {
   int32_t tmpint32;
-  struct ent_context *shadow_context;
+  struct ent_context *shadow_context=NULL;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct spwd result;

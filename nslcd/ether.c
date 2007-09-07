@@ -225,7 +225,7 @@ int nslcd_ether_all(TFILE *fp)
 {
   int32_t tmpint32;
   char filter[1024];
-  struct ent_context *ether_context;
+  struct ent_context *ether_context=NULL;
   /* these are here for now until we rewrite the LDAP code */
   struct ether result;
   char buffer[1024];

@@ -207,7 +207,7 @@ int nslcd_protocol_bynumber(TFILE *fp)
 int nslcd_protocol_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  struct ent_context *protocol_context;
+  struct ent_context *protocol_context=NULL;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct protoent result;

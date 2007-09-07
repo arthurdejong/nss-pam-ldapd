@@ -324,7 +324,7 @@ int nslcd_service_bynumber(TFILE *fp)
 int nslcd_service_all(TFILE *fp)
 {
   int32_t tmpint32;
-  struct ent_context *serv_context;
+  struct ent_context *serv_context=NULL;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct servent result;

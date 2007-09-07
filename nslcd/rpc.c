@@ -212,7 +212,7 @@ int nslcd_rpc_bynumber(TFILE *fp)
 int nslcd_rpc_all(TFILE *fp)
 {
   int32_t tmpint32;
-  struct ent_context *rpc_context;
+  struct ent_context *rpc_context=NULL;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct rpcent result;
