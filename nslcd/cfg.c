@@ -37,7 +37,6 @@
 #include "ldap-nss.h"
 #include "util.h"
 #include "log.h"
-#include "ldap-schema.h"
 #include "cfg.h"
 #include "attmap.h"
 

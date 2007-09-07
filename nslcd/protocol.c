@@ -53,7 +53,6 @@
 #include "common.h"
 #include "log.h"
 #include "attmap.h"
-#include "ldap-schema.h"
 
 /* the attributes to request with searches */
 static const char *protocol_attrs[3];

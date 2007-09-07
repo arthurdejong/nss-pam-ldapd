@@ -54,7 +54,6 @@
 #include "common.h"
 #include "log.h"
 #include "attmap.h"
-#include "ldap-schema.h"
 
 #ifndef MAXALIASES
 #define MAXALIASES 35

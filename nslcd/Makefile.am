@@ -26,7 +26,6 @@ AM_CFLAGS = $(PTHREAD_CFLAGS)
 nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
                 log.c log.h \
                 common.c common.h \
-                ldap-schema.c ldap-schema.h \
                 ldap-nss.c ldap-nss.h \
                 pagectrl.c pagectrl.h \
                 util.c util.h \

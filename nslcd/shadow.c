@@ -50,7 +50,6 @@
 #include "log.h"
 #include "attmap.h"
 #include "cfg.h"
-#include "ldap-schema.h"
 
 /* the attributes to request with searches */
 static const char *shadow_attrs[10];

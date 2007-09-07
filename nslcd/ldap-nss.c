@@ -79,7 +79,6 @@
 #include "pagectrl.h"
 #include "common.h"
 #include "log.h"
-#include "ldap-schema.h"
 #include "cfg.h"
 #include "attmap.h"
 
@@ -771,8 +770,6 @@ do_init (void)
   __session.ls_conn = NULL;
   __session.ls_timestamp = 0;
   __session.ls_state = LS_UNINITIALIZED;
-
-  _nss_ldap_init_filters ();
 
 #ifdef HAVE_LDAP_SET_OPTION
   if (nslcd_cfg->ldc_debug)

@@ -54,7 +54,6 @@
 #include "common.h"
 #include "log.h"
 #include "cfg.h"
-#include "ldap-schema.h"
 #include "attmap.h"
 
 
