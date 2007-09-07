@@ -68,61 +68,6 @@
 #define bytesleft(ptr, blen, TYPE) \
   ( (blen < alignof(TYPE)) ? 0 : (blen - alignof(TYPE) + 1))
 
-enum ldap_args_types
-{
-  LA_TYPE_STRING,
-  LA_TYPE_NUMBER,
-  LA_TYPE_STRING_AND_STRING,
-  LA_TYPE_NUMBER_AND_STRING,
-  LA_TYPE_TRIPLE,
-  LA_TYPE_STRING_LIST_OR
-};
-
-enum ldap_map_type
-{
-  MAP_ATTRIBUTE = 0,
-  MAP_OBJECTCLASS,
-  MAP_MAX = MAP_OBJECTCLASS
-};
-
-struct ldap_args
-{
-  enum ldap_args_types la_type;
-  union
-  {
-    const char *la_string;
-    long la_number;
-    struct {
-      /* for Solaris netgroup support */
-      const char *host;
-      const char *user;
-      const char *domain;
-    } la_triple;
-    const char **la_string_list;
-  }
-  la_arg1;
-  union
-  {
-    const char *la_string;
-  }
-  la_arg2;
-  const char *la_base; /* override default base */
-};
-
-#define LA_INIT(q)                              do { \
-                                                (q).la_type = LA_TYPE_STRING; \
-                                                (q).la_arg1.la_string = NULL; \
-                                                (q).la_arg2.la_string = NULL; \
-                                                (q).la_base = NULL; \
-                                                } while (0)
-#define LA_TYPE(q)                              ((q).la_type)
-#define LA_STRING(q)                            ((q).la_arg1.la_string)
-#define LA_NUMBER(q)                            ((q).la_arg1.la_number)
-#define LA_TRIPLE(q)                            ((q).la_arg1.la_triple)
-#define LA_STRING_LIST(q)                       ((q).la_arg1.la_string_list)
-#define LA_STRING2(q)                           ((q).la_arg2.la_string)
-#define LA_BASE(q)                              ((q).la_base)
-
 /*
  * the state consists of the desired attribute value or an offset into a list of
  * values for the desired attribute. This is necessary to support services.
