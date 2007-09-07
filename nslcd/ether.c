@@ -74,7 +74,7 @@ struct ether
 };
 
 /* the attributes to request with searches */
-static const char *ether_attlst[3];
+static const char *ether_attrs[3];
 
 /* create a search filter for searching an ethernet address
    by name, return -1 on errors */
@@ -117,11 +117,11 @@ static int mkfilter_ether_all(char *buffer,size_t buflen)
                    attmap_objectClass,attmap_ether_objectClass);
 }
 
-static void ether_attlst_init(void)
+static void ether_attrs_init(void)
 {
-  ether_attlst[0]=attmap_ether_cn;
-  ether_attlst[1]=attmap_ether_macAddress;
-  ether_attlst[2]=NULL;
+  ether_attrs[0]=attmap_ether_cn;
+  ether_attrs[1]=attmap_ether_macAddress;
+  ether_attrs[2]=NULL;
 }
 
 static enum nss_status
@@ -175,9 +175,9 @@ int nslcd_ether_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_ETHER_BYNAME);
   /* do the LDAP request */
   mkfilter_ether_byname(name,filter,sizeof(filter));
-  ether_attlst_init();
+  ether_attrs_init();
   retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_ETHERS,
-                           NULL,filter,ether_attlst,_nss_ldap_parse_ether);
+                           NULL,filter,ether_attrs,_nss_ldap_parse_ether);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -208,9 +208,9 @@ int nslcd_ether_byether(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_ETHER_BYETHER);
   /* do the LDAP request */
   mkfilter_ether_byether(&addr,filter,sizeof(filter));
-  ether_attlst_init();
+  ether_attrs_init();
   retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_ETHERS,
-                           NULL,filter,ether_attlst,_nss_ldap_parse_ether);
+                           NULL,filter,ether_attrs,_nss_ldap_parse_ether);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -240,8 +240,8 @@ int nslcd_ether_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&ether_context)==NULL)
     return -1;
   /* loop over all results */
-  ether_attlst_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&ether_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getetherent,LM_ETHERS,ether_attlst,_nss_ldap_parse_ether)))==NSLCD_RESULT_SUCCESS)
+  ether_attrs_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&ether_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getetherent,LM_ETHERS,ether_attrs,_nss_ldap_parse_ether)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

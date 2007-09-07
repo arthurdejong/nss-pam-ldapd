@@ -53,7 +53,7 @@
 #include "ldap-schema.h"
 
 /* the attributes to request with searches */
-static const char *shadow_attlst[10];
+static const char *shadow_attrs[10];
 
 static int mkfilter_shadow_byname(const char *name,
                                   char *buffer,size_t buflen)
@@ -76,18 +76,18 @@ static int mkfilter_shadow_all(char *buffer,size_t buflen)
                     attmap_objectClass,attmap_shadow_objectClass);
 }
 
-static void shadow_attlst_init(void)
+static void shadow_attrs_init(void)
 {
-  shadow_attlst[0]=attmap_shadow_uid;
-  shadow_attlst[1]=attmap_shadow_userPassword;
-  shadow_attlst[2]=attmap_shadow_shadowLastChange;
-  shadow_attlst[3]=attmap_shadow_shadowMax;
-  shadow_attlst[4]=attmap_shadow_shadowMin;
-  shadow_attlst[5]=attmap_shadow_shadowWarning;
-  shadow_attlst[6]=attmap_shadow_shadowInactive;
-  shadow_attlst[7]=attmap_shadow_shadowExpire;
-  shadow_attlst[8]=attmap_shadow_shadowFlag;
-  shadow_attlst[9]=NULL;
+  shadow_attrs[0]=attmap_shadow_uid;
+  shadow_attrs[1]=attmap_shadow_userPassword;
+  shadow_attrs[2]=attmap_shadow_shadowLastChange;
+  shadow_attrs[3]=attmap_shadow_shadowMax;
+  shadow_attrs[4]=attmap_shadow_shadowMin;
+  shadow_attrs[5]=attmap_shadow_shadowWarning;
+  shadow_attrs[6]=attmap_shadow_shadowInactive;
+  shadow_attrs[7]=attmap_shadow_shadowExpire;
+  shadow_attrs[8]=attmap_shadow_shadowFlag;
+  shadow_attrs[9]=NULL;
 }
 
 static int
@@ -211,9 +211,9 @@ int nslcd_shadow_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_SHADOW_BYNAME);
   /* do the LDAP request */
   mkfilter_shadow_byname(name,filter,sizeof(filter));
-  shadow_attlst_init();
+  shadow_attrs_init();
   retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_SHADOW,
-                           NULL,filter,shadow_attlst,_nss_ldap_parse_sp);
+                           NULL,filter,shadow_attrs,_nss_ldap_parse_sp);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -243,8 +243,8 @@ int nslcd_shadow_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&shadow_context)==NULL)
     return -1;
   /* loop over all results */
-  shadow_attlst_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&shadow_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getspent,LM_SHADOW,shadow_attlst,_nss_ldap_parse_sp)))==NSLCD_RESULT_SUCCESS)
+  shadow_attrs_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&shadow_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getspent,LM_SHADOW,shadow_attrs,_nss_ldap_parse_sp)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

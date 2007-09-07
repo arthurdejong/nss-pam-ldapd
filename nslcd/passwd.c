@@ -60,7 +60,7 @@
 #endif
 
 /* the attributes to request with searches */
-static const char *passwd_attlst[10];
+static const char *passwd_attrs[10];
 
 /* create a search filter for searching a passwd entry
    by name, return -1 on errors */
@@ -98,18 +98,18 @@ static int mkfilter_passwd_all(char *buffer,size_t buflen)
                     attmap_objectClass,attmap_passwd_objectClass);
 }
 
-static void passwd_attlst_init(void)
+static void passwd_attrs_init(void)
 {
-  passwd_attlst[0]=attmap_passwd_uid;
-  passwd_attlst[1]=attmap_passwd_userPassword;
-  passwd_attlst[2]=attmap_passwd_uidNumber;
-  passwd_attlst[3]=attmap_passwd_gidNumber;
-  passwd_attlst[4]=attmap_passwd_cn;
-  passwd_attlst[5]=attmap_passwd_homeDirectory;
-  passwd_attlst[6]=attmap_passwd_loginShell;
-  passwd_attlst[7]=attmap_passwd_gecos;
-  passwd_attlst[8]=attmap_objectClass;
-  passwd_attlst[9]=NULL;
+  passwd_attrs[0]=attmap_passwd_uid;
+  passwd_attrs[1]=attmap_passwd_userPassword;
+  passwd_attrs[2]=attmap_passwd_uidNumber;
+  passwd_attrs[3]=attmap_passwd_gidNumber;
+  passwd_attrs[4]=attmap_passwd_cn;
+  passwd_attrs[5]=attmap_passwd_homeDirectory;
+  passwd_attrs[6]=attmap_passwd_loginShell;
+  passwd_attrs[7]=attmap_passwd_gecos;
+  passwd_attrs[8]=attmap_objectClass;
+  passwd_attrs[9]=NULL;
 }
 
 static inline enum nss_status _nss_ldap_assign_emptystring(
@@ -245,9 +245,9 @@ int nslcd_passwd_byname(TFILE *fp)
   log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);
   /* do the LDAP request */
   mkfilter_passwd_byname(name,filter,sizeof(filter));
-  passwd_attlst_init();
+  passwd_attrs_init();
   retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_PASSWD,
-                           NULL,filter,passwd_attlst,_nss_ldap_parse_pw);
+                           NULL,filter,passwd_attrs,_nss_ldap_parse_pw);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYNAME);
@@ -277,9 +277,9 @@ int nslcd_passwd_byuid(TFILE *fp)
   log_log(LOG_DEBUG,"nslcd_passwd_byuid(%d)",(int)uid);
   /* do the LDAP request */
   mkfilter_passwd_byuid(uid,filter,sizeof(filter));
-  passwd_attlst_init();
+  passwd_attrs_init();
   retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_PASSWD,
-                           NULL,filter,passwd_attlst,_nss_ldap_parse_pw);
+                           NULL,filter,passwd_attrs,_nss_ldap_parse_pw);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);
@@ -311,8 +311,8 @@ int nslcd_passwd_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&pw_context)==NULL)
     return -1;
   /* go over results */
-  passwd_attlst_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&pw_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwent,LM_PASSWD,passwd_attlst,_nss_ldap_parse_pw)))==NSLCD_RESULT_SUCCESS)
+  passwd_attrs_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&pw_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwent,LM_PASSWD,passwd_attrs,_nss_ldap_parse_pw)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

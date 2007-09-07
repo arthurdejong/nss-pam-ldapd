@@ -113,7 +113,7 @@ static enum nss_status ng_chase(const char *dn,ldap_initgroups_args_t *lia);
 static enum nss_status ng_chase_backlink(const char **membersOf,ldap_initgroups_args_t *lia);
 
 /* the attributes to request with searches */
-static const char *group_attlst[6];
+static const char *group_attrs[6];
 
 /* create a search filter for searching a group entry
    by name, return -1 on errors */
@@ -192,14 +192,14 @@ static int mkfilter_group_all(char *buffer,size_t buflen)
                     attmap_objectClass,attmap_group_objectClass);
 }
 
-static void group_attlst_init(void)
+static void group_attrs_init(void)
 {
-  group_attlst[0]=attmap_group_cn;
-  group_attlst[1]=attmap_group_userPassword;
-  group_attlst[2]=attmap_group_memberUid;
-  group_attlst[3]=attmap_group_uniqueMember;
-  group_attlst[4]=attmap_group_gidNumber;
-  group_attlst[5]=NULL;
+  group_attrs[0]=attmap_group_cn;
+  group_attrs[1]=attmap_group_userPassword;
+  group_attrs[2]=attmap_group_memberUid;
+  group_attrs[3]=attmap_group_uniqueMember;
+  group_attrs[4]=attmap_group_gidNumber;
+  group_attrs[5]=NULL;
 }
 
 /*
@@ -1196,9 +1196,9 @@ int nslcd_group_byname(TFILE *fp)
   }
   /* do the LDAP request */
   mkfilter_group_byname(name,filter,sizeof(filter));
-  group_attlst_init();
+  group_attrs_init();
   retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_GROUP,
-                           NULL,filter,group_attlst,_nss_ldap_parse_gr);
+                           NULL,filter,group_attrs,_nss_ldap_parse_gr);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYNAME);
@@ -1234,9 +1234,9 @@ int nslcd_group_bygid(TFILE *fp)
   }
   /* do the LDAP request */
   mkfilter_group_bygid(gid,filter,sizeof(filter));
-  group_attlst_init();
+  group_attrs_init();
   retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_GROUP,
-                           NULL,filter,group_attlst,_nss_ldap_parse_gr);
+                           NULL,filter,group_attrs,_nss_ldap_parse_gr);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYGID);
@@ -1324,8 +1324,8 @@ int nslcd_group_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&gr_context)==NULL)
     return -1;
   /* loop over all results */
-  group_attlst_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&gr_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrent,LM_GROUP,group_attlst,_nss_ldap_parse_gr)))==NSLCD_RESULT_SUCCESS)
+  group_attrs_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&gr_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getgrent,LM_GROUP,group_attrs,_nss_ldap_parse_gr)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

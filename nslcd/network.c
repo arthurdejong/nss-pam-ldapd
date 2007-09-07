@@ -59,7 +59,7 @@
 #endif /* HAVE_USERSEC_H */
 
 /* the attributes to request with searches */
-static const char *network_attlst[3];
+static const char *network_attrs[3];
 
 /* create a search filter for searching a network entry
    by name, return -1 on errors */
@@ -98,11 +98,11 @@ static int mkfilter_network_all(char *buffer,size_t buflen)
                     attmap_objectClass,attmap_network_objectClass);
 }
 
-static void network_attlst_init(void)
+static void network_attrs_init(void)
 {
-  network_attlst[0]=attmap_network_cn;
-  network_attlst[1]=attmap_network_ipNetworkNumber;
-  network_attlst[2]=NULL;
+  network_attrs[0]=attmap_network_cn;
+  network_attrs[1]=attmap_network_ipNetworkNumber;
+  network_attrs[2]=NULL;
 }
 
 /* write a single network entry to the stream */
@@ -175,9 +175,9 @@ int nslcd_network_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_NETWORK_BYNAME);
   /* do the LDAP request */
   mkfilter_network_byname(name,filter,sizeof(filter));
-  network_attlst_init();
+  network_attrs_init();
   retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_NETWORKS,
-                           NULL,filter,network_attlst,_nss_ldap_parse_net);
+                           NULL,filter,network_attrs,_nss_ldap_parse_net);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -231,9 +231,9 @@ int nslcd_network_byaddr(TFILE *fp)
   {
     /* do the request */
     mkfilter_network_byaddr(name,filter,sizeof(filter));
-    network_attlst_init();
+    network_attrs_init();
     retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_NETWORKS,
-                             NULL,filter,network_attlst,_nss_ldap_parse_net);
+                             NULL,filter,network_attrs,_nss_ldap_parse_net);
     /* if no entry was found, retry with .0 stripped from the end */
     if ((retv==NSLCD_RESULT_NOTFOUND) &&
         (strlen(name)>2) &&
@@ -271,8 +271,8 @@ int nslcd_network_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&net_context)==NULL)
     return -1;
   /* loop over all results */
-  network_attlst_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&net_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getnetent,LM_NETWORKS,network_attlst,_nss_ldap_parse_net)))==NSLCD_RESULT_SUCCESS)
+  network_attrs_init();
+  while ((retv=nss2nslcd(_nss_ldap_getent(&net_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getnetent,LM_NETWORKS,network_attrs,_nss_ldap_parse_net)))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

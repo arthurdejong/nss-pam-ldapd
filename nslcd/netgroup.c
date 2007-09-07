@@ -115,7 +115,7 @@ struct mynetgrent
   while (0)
 
 /* the attributes to request with searches */
-static const char *netgroup_attlst[4];
+static const char *netgroup_attrs[4];
 
 static int mkfilter_netgroup_byname(const char *name,
                                     char *buffer,size_t buflen)
@@ -131,12 +131,12 @@ static int mkfilter_netgroup_byname(const char *name,
                     attmap_netgroup_cn,buf2);
 }
 
-static void netgroup_attlst_init(void)
+static void netgroup_attrs_init(void)
 {
-  netgroup_attlst[0]=attmap_netgroup_cn;
-  netgroup_attlst[1]=attmap_netgroup_nisNetgroupTriple;
-  netgroup_attlst[2]=attmap_netgroup_memberNisNetgroup;
-  netgroup_attlst[3]=NULL;
+  netgroup_attrs[0]=attmap_netgroup_cn;
+  netgroup_attrs[1]=attmap_netgroup_nisNetgroupTriple;
+  netgroup_attrs[2]=attmap_netgroup_memberNisNetgroup;
+  netgroup_attrs[3]=NULL;
 }
 
 static char *
@@ -334,9 +334,9 @@ int nslcd_netgroup_byname(TFILE *fp)
   result.data_size = 0;
   /* do initial ldap request */
   mkfilter_netgroup_byname(name,filter,sizeof(filter));
-  netgroup_attlst_init();
+  netgroup_attrs_init();
   if (_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_NETGROUP,
-                          NULL,filter,netgroup_attlst,_nss_ldap_load_netgr))
+                          NULL,filter,netgroup_attrs,_nss_ldap_load_netgr))
     return -1;
   if (_nss_ldap_ent_context_init(&netgroup_context)==NULL)
     return -1;
