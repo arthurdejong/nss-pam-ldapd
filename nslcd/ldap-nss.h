@@ -253,30 +253,32 @@ enum nss_status _nss_ldap_read (const char *dn, /* IN */
  * extended enumeration routine; uses asynchronous API.
  * Caller must have acquired the global mutex
  */
-enum nss_status _nss_ldap_getent_ex (struct ldap_args * args, /* IN */
+enum nss_status _nss_ldap_getent_ex (
                                 struct ent_context ** ctx,   /* IN/OUT */
                                 void *result,   /* IN/OUT */
                                 char *buffer,   /* IN */
                                 size_t buflen,  /* IN */
                                 int *errnop,    /* OUT */
-                                const char *filterprot, /* IN */
-                                enum ldap_map_selector sel,        /* IN */
+                                const char *base, /* IN */
+                                const char *filter, /* IN */
                                 const char **attrs, /* IN */
+                                enum ldap_map_selector sel,        /* IN */
                                 parser_t parser /* IN */ );
 
 /*
  * common enumeration routine; uses asynchronous API.
  * Acquires the global mutex
  */
-enum nss_status _nss_ldap_getent (struct ent_context ** ctx, /* IN/OUT */
-                             void *result,      /* IN/OUT */
-                             char *buffer,      /* IN */
-                             size_t buflen,     /* IN */
-                             int *errnop,       /* OUT */
-                             const char *filterprot,    /* IN */
-                             enum ldap_map_selector sel,   /* IN */
-                             const char **attrs, /* IN */
-                             parser_t parser /* IN */ );
+int _nss_ldap_getent(struct ent_context ** ctx, /* IN/OUT */
+                     void *result,      /* IN/OUT */
+                     char *buffer,      /* IN */
+                     size_t buflen,     /* IN */
+                     int *errnop,       /* OUT */
+                     const char *base,  /* IN */
+                     const char *filter, /* IN */
+                     const char **attrs, /* IN */
+                     enum ldap_map_selector sel,   /* IN */
+                     parser_t parser /* IN */ );
 
 /*
  * common lookup routine; uses synchronous API.

@@ -142,7 +142,8 @@ int nslcd_alias_byname(TFILE *fp)
 int nslcd_alias_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32;
-  static struct ent_context *alias_context;
+  struct ent_context *alias_context;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct aliasent result;
   char buffer[1024];
@@ -157,8 +158,10 @@ int nslcd_alias_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&alias_context)==NULL)
     return -1;
   /* loop over all results */
+  mkfilter_alias_all(filter,sizeof(filter));
   alias_attrs_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&alias_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getaliasent,LM_ALIASES,alias_attrs,_nss_ldap_parse_alias)))==NSLCD_RESULT_SUCCESS)
+  while ((retv=_nss_ldap_getent(&alias_context,&result,buffer,sizeof(buffer),&errnop,
+                                NULL,filter,alias_attrs,LM_ALIASES,_nss_ldap_parse_alias))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

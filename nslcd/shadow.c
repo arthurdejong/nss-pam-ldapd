@@ -228,7 +228,8 @@ int nslcd_shadow_byname(TFILE *fp)
 int nslcd_shadow_all(TFILE *fp)
 {
   int32_t tmpint32;
-  static struct ent_context *shadow_context;
+  struct ent_context *shadow_context;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct spwd result;
   char buffer[1024];
@@ -243,8 +244,10 @@ int nslcd_shadow_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&shadow_context)==NULL)
     return -1;
   /* loop over all results */
+  mkfilter_shadow_all(filter,sizeof(filter));
   shadow_attrs_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&shadow_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getspent,LM_SHADOW,shadow_attrs,_nss_ldap_parse_sp)))==NSLCD_RESULT_SUCCESS)
+  while ((retv=_nss_ldap_getent(&shadow_context,&result,buffer,sizeof(buffer),&errnop,
+                                NULL,filter,shadow_attrs,LM_SHADOW,_nss_ldap_parse_sp))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

@@ -144,4 +144,3 @@ _nss_ldap_init_filters ()
             "(%s=%s)", attmap_objectClass, attmap_shadow_objectClass);
 
 }
-

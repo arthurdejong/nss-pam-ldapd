@@ -325,7 +325,8 @@ int nslcd_service_bynumber(TFILE *fp)
 int nslcd_service_all(TFILE *fp)
 {
   int32_t tmpint32;
-  static struct ent_context *serv_context;
+  struct ent_context *serv_context;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct servent result;
   char buffer[1024];
@@ -340,8 +341,10 @@ int nslcd_service_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&serv_context)==NULL)
     return -1;
   /* loop over all results */
+  mkfilter_service_all(filter,sizeof(filter));
   service_attrs_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&serv_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getservent,LM_SERVICES,service_attrs,_nss_ldap_parse_serv)))==NSLCD_RESULT_SUCCESS)
+  while ((retv=_nss_ldap_getent(&serv_context,&result,buffer,sizeof(buffer),&errnop,
+                                NULL,filter,service_attrs,LM_SERVICES,_nss_ldap_parse_serv))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

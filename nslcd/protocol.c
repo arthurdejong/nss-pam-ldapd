@@ -208,7 +208,8 @@ int nslcd_protocol_bynumber(TFILE *fp)
 int nslcd_protocol_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  static struct ent_context *protocol_context;
+  struct ent_context *protocol_context;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct protoent result;
   char buffer[1024];
@@ -223,8 +224,10 @@ int nslcd_protocol_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&protocol_context)==NULL)
     return -1;
   /* loop over all results */
+  mkfilter_protocol_all(filter,sizeof(filter));
   protocol_attrs_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&protocol_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getprotoent,LM_PROTOCOLS,protocol_attrs,_nss_ldap_parse_proto)))==NSLCD_RESULT_SUCCESS)
+  while ((retv=_nss_ldap_getent(&protocol_context,&result,buffer,sizeof(buffer),&errnop,
+                                NULL,filter,protocol_attrs,LM_PROTOCOLS,_nss_ldap_parse_proto))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

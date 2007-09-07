@@ -225,7 +225,8 @@ int nslcd_ether_byether(TFILE *fp)
 int nslcd_ether_all(TFILE *fp)
 {
   int32_t tmpint32;
-  static struct ent_context *ether_context;
+  char filter[1024];
+  struct ent_context *ether_context;
   /* these are here for now until we rewrite the LDAP code */
   struct ether result;
   char buffer[1024];
@@ -240,8 +241,10 @@ int nslcd_ether_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&ether_context)==NULL)
     return -1;
   /* loop over all results */
+  mkfilter_ether_all(filter,sizeof(filter));
   ether_attrs_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&ether_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getetherent,LM_ETHERS,ether_attrs,_nss_ldap_parse_ether)))==NSLCD_RESULT_SUCCESS)
+  while ((retv=_nss_ldap_getent(&ether_context,&result,buffer,sizeof(buffer),&errnop,
+                                NULL,filter,ether_attrs,LM_ETHERS,_nss_ldap_parse_ether))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

@@ -388,7 +388,8 @@ int nslcd_host_byaddr(TFILE *fp)
 int nslcd_host_all(TFILE *fp)
 {
   int32_t tmpint32;
-  static struct ent_context *host_context;
+  struct ent_context *host_context;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct hostent result;
   char buffer[1024];
@@ -403,15 +404,16 @@ int nslcd_host_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&host_context)==NULL)
     return -1;
   /* loop over all results */
+  mkfilter_host_all(filter,sizeof(filter));
   host_attrs_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&host_context,&result,buffer,1024,&errnop,_nss_ldap_filt_gethostent,LM_HOSTS,
-                                          host_attrs,
+  while ((retv=_nss_ldap_getent(&host_context,&result,buffer,sizeof(buffer),&errnop,
+                                NULL,filter,host_attrs,LM_HOSTS,
 #ifdef INET6
                              (_res.options&RES_USE_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4
 #else
                              _nss_ldap_parse_hostv4
 #endif
-                             )))==NSLCD_RESULT_SUCCESS)
+                             ))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

@@ -296,8 +296,9 @@ int nslcd_passwd_byuid(TFILE *fp)
 int nslcd_passwd_all(TFILE *fp)
 {
   int32_t tmpint32;
+  struct ent_context *passwd_context = NULL;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
-  struct ent_context *pw_context = NULL;
   struct passwd result;
   char buffer[1024];
   int errnop;
@@ -308,11 +309,13 @@ int nslcd_passwd_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_ALL);
   /* initialize context */
-  if (_nss_ldap_ent_context_init(&pw_context)==NULL)
+  if (_nss_ldap_ent_context_init(&passwd_context)==NULL)
     return -1;
   /* go over results */
+  mkfilter_passwd_all(filter,sizeof(filter));
   passwd_attrs_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&pw_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getpwent,LM_PASSWD,passwd_attrs,_nss_ldap_parse_pw)))==NSLCD_RESULT_SUCCESS)
+  while ((retv=_nss_ldap_getent(&passwd_context,&result,buffer,sizeof(buffer),&errnop,
+                                NULL,filter,passwd_attrs,LM_PASSWD,_nss_ldap_parse_pw))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
@@ -322,9 +325,9 @@ int nslcd_passwd_all(TFILE *fp)
   WRITE_INT32(fp,retv);
   WRITE_FLUSH(fp);
   /* FIXME: if some statement returns what happens to the context? */
-  _nss_ldap_enter(); \
-  _nss_ldap_ent_context_release(pw_context); \
-  _nss_ldap_leave(); \
+  _nss_ldap_enter();
+  _nss_ldap_ent_context_release(passwd_context);
+  _nss_ldap_leave();
   /* we're done */
   return 0;
 }

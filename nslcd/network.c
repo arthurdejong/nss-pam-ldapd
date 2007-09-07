@@ -256,7 +256,8 @@ int nslcd_network_byaddr(TFILE *fp)
 int nslcd_network_all(TFILE *fp)
 {
   int32_t tmpint32;
-  static struct ent_context *net_context;
+  struct ent_context *net_context;
+  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct netent result;
   char buffer[1024];
@@ -271,8 +272,10 @@ int nslcd_network_all(TFILE *fp)
   if (_nss_ldap_ent_context_init(&net_context)==NULL)
     return -1;
   /* loop over all results */
+  mkfilter_network_all(filter,sizeof(filter));
   network_attrs_init();
-  while ((retv=nss2nslcd(_nss_ldap_getent(&net_context,&result,buffer,1024,&errnop,_nss_ldap_filt_getnetent,LM_NETWORKS,network_attrs,_nss_ldap_parse_net)))==NSLCD_RESULT_SUCCESS)
+  while ((retv=_nss_ldap_getent(&net_context,&result,buffer,sizeof(buffer),&errnop,
+                                NULL,filter,network_attrs,LM_NETWORKS,_nss_ldap_parse_net))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
