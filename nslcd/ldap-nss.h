@@ -169,14 +169,13 @@ void _nss_ldap_ent_context_cleanup (struct ent_context *);
 char **_nss_ldap_get_values (LDAPMessage * e, const char *attr);
 char *_nss_ldap_get_dn (LDAPMessage * e);
 LDAPMessage *_nss_ldap_first_entry (LDAPMessage * res);
-LDAPMessage *_nss_ldap_next_entry (LDAPMessage * res);
 char *_nss_ldap_first_attribute (LDAPMessage * entry, BerElement **berptr);
 char *_nss_ldap_next_attribute (LDAPMessage * entry, BerElement *ber);
 
 /*
  * Synchronous search cover (caller acquires lock).
  */
-enum nss_status _nss_ldap_search_s(
+enum nss_status _nss_ldap_search_locked(
         const char *base,int scope,const char *filter,
         const char **attrs,int sizelimit,LDAPMessage **res);
 

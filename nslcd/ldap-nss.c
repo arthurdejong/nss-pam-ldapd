@@ -1435,7 +1435,7 @@ do_with_reconnect (const char *base, int scope,
 /*
  * Synchronous search function. Don't call this directly;
  * always wrap calls to this with do_with_reconnect(), or,
- * better still, use _nss_ldap_search_s().
+ * better still, use _nss_ldap_search_locked().
  */
 static int
 do_search_s (const char *base, int scope,
@@ -1744,22 +1744,6 @@ _nss_ldap_first_entry (LDAPMessage * res)
   return ldap_first_entry (__session.ls_conn, res);
 }
 
-/*
- * Simple wrapper around ldap_next_entry(). Requires that
- * session is already established.
- */
-LDAPMessage *
-_nss_ldap_next_entry (LDAPMessage * res)
-{
-  if (__session.ls_state != LS_CONNECTED_TO_DSA)
-    {
-      return NULL;
-    }
-  assert (__session.ls_conn != NULL);
-
-  return ldap_next_entry (__session.ls_conn, res);
-}
-
 char *
 _nss_ldap_first_attribute (LDAPMessage * entry, BerElement ** berptr)
 {
@@ -1788,16 +1772,16 @@ _nss_ldap_next_attribute (LDAPMessage * entry, BerElement * ber)
  * The generic synchronous lookup cover function.
  * Assumes caller holds lock.
  */
-enum nss_status _nss_ldap_search_s(
+enum nss_status _nss_ldap_search_locked(
         const char *base,int scope,const char *filter,
         const char **attrs,int sizelimit,LDAPMessage **res)
 {
   enum nss_status stat;
-  log_log(LOG_DEBUG,"==> _nss_ldap_search_s (base=\"%s\", filter=\"%s\")",base,filter);
+  log_log(LOG_DEBUG,"==> _nss_ldap_search_locked (base=\"%s\", filter=\"%s\")",base,filter);
   /* initilize session */
   if ((stat=do_init())!=NSS_STATUS_SUCCESS)
   {
-    log_log(LOG_DEBUG,"<== _nss_ldap_search_s");
+    log_log(LOG_DEBUG,"<== _nss_ldap_search_locked");
     return stat;
   }
   stat=do_with_reconnect(
@@ -1944,7 +1928,7 @@ int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,int *errnop,
 
   _nss_ldap_ent_context_init_locked(&context);
 
-  stat=_nss_ldap_search_s(base,scope,filter,attrs,1,&context.ec_res);
+  stat=_nss_ldap_search_locked(base,scope,filter,attrs,1,&context.ec_res);
   if (stat!=NSS_STATUS_SUCCESS)
   {
     _nss_ldap_leave ();
@@ -2032,7 +2016,7 @@ int _nss_ldap_searchbyname(
 
   _nss_ldap_ent_context_init_locked(&context);
 
-  stat=nss2nslcd(_nss_ldap_search_s(base,scope,filter,attrs,1,&context.ec_res));
+  stat=nss2nslcd(_nss_ldap_search_locked(base,scope,filter,attrs,1,&context.ec_res));
   /* write the result code */
   WRITE_INT32(fp,stat);
   /* bail on nothing found */
