@@ -29,14 +29,6 @@
 #include "common/tio.h"
 #include "compat/attrs.h"
 
-/* translates a nss code (as defined in nss.h) to a
-   nslcd return code (as defined in nslcd.h) */
-/* FIXME: this is a temporary hack, get rid of it */
-#include <nss.h>
-int nss2nslcd(enum nss_status code)
-  PURE MUST_USE;
-
-
 /* macros for basic read and write operations, the following
    ERROR_OUT* marcos define the action taken on errors
    the stream is not closed because the caller closes the

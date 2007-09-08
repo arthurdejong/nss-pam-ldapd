@@ -43,18 +43,3 @@ int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
   /* check if the string was completely written */
   return ((res<0)||(((size_t)res)>=buflen));
 }
-
-/* translates a nslcd return code (as defined in nslcd.h) to
-   a nss code (as defined in nss.h) */
-/* FIXME: this is a temporary hack, get rid of it */
-int nss2nslcd(enum nss_status code)
-{
-  switch (code)
-  {
-    case NSS_STATUS_UNAVAIL:  return NSLCD_RESULT_UNAVAIL;
-    case NSS_STATUS_NOTFOUND: return NSLCD_RESULT_NOTFOUND;
-    case NSS_STATUS_SUCCESS:  return NSLCD_RESULT_SUCCESS;
-/*    case NSS_STATUS_TRYAGAIN: return NSLCD_RS_SMALLBUF; */
-    default:                  return NSLCD_RESULT_UNAVAIL;
-  }
-}

@@ -1835,6 +1835,21 @@ do_next_page (const char *base,int scope,const char *filter,const char **attrs,
   return (*msgid<0)?NSS_STATUS_UNAVAIL:NSS_STATUS_SUCCESS;
 }
 
+/* translates a nslcd return code (as defined in nslcd.h) to
+   a nss code (as defined in nss.h) */
+/* FIXME: this is a temporary hack, get rid of it */
+static int nss2nslcd(enum nss_status code)
+{
+  switch (code)
+  {
+    case NSS_STATUS_UNAVAIL:  return NSLCD_RESULT_UNAVAIL;
+    case NSS_STATUS_NOTFOUND: return NSLCD_RESULT_NOTFOUND;
+    case NSS_STATUS_SUCCESS:  return NSLCD_RESULT_SUCCESS;
+/*    case NSS_STATUS_TRYAGAIN: return NSLCD_RS_SMALLBUF; */
+    default:                  return NSLCD_RESULT_UNAVAIL;
+  }
+}
+
 /*
  * General entry point for enumeration routines.
  * This should really use the asynchronous LDAP search API to avoid
