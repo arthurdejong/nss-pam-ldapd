@@ -1891,7 +1891,6 @@ _nss_ldap_getent_locked(struct ent_context *context,
   enum nss_status stat = NSS_STATUS_SUCCESS;
   int msgid;
   log_log(LOG_DEBUG,"==> _nss_ldap_getent_locked (base=\"%s\", filter=\"%s\")",base,filter);
-next:
   /* if context->ec_msgid < 0, then we haven't searched yet */
   if (context->ec_msgid<0)
   {
@@ -1922,11 +1921,6 @@ next:
       context->ec_msgid=msgid;
       stat=do_parse(context,result,buffer,buflen,errnop,parser);
     }
-  }
-  if (stat==NSS_STATUS_NOTFOUND)
-  {
-    context->ec_msgid = -1;
-    goto next;
   }
   log_log(LOG_DEBUG,"<== _nss_ldap_getent_locked");
   return stat;
