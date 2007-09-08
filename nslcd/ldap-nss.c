@@ -202,7 +202,7 @@ do_map_error (int rc)
 
 #if defined(HAVE_LDAP_SASL_INTERACTIVE_BIND_S) && (defined(HAVE_SASL_H) ||defined (HAVE_SASL_SASL_H))
 static int
-do_sasl_interact (LDAP * ld, unsigned flags, void *defaults, void *_interact)
+do_sasl_interact (LDAP *ld, unsigned flags, void *defaults, void *_interact)
 {
   char *authzid = (char *) defaults;
   sasl_interact_t *interact = (sasl_interact_t *) _interact;
@@ -461,7 +461,7 @@ static int do_start_tls (struct ldap_session * session)
 #if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
 #if LDAP_SET_REBIND_PROC_ARGS == 3
 static int
-do_rebind (LDAP * ld, LDAP_CONST char *url, ber_tag_t request,
+do_rebind (LDAP *ld, LDAP_CONST char *url, ber_tag_t request,
            ber_int_t msgid, void *arg)
 #else
 static int
@@ -1277,7 +1277,6 @@ void _nss_ldap_ent_context_init_locked(struct ent_context *context)
   context->ec_cookie=NULL;
   context->ec_res=NULL;
   context->ec_msgid=-1;
-  context->ec_sd=NULL;
   LS_INIT(context->ec_state);
 }
 
@@ -1307,7 +1306,6 @@ void _nss_ldap_ent_context_cleanup(struct ent_context *context)
     ber_bvfree(context->ec_cookie);
     context->ec_cookie=NULL;
   }
-  context->ec_sd=NULL;
   LS_INIT(context->ec_state);
   if (_nss_ldap_test_config_flag(NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT))
     do_close ();
@@ -1791,13 +1789,10 @@ _nss_ldap_next_attribute (LDAPMessage * entry, BerElement * ber)
  * Assumes caller holds lock.
  */
 enum nss_status _nss_ldap_search_s(
-        const char *base,const char *filter,
-        enum ldap_map_selector sel,
+        const char *base,int scope,const char *filter,
         const char **attrs,int sizelimit,LDAPMessage **res)
 {
-  int scope;
   enum nss_status stat;
-  struct ldap_service_search_descriptor *sd=NULL;
   log_log(LOG_DEBUG,"==> _nss_ldap_search_s (base=\"%s\", filter=\"%s\")",base,filter);
   /* initilize session */
   if ((stat=do_init())!=NSS_STATUS_SUCCESS)
@@ -1805,33 +1800,9 @@ enum nss_status _nss_ldap_search_s(
     log_log(LOG_DEBUG,"<== _nss_ldap_search_s");
     return stat;
   }
-  /* if args includes a base, use that */
-  if (base!=NULL)
-  {
-    sel=LM_NONE;
-  }
-  /* Set some reasonable defaults. */
-  if (base==NULL)
-    base=nslcd_cfg->ldc_base;
-  scope=nslcd_cfg->ldc_scope;
-  if (sel<LM_NONE)
-  {
-    /* get search descriptor */
-    sd=nslcd_cfg->ldc_sds[sel];
-    if (sd!=NULL)
-    {
-      if (sd->lsd_base!=NULL)
-        base=sd->lsd_base;
-      if (sd->lsd_scope!=-1)
-        scope=sd->lsd_scope;
-    }
-  }
-
-
   stat=do_with_reconnect(
           base,scope,filter,attrs,
           sizelimit,res,(search_func_t)do_search_s);
-
   return stat;
 }
 
@@ -1840,14 +1811,10 @@ enum nss_status _nss_ldap_search_s(
  * Assumes caller holds lock.
  */
 static enum nss_status
-_nss_ldap_search (const char *base,const char *filter,const char **attrs,
-                  enum ldap_map_selector sel,
-                  int sizelimit, int *msgid,
-                  struct ldap_service_search_descriptor **csd)
+_nss_ldap_search (const char *base,int scope,const char *filter,const char **attrs,
+                  int sizelimit, int *msgid)
 {
-  int scope;
   enum nss_status stat;
-  struct ldap_service_search_descriptor *sd=NULL;
   log_log(LOG_DEBUG,"==> _nss_ldap_search");
   *msgid = -1;
   stat=do_init();
@@ -1856,29 +1823,6 @@ _nss_ldap_search (const char *base,const char *filter,const char **attrs,
     log_log(LOG_DEBUG,"<== _nss_ldap_search");
     return stat;
   }
-  /* Set some reasonable defaults. */
-  if (base==NULL)
-    base=nslcd_cfg->ldc_base;
-  scope=nslcd_cfg->ldc_scope;
-  if (sel<LM_NONE || *csd!=NULL)
-  {
-    /*
-     * If we were chasing multiple descriptors and there are none left,
-     * just quit with NSS_STATUS_NOTFOUND.
-     */
-    if (*csd != NULL)
-      return NSS_STATUS_NOTFOUND;
-    else
-      sd = nslcd_cfg->ldc_sds[sel];
-    *csd = sd;
-    if (sd != NULL)
-    {
-      if (sd->lsd_base!=NULL)
-        base=sd->lsd_base;
-      if (sd->lsd_scope!=-1)
-        scope=sd->lsd_scope;
-    }
-  }
   stat=do_with_reconnect(base,scope,filter,attrs,
                          sizelimit,msgid,(search_func_t)do_search);
   log_log(LOG_DEBUG,"<== _nss_ldap_search");
@@ -1886,31 +1830,12 @@ _nss_ldap_search (const char *base,const char *filter,const char **attrs,
 }
 
 static enum nss_status
-do_next_page (const char *base,const char *filter,const char **attrs,
-              enum ldap_map_selector sel,
+do_next_page (const char *base,int scope,const char *filter,const char **attrs,
               int sizelimit, int *msgid,
               struct berval *pCookie)
 {
-  int scope=-1;
   enum nss_status stat;
-  struct ldap_service_search_descriptor *sd=NULL;
   LDAPControl *serverctrls[2]={ NULL, NULL };
-  if (sel<LM_NONE)
-  {
-    sd=nslcd_cfg->ldc_sds[sel];
-    if (sd!=NULL)
-    {
-      if ((sd->lsd_base!=NULL)&&(base=NULL))
-        base=sd->lsd_base;
-      if (sd->lsd_scope!=-1)
-        scope=sd->lsd_scope;
-    }
-  }
-  /* set some reasonable defaults */
-  if (base==NULL)
-    base=nslcd_cfg->ldc_base;
-  if (scope==-1)
-    scope=nslcd_cfg->ldc_scope;
   stat=ldap_create_page_control(__session.ls_conn,
                                 nslcd_cfg->ldc_pagesize,
                                 pCookie,0,&serverctrls[0]);
@@ -1918,9 +1843,8 @@ do_next_page (const char *base,const char *filter,const char **attrs,
   {
     return NSS_STATUS_UNAVAIL;
   }
-  stat=ldap_search_ext(__session.ls_conn,base,
-                       nslcd_cfg->ldc_scope,
-                       filter,
+  stat=ldap_search_ext(__session.ls_conn,
+                       base,scope,filter,
                        (char **)attrs,0,serverctrls,NULL,LDAP_NO_LIMIT,
                        sizelimit,msgid);
   ldap_control_free(serverctrls[0]);
@@ -1937,8 +1861,8 @@ do_next_page (const char *base,const char *filter,const char **attrs,
 int
 _nss_ldap_getent(struct ent_context *context,
                  void *result,char *buffer,size_t buflen,int *errnop,
-                 const char *base,const char *filter,
-                 const char **attrs, enum ldap_map_selector sel, parser_t parser)
+                 const char *base,int scope,const char *filter,
+                 const char **attrs, parser_t parser)
 {
   int status;
   /*
@@ -1948,8 +1872,8 @@ _nss_ldap_getent(struct ent_context *context,
    */
   _nss_ldap_enter();
   status=nss2nslcd(_nss_ldap_getent_locked(context,result,
-                             buffer,buflen,
-                             errnop,base,filter,attrs,sel,parser));
+                             buffer,buflen,errnop,
+                             base,scope,filter,attrs,parser));
   _nss_ldap_leave();
   return status;
 }
@@ -1961,9 +1885,8 @@ _nss_ldap_getent(struct ent_context *context,
 enum nss_status
 _nss_ldap_getent_locked(struct ent_context *context,
                     void *result,char *buffer,size_t buflen,int *errnop,
-                    const char *base,const char *filter,
-                    const char **attrs,
-                    enum ldap_map_selector sel,parser_t parser)
+                    const char *base,int scope,const char *filter,const char **attrs,
+                    parser_t parser)
 {
   enum nss_status stat = NSS_STATUS_SUCCESS;
   int msgid;
@@ -1972,8 +1895,8 @@ next:
   /* if context->ec_msgid < 0, then we haven't searched yet */
   if (context->ec_msgid<0)
   {
-    stat=_nss_ldap_search(base,filter,attrs,sel,
-                          LDAP_NO_LIMIT,&msgid,&(context->ec_sd));
+    stat=_nss_ldap_search(base,scope,filter,attrs,
+                          LDAP_NO_LIMIT,&msgid);
     if (stat != NSS_STATUS_SUCCESS)
     {
       log_log(LOG_DEBUG,"<== _nss_ldap_getent_locked");
@@ -1989,7 +1912,7 @@ next:
     /* Is there another page of results? */
     if ((context->ec_cookie!=NULL)&&(context->ec_cookie->bv_len!=0))
     {
-      stat=do_next_page(base,filter,attrs,sel,LDAP_NO_LIMIT,&msgid,
+      stat=do_next_page(base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid,
                         context->ec_cookie);
       if (stat!=NSS_STATUS_SUCCESS)
       {
@@ -2000,7 +1923,7 @@ next:
       stat=do_parse(context,result,buffer,buflen,errnop,parser);
     }
   }
-  if ((stat==NSS_STATUS_NOTFOUND)&&(context->ec_sd!=NULL))
+  if (stat==NSS_STATUS_NOTFOUND)
   {
     context->ec_msgid = -1;
     goto next;
@@ -2013,10 +1936,8 @@ next:
  * General match function.
  * Locks mutex.
  */
-int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,
-                        int *errnop, enum ldap_map_selector sel,
-                        const char *base, const char *filter,
-                        const char **attrs,
+int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,int *errnop,
+                        const char *base,int scope,const char *filter,const char **attrs,
                         parser_t parser)
 {
 
@@ -2029,7 +1950,7 @@ int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,
 
   _nss_ldap_ent_context_init_locked(&context);
 
-  stat=_nss_ldap_search_s(base,filter,sel,attrs,1,&context.ec_res);
+  stat=_nss_ldap_search_s(base,scope,filter,attrs,1,&context.ec_res);
   if (stat!=NSS_STATUS_SUCCESS)
   {
     _nss_ldap_leave ();
@@ -2106,8 +2027,8 @@ static int NEW_do_parse_s(struct ent_context *context,TFILE *fp,NEWparser_t pars
 
 
 int _nss_ldap_searchbyname(
-        const char *base,const char *filter,
-        enum ldap_map_selector sel,const char **attrs,TFILE *fp,NEWparser_t parser)
+        const char *base,int scope,const char *filter,const char **attrs,
+        TFILE *fp,NEWparser_t parser)
 {
   int stat;
   struct ent_context context;
@@ -2117,7 +2038,7 @@ int _nss_ldap_searchbyname(
 
   _nss_ldap_ent_context_init_locked(&context);
 
-  stat=nss2nslcd(_nss_ldap_search_s(base,filter,sel,attrs,1,&context.ec_res));
+  stat=nss2nslcd(_nss_ldap_search_s(base,scope,filter,attrs,1,&context.ec_res));
   /* write the result code */
   WRITE_INT32(fp,stat);
   /* bail on nothing found */
@@ -2410,7 +2331,7 @@ int has_objectclass(LDAPMessage *entry,const char *objectclass)
   ld=__session.ls_conn;
   if (ld==NULL)
     return 0;
-  vals=ldap_get_values(ld,entry,attmap_objectClass);
+  vals=ldap_get_values(ld,entry,"objectClass");
   if (vals==NULL)
     return 0;
   for (i=0;vals[i]!=NULL;i++)

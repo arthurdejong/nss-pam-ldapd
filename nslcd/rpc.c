@@ -116,8 +116,15 @@ static int mkfilter_rpc_bynumber(int number,
                     attmap_rpc_oncRpcNumber,number);
 }
 
-static void rpc_attrs_init(void)
+static void rpc_init(void)
 {
+  /* set up base */
+  if (rpc_base==NULL)
+    rpc_base=nslcd_cfg->ldc_base;
+  /* set up scope */
+  if (rpc_scope==LDAP_SCOPE_DEFAULT)
+    rpc_scope=nslcd_cfg->ldc_scope;
+  /* set up attribute list */
   rpc_attrs[0]=attmap_rpc_cn;
   rpc_attrs[1]=attmap_rpc_oncRpcNumber;
   rpc_attrs[2]=NULL;
@@ -182,9 +189,10 @@ int nslcd_rpc_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_RPC_BYNAME);
   /* do the LDAP request */
   mkfilter_rpc_byname(name,filter,sizeof(filter));
-  rpc_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_RPC,
-                           NULL,filter,rpc_attrs,_nss_ldap_parse_rpc);
+  rpc_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           rpc_base,rpc_scope,filter,rpc_attrs,
+                           _nss_ldap_parse_rpc);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -213,9 +221,10 @@ int nslcd_rpc_bynumber(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_RPC_BYNUMBER);
   /* do the LDAP request */
   mkfilter_rpc_bynumber(number,filter,sizeof(filter));
-  rpc_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_RPC,
-                           NULL,filter,rpc_attrs,_nss_ldap_parse_rpc);
+  rpc_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           rpc_base,rpc_scope,filter,rpc_attrs,
+                           _nss_ldap_parse_rpc);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -242,9 +251,10 @@ int nslcd_rpc_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  rpc_attrs_init();
+  rpc_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,rpc_filter,rpc_attrs,LM_RPC,_nss_ldap_parse_rpc))==NSLCD_RESULT_SUCCESS)
+                                rpc_base,rpc_scope,rpc_filter,rpc_attrs,
+                                _nss_ldap_parse_rpc))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

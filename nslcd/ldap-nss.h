@@ -104,7 +104,6 @@ struct ent_context
   struct ldap_state ec_state;        /* eg. for services */
   int ec_msgid;                      /* message ID */
   LDAPMessage *ec_res;               /* result chain */
-  struct ldap_service_search_descriptor *ec_sd;  /* current sd */
   struct berval *ec_cookie;          /* cookie for paged searches */
 };
 
@@ -178,13 +177,14 @@ char *_nss_ldap_next_attribute (LDAPMessage * entry, BerElement *ber);
  * Synchronous search cover (caller acquires lock).
  */
 enum nss_status _nss_ldap_search_s(
-        const char *base,const char *filter,
-        enum ldap_map_selector sel,
+        const char *base,int scope,const char *filter,
         const char **attrs,int sizelimit,LDAPMessage **res);
 
 int _nss_ldap_searchbyname(
-        const char *base,const char *filter,
-        enum ldap_map_selector sel,const char **attrs,TFILE *fp,NEWparser_t parser);
+        const char *base,int scope,const char *filter,
+        const char **attrs,TFILE *fp,NEWparser_t parser);
+
+int _nss_ldap_write_attrvals(TFILE *fp,LDAPMessage *e,const char *attr);
 
 /*
  * Emulate X.500 read operation.
@@ -204,9 +204,9 @@ enum nss_status _nss_ldap_getent_locked (
                                 size_t buflen,  /* IN */
                                 int *errnop,    /* OUT */
                                 const char *base, /* IN */
+                                int scope,        /* IN */
                                 const char *filter, /* IN */
                                 const char **attrs, /* IN */
-                                enum ldap_map_selector sel,        /* IN */
                                 parser_t parser /* IN */ );
 
 /*
@@ -219,18 +219,16 @@ int _nss_ldap_getent(struct ent_context *context, /* IN/OUT */
                      size_t buflen,     /* IN */
                      int *errnop,       /* OUT */
                      const char *base,  /* IN */
+                     int scope,         /* IN */
                      const char *filter, /* IN */
                      const char **attrs, /* IN */
-                     enum ldap_map_selector sel,   /* IN */
                      parser_t parser /* IN */ );
 
 /*
  * common lookup routine; uses synchronous API.
  */
-int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,
-                        int *errnop, enum ldap_map_selector sel,
-                        const char *base, const char *filter,
-                        const char **attrs,
+int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,int *errnop,
+                        const char *base,int scope,const char *filter,const char **attrs,
                         parser_t parser);
 
 /* parsing utility functions */

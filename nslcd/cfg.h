@@ -76,14 +76,6 @@ enum ldap_map_selector
   LM_NONE
 };
 
-struct ldap_service_search_descriptor
-{
-  /* search base, qualified */
-  char *lsd_base;
-  /* scope */
-  int lsd_scope;
-};
-
 struct ldap_config
 {
   /* NULL terminated list of URIs */
@@ -120,8 +112,6 @@ struct ldap_config
   int ldc_deref;
   /* Chase referrals */
   int ldc_referrals;
-  /* naming contexts */
-  struct ldap_service_search_descriptor *ldc_sds[LM_NONE];
   /* search timelimit */
   int ldc_timelimit;
   /* bind timelimit */

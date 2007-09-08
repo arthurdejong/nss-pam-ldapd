@@ -102,8 +102,15 @@ static int mkfilter_protocol_bynumber(int protocol,
                   attmap_protocol_ipProtocolNumber,protocol);
 }
 
-static void protocol_attrs_init(void)
+static void protocol_init(void)
 {
+  /* set up base */
+  if (protocol_base==NULL)
+    protocol_base=nslcd_cfg->ldc_base;
+  /* set up scope */
+  if (protocol_scope==LDAP_SCOPE_DEFAULT)
+    protocol_scope=nslcd_cfg->ldc_scope;
+  /* set up attribute list */
   protocol_attrs[0]=attmap_protocol_cn;
   protocol_attrs[1]=attmap_protocol_ipProtocolNumber;
   protocol_attrs[2]=NULL;
@@ -168,9 +175,10 @@ int nslcd_protocol_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_BYNAME);
   /* do the LDAP request */
   mkfilter_protocol_byname(name,filter,sizeof(filter));
-  protocol_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_PROTOCOLS,
-                           NULL,filter,protocol_attrs,_nss_ldap_parse_proto);
+  protocol_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           protocol_base,protocol_scope,filter,protocol_attrs,
+                           _nss_ldap_parse_proto);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -201,9 +209,10 @@ int nslcd_protocol_bynumber(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_BYNUMBER);
   /* do the LDAP request */
   mkfilter_protocol_bynumber(protocol,filter,sizeof(filter));
-  protocol_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_PROTOCOLS,
-                           NULL,filter,protocol_attrs,_nss_ldap_parse_proto);
+  protocol_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           protocol_base,protocol_scope,filter,protocol_attrs,
+                           _nss_ldap_parse_proto);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -232,9 +241,10 @@ int nslcd_protocol_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  protocol_attrs_init();
+  protocol_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,protocol_filter,protocol_attrs,LM_PROTOCOLS,_nss_ldap_parse_proto))==NSLCD_RESULT_SUCCESS)
+                                protocol_base,protocol_scope,protocol_filter,protocol_attrs,
+                                _nss_ldap_parse_proto))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

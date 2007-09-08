@@ -181,7 +181,7 @@ static char *user2dn(const char *user)
   char filter[1024];
   LDAPMessage *res, *e;
   mkfilter_passwd_byname(user,filter,sizeof(filter));
-  if (_nss_ldap_search_s(NULL,filter,LM_PASSWD,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
+  if (_nss_ldap_search_s(group_base,group_scope,filter,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
   {
     e=_nss_ldap_first_entry(res);
     if (e!=NULL)
@@ -224,8 +224,15 @@ static int mkfilter_group_bymember(const char *user,
   }
 }
 
-static void group_attrs_init(void)
+static void group_init(void)
 {
+  /* set up base */
+  if (group_base==NULL)
+    group_base=nslcd_cfg->ldc_base;
+  /* set up scope */
+  if (group_scope==LDAP_SCOPE_DEFAULT)
+    group_scope=nslcd_cfg->ldc_scope;
+  /* set up attribute list */
   group_attrs[0]=attmap_group_cn;
   group_attrs[1]=attmap_group_userPassword;
   group_attrs[2]=attmap_group_memberUid;
@@ -1012,8 +1019,8 @@ static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
   _nss_ldap_ent_context_init_locked(&context);
   mkfilter_getgroupsbydn(dn,filter,sizeof(filter));
   stat=_nss_ldap_getent_locked(&context,lia,NULL,0,&erange,
-                           NULL,filter,gidnumber_attrs,
-                           LM_GROUP,do_parse_initgroups_nested);
+                           group_base,group_scope,filter,gidnumber_attrs,
+                           do_parse_initgroups_nested);
 
   if (stat==NSS_STATUS_SUCCESS)
     stat=_nss_ldap_namelist_push(&lia->known_groups,dn);
@@ -1073,8 +1080,8 @@ static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroup
   /* FIXME: the search filter is wrong here, we should figure out what it's
             supposed to be */
   stat=_nss_ldap_getent_locked(&context,lia,NULL,0,&erange,
-                           NULL,"(distinguishedName=%s)",gidnumber_attrs,
-                           LM_GROUP,do_parse_initgroups_nested);
+                           group_base,group_scope,"(distinguishedName=%s)",gidnumber_attrs,
+                           do_parse_initgroups_nested);
 
   if (stat == NSS_STATUS_SUCCESS)
     {
@@ -1124,8 +1131,8 @@ static int group_bymember(const char *user, long int *start,
   gidnumber_attrs[1] = NULL;
   _nss_ldap_ent_context_init_locked(&context);
   stat=_nss_ldap_getent_locked(&context,(void *)&lia,NULL,0,errnop,
-                           NULL,filter,gidnumber_attrs,
-                           LM_GROUP,do_parse_initgroups_nested);
+                           group_base,group_scope,filter,gidnumber_attrs,
+                           do_parse_initgroups_nested);
   _nss_ldap_namelist_destroy(&lia.known_groups);
   _nss_ldap_ent_context_cleanup(&context);
   _nss_ldap_leave();
@@ -1169,9 +1176,10 @@ int nslcd_group_byname(TFILE *fp)
   }
   /* do the LDAP request */
   mkfilter_group_byname(name,filter,sizeof(filter));
-  group_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_GROUP,
-                           NULL,filter,group_attrs,_nss_ldap_parse_gr);
+  group_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           group_base,group_scope,filter,group_attrs,
+                           _nss_ldap_parse_gr);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYNAME);
@@ -1207,9 +1215,10 @@ int nslcd_group_bygid(TFILE *fp)
   }
   /* do the LDAP request */
   mkfilter_group_bygid(gid,filter,sizeof(filter));
-  group_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_GROUP,
-                           NULL,filter,group_attrs,_nss_ldap_parse_gr);
+  group_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           group_base,group_scope,filter,
+                           group_attrs,_nss_ldap_parse_gr);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYGID);
@@ -1296,9 +1305,10 @@ int nslcd_group_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  group_attrs_init();
+  group_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,group_filter,group_attrs,LM_GROUP,_nss_ldap_parse_gr))==NSLCD_RESULT_SUCCESS)
+                                group_base,group_scope,group_filter,group_attrs,
+                                _nss_ldap_parse_gr))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

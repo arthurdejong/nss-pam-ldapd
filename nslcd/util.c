@@ -301,7 +301,7 @@ enum nss_status _nss_ldap_dn2uid(const char *dn,char **uid,char **buffer,
 
       attrs[0] = attmap_passwd_uid;
       attrs[1] = attmap_group_uniqueMember;
-      attrs[2] = attmap_objectClass;
+      attrs[2] = "objectClass";
       attrs[3] = NULL;
 
       if (_nss_ldap_read (dn, attrs, &res) == NSS_STATUS_SUCCESS)

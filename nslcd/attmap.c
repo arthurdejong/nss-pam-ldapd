@@ -29,6 +29,85 @@
 
 const char *attmap_objectClass           = "objectClass";
 
+/* these are the bases that are defined per database */
+extern const char *alias_base;
+extern const char *ether_base;
+extern const char *group_base;
+extern const char *host_base;
+extern const char *netgroup_base;
+extern const char *network_base;
+extern const char *passwd_base;
+extern const char *protocol_base;
+extern const char *rpc_base;
+extern const char *service_base;
+extern const char *shadow_base;
+
+const char **base_get_var(enum ldap_map_selector map)
+{
+  switch (map)
+  {
+    case LM_ALIASES:   return &alias_base;
+    case LM_ETHERS:    return &ether_base;
+    case LM_GROUP:     return &group_base;
+    case LM_HOSTS:     return &host_base;
+    case LM_NETGROUP:  return &netgroup_base;
+    case LM_NETWORKS:  return &network_base;
+    case LM_PASSWD:    return &passwd_base;
+    case LM_PROTOCOLS: return &protocol_base;
+    case LM_RPC:       return &rpc_base;
+    case LM_SERVICES:  return &service_base;
+    case LM_SHADOW:    return &shadow_base;
+    case LM_NONE:
+    default:           return NULL;
+  }
+}
+
+/* these are the scopes that are defined per database */
+extern int alias_scope;
+extern int ether_scope;
+extern int group_scope;
+extern int host_scope;
+extern int netgroup_scope;
+extern int network_scope;
+extern int passwd_scope;
+extern int protocol_scope;
+extern int rpc_scope;
+extern int service_scope;
+extern int shadow_scope;
+
+int *scope_get_var(enum ldap_map_selector map)
+{
+  switch (map)
+  {
+    case LM_ALIASES:   return &alias_scope;
+    case LM_ETHERS:    return &ether_scope;
+    case LM_GROUP:     return &group_scope;
+    case LM_HOSTS:     return &host_scope;
+    case LM_NETGROUP:  return &netgroup_scope;
+    case LM_NETWORKS:  return &network_scope;
+    case LM_PASSWD:    return &passwd_scope;
+    case LM_PROTOCOLS: return &protocol_scope;
+    case LM_RPC:       return &rpc_scope;
+    case LM_SERVICES:  return &service_scope;
+    case LM_SHADOW:    return &shadow_scope;
+    case LM_NONE:
+    default:           return NULL;
+  }
+}
+
+/* these are the filters that are defined per database */
+extern const char *alias_filter;
+extern const char *ether_filter;
+extern const char *group_filter;
+extern const char *host_filter;
+extern const char *netgroup_filter;
+extern const char *network_filter;
+extern const char *passwd_filter;
+extern const char *protocol_filter;
+extern const char *rpc_filter;
+extern const char *service_filter;
+extern const char *shadow_filter;
+
 const char **filter_get_var(enum ldap_map_selector map)
 {
   switch (map)

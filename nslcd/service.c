@@ -142,8 +142,15 @@ static int mkfilter_service_bynumber(int number,
                       attmap_service_ipServicePort,number);
 }
 
-static void service_attrs_init(void)
+static void service_init(void)
 {
+  /* set up base */
+  if (service_base==NULL)
+    service_base=nslcd_cfg->ldc_base;
+  /* set up scope */
+  if (service_scope==LDAP_SCOPE_DEFAULT)
+    service_scope=nslcd_cfg->ldc_scope;
+  /* set up attribute list */
   service_attrs[0]=attmap_service_cn;
   service_attrs[1]=attmap_service_ipServicePort;
   service_attrs[2]=attmap_service_ipServiceProtocol;
@@ -293,9 +300,10 @@ int nslcd_service_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_SERVICE_BYNAME);
   /* do the LDAP request */
   mkfilter_service_byname(name,protocol,filter,sizeof(filter));
-  service_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_SERVICES,
-                          NULL,filter,service_attrs,_nss_ldap_parse_serv);
+  service_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                          service_base,service_scope,filter,service_attrs,
+                          _nss_ldap_parse_serv);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -326,9 +334,10 @@ int nslcd_service_bynumber(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_SERVICE_BYNUMBER);
   /* do the LDAP request */
   mkfilter_service_bynumber(number,protocol,filter,sizeof(filter));
-  service_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_SERVICES,
-                           NULL,filter,service_attrs,_nss_ldap_parse_serv);
+  service_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           service_base,service_scope,filter,service_attrs,
+                           _nss_ldap_parse_serv);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -355,9 +364,10 @@ int nslcd_service_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  service_attrs_init();
+  service_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,service_filter,service_attrs,LM_SERVICES,_nss_ldap_parse_serv))==NSLCD_RESULT_SUCCESS)
+                                service_base,service_scope,service_filter,service_attrs,
+                                _nss_ldap_parse_serv))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

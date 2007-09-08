@@ -127,8 +127,15 @@ static int mkfilter_ether_byether(const struct ether_addr *addr,
                    attmap_ether_macAddress,buf2);
 }
 
-static void ether_attrs_init(void)
+static void ether_init(void)
 {
+  /* set up base */
+  if (ether_base==NULL)
+    ether_base=nslcd_cfg->ldc_base;
+  /* set up scope */
+  if (ether_scope==LDAP_SCOPE_DEFAULT)
+    ether_scope=nslcd_cfg->ldc_scope;
+  /* set up attribute list */
   ether_attrs[0]=attmap_ether_cn;
   ether_attrs[1]=attmap_ether_macAddress;
   ether_attrs[2]=NULL;
@@ -185,9 +192,10 @@ int nslcd_ether_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_ETHER_BYNAME);
   /* do the LDAP request */
   mkfilter_ether_byname(name,filter,sizeof(filter));
-  ether_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_ETHERS,
-                           NULL,filter,ether_attrs,_nss_ldap_parse_ether);
+  ether_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           ether_base,ether_scope,filter,ether_attrs,
+                           _nss_ldap_parse_ether);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -218,9 +226,10 @@ int nslcd_ether_byether(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_ETHER_BYETHER);
   /* do the LDAP request */
   mkfilter_ether_byether(&addr,filter,sizeof(filter));
-  ether_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_ETHERS,
-                           NULL,filter,ether_attrs,_nss_ldap_parse_ether);
+  ether_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           ether_base,ether_scope,filter,ether_attrs,
+                           _nss_ldap_parse_ether);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -249,9 +258,10 @@ int nslcd_ether_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  ether_attrs_init();
+  ether_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,ether_filter,ether_attrs,LM_ETHERS,_nss_ldap_parse_ether))==NSLCD_RESULT_SUCCESS)
+                                ether_base,ether_scope,ether_filter,ether_attrs,
+                                _nss_ldap_parse_ether))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

@@ -96,8 +96,15 @@ static int mkfilter_shadow_byname(const char *name,
                     attmap_shadow_uid,buf2);
 }
 
-static void shadow_attrs_init(void)
+static void shadow_init(void)
 {
+  /* set up base */
+  if (shadow_base==NULL)
+    shadow_base=nslcd_cfg->ldc_base;
+  /* set up scope */
+  if (shadow_scope==LDAP_SCOPE_DEFAULT)
+    shadow_scope=nslcd_cfg->ldc_scope;
+  /* set up attribute list */
   shadow_attrs[0]=attmap_shadow_uid;
   shadow_attrs[1]=attmap_shadow_userPassword;
   shadow_attrs[2]=attmap_shadow_shadowLastChange;
@@ -231,9 +238,10 @@ int nslcd_shadow_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_SHADOW_BYNAME);
   /* do the LDAP request */
   mkfilter_shadow_byname(name,filter,sizeof(filter));
-  shadow_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_SHADOW,
-                           NULL,filter,shadow_attrs,_nss_ldap_parse_sp);
+  shadow_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           shadow_base,shadow_scope,filter,shadow_attrs,
+                           _nss_ldap_parse_sp);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -262,9 +270,10 @@ int nslcd_shadow_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  shadow_attrs_init();
+  shadow_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,shadow_filter,shadow_attrs,LM_SHADOW,_nss_ldap_parse_sp))==NSLCD_RESULT_SUCCESS)
+                                shadow_base,shadow_scope,shadow_filter,shadow_attrs,
+                                _nss_ldap_parse_sp))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

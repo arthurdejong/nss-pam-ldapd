@@ -93,8 +93,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_scope=LDAP_SCOPE_SUBTREE;
   cfg->ldc_deref=LDAP_DEREF_NEVER;
   cfg->ldc_referrals=1;
-  for (i=0;i<LM_NONE;i++)
-    cfg->ldc_sds[i]=NULL;
   cfg->ldc_timelimit=LDAP_NO_LIMIT;
   cfg->ldc_bind_timelimit=30;
   cfg->ldc_reconnect_pol=LP_RECONNECT_HARD_OPEN;
@@ -223,12 +221,107 @@ static enum ldap_map_selector parse_map(const char *filename,int lnr,const char 
   }
 }
 
-/* this function modifies the statement argument passed */
-static void parse_map_statement(const char *filename,int lnr,
-                                struct ldap_config *cfg,const char **opts)
+/* check that the condition is true and otherwise log an error
+   and bail out */
+static inline void check_argumentcount(const char *filename,int lnr,
+                                       const char *keyword,int condition)
+{
+  if (!condition)
+  {
+    log_log(LOG_ERR,"%s:%d: %s: wrong number of arguments",filename,lnr,keyword);
+    exit(EXIT_FAILURE);
+  }
+}
+
+static void parse_base_statement(const char *filename,int lnr,
+                                 const char **opts,int nopts,
+                                 struct ldap_config *cfg)
 {
   enum ldap_map_selector map;
   const char **var;
+  if (nopts==2)
+    cfg->ldc_base=xstrdup(opts[1]);
+  else if (nopts==3)
+  {
+    /* get the map */
+    map=parse_map(filename,lnr,opts[1]);
+    /* get the base variable to set */
+    var=base_get_var(map);
+    if (var==NULL)
+    {
+      log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,opts[1]);
+      exit(EXIT_FAILURE);
+    }
+    /* check if the value will be changed */
+    if ((*var==NULL)||(strcmp(*var,opts[2])!=0))
+    {
+      /* Note: we have a memory leak here if a single mapping is changed
+               multiple times in one config (deemed not a problem) */
+      *var=xstrdup(opts[2]);
+    }
+  }
+  else
+    check_argumentcount(filename,lnr,opts[0],0);
+}
+
+static void parse_scope_statement(const char *filename,int lnr,
+                                  const char **opts,int nopts,
+                                  struct ldap_config *cfg)
+{
+  enum ldap_map_selector map;
+  int *var;
+  if (nopts==2)
+    cfg->ldc_scope=parse_scope(filename,lnr,opts[1]);
+  else if (nopts==3)
+  {
+    /* get the map */
+    map=parse_map(filename,lnr,opts[1]);
+    /* get the scope variable to set */
+    var=scope_get_var(map);
+    if (var==NULL)
+    {
+      log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,opts[1]);
+      exit(EXIT_FAILURE);
+    }
+    /* set the scope */
+    *var=parse_scope(filename,lnr,opts[2]);
+  }
+  else
+    check_argumentcount(filename,lnr,opts[0],0);
+}
+
+static void parse_filter_statement(const char *filename,int lnr,
+                                   const char **opts,int nopts)
+{
+  enum ldap_map_selector map;
+  const char **var;
+  check_argumentcount(filename,lnr,opts[0],nopts==3);
+  /* get the map */
+  map=parse_map(filename,lnr,opts[1]);
+  /* get the filter variable to set */
+  var=filter_get_var(map);
+  if (var==NULL)
+  {
+    log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,opts[1]);
+    exit(EXIT_FAILURE);
+  }
+  /* check if the value will be changed */
+  if (strcmp(*var,opts[2])!=0)
+  {
+    /* Note: we have a memory leak here if a single mapping is changed
+             multiple times in one config (deemed not a problem) */
+    *var=xstrdup(opts[2]);
+  }
+}
+
+/* this function modifies the statement argument passed */
+static void parse_map_statement(const char *filename,int lnr,
+                                const char **opts,int nopts,
+                                struct ldap_config *cfg)
+{
+  enum ldap_map_selector map;
+  const char **var;
+  check_argumentcount(filename,lnr,opts[0],nopts==4);
   /* get the map */
   map=parse_map(filename,lnr,opts[1]);
   /* special handling for some attribute mappings */
@@ -263,56 +356,6 @@ static void parse_map_statement(const char *filename,int lnr,
              multiple times in one config (deemed not a problem) */
     *var=xstrdup(opts[3]);
   }
-}
-
-static void parse_filter_statement(const char *filename,int lnr,
-                                   const char **opts)
-{
-  enum ldap_map_selector map;
-  const char **var;
-  /* get the map */
-  map=parse_map(filename,lnr,opts[1]);
-  /* get the filter variable to set */
-  var=filter_get_var(map);
-  if (var==NULL)
-  {
-    log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,opts[1]);
-    exit(EXIT_FAILURE);
-  }
-  /* check if the value will be changed */
-  if (strcmp(*var,opts[2])!=0)
-  {
-    /* Note: we have a memory leak here if a single mapping is changed
-             multiple times in one config (deemed not a problem) */
-    *var=xstrdup(opts[2]);
-  }
-}
-
-static void alloc_lsd(struct ldap_service_search_descriptor **lsd)
-{
-  if (*lsd!=NULL)
-    return;
-  *lsd=(struct ldap_service_search_descriptor *)malloc(sizeof(struct ldap_service_search_descriptor));
-  if (*lsd==NULL)
-  {
-    log_log(LOG_CRIT,"malloc() failed to allocate memory");
-    exit(EXIT_FAILURE);
-  }
-  /* initialize fields */
-  (*lsd)->lsd_base=NULL;
-  (*lsd)->lsd_scope=-1;
-}
-
-static void do_setbase(struct ldap_service_search_descriptor **lsd,const char *base)
-{
-  alloc_lsd(lsd);
-  (*lsd)->lsd_base=xstrdup(base);
-}
-
-static void do_setscope(struct ldap_service_search_descriptor **lsd,int scope)
-{
-  alloc_lsd(lsd);
-  (*lsd)->lsd_scope=scope;
 }
 
 /* split a line from the configuration file
@@ -357,18 +400,6 @@ static const char **tokenize(const char *filename,int lnr,char *line,int *nopt)
   }
   *nopt=opt;
   return retv;
-}
-
-/* check that the condition is true and otherwise log an error
-   and bail out */
-static inline void check_argumentcount(const char *filename,int lnr,
-                                       const char *keyword,int condition)
-{
-  if (!condition)
-  {
-    log_log(LOG_ERR,"%s:%d: %s: wrong number of arguments",filename,lnr,keyword);
-    exit(EXIT_FAILURE);
-  }
 }
 
 static void cfg_read(const char *filename,struct ldap_config *cfg)
@@ -477,21 +508,11 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     /* search/mapping options */
     else if (strcasecmp(opts[0],"base")==0)
     {
-      if (nopts==2)
-        cfg->ldc_base=xstrdup(opts[1]);
-      else if (nopts==3)
-        do_setbase(&(cfg->ldc_sds[parse_map(filename,lnr,opts[1])]),opts[2]);
-      else
-        check_argumentcount(filename,lnr,opts[0],0);
+      parse_base_statement(filename,lnr,opts,nopts,cfg);
     }
     else if (strcasecmp(opts[0],"scope")==0)
     {
-      if (nopts==2)
-        cfg->ldc_scope=parse_scope(filename,lnr,opts[1]);
-      else if (nopts==3)
-        do_setscope(&(cfg->ldc_sds[parse_map(filename,lnr,opts[1])]),parse_scope(filename,lnr,opts[2]));
-      else
-        check_argumentcount(filename,lnr,opts[0],0);
+      parse_scope_statement(filename,lnr,opts,nopts,cfg);
     }
     else if (strcasecmp(opts[0],"deref")==0)
     {
@@ -517,13 +538,11 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(opts[0],"filter")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==3);
-      parse_filter_statement(filename,lnr,opts);
+      parse_filter_statement(filename,lnr,opts,nopts);
     }
     else if (strcasecmp(opts[0],"map")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==4);
-      parse_map_statement(filename,lnr,cfg,opts);
+      parse_map_statement(filename,lnr,opts,nopts,cfg);
     }
     /* timing/reconnect options */
     else if (strcasecmp(opts[0],"timelimit")==0)

@@ -150,8 +150,15 @@ static int mkfilter_netgroup_byname(const char *name,
                     attmap_netgroup_cn,buf2);
 }
 
-static void netgroup_attrs_init(void)
+static void netgroup_init(void)
 {
+  /* set up base */
+  if (netgroup_base==NULL)
+    netgroup_base=nslcd_cfg->ldc_base;
+  /* set up scope */
+  if (netgroup_scope==LDAP_SCOPE_DEFAULT)
+    netgroup_scope=nslcd_cfg->ldc_scope;
+  /* set up attribute list */
   netgroup_attrs[0]=attmap_netgroup_cn;
   netgroup_attrs[1]=attmap_netgroup_nisNetgroupTriple;
   netgroup_attrs[2]=attmap_netgroup_memberNisNetgroup;
@@ -351,9 +358,9 @@ int nslcd_netgroup_byname(TFILE *fp)
   result.data_size = 0;
   /* do initial ldap request */
   mkfilter_netgroup_byname(name,filter,sizeof(filter));
-  netgroup_attrs_init();
-  if (_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_NETGROUP,
-                          NULL,filter,netgroup_attrs,_nss_ldap_load_netgr))
+  netgroup_init();
+  if (_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                          netgroup_base,netgroup_scope,filter,netgroup_attrs,_nss_ldap_load_netgr))
     return -1;
   /* loop over all results */
   while ((stat=_nss_ldap_parse_netgr(&result,buffer,1024))==NSS_STATUS_SUCCESS)

@@ -112,8 +112,15 @@ static int mkfilter_passwd_byuid(uid_t uid,
                   attmap_passwd_uidNumber,uid);
 }
 
-static void passwd_attrs_init(void)
+static void passwd_init(void)
 {
+  /* set up base */
+  if (passwd_base==NULL)
+    passwd_base=nslcd_cfg->ldc_base;
+  /* set up scope */
+  if (passwd_scope==LDAP_SCOPE_DEFAULT)
+    passwd_scope=nslcd_cfg->ldc_scope;
+  /* set up attribute list */
   passwd_attrs[0]=attmap_passwd_uid;
   passwd_attrs[1]=attmap_passwd_userPassword;
   passwd_attrs[2]=attmap_passwd_uidNumber;
@@ -122,7 +129,7 @@ static void passwd_attrs_init(void)
   passwd_attrs[5]=attmap_passwd_homeDirectory;
   passwd_attrs[6]=attmap_passwd_loginShell;
   passwd_attrs[7]=attmap_passwd_gecos;
-  passwd_attrs[8]=attmap_objectClass;
+  passwd_attrs[8]="objectClass";
   passwd_attrs[9]=NULL;
 }
 
@@ -259,9 +266,10 @@ int nslcd_passwd_byname(TFILE *fp)
   log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);
   /* do the LDAP request */
   mkfilter_passwd_byname(name,filter,sizeof(filter));
-  passwd_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_PASSWD,
-                           NULL,filter,passwd_attrs,_nss_ldap_parse_pw);
+  passwd_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           passwd_base,passwd_scope,filter,passwd_attrs,
+                           _nss_ldap_parse_pw);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYNAME);
@@ -291,9 +299,10 @@ int nslcd_passwd_byuid(TFILE *fp)
   log_log(LOG_DEBUG,"nslcd_passwd_byuid(%d)",(int)uid);
   /* do the LDAP request */
   mkfilter_passwd_byuid(uid,filter,sizeof(filter));
-  passwd_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_PASSWD,
-                           NULL,filter,passwd_attrs,_nss_ldap_parse_pw);
+  passwd_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           passwd_base,passwd_scope,filter,passwd_attrs,
+                           _nss_ldap_parse_pw);
   /* write the response */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);
@@ -324,9 +333,10 @@ int nslcd_passwd_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* go over results */
-  passwd_attrs_init();
+  passwd_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,passwd_filter,passwd_attrs,LM_PASSWD,_nss_ldap_parse_pw))==NSLCD_RESULT_SUCCESS)
+                                passwd_base,passwd_scope,passwd_filter,passwd_attrs,
+                                _nss_ldap_parse_pw))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

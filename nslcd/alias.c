@@ -83,8 +83,15 @@ static int mkfilter_alias_byname(const char *name,
                     attmap_alias_cn,buf2);
 }
 
-static void alias_attrs_init(void)
+static void alias_init(void)
 {
+  /* set up base */
+  if (alias_base==NULL)
+    alias_base=nslcd_cfg->ldc_base;
+  /* set up scope */
+  if (alias_scope==LDAP_SCOPE_DEFAULT)
+    alias_scope=nslcd_cfg->ldc_scope;
+  /* set up attribute list */
   alias_attrs[0]=attmap_alias_cn;
   alias_attrs[1]=attmap_alias_rfc822MailMember;
   alias_attrs[2]=NULL;
@@ -141,8 +148,9 @@ int nslcd_alias_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_ALIAS_BYNAME);
   /* do the LDAP request */
   mkfilter_alias_byname(name,filter,sizeof(filter));
-  alias_attrs_init();
-  _nss_ldap_searchbyname(NULL,filter,LM_ALIASES,alias_attrs,fp,write_alias);
+  alias_init();
+  _nss_ldap_searchbyname(alias_base,alias_scope,filter,alias_attrs,
+                         fp,write_alias);
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -165,9 +173,10 @@ int nslcd_alias_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  alias_attrs_init();
+  alias_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,alias_filter,alias_attrs,LM_ALIASES,_nss_ldap_parse_alias))==NSLCD_RESULT_SUCCESS)
+                                alias_base,alias_scope,alias_filter,alias_attrs,
+                                _nss_ldap_parse_alias))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

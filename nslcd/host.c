@@ -113,8 +113,15 @@ static int mkfilter_host_byaddr(const char *name,
                     attmap_host_ipHostNumber,buf2);
 }
 
-static void host_attrs_init(void)
+static void host_init(void)
 {
+  /* set up base */
+  if (host_base==NULL)
+    host_base=nslcd_cfg->ldc_base;
+  /* set up scope */
+  if (host_scope==LDAP_SCOPE_DEFAULT)
+    host_scope=nslcd_cfg->ldc_scope;
+  /* set up attribute list */
   host_attrs[0]=attmap_host_cn;
   host_attrs[1]=attmap_host_ipHostNumber;
   host_attrs[2]=NULL;
@@ -324,9 +331,9 @@ int nslcd_host_byname(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_HOST_BYNAME);
   /* do the LDAP request */
   mkfilter_host_byname(name,filter,sizeof(filter));
-  host_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_HOSTS,
-                           NULL,filter,host_attrs,
+  host_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           host_base,host_scope,filter,host_attrs,
 #ifdef INET6
                            (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4);
 #else
@@ -381,9 +388,9 @@ int nslcd_host_byaddr(TFILE *fp)
   WRITE_INT32(fp,NSLCD_ACTION_HOST_BYADDR);
   /* do the LDAP request */
   mkfilter_host_byaddr(name,filter,sizeof(filter));
-  host_attrs_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,LM_HOSTS,
-                           NULL,filter,host_attrs,
+  host_init();
+  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+                           host_base,host_scope,filter,host_attrs,
 #ifdef INET6
                            (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4);
 #else
@@ -415,9 +422,9 @@ int nslcd_host_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  host_attrs_init();
+  host_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,host_filter,host_attrs,LM_HOSTS,
+                                host_base,host_scope,host_filter,host_attrs,
 #ifdef INET6
                              (_res.options&RES_USE_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4
 #else
