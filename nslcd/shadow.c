@@ -51,7 +51,35 @@
 #include "attmap.h"
 #include "cfg.h"
 
+/* ( nisSchema.2.1 NAME 'shadowAccount' SUP top AUXILIARY
+ *   DESC 'Additional attributes for shadow passwords'
+ *   MUST uid
+ *   MAY ( userPassword $ shadowLastChange $ shadowMin
+ *         shadowMax $ shadowWarning $ shadowInactive $
+ *         shadowExpire $ shadowFlag $ description ) )
+ */
+
+/* the search base for searches */
+const char *shadow_base = NULL;
+
+/* the search scope for searches */
+int shadow_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *shadow_filter = "(objectClass=shadowAccount)";
+
 /* the attributes to request with searches */
+const char *attmap_shadow_uid              = "uid";
+const char *attmap_shadow_userPassword     = "userPassword";
+const char *attmap_shadow_shadowLastChange = "shadowLastChange";
+const char *attmap_shadow_shadowMin        = "shadowMin";
+const char *attmap_shadow_shadowMax        = "shadowMax";
+const char *attmap_shadow_shadowWarning    = "shadowWarning";
+const char *attmap_shadow_shadowInactive   = "shadowInactive";
+const char *attmap_shadow_shadowExpire     = "shadowExpire";
+const char *attmap_shadow_shadowFlag       = "shadowFlag";
+
+/* the attribute list to request with searches */
 static const char *shadow_attrs[10];
 
 static int mkfilter_shadow_byname(const char *name,
@@ -63,16 +91,9 @@ static int mkfilter_shadow_byname(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_shadow_objectClass,
+                    "(&%s(%s=%s))",
+                    shadow_filter,
                     attmap_shadow_uid,buf2);
-}
-
-static int mkfilter_shadow_all(char *buffer,size_t buflen)
-{
-  return mysnprintf(buffer,buflen,
-                    "(%s=%s)",
-                    attmap_objectClass,attmap_shadow_objectClass);
 }
 
 static void shadow_attrs_init(void)
@@ -228,7 +249,6 @@ int nslcd_shadow_all(TFILE *fp)
 {
   int32_t tmpint32;
   struct ent_context context;
-  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct spwd result;
   char buffer[1024];
@@ -242,10 +262,9 @@ int nslcd_shadow_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  mkfilter_shadow_all(filter,sizeof(filter));
   shadow_attrs_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,filter,shadow_attrs,LM_SHADOW,_nss_ldap_parse_sp))==NSLCD_RESULT_SUCCESS)
+                                NULL,shadow_filter,shadow_attrs,LM_SHADOW,_nss_ldap_parse_sp))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

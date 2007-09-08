@@ -72,7 +72,26 @@ struct ether
   struct ether_addr e_addr;
 };
 
+/* ( nisSchema.2.11 NAME 'ieee802Device' SUP top AUXILIARY
+ *   DESC 'A device with a MAC address; device SHOULD be
+ *         used as a structural class'
+ *   MAY macAddress )
+ */
+
+/* the search base for searches */
+const char *ether_base = NULL;
+
+/* the search scope for searches */
+int ether_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *ether_filter = "(objectClass=ieee802Device)";
+
 /* the attributes to request with searches */
+const char *attmap_ether_cn          = "cn";
+const char *attmap_ether_macAddress  = "macAddress";
+
+/* the attribute list to request with searches */
 static const char *ether_attrs[3];
 
 /* create a search filter for searching an ethernet address
@@ -86,8 +105,8 @@ static int mkfilter_ether_byname(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                   "(&(%s=%s)(%s=%s))",
-                   attmap_objectClass,attmap_ether_objectClass,
+                   "(&%s(%s=%s))",
+                   ether_filter,
                    attmap_ether_cn,buf2);
 }
 
@@ -103,17 +122,9 @@ static int mkfilter_ether_byether(const struct ether_addr *addr,
   /* there should be no characters that need escaping */
   /* build filter */
   return mysnprintf(buffer,buflen,
-                   "(&(%s=%s)(%s=%s))",
-                   attmap_objectClass,attmap_ether_objectClass,
+                   "(&%s(%s=%s))",
+                   ether_filter,
                    attmap_ether_macAddress,buf2);
-}
-
-static int mkfilter_ether_all(char *buffer,size_t buflen)
-{
-  /* build filter */
-  return mysnprintf(buffer,buflen,
-                   "(%s=%s)",
-                   attmap_objectClass,attmap_ether_objectClass);
 }
 
 static void ether_attrs_init(void)
@@ -224,7 +235,6 @@ int nslcd_ether_byether(TFILE *fp)
 int nslcd_ether_all(TFILE *fp)
 {
   int32_t tmpint32;
-  char filter[1024];
   struct ent_context context;
   /* these are here for now until we rewrite the LDAP code */
   struct ether result;
@@ -239,10 +249,9 @@ int nslcd_ether_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  mkfilter_ether_all(filter,sizeof(filter));
   ether_attrs_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,filter,ether_attrs,LM_ETHERS,_nss_ldap_parse_ether))==NSLCD_RESULT_SUCCESS)
+                                NULL,ether_filter,ether_attrs,LM_ETHERS,_nss_ldap_parse_ether))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

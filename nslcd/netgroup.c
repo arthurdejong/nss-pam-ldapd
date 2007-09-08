@@ -113,7 +113,27 @@ struct mynetgrent
     }                                                                         \
   while (0)
 
+/* ( nisSchema.2.8 NAME 'nisNetgroup' SUP top STRUCTURAL
+ *   DESC 'Abstraction of a netgroup. May refer to other netgroups'
+ *   MUST cn
+ *   MAY ( nisNetgroupTriple $ memberNisNetgroup $ description ) )
+ */
+
+/* the search base for searches */
+const char *netgroup_base = NULL;
+
+/* the search scope for searches */
+int netgroup_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *netgroup_filter = "(objectClass=nisNetgroup)";
+
 /* the attributes to request with searches */
+const char *attmap_netgroup_cn              = "cn";
+const char *attmap_netgroup_nisNetgroupTriple = "nisNetgroupTriple";
+const char *attmap_netgroup_memberNisNetgroup = "memberNisNetgroup";
+
+/* the attribute list to request with searches */
 static const char *netgroup_attrs[4];
 
 static int mkfilter_netgroup_byname(const char *name,
@@ -125,8 +145,8 @@ static int mkfilter_netgroup_byname(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_netgroup_objectClass,
+                    "(&%s(%s=%s))",
+                    netgroup_filter,
                     attmap_netgroup_cn,buf2);
 }
 

@@ -67,7 +67,31 @@
 #define SERVICE_NUMBER        htons(result->s_port)
 #define SERVICE_PROTOCOL      result->s_proto
 
+/* ( nisSchema.2.3 NAME 'ipService' SUP top STRUCTURAL
+ *   DESC 'Abstraction an Internet Protocol service.
+ *         Maps an IP port and protocol (such as tcp or udp)
+ *         to one or more names; the distinguished value of
+ *         the cn attribute denotes the service's canonical
+ *         name'
+ *   MUST ( cn $ ipServicePort $ ipServiceProtocol )
+ *   MAY ( description ) )
+ */
+
+/* the search base for searches */
+const char *service_base = NULL;
+
+/* the search scope for searches */
+int service_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *service_filter = "(objectClass=ipService)";
+
 /* the attributes to request with searches */
+const char *attmap_service_cn                = "cn";
+const char *attmap_service_ipServicePort     = "ipServicePort";
+const char *attmap_service_ipServiceProtocol = "ipServiceProtocol";
+
+/* the attribute list to request with searches */
 static const char *service_attrs[4];
 
 static int mkfilter_service_byname(const char *name,
@@ -84,14 +108,14 @@ static int mkfilter_service_byname(const char *name,
   /* build filter */
   if (*protocol!='\0')
     return mysnprintf(buffer,buflen,
-                      "(&(%s=%s)(%s=%s)(%s=%s))",
-                      attmap_objectClass,attmap_service_objectClass,
+                      "(&%s(%s=%s)(%s=%s))",
+                      service_filter,
                       attmap_service_cn,buf2,
                       attmap_service_ipServiceProtocol,buf3);
   else
     return mysnprintf(buffer,buflen,
-                      "(&(%s=%s)(%s=%s))",
-                      attmap_objectClass,attmap_service_objectClass,
+                      "(&%s(%s=%s))",
+                      service_filter,
                       attmap_service_cn,buf2);
 }
 
@@ -107,22 +131,15 @@ static int mkfilter_service_bynumber(int number,
   /* build filter */
   if (*protocol!='\0')
     return mysnprintf(buffer,buflen,
-                      "(&(%s=%s)(%s=%d)(%s=%s))",
-                      attmap_objectClass,attmap_service_objectClass,
+                      "(&%s(%s=%d)(%s=%s))",
+                      service_filter,
                       attmap_service_ipServicePort,number,
                       attmap_service_ipServiceProtocol,buf3);
   else
     return mysnprintf(buffer,buflen,
-                      "(&(%s=%s)(%s=%d))",
-                      attmap_objectClass,attmap_service_objectClass,
+                      "(&%s(%s=%d))",
+                      service_filter,
                       attmap_service_ipServicePort,number);
-}
-
-static int mkfilter_service_all(char *buffer,size_t buflen)
-{
-  return mysnprintf(buffer,buflen,
-                    "(%s=%s)",
-                    attmap_objectClass,attmap_service_objectClass);
 }
 
 static void service_attrs_init(void)
@@ -325,7 +342,6 @@ int nslcd_service_all(TFILE *fp)
 {
   int32_t tmpint32;
   struct ent_context context;
-  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct servent result;
   char buffer[1024];
@@ -339,10 +355,9 @@ int nslcd_service_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  mkfilter_service_all(filter,sizeof(filter));
   service_attrs_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,filter,service_attrs,LM_SERVICES,_nss_ldap_parse_serv))==NSLCD_RESULT_SUCCESS)
+                                NULL,service_filter,service_attrs,LM_SERVICES,_nss_ldap_parse_serv))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

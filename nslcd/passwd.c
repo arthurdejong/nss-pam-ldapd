@@ -58,7 +58,31 @@
 #define GID_NOBODY     UID_NOBODY
 #endif
 
-/* the attributes to request with searches */
+/* the search base for searches */
+const char *passwd_base = NULL;
+
+/* the search scope for searches */
+int passwd_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *passwd_filter = "(objectClass=posixAccount)";
+
+/* the attributes used in searches
+ * ( nisSchema.2.0 NAME 'posixAccount' SUP top AUXILIARY
+ *   DESC 'Abstraction of an account with POSIX attributes'
+ *   MUST ( cn $ uid $ uidNumber $ gidNumber $ homeDirectory )
+ *   MAY ( userPassword $ loginShell $ gecos $ description ) )
+ */
+const char *attmap_passwd_uid           = "uid";
+const char *attmap_passwd_userPassword  = "userPassword";
+const char *attmap_passwd_uidNumber     = "uidNumber";
+const char *attmap_passwd_gidNumber     = "gidNumber";
+const char *attmap_passwd_gecos         = "gecos";
+const char *attmap_passwd_cn            = "cn";
+const char *attmap_passwd_homeDirectory = "homeDirectory";
+const char *attmap_passwd_loginShell    = "loginShell";
+
+/* the attribute list to request with searches */
 static const char *passwd_attrs[10];
 
 /* create a search filter for searching a passwd entry
@@ -72,8 +96,8 @@ int mkfilter_passwd_byname(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_passwd_objectClass,
+                    "(&%s(%s=%s))",
+                    passwd_filter,
                     attmap_passwd_uid,buf2);
 }
 
@@ -83,18 +107,9 @@ static int mkfilter_passwd_byuid(uid_t uid,
                                  char *buffer,size_t buflen)
 {
   return snprintf(buffer,buflen,
-                  "(&(%s=%s)(%s=%d))",
-                  attmap_objectClass,attmap_passwd_objectClass,
+                  "(&%s(%s=%d))",
+                  passwd_filter,
                   attmap_passwd_uidNumber,uid);
-}
-
-/* create a search filter for enumerating all passwd
-   entries, return -1 on errors */
-static int mkfilter_passwd_all(char *buffer,size_t buflen)
-{
-  return mysnprintf(buffer,buflen,
-                    "(%s=%s)",
-                    attmap_objectClass,attmap_passwd_objectClass);
 }
 
 static void passwd_attrs_init(void)
@@ -296,7 +311,6 @@ int nslcd_passwd_all(TFILE *fp)
 {
   int32_t tmpint32;
   struct ent_context context;
-  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct passwd result;
   char buffer[1024];
@@ -310,10 +324,9 @@ int nslcd_passwd_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* go over results */
-  mkfilter_passwd_all(filter,sizeof(filter));
   passwd_attrs_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,filter,passwd_attrs,LM_PASSWD,_nss_ldap_parse_pw))==NSLCD_RESULT_SUCCESS)
+                                NULL,passwd_filter,passwd_attrs,LM_PASSWD,_nss_ldap_parse_pw))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

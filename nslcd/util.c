@@ -282,6 +282,7 @@ dn2uid_cache_get (const char *dn, char **uid, char **buffer, size_t * buflen)
   return NSS_STATUS_SUCCESS;
 }
 
+/* TODO: move to group.c */
 enum nss_status _nss_ldap_dn2uid(const char *dn,char **uid,char **buffer,
                                  size_t * buflen,int *pIsNestedGroup,
                                  LDAPMessage **pRes)
@@ -308,7 +309,8 @@ enum nss_status _nss_ldap_dn2uid(const char *dn,char **uid,char **buffer,
           LDAPMessage *e = _nss_ldap_first_entry (res);
           if (e != NULL)
             {
-              if (has_objectclass(e,attmap_group_objectClass))
+              /* FIXME: somehow replace this with the dynamic stuff in group.c */
+              if (has_objectclass(e,"posixGroup"))
                 {
                   *pIsNestedGroup = 1;
                   *pRes = res;

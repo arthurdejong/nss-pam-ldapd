@@ -194,7 +194,6 @@ static int parse_scope(const char *filename,int lnr,const char *value)
 
 static enum ldap_map_selector parse_map(const char *filename,int lnr,const char *value)
 {
-  /* TODO: merge this code with attmap_get_var() */
   if ( (strcasecmp(value,"alias")==0) || (strcasecmp(value,"aliases")==0) )
     return LM_ALIASES;
   else if ( (strcasecmp(value,"ether")==0) || (strcasecmp(value,"ethers")==0) )
@@ -250,6 +249,7 @@ static void parse_map_statement(const char *filename,int lnr,
     else if (strcasecmp(opts[3],"pwdLastSet")==0)
       cfg->ldc_shadow_type=LS_AD_SHADOW;
   }
+  /* get the attribute variable to set */
   var=attmap_get_var(map,opts[2]);
   if (var==NULL)
   {
@@ -262,6 +262,29 @@ static void parse_map_statement(const char *filename,int lnr,
     /* Note: we have a memory leak here if a single mapping is changed
              multiple times in one config (deemed not a problem) */
     *var=xstrdup(opts[3]);
+  }
+}
+
+static void parse_filter_statement(const char *filename,int lnr,
+                                   const char **opts)
+{
+  enum ldap_map_selector map;
+  const char **var;
+  /* get the map */
+  map=parse_map(filename,lnr,opts[1]);
+  /* get the filter variable to set */
+  var=filter_get_var(map);
+  if (var==NULL)
+  {
+    log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,opts[1]);
+    exit(EXIT_FAILURE);
+  }
+  /* check if the value will be changed */
+  if (strcmp(*var,opts[2])!=0)
+  {
+    /* Note: we have a memory leak here if a single mapping is changed
+             multiple times in one config (deemed not a problem) */
+    *var=xstrdup(opts[2]);
   }
 }
 
@@ -278,8 +301,6 @@ static void alloc_lsd(struct ldap_service_search_descriptor **lsd)
   /* initialize fields */
   (*lsd)->lsd_base=NULL;
   (*lsd)->lsd_scope=-1;
-  (*lsd)->lsd_filter=NULL;
-  (*lsd)->lsd_next=NULL;
 }
 
 static void do_setbase(struct ldap_service_search_descriptor **lsd,const char *base)
@@ -292,12 +313,6 @@ static void do_setscope(struct ldap_service_search_descriptor **lsd,int scope)
 {
   alloc_lsd(lsd);
   (*lsd)->lsd_scope=scope;
-}
-
-static void do_setfilter(struct ldap_service_search_descriptor **lsd,const char *filter)
-{
-  alloc_lsd(lsd);
-  (*lsd)->lsd_filter=xstrdup(filter);;
 }
 
 /* split a line from the configuration file
@@ -503,7 +518,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     else if (strcasecmp(opts[0],"filter")==0)
     {
       check_argumentcount(filename,lnr,opts[0],nopts==3);
-      do_setfilter(&(cfg->ldc_sds[parse_map(filename,lnr,opts[1])]),opts[2]);
+      parse_filter_statement(filename,lnr,opts);
     }
     else if (strcasecmp(opts[0],"map")==0)
     {

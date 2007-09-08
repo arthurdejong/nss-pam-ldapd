@@ -44,7 +44,27 @@
 #include "log.h"
 #include "attmap.h"
 
+/* Vendor-specific attributes and object classes.
+ * (Mainly from Sun.)
+ * ( 1.3.6.1.4.1.42.2.27.1.2.5 NAME 'nisMailAlias' SUP top STRUCTURAL
+ *   DESC 'NIS mail alias'
+ *   MUST cn
+ *   MAY rfc822MailMember )
+ */
+
+/* the search base for searches */
+const char *alias_base = NULL;
+
+/* the search scope for searches */
+int alias_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *alias_filter = "(objectClass=nisMailAlias)";
+
 /* the attributes to request with searches */
+const char *attmap_alias_cn               = "cn";
+const char *attmap_alias_rfc822MailMember = "rfc822MailMember";
+/* the attribute list to request with searches */
 static const char *alias_attrs[3];
 
 /* create a search filter for searching an alias by name,
@@ -58,19 +78,9 @@ static int mkfilter_alias_byname(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_alias_objectClass,
+                    "(&%s(%s=%s))",
+                    alias_filter,
                     attmap_alias_cn,buf2);
-}
-
-/* create a search filter for enumerating all aliases,
-   return -1 on errors */
-static int mkfilter_alias_all(char *buffer,size_t buflen)
-{
-  /* build filter */
-  return mysnprintf(buffer,buflen,
-                    "(%s=%s)",
-                    attmap_objectClass,attmap_alias_objectClass);
 }
 
 static void alias_attrs_init(void)
@@ -142,7 +152,6 @@ int nslcd_alias_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32;
   struct ent_context context;
-  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct aliasent result;
   char buffer[1024];
@@ -156,10 +165,9 @@ int nslcd_alias_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  mkfilter_alias_all(filter,sizeof(filter));
   alias_attrs_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,filter,alias_attrs,LM_ALIASES,_nss_ldap_parse_alias))==NSLCD_RESULT_SUCCESS)
+                                NULL,alias_filter,alias_attrs,LM_ALIASES,_nss_ldap_parse_alias))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

@@ -66,7 +66,31 @@
 #define RPC_ALIASES           result->r_aliases
 #define RPC_NUMBER            result->r_number
 
+/* ( nisSchema.2.5 NAME 'oncRpc' SUP top STRUCTURAL
+ *   DESC 'Abstraction of an Open Network Computing (ONC)
+ *         [RFC1057] Remote Procedure Call (RPC) binding.
+ *         This class maps an ONC RPC number to a name.
+ *         The distinguished value of the cn attribute denotes
+ *         the RPC service's canonical name'
+ *   MUST ( cn $ oncRpcNumber )
+ *   MAY description )
+ */
+
+/* the search base for searches */
+const char *rpc_base = NULL;
+
+/* the search scope for searches */
+int rpc_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *rpc_filter = "(objectClass=ipService)";
+
 /* the attributes to request with searches */
+const char *attmap_rpc_objectClass      = "oncRpc";
+const char *attmap_rpc_cn               = "cn";
+const char *attmap_rpc_oncRpcNumber     = "oncRpcNumber";
+
+/* the attribute list to request with searches */
 static const char *rpc_attrs[3];
 
 static int mkfilter_rpc_byname(const char *name,
@@ -78,8 +102,8 @@ static int mkfilter_rpc_byname(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_rpc_objectClass,
+                    "(&%s(%s=%s))",
+                    rpc_filter,
                     attmap_rpc_cn,buf2);
 }
 
@@ -87,17 +111,9 @@ static int mkfilter_rpc_bynumber(int number,
                                  char *buffer,size_t buflen)
 {
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%d))",
-                    attmap_objectClass,attmap_rpc_objectClass,
+                    "(&%s(%s=%d))",
+                    rpc_filter,
                     attmap_rpc_oncRpcNumber,number);
-}
-
-static int mkfilter_rpc_all(char *buffer,size_t buflen)
-{
-  /* build filter */
-  return mysnprintf(buffer,buflen,
-                    "(%s=%s)",
-                    attmap_objectClass,attmap_rpc_objectClass);
 }
 
 static void rpc_attrs_init(void)
@@ -213,7 +229,6 @@ int nslcd_rpc_all(TFILE *fp)
 {
   int32_t tmpint32;
   struct ent_context context;
-  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct rpcent result;
   char buffer[1024];
@@ -227,10 +242,9 @@ int nslcd_rpc_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  mkfilter_rpc_all(filter,sizeof(filter));
   rpc_attrs_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,filter,rpc_attrs,LM_RPC,_nss_ldap_parse_rpc))==NSLCD_RESULT_SUCCESS)
+                                NULL,rpc_filter,rpc_attrs,LM_RPC,_nss_ldap_parse_rpc))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

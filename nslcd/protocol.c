@@ -54,7 +54,27 @@
 #include "log.h"
 #include "attmap.h"
 
-/* the attributes to request with searches */
+/* the search base for searches */
+const char *protocol_base = NULL;
+
+/* the search scope for searches */
+int protocol_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *protocol_filter = "(objectClass=ipProtocol)";
+
+/* the attributes used in searches
+ * ( nisSchema.2.4 NAME 'ipProtocol' SUP top STRUCTURAL
+ *   DESC 'Abstraction of an IP protocol. Maps a protocol number
+ *         to one or more names. The distinguished value of the cn
+ *         attribute denotes the protocol's canonical name'
+ *   MUST ( cn $ ipProtocolNumber )
+ *    MAY description )
+ */
+const char *attmap_protocol_cn               = "cn";
+const char *attmap_protocol_ipProtocolNumber = "ipProtocolNumber";
+
+/* the attribute list to request with searches */
 static const char *protocol_attrs[3];
 
 static int mkfilter_protocol_byname(const char *name,
@@ -66,8 +86,8 @@ static int mkfilter_protocol_byname(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_protocol_objectClass,
+                    "(&%s(%s=%s))",
+                    protocol_filter,
                     attmap_protocol_cn,buf2);
 }
 
@@ -77,18 +97,9 @@ static int mkfilter_protocol_bynumber(int protocol,
                                       char *buffer,size_t buflen)
 {
   return snprintf(buffer,buflen,
-                  "(&(%s=%s)(%s=%d))",
-                  attmap_objectClass,attmap_protocol_objectClass,
+                  "(&%s(%s=%d))",
+                  protocol_filter,
                   attmap_protocol_ipProtocolNumber,protocol);
-}
-
-/* create a search filter for enumerating all protocol
-   entries, return -1 on errors */
-static int mkfilter_protocol_all(char *buffer,size_t buflen)
-{
-  return mysnprintf(buffer,buflen,
-                    "(%s=%s)",
-                    attmap_objectClass,attmap_protocol_objectClass);
 }
 
 static void protocol_attrs_init(void)
@@ -208,7 +219,6 @@ int nslcd_protocol_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   struct ent_context context;
-  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct protoent result;
   char buffer[1024];
@@ -222,10 +232,9 @@ int nslcd_protocol_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  mkfilter_protocol_all(filter,sizeof(filter));
   protocol_attrs_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,filter,protocol_attrs,LM_PROTOCOLS,_nss_ldap_parse_proto))==NSLCD_RESULT_SUCCESS)
+                                NULL,protocol_filter,protocol_attrs,LM_PROTOCOLS,_nss_ldap_parse_proto))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result code */
     WRITE_INT32(fp,retv);

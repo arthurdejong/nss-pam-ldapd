@@ -25,6 +25,21 @@
 
 #include "ldap-nss.h"
 
+/* These are the filters that are defined per database. */
+
+/* TODO: move these to a per-database header file */
+extern const char *alias_filter;
+extern const char *ether_filter;
+extern const char *group_filter;
+extern const char *host_filter;
+extern const char *netgroup_filter;
+extern const char *network_filter;
+extern const char *passwd_filter;
+extern const char *protocol_filter;
+extern const char *rpc_filter;
+extern const char *service_filter;
+extern const char *shadow_filter;
+
 /* What follows is a list of attribute names per database. */
 
 /* TODO: replace the objectClass name mapping with filter definitions */
@@ -39,7 +54,6 @@ extern const char *attmap_objectClass;
  *   MUST cn
  *   MAY rfc822MailMember )
  */
-extern const char *attmap_alias_objectClass;
 extern const char *attmap_alias_cn;
 extern const char *attmap_alias_rfc822MailMember;
 
@@ -49,7 +63,6 @@ extern const char *attmap_alias_rfc822MailMember;
  *         used as a structural class'
  *   MAY macAddress )
  */
-extern const char *attmap_ether_objectClass;
 extern const char *attmap_ether_cn;
 extern const char *attmap_ether_macAddress;
 
@@ -59,7 +72,6 @@ extern const char *attmap_ether_macAddress;
  *   MUST ( cn $ gidNumber )
  *   MAY ( userPassword $ uidMember $ description ) )
  */
-extern const char *attmap_group_objectClass;
 extern const char *attmap_group_cn;
 extern const char *attmap_group_userPassword;
 extern const char *attmap_group_gidNumber;
@@ -75,7 +87,6 @@ extern const char *attmap_group_memberOf;
  *   MUST ( cn $ ipHostNumber )
  *   MAY ( l $ description $ manager ) )
  */
-extern const char *attmap_host_objectClass;
 extern const char *attmap_host_cn;
 extern const char *attmap_host_ipHostNumber;
 
@@ -85,7 +96,6 @@ extern const char *attmap_host_ipHostNumber;
  *   MUST cn
  *   MAY ( nisNetgroupTriple $ memberNisNetgroup $ description ) )
  */
-extern const char *attmap_netgroup_objectClass;
 extern const char *attmap_netgroup_cn;
 extern const char *attmap_netgroup_nisNetgroupTriple;
 extern const char *attmap_netgroup_memberNisNetgroup;
@@ -96,7 +106,6 @@ extern const char *attmap_netgroup_memberNisNetgroup;
  *   MUST ( cn $ ipNetworkNumber )
  *   MAY ( ipNetmaskNumber $ l $ description $ manager ) )
  */
-extern const char *attmap_network_objectClass;
 extern const char *attmap_network_cn;
 extern const char *attmap_network_ipNetworkNumber;
 /*extern const char *attmap_network_ipNetmaskNumber; */
@@ -107,7 +116,6 @@ extern const char *attmap_network_ipNetworkNumber;
  *   MUST ( cn $ uid $ uidNumber $ gidNumber $ homeDirectory )
  *   MAY ( userPassword $ loginShell $ gecos $ description ) )
  */
-extern const char *attmap_passwd_objectClass;
 extern const char *attmap_passwd_uid;
 extern const char *attmap_passwd_userPassword;
 extern const char *attmap_passwd_uidNumber;
@@ -125,7 +133,6 @@ extern const char *attmap_passwd_loginShell;
  *   MUST ( cn $ ipProtocolNumber )
  *    MAY description )
  */
-extern const char *attmap_protocol_objectClass;
 extern const char *attmap_protocol_cn;
 extern const char *attmap_protocol_ipProtocolNumber;
 
@@ -139,7 +146,6 @@ extern const char *attmap_protocol_ipProtocolNumber;
  *   MUST ( cn $ oncRpcNumber )
  *   MAY description )
  */
-extern const char *attmap_rpc_objectClass;
 extern const char *attmap_rpc_cn;
 extern const char *attmap_rpc_oncRpcNumber;
 
@@ -153,7 +159,6 @@ extern const char *attmap_rpc_oncRpcNumber;
  *   MUST ( cn $ ipServicePort $ ipServiceProtocol )
  *   MAY ( description ) )
  */
-extern const char *attmap_service_objectClass;
 extern const char *attmap_service_cn;
 extern const char *attmap_service_ipServicePort;
 extern const char *attmap_service_ipServiceProtocol;
@@ -166,7 +171,6 @@ extern const char *attmap_service_ipServiceProtocol;
  *         shadowMax $ shadowWarning $ shadowInactive $
  *         shadowExpire $ shadowFlag $ description ) )
  */
-extern const char *attmap_shadow_objectClass;
 extern const char *attmap_shadow_uid;
 extern const char *attmap_shadow_userPassword;
 extern const char *attmap_shadow_shadowLastChange;
@@ -176,6 +180,9 @@ extern const char *attmap_shadow_shadowWarning;
 extern const char *attmap_shadow_shadowInactive;
 extern const char *attmap_shadow_shadowExpire;
 extern const char *attmap_shadow_shadowFlag;
+
+/* return a reference to the map specific filter variable */
+const char **filter_get_var(enum ldap_map_selector map);
 
 /* return a reference to the attribute mapping variable for the specified name
    the name is the name after the attmap_... variables above with the

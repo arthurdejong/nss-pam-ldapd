@@ -1818,7 +1818,6 @@ enum nss_status _nss_ldap_search_s(
   {
     /* get search descriptor */
     sd=nslcd_cfg->ldc_sds[sel];
-next:
     if (sd!=NULL)
     {
       if (sd->lsd_base!=NULL)
@@ -1833,17 +1832,6 @@ next:
           base,scope,filter,attrs,
           sizelimit,res,(search_func_t)do_search_s);
 
-  /* If no entry was returned, try the next search descriptor. */
-  if (sd != NULL && sd->lsd_next != NULL)
-  {
-    if (stat==NSS_STATUS_NOTFOUND ||
-        (stat==NSS_STATUS_SUCCESS &&
-         ldap_first_entry(__session.ls_conn,*res)==NULL))
-    {
-      sd=sd->lsd_next;
-      goto next;
-    }
-  }
   return stat;
 }
 
@@ -1879,11 +1867,7 @@ _nss_ldap_search (const char *base,const char *filter,const char **attrs,
      * just quit with NSS_STATUS_NOTFOUND.
      */
     if (*csd != NULL)
-    {
-      sd = (*csd)->lsd_next;
-      if (sd == NULL)
-        return NSS_STATUS_NOTFOUND;
-    }
+      return NSS_STATUS_NOTFOUND;
     else
       sd = nslcd_cfg->ldc_sds[sel];
     *csd = sd;

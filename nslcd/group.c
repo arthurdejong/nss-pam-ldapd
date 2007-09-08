@@ -111,7 +111,30 @@ static enum nss_status ng_chase(const char *dn,ldap_initgroups_args_t *lia);
 
 static enum nss_status ng_chase_backlink(const char **membersOf,ldap_initgroups_args_t *lia);
 
+/* ( nisSchema.2.2 NAME 'posixGroup' SUP top STRUCTURAL
+ *   DESC 'Abstraction of a group of accounts'
+ *   MUST ( cn $ gidNumber )
+ *   MAY ( userPassword $ uidMember $ description ) )
+ */
+
+/* the search base for searches */
+const char *group_base = NULL;
+
+/* the search scope for searches */
+int group_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *group_filter = "(objectClass=posixGroup)";
+
 /* the attributes to request with searches */
+const char *attmap_group_cn            = "cn";
+const char *attmap_group_userPassword  = "userPassword";
+const char *attmap_group_gidNumber     = "gidNumber";
+const char *attmap_group_memberUid     = "memberUid";
+const char *attmap_group_uniqueMember  = "uniqueMember";
+const char *attmap_group_memberOf      = "memberOf";
+
+/* the attribute list to request with searches */
 static const char *group_attrs[6];
 
 /* create a search filter for searching a group entry
@@ -125,8 +148,8 @@ static int mkfilter_group_byname(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_group_objectClass,
+                    "(&%s(%s=%s))",
+                    group_filter,
                     attmap_group_cn,buf2);
 }
 
@@ -136,17 +159,17 @@ static int mkfilter_group_bygid(gid_t gid,
                                 char *buffer,size_t buflen)
 {
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%d))",
-                    attmap_objectClass,attmap_group_objectClass,
-                    attmap_group_cn,gid);
+                    "(&%s(%s=%d))",
+                    group_filter,
+                    attmap_group_gidNumber,gid);
 }
 
 static int mkfilter_getgroupsbydn(const char *dn,
                                   char *buffer,size_t buflen)
 {
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_group_objectClass,
+                    "(&%s(%s=%s))",
+                    group_filter,
                     attmap_group_uniqueMember,dn);
 }
 
@@ -184,8 +207,8 @@ static int mkfilter_group_bymember(const char *user,
     userdn=user2dn(user);
   if (userdn==NULL)
     return mysnprintf(buffer,buflen,
-                      "(&(%s=%s)(%s=%s))",
-                      attmap_objectClass,attmap_group_objectClass,
+                      "(&%s(%s=%s))",
+                      group_filter,
                       attmap_group_memberUid,user);
   else
   {
@@ -194,20 +217,11 @@ static int mkfilter_group_bymember(const char *user,
       return -1;
     ldap_memfree(userdn);
     return mysnprintf(buffer,buflen,
-                      "(&(%s=%s)(|(%s=%s)(%s=%s)))",
-                      attmap_objectClass, attmap_group_objectClass,
+                      "(&%s(|(%s=%s)(%s=%s)))",
+                      group_filter,
                       attmap_group_memberUid, user,
                       attmap_group_uniqueMember, userdn);
   }
-}
-
-/* create a search filter for searching a group entry
-   by name, return -1 on errors */
-static int mkfilter_group_all(char *buffer,size_t buflen)
-{
-  return mysnprintf(buffer,buflen,
-                    "(%s=%s)",
-                    attmap_objectClass,attmap_group_objectClass);
 }
 
 static void group_attrs_init(void)
@@ -1269,7 +1283,6 @@ int nslcd_group_all(TFILE *fp)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   struct ent_context context;
-  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct group result;
   char buffer[1024];
@@ -1283,10 +1296,9 @@ int nslcd_group_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  mkfilter_group_all(filter,sizeof(filter));
   group_attrs_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,filter,group_attrs,LM_GROUP,_nss_ldap_parse_gr))==NSLCD_RESULT_SUCCESS)
+                                NULL,group_filter,group_attrs,LM_GROUP,_nss_ldap_parse_gr))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

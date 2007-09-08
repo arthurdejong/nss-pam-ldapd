@@ -57,7 +57,26 @@
 #define MAXADDRSIZE 4
 #endif /* HAVE_USERSEC_H */
 
-/* the attributes to request with searches */
+/* the search base for searches */
+const char *network_base = NULL;
+
+/* the search scope for searches */
+int network_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *network_filter = "(objectClass=ipNetwork)";
+
+/* the attributes used in searches
+ * ( nisSchema.2.7 NAME 'ipNetwork' SUP top STRUCTURAL
+ *   DESC 'Abstraction of a network. The distinguished value of
+ *   MUST ( cn $ ipNetworkNumber )
+ *   MAY ( ipNetmaskNumber $ l $ description $ manager ) )
+ */
+const char *attmap_network_cn              = "cn";
+const char *attmap_network_ipNetworkNumber = "ipNetworkNumber";
+/*const char *attmap_network_ipNetmaskNumber = "ipNetmaskNumber"; */
+
+/* the attribute list to request with searches */
 static const char *network_attrs[3];
 
 /* create a search filter for searching a network entry
@@ -71,8 +90,8 @@ static int mkfilter_network_byname(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_network_objectClass,
+                    "(&%s(%s=%s))",
+                    network_filter,
                     attmap_network_cn,buf2);
 }
 
@@ -85,16 +104,9 @@ static int mkfilter_network_byaddr(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_network_objectClass,
+                    "(&%s(%s=%s))",
+                    network_filter,
                     attmap_network_ipNetworkNumber,buf2);
-}
-
-static int mkfilter_network_all(char *buffer,size_t buflen)
-{
-  return mysnprintf(buffer,buflen,
-                    "(%s=%s)",
-                    attmap_objectClass,attmap_network_objectClass);
 }
 
 static void network_attrs_init(void)
@@ -256,7 +268,6 @@ int nslcd_network_all(TFILE *fp)
 {
   int32_t tmpint32;
   struct ent_context context;
-  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct netent result;
   char buffer[1024];
@@ -270,10 +281,9 @@ int nslcd_network_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  mkfilter_network_all(filter,sizeof(filter));
   network_attrs_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,filter,network_attrs,LM_NETWORKS,_nss_ldap_parse_net))==NSLCD_RESULT_SUCCESS)
+                                NULL,network_filter,network_attrs,LM_NETWORKS,_nss_ldap_parse_net))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

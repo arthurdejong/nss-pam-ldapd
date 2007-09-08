@@ -59,7 +59,28 @@
 #define MAXALIASES 35
 #endif
 
+/* ( nisSchema.2.6 NAME 'ipHost' SUP top AUXILIARY
+ *   DESC 'Abstraction of a host, an IP device. The distinguished
+ *         value of the cn attribute denotes the host's canonical
+ *         name. Device SHOULD be used as a structural class'
+ *   MUST ( cn $ ipHostNumber )
+ *   MAY ( l $ description $ manager ) )
+ */
+
+/* the search base for searches */
+const char *host_base = NULL;
+
+/* the search scope for searches */
+int host_scope = LDAP_SCOPE_DEFAULT;
+
+/* the basic search filter for searches */
+const char *host_filter = "(objectClass=ipHost)";
+
 /* the attributes to request with searches */
+const char *attmap_host_cn            = "cn";
+const char *attmap_host_ipHostNumber  = "ipHostNumber";
+
+/* the attribute list to request with searches */
 static const char *host_attrs[3];
 
 /* create a search filter for searching a host entry
@@ -73,8 +94,8 @@ static int mkfilter_host_byname(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_host_objectClass,
+                    "(&%s(%s=%s))",
+                    host_filter,
                     attmap_host_cn,buf2);
 }
 
@@ -87,16 +108,9 @@ static int mkfilter_host_byaddr(const char *name,
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
-                    "(&(%s=%s)(%s=%s))",
-                    attmap_objectClass,attmap_host_objectClass,
+                    "(&%s(%s=%s))",
+                    host_filter,
                     attmap_host_ipHostNumber,buf2);
-}
-
-static int mkfilter_host_all(char *buffer,size_t buflen)
-{
-  return mysnprintf(buffer,buflen,
-                    "(%s=%s)",
-                    attmap_objectClass,attmap_host_objectClass);
 }
 
 static void host_attrs_init(void)
@@ -388,7 +402,6 @@ int nslcd_host_all(TFILE *fp)
 {
   int32_t tmpint32;
   struct ent_context context;
-  char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
   struct hostent result;
   char buffer[1024];
@@ -402,10 +415,9 @@ int nslcd_host_all(TFILE *fp)
   /* initialize context */
   _nss_ldap_ent_context_init(&context);
   /* loop over all results */
-  mkfilter_host_all(filter,sizeof(filter));
   host_attrs_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
-                                NULL,filter,host_attrs,LM_HOSTS,
+                                NULL,host_filter,host_attrs,LM_HOSTS,
 #ifdef INET6
                              (_res.options&RES_USE_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4
 #else
