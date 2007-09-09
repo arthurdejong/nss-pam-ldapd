@@ -304,7 +304,7 @@ enum nss_status _nss_ldap_dn2uid(const char *dn,char **uid,char **buffer,
       attrs[2] = "objectClass";
       attrs[3] = NULL;
 
-      if (_nss_ldap_read (dn, attrs, &res) == NSS_STATUS_SUCCESS)
+      if (_nss_ldap_read_sync(dn, attrs, &res)==NSS_STATUS_SUCCESS)
         {
           LDAPMessage *e = _nss_ldap_first_entry (res);
           if (e != NULL)

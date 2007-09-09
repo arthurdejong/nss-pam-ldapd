@@ -175,7 +175,7 @@ char *_nss_ldap_next_attribute (LDAPMessage * entry, BerElement *ber);
 /*
  * Synchronous search cover (caller acquires lock).
  */
-enum nss_status _nss_ldap_search_locked(
+enum nss_status _nss_ldap_search_sync_locked(
         const char *base,int scope,const char *filter,
         const char **attrs,int sizelimit,LDAPMessage **res);
 
@@ -188,7 +188,7 @@ int _nss_ldap_write_attrvals(TFILE *fp,LDAPMessage *e,const char *attr);
 /*
  * Emulate X.500 read operation.
  */
-enum nss_status _nss_ldap_read (const char *dn, /* IN */
+enum nss_status _nss_ldap_read_sync (const char *dn, /* IN */
                            const char **attributes,     /* IN */
                            LDAPMessage ** res /* OUT */ );
 

@@ -181,7 +181,7 @@ static char *user2dn(const char *user)
   char filter[1024];
   LDAPMessage *res, *e;
   mkfilter_passwd_byname(user,filter,sizeof(filter));
-  if (_nss_ldap_search_locked(group_base,group_scope,filter,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
+  if (_nss_ldap_search_sync_locked(group_base,group_scope,filter,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
   {
     e=_nss_ldap_first_entry(res);
     if (e!=NULL)
@@ -710,7 +710,7 @@ do_parse_group_members (LDAPMessage * e,
                   res = NULL;
                 }
 
-              stat = _nss_ldap_read (groupdn, uniquemember_attrs, &res);
+              stat=_nss_ldap_read_sync(groupdn,uniquemember_attrs,&res);
               if (stat != NSS_STATUS_SUCCESS)
                 goto out;
 

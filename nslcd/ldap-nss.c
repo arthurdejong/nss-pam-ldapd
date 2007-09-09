@@ -1575,8 +1575,9 @@ do_parse_s (struct ent_context *context, void *result, char
  * such as the RFC2307bis group expansion function.
  */
 enum nss_status
-_nss_ldap_read (const char *dn, const char **attributes, LDAPMessage ** res)
+_nss_ldap_read_sync (const char *dn, const char **attributes, LDAPMessage ** res)
 {
+  /* synchronous search */
   return do_with_reconnect (dn, LDAP_SCOPE_BASE, "(objectclass=*)",
                             attributes, 1 /* sizelimit */, res,
                             NULL);
@@ -1656,7 +1657,7 @@ _nss_ldap_next_attribute (LDAPMessage * entry, BerElement * ber)
  * The generic synchronous lookup cover function.
  * Assumes caller holds lock.
  */
-enum nss_status _nss_ldap_search_locked(
+enum nss_status _nss_ldap_search_sync_locked(
         const char *base,int scope,const char *filter,
         const char **attrs,int sizelimit,LDAPMessage **res)
 {
@@ -1668,6 +1669,7 @@ enum nss_status _nss_ldap_search_locked(
     log_log(LOG_DEBUG,"<== _nss_ldap_search_locked");
     return stat;
   }
+  /* synchronous search */
   stat=do_with_reconnect(
           base,scope,filter,attrs,
           sizelimit,res,NULL);
@@ -1679,7 +1681,7 @@ enum nss_status _nss_ldap_search_locked(
  * Assumes caller holds lock.
  */
 static enum nss_status
-_nss_ldap_search(const char *base,int scope,const char *filter,const char **attrs,
+_nss_ldap_search_async_locked(const char *base,int scope,const char *filter,const char **attrs,
                  int sizelimit, int *msgid)
 {
   enum nss_status stat;
@@ -1692,7 +1694,7 @@ _nss_ldap_search(const char *base,int scope,const char *filter,const char **attr
     log_log(LOG_DEBUG,"<== _nss_ldap_search");
     return stat;
   }
-  /* perform the search */
+  /* asynchronous search */
   stat=do_with_reconnect(base,scope,filter,attrs,
                          sizelimit,NULL,msgid);
   log_log(LOG_DEBUG,"<== _nss_ldap_search");
@@ -1778,7 +1780,7 @@ _nss_ldap_getent_locked(struct ent_context *context,
   if (context->ec_msgid<0)
   {
     /* set up a new search */
-    stat=_nss_ldap_search(base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid);
+    stat=_nss_ldap_search_async_locked(base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid);
     if (stat != NSS_STATUS_SUCCESS)
     {
       log_log(LOG_DEBUG,"<== _nss_ldap_getent_locked");
@@ -1828,7 +1830,7 @@ int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,int *errnop,
 
   _nss_ldap_ent_context_init_locked(&context);
 
-  stat=_nss_ldap_search_locked(base,scope,filter,attrs,1,&context.ec_res);
+  stat=_nss_ldap_search_sync_locked(base,scope,filter,attrs,1,&context.ec_res);
   if (stat!=NSS_STATUS_SUCCESS)
   {
     _nss_ldap_leave ();
@@ -1916,7 +1918,7 @@ int _nss_ldap_searchbyname(
 
   _nss_ldap_ent_context_init_locked(&context);
 
-  stat=nss2nslcd(_nss_ldap_search_locked(base,scope,filter,attrs,1,&context.ec_res));
+  stat=nss2nslcd(_nss_ldap_search_sync_locked(base,scope,filter,attrs,1,&context.ec_res));
   /* write the result code */
   WRITE_INT32(fp,stat);
   /* bail on nothing found */
