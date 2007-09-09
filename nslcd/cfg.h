@@ -144,11 +144,12 @@ struct ldap_config
   int ldc_restart;
   /* set to a greater than 0 to enable handling of paged results with the specified size */
   int ldc_pagesize;
-  /* undocumented settings */
+  /* number of sleeping reconnect attempts */
   int ldc_reconnect_tries;
+  /* seconds to sleep; doubled until max */
   int ldc_reconnect_sleeptime;
+  /* maximum seconds to sleep */
   int ldc_reconnect_maxsleeptime;
-  int ldc_reconnect_maxconntries;
   /* LDAP debug level */
   int ldc_debug;
   /* is userPassword "userPassword" or not? ie. do we need {crypt} to be stripped

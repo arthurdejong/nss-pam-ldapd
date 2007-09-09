@@ -49,8 +49,8 @@ struct ldap_config *nslcd_cfg=NULL;
  * the constants below.
  */
 #define LDAP_NSS_TRIES           5      /* number of sleeping reconnect attempts */
-#define LDAP_NSS_SLEEPTIME       4      /* seconds to sleep; doubled until max */
-#define LDAP_NSS_MAXSLEEPTIME    64     /* maximum seconds to sleep */
+#define LDAP_NSS_SLEEPTIME       1      /* seconds to sleep; doubled until max */
+#define LDAP_NSS_MAXSLEEPTIME    32     /* maximum seconds to sleep */
 #define LDAP_NSS_MAXCONNTRIES    2      /* reconnect attempts before sleeping */
 
 /* the maximum line length in the configuration file */
@@ -112,7 +112,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_reconnect_tries=LDAP_NSS_TRIES;
   cfg->ldc_reconnect_sleeptime=LDAP_NSS_SLEEPTIME;
   cfg->ldc_reconnect_maxsleeptime=LDAP_NSS_MAXSLEEPTIME;
-  cfg->ldc_reconnect_maxconntries=LDAP_NSS_MAXCONNTRIES;
   cfg->ldc_debug=0;
   cfg->ldc_password_type=LU_RFC2307_USERPASSWORD;
   cfg->ldc_shadow_type=LS_RFC2307_SHADOW;
@@ -667,11 +666,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     {
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_reconnect_maxsleeptime=atoi(opts[1]);
-    }
-    else if (strcasecmp(opts[0],"nss_reconnect_maxconntries")==0)
-    {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_reconnect_maxconntries=atoi(opts[1]);
     }
     else
     {

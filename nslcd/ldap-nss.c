@@ -81,24 +81,7 @@
 #include "log.h"
 #include "cfg.h"
 #include "attmap.h"
-
-/* how many messages to retrieve results for */
-#ifndef LDAP_MSG_ONE
-#define LDAP_MSG_ONE            0x00
-#endif
-#ifndef LDAP_MSG_ALL
-#define LDAP_MSG_ALL            0x01
-#endif
-#ifndef LDAP_MSG_RECEIVED
-#define LDAP_MSG_RECEIVED       0x02
-#endif
-
-#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
-extern int ldap_ld_free (LDAP * ld, int close, LDAPControl **,
-                         LDAPControl **);
-#else
-extern int ldap_ld_free (LDAP * ld, int close);
-#endif /* OPENLDAP 2.x */
+#include "compat/ldap.h"
 
 NSS_LDAP_DEFINE_LOCK (__lock);
 
@@ -106,7 +89,6 @@ NSS_LDAP_DEFINE_LOCK (__lock);
  * LS_INIT only used for enumeration contexts
  */
 #define LS_INIT(state)  do { state.ls_type = LS_TYPE_INDEX; state.ls_retry = 0; state.ls_info.ls_index = -1; } while (0)
-
 
 enum ldap_session_state
 {
@@ -149,14 +131,6 @@ static void do_close (void);
  * Disable keepalive on a LDAP connection's socket.
  */
 static void do_set_sockopts (void);
-
-/*
- * Function to be braced by reconnect harness. Used so we
- * can apply the reconnect code to both asynchronous and
- * synchronous searches.
- */
-typedef int (*search_func_t) (const char *, int, const char *,
-                              const char **, int, void *);
 
 static enum nss_status
 do_map_error (int rc)
@@ -661,73 +635,20 @@ do_close (void)
   log_log(LOG_DEBUG,"<== do_close");
 }
 
-static enum nss_status
-do_init_session (LDAP ** ld, const char *uri)
+static enum nss_status do_init_session(LDAP **ld,const char *uri)
 {
-  int rc;
-  int ldaps;
-  char *p;
   enum nss_status stat;
-
-  ldaps = (strncasecmp (uri, "ldaps://", sizeof ("ldaps://") - 1) == 0);
-  p = strchr (uri, ':');
-  /* we should be looking for the second instance to find the port number */
-  if (p != NULL)
-    {
-      p = strchr (p, ':');
-    }
-
-#ifdef HAVE_LDAP_INITIALIZE
-  rc = ldap_initialize (ld, uri);
-#else
-  if (strncasecmp (uri, "ldap://", sizeof ("ldap://") - 1) != 0)
-    {
-      return NSS_STATUS_UNAVAIL;
-    }
-
-  uri += sizeof ("ldap://") - 1;
-  p = strchr (uri, ':');
-
-  if (p != NULL)
-    {
-      size_t urilen = (p - uri);
-
-      if (urilen >= sizeof (uribuf))
-        {
-          return NSS_STATUS_UNAVAIL;
-        }
-
-      memcpy (uribuf, uri, urilen);
-      uribuf[urilen] = '\0';
-
-      defport = atoi (p + 1);
-      uri = uribuf;
-    }
-
-#ifdef HAVE_LDAP_INIT
-  *ld = ldap_init (uri, defport);
-#else
-  *ld = ldap_open (uri, defport);
-#endif
-
-  rc = (*ld == NULL) ? LDAP_SERVER_DOWN : LDAP_SUCCESS;
-
-#endif /* HAVE_LDAP_INITIALIZE */
-
-  stat = do_map_error (rc);
-  if (stat == NSS_STATUS_SUCCESS && *ld == NULL)
-    {
-      stat = NSS_STATUS_UNAVAIL;
-    }
+  stat=do_map_error(ldap_initialize(ld,uri));
+  if ((stat==NSS_STATUS_SUCCESS)&&(*ld==NULL))
+    return NSS_STATUS_UNAVAIL;
   return stat;
 }
 
-static enum nss_status
-do_init (void)
+enum nss_status _nss_ldap_init(void)
 {
   enum nss_status stat;
 
-  log_log(LOG_DEBUG,"==> do_init");
+  log_log(LOG_DEBUG,"==> _nss_ldap_init");
 
   if (__session.ls_state == LS_CONNECTED_TO_DSA)
     {
@@ -761,7 +682,7 @@ do_init (void)
        */
       if (__session.ls_state == LS_CONNECTED_TO_DSA)
         {
-          log_log(LOG_DEBUG,"<== do_init (cached session)");
+          log_log(LOG_DEBUG,"<== _nss_ldap_init (cached session)");
           return NSS_STATUS_SUCCESS;
         }
     }
@@ -772,15 +693,10 @@ do_init (void)
 
 #ifdef HAVE_LDAP_SET_OPTION
   if (nslcd_cfg->ldc_debug)
-    {
-#ifdef LBER_OPT_DEBUG_LEVEL
-      if (nslcd_cfg->ldc_debug)
-        {
-          ber_set_option (NULL, LBER_OPT_DEBUG_LEVEL, &nslcd_cfg->ldc_debug);
-          ldap_set_option (NULL, LDAP_OPT_DEBUG_LEVEL, &nslcd_cfg->ldc_debug);
-        }
-#endif /* LBER_OPT_DEBUG_LEVEL */
-    }
+  {
+    ber_set_option(NULL,LBER_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
+    ldap_set_option(NULL,LDAP_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
+  }
 #endif /* HAVE_LDAP_SET_OPTION */
 
 #ifdef HAVE_LDAPSSL_CLIENT_INIT
@@ -793,7 +709,7 @@ do_init (void)
       if (__ssl_initialized == 0
           && (rc = ldapssl_client_init (nslcd_cfg->ldc_sslpath, NULL)) != LDAP_SUCCESS)
         {
-          log_log(LOG_DEBUG,"<== do_init (ldapssl_client_init failed with rc = %d)", rc);
+          log_log(LOG_DEBUG,"<== _nss_ldap_init (ldapssl_client_init failed with rc = %d)", rc);
           return NSS_STATUS_UNAVAIL;
         }
       __ssl_initialized = 1;
@@ -807,26 +723,17 @@ do_init (void)
 
   stat = do_init_session (&__session.ls_conn,
                           nslcd_cfg->ldc_uris[__session.ls_current_uri]);
-  if (stat != NSS_STATUS_SUCCESS)
-    {
-      log_log(LOG_DEBUG,"<== do_init (failed to initialize LDAP session)");
-      return stat;
-    }
+  if (stat!=NSS_STATUS_SUCCESS)
+  {
+    log_log(LOG_DEBUG,"<== _nss_ldap_init (failed to initialize LDAP session)");
+    return stat;
+  }
 
-  __session.ls_state = LS_INITIALIZED;
+  __session.ls_state=LS_INITIALIZED;
 
-  log_log(LOG_DEBUG,"<== do_init (initialized session)");
+  log_log(LOG_DEBUG,"<== _nss_ldap_init (initialized session)");
 
   return NSS_STATUS_SUCCESS;
-}
-
-/*
- * A simple alias around do_init().
- */
-enum nss_status
-_nss_ldap_init (void)
-{
-  return do_init ();
 }
 
 #if defined HAVE_LDAP_START_TLS_S || (defined(HAVE_LDAP_SET_OPTION) && defined(LDAP_OPT_X_TLS))
@@ -913,7 +820,7 @@ static int do_ssl_options(void)
 /*
  * Opens connection to an LDAP server - should only be called from search
  * API. Other API that just needs access to configuration and schema should
- * call do_init().
+ * call _nss_ldap_init().
  *
  * As with do_close(), this assumes ownership of sess.
  * It also wants to own __config: is there a potential deadlock here? XXX
@@ -934,8 +841,8 @@ do_open (void)
 
   log_log(LOG_DEBUG,"==> do_open");
 
-  /* Moved the head part of do_open() into do_init() */
-  stat = do_init ();
+  /* Moved the head part of do_open() into _nss_ldap_init() */
+  stat = _nss_ldap_init();
   if (stat != NSS_STATUS_SUCCESS)
     {
       log_log(LOG_DEBUG,"<== do_open (session initialization failed)");
@@ -1312,135 +1219,12 @@ void _nss_ldap_ent_context_cleanup(struct ent_context *context)
 }
 
 /*
- * Function to call either do_search() or do_search_s() with
- * reconnection logic.
- */
-static enum nss_status
-do_with_reconnect (const char *base, int scope,
-                   const char *filter, const char **attrs, int sizelimit,
-                   void *private, search_func_t search_func)
-{
-  int rc = LDAP_UNAVAILABLE, tries = 0, backoff = 0;
-  int hard = 1, start_uri = 0, log = 0;
-  enum nss_status stat = NSS_STATUS_UNAVAIL;
-  int maxtries;
-
-  log_log(LOG_DEBUG,"==> do_with_reconnect (base=\"%s\", scope=%d, filter=\"%s\")",base,scope,filter);
-
-  /* caller must successfully call do_init() first */
-  assert (nslcd_cfg != NULL);
-
-  maxtries = nslcd_cfg->ldc_reconnect_maxconntries +
-             nslcd_cfg->ldc_reconnect_tries;
-
-  while (stat == NSS_STATUS_UNAVAIL && hard && tries < maxtries)
-    {
-      if (tries >= nslcd_cfg->ldc_reconnect_maxconntries)
-        {
-          if (backoff == 0)
-            backoff = nslcd_cfg->ldc_reconnect_sleeptime;
-          else if (backoff < nslcd_cfg->ldc_reconnect_maxsleeptime)
-            backoff *= 2;
-
-          log_log(LOG_INFO,"reconnecting to LDAP server (sleeping %d seconds)...",
-                  backoff);
-          (void) sleep (backoff);
-        }
-      else if (tries > 1)
-        {
-          /* Don't sleep, reconnect immediately. */
-          log_log(LOG_INFO,"reconnecting to LDAP server...");
-        }
-
-      /* For each "try", attempt to connect to all specified URIs */
-      start_uri = __session.ls_current_uri;
-      do
-        {
-          stat = do_open ();
-          if (stat == NSS_STATUS_SUCCESS)
-            {
-              stat = do_map_error (search_func (base, scope, filter,
-                                                attrs, sizelimit, private));
-            }
-          if (stat != NSS_STATUS_UNAVAIL)
-            break;
-
-          log++;
-
-          /* test in case config file could not be read */
-          if (nslcd_cfg != NULL)
-            {
-              assert (nslcd_cfg->
-                      ldc_uris[__session.ls_current_uri] != NULL);
-
-              __session.ls_current_uri++;
-
-              if (nslcd_cfg->ldc_uris[__session.ls_current_uri] ==
-                  NULL)
-                __session.ls_current_uri = 0;
-            }
-        }
-      while (__session.ls_current_uri != start_uri);
-
-      if (stat == NSS_STATUS_UNAVAIL)
-        {
-          do_close ();
-
-          /*
-           * If a soft reconnect policy is specified, then do not
-           * try to reconnect to the LDAP server if it is down.
-           */
-          if (nslcd_cfg->ldc_reconnect_pol == LP_RECONNECT_SOFT)
-            hard = 0;
-
-          ++tries;
-        }
-    }
-
-  switch (stat)
-    {
-    case NSS_STATUS_UNAVAIL:
-      log_log(LOG_ERR,"could not search LDAP server - %s",ldap_err2string(rc));
-      break;
-    case NSS_STATUS_TRYAGAIN:
-      log_log(LOG_ERR,"could not %s %sconnect to LDAP server - %s",
-              hard ? "hard" : "soft", tries ? "re" : "",
-              ldap_err2string (rc));
-      stat = NSS_STATUS_UNAVAIL;
-      break;
-    case NSS_STATUS_SUCCESS:
-      if (log)
-        {
-          char *uri = nslcd_cfg->ldc_uris[__session.ls_current_uri];
-
-          if (uri == NULL)
-            uri = "(null)";
-
-          if (tries)
-            log_log(LOG_INFO,"reconnected to LDAP server %s after %d attempt%s",
-              uri, tries, (tries == 1) ? "" : "s");
-          else
-            log_log(LOG_INFO,"reconnected to LDAP server %s", uri);
-        }
-      time (&__session.ls_timestamp);
-      break;
-    default:
-      break;
-    }
-
-  log_log(LOG_DEBUG,"<== do_with_reconnect");
-  return stat;
-}
-
-/*
  * Synchronous search function. Don't call this directly;
  * always wrap calls to this with do_with_reconnect(), or,
  * better still, use _nss_ldap_search_locked().
  */
-static int
-do_search_s (const char *base, int scope,
-             const char *filter, const char **attrs, int sizelimit,
-             LDAPMessage ** res)
+static int do_search_s(const char *base,int scope,const char *filter,
+                       const char **attrs,int sizelimit,LDAPMessage **res)
 {
   int rc;
   struct timeval tv, *tvp;
@@ -1474,9 +1258,8 @@ do_search_s (const char *base, int scope,
  * always wrap calls to this with do_with_reconnect(), or,
  * better still, use _nss_ldap_search().
  */
-static int
-do_search (const char *base, int scope,
-           const char *filter, const char **attrs, int sizelimit, int *msgid)
+static int do_search(const char *base,int scope,const char *filter,
+                     const char **attrs,int sizelimit,int *msgid)
 {
   int rc;
   LDAPControl *serverCtrls[2];
@@ -1534,6 +1317,107 @@ do_search (const char *base, int scope,
   log_log(LOG_DEBUG,"<== do_search");
 
   return rc;
+}
+
+/*
+ * Function to call either do_search() or do_search_s() with
+ * reconnection logic (depending on wheter res or msgid is not NULL).
+ */
+static enum nss_status
+do_with_reconnect(const char *base,int scope,const char *filter,
+                  const char **attrs,int sizelimit,
+                  LDAPMessage **res,int *msgid)
+{
+  int rc=LDAP_UNAVAILABLE, tries=0, backoff=0;
+  int hard=1, start_uri=0, log=0;
+  enum nss_status stat=NSS_STATUS_UNAVAIL;
+  int maxtries;
+  log_log(LOG_DEBUG,"==> do_with_reconnect (base=\"%s\", scope=%d, filter=\"%s\")",base,scope,filter);
+  /* get the maximum number of tries */
+  maxtries=nslcd_cfg->ldc_reconnect_tries;
+  /* keep trying until we have success or a hard failure */
+  while ((stat==NSS_STATUS_UNAVAIL)&&(hard)&&(tries<maxtries))
+  {
+    /* sleep between tries */
+    if (tries>0)
+    {
+      if (backoff==0)
+        backoff=nslcd_cfg->ldc_reconnect_sleeptime;
+      else if (backoff<nslcd_cfg->ldc_reconnect_maxsleeptime)
+        backoff*=2;
+      log_log(LOG_INFO,"reconnecting to LDAP server (sleeping %d seconds)...",backoff);
+      (void)sleep(backoff);
+    }
+    /* for each "try", attempt to connect to all specified URIs */
+    start_uri=__session.ls_current_uri;
+    do
+    {
+      /* open a connection and do the search */
+      stat=do_open();
+      if (stat==NSS_STATUS_SUCCESS)
+      {
+        if (res!=NULL)
+          stat=do_map_error(do_search_s(base,scope,filter,attrs,sizelimit,res));
+        else
+          stat=do_map_error(do_search(base,scope,filter,attrs,sizelimit,msgid));
+      }
+      /* if we got any feedback from the server, don't try other ones */
+      if (stat!=NSS_STATUS_UNAVAIL)
+        break;
+      log++;
+      /* the currently configured uri should exist */
+      assert(nslcd_cfg->ldc_uris[__session.ls_current_uri]!=NULL);
+      /* try the next URI (with wrap-around) */
+      __session.ls_current_uri++;
+      if (nslcd_cfg->ldc_uris[__session.ls_current_uri]==NULL)
+        __session.ls_current_uri = 0;
+    }
+    while (__session.ls_current_uri != start_uri);
+    /* if we had reachability problems with the server close the connection */
+    /* TODO: we should probably close in the loop above */
+    if (stat==NSS_STATUS_UNAVAIL)
+    {
+      do_close ();
+      /* If a soft reconnect policy is specified, then do not
+       * try to reconnect to the LDAP server if it is down.
+       */
+      if (nslcd_cfg->ldc_reconnect_pol == LP_RECONNECT_SOFT)
+        hard = 0;
+      ++tries;
+    }
+  }
+
+  switch (stat)
+  {
+    case NSS_STATUS_UNAVAIL:
+      log_log(LOG_ERR,"could not search LDAP server - %s",ldap_err2string(rc));
+      break;
+    case NSS_STATUS_TRYAGAIN:
+      log_log(LOG_ERR,"could not %s %sconnect to LDAP server - %s",
+              hard?"hard":"soft", tries?"re":"",
+              ldap_err2string(rc));
+      stat=NSS_STATUS_UNAVAIL;
+      break;
+    case NSS_STATUS_SUCCESS:
+      if (log)
+      {
+        char *uri=nslcd_cfg->ldc_uris[__session.ls_current_uri];
+        if (uri==NULL)
+          uri = "(null)";
+        if (tries)
+          log_log(LOG_INFO,"reconnected to LDAP server %s after %d attempt%s",
+            uri, tries, (tries == 1) ? "" : "s");
+        else
+          log_log(LOG_INFO,"reconnected to LDAP server %s", uri);
+      }
+      /* update the last activity on the connection */
+      time(&__session.ls_timestamp);
+      break;
+    default:
+      break;
+  }
+  log_log(LOG_DEBUG,"<== do_with_reconnect");
+  return stat;
 }
 
 static void
@@ -1694,8 +1578,8 @@ enum nss_status
 _nss_ldap_read (const char *dn, const char **attributes, LDAPMessage ** res)
 {
   return do_with_reconnect (dn, LDAP_SCOPE_BASE, "(objectclass=*)",
-                            attributes, 1, /* sizelimit */ res,
-                            (search_func_t) do_search_s);
+                            attributes, 1 /* sizelimit */, res,
+                            NULL);
 }
 
 /*
@@ -1779,14 +1663,14 @@ enum nss_status _nss_ldap_search_locked(
   enum nss_status stat;
   log_log(LOG_DEBUG,"==> _nss_ldap_search_locked (base=\"%s\", filter=\"%s\")",base,filter);
   /* initilize session */
-  if ((stat=do_init())!=NSS_STATUS_SUCCESS)
+  if ((stat=_nss_ldap_init())!=NSS_STATUS_SUCCESS)
   {
     log_log(LOG_DEBUG,"<== _nss_ldap_search_locked");
     return stat;
   }
   stat=do_with_reconnect(
           base,scope,filter,attrs,
-          sizelimit,res,(search_func_t)do_search_s);
+          sizelimit,res,NULL);
   return stat;
 }
 
@@ -1795,20 +1679,22 @@ enum nss_status _nss_ldap_search_locked(
  * Assumes caller holds lock.
  */
 static enum nss_status
-_nss_ldap_search (const char *base,int scope,const char *filter,const char **attrs,
-                  int sizelimit, int *msgid)
+_nss_ldap_search(const char *base,int scope,const char *filter,const char **attrs,
+                 int sizelimit, int *msgid)
 {
   enum nss_status stat;
   log_log(LOG_DEBUG,"==> _nss_ldap_search");
-  *msgid = -1;
-  stat=do_init();
+  *msgid=-1;
+  /* initialize connection if needed */
+  stat=_nss_ldap_init();
   if (stat!=NSS_STATUS_SUCCESS)
   {
     log_log(LOG_DEBUG,"<== _nss_ldap_search");
     return stat;
   }
+  /* perform the search */
   stat=do_with_reconnect(base,scope,filter,attrs,
-                         sizelimit,msgid,(search_func_t)do_search);
+                         sizelimit,NULL,msgid);
   log_log(LOG_DEBUG,"<== _nss_ldap_search");
   return stat;
 }
@@ -1824,9 +1710,7 @@ do_next_page (const char *base,int scope,const char *filter,const char **attrs,
                                 nslcd_cfg->ldc_pagesize,
                                 pCookie,0,&serverctrls[0]);
   if (stat != LDAP_SUCCESS)
-  {
     return NSS_STATUS_UNAVAIL;
-  }
   stat=ldap_search_ext(__session.ls_conn,
                        base,scope,filter,
                        (char **)attrs,0,serverctrls,NULL,LDAP_NO_LIMIT,
@@ -1887,14 +1771,14 @@ _nss_ldap_getent_locked(struct ent_context *context,
                     const char *base,int scope,const char *filter,const char **attrs,
                     parser_t parser)
 {
-  enum nss_status stat = NSS_STATUS_SUCCESS;
+  enum nss_status stat=NSS_STATUS_SUCCESS;
   int msgid;
   log_log(LOG_DEBUG,"==> _nss_ldap_getent_locked (base=\"%s\", filter=\"%s\")",base,filter);
   /* if context->ec_msgid < 0, then we haven't searched yet */
   if (context->ec_msgid<0)
   {
-    stat=_nss_ldap_search(base,scope,filter,attrs,
-                          LDAP_NO_LIMIT,&msgid);
+    /* set up a new search */
+    stat=_nss_ldap_search(base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid);
     if (stat != NSS_STATUS_SUCCESS)
     {
       log_log(LOG_DEBUG,"<== _nss_ldap_getent_locked");
@@ -1903,6 +1787,7 @@ _nss_ldap_getent_locked(struct ent_context *context,
     context->ec_msgid=msgid;
   }
 
+  /* parse a result */
   stat=do_parse(context,result,buffer,buflen,errnop,parser);
 
   if (stat==NSS_STATUS_NOTFOUND)
@@ -1910,14 +1795,14 @@ _nss_ldap_getent_locked(struct ent_context *context,
     /* Is there another page of results? */
     if ((context->ec_cookie!=NULL)&&(context->ec_cookie->bv_len!=0))
     {
-      stat=do_next_page(base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid,
-                        context->ec_cookie);
+      stat=do_next_page(base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid,context->ec_cookie);
       if (stat!=NSS_STATUS_SUCCESS)
       {
         log_log(LOG_DEBUG,"<== _nss_ldap_getent_locked");
         return stat;
       }
       context->ec_msgid=msgid;
+      /* retry parsing a result */
       stat=do_parse(context,result,buffer,buflen,errnop,parser);
     }
   }
