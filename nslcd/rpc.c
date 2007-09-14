@@ -53,7 +53,6 @@
 #endif
 
 #include "ldap-nss.h"
-#include "util.h"
 #include "common.h"
 #include "log.h"
 #include "attmap.h"

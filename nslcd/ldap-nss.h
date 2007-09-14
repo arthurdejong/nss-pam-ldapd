@@ -194,4 +194,17 @@ int has_objectclass(MYLDAP_SESSION *session,LDAPMessage *entry,const char *objec
 
 enum nss_status _nss_ldap_init(MYLDAP_SESSION *session);
 
+/*
+ * get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry)
+ * would return lukeh.
+ */
+enum nss_status _nss_ldap_getrdnvalue(
+        MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype,
+        char **rval,char **buffer,size_t * buflen);
+
+/*
+ * Escape '*' in a string for use as a filter
+ */
+int myldap_escape(const char *src,char *buffer,size_t buflen);
+
 #endif /* _LDAP_NSS_LDAP_LDAP_NSS_H */

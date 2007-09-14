@@ -35,7 +35,6 @@
 #include <errno.h>
 
 #include "ldap-nss.h"
-#include "util.h"
 #include "log.h"
 #include "cfg.h"
 #include "attmap.h"

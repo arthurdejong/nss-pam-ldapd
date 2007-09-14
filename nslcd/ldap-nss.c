@@ -75,7 +75,6 @@
 #endif
 
 #include "ldap-nss.h"
-#include "util.h"
 #include "pagectrl.h"
 #include "common.h"
 #include "log.h"
@@ -1438,5 +1437,210 @@ int has_objectclass(MYLDAP_SESSION *session,LDAPMessage *entry,const char *objec
     }
   }
   ldap_value_free(vals);
+  return 0;
+}
+
+static enum nss_status
+do_getrdnvalue (const char *dn,
+                const char *rdntype,
+                char **rval, char **buffer, size_t * buflen)
+{
+  char **exploded_dn;
+  char *rdnvalue = NULL;
+  char rdnava[64];
+  size_t rdnlen = 0, rdnavalen;
+
+  snprintf (rdnava, sizeof rdnava, "%s=", rdntype);
+  rdnavalen = strlen (rdnava);
+
+  exploded_dn = ldap_explode_dn (dn, 0);
+
+  if (exploded_dn != NULL)
+    {
+      /*
+       * attempt to get the naming attribute's principal
+       * value by parsing the RDN. We need to support
+       * multivalued RDNs (as they're essentially mandated
+       * for services)
+       */
+#ifdef HAVE_LDAP_EXPLODE_RDN
+      /*
+       * use ldap_explode_rdn() API, as it's cleaner than
+       * strtok(). This code has not been tested!
+       */
+      char **p, **exploded_rdn;
+
+      exploded_rdn = ldap_explode_rdn (*exploded_dn, 0);
+      if (exploded_rdn != NULL)
+        {
+          for (p = exploded_rdn; *p != NULL; p++)
+            {
+              if (strncasecmp (*p, rdnava, rdnavalen) == 0)
+                {
+                  char *r = *p + rdnavalen;
+
+                  rdnlen = strlen (r);
+                  if (*buflen <= rdnlen)
+                    {
+                      ldap_value_free (exploded_rdn);
+                      ldap_value_free (exploded_dn);
+                      return NSS_STATUS_TRYAGAIN;
+                    }
+                  rdnvalue = *buffer;
+                  strncpy (rdnvalue, r, rdnlen);
+                  break;
+                }
+            }
+          ldap_value_free (exploded_rdn);
+        }
+#else /* HAVE_LDAP_EXPLODE_RDN */
+      /*
+       * we don't have Netscape's ldap_explode_rdn() API,
+       * so we fudge it with strtok(). Note that this will
+       * not handle escaping properly.
+       */
+      char *p, *r = *exploded_dn;
+#ifdef HAVE_STRTOK_R
+      char *st = NULL;
+#endif /* HAVE_STRTOK_R */
+
+#ifndef HAVE_STRTOK_R
+      for (p = strtok (r, "+");
+#else /* HAVE_STRTOK_R */
+      for (p = strtok_r (r, "+", &st);
+#endif /* not HAVE_STRTOK_R */
+           p != NULL;
+#ifndef HAVE_STRTOK_R
+           p = strtok (NULL, "+"))
+#else /* HAVE_STRTOK_R */
+           p = strtok_r (NULL, "+", &st))
+#endif /* not HAVE_STRTOK_R */
+      {
+        if (strncasecmp (p, rdnava, rdnavalen) == 0)
+          {
+            p += rdnavalen;
+            rdnlen = strlen (p);
+            if (*buflen <= rdnlen)
+              {
+                ldap_value_free (exploded_dn);
+                return NSS_STATUS_TRYAGAIN;
+              }
+            rdnvalue = *buffer;
+            strncpy (rdnvalue, p, rdnlen);
+            break;
+          }
+        if (r != NULL)
+          r = NULL;
+      }
+#endif /* not HAVE_LDAP_EXPLODE_RDN */
+    }
+
+  if (exploded_dn != NULL)
+    {
+      ldap_value_free (exploded_dn);
+    }
+
+  if (rdnvalue != NULL)
+    {
+      rdnvalue[rdnlen] = '\0';
+      *buffer += rdnlen + 1;
+      *buflen -= rdnlen + 1;
+      *rval = rdnvalue;
+      return NSS_STATUS_SUCCESS;
+    }
+
+  return NSS_STATUS_NOTFOUND;
+}
+
+enum nss_status _nss_ldap_getrdnvalue(
+        MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype,
+        char **rval,char **buffer,size_t *buflen)
+{
+  char *dn;
+  enum nss_status status;
+  size_t rdnlen;
+
+  dn=_nss_ldap_get_dn(session,entry);
+  if (dn==NULL)
+    return NSS_STATUS_NOTFOUND;
+
+  status = do_getrdnvalue (dn, rdntype, rval, buffer, buflen);
+#ifdef HAVE_LDAP_MEMFREE
+  ldap_memfree (dn);
+#else /* HAVE_LDAP_MEMFREE */
+  free (dn);
+#endif /* not HAVE_LDAP_MEMFREE */
+
+  /*
+   * If examining the DN failed, then pick the nominal first
+   * value of cn as the canonical name (recall that attributes
+   * are sets, not sequences)
+   */
+  if (status == NSS_STATUS_NOTFOUND)
+    {
+      char **vals;
+
+      vals=_nss_ldap_get_values(session,entry,rdntype);
+
+      if (vals != NULL)
+        {
+          rdnlen = strlen (*vals);
+          if (*buflen > rdnlen)
+            {
+              char *rdnvalue = *buffer;
+              strncpy (rdnvalue, *vals, rdnlen);
+              rdnvalue[rdnlen] = '\0';
+              *buffer += rdnlen + 1;
+              *buflen -= rdnlen + 1;
+              *rval = rdnvalue;
+              status = NSS_STATUS_SUCCESS;
+            }
+          else
+            {
+              status = NSS_STATUS_TRYAGAIN;
+            }
+          ldap_value_free (vals);
+        }
+    }
+
+  return status;
+}
+
+int myldap_escape(const char *src,char *buffer,size_t buflen)
+{
+  size_t pos=0;
+  /* go over all characters in source string */
+  for (;*src!='\0';src++)
+  {
+    /* check if char will fit */
+    if (pos>=(buflen+4))
+      return -1;
+    /* do escaping for some characters */
+    switch (*src)
+    {
+      case '*':
+        strcpy(buffer+pos,"\\2a");
+        pos+=3;
+        break;
+      case '(':
+        strcpy(buffer+pos,"\\28");
+        pos+=3;
+        break;
+      case ')':
+        strcpy(buffer+pos,"\\29");
+        pos+=3;
+        break;
+      case '\\':
+        strcpy(buffer+pos,"\\5c");
+        pos+=3;
+        break;
+      default:
+        /* just copy character */
+        buffer[pos++]=*src;
+        break;
+    }
+  }
+  /* terminate destination string */
+  buffer[pos]='\0';
   return 0;
 }
