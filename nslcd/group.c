@@ -113,7 +113,11 @@ static enum nss_status ng_chase_backlink(MYLDAP_SESSION *session,const char **me
 /* ( nisSchema.2.2 NAME 'posixGroup' SUP top STRUCTURAL
  *   DESC 'Abstraction of a group of accounts'
  *   MUST ( cn $ gidNumber )
- *   MAY ( userPassword $ uidMember $ description ) )
+ *   MAY ( userPassword $ memberUid $ description ) )
+ *
+ * apart from that the above the uniqueMember attributes may be
+ * supported in a coming release (they map to DNs, which is an extra
+ * lookup step)
  */
 
 /* the search base for searches */
@@ -451,13 +455,10 @@ static enum nss_status do_get_range_values(
  * Format an attribute with description as:
  *      attribute;range=START-END
  */
-static enum nss_status
-do_construct_range_attribute (const char *attribute,
-                              int start,
-                              int end,
-                              char **buffer,
-                              size_t * buflen,
-                              const char **pAttributeWithRange)
+static enum nss_status do_construct_range_attribute(
+        const char *attribute,int start,int end,
+        char **buffer,size_t * buflen,
+        const char **pAttributeWithRange)
 {
   size_t len;
   char startbuf[32], endbuf[32];
@@ -486,9 +487,10 @@ do_construct_range_attribute (const char *attribute,
   return NSS_STATUS_SUCCESS;
 }
 
-static enum nss_status _nss_ldap_dn2uid(MYLDAP_SESSION *session,const char *dn,char **uid,char **buffer,
-                                 size_t * buflen,int *pIsNestedGroup,
-                                 LDAPMessage **pRes)
+static enum nss_status dn2uid(
+        MYLDAP_SESSION *session,const char *dn,char **uid,char **buffer,
+        size_t *buflen,int *pIsNestedGroup,
+        LDAPMessage **pRes)
 {
   enum nss_status status;
   const char *attrs[4];
@@ -655,7 +657,7 @@ static enum nss_status do_parse_group_members(
                   *uid = '\0';
                 }
 
-              parseStat=_nss_ldap_dn2uid(session,*valiter,&groupMembers[i],buffer,buflen,&isNestedGroup,&res);
+              parseStat=dn2uid(session,*valiter,&groupMembers[i],buffer,buflen,&isNestedGroup,&res);
               if (parseStat == NSS_STATUS_SUCCESS)
                 {
                   if (isNestedGroup == 0)
