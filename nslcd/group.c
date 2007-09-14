@@ -175,7 +175,6 @@ static int mkfilter_getgroupsbydn(const char *dn,
 
 static char *user2dn(MYLDAP_SESSION *session,const char *user)
 {
-  /* TODO: move this to passwd.c once we are sure we would be able to lock there */
   char *userdn=NULL;
   static const char *no_attrs[]={ NULL };
   char filter[1024];
@@ -1057,10 +1056,10 @@ static enum nss_status ng_chase_backlink(MYLDAP_SESSION *session,const char **me
   gidnumber_attrs[1] = attmap_group_memberOf;
   gidnumber_attrs[2] = NULL;
 
-  _nss_ldap_ent_context_init_locked(&context,session);
+  _nss_ldap_ent_context_init(&context,session);
   /* FIXME: the search filter is wrong here, we should figure out what it's
             supposed to be */
-  stat=_nss_ldap_getent_locked(&context,lia,NULL,0,&erange,
+  stat=_nss_ldap_getent(&context,lia,NULL,0,&erange,
                            group_base,group_scope,"(distinguishedName=%s)",gidnumber_attrs,
                            do_parse_initgroups_nested);
 
@@ -1107,10 +1106,10 @@ static int group_bymember(MYLDAP_SESSION *session,const char *user,
   mkfilter_group_bymember(session,user,filter,sizeof(filter));
   gidnumber_attrs[0] = attmap_group_gidNumber;
   gidnumber_attrs[1] = NULL;
-  _nss_ldap_ent_context_init_locked(&context,session);
-  stat=_nss_ldap_getent_locked(&context,(void *)&lia,NULL,0,errnop,
-                           group_base,group_scope,filter,gidnumber_attrs,
-                           do_parse_initgroups_nested);
+  _nss_ldap_ent_context_init(&context,session);
+  stat=_nss_ldap_getent(&context,(void *)&lia,NULL,0,errnop,
+                        group_base,group_scope,filter,gidnumber_attrs,
+                        do_parse_initgroups_nested);
   _nss_ldap_namelist_destroy(&lia.known_groups);
   _nss_ldap_ent_context_cleanup(&context);
   if ((stat!=NSS_STATUS_SUCCESS)&&(stat!=NSS_STATUS_NOTFOUND))
