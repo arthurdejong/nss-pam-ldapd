@@ -51,11 +51,11 @@
 #include "attmap.h"
 
 #ifndef UID_NOBODY
-#define UID_NOBODY      (-2)
+#define UID_NOBODY      (uid_t)(-2)
 #endif
 
 #ifndef GID_NOBODY
-#define GID_NOBODY     UID_NOBODY
+#define GID_NOBODY     (gid_t)UID_NOBODY
 #endif
 
 /* the search base for searches */
@@ -131,6 +131,24 @@ static void passwd_init(void)
   passwd_attrs[7]=attmap_passwd_gecos;
   passwd_attrs[8]="objectClass";
   passwd_attrs[9]=NULL;
+}
+
+/* macros for expanding the NSLCD_PASSWD macro */
+#define NSLCD_STRING(field)    WRITE_STRING(fp,field)
+#define NSLCD_TYPE(field,type) WRITE_TYPE(fp,field,type)
+#define PASSWD_NAME            result->pw_name
+#define PASSWD_PASSWD          result->pw_passwd
+#define PASSWD_UID             result->pw_uid
+#define PASSWD_GID             result->pw_gid
+#define PASSWD_GECOS           result->pw_gecos
+#define PASSWD_DIR             result->pw_dir
+#define PASSWD_SHELL           result->pw_shell
+
+static int write_passwd(TFILE *fp,struct passwd *result)
+{
+  int32_t tmpint32;
+  NSLCD_PASSWD;
+  return 0;
 }
 
 static inline enum nss_status _nss_ldap_assign_emptystring(
@@ -223,17 +241,6 @@ static enum nss_status _nss_ldap_parse_pw(
   return NSS_STATUS_SUCCESS;
 }
 
-/* macros for expanding the NSLCD_PASSWD macro */
-#define NSLCD_STRING(field)    WRITE_STRING(fp,field)
-#define NSLCD_TYPE(field,type) WRITE_TYPE(fp,field,type)
-#define PASSWD_NAME   result.pw_name
-#define PASSWD_PASSWD result.pw_passwd
-#define PASSWD_UID    result.pw_uid
-#define PASSWD_GID    result.pw_gid
-#define PASSWD_GECOS  result.pw_gecos
-#define PASSWD_DIR    result.pw_dir
-#define PASSWD_SHELL  result.pw_shell
-
 /* the caller should take care of opening and closing the stream */
 int nslcd_passwd_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
@@ -260,9 +267,8 @@ int nslcd_passwd_byname(TFILE *fp,MYLDAP_SESSION *session)
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYNAME);
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    NSLCD_PASSWD;
-  }
+    if (write_passwd(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -293,9 +299,8 @@ int nslcd_passwd_byuid(TFILE *fp,MYLDAP_SESSION *session)
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    NSLCD_PASSWD;
-  }
+    if (write_passwd(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -325,7 +330,8 @@ int nslcd_passwd_all(TFILE *fp,MYLDAP_SESSION *session)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    NSLCD_PASSWD;
+    if (write_passwd(fp,&result))
+      return -1;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

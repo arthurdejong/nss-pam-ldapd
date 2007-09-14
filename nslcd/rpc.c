@@ -58,14 +58,6 @@
 #include "log.h"
 #include "attmap.h"
 
-/* macros for expanding the NSLCD_RPC macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define RPC_NAME              result->r_name
-#define RPC_ALIASES           result->r_aliases
-#define RPC_NUMBER            result->r_number
-
 /* ( nisSchema.2.5 NAME 'oncRpc' SUP top STRUCTURAL
  *   DESC 'Abstraction of an Open Network Computing (ONC)
  *         [RFC1057] Remote Procedure Call (RPC) binding.
@@ -129,6 +121,14 @@ static void rpc_init(void)
   rpc_attrs[1]=attmap_rpc_oncRpcNumber;
   rpc_attrs[2]=NULL;
 }
+
+/* macros for expanding the NSLCD_RPC macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
+#define RPC_NAME                result->r_name
+#define RPC_ALIASES             result->r_aliases
+#define RPC_NUMBER              result->r_number
 
 /* write a single rpc entry to the stream */
 static int write_rpcent(TFILE *fp,struct rpcent *result)

@@ -240,6 +240,22 @@ static void group_init(void)
   group_attrs[5]=NULL;
 }
 
+/* macros for expanding the NSLCD_GROUP macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define GROUP_NAME              result->gr_name
+#define GROUP_PASSWD            result->gr_passwd
+#define GROUP_GID               result->gr_gid
+#define GROUP_MEMBERS           result->gr_mem
+
+static int write_group(TFILE *fp,struct group *result)
+{
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  NSLCD_GROUP;
+  return 0;
+}
+
 /*
  * Add a nested netgroup or group to the namelist
  */
@@ -1121,18 +1137,9 @@ static int group_bymember(MYLDAP_SESSION *session,const char *user,
   return 0;
 }
 
-/* macros for expanding the NSLCD_GROUP macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define GROUP_NAME            result.gr_name
-#define GROUP_PASSWD          result.gr_passwd
-#define GROUP_GID             result.gr_gid
-#define GROUP_MEMBERS         result.gr_mem
-
 int nslcd_group_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
-  int32_t tmpint32,tmp2int32,tmp3int32;
+  int32_t tmpint32;
   char name[256];
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
@@ -1161,9 +1168,8 @@ int nslcd_group_byname(TFILE *fp,MYLDAP_SESSION *session)
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYNAME);
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    NSLCD_GROUP;
-  }
+    if (write_group(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -1171,7 +1177,7 @@ int nslcd_group_byname(TFILE *fp,MYLDAP_SESSION *session)
 
 int nslcd_group_bygid(TFILE *fp,MYLDAP_SESSION *session)
 {
-  int32_t tmpint32,tmp2int32,tmp3int32;
+  int32_t tmpint32;
   gid_t gid;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
@@ -1200,9 +1206,8 @@ int nslcd_group_bygid(TFILE *fp,MYLDAP_SESSION *session)
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYGID);
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    NSLCD_GROUP;
-  }
+    if (write_group(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -1266,7 +1271,7 @@ int nslcd_group_bymember(TFILE *fp,MYLDAP_SESSION *session)
 
 int nslcd_group_all(TFILE *fp,MYLDAP_SESSION *session)
 {
-  int32_t tmpint32,tmp2int32,tmp3int32;
+  int32_t tmpint32;
   struct ent_context context;
   /* these are here for now until we rewrite the LDAP code */
   struct group result;
@@ -1288,7 +1293,8 @@ int nslcd_group_all(TFILE *fp,MYLDAP_SESSION *session)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    NSLCD_GROUP;
+    if (write_group(fp,&result))
+      return -1;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

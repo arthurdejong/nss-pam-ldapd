@@ -116,6 +116,21 @@ static void protocol_init(void)
   protocol_attrs[2]=NULL;
 }
 
+/* macros for expanding the NSLCD_PROTOCOL macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
+#define PROTOCOL_NAME           result->p_name
+#define PROTOCOL_ALIASES        result->p_aliases
+#define PROTOCOL_NUMBER         result->p_proto
+
+static int write_protoent(TFILE *fp,struct protoent *result)
+{
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  NSLCD_PROTOCOL;
+  return 0;
+}
+
 static enum nss_status _nss_ldap_parse_proto(
         MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
         void *result,char *buffer,size_t buflen)
@@ -142,17 +157,9 @@ static enum nss_status _nss_ldap_parse_proto(
   return NSS_STATUS_SUCCESS;
 }
 
-/* macros for expanding the NSLCD_PROTOCOL macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define PROTOCOL_NAME         result.p_name
-#define PROTOCOL_ALIASES      result.p_aliases
-#define PROTOCOL_NUMBER       result.p_proto
-
 int nslcd_protocol_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
-  int32_t tmpint32,tmp2int32,tmp3int32;
+  int32_t tmpint32;
   char name[256];
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
@@ -176,9 +183,8 @@ int nslcd_protocol_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    NSLCD_PROTOCOL;
-  }
+    if (write_protoent(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -186,7 +192,7 @@ int nslcd_protocol_byname(TFILE *fp,MYLDAP_SESSION *session)
 
 int nslcd_protocol_bynumber(TFILE *fp,MYLDAP_SESSION *session)
 {
-  int32_t tmpint32,tmp2int32,tmp3int32;
+  int32_t tmpint32;
   int protocol;
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
@@ -210,9 +216,8 @@ int nslcd_protocol_bynumber(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    NSLCD_PROTOCOL;
-  }
+    if (write_protoent(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -220,7 +225,7 @@ int nslcd_protocol_bynumber(TFILE *fp,MYLDAP_SESSION *session)
 
 int nslcd_protocol_all(TFILE *fp,MYLDAP_SESSION *session)
 {
-  int32_t tmpint32,tmp2int32,tmp3int32;
+  int32_t tmpint32;
   struct ent_context context;
   /* these are here for now until we rewrite the LDAP code */
   struct protoent result;
@@ -243,7 +248,8 @@ int nslcd_protocol_all(TFILE *fp,MYLDAP_SESSION *session)
     /* write the result code */
     WRITE_INT32(fp,retv);
     /* write the entry */
-    NSLCD_PROTOCOL;
+    if (write_protoent(fp,&result))
+      return -1;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

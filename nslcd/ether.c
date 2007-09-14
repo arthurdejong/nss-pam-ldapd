@@ -141,6 +141,19 @@ static void ether_init(void)
   ether_attrs[2]=NULL;
 }
 
+/* macros for expanding the NSLCD_ETHER macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
+#define ETHER_NAME              result->e_name
+#define ETHER_ADDR              result->e_addr
+
+static int write_ether(TFILE *fp,struct ether *result)
+{
+  int32_t tmpint32;
+  NSLCD_ETHER;
+  return 0;
+}
+
 static enum nss_status _nss_ldap_parse_ether(
         MYLDAP_SESSION *session,LDAPMessage *e,
         struct ldap_state UNUSED(*state),void *result,char *buffer,
@@ -159,12 +172,6 @@ static enum nss_status _nss_ldap_parse_ether(
   memcpy(&ether->e_addr,addr,sizeof(*addr));
   return NSS_STATUS_SUCCESS;
 }
-
-/* macros for expanding the NSLCD_ETHER macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
-#define ETHER_NAME            result.e_name
-#define ETHER_ADDR            result.e_addr
 
 int nslcd_ether_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
@@ -192,9 +199,8 @@ int nslcd_ether_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    NSLCD_ETHER;
-  }
+    if (write_ether(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -226,9 +232,8 @@ int nslcd_ether_byether(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    NSLCD_ETHER;
-  }
+    if (write_ether(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -258,7 +263,8 @@ int nslcd_ether_all(TFILE *fp,MYLDAP_SESSION *session)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    NSLCD_ETHER;
+    if (write_ether(fp,&result))
+      return -1;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

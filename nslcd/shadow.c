@@ -117,6 +117,26 @@ static void shadow_init(void)
   shadow_attrs[9]=NULL;
 }
 
+/* macros for expanding the NSLCD_SHADOW macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
+#define SHADOW_NAME             result->sp_namp
+#define SHADOW_PASSWD           result->sp_pwdp
+#define SHADOW_LASTCHANGE       result->sp_lstchg
+#define SHADOW_MINDAYS          result->sp_min
+#define SHADOW_MAXDAYS          result->sp_max
+#define SHADOW_WARN             result->sp_warn
+#define SHADOW_INACT            result->sp_inact
+#define SHADOW_EXPIRE           result->sp_expire
+#define SHADOW_FLAG             result->sp_flag
+
+static int write_spwd(TFILE *fp,struct spwd *result)
+{
+  int32_t tmpint32;
+  NSLCD_SHADOW;
+  return 0;
+}
+
 static int
 _nss_ldap_shadow_date (const char *val)
 {
@@ -192,19 +212,6 @@ static enum nss_status _nss_ldap_parse_sp(
   return NSS_STATUS_SUCCESS;
 }
 
-/* macros for expanding the NSLCD_SHADOW macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define SHADOW_NAME           result.sp_namp
-#define SHADOW_PASSWD         result.sp_pwdp
-#define SHADOW_LASTCHANGE     result.sp_lstchg
-#define SHADOW_MINDAYS        result.sp_min
-#define SHADOW_MAXDAYS        result.sp_max
-#define SHADOW_WARN           result.sp_warn
-#define SHADOW_INACT          result.sp_inact
-#define SHADOW_EXPIRE         result.sp_expire
-#define SHADOW_FLAG           result.sp_flag
-
 int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
@@ -230,9 +237,8 @@ int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    NSLCD_SHADOW;
-  }
+    if (write_spwd(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -262,7 +268,8 @@ int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    NSLCD_SHADOW;
+    if (write_spwd(fp,&result))
+      return -1;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

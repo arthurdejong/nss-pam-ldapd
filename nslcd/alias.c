@@ -98,6 +98,19 @@ static void alias_init(void)
   alias_attrs[2]=NULL;
 }
 
+/* macros for expanding the NSLCD_ALIAS macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NUM(fp,field,result->alias_members_len)
+#define ALIAS_NAME              result->alias_name
+#define ALIAS_RCPTS             result->alias_members
+
+static int write_aliasent(TFILE *fp,struct aliasent *result)
+{
+  int32_t tmpint32,tmp2int32;
+  NSLCD_ALIAS;
+  return 0;
+}
+
 static enum nss_status _nss_ldap_parse_alias(
         MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),void *result,
         char *buffer,size_t buflen)
@@ -118,15 +131,9 @@ static enum nss_status _nss_ldap_parse_alias(
   return stat;
 }
 
-/* macros for expanding the NSLCD_ALIAS macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NUM(fp,field,result.alias_members_len)
-#define ALIAS_NAME            result.alias_name
-#define ALIAS_RCPTS           result.alias_members
-
 int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
-  int32_t tmpint32,tmp2int32;
+  int32_t tmpint32;
   char name[256];
   char filter[1024];
   /* these are here for now until we rewrite the LDAP code */
@@ -150,9 +157,8 @@ int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-  {
-    NSLCD_ALIAS;
-  }
+    if (write_aliasent(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -160,7 +166,7 @@ int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session)
 
 int nslcd_alias_all(TFILE *fp,MYLDAP_SESSION *session)
 {
-  int32_t tmpint32,tmp2int32;
+  int32_t tmpint32;
   struct ent_context context;
   /* these are here for now until we rewrite the LDAP code */
   struct aliasent result;
@@ -182,7 +188,8 @@ int nslcd_alias_all(TFILE *fp,MYLDAP_SESSION *session)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    NSLCD_ALIAS;
+    if (write_aliasent(fp,&result))
+      return -1;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

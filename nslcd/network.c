@@ -261,7 +261,8 @@ int nslcd_network_byaddr(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-    write_netent(fp,&result);
+    if (write_netent(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -291,8 +292,8 @@ int nslcd_network_all(TFILE *fp,MYLDAP_SESSION *session)
   {
     /* write the result */
     WRITE_INT32(fp,retv);
-    if (retv==NSLCD_RESULT_SUCCESS)
-      write_netent(fp,&result);
+    if (write_netent(fp,&result))
+      return -1;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);

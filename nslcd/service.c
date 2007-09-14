@@ -58,15 +58,6 @@
 #include "log.h"
 #include "attmap.h"
 
-/* macros for expanding the NSLCD_SERVICE macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define SERVICE_NAME          result->s_name
-#define SERVICE_ALIASES       result->s_aliases
-#define SERVICE_NUMBER        htons(result->s_port)
-#define SERVICE_PROTOCOL      result->s_proto
-
 /* ( nisSchema.2.3 NAME 'ipService' SUP top STRUCTURAL
  *   DESC 'Abstraction an Internet Protocol service.
  *         Maps an IP port and protocol (such as tcp or udp)
@@ -157,7 +148,15 @@ static void service_init(void)
   service_attrs[3]=NULL;
 }
 
-/* write a single host entry to the stream */
+/* macros for expanding the NSLCD_SERVICE macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
+#define SERVICE_NAME            result->s_name
+#define SERVICE_ALIASES         result->s_aliases
+#define SERVICE_NUMBER          htons(result->s_port)
+#define SERVICE_PROTOCOL        result->s_proto
+
 static int write_servent(TFILE *fp,struct servent *result)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
@@ -299,7 +298,8 @@ int nslcd_service_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-    write_servent(fp,&result);
+    if (write_servent(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -333,7 +333,8 @@ int nslcd_service_bynumber(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
-    write_servent(fp,&result);
+    if (write_servent(fp,&result))
+      return -1;
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
@@ -364,7 +365,8 @@ int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session)
     /* write the result code */
     WRITE_INT32(fp,retv);
     /* write the entry */
-    write_servent(fp,&result);
+    if (write_servent(fp,&result))
+      return -1;
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
