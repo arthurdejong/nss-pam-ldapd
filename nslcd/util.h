@@ -26,8 +26,6 @@
 #ifndef _LDAP_NSS_LDAP_UTIL_H
 #define _LDAP_NSS_LDAP_UTIL_H
 
-#include "common/tio.h"
-
 /*
  * get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry)
  * would return lukeh.
@@ -35,8 +33,6 @@
 enum nss_status _nss_ldap_getrdnvalue(
         MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype,
         char **rval,char **buffer,size_t * buflen);
-
-int _nss_ldap_write_rndvalue(TFILE *fp,MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype);
 
 /*
  * map a distinguished name to a login name, or group entry

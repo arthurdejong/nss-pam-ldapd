@@ -118,17 +118,6 @@ static enum nss_status _nss_ldap_parse_alias(
   return stat;
 }
 
-static int write_alias(MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),TFILE *fp)
-{
-  int stat;
-  if ((stat=_nss_ldap_write_rndvalue(fp,session,e,attmap_alias_cn))!=NSLCD_RESULT_SUCCESS)
-    return stat;
-  if ((stat=_nss_ldap_write_attrvals(fp,session,e,attmap_alias_rfc822MailMember))!=NSLCD_RESULT_SUCCESS)
-    return stat;
-  return NSLCD_RESULT_SUCCESS;
-}
-
-
 /* macros for expanding the NSLCD_ALIAS macro */
 #define NSLCD_STRING(field)     WRITE_STRING(fp,field)
 #define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NUM(fp,field,result.alias_members_len)
@@ -137,9 +126,14 @@ static int write_alias(MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state 
 
 int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
-  int32_t tmpint32;
+  int32_t tmpint32,tmp2int32;
   char name[256];
   char filter[1024];
+  /* these are here for now until we rewrite the LDAP code */
+  struct aliasent result;
+  char buffer[1024];
+  int errnop;
+  int retv;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
@@ -150,8 +144,15 @@ int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_alias_byname(name,filter,sizeof(filter));
   alias_init();
-  _nss_ldap_searchbyname(session,alias_base,alias_scope,filter,alias_attrs,
-                         fp,write_alias);
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+                           alias_base,alias_scope,filter,alias_attrs,
+                           _nss_ldap_parse_alias);
+  /* write the response */
+  WRITE_INT32(fp,retv);
+  if (retv==NSLCD_RESULT_SUCCESS)
+  {
+    NSLCD_ALIAS;
+  }
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;

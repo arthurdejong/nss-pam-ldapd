@@ -702,11 +702,7 @@ static int do_search_sync(
 {
   int rc;
   struct timeval tv, *tvp;
-
-  log_log(LOG_DEBUG,"==> do_search_sync");
-
   ldap_set_option(session->ls_conn,LDAP_OPT_SIZELIMIT,(void *)&sizelimit);
-
   if (nslcd_cfg->ldc_timelimit==LDAP_NO_LIMIT)
     tvp=NULL;
   else
@@ -715,11 +711,7 @@ static int do_search_sync(
     tv.tv_usec=0;
     tvp=&tv;
   }
-
   rc=ldap_search_st(session->ls_conn,base,scope,filter,(char **)attrs,0,tvp,res);
-
-  log_log(LOG_DEBUG,"<== do_search_sync");
-
   return rc;
 }
 
@@ -735,9 +727,6 @@ static int do_search_async(
   int rc;
   LDAPControl *serverCtrls[2];
   LDAPControl **pServerCtrls;
-
-  log_log(LOG_DEBUG,"==> do_search_async");
-
   if (nslcd_cfg->ldc_pagesize>0)
   {
     rc=ldap_create_page_control(session->ls_conn,nslcd_cfg->ldc_pagesize,
@@ -749,18 +738,13 @@ static int do_search_async(
   }
   else
     pServerCtrls=NULL;
-
   rc=ldap_search_ext(session->ls_conn,base,scope,filter,(char **) attrs,
                      0,pServerCtrls,NULL,LDAP_NO_LIMIT,sizelimit,msgid);
-
   if (pServerCtrls!=NULL)
   {
     ldap_control_free(serverCtrls[0]);
     serverCtrls[0]=NULL;
   }
-
-  log_log(LOG_DEBUG,"<== do_search_async");
-
   return rc;
 }
 
@@ -777,7 +761,7 @@ static enum nss_status do_with_reconnect(
   int hard=1, start_uri=0, log=0;
   enum nss_status stat=NSS_STATUS_UNAVAIL;
   int maxtries;
-  log_log(LOG_DEBUG,"==> do_with_reconnect (base=\"%s\", scope=%d, filter=\"%s\")",base,scope,filter);
+  log_log(LOG_DEBUG,"do_with_reconnect(base=\"%s\", scope=%d, filter=\"%s\")",base,scope,filter);
   /* get the maximum number of tries */
   maxtries=nslcd_cfg->ldc_reconnect_tries;
   /* keep trying until we have success or a hard failure */
@@ -861,7 +845,6 @@ static enum nss_status do_with_reconnect(
     default:
       break;
   }
-  log_log(LOG_DEBUG,"<== do_with_reconnect");
   return stat;
 }
 
@@ -1235,75 +1218,6 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
   return nss2nslcd(stat);
 }
 
-static int NEW_do_parse_sync(struct ent_context *context,TFILE *fp,NEWparser_t parser)
-{
-  int parseStat=NSLCD_RESULT_NOTFOUND;
-  LDAPMessage *e=NULL;
-  /*
-   * if ec_state.ls_info.ls_index is non-zero, then we don't collect another
-   * entry off the LDAP chain, and instead refeed the existing result to
-   * the parser. Once the parser has finished with it, it will return
-   * NSS_STATUS_NOTFOUND and reset the index to -1, at which point we'll retrieve
-   * another entry.
-   */
-  do
-  {
-    if ((context->ec_state.ls_retry==0) &&
-        ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
-          (context->ec_state.ls_info.ls_index==-1) ))
-    {
-      if (e==NULL)
-        e=ldap_first_entry(context->session->ls_conn,context->ec_res);
-      else
-        e=ldap_next_entry(context->session->ls_conn,e);
-    }
-    if (e==NULL)
-    {
-      /* Could not get a result; bail */
-      parseStat=NSLCD_RESULT_NOTFOUND;
-      break;
-    }
-    /*
-     * We have an entry; now, try to parse it.
-     *
-     * If we do not parse the entry because of a schema
-     * violation, the parser should return NSS_STATUS_NOTFOUND.
-     * We'll keep on trying subsequent entries until we
-     * find one which is parseable, or exhaust avialable
-     * entries, whichever is first.
-     */
-    parseStat=parser(context->session,e,&context->ec_state,fp);
-    /* hold onto the state if we're out of memory XXX */
-    context->ec_state.ls_retry=0;
-  }
-  while (parseStat==NSLCD_RESULT_NOTFOUND);
-  return parseStat;
-}
-
-int _nss_ldap_searchbyname(
-        MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,const char **attrs,TFILE *fp,NEWparser_t parser)
-{
-  int stat;
-  struct ent_context context;
-  int32_t tmpint32;
-
-  _nss_ldap_ent_context_init(&context,session);
-
-  stat=nss2nslcd(_nss_ldap_search_sync(session,base,scope,filter,attrs,1,&context.ec_res));
-  /* write the result code */
-  WRITE_INT32(fp,stat);
-  /* bail on nothing found */
-  if (stat!=NSLCD_RESULT_SUCCESS)
-    return 1;
-  /* call the parser for the result */
-  stat=NEW_do_parse_sync(&context,fp,parser);
-
-  _nss_ldap_ent_context_cleanup(&context);
-
-  return stat;
-}
-
 /*
  * These functions are called from within the parser, where it is assumed
  * to be safe to use the connection and the respective message.
@@ -1394,32 +1308,6 @@ enum nss_status _nss_ldap_assign_attrvals(
 
   ldap_value_free(vals);
   return NSS_STATUS_SUCCESS;
-}
-
-int _nss_ldap_write_attrvals(TFILE *fp,MYLDAP_SESSION *session,LDAPMessage *e,const char *attr)
-{
-  char **vals;
-  int valcount;
-  int i;
-  int32_t tmpint32;
-  /* log */
-  log_log(LOG_DEBUG,"_nss_ldap_write_attrvals(%s)",attr);
-  /* check if we have a connection */
-  if (session->ls_conn==NULL)
-    return NSLCD_RESULT_UNAVAIL;
-  /* get the values and the number of values */
-  vals=ldap_get_values(session->ls_conn,e,attr);
-  valcount=(vals==NULL)?0:ldap_count_values(vals);
-  /* write number of entries */
-  WRITE_INT32(fp,valcount);
-  /* write the entries themselves */
-  for (i=0;i<valcount;i++)
-  {
-    WRITE_STRING(fp,vals[i]);
-  }
-  if (vals!=NULL)
-    ldap_value_free(vals);
-  return NSLCD_RESULT_SUCCESS;
 }
 
 /* Assign a single value to *valptr. */

@@ -34,12 +34,7 @@
 #include <nss.h>
 #include <ldap.h>
 
-#include "common/tio.h"
 #include "cfg.h"
-
-#ifndef LDAP_FILT_MAXSIZ
-#define LDAP_FILT_MAXSIZ 1024
-#endif /* not LDAP_FILT_MAXSIZ */
 
 #ifdef __GNUC__
 #define alignof(ptr) __alignof__(ptr)
@@ -107,10 +102,10 @@ struct ent_context
 /* create a new session, this does not yet connect to the LDAP server */
 MUST_USE MYLDAP_SESSION *myldap_create_session(void);
 
+/* this a a parser function for LDAP results */
 typedef enum nss_status (*parser_t)(MYLDAP_SESSION *session,LDAPMessage *e,
-                                    struct ldap_state *, void *,char *, size_t);
-
-typedef int (*NEWparser_t)(MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state *pvt,TFILE *fp);
+                                    struct ldap_state *state,void *result,
+                                    char *buffer,size_t buflen);
 
 /*
  * _nss_ldap_ent_context_init() is called for each getXXent() call
@@ -120,35 +115,17 @@ void _nss_ldap_ent_context_init(struct ent_context *context,MYLDAP_SESSION *sess
 /*
  * _nss_ldap_ent_context_cleanup() is used to manually free a context
  */
-void _nss_ldap_ent_context_cleanup (struct ent_context *);
+void _nss_ldap_ent_context_cleanup(struct ent_context *context);
 
-/*
- * these are helper functions for ldap-grp.c only on Solaris
- */
-char **_nss_ldap_get_values(MYLDAP_SESSION *session,LDAPMessage *e,const char *attr);
-char *_nss_ldap_get_dn (MYLDAP_SESSION *session,LDAPMessage *e);
-LDAPMessage *_nss_ldap_first_entry(MYLDAP_SESSION *session,LDAPMessage *res);
-char *_nss_ldap_first_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement **berptr);
-char *_nss_ldap_next_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement *ber);
-
-/*
- * Synchronous search cover.
- */
 enum nss_status _nss_ldap_search_sync(
         MYLDAP_SESSION *session,const char *base,int scope,
         const char *filter,const char **attrs,int sizelimit,
         LDAPMessage **res);
 
-int _nss_ldap_searchbyname(
-        MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,const char **attrs,TFILE *fp,NEWparser_t parser);
-
-int _nss_ldap_write_attrvals(TFILE *fp,MYLDAP_SESSION *session,LDAPMessage *e,const char *attr);
-
 /*
  * Emulate X.500 read operation.
  */
-enum nss_status _nss_ldap_read_sync (
+enum nss_status _nss_ldap_read_sync(
         MYLDAP_SESSION *session,
         const char *dn, /* IN */
         const char **attributes,     /* IN */
@@ -178,6 +155,13 @@ int _nss_ldap_getbyname(
         parser_t parser);
 
 /* parsing utility functions */
+
+char **_nss_ldap_get_values(MYLDAP_SESSION *session,LDAPMessage *e,const char *attr);
+char *_nss_ldap_get_dn(MYLDAP_SESSION *session,LDAPMessage *e);
+LDAPMessage *_nss_ldap_first_entry(MYLDAP_SESSION *session,LDAPMessage *res);
+char *_nss_ldap_first_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement **berptr);
+char *_nss_ldap_next_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement *ber);
+
 enum nss_status _nss_ldap_assign_attrvals (
         MYLDAP_SESSION *session,
         LDAPMessage *e,     /* IN */
