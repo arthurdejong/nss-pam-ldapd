@@ -309,55 +309,6 @@ dn2uid_cache_get (const char *dn, char **uid, char **buffer, size_t * buflen)
   return NSS_STATUS_SUCCESS;
 }
 
-/* TODO: move to group.c */
-enum nss_status _nss_ldap_dn2uid(MYLDAP_SESSION *session,const char *dn,char **uid,char **buffer,
-                                 size_t * buflen,int *pIsNestedGroup,
-                                 LDAPMessage **pRes)
-{
-  enum nss_status status;
-
-  log_log(LOG_DEBUG,"==> _nss_ldap_dn2uid");
-
-  *pIsNestedGroup = 0;
-
-  status = dn2uid_cache_get (dn, uid, buffer, buflen);
-  if (status == NSS_STATUS_NOTFOUND)
-    {
-      const char *attrs[4];
-      LDAPMessage *res;
-
-      attrs[0] = attmap_passwd_uid;
-      attrs[1] = attmap_group_uniqueMember;
-      attrs[2] = "objectClass";
-      attrs[3] = NULL;
-
-      if (_nss_ldap_read_sync(session,dn,attrs,&res)==NSS_STATUS_SUCCESS)
-        {
-          LDAPMessage *e=_nss_ldap_first_entry(session,res);
-          if (e != NULL)
-            {
-              /* FIXME: somehow replace this with the dynamic stuff in group.c */
-              if (has_objectclass(session,e,"posixGroup"))
-                {
-                  *pIsNestedGroup = 1;
-                  *pRes = res;
-                  log_log(LOG_DEBUG,"<== _nss_ldap_dn2uid (nested group)");
-                  return NSS_STATUS_SUCCESS;
-                }
-
-              status=_nss_ldap_assign_attrval(session,e,attmap_passwd_uid,uid,buffer,buflen);
-              if (status == NSS_STATUS_SUCCESS)
-                dn2uid_cache_put (dn, *uid);
-            }
-        }
-      ldap_msgfree (res);
-    }
-
-  log_log(LOG_DEBUG,"<== _nss_ldap_dn2uid");
-
-  return status;
-}
-
 static enum nss_status
 do_getrdnvalue (const char *dn,
                 const char *rdntype,

@@ -35,13 +35,6 @@ enum nss_status _nss_ldap_getrdnvalue(
         char **rval,char **buffer,size_t * buflen);
 
 /*
- * map a distinguished name to a login name, or group entry
- */
-enum nss_status _nss_ldap_dn2uid(
-        MYLDAP_SESSION *session,const char *dn,char **uid,char **buffer,
-        size_t *buflen,int *pIsNestedGroup,LDAPMessage **pRes);
-
-/*
  * Escape '*' in a string for use as a filter
  */
 int _nss_ldap_escape_string(const char *src,char *buffer,size_t buflen);
