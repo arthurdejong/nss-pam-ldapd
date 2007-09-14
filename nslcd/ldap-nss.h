@@ -26,13 +26,6 @@
 #ifndef _LDAP_NSS_LDAP_LDAP_NSS_H
 #define _LDAP_NSS_LDAP_LDAP_NSS_H
 
-/* for glibc, use weak aliases to pthreads functions */
-#ifdef HAVE_LIBC_LOCK_H
-#include <libc-lock.h>
-#elif defined(HAVE_BITS_LIBC_LOCK_H)
-#include <bits/libc-lock.h>
-#endif
-
 #include <time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -120,48 +113,7 @@ typedef enum nss_status (*parser_t)(MYLDAP_SESSION *session,LDAPMessage *e,
 typedef int (*NEWparser_t)(MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state *pvt,TFILE *fp);
 
 /*
- * Portable locking macro.
- */
-#if defined(HAVE_THREAD_H)
-#define NSS_LDAP_LOCK(m)                mutex_lock(&m)
-#define NSS_LDAP_UNLOCK(m)              mutex_unlock(&m)
-#define NSS_LDAP_DEFINE_LOCK(m)         static mutex_t m = DEFAULTMUTEX
-#elif defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
-#define NSS_LDAP_LOCK(m)                __libc_lock_lock(m)
-#define NSS_LDAP_UNLOCK(m)              __libc_lock_unlock(m)
-#define NSS_LDAP_DEFINE_LOCK(m)         static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER
-#elif defined(HAVE_PTHREAD_H)
-#define NSS_LDAP_LOCK(m)               pthread_mutex_lock(&m)
-#define NSS_LDAP_UNLOCK(m)             pthread_mutex_unlock(&m)
-#define NSS_LDAP_DEFINE_LOCK(m)                static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER
-#else
-#define NSS_LDAP_LOCK(m)
-#define NSS_LDAP_UNLOCK(m)
-#define NSS_LDAP_DEFINE_LOCK(m)
-#endif
-
-/*
- * Acquire global nss_ldap lock and blocks SIGPIPE.
- * Generally this should only be done within ldap-nss.c.
- */
-void _nss_ldap_enter(void);
-
-/*
- * Release global nss_ldap lock and blocks SIGPIPE.
- * Generally this should only be done within ldap-nss.c.
- */
-void _nss_ldap_leave(void);
-
-/*
- * _nss_ldap_ent_context_init_locked() has the same behaviour
- * as above, except it assumes that the caller has acquired
- * the lock
- */
-void _nss_ldap_ent_context_init_locked(struct ent_context *context,MYLDAP_SESSION *session);
-
-/*
  * _nss_ldap_ent_context_init() is called for each getXXent() call
- * This will acquire the global mutex.
  */
 void _nss_ldap_ent_context_init(struct ent_context *context,MYLDAP_SESSION *session);
 
@@ -180,9 +132,9 @@ char *_nss_ldap_first_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerEl
 char *_nss_ldap_next_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement *ber);
 
 /*
- * Synchronous search cover (caller acquires lock).
+ * Synchronous search cover.
  */
-enum nss_status _nss_ldap_search_sync_locked(
+enum nss_status _nss_ldap_search_sync(
         MYLDAP_SESSION *session,const char *base,int scope,
         const char *filter,const char **attrs,int sizelimit,
         LDAPMessage **res);
@@ -203,24 +155,7 @@ enum nss_status _nss_ldap_read_sync (
         LDAPMessage ** res /* OUT */ );
 
 /*
- * extended enumeration routine; uses asynchronous API.
- * Caller must have acquired the global mutex
- */
-enum nss_status _nss_ldap_getent_locked (
-        struct ent_context *context,   /* IN/OUT */
-        void *result,   /* IN/OUT */
-        char *buffer,   /* IN */
-        size_t buflen,  /* IN */
-        int *errnop,    /* OUT */
-        const char *base, /* IN */
-        int scope,        /* IN */
-        const char *filter, /* IN */
-        const char **attrs, /* IN */
-        parser_t parser /* IN */ );
-
-/*
  * common enumeration routine; uses asynchronous API.
- * Acquires the global mutex
  */
 int _nss_ldap_getent(
         struct ent_context *context, /* IN/OUT */

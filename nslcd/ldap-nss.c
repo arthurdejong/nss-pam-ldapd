@@ -83,9 +83,6 @@
 #include "attmap.h"
 #include "compat/ldap.h"
 
-/* TODO: move the lock inside the session */
-NSS_LDAP_DEFINE_LOCK(global_lock);
-
 /*
  * LS_INIT only used for enumeration contexts
  */
@@ -294,22 +291,6 @@ static int do_rebind(LDAP *ld,LDAP_CONST char UNUSED(*url),
 }
 
 /*
- * Acquires global lock.
- */
-void _nss_ldap_enter(void)
-{
-  NSS_LDAP_LOCK(global_lock);
-}
-
-/*
- * Releases global mutex.
- */
-void _nss_ldap_leave(void)
-{
-  NSS_LDAP_UNLOCK(global_lock);
-}
-
-/*
  * Disable keepalive on a LDAP connection's socket.
  */
 static void do_set_sockopts(MYLDAP_SESSION *session)
@@ -331,9 +312,6 @@ static void do_set_sockopts(MYLDAP_SESSION *session)
 /*
  * Close the global session, sending an unbind.
  * Closes connection to the LDAP server.
- * This assumes that we have exclusive access to session->ls_conn,
- * either by some other function having acquired a lock, or by
- * using a thread safe libldap.
  */
 static void do_close(MYLDAP_SESSION *session)
 {
@@ -481,9 +459,6 @@ static int do_ssl_options(void)
  * Opens connection to an LDAP server - should only be called from search
  * API. Other API that just needs access to configuration and schema should
  * call _nss_ldap_init().
- *
- * As with do_close(), this assumes ownership of sess.
- * It also wants to own __config: is there a potential deadlock here? XXX
  */
 static enum nss_status do_open(MYLDAP_SESSION *session)
 {
@@ -671,28 +646,13 @@ static enum nss_status do_result_async(struct ent_context *context,int all)
 }
 
 /*
- * This function initializes an enumeration context, acquiring
- * the global mutex.
+ * This function initializes an enumeration context.
  *
  * It could be done from the default constructor, under Solaris, but we
  * delay it until the setXXent() function is called.
  */
 void _nss_ldap_ent_context_init(struct ent_context *context,MYLDAP_SESSION *session)
 {
-  _nss_ldap_enter();
-  _nss_ldap_ent_context_init_locked(context,session);
-  _nss_ldap_leave();
-}
-
-/*
- * This function initializes an enumeration context.
- *
- * It could be done from the default constructor, under Solaris, but we
- * delay it until the setXXent() function is called.
- */
-void _nss_ldap_ent_context_init_locked(struct ent_context *context,MYLDAP_SESSION *session)
-{
-  /* TODO: find out why we need to have aquired a lock for this */
   context->session=session;
   context->ec_cookie=NULL;
   context->ec_res=NULL;
@@ -701,8 +661,7 @@ void _nss_ldap_ent_context_init_locked(struct ent_context *context,MYLDAP_SESSIO
 }
 
 /*
- * Clears a given context; we require the caller
- * to acquire the lock.
+ * Clears a given context.
  */
 void _nss_ldap_ent_context_cleanup(struct ent_context *context)
 {
@@ -734,7 +693,7 @@ void _nss_ldap_ent_context_cleanup(struct ent_context *context)
 /*
  * Synchronous search function. Don't call this directly;
  * always wrap calls to this with do_with_reconnect(), or,
- * better still, use _nss_ldap_search_locked().
+ * better still, use _nss_ldap_search().
  */
 static int do_search_sync(
         MYLDAP_SESSION *session,const char *base,int scope,
@@ -1121,15 +1080,14 @@ char *_nss_ldap_next_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerEle
 
 /*
  * The generic synchronous lookup cover function.
- * Assumes caller holds lock.
  */
-enum nss_status _nss_ldap_search_sync_locked(
+enum nss_status _nss_ldap_search_sync(
         MYLDAP_SESSION *session,const char *base,int scope,
         const char *filter,const char **attrs,int sizelimit,
         LDAPMessage **res)
 {
   enum nss_status stat;
-  log_log(LOG_DEBUG,"_nss_ldap_search_sync_locked(base=\"%s\", filter=\"%s\")",base,filter);
+  log_log(LOG_DEBUG,"_nss_ldap_search_sync(base=\"%s\", filter=\"%s\")",base,filter);
   /* initilize session */
   if ((stat=_nss_ldap_init(session))!=NSS_STATUS_SUCCESS)
   {
@@ -1143,14 +1101,13 @@ enum nss_status _nss_ldap_search_sync_locked(
 
 /*
  * The generic lookup cover function (asynchronous).
- * Assumes caller holds lock.
  */
-static enum nss_status _nss_ldap_search_async_locked(
+static enum nss_status _nss_ldap_search_async(
         MYLDAP_SESSION *session,const char *base,int scope,
         const char *filter,const char **attrs,int sizelimit,int *msgid)
 {
   enum nss_status stat;
-  log_log(LOG_DEBUG,"_nss_ldap_search_async_locked(base=\"%s\", filter=\"%s\")",base,filter);
+  log_log(LOG_DEBUG,"_nss_ldap_search_async(base=\"%s\", filter=\"%s\")",base,filter);
   *msgid=-1;
   /* initialize session */
   if ((stat=_nss_ldap_init(session))!=NSS_STATUS_SUCCESS)
@@ -1200,50 +1157,26 @@ static int nss2nslcd(enum nss_status code)
 }
 
 /*
- * General entry point for enumeration routines.
+ * Internal entry point for enumeration routines.
  * This should really use the asynchronous LDAP search API to avoid
  * pulling down all the entries at once, particularly if the
  * enumeration is not completed.
- * Locks mutex.
  */
-int _nss_ldap_getent(struct ent_context *context,
-                     void *result,char *buffer,size_t buflen,int *errnop,
-                     const char *base,int scope,const char *filter,
-                     const char **attrs,parser_t parser)
-{
-  int status;
-  /*
-   * we need to lock here as the context may not be thread-specific
-   * data (under glibc, for example). Maybe we should make the lock part
-   * of the context.
-   */
-  _nss_ldap_enter();
-  status=nss2nslcd(_nss_ldap_getent_locked(context,result,
-                             buffer,buflen,errnop,
-                             base,scope,filter,attrs,parser));
-  _nss_ldap_leave();
-  return status;
-}
-
-/*
- * Internal entry point for enumeration routines.
- * Caller holds global mutex
- */
-enum nss_status _nss_ldap_getent_locked(
+int _nss_ldap_getent(
         struct ent_context *context,void *result,char *buffer,size_t buflen,int *errnop,
         const char *base,int scope,const char *filter,const char **attrs,
         parser_t parser)
 {
   enum nss_status stat=NSS_STATUS_SUCCESS;
   int msgid;
-  log_log(LOG_DEBUG,"_nss_ldap_getent_locked(base=\"%s\", filter=\"%s\")",base,filter);
+  log_log(LOG_DEBUG,"_nss_ldap_getent(base=\"%s\", filter=\"%s\")",base,filter);
   /* if context->ec_msgid < 0, then we haven't searched yet */
   if (context->ec_msgid<0)
   {
     /* set up a new search */
-    stat=_nss_ldap_search_async_locked(context->session,base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid);
+    stat=_nss_ldap_search_async(context->session,base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid);
     if (stat != NSS_STATUS_SUCCESS)
-      return stat;
+      return nss2nslcd(stat);
     context->ec_msgid=msgid;
   }
 
@@ -1257,18 +1190,17 @@ enum nss_status _nss_ldap_getent_locked(
     {
       stat=do_next_page(context->session,base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid,context->ec_cookie);
       if (stat!=NSS_STATUS_SUCCESS)
-        return stat;
+        return nss2nslcd(stat);
       context->ec_msgid=msgid;
       /* retry parsing a result */
       stat=do_parse_async(context,result,buffer,buflen,errnop,parser);
     }
   }
-  return stat;
+  return nss2nslcd(stat);
 }
 
 /*
  * General match function.
- * Locks mutex.
  */
 int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size_t buflen,int *errnop,
                         const char *base,int scope,const char *filter,const char **attrs,
@@ -1278,18 +1210,13 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
   enum nss_status stat = NSS_STATUS_NOTFOUND;
   struct ent_context context;
 
-  _nss_ldap_enter();
-
   log_log(LOG_DEBUG,"_nss_ldap_getbyname(base=\"%s\", filter=\"%s\"",base,filter);
 
-  _nss_ldap_ent_context_init_locked(&context,session);
+  _nss_ldap_ent_context_init(&context,session);
 
-  stat=_nss_ldap_search_sync_locked(context.session,base,scope,filter,attrs,1,&context.ec_res);
+  stat=_nss_ldap_search_sync(context.session,base,scope,filter,attrs,1,&context.ec_res);
   if (stat!=NSS_STATUS_SUCCESS)
-  {
-    _nss_ldap_leave();
     return nss2nslcd(stat);
-  }
 
   /*
    * we pass this along for the benefit of the services parser,
@@ -1304,9 +1231,6 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
   stat=do_parse_sync(&context,result,buffer,buflen,errnop,parser);
 
   _nss_ldap_ent_context_cleanup(&context);
-
-  /* moved unlock here to avoid race condition bug #49 */
-  _nss_ldap_leave();
 
   return nss2nslcd(stat);
 }
@@ -1364,26 +1288,18 @@ int _nss_ldap_searchbyname(
   struct ent_context context;
   int32_t tmpint32;
 
-  _nss_ldap_enter();
+  _nss_ldap_ent_context_init(&context,session);
 
-  _nss_ldap_ent_context_init_locked(&context,session);
-
-  stat=nss2nslcd(_nss_ldap_search_sync_locked(session,base,scope,filter,attrs,1,&context.ec_res));
+  stat=nss2nslcd(_nss_ldap_search_sync(session,base,scope,filter,attrs,1,&context.ec_res));
   /* write the result code */
   WRITE_INT32(fp,stat);
   /* bail on nothing found */
   if (stat!=NSLCD_RESULT_SUCCESS)
-  {
-    _nss_ldap_leave();
     return 1;
-  }
   /* call the parser for the result */
   stat=NEW_do_parse_sync(&context,fp,parser);
 
   _nss_ldap_ent_context_cleanup(&context);
-
-  /* moved unlock here to avoid race condition bug #49 */
-  _nss_ldap_leave();
 
   return stat;
 }

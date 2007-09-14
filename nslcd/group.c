@@ -181,7 +181,7 @@ static char *user2dn(MYLDAP_SESSION *session,const char *user)
   char filter[1024];
   LDAPMessage *res, *e;
   mkfilter_passwd_byname(user,filter,sizeof(filter));
-  if (_nss_ldap_search_sync_locked(session,group_base,group_scope,filter,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
+  if (_nss_ldap_search_sync(session,group_base,group_scope,filter,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
   {
     e=_nss_ldap_first_entry(session,res);
     if (e!=NULL)
@@ -997,9 +997,9 @@ static enum nss_status ng_chase(MYLDAP_SESSION *session,const char *dn,ldap_init
   gidnumber_attrs[0]=attmap_group_gidNumber;
   gidnumber_attrs[1]=NULL;
 
-  _nss_ldap_ent_context_init_locked(&context,session);
+  _nss_ldap_ent_context_init(&context,session);
   mkfilter_getgroupsbydn(dn,filter,sizeof(filter));
-  stat=_nss_ldap_getent_locked(&context,lia,NULL,0,&erange,
+  stat=_nss_ldap_getent(&context,lia,NULL,0,&erange,
                            group_base,group_scope,filter,gidnumber_attrs,
                            do_parse_initgroups_nested);
 
@@ -1097,13 +1097,11 @@ static int group_bymember(MYLDAP_SESSION *session,const char *user,
   log_log(LOG_DEBUG,"==> group_bymember (user=%s)",user);
   lia.depth = 0;
   lia.known_groups=NULL;
-  _nss_ldap_enter();
   /* initialize schema */
   stat=_nss_ldap_init(session);
   if (stat!=NSS_STATUS_SUCCESS)
   {
     log_log(LOG_DEBUG,"<== group_bymember (init failed)");
-    _nss_ldap_leave();
     return -1;
   }
   mkfilter_group_bymember(session,user,filter,sizeof(filter));
@@ -1115,7 +1113,6 @@ static int group_bymember(MYLDAP_SESSION *session,const char *user,
                            do_parse_initgroups_nested);
   _nss_ldap_namelist_destroy(&lia.known_groups);
   _nss_ldap_ent_context_cleanup(&context);
-  _nss_ldap_leave();
   if ((stat!=NSS_STATUS_SUCCESS)&&(stat!=NSS_STATUS_NOTFOUND))
   {
     log_log(LOG_DEBUG,"<== group_bymember (not found)");
@@ -1298,9 +1295,7 @@ int nslcd_group_all(TFILE *fp,MYLDAP_SESSION *session)
   WRITE_INT32(fp,retv);
   WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_enter();
   _nss_ldap_ent_context_cleanup(&context);
-  _nss_ldap_leave();
   /* we're done */
   return 0;
 }

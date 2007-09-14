@@ -49,6 +49,13 @@
 #include <pthread.h>
 #endif
 
+/* for glibc, use weak aliases to pthreads functions */
+#ifdef HAVE_LIBC_LOCK_H
+#include <libc-lock.h>
+#elif defined(HAVE_BITS_LIBC_LOCK_H)
+#include <bits/libc-lock.h>
+#endif
+
 #include "ldap-nss.h"
 #include "util.h"
 #include "common.h"
@@ -56,6 +63,26 @@
 #include "cfg.h"
 #include "attmap.h"
 
+/*
+ * Portable locking macro.
+ */
+#if defined(HAVE_THREAD_H)
+#define NSS_LDAP_LOCK(m)                mutex_lock(&m)
+#define NSS_LDAP_UNLOCK(m)              mutex_unlock(&m)
+#define NSS_LDAP_DEFINE_LOCK(m)         static mutex_t m = DEFAULTMUTEX
+#elif defined(HAVE_LIBC_LOCK_H) || defined(HAVE_BITS_LIBC_LOCK_H)
+#define NSS_LDAP_LOCK(m)                __libc_lock_lock(m)
+#define NSS_LDAP_UNLOCK(m)              __libc_lock_unlock(m)
+#define NSS_LDAP_DEFINE_LOCK(m)         static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER
+#elif defined(HAVE_PTHREAD_H)
+#define NSS_LDAP_LOCK(m)               pthread_mutex_lock(&m)
+#define NSS_LDAP_UNLOCK(m)             pthread_mutex_unlock(&m)
+#define NSS_LDAP_DEFINE_LOCK(m)                static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER
+#else
+#define NSS_LDAP_LOCK(m)
+#define NSS_LDAP_UNLOCK(m)
+#define NSS_LDAP_DEFINE_LOCK(m)
+#endif
 
 static void *__cache = NULL;
 
