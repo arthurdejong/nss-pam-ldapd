@@ -191,7 +191,6 @@ int nslcd_rpc_byname(TFILE *fp,MYLDAP_SESSION *session)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
     write_rpcent(fp,&result);
-  WRITE_FLUSH(fp);
   /* we're done */
   return 0;
 }
@@ -223,7 +222,6 @@ int nslcd_rpc_bynumber(TFILE *fp,MYLDAP_SESSION *session)
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
     write_rpcent(fp,&result);
-  WRITE_FLUSH(fp);
   /* we're done */
   return 0;
 }
@@ -257,7 +255,6 @@ int nslcd_rpc_all(TFILE *fp,MYLDAP_SESSION *session)
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
-  WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_ent_context_cleanup(&context);
   /* we're done */

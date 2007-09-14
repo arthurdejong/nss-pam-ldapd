@@ -201,7 +201,6 @@ int nslcd_ether_byname(TFILE *fp,MYLDAP_SESSION *session)
   if (retv==NSLCD_RESULT_SUCCESS)
     if (write_ether(fp,&result))
       return -1;
-  WRITE_FLUSH(fp);
   /* we're done */
   return 0;
 }
@@ -234,7 +233,6 @@ int nslcd_ether_byether(TFILE *fp,MYLDAP_SESSION *session)
   if (retv==NSLCD_RESULT_SUCCESS)
     if (write_ether(fp,&result))
       return -1;
-  WRITE_FLUSH(fp);
   /* we're done */
   return 0;
 }
@@ -268,7 +266,6 @@ int nslcd_ether_all(TFILE *fp,MYLDAP_SESSION *session)
   }
   /* write the final result code */
   WRITE_INT32(fp,retv);
-  WRITE_FLUSH(fp);
   /* FIXME: if a previous call returns what happens to the context? */
   _nss_ldap_ent_context_cleanup(&context);
   /* we're done */
