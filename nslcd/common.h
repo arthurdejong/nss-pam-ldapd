@@ -85,7 +85,6 @@ int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
 
-int mkfilter_passwd_byname(const char *name,
-                           char *buffer,size_t buflen);
+char *passwd_username2dn(MYLDAP_SESSION *session,const char *username);
 
 #endif /* not _SERVER_COMMON_H */

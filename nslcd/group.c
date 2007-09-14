@@ -173,25 +173,6 @@ static int mkfilter_getgroupsbydn(const char *dn,
                     attmap_group_uniqueMember,dn);
 }
 
-static char *user2dn(MYLDAP_SESSION *session,const char *user)
-{
-  char *userdn=NULL;
-  static const char *no_attrs[]={ NULL };
-  char filter[1024];
-  LDAPMessage *res, *e;
-  mkfilter_passwd_byname(user,filter,sizeof(filter));
-  if (_nss_ldap_search_sync(session,group_base,group_scope,filter,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
-  {
-    e=_nss_ldap_first_entry(session,res);
-    if (e!=NULL)
-    {
-      userdn=_nss_ldap_get_dn(session,e);
-    }
-    ldap_msgfree(res);
-  }
-  return userdn;
-}
-
 static int mkfilter_group_bymember(MYLDAP_SESSION *session,const char *user,
                                    char *buffer,size_t buflen)
 {
@@ -203,7 +184,7 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,const char *user,
     return -1;
   /* lookup the user's DN */
   if (_nss_ldap_test_config_flag(NSS_LDAP_FLAGS_RFC2307BIS))
-    userdn=user2dn(session,user);
+    userdn=passwd_username2dn(session,user);
   if (userdn==NULL)
     return mysnprintf(buffer,buflen,
                       "(&%s(%s=%s))",

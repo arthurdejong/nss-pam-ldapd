@@ -87,7 +87,7 @@ static const char *passwd_attrs[10];
 
 /* create a search filter for searching a passwd entry
    by name, return -1 on errors */
-int mkfilter_passwd_byname(const char *name,
+static int mkfilter_passwd_byname(const char *name,
                                   char *buffer,size_t buflen)
 {
   char buf2[1024];
@@ -239,6 +239,23 @@ static enum nss_status _nss_ldap_parse_pw(
     (void) _nss_ldap_assign_emptystring (&pw->pw_shell, &buffer, &buflen);
 
   return NSS_STATUS_SUCCESS;
+}
+
+char *passwd_username2dn(MYLDAP_SESSION *session,const char *username)
+{
+  char *userdn=NULL;
+  static const char *no_attrs[]={ NULL };
+  char filter[1024];
+  LDAPMessage *res,*e;
+  mkfilter_passwd_byname(username,filter,sizeof(filter));
+  if (_nss_ldap_search_sync(session,passwd_base,passwd_scope,filter,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
+  {
+    e=_nss_ldap_first_entry(session,res);
+    if (e!=NULL)
+      userdn=_nss_ldap_get_dn(session,e);
+    ldap_msgfree(res);
+  }
+  return userdn;
 }
 
 /* the caller should take care of opening and closing the stream */
