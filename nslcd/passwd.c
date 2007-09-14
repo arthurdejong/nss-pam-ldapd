@@ -149,16 +149,16 @@ static inline enum nss_status _nss_ldap_assign_emptystring(
   return NSS_STATUS_SUCCESS;
 }
 
-static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
-                    struct ldap_state * pvt,
-                    void *result, char *buffer, size_t buflen)
+static enum nss_status _nss_ldap_parse_pw(
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
+        void *result,char *buffer,size_t buflen)
 {
   /* FIXME: fix following problem:
             if the entry has multiple uid fields we may end up
             sending the wrong uid, we should return the requested
             uid instead, otherwise write an entry for each uid
             (maybe also for uidNumber) */
-  struct passwd *pw = (struct passwd *) result;
+  struct passwd *pw=(struct passwd *)result;
   char *uid, *gid;
   enum nss_status stat;
   char tmpbuf[ sizeof( uid_t ) * 8 / 3 + 2 ];
@@ -167,7 +167,7 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
 
   tmpbuf[ sizeof(tmpbuf) - 1 ] = '\0';
 
-  if (has_objectclass(e,"shadowAccount"))
+  if (has_objectclass(session,e,"shadowAccount"))
     {
       /* don't include password for shadowAccount */
       if (buflen < 3)
@@ -180,58 +180,43 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
     }
   else
     {
-      stat =
-        _nss_ldap_assign_userpassword (e, attmap_passwd_userPassword,
-                                       &pw->pw_passwd, &buffer, &buflen);
+      stat=_nss_ldap_assign_userpassword(session,e,attmap_passwd_userPassword,&pw->pw_passwd,&buffer,&buflen);
       if (stat != NSS_STATUS_SUCCESS)
         return stat;
     }
 
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_passwd_uid, &pw->pw_name, &buffer,
-                              &buflen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_uid,&pw->pw_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   tmp = tmpbuf;
   tmplen = sizeof (tmpbuf) - 1;
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_passwd_uidNumber, &uid, &tmp, &tmplen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_uidNumber,&uid,&tmp,&tmplen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
   pw->pw_uid = (*uid == '\0') ? UID_NOBODY : (uid_t) atol (uid);
 
   tmp = tmpbuf;
   tmplen = sizeof (tmpbuf) - 1;
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_passwd_gidNumber, &gid, &tmp,
-                              &tmplen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_gidNumber,&gid,&tmp,&tmplen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
   pw->pw_gid = (*gid == '\0') ? GID_NOBODY : (gid_t) atol (gid);
 
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_passwd_gecos, &pw->pw_gecos, &buffer,
-                              &buflen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_gecos,&pw->pw_gecos,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     {
       pw->pw_gecos = NULL;
-      stat =
-        _nss_ldap_assign_attrval (e, attmap_passwd_cn, &pw->pw_gecos,
-                                  &buffer, &buflen);
+      stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_cn,&pw->pw_gecos,&buffer,&buflen);
       if (stat != NSS_STATUS_SUCCESS)
         return stat;
     }
 
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_passwd_homeDirectory, &pw->pw_dir, &buffer,
-                              &buflen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_homeDirectory,&pw->pw_dir,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     (void) _nss_ldap_assign_emptystring (&pw->pw_dir, &buffer, &buflen);
 
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_passwd_loginShell, &pw->pw_shell, &buffer,
-                              &buflen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_loginShell,&pw->pw_shell,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     (void) _nss_ldap_assign_emptystring (&pw->pw_shell, &buffer, &buflen);
 
@@ -250,7 +235,7 @@ static enum nss_status _nss_ldap_parse_pw (LDAPMessage * e,
 #define PASSWD_SHELL  result.pw_shell
 
 /* the caller should take care of opening and closing the stream */
-int nslcd_passwd_byname(TFILE *fp)
+int nslcd_passwd_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   char name[256];
@@ -267,7 +252,7 @@ int nslcd_passwd_byname(TFILE *fp)
   /* do the LDAP request */
   mkfilter_passwd_byname(name,filter,sizeof(filter));
   passwd_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            passwd_base,passwd_scope,filter,passwd_attrs,
                            _nss_ldap_parse_pw);
   /* write the response */
@@ -283,7 +268,7 @@ int nslcd_passwd_byname(TFILE *fp)
   return 0;
 }
 
-int nslcd_passwd_byuid(TFILE *fp)
+int nslcd_passwd_byuid(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   uid_t uid;
@@ -300,7 +285,7 @@ int nslcd_passwd_byuid(TFILE *fp)
   /* do the LDAP request */
   mkfilter_passwd_byuid(uid,filter,sizeof(filter));
   passwd_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            passwd_base,passwd_scope,filter,passwd_attrs,
                            _nss_ldap_parse_pw);
   /* write the response */
@@ -316,7 +301,7 @@ int nslcd_passwd_byuid(TFILE *fp)
   return 0;
 }
 
-int nslcd_passwd_all(TFILE *fp)
+int nslcd_passwd_all(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   struct ent_context context;
@@ -331,7 +316,7 @@ int nslcd_passwd_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PASSWD_ALL);
   /* initialize context */
-  _nss_ldap_ent_context_init(&context);
+  _nss_ldap_ent_context_init(&context,session);
   /* go over results */
   passwd_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,

@@ -150,11 +150,9 @@ static int write_hostent(TFILE *fp,struct hostent *result)
   return 0;
 }
 
-static enum nss_status
-_nss_ldap_parse_host (LDAPMessage * e,
-                      struct ldap_state * pvt,
-                      void *result, char *buffer, size_t buflen,
-                      int af)
+static enum nss_status _nss_ldap_parse_host(
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
+        void *result,char *buffer,size_t buflen)
 {
   /* this code needs reviewing. XXX */
   struct hostent *host = (struct hostent *) result;
@@ -174,19 +172,19 @@ _nss_ldap_parse_host (LDAPMessage * e,
 
   *addressbuf = *buffer = '\0';
 
-  stat = _nss_ldap_assign_attrval (e, attmap_host_cn, &host->h_name,
+  stat = _nss_ldap_assign_attrval (session,e, attmap_host_cn, &host->h_name,
                                    &buffer, &buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
-    _nss_ldap_assign_attrvals (e, attmap_host_cn, host->h_name,
+    _nss_ldap_assign_attrvals (session,e, attmap_host_cn, host->h_name,
                                &host->h_aliases, &buffer, &buflen, NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   stat =
-    _nss_ldap_assign_attrvals (e, attmap_host_ipHostNumber, NULL, &addresses,
+    _nss_ldap_assign_attrvals (session,e, attmap_host_ipHostNumber, NULL, &addresses,
                                &p_addressbuf, &addresslen, &addresscount);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
@@ -293,27 +291,7 @@ _nss_ldap_parse_host (LDAPMessage * e,
   return NSS_STATUS_SUCCESS;
 }
 
-static enum nss_status
-_nss_ldap_parse_hostv4 (LDAPMessage * e,
-                        struct ldap_state * pvt,
-                        void *result, char *buffer, size_t buflen)
-{
-  return _nss_ldap_parse_host (e, pvt, result, buffer, buflen,
-                               AF_INET);
-}
-
-#ifdef INET6
-static enum nss_status
-_nss_ldap_parse_hostv6 (LDAPMessage * e,
-                        struct ldap_state * pvt,
-                        void *result, char *buffer, size_t buflen)
-{
-  return _nss_ldap_parse_host (e, pvt, result, buffer, buflen,
-                               AF_INET6);
-}
-#endif
-
-int nslcd_host_byname(TFILE *fp)
+int nslcd_host_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   char name[256];
@@ -332,13 +310,9 @@ int nslcd_host_byname(TFILE *fp)
   /* do the LDAP request */
   mkfilter_host_byname(name,filter,sizeof(filter));
   host_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            host_base,host_scope,filter,host_attrs,
-#ifdef INET6
-                           (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4);
-#else
-                           _nss_ldap_parse_hostv4);
-#endif
+                           _nss_ldap_parse_host);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -348,7 +322,7 @@ int nslcd_host_byname(TFILE *fp)
   return 0;
 }
 
-int nslcd_host_byaddr(TFILE *fp)
+int nslcd_host_byaddr(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   int af;
@@ -389,13 +363,9 @@ int nslcd_host_byaddr(TFILE *fp)
   /* do the LDAP request */
   mkfilter_host_byaddr(name,filter,sizeof(filter));
   host_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            host_base,host_scope,filter,host_attrs,
-#ifdef INET6
-                           (af == AF_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4);
-#else
-                           _nss_ldap_parse_hostv4);
-#endif
+                           _nss_ldap_parse_host);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -405,7 +375,7 @@ int nslcd_host_byaddr(TFILE *fp)
   return 0;
 }
 
-int nslcd_host_all(TFILE *fp)
+int nslcd_host_all(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   struct ent_context context;
@@ -420,17 +390,12 @@ int nslcd_host_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_HOST_ALL);
   /* initialize context */
-  _nss_ldap_ent_context_init(&context);
+  _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   host_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
                                 host_base,host_scope,host_filter,host_attrs,
-#ifdef INET6
-                             (_res.options&RES_USE_INET6)?_nss_ldap_parse_hostv6:_nss_ldap_parse_hostv4
-#else
-                             _nss_ldap_parse_hostv4
-#endif
-                             ))==NSLCD_RESULT_SUCCESS)
+                               _nss_ldap_parse_host))==NSLCD_RESULT_SUCCESS)
   {
     /* write the result */
     WRITE_INT32(fp,retv);

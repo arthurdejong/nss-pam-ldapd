@@ -116,32 +116,26 @@ static void protocol_init(void)
   protocol_attrs[2]=NULL;
 }
 
-static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
-                       struct ldap_state UNUSED(*pvt),
-                       void *result, char *buffer, size_t buflen)
+static enum nss_status _nss_ldap_parse_proto(
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
+        void *result,char *buffer,size_t buflen)
 {
 
   struct protoent *proto = (struct protoent *) result;
   char *number;
   enum nss_status stat;
 
-  stat =
-    _nss_ldap_getrdnvalue (e, attmap_protocol_cn, &proto->p_name,
-                           &buffer, &buflen);
+  stat=_nss_ldap_getrdnvalue(session,e,attmap_protocol_cn,&proto->p_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_protocol_ipProtocolNumber, &number, &buffer,
-                              &buflen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_protocol_ipProtocolNumber,&number,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   proto->p_proto = atoi (number);
 
-  stat =
-    _nss_ldap_assign_attrvals (e, attmap_protocol_cn, proto->p_name,
-                               &proto->p_aliases, &buffer, &buflen, NULL);
+  stat=_nss_ldap_assign_attrvals (session,e,attmap_protocol_cn,proto->p_name,&proto->p_aliases,&buffer,&buflen,NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
@@ -156,7 +150,7 @@ static enum nss_status _nss_ldap_parse_proto (LDAPMessage *e,
 #define PROTOCOL_ALIASES      result.p_aliases
 #define PROTOCOL_NUMBER       result.p_proto
 
-int nslcd_protocol_byname(TFILE *fp)
+int nslcd_protocol_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   char name[256];
@@ -176,7 +170,7 @@ int nslcd_protocol_byname(TFILE *fp)
   /* do the LDAP request */
   mkfilter_protocol_byname(name,filter,sizeof(filter));
   protocol_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            protocol_base,protocol_scope,filter,protocol_attrs,
                            _nss_ldap_parse_proto);
   /* write the response */
@@ -190,7 +184,7 @@ int nslcd_protocol_byname(TFILE *fp)
   return 0;
 }
 
-int nslcd_protocol_bynumber(TFILE *fp)
+int nslcd_protocol_bynumber(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   int protocol;
@@ -210,7 +204,7 @@ int nslcd_protocol_bynumber(TFILE *fp)
   /* do the LDAP request */
   mkfilter_protocol_bynumber(protocol,filter,sizeof(filter));
   protocol_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            protocol_base,protocol_scope,filter,protocol_attrs,
                            _nss_ldap_parse_proto);
   /* write the response */
@@ -224,7 +218,7 @@ int nslcd_protocol_bynumber(TFILE *fp)
   return 0;
 }
 
-int nslcd_protocol_all(TFILE *fp)
+int nslcd_protocol_all(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   struct ent_context context;
@@ -239,7 +233,7 @@ int nslcd_protocol_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_ALL);
   /* initialize context */
-  _nss_ldap_ent_context_init(&context);
+  _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   protocol_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,

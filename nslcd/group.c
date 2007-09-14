@@ -107,9 +107,9 @@ ldap_initgroups_args_t;
 #define GID_NOBODY     UID_NOBODY
 #endif
 
-static enum nss_status ng_chase(const char *dn,ldap_initgroups_args_t *lia);
+static enum nss_status ng_chase(MYLDAP_SESSION *session,const char *dn,ldap_initgroups_args_t *lia);
 
-static enum nss_status ng_chase_backlink(const char **membersOf,ldap_initgroups_args_t *lia);
+static enum nss_status ng_chase_backlink(MYLDAP_SESSION *session,const char **membersOf,ldap_initgroups_args_t *lia);
 
 /* ( nisSchema.2.2 NAME 'posixGroup' SUP top STRUCTURAL
  *   DESC 'Abstraction of a group of accounts'
@@ -173,7 +173,7 @@ static int mkfilter_getgroupsbydn(const char *dn,
                     attmap_group_uniqueMember,dn);
 }
 
-static char *user2dn(const char *user)
+static char *user2dn(MYLDAP_SESSION *session,const char *user)
 {
   /* TODO: move this to passwd.c once we are sure we would be able to lock there */
   char *userdn=NULL;
@@ -181,20 +181,20 @@ static char *user2dn(const char *user)
   char filter[1024];
   LDAPMessage *res, *e;
   mkfilter_passwd_byname(user,filter,sizeof(filter));
-  if (_nss_ldap_search_sync_locked(group_base,group_scope,filter,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
+  if (_nss_ldap_search_sync_locked(session,group_base,group_scope,filter,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
   {
-    e=_nss_ldap_first_entry(res);
+    e=_nss_ldap_first_entry(session,res);
     if (e!=NULL)
     {
-      userdn=_nss_ldap_get_dn(e);
+      userdn=_nss_ldap_get_dn(session,e);
     }
     ldap_msgfree(res);
   }
   return userdn;
 }
 
-static int mkfilter_group_bymember(const char *user,
-                                            char *buffer,size_t buflen)
+static int mkfilter_group_bymember(MYLDAP_SESSION *session,const char *user,
+                                   char *buffer,size_t buflen)
 {
   char buf2[1024];
   char *userdn;
@@ -204,7 +204,7 @@ static int mkfilter_group_bymember(const char *user,
     return -1;
   /* lookup the user's DN */
   if (_nss_ldap_test_config_flag(NSS_LDAP_FLAGS_RFC2307BIS))
-    userdn=user2dn(user);
+    userdn=user2dn(session,user);
   if (userdn==NULL)
     return mysnprintf(buffer,buflen,
                       "(&%s(%s=%s))",
@@ -409,10 +409,9 @@ do_parse_range (const char *attributeType,
   return stat;
 }
 
-static enum nss_status
-do_get_range_values (LDAPMessage * e,
-                     const char *attributeType,
-                     int *start, int *end, char ***pGroupMembers)
+static enum nss_status do_get_range_values(
+        MYLDAP_SESSION *session,LDAPMessage *e,const char *attributeType,
+        int *start,int *end,char ***pGroupMembers)
 {
   enum nss_status stat = NSS_STATUS_NOTFOUND;
   BerElement *ber = NULL;
@@ -420,13 +419,13 @@ do_get_range_values (LDAPMessage * e,
 
   *pGroupMembers = NULL;
 
-  for (attribute = _nss_ldap_first_attribute (e, &ber);
-       attribute != NULL; attribute = _nss_ldap_next_attribute (e, ber))
+  for (attribute = _nss_ldap_first_attribute(session,e,&ber);
+       attribute != NULL; attribute = _nss_ldap_next_attribute(session,e,ber))
     {
       stat = do_parse_range (attributeType, attribute, start, end);
       if (stat == NSS_STATUS_SUCCESS)
         {
-          *pGroupMembers = _nss_ldap_get_values (e, attribute);
+          *pGroupMembers = _nss_ldap_get_values(session,e,attribute);
           if (*pGroupMembers == NULL)
             {
               stat = NSS_STATUS_NOTFOUND;
@@ -495,15 +494,11 @@ do_construct_range_attribute (const char *attribute,
 /*
  * Expand group members, including nested groups
  */
-static enum nss_status
-do_parse_group_members (LDAPMessage * e,
-                        char ***pGroupMembers,
-                        size_t * pGroupMembersCount,
-                        size_t * pGroupMembersBufferSize,
-                        int *pGroupMembersBufferIsMalloced,
-                        char **buffer, size_t * buflen,
-                        int *depth,
-                        struct name_list **pKnownGroups) /* traversed groups */
+static enum nss_status do_parse_group_members(
+        MYLDAP_SESSION *session,LDAPMessage *e,char ***pGroupMembers,
+        size_t *pGroupMembersCount,size_t *pGroupMembersBufferSize,
+        int *pGroupMembersBufferIsMalloced,char **buffer,size_t *buflen,
+        int *depth,struct name_list **pKnownGroups) /* traversed groups */
 {
   enum nss_status stat = NSS_STATUS_SUCCESS;
   char **dnValues = NULL;
@@ -512,7 +507,7 @@ do_parse_group_members (LDAPMessage * e,
   size_t groupMembersCount, i;
   char **valiter;
   const char *uniquemember_attrs[2];
-  LDAPMessage *res = NULL;
+  LDAPMessage *res=NULL;
   int start, end = 0;
   char *groupdn = NULL;
 
@@ -527,7 +522,7 @@ do_parse_group_members (LDAPMessage * e,
   i = *pGroupMembersCount;      /* index of next member */
   groupMembers = *pGroupMembers;
 
-  groupdn = _nss_ldap_get_dn (e);
+  groupdn=_nss_ldap_get_dn(session,e);
   if (groupdn == NULL)
     {
       stat = NSS_STATUS_NOTFOUND;
@@ -557,13 +552,13 @@ do_parse_group_members (LDAPMessage * e,
 
       groupMembersCount = 0;    /* number of members in this group */
 
-      (void) do_get_range_values (e, attmap_group_uniqueMember, &start, &end, &dnValues);
+      (void)do_get_range_values(session,e,attmap_group_uniqueMember,&start,&end,&dnValues);
       if (dnValues != NULL)
         {
           groupMembersCount += ldap_count_values (dnValues);
         }
 
-      uidValues = _nss_ldap_get_values (e, attmap_group_memberUid);
+      uidValues=_nss_ldap_get_values(session,e,attmap_group_memberUid);
       if (uidValues != NULL)
         {
           groupMembersCount += ldap_count_values (uidValues);
@@ -626,9 +621,7 @@ do_parse_group_members (LDAPMessage * e,
                   *uid = '\0';
                 }
 
-              parseStat = _nss_ldap_dn2uid (*valiter, &groupMembers[i],
-                                            buffer, buflen, &isNestedGroup,
-                                            &res);
+              parseStat=_nss_ldap_dn2uid(session,*valiter,&groupMembers[i],buffer,buflen,&isNestedGroup,&res);
               if (parseStat == NSS_STATUS_SUCCESS)
                 {
                   if (isNestedGroup == 0)
@@ -640,7 +633,7 @@ do_parse_group_members (LDAPMessage * e,
 
                   (*depth)++;
                   parseStat =
-                    do_parse_group_members (_nss_ldap_first_entry (res),
+                    do_parse_group_members (session,_nss_ldap_first_entry(session,res),
                                             &groupMembers, &i,
                                             pGroupMembersBufferSize,
                                             pGroupMembersBufferIsMalloced,
@@ -710,11 +703,11 @@ do_parse_group_members (LDAPMessage * e,
                   res = NULL;
                 }
 
-              stat=_nss_ldap_read_sync(groupdn,uniquemember_attrs,&res);
+              stat=_nss_ldap_read_sync(session,groupdn,uniquemember_attrs,&res);
               if (stat != NSS_STATUS_SUCCESS)
                 goto out;
 
-              e = _nss_ldap_first_entry (res);
+              e=_nss_ldap_first_entry(session,res);
             }
         }
     }
@@ -771,10 +764,9 @@ do_fix_group_members_buffer (char **mallocedGroupMembers,
   return NSS_STATUS_SUCCESS;
 }
 
-static enum nss_status
-_nss_ldap_parse_gr (LDAPMessage * e,
-                    struct ldap_state * pvt,
-                    void *result, char *buffer, size_t buflen)
+static enum nss_status _nss_ldap_parse_gr(
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
+        void *result,char *buffer,size_t buflen)
 {
   struct group *gr = (struct group *) result;
   char *gid;
@@ -787,9 +779,7 @@ _nss_ldap_parse_gr (LDAPMessage * e,
   int depth;
   struct name_list *knownGroups = NULL;
 
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_group_gidNumber, &gid, &buffer,
-                              &buflen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_group_gidNumber,&gid,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
@@ -798,15 +788,11 @@ _nss_ldap_parse_gr (LDAPMessage * e,
                                                               (char **) NULL,
                                                               10);
 
-  stat =
-    _nss_ldap_getrdnvalue (e, attmap_group_cn, &gr->gr_name, &buffer,
-                           &buflen);
+  stat=_nss_ldap_getrdnvalue(session,e,attmap_group_cn,&gr->gr_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat =
-    _nss_ldap_assign_userpassword (e, attmap_group_userPassword,
-                                   &gr->gr_passwd, &buffer, &buflen);
+  stat=_nss_ldap_assign_userpassword(session,e,attmap_group_userPassword,&gr->gr_passwd,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
@@ -818,10 +804,9 @@ _nss_ldap_parse_gr (LDAPMessage * e,
       groupMembersBufferIsMalloced = 0;
       depth = 0;
 
-      stat = do_parse_group_members (e, &groupMembers, &groupMembersCount,
-                                     &groupMembersBufferSize,
-                                     &groupMembersBufferIsMalloced, &buffer,
-                                     &buflen, &depth, &knownGroups);
+      stat=do_parse_group_members(session,e,&groupMembers,&groupMembersCount,
+                                  &groupMembersBufferSize,&groupMembersBufferIsMalloced,
+                                  &buffer,&buflen,&depth,&knownGroups);
       if (stat != NSS_STATUS_SUCCESS)
         {
           if (groupMembersBufferIsMalloced)
@@ -839,9 +824,8 @@ _nss_ldap_parse_gr (LDAPMessage * e,
     }
   else
     {
-      stat =
-        _nss_ldap_assign_attrvals (e, attmap_group_memberUid, NULL,
-                                   &gr->gr_mem, &buffer, &buflen, NULL);
+      stat=_nss_ldap_assign_attrvals(session,e,attmap_group_memberUid,NULL,
+                                     &gr->gr_mem,&buffer,&buflen,NULL);
     }
 
   return stat;
@@ -852,17 +836,15 @@ _nss_ldap_parse_gr (LDAPMessage * e,
  * of any groups to which this group belongs (RFC2307bis nested
  * group expansion is done by do_parse_initgroups_nested()).
  */
-static enum nss_status
-do_parse_initgroups (LDAPMessage * e,
-                     struct ldap_state * pvt, void *result,
-                     char *buffer, size_t buflen)
+static enum nss_status do_parse_initgroups(
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
+        void *result,char UNUSED(*buffer),size_t UNUSED(buflen))
 {
   char **values;
   ssize_t i;
   gid_t gid;
-  ldap_initgroups_args_t *lia = (ldap_initgroups_args_t *) result;
-
-  values = _nss_ldap_get_values (e, attmap_group_gidNumber);
+  ldap_initgroups_args_t *lia=(ldap_initgroups_args_t *)result;
+  values=_nss_ldap_get_values(session,e,attmap_group_gidNumber);
   if (values == NULL)
     {
       /* invalid group; skip it */
@@ -941,17 +923,16 @@ do_parse_initgroups (LDAPMessage * e,
   return NSS_STATUS_NOTFOUND;
 }
 
-static enum nss_status
-do_parse_initgroups_nested (LDAPMessage * e,
-                            struct ldap_state * pvt, void *result,
-                            char *buffer, size_t buflen)
+static enum nss_status do_parse_initgroups_nested(
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state *state,
+        void *result,char *buffer,size_t buflen)
 {
   enum nss_status status;
   ldap_initgroups_args_t *lia = (ldap_initgroups_args_t *) result;
   char **values;
   char *groupdn;
 
-  status = do_parse_initgroups (e, pvt, result, buffer, buflen);
+  status=do_parse_initgroups(session,e,state,result,buffer,buflen);
   if (status != NSS_STATUS_NOTFOUND)
     return status;
 
@@ -964,11 +945,11 @@ do_parse_initgroups_nested (LDAPMessage * e,
        * Now add the GIDs of any groups of which this group is
        * a member.
        */
-      values = _nss_ldap_get_values (e, attmap_group_memberOf);
+      values=_nss_ldap_get_values(session,e,attmap_group_memberOf);
       if (values != NULL)
         {
           lia->depth++;
-          status=ng_chase_backlink((const char **)values,lia);
+          status=ng_chase_backlink(session,(const char **)values,lia);
           lia->depth--;
 
           ldap_value_free (values);
@@ -981,12 +962,12 @@ do_parse_initgroups_nested (LDAPMessage * e,
       /*
        * Now add the GIDs of any groups which refer to this group
        */
-      groupdn = _nss_ldap_get_dn (e);
+      groupdn=_nss_ldap_get_dn(session,e);
       if (groupdn != NULL)
         {
           /* Note: there was a problem here with stat in the orriginal code */
           lia->depth++;
-          status=ng_chase(groupdn,lia);
+          status=ng_chase(session,groupdn,lia);
           lia->depth--;
 #ifdef HAVE_LDAP_MEMFREE
           ldap_memfree(groupdn);
@@ -999,7 +980,7 @@ do_parse_initgroups_nested (LDAPMessage * e,
   return status;
 }
 
-static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
+static enum nss_status ng_chase(MYLDAP_SESSION *session,const char *dn,ldap_initgroups_args_t *lia)
 {
   char filter[1024];
   enum nss_status stat;
@@ -1016,7 +997,7 @@ static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
   gidnumber_attrs[0]=attmap_group_gidNumber;
   gidnumber_attrs[1]=NULL;
 
-  _nss_ldap_ent_context_init_locked(&context);
+  _nss_ldap_ent_context_init_locked(&context,session);
   mkfilter_getgroupsbydn(dn,filter,sizeof(filter));
   stat=_nss_ldap_getent_locked(&context,lia,NULL,0,&erange,
                            group_base,group_scope,filter,gidnumber_attrs,
@@ -1030,7 +1011,7 @@ static enum nss_status ng_chase(const char *dn, ldap_initgroups_args_t * lia)
   return stat;
 }
 
-static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroups_args_t * lia)
+static enum nss_status ng_chase_backlink(MYLDAP_SESSION *session,const char **membersOf,ldap_initgroups_args_t *lia)
 {
   enum nss_status stat;
   struct ent_context context;
@@ -1076,7 +1057,7 @@ static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroup
   gidnumber_attrs[1] = attmap_group_memberOf;
   gidnumber_attrs[2] = NULL;
 
-  _nss_ldap_ent_context_init_locked(&context);
+  _nss_ldap_ent_context_init_locked(&context,session);
   /* FIXME: the search filter is wrong here, we should figure out what it's
             supposed to be */
   stat=_nss_ldap_getent_locked(&context,lia,NULL,0,&erange,
@@ -1105,8 +1086,7 @@ static enum nss_status ng_chase_backlink(const char ** membersOf, ldap_initgroup
   return stat;
 }
 
-static int group_bymember(const char *user, long int *start,
-                          long int *size, long int limit,
+static int group_bymember(MYLDAP_SESSION *session,const char *user,
                           int *errnop)
 {
   ldap_initgroups_args_t lia;
@@ -1119,17 +1099,17 @@ static int group_bymember(const char *user, long int *start,
   lia.known_groups=NULL;
   _nss_ldap_enter();
   /* initialize schema */
-  stat=_nss_ldap_init();
+  stat=_nss_ldap_init(session);
   if (stat!=NSS_STATUS_SUCCESS)
   {
     log_log(LOG_DEBUG,"<== group_bymember (init failed)");
     _nss_ldap_leave();
     return -1;
   }
-  mkfilter_group_bymember(user,filter,sizeof(filter));
+  mkfilter_group_bymember(session,user,filter,sizeof(filter));
   gidnumber_attrs[0] = attmap_group_gidNumber;
   gidnumber_attrs[1] = NULL;
-  _nss_ldap_ent_context_init_locked(&context);
+  _nss_ldap_ent_context_init_locked(&context,session);
   stat=_nss_ldap_getent_locked(&context,(void *)&lia,NULL,0,errnop,
                            group_base,group_scope,filter,gidnumber_attrs,
                            do_parse_initgroups_nested);
@@ -1154,7 +1134,7 @@ static int group_bymember(const char *user, long int *start,
 #define GROUP_GID             result.gr_gid
 #define GROUP_MEMBERS         result.gr_mem
 
-int nslcd_group_byname(TFILE *fp)
+int nslcd_group_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   char name[256];
@@ -1177,7 +1157,7 @@ int nslcd_group_byname(TFILE *fp)
   /* do the LDAP request */
   mkfilter_group_byname(name,filter,sizeof(filter));
   group_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            group_base,group_scope,filter,group_attrs,
                            _nss_ldap_parse_gr);
   /* write the response */
@@ -1193,7 +1173,7 @@ int nslcd_group_byname(TFILE *fp)
   return 0;
 }
 
-int nslcd_group_bygid(TFILE *fp)
+int nslcd_group_bygid(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   gid_t gid;
@@ -1216,7 +1196,7 @@ int nslcd_group_bygid(TFILE *fp)
   /* do the LDAP request */
   mkfilter_group_bygid(gid,filter,sizeof(filter));
   group_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            group_base,group_scope,filter,
                            group_attrs,_nss_ldap_parse_gr);
   /* write the response */
@@ -1232,7 +1212,7 @@ int nslcd_group_bygid(TFILE *fp)
   return 0;
 }
 
-int nslcd_group_bymember(TFILE *fp)
+int nslcd_group_bymember(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   char name[256];
@@ -1288,7 +1268,7 @@ int nslcd_group_bymember(TFILE *fp)
   return 0;
 }
 
-int nslcd_group_all(TFILE *fp)
+int nslcd_group_all(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   struct ent_context context;
@@ -1303,7 +1283,7 @@ int nslcd_group_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_GROUP_ALL);
   /* initialize context */
-  _nss_ldap_ent_context_init(&context);
+  _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   group_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,

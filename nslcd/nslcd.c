@@ -118,7 +118,7 @@ static void parse_cmdline(int argc,char *argv[])
     switch (optc)
     {
     case 'd': /* -d, --debug        don't fork and print debugging to stderr */
-      nslcd_debugging=1;
+      nslcd_debugging++;
       log_setdefaultloglevel(LOG_DEBUG);
       break;
     case 'h': /*     --help         display this help and exit */
@@ -334,7 +334,7 @@ static int read_header(TFILE *fp,int32_t *action)
 
 /* read a request message, returns <0 in case of errors,
    this function closes the socket */
-static void handleconnection(int sock)
+static void handleconnection(int sock,MYLDAP_SESSION *session)
 {
   TFILE *fp;
   socklen_t alen;
@@ -384,36 +384,36 @@ static void handleconnection(int sock)
   /* handle request */
   switch (action)
   {
-    case NSLCD_ACTION_ALIAS_BYNAME:     (void)nslcd_alias_byname(fp); break;
-    case NSLCD_ACTION_ALIAS_ALL:        (void)nslcd_alias_all(fp); break;
-    case NSLCD_ACTION_ETHER_BYNAME:     (void)nslcd_ether_byname(fp); break;
-    case NSLCD_ACTION_ETHER_BYETHER:    (void)nslcd_ether_byether(fp); break;
-    case NSLCD_ACTION_ETHER_ALL:        (void)nslcd_ether_all(fp); break;
-    case NSLCD_ACTION_GROUP_BYNAME:     (void)nslcd_group_byname(fp); break;
-    case NSLCD_ACTION_GROUP_BYGID:      (void)nslcd_group_bygid(fp); break;
-    case NSLCD_ACTION_GROUP_BYMEMBER:   (void)nslcd_group_bymember(fp); break;
-    case NSLCD_ACTION_GROUP_ALL:        (void)nslcd_group_all(fp); break;
-    case NSLCD_ACTION_HOST_BYNAME:      (void)nslcd_host_byname(fp); break;
-    case NSLCD_ACTION_HOST_BYADDR:      (void)nslcd_host_byaddr(fp); break;
-    case NSLCD_ACTION_HOST_ALL:         (void)nslcd_host_all(fp); break;
-    case NSLCD_ACTION_NETGROUP_BYNAME:  (void)nslcd_netgroup_byname(fp); break;
-    case NSLCD_ACTION_NETWORK_BYNAME:   (void)nslcd_network_byname(fp); break;
-    case NSLCD_ACTION_NETWORK_BYADDR:   (void)nslcd_network_byaddr(fp); break;
-    case NSLCD_ACTION_NETWORK_ALL:      (void)nslcd_network_all(fp); break;
-    case NSLCD_ACTION_PASSWD_BYNAME:    (void)nslcd_passwd_byname(fp); break;
-    case NSLCD_ACTION_PASSWD_BYUID:     (void)nslcd_passwd_byuid(fp); break;
-    case NSLCD_ACTION_PASSWD_ALL:       (void)nslcd_passwd_all(fp); break;
-    case NSLCD_ACTION_PROTOCOL_BYNAME:  (void)nslcd_protocol_byname(fp); break;
-    case NSLCD_ACTION_PROTOCOL_BYNUMBER:(void)nslcd_protocol_bynumber(fp); break;
-    case NSLCD_ACTION_PROTOCOL_ALL:     (void)nslcd_protocol_all(fp); break;
-    case NSLCD_ACTION_RPC_BYNAME:       (void)nslcd_rpc_byname(fp); break;
-    case NSLCD_ACTION_RPC_BYNUMBER:     (void)nslcd_rpc_bynumber(fp); break;
-    case NSLCD_ACTION_RPC_ALL:          (void)nslcd_rpc_all(fp); break;
-    case NSLCD_ACTION_SERVICE_BYNAME:   (void)nslcd_service_byname(fp); break;
-    case NSLCD_ACTION_SERVICE_BYNUMBER: (void)nslcd_service_bynumber(fp); break;
-    case NSLCD_ACTION_SERVICE_ALL:      (void)nslcd_service_all(fp); break;
-    case NSLCD_ACTION_SHADOW_BYNAME:    (void)nslcd_shadow_byname(fp); break;
-    case NSLCD_ACTION_SHADOW_ALL:       (void)nslcd_shadow_all(fp); break;
+    case NSLCD_ACTION_ALIAS_BYNAME:     (void)nslcd_alias_byname(fp,session); break;
+    case NSLCD_ACTION_ALIAS_ALL:        (void)nslcd_alias_all(fp,session); break;
+    case NSLCD_ACTION_ETHER_BYNAME:     (void)nslcd_ether_byname(fp,session); break;
+    case NSLCD_ACTION_ETHER_BYETHER:    (void)nslcd_ether_byether(fp,session); break;
+    case NSLCD_ACTION_ETHER_ALL:        (void)nslcd_ether_all(fp,session); break;
+    case NSLCD_ACTION_GROUP_BYNAME:     (void)nslcd_group_byname(fp,session); break;
+    case NSLCD_ACTION_GROUP_BYGID:      (void)nslcd_group_bygid(fp,session); break;
+    case NSLCD_ACTION_GROUP_BYMEMBER:   (void)nslcd_group_bymember(fp,session); break;
+    case NSLCD_ACTION_GROUP_ALL:        (void)nslcd_group_all(fp,session); break;
+    case NSLCD_ACTION_HOST_BYNAME:      (void)nslcd_host_byname(fp,session); break;
+    case NSLCD_ACTION_HOST_BYADDR:      (void)nslcd_host_byaddr(fp,session); break;
+    case NSLCD_ACTION_HOST_ALL:         (void)nslcd_host_all(fp,session); break;
+    case NSLCD_ACTION_NETGROUP_BYNAME:  (void)nslcd_netgroup_byname(fp,session); break;
+    case NSLCD_ACTION_NETWORK_BYNAME:   (void)nslcd_network_byname(fp,session); break;
+    case NSLCD_ACTION_NETWORK_BYADDR:   (void)nslcd_network_byaddr(fp,session); break;
+    case NSLCD_ACTION_NETWORK_ALL:      (void)nslcd_network_all(fp,session); break;
+    case NSLCD_ACTION_PASSWD_BYNAME:    (void)nslcd_passwd_byname(fp,session); break;
+    case NSLCD_ACTION_PASSWD_BYUID:     (void)nslcd_passwd_byuid(fp,session); break;
+    case NSLCD_ACTION_PASSWD_ALL:       (void)nslcd_passwd_all(fp,session); break;
+    case NSLCD_ACTION_PROTOCOL_BYNAME:  (void)nslcd_protocol_byname(fp,session); break;
+    case NSLCD_ACTION_PROTOCOL_BYNUMBER:(void)nslcd_protocol_bynumber(fp,session); break;
+    case NSLCD_ACTION_PROTOCOL_ALL:     (void)nslcd_protocol_all(fp,session); break;
+    case NSLCD_ACTION_RPC_BYNAME:       (void)nslcd_rpc_byname(fp,session); break;
+    case NSLCD_ACTION_RPC_BYNUMBER:     (void)nslcd_rpc_bynumber(fp,session); break;
+    case NSLCD_ACTION_RPC_ALL:          (void)nslcd_rpc_all(fp,session); break;
+    case NSLCD_ACTION_SERVICE_BYNAME:   (void)nslcd_service_byname(fp,session); break;
+    case NSLCD_ACTION_SERVICE_BYNUMBER: (void)nslcd_service_bynumber(fp,session); break;
+    case NSLCD_ACTION_SERVICE_ALL:      (void)nslcd_service_all(fp,session); break;
+    case NSLCD_ACTION_SHADOW_BYNAME:    (void)nslcd_shadow_byname(fp,session); break;
+    case NSLCD_ACTION_SHADOW_ALL:       (void)nslcd_shadow_all(fp,session); break;
     default:
       log_log(LOG_WARNING,"invalid request id: %d",(int)action);
       break;
@@ -425,7 +425,7 @@ static void handleconnection(int sock)
 }
 
 /* accept a connection on the socket */
-static void acceptconnection(void)
+static void acceptconnection(MYLDAP_SESSION *session)
 {
   int csock;
   int j;
@@ -463,7 +463,7 @@ static void acceptconnection(void)
   }
 
   /* handle the connection */
-  handleconnection(csock);
+  handleconnection(csock,session);
 }
 
 
@@ -509,15 +509,17 @@ static void install_sighandler(int signum,RETSIGTYPE (*handler) (int))
 
 static void *worker(void UNUSED(*arg))
 {
+  MYLDAP_SESSION *session;
+  /* create a new LDAP session */
+  session=myldap_create_session();
   /* start waiting for incoming connections */
   while (nslcd_exitsignal==0)
   {
     /* wait for a new connection */
-    acceptconnection();
+    acceptconnection(session);
   }
   return NULL;
 }
-
 
 /* the main program... */
 int main(int argc,char *argv[])
@@ -543,7 +545,7 @@ int main(int argc,char *argv[])
 
   /* read configuration file */
   cfg_init();
-  nslcd_cfg->ldc_debug=nslcd_debugging;
+  nslcd_cfg->ldc_debug=nslcd_debugging?nslcd_debugging-1:0;
 
   /* daemonize */
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
@@ -556,7 +558,7 @@ int main(int argc,char *argv[])
   (void)umask((mode_t)0022);
 
   /* intilialize logging */
-  if (!nslcd_cfg->ldc_debug)
+  if (!nslcd_debugging)
     log_startlogging();
   log_log(LOG_INFO,"version %s starting",VERSION);
 

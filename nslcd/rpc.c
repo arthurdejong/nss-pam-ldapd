@@ -138,39 +138,33 @@ static int write_rpcent(TFILE *fp,struct rpcent *result)
   return 0;
 }
 
-static enum nss_status _nss_ldap_parse_rpc (LDAPMessage * e,
-                     struct ldap_state UNUSED(*pvt),
-                     void *result, char *buffer, size_t buflen)
+static enum nss_status _nss_ldap_parse_rpc(
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
+        void *result,char *buffer,size_t buflen)
 {
 
   struct rpcent *rpc = (struct rpcent *) result;
   char *number;
   enum nss_status stat;
 
-  stat =
-    _nss_ldap_getrdnvalue (e, attmap_rpc_cn, &rpc->r_name, &buffer,
-                           &buflen);
+  stat=_nss_ldap_getrdnvalue(session,e,attmap_rpc_cn,&rpc->r_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_rpc_oncRpcNumber, &number, &buffer,
-                              &buflen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_rpc_oncRpcNumber,&number,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   rpc->r_number = atol (number);
 
-  stat =
-    _nss_ldap_assign_attrvals (e, attmap_rpc_cn, rpc->r_name,
-                               &rpc->r_aliases, &buffer, &buflen, NULL);
+  stat=_nss_ldap_assign_attrvals(session,e,attmap_rpc_cn,rpc->r_name,&rpc->r_aliases,&buffer,&buflen,NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_rpc_byname(TFILE *fp)
+int nslcd_rpc_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   char name[256];
@@ -190,7 +184,7 @@ int nslcd_rpc_byname(TFILE *fp)
   /* do the LDAP request */
   mkfilter_rpc_byname(name,filter,sizeof(filter));
   rpc_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            rpc_base,rpc_scope,filter,rpc_attrs,
                            _nss_ldap_parse_rpc);
   /* write the response */
@@ -202,7 +196,7 @@ int nslcd_rpc_byname(TFILE *fp)
   return 0;
 }
 
-int nslcd_rpc_bynumber(TFILE *fp)
+int nslcd_rpc_bynumber(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   int number;
@@ -222,7 +216,7 @@ int nslcd_rpc_bynumber(TFILE *fp)
   /* do the LDAP request */
   mkfilter_rpc_bynumber(number,filter,sizeof(filter));
   rpc_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            rpc_base,rpc_scope,filter,rpc_attrs,
                            _nss_ldap_parse_rpc);
   /* write the response */
@@ -234,7 +228,7 @@ int nslcd_rpc_bynumber(TFILE *fp)
   return 0;
 }
 
-int nslcd_rpc_all(TFILE *fp)
+int nslcd_rpc_all(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   struct ent_context context;
@@ -249,7 +243,7 @@ int nslcd_rpc_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_RPC_ALL);
   /* initialize context */
-  _nss_ldap_ent_context_init(&context);
+  _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   rpc_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,

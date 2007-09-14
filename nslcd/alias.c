@@ -64,6 +64,7 @@ const char *alias_filter = "(objectClass=nisMailAlias)";
 /* the attributes to request with searches */
 const char *attmap_alias_cn               = "cn";
 const char *attmap_alias_rfc822MailMember = "rfc822MailMember";
+
 /* the attribute list to request with searches */
 static const char *alias_attrs[3];
 
@@ -98,7 +99,7 @@ static void alias_init(void)
 }
 
 static enum nss_status _nss_ldap_parse_alias(
-        LDAPMessage *e,struct ldap_state UNUSED(*pvt),void *result,
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),void *result,
         char *buffer,size_t buflen)
 {
   /* FIXME: fix following problem:
@@ -108,21 +109,21 @@ static enum nss_status _nss_ldap_parse_alias(
   struct aliasent *alias=(struct aliasent *)result;
   enum nss_status stat;
 
-  stat=_nss_ldap_getrdnvalue(e,attmap_alias_cn,&alias->alias_name,&buffer,&buflen);
+  stat=_nss_ldap_getrdnvalue(session,e,attmap_alias_cn,&alias->alias_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat=_nss_ldap_assign_attrvals(e,attmap_alias_rfc822MailMember,NULL,&alias->alias_members,&buffer,&buflen,&alias->alias_members_len);
+  stat=_nss_ldap_assign_attrvals(session,e,attmap_alias_rfc822MailMember,NULL,&alias->alias_members,&buffer,&buflen,&alias->alias_members_len);
 
   return stat;
 }
 
-static int write_alias(LDAPMessage *e,struct ldap_state UNUSED(*pvt),TFILE *fp)
+static int write_alias(MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),TFILE *fp)
 {
   int stat;
-  if ((stat=_nss_ldap_write_rndvalue(fp,e,attmap_alias_cn))!=NSLCD_RESULT_SUCCESS)
+  if ((stat=_nss_ldap_write_rndvalue(fp,session,e,attmap_alias_cn))!=NSLCD_RESULT_SUCCESS)
     return stat;
-  if ((stat=_nss_ldap_write_attrvals(fp,e,attmap_alias_rfc822MailMember))!=NSLCD_RESULT_SUCCESS)
+  if ((stat=_nss_ldap_write_attrvals(fp,session,e,attmap_alias_rfc822MailMember))!=NSLCD_RESULT_SUCCESS)
     return stat;
   return NSLCD_RESULT_SUCCESS;
 }
@@ -134,7 +135,7 @@ static int write_alias(LDAPMessage *e,struct ldap_state UNUSED(*pvt),TFILE *fp)
 #define ALIAS_NAME            result.alias_name
 #define ALIAS_RCPTS           result.alias_members
 
-int nslcd_alias_byname(TFILE *fp)
+int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   char name[256];
@@ -149,14 +150,14 @@ int nslcd_alias_byname(TFILE *fp)
   /* do the LDAP request */
   mkfilter_alias_byname(name,filter,sizeof(filter));
   alias_init();
-  _nss_ldap_searchbyname(alias_base,alias_scope,filter,alias_attrs,
+  _nss_ldap_searchbyname(session,alias_base,alias_scope,filter,alias_attrs,
                          fp,write_alias);
   WRITE_FLUSH(fp);
   /* we're done */
   return 0;
 }
 
-int nslcd_alias_all(TFILE *fp)
+int nslcd_alias_all(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32,tmp2int32;
   struct ent_context context;
@@ -171,7 +172,7 @@ int nslcd_alias_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_ALIAS_ALL);
   /* initialize context */
-  _nss_ldap_ent_context_init(&context);
+  _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   alias_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,

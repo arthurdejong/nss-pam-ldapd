@@ -140,42 +140,36 @@ static int write_netent(TFILE *fp,struct netent *result)
   WRITE_INT32(fp,result->n_net);
   return 0;
 }
-static enum nss_status
-_nss_ldap_parse_net (LDAPMessage * e,
-                     struct ldap_state * pvt,
-                     void *result, char *buffer, size_t buflen)
+static enum nss_status _nss_ldap_parse_net(
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
+        void *result,char *buffer,size_t buflen)
 {
 
   char *tmp;
-  struct netent *network = (struct netent *) result;
+  struct netent *network=(struct netent *)result;
   enum nss_status stat;
 
   /* IPv6 support ? XXX */
   network->n_addrtype = AF_INET;
 
-  stat = _nss_ldap_assign_attrval (e, attmap_network_cn, &network->n_name,
-                                   &buffer, &buflen);
-  if (stat != NSS_STATUS_SUCCESS)
+  stat=_nss_ldap_assign_attrval(session,e,attmap_network_cn,&network->n_name,&buffer,&buflen);
+  if (stat!=NSS_STATUS_SUCCESS)
     return stat;
 
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_network_ipNetworkNumber, &tmp, &buffer,
-                              &buflen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_network_ipNetworkNumber,&tmp,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   network->n_net = inet_network (tmp);
 
-  stat =
-    _nss_ldap_assign_attrvals (e, attmap_network_cn, network->n_name,
-                               &network->n_aliases, &buffer, &buflen, NULL);
+  stat=_nss_ldap_assign_attrvals(session,e,attmap_network_cn,network->n_name,&network->n_aliases,&buffer,&buflen,NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_network_byname(TFILE *fp)
+int nslcd_network_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   char name[256];
@@ -194,7 +188,7 @@ int nslcd_network_byname(TFILE *fp)
   /* do the LDAP request */
   mkfilter_network_byname(name,filter,sizeof(filter));
   network_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            network_base,network_scope,filter,network_attrs,
                            _nss_ldap_parse_net);
   /* write the response */
@@ -206,7 +200,7 @@ int nslcd_network_byname(TFILE *fp)
   return 0;
 }
 
-int nslcd_network_byaddr(TFILE *fp)
+int nslcd_network_byaddr(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   int af;
@@ -251,7 +245,7 @@ int nslcd_network_byaddr(TFILE *fp)
     /* do the request */
     mkfilter_network_byaddr(name,filter,sizeof(filter));
     network_init();
-    retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+    retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                              network_base,network_scope,filter,network_attrs,
                              _nss_ldap_parse_net);
     /* if no entry was found, retry with .0 stripped from the end */
@@ -273,7 +267,7 @@ int nslcd_network_byaddr(TFILE *fp)
   return 0;
 }
 
-int nslcd_network_all(TFILE *fp)
+int nslcd_network_all(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   struct ent_context context;
@@ -288,7 +282,7 @@ int nslcd_network_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_NETWORK_ALL);
   /* initialize context */
-  _nss_ldap_ent_context_init(&context);
+  _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   network_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,

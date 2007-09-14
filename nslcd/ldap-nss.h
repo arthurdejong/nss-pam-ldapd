@@ -68,6 +68,9 @@
 #define bytesleft(ptr, blen, TYPE) \
   ( (blen < alignof(TYPE)) ? 0 : (blen - alignof(TYPE) + 1))
 
+/* This a a generic session handle. */
+typedef struct ldap_session MYLDAP_SESSION;
+
 /*
  * the state consists of the desired attribute value or an offset into a list of
  * values for the desired attribute. This is necessary to support services.
@@ -101,16 +104,20 @@ struct ldap_state
  */
 struct ent_context
 {
+  MYLDAP_SESSION *session;           /* the connection to the LDAP server */
   struct ldap_state ec_state;        /* eg. for services */
   int ec_msgid;                      /* message ID */
   LDAPMessage *ec_res;               /* result chain */
   struct berval *ec_cookie;          /* cookie for paged searches */
 };
 
-typedef enum nss_status (*parser_t) (LDAPMessage *, struct ldap_state *, void *,
-                                char *, size_t);
+/* create a new session, this does not yet connect to the LDAP server */
+MUST_USE MYLDAP_SESSION *myldap_create_session(void);
 
-typedef int (*NEWparser_t)(LDAPMessage *e,struct ldap_state *pvt,TFILE *fp);
+typedef enum nss_status (*parser_t)(MYLDAP_SESSION *session,LDAPMessage *e,
+                                    struct ldap_state *, void *,char *, size_t);
+
+typedef int (*NEWparser_t)(MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state *pvt,TFILE *fp);
 
 /*
  * Portable locking macro.
@@ -137,26 +144,26 @@ typedef int (*NEWparser_t)(LDAPMessage *e,struct ldap_state *pvt,TFILE *fp);
  * Acquire global nss_ldap lock and blocks SIGPIPE.
  * Generally this should only be done within ldap-nss.c.
  */
-void _nss_ldap_enter (void);
+void _nss_ldap_enter(void);
 
 /*
  * Release global nss_ldap lock and blocks SIGPIPE.
  * Generally this should only be done within ldap-nss.c.
  */
-void _nss_ldap_leave (void);
+void _nss_ldap_leave(void);
 
 /*
  * _nss_ldap_ent_context_init_locked() has the same behaviour
  * as above, except it assumes that the caller has acquired
  * the lock
  */
-void _nss_ldap_ent_context_init_locked(struct ent_context *context);
+void _nss_ldap_ent_context_init_locked(struct ent_context *context,MYLDAP_SESSION *session);
 
 /*
  * _nss_ldap_ent_context_init() is called for each getXXent() call
  * This will acquire the global mutex.
  */
-void _nss_ldap_ent_context_init(struct ent_context *context);
+void _nss_ldap_ent_context_init(struct ent_context *context,MYLDAP_SESSION *session);
 
 /*
  * _nss_ldap_ent_context_cleanup() is used to manually free a context
@@ -166,97 +173,106 @@ void _nss_ldap_ent_context_cleanup (struct ent_context *);
 /*
  * these are helper functions for ldap-grp.c only on Solaris
  */
-char **_nss_ldap_get_values (LDAPMessage * e, const char *attr);
-char *_nss_ldap_get_dn (LDAPMessage * e);
-LDAPMessage *_nss_ldap_first_entry (LDAPMessage * res);
-char *_nss_ldap_first_attribute (LDAPMessage * entry, BerElement **berptr);
-char *_nss_ldap_next_attribute (LDAPMessage * entry, BerElement *ber);
+char **_nss_ldap_get_values(MYLDAP_SESSION *session,LDAPMessage *e,const char *attr);
+char *_nss_ldap_get_dn (MYLDAP_SESSION *session,LDAPMessage *e);
+LDAPMessage *_nss_ldap_first_entry(MYLDAP_SESSION *session,LDAPMessage *res);
+char *_nss_ldap_first_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement **berptr);
+char *_nss_ldap_next_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement *ber);
 
 /*
  * Synchronous search cover (caller acquires lock).
  */
 enum nss_status _nss_ldap_search_sync_locked(
-        const char *base,int scope,const char *filter,
-        const char **attrs,int sizelimit,LDAPMessage **res);
+        MYLDAP_SESSION *session,const char *base,int scope,
+        const char *filter,const char **attrs,int sizelimit,
+        LDAPMessage **res);
 
 int _nss_ldap_searchbyname(
-        const char *base,int scope,const char *filter,
-        const char **attrs,TFILE *fp,NEWparser_t parser);
+        MYLDAP_SESSION *session,const char *base,int scope,
+        const char *filter,const char **attrs,TFILE *fp,NEWparser_t parser);
 
-int _nss_ldap_write_attrvals(TFILE *fp,LDAPMessage *e,const char *attr);
+int _nss_ldap_write_attrvals(TFILE *fp,MYLDAP_SESSION *session,LDAPMessage *e,const char *attr);
 
 /*
  * Emulate X.500 read operation.
  */
-enum nss_status _nss_ldap_read_sync (const char *dn, /* IN */
-                           const char **attributes,     /* IN */
-                           LDAPMessage ** res /* OUT */ );
+enum nss_status _nss_ldap_read_sync (
+        MYLDAP_SESSION *session,
+        const char *dn, /* IN */
+        const char **attributes,     /* IN */
+        LDAPMessage ** res /* OUT */ );
 
 /*
  * extended enumeration routine; uses asynchronous API.
  * Caller must have acquired the global mutex
  */
 enum nss_status _nss_ldap_getent_locked (
-                                struct ent_context *context,   /* IN/OUT */
-                                void *result,   /* IN/OUT */
-                                char *buffer,   /* IN */
-                                size_t buflen,  /* IN */
-                                int *errnop,    /* OUT */
-                                const char *base, /* IN */
-                                int scope,        /* IN */
-                                const char *filter, /* IN */
-                                const char **attrs, /* IN */
-                                parser_t parser /* IN */ );
+        struct ent_context *context,   /* IN/OUT */
+        void *result,   /* IN/OUT */
+        char *buffer,   /* IN */
+        size_t buflen,  /* IN */
+        int *errnop,    /* OUT */
+        const char *base, /* IN */
+        int scope,        /* IN */
+        const char *filter, /* IN */
+        const char **attrs, /* IN */
+        parser_t parser /* IN */ );
 
 /*
  * common enumeration routine; uses asynchronous API.
  * Acquires the global mutex
  */
-int _nss_ldap_getent(struct ent_context *context, /* IN/OUT */
-                     void *result,      /* IN/OUT */
-                     char *buffer,      /* IN */
-                     size_t buflen,     /* IN */
-                     int *errnop,       /* OUT */
-                     const char *base,  /* IN */
-                     int scope,         /* IN */
-                     const char *filter, /* IN */
-                     const char **attrs, /* IN */
-                     parser_t parser /* IN */ );
+int _nss_ldap_getent(
+        struct ent_context *context, /* IN/OUT */
+        void *result,      /* IN/OUT */
+        char *buffer,      /* IN */
+        size_t buflen,     /* IN */
+        int *errnop,       /* OUT */
+        const char *base,  /* IN */
+        int scope,         /* IN */
+        const char *filter, /* IN */
+        const char **attrs, /* IN */
+        parser_t parser /* IN */ );
 
 /*
  * common lookup routine; uses synchronous API.
  */
-int _nss_ldap_getbyname(void *result, char *buffer, size_t buflen,int *errnop,
-                        const char *base,int scope,const char *filter,const char **attrs,
-                        parser_t parser);
+int _nss_ldap_getbyname(
+        MYLDAP_SESSION *session,void *result, char *buffer, size_t buflen,int *errnop,
+        const char *base,int scope,const char *filter,const char **attrs,
+        parser_t parser);
 
 /* parsing utility functions */
-enum nss_status _nss_ldap_assign_attrvals (LDAPMessage * e,     /* IN */
-                                      const char *attr, /* IN */
-                                      const char *omitvalue,    /* IN */
-                                      char ***valptr,   /* OUT */
-                                      char **pbuffer,    /* IN/OUT */
-                                      size_t * pbuflen,  /* IN/OUT */
-                                      size_t * pvalcount /* OUT */ );
+enum nss_status _nss_ldap_assign_attrvals (
+        MYLDAP_SESSION *session,
+        LDAPMessage *e,     /* IN */
+        const char *attr, /* IN */
+        const char *omitvalue,    /* IN */
+        char ***valptr,   /* OUT */
+        char **pbuffer,    /* IN/OUT */
+        size_t * pbuflen,  /* IN/OUT */
+        size_t * pvalcount /* OUT */ );
 
+enum nss_status _nss_ldap_assign_attrval(
+        MYLDAP_SESSION *session,
+        LDAPMessage *e,      /* IN */
+        const char *attr,  /* IN */
+        char **valptr,     /* OUT */
+        char **buffer,     /* IN/OUT */
+        size_t * buflen /* IN/OUT */ );
 
-enum nss_status _nss_ldap_assign_attrval (LDAPMessage * e,      /* IN */
-                                     const char *attr,  /* IN */
-                                     char **valptr,     /* OUT */
-                                     char **buffer,     /* IN/OUT */
-                                     size_t * buflen /* IN/OUT */ );
-
-
-enum nss_status _nss_ldap_assign_userpassword (LDAPMessage * e, /* IN */
-                                          const char *attr,     /* IN */
-                                          char **valptr,        /* OUT */
-                                          char **buffer,        /* IN/OUT */
-                                          size_t * buflen);     /* IN/OUT */
+enum nss_status _nss_ldap_assign_userpassword(
+        MYLDAP_SESSION *session,
+        LDAPMessage *e,       /* IN */
+        const char *attr,     /* IN */
+        char **valptr,        /* OUT */
+        char **buffer,        /* IN/OUT */
+        size_t * buflen);     /* IN/OUT */
 
 /* check that the entry has the specified objectclass
    return 0 for false, not-0 for true */
-int has_objectclass(LDAPMessage *entry,const char *objectclass);
+int has_objectclass(MYLDAP_SESSION *session,LDAPMessage *entry,const char *objectclass);
 
-enum nss_status _nss_ldap_init (void);
+enum nss_status _nss_ldap_init(MYLDAP_SESSION *session);
 
 #endif /* _LDAP_NSS_LDAP_LDAP_NSS_H */

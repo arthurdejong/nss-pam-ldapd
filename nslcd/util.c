@@ -283,7 +283,7 @@ dn2uid_cache_get (const char *dn, char **uid, char **buffer, size_t * buflen)
 }
 
 /* TODO: move to group.c */
-enum nss_status _nss_ldap_dn2uid(const char *dn,char **uid,char **buffer,
+enum nss_status _nss_ldap_dn2uid(MYLDAP_SESSION *session,const char *dn,char **uid,char **buffer,
                                  size_t * buflen,int *pIsNestedGroup,
                                  LDAPMessage **pRes)
 {
@@ -304,13 +304,13 @@ enum nss_status _nss_ldap_dn2uid(const char *dn,char **uid,char **buffer,
       attrs[2] = "objectClass";
       attrs[3] = NULL;
 
-      if (_nss_ldap_read_sync(dn, attrs, &res)==NSS_STATUS_SUCCESS)
+      if (_nss_ldap_read_sync(session,dn,attrs,&res)==NSS_STATUS_SUCCESS)
         {
-          LDAPMessage *e = _nss_ldap_first_entry (res);
+          LDAPMessage *e=_nss_ldap_first_entry(session,res);
           if (e != NULL)
             {
               /* FIXME: somehow replace this with the dynamic stuff in group.c */
-              if (has_objectclass(e,"posixGroup"))
+              if (has_objectclass(session,e,"posixGroup"))
                 {
                   *pIsNestedGroup = 1;
                   *pRes = res;
@@ -318,9 +318,7 @@ enum nss_status _nss_ldap_dn2uid(const char *dn,char **uid,char **buffer,
                   return NSS_STATUS_SUCCESS;
                 }
 
-              status =
-                _nss_ldap_assign_attrval (e, attmap_passwd_uid, uid,
-                                          buffer, buflen);
+              status=_nss_ldap_assign_attrval(session,e,attmap_passwd_uid,uid,buffer,buflen);
               if (status == NSS_STATUS_SUCCESS)
                 dn2uid_cache_put (dn, *uid);
             }
@@ -445,15 +443,14 @@ do_getrdnvalue (const char *dn,
   return NSS_STATUS_NOTFOUND;
 }
 
-enum nss_status
-_nss_ldap_getrdnvalue (LDAPMessage * entry,
-                       const char *rdntype,
-                       char **rval, char **buffer, size_t * buflen)
+enum nss_status _nss_ldap_getrdnvalue(
+        MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype,
+        char **rval,char **buffer,size_t * buflen)
 {
   char *dn;
   enum nss_status status;
 
-  dn = _nss_ldap_get_dn (entry);
+  dn=_nss_ldap_get_dn(session,entry);
   if (dn == NULL)
     {
       return NSS_STATUS_NOTFOUND;
@@ -475,7 +472,7 @@ _nss_ldap_getrdnvalue (LDAPMessage * entry,
     {
       char **vals;
 
-      vals = _nss_ldap_get_values (entry, rdntype);
+      vals=_nss_ldap_get_values(session,entry,rdntype);
 
       if (vals != NULL)
         {
@@ -501,7 +498,7 @@ _nss_ldap_getrdnvalue (LDAPMessage * entry,
   return status;
 }
 
-int _nss_ldap_write_rndvalue(TFILE *fp,LDAPMessage *entry,const char *rdntype)
+int _nss_ldap_write_rndvalue(TFILE *fp,MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype)
 {
   char *dn;
   int status=456;
@@ -515,7 +512,7 @@ int _nss_ldap_write_rndvalue(TFILE *fp,LDAPMessage *entry,const char *rdntype)
   /* log call */
   log_log(LOG_DEBUG,"_nss_ldap_write_rndvalue(%s)",rdntype);
   /* get the dn from the entry */
-  dn=_nss_ldap_get_dn(entry);
+  dn=_nss_ldap_get_dn(session,entry);
   if (dn==NULL)
     return NSLCD_RESULT_NOTFOUND;
   /* append a `=' to the rdntype */
@@ -557,7 +554,7 @@ int _nss_ldap_write_rndvalue(TFILE *fp,LDAPMessage *entry,const char *rdntype)
    */
   if (status==456)
   {
-    vals=_nss_ldap_get_values(entry,rdntype);
+    vals=_nss_ldap_get_values(session,entry,rdntype);
     if (vals!=NULL)
     {
       /* write the first entry */

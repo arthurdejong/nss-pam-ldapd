@@ -32,18 +32,18 @@
  * get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry)
  * would return lukeh.
  */
-enum nss_status _nss_ldap_getrdnvalue(LDAPMessage *entry,
-                                  const char *rdntype,
-                                  char **rval, char **buffer, size_t * buflen);
+enum nss_status _nss_ldap_getrdnvalue(
+        MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype,
+        char **rval,char **buffer,size_t * buflen);
 
-int _nss_ldap_write_rndvalue(TFILE *fp,LDAPMessage *entry,const char *rdntype);
+int _nss_ldap_write_rndvalue(TFILE *fp,MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype);
 
 /*
  * map a distinguished name to a login name, or group entry
  */
-enum nss_status _nss_ldap_dn2uid (const char *dn,
-                             char **uid, char **buffer, size_t * buflen,
-                             int *pIsNestedGroup, LDAPMessage ** pRes);
+enum nss_status _nss_ldap_dn2uid(
+        MYLDAP_SESSION *session,const char *dn,char **uid,char **buffer,
+        size_t *buflen,int *pIsNestedGroup,LDAPMessage **pRes);
 
 /*
  * Escape '*' in a string for use as a filter

@@ -28,6 +28,7 @@
 #include "nslcd-common.h"
 #include "common/tio.h"
 #include "compat/attrs.h"
+#include "ldap-nss.h"
 
 /* macros for basic read and write operations, the following
    ERROR_OUT* marcos define the action taken on errors
@@ -53,36 +54,36 @@ int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
 
 /* these are the different functions that handle the database
    specific actions, see nslcd.h for the action descriptions */
-int nslcd_alias_byname(TFILE *fp);
-int nslcd_alias_all(TFILE *fp);
-int nslcd_ether_byname(TFILE *fp);
-int nslcd_ether_byether(TFILE *fp);
-int nslcd_ether_all(TFILE *fp);
-int nslcd_group_byname(TFILE *fp);
-int nslcd_group_bygid(TFILE *fp);
-int nslcd_group_bymember(TFILE *fp);
-int nslcd_group_all(TFILE *fp);
-int nslcd_host_byname(TFILE *fp);
-int nslcd_host_byaddr(TFILE *fp);
-int nslcd_host_all(TFILE *fp);
-int nslcd_netgroup_byname(TFILE *fp);
-int nslcd_network_byname(TFILE *fp);
-int nslcd_network_byaddr(TFILE *fp);
-int nslcd_network_all(TFILE *fp);
-int nslcd_passwd_byname(TFILE *fp);
-int nslcd_passwd_byuid(TFILE *fp);
-int nslcd_passwd_all(TFILE *fp);
-int nslcd_protocol_byname(TFILE *fp);
-int nslcd_protocol_bynumber(TFILE *fp);
-int nslcd_protocol_all(TFILE *fp);
-int nslcd_rpc_byname(TFILE *fp);
-int nslcd_rpc_bynumber(TFILE *fp);
-int nslcd_rpc_all(TFILE *fp);
-int nslcd_service_byname(TFILE *fp);
-int nslcd_service_bynumber(TFILE *fp);
-int nslcd_service_all(TFILE *fp);
-int nslcd_shadow_byname(TFILE *fp);
-int nslcd_shadow_all(TFILE *fp);
+int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_alias_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_ether_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_ether_byether(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_ether_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_group_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_group_bygid(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_group_bymember(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_group_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_host_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_host_byaddr(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_host_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_netgroup_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_network_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_network_byaddr(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_network_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_passwd_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_passwd_byuid(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_passwd_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_protocol_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_protocol_bynumber(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_protocol_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_rpc_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_rpc_bynumber(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_rpc_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_service_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_service_bynumber(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
 
 int mkfilter_passwd_byname(const char *name,
                            char *buffer,size_t buflen);

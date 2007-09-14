@@ -165,9 +165,9 @@ static int write_servent(TFILE *fp,struct servent *result)
   return 0;
 }
 
-static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
-                      struct ldap_state *state,
-                      void *result,char *buffer,size_t buflen)
+static enum nss_status _nss_ldap_parse_serv(
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state *state,
+        void *result,char *buffer,size_t buflen)
 {
   struct servent *service = (struct servent *)result;
   char *port;
@@ -178,14 +178,12 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
    * ipServiceProtocol fields.
    */
 
-  if (state->ls_type == LS_TYPE_KEY)
+  if (state->ls_type==LS_TYPE_KEY)
     {
       if (state->ls_info.ls_key == NULL)
         {
           /* non-deterministic behaviour is ok */
-          stat =
-            _nss_ldap_assign_attrval (e, attmap_service_ipServiceProtocol,
-                                      &service->s_proto, &buffer, &buflen);
+          stat=_nss_ldap_assign_attrval(session,e,attmap_service_ipServiceProtocol,&service->s_proto,&buffer,&buflen);
           if (stat != NSS_STATUS_SUCCESS)
             {
               return stat;
@@ -208,7 +206,7 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
     }
   else
     {
-      char **vals = _nss_ldap_get_values (e, attmap_service_ipServiceProtocol);
+      char **vals=_nss_ldap_get_values(session,e,attmap_service_ipServiceProtocol);
       int len;
       if (vals == NULL)
         {
@@ -251,25 +249,19 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
       return stat;
     }
 
-  stat =
-    _nss_ldap_getrdnvalue (e, attmap_service_cn, &service->s_name,
-                           &buffer, &buflen);
+  stat=_nss_ldap_getrdnvalue(session,e,attmap_service_cn,&service->s_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     {
       return stat;
     }
 
-  stat =
-    _nss_ldap_assign_attrvals (e, attmap_service_cn, service->s_name,
-                               &service->s_aliases, &buffer, &buflen, NULL);
+  stat=_nss_ldap_assign_attrvals(session,e,attmap_service_cn,service->s_name,&service->s_aliases,&buffer,&buflen,NULL);
   if (stat != NSS_STATUS_SUCCESS)
     {
       return stat;
     }
 
-  stat =
-    _nss_ldap_assign_attrval (e, attmap_service_ipServicePort, &port, &buffer,
-                              &buflen);
+  stat=_nss_ldap_assign_attrval(session,e,attmap_service_ipServicePort,&port,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     {
       return stat;
@@ -280,7 +272,7 @@ static enum nss_status _nss_ldap_parse_serv (LDAPMessage *e,
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_service_byname(TFILE *fp)
+int nslcd_service_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   char name[256],protocol[256];
@@ -301,9 +293,9 @@ int nslcd_service_byname(TFILE *fp)
   /* do the LDAP request */
   mkfilter_service_byname(name,protocol,filter,sizeof(filter));
   service_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
-                          service_base,service_scope,filter,service_attrs,
-                          _nss_ldap_parse_serv);
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+                           service_base,service_scope,filter,service_attrs,
+                           _nss_ldap_parse_serv);
   /* write the response */
   WRITE_INT32(fp,retv);
   if (retv==NSLCD_RESULT_SUCCESS)
@@ -313,7 +305,7 @@ int nslcd_service_byname(TFILE *fp)
   return 0;
 }
 
-int nslcd_service_bynumber(TFILE *fp)
+int nslcd_service_bynumber(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   int number;
@@ -335,7 +327,7 @@ int nslcd_service_bynumber(TFILE *fp)
   /* do the LDAP request */
   mkfilter_service_bynumber(number,protocol,filter,sizeof(filter));
   service_init();
-  retv=_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                            service_base,service_scope,filter,service_attrs,
                            _nss_ldap_parse_serv);
   /* write the response */
@@ -347,7 +339,7 @@ int nslcd_service_bynumber(TFILE *fp)
   return 0;
 }
 
-int nslcd_service_all(TFILE *fp)
+int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   struct ent_context context;
@@ -362,7 +354,7 @@ int nslcd_service_all(TFILE *fp)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_SERVICE_ALL);
   /* initialize context */
-  _nss_ldap_ent_context_init(&context);
+  _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   service_init();
   while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,

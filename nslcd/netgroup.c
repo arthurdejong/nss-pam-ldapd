@@ -268,10 +268,9 @@ _nss_ldap_parse_netgr (void *vresultp, char *buffer, size_t buflen)
   return NSS_STATUS_SUCCESS;
 }
 
-static enum nss_status
-_nss_ldap_load_netgr (LDAPMessage * e,
-                      struct ldap_state * pvt,
-                      void *vresultp, char *buffer, size_t buflen)
+static enum nss_status _nss_ldap_load_netgr(
+        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
+        void *vresultp,char UNUSED(*buffer),size_t UNUSED(buflen))
 {
   int attr;
   int nvals;
@@ -286,10 +285,10 @@ _nss_ldap_load_netgr (LDAPMessage * e,
       switch (attr)
         {
         case 1:
-          vals = _nss_ldap_get_values (e, attmap_netgroup_nisNetgroupTriple);
+          vals=_nss_ldap_get_values(session,e,attmap_netgroup_nisNetgroupTriple);
           break;
         default:
-          vals = _nss_ldap_get_values (e, attmap_netgroup_memberNisNetgroup);
+          vals=_nss_ldap_get_values(session,e,attmap_netgroup_memberNisNetgroup);
           break;
         }
 
@@ -336,7 +335,7 @@ out:
   return stat;
 }
 
-int nslcd_netgroup_byname(TFILE *fp)
+int nslcd_netgroup_byname(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   char name[256];
@@ -359,7 +358,7 @@ int nslcd_netgroup_byname(TFILE *fp)
   /* do initial ldap request */
   mkfilter_netgroup_byname(name,filter,sizeof(filter));
   netgroup_init();
-  if (_nss_ldap_getbyname(&result,buffer,1024,&errnop,
+  if (_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
                           netgroup_base,netgroup_scope,filter,netgroup_attrs,_nss_ldap_load_netgr))
     return -1;
   /* loop over all results */
