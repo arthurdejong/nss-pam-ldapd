@@ -241,12 +241,16 @@ static enum nss_status _nss_ldap_parse_pw(
   return NSS_STATUS_SUCCESS;
 }
 
+/* Note that our caller has to free the returned value with ldap_free() */
 char *passwd_username2dn(MYLDAP_SESSION *session,const char *username)
 {
   char *userdn=NULL;
   static const char *no_attrs[]={ NULL };
   char filter[1024];
   LDAPMessage *res,*e;
+  /* log call */
+  log_log(LOG_DEBUG,"passwd_username2dn(%s)",username);
+  /* do the LDAP request */
   mkfilter_passwd_byname(username,filter,sizeof(filter));
   if (_nss_ldap_search_sync(session,passwd_base,passwd_scope,filter,no_attrs,1,&res)==NSS_STATUS_SUCCESS)
   {
