@@ -30,7 +30,6 @@
 #include <sys/param.h>
 #include <string.h>
 #include <pwd.h>
-#include <errno.h>
 #ifdef HAVE_LBER_H
 #include <lber.h>
 #endif
@@ -270,7 +269,6 @@ int nslcd_passwd_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct passwd result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
@@ -279,7 +277,7 @@ int nslcd_passwd_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_passwd_byname(name,filter,sizeof(filter));
   passwd_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            passwd_base,passwd_scope,filter,passwd_attrs,
                            _nss_ldap_parse_pw);
   /* write the response */
@@ -301,7 +299,6 @@ int nslcd_passwd_byuid(TFILE *fp,MYLDAP_SESSION *session)
   struct passwd result;
   char buffer[1024];
   char filter[1024];
-  int errnop;
   int retv;
   /* read request parameters */
   READ_TYPE(fp,uid,uid_t);
@@ -310,7 +307,7 @@ int nslcd_passwd_byuid(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_passwd_byuid(uid,filter,sizeof(filter));
   passwd_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            passwd_base,passwd_scope,filter,passwd_attrs,
                            _nss_ldap_parse_pw);
   /* write the response */
@@ -331,7 +328,6 @@ int nslcd_passwd_all(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct passwd result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* log call */
   log_log(LOG_DEBUG,"nslcd_passwd_all()");
@@ -342,7 +338,7 @@ int nslcd_passwd_all(TFILE *fp,MYLDAP_SESSION *session)
   _nss_ldap_ent_context_init(&context,session);
   /* go over results */
   passwd_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
                                 passwd_base,passwd_scope,passwd_filter,passwd_attrs,
                                 _nss_ldap_parse_pw))==NSLCD_RESULT_SUCCESS)
   {

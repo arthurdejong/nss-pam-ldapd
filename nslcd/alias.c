@@ -30,7 +30,6 @@
 #include <string.h>
 #include <lber.h>
 #include <ldap.h>
-#include <errno.h>
 #include <aliases.h>
 #if defined(HAVE_THREAD_H)
 #include <thread.h>
@@ -138,7 +137,6 @@ int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct aliasent result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
@@ -150,7 +148,7 @@ int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_alias_byname(name,filter,sizeof(filter));
   alias_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            alias_base,alias_scope,filter,alias_attrs,
                            _nss_ldap_parse_alias);
   /* write the response */
@@ -169,7 +167,6 @@ int nslcd_alias_all(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct aliasent result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* log call */
   log_log(LOG_DEBUG,"nslcd_alias_all()");
@@ -180,7 +177,7 @@ int nslcd_alias_all(TFILE *fp,MYLDAP_SESSION *session)
   _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   alias_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
                                 alias_base,alias_scope,alias_filter,alias_attrs,
                                 _nss_ldap_parse_alias))==NSLCD_RESULT_SUCCESS)
   {

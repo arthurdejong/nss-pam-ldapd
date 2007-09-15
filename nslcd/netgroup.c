@@ -342,7 +342,6 @@ int nslcd_netgroup_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct mynetgrent result;
   char buffer[1024];
-  int errnop;
   enum nss_status stat=NSS_STATUS_SUCCESS;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
@@ -357,7 +356,7 @@ int nslcd_netgroup_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* do initial ldap request */
   mkfilter_netgroup_byname(name,filter,sizeof(filter));
   netgroup_init();
-  if (_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  if (_nss_ldap_getbyname(session,&result,buffer,1024,
                           netgroup_base,netgroup_scope,filter,netgroup_attrs,_nss_ldap_load_netgr))
     return -1;
   /* loop over all results */

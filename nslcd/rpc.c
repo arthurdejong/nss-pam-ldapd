@@ -34,7 +34,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #ifdef HAVE_RPC_RPCENT_H
 #include <rpc/rpcent.h>
 #else
@@ -171,7 +170,6 @@ int nslcd_rpc_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct rpcent result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
@@ -183,7 +181,7 @@ int nslcd_rpc_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_rpc_byname(name,filter,sizeof(filter));
   rpc_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            rpc_base,rpc_scope,filter,rpc_attrs,
                            _nss_ldap_parse_rpc);
   /* write the response */
@@ -202,7 +200,6 @@ int nslcd_rpc_bynumber(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct rpcent result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* read request parameters */
   READ_INT32(fp,number);
@@ -214,7 +211,7 @@ int nslcd_rpc_bynumber(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_rpc_bynumber(number,filter,sizeof(filter));
   rpc_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            rpc_base,rpc_scope,filter,rpc_attrs,
                            _nss_ldap_parse_rpc);
   /* write the response */
@@ -232,7 +229,6 @@ int nslcd_rpc_all(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct rpcent result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* log call */
   log_log(LOG_DEBUG,"nslcd_rpc_all()");
@@ -243,7 +239,7 @@ int nslcd_rpc_all(TFILE *fp,MYLDAP_SESSION *session)
   _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   rpc_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
                                 rpc_base,rpc_scope,rpc_filter,rpc_attrs,
                                 _nss_ldap_parse_rpc))==NSLCD_RESULT_SUCCESS)
   {

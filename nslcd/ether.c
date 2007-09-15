@@ -180,7 +180,6 @@ int nslcd_ether_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct ether result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
@@ -192,7 +191,7 @@ int nslcd_ether_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_ether_byname(name,filter,sizeof(filter));
   ether_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            ether_base,ether_scope,filter,ether_attrs,
                            _nss_ldap_parse_ether);
   /* write the response */
@@ -212,7 +211,6 @@ int nslcd_ether_byether(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct ether result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* read request parameters */
   READ_TYPE(fp,addr,u_int8_t[6]);
@@ -224,7 +222,7 @@ int nslcd_ether_byether(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_ether_byether(&addr,filter,sizeof(filter));
   ether_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            ether_base,ether_scope,filter,ether_attrs,
                            _nss_ldap_parse_ether);
   /* write the response */
@@ -243,7 +241,6 @@ int nslcd_ether_all(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct ether result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* log call */
   log_log(LOG_DEBUG,"nslcd_ether_all()");
@@ -254,7 +251,7 @@ int nslcd_ether_all(TFILE *fp,MYLDAP_SESSION *session)
   _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   ether_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
                                 ether_base,ether_scope,ether_filter,ether_attrs,
                                 _nss_ldap_parse_ether))==NSLCD_RESULT_SUCCESS)
   {

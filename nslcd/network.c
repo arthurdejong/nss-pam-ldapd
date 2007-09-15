@@ -33,7 +33,6 @@
 #include <arpa/inet.h>
 #include <arpa/nameser.h>
 #include <sys/socket.h>
-#include <errno.h>
 #ifdef HAVE_LBER_H
 #include <lber.h>
 #endif
@@ -176,7 +175,6 @@ int nslcd_network_byname(TFILE *fp,MYLDAP_SESSION *session)
   int retv;
   struct netent result;
   char buffer[1024];
-  int errnop;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
@@ -187,7 +185,7 @@ int nslcd_network_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_network_byname(name,filter,sizeof(filter));
   network_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            network_base,network_scope,filter,network_attrs,
                            _nss_ldap_parse_net);
   /* write the response */
@@ -208,7 +206,6 @@ int nslcd_network_byaddr(TFILE *fp,MYLDAP_SESSION *session)
   int retv=456;
   struct netent result;
   char buffer[1024];
-  int errnop;
   /* read address family */
   READ_INT32(fp,af);
   if (af!=AF_INET)
@@ -243,7 +240,7 @@ int nslcd_network_byaddr(TFILE *fp,MYLDAP_SESSION *session)
     /* do the request */
     mkfilter_network_byaddr(name,filter,sizeof(filter));
     network_init();
-    retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+    retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                              network_base,network_scope,filter,network_attrs,
                              _nss_ldap_parse_net);
     /* if no entry was found, retry with .0 stripped from the end */
@@ -272,7 +269,6 @@ int nslcd_network_all(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct netent result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* log call */
   log_log(LOG_DEBUG,"nslcd_network_all()");
@@ -283,7 +279,7 @@ int nslcd_network_all(TFILE *fp,MYLDAP_SESSION *session)
   _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   network_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
                                 network_base,network_scope,network_filter,network_attrs,
                                 _nss_ldap_parse_net))==NSLCD_RESULT_SUCCESS)
   {

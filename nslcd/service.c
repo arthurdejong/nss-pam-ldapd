@@ -36,7 +36,6 @@
 #include <string.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <errno.h>
 #ifdef HAVE_SYS_BYTEORDER_H
 #include <sys/byteorder.h>
 #endif
@@ -278,7 +277,6 @@ int nslcd_service_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct servent result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
@@ -291,7 +289,7 @@ int nslcd_service_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_service_byname(name,protocol,filter,sizeof(filter));
   service_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            service_base,service_scope,filter,service_attrs,
                            _nss_ldap_parse_serv);
   /* write the response */
@@ -312,7 +310,6 @@ int nslcd_service_bynumber(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct servent result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* read request parameters */
   READ_INT32(fp,number);
@@ -325,7 +322,7 @@ int nslcd_service_bynumber(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_service_bynumber(number,protocol,filter,sizeof(filter));
   service_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            service_base,service_scope,filter,service_attrs,
                            _nss_ldap_parse_serv);
   /* write the response */
@@ -344,7 +341,6 @@ int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct servent result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* log call */
   log_log(LOG_DEBUG,"nslcd_service_all()");
@@ -355,7 +351,7 @@ int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session)
   _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   service_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
                                 service_base,service_scope,service_filter,service_attrs,
                                 _nss_ldap_parse_serv))==NSLCD_RESULT_SUCCESS)
   {

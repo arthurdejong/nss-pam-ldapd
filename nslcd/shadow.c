@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <shadow.h>
-#include <errno.h>
 #ifdef HAVE_PROT_H
 #define _PROT_INCLUDED
 #endif
@@ -219,7 +218,6 @@ int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session)
   int retv;
   struct spwd result;
   char buffer[1024];
-  int errnop;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
@@ -230,7 +228,7 @@ int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_shadow_byname(name,filter,sizeof(filter));
   shadow_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            shadow_base,shadow_scope,filter,shadow_attrs,
                            _nss_ldap_parse_sp);
   /* write the response */
@@ -249,7 +247,6 @@ int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct spwd result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* log call */
   log_log(LOG_DEBUG,"nslcd_shadow_all()");
@@ -260,7 +257,7 @@ int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session)
   _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   shadow_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
                                 shadow_base,shadow_scope,shadow_filter,shadow_attrs,
                                 _nss_ldap_parse_sp))==NSLCD_RESULT_SUCCESS)
   {

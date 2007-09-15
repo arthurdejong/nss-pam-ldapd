@@ -38,7 +38,6 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/param.h>
-#include <errno.h>
 #ifdef HAVE_SYS_UN_H
 #include <sys/un.h>
 #endif
@@ -840,22 +839,6 @@ static enum nss_status do_with_reconnect(
   return stat;
 }
 
-static void do_map_errno(enum nss_status status, int *errnop)
-{
-  switch (status)
-  {
-    case NSS_STATUS_TRYAGAIN:
-      *errnop = ERANGE;
-      break;
-    case NSS_STATUS_NOTFOUND:
-      *errnop = ENOENT;
-      break;
-    case NSS_STATUS_SUCCESS:
-    default:
-      *errnop = 0;
-  }
-}
-
 /*
  * Tries parser function "parser" on entries, calling do_result_async()
  * to retrieve them from the LDAP server until one parses
@@ -863,7 +846,7 @@ static void do_map_errno(enum nss_status status, int *errnop)
  */
 static enum nss_status do_parse_async(
         struct ent_context *context,void *result,
-        char *buffer,size_t buflen,int *errnop,parser_t parser)
+        char *buffer,size_t buflen,parser_t parser)
 {
   enum nss_status parseStat=NSS_STATUS_NOTFOUND;
   log_log(LOG_DEBUG,"==> do_parse_async");
@@ -918,8 +901,6 @@ static enum nss_status do_parse_async(
   }
   while (parseStat==NSS_STATUS_NOTFOUND);
 
-  do_map_errno(parseStat,errnop);
-
   log_log(LOG_DEBUG,"<== do_parse_async");
 
   return parseStat;
@@ -930,7 +911,7 @@ static enum nss_status do_parse_async(
  */
 static enum nss_status do_parse_sync(
         struct ent_context *context,void *result,
-        char *buffer,size_t buflen,int *errnop,parser_t parser)
+        char *buffer,size_t buflen,parser_t parser)
 {
   enum nss_status parseStat=NSS_STATUS_NOTFOUND;
   LDAPMessage *e=NULL;
@@ -978,8 +959,6 @@ static enum nss_status do_parse_sync(
     context->ec_state.ls_retry=(parseStat==NSS_STATUS_TRYAGAIN)&&(buffer!=NULL);
   }
   while (parseStat==NSS_STATUS_NOTFOUND);
-
-  do_map_errno(parseStat,errnop);
 
   log_log(LOG_DEBUG,"<== do_parse_sync");
 
@@ -1138,7 +1117,7 @@ static int nss2nslcd(enum nss_status code)
  * enumeration is not completed.
  */
 int _nss_ldap_getent(
-        struct ent_context *context,void *result,char *buffer,size_t buflen,int *errnop,
+        struct ent_context *context,void *result,char *buffer,size_t buflen,
         const char *base,int scope,const char *filter,const char **attrs,
         parser_t parser)
 {
@@ -1158,7 +1137,7 @@ int _nss_ldap_getent(
   while (1)
   {
     /* parse a result */
-    stat=do_parse_async(context,result,buffer,buflen,errnop,parser);
+    stat=do_parse_async(context,result,buffer,buflen,parser);
     /* if this had no more results, try the next page */
     if ((stat==NSS_STATUS_NOTFOUND)&&(context->ec_cookie!=NULL)&&(context->ec_cookie->bv_len!=0))
     {
@@ -1175,7 +1154,7 @@ int _nss_ldap_getent(
 /*
  * General match function.
  */
-int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size_t buflen,int *errnop,
+int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size_t buflen,
                         const char *base,int scope,const char *filter,const char **attrs,
                         parser_t parser)
 {
@@ -1201,7 +1180,7 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
   context.ec_state.ls_type=LS_TYPE_KEY;
   context.ec_state.ls_info.ls_key=NULL /*was: args->la_arg2.la_string*/;
 
-  stat=do_parse_sync(&context,result,buffer,buflen,errnop,parser);
+  stat=do_parse_sync(&context,result,buffer,buflen,parser);
 
   _nss_ldap_ent_context_cleanup(&context);
 

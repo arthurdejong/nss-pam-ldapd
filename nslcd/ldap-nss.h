@@ -139,7 +139,6 @@ int _nss_ldap_getent(
         void *result,      /* IN/OUT */
         char *buffer,      /* IN */
         size_t buflen,     /* IN */
-        int *errnop,       /* OUT */
         const char *base,  /* IN */
         int scope,         /* IN */
         const char *filter, /* IN */
@@ -150,7 +149,7 @@ int _nss_ldap_getent(
  * common lookup routine; uses synchronous API.
  */
 int _nss_ldap_getbyname(
-        MYLDAP_SESSION *session,void *result, char *buffer, size_t buflen,int *errnop,
+        MYLDAP_SESSION *session,void *result, char *buffer, size_t buflen,
         const char *base,int scope,const char *filter,const char **attrs,
         parser_t parser);
 

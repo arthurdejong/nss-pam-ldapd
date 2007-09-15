@@ -298,7 +298,6 @@ int nslcd_host_byname(TFILE *fp,MYLDAP_SESSION *session)
   int retv;
   struct hostent result;
   char buffer[1024];
-  int errnop;
   /* read request parameters */
   READ_STRING_BUF2(fp,name,sizeof(name));
   /* log call */
@@ -309,7 +308,7 @@ int nslcd_host_byname(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_host_byname(name,filter,sizeof(filter));
   host_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            host_base,host_scope,filter,host_attrs,
                            _nss_ldap_parse_host);
   /* write the response */
@@ -330,7 +329,6 @@ int nslcd_host_byaddr(TFILE *fp,MYLDAP_SESSION *session)
   int retv;
   struct hostent result;
   char buffer[1024];
-  int errnop;
   /* read address family */
   READ_INT32(fp,af);
   if ((af!=AF_INET)&&(af!=AF_INET6))
@@ -361,7 +359,7 @@ int nslcd_host_byaddr(TFILE *fp,MYLDAP_SESSION *session)
   /* do the LDAP request */
   mkfilter_host_byaddr(name,filter,sizeof(filter));
   host_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,&errnop,
+  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
                            host_base,host_scope,filter,host_attrs,
                            _nss_ldap_parse_host);
   /* write the response */
@@ -379,7 +377,6 @@ int nslcd_host_all(TFILE *fp,MYLDAP_SESSION *session)
   /* these are here for now until we rewrite the LDAP code */
   struct hostent result;
   char buffer[1024];
-  int errnop;
   int retv;
   /* log call */
   log_log(LOG_DEBUG,"nslcd_host_all()");
@@ -390,7 +387,7 @@ int nslcd_host_all(TFILE *fp,MYLDAP_SESSION *session)
   _nss_ldap_ent_context_init(&context,session);
   /* loop over all results */
   host_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),&errnop,
+  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
                                 host_base,host_scope,host_filter,host_attrs,
                                _nss_ldap_parse_host))==NSLCD_RESULT_SUCCESS)
   {
