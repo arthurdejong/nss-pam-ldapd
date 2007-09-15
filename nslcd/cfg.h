@@ -26,7 +26,6 @@
 #ifndef _CFG_H
 #define _CFG_H
 
-#include "common/dict.h"
 #include "compat/attrs.h"
 
 /* maximum number of URIs */
