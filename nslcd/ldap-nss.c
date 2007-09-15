@@ -87,13 +87,6 @@
  */
 #define LS_INIT(state)  do { state.ls_type = LS_TYPE_INDEX; state.ls_retry = 0; state.ls_info.ls_index = -1; } while (0)
 
-enum ldap_session_state
-{
-  LS_UNINITIALIZED = -1,
-  LS_INITIALIZED,
-  LS_CONNECTED_TO_DSA
-};
-
 /*
  * convenient wrapper around pointer into global config list, and a
  * connection to an LDAP server.
@@ -105,8 +98,8 @@ struct ldap_session
   /* timestamp of last activity */
   time_t ls_timestamp;
   /* has session been connected? */
-  enum ldap_session_state ls_state;
-  /* index into ldc_uris: currently connected DSA */
+  int is_connected;
+  /* index into ldc_uris: currently connected LDAP uri */
   int ls_current_uri;
 };
 
@@ -123,7 +116,7 @@ MYLDAP_SESSION *myldap_create_session(void)
   /* initialize the session */
   session->ls_conn=NULL;
   session->ls_timestamp=0;
-  session->ls_state=LS_UNINITIALIZED;
+  session->is_connected=0;
   session->ls_current_uri=0;
   /* return the new session */
   return session;
@@ -194,99 +187,70 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
   return LDAP_SUCCESS;
 }
 
-static int do_bind(LDAP *ld,int timelimit,const char *dn,const char *pw,int with_sasl)
+/* this returns an LDAP result code */
+static int do_bind(MYLDAP_SESSION *session)
 {
   int rc;
   int msgid;
   struct timeval tv;
   LDAPMessage *result;
-
-  log_log(LOG_DEBUG,"==> do_bind");
-
+  char *binddn,*bindarg;
+  int usesasl;
   /*
-   * set timelimit in ld for select() call in ldap_pvt_connect()
-   * function implemented in libldap2's os-ip.c
+   * If we're running as root, let us bind as a special
+   * user, so we can fake shadow passwords.
    */
-  tv.tv_sec = timelimit;
-  tv.tv_usec = 0;
-
-  if (!with_sasl)
+  /* TODO: store this information in the session */
+  if ((geteuid()==0)&&(nslcd_cfg->ldc_rootbinddn!=NULL))
   {
-    msgid=ldap_simple_bind(ld,dn,pw);
-    if (msgid<0)
-    {
-      if (ldap_get_option(ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
-        rc=LDAP_UNAVAILABLE;
-      /* Notify if we failed. */
-      log_log(LOG_ERR,"could not connect to any LDAP server as %s - %s",
-                      dn, ldap_err2string(rc));
-      log_log(LOG_DEBUG,"<== do_bind");
-      return rc;
-    }
-
-    rc=ldap_result(ld,msgid,0,&tv,&result);
-    if (rc>0)
-    {
-      log_log(LOG_DEBUG,"<== do_bind");
-      return ldap_result2error(ld,result,1);
-    }
-
-    /* took too long */
-    if (rc==0)
-      ldap_abandon(ld,msgid);
+    binddn=nslcd_cfg->ldc_rootbinddn;
+    usesasl=nslcd_cfg->ldc_rootusesasl;
+    bindarg=nslcd_cfg->ldc_rootusesasl?nslcd_cfg->ldc_rootsaslid:nslcd_cfg->ldc_rootbindpw;
   }
   else
   {
-    if (nslcd_cfg->ldc_sasl_secprops!=NULL)
-    {
-      rc=ldap_set_option(ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
-      if (rc!=LDAP_SUCCESS)
-      {
-        log_log(LOG_DEBUG,"do_bind: unable to set SASL security properties");
-        return rc;
-      }
-    }
-    rc=ldap_sasl_interactive_bind_s(ld, dn, "GSSAPI", NULL, NULL,
-                                       LDAP_SASL_QUIET,
-                                       do_sasl_interact,(void *) pw);
+    binddn=nslcd_cfg->ldc_binddn;
+    usesasl=nslcd_cfg->ldc_usesasl;
+    bindarg=nslcd_cfg->ldc_usesasl?nslcd_cfg->ldc_saslid:nslcd_cfg->ldc_bindpw;
+  }
+  if (!usesasl)
+  {
+    /* do a simple bind */
+    log_log(LOG_DEBUG,"simple bind as %s",binddn);
+    rc=ldap_simple_bind_s(session->ls_conn,binddn,bindarg);
+    if (rc!=LDAP_SUCCESS)
+      log_log(LOG_ERR,"ldap_simple_bind_s() failed: %s: %s",ldap_err2string(rc),strerror(errno));
     return rc;
   }
-
-  log_log(LOG_DEBUG,"<== do_bind");
-  return -1;
+  else
+  {
+    /* do a SASL bind */
+    log_log(LOG_DEBUG,"SASL bind as %s",binddn);
+    if (nslcd_cfg->ldc_sasl_secprops!=NULL)
+    {
+      rc=ldap_set_option(session->ls_conn,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
+      if (rc!=LDAP_SUCCESS)
+      {
+        log_log(LOG_ERR,"unable to set SASL security properties: %s",ldap_err2string(rc));
+        return -1;
+      }
+    }
+    rc=ldap_sasl_interactive_bind_s(session->ls_conn,binddn,"GSSAPI",NULL,NULL,
+                                    LDAP_SASL_QUIET,
+                                    do_sasl_interact,(void *)bindarg);
+    return rc;
+  }
 }
 
 /*
  * This function is called by the LDAP library when chasing referrals.
  * It is configured with the ldap_set_rebind_proc() below.
  */
-static int do_rebind(LDAP *ld,LDAP_CONST char UNUSED(*url),
+static int do_rebind(LDAP *UNUSED(ld),LDAP_CONST char UNUSED(*url),
                      ber_tag_t UNUSED(request),
-                     ber_int_t UNUSED(msgid),void UNUSED(*arg))
+                     ber_int_t UNUSED(msgid),void *arg)
 {
-  char *who, *cred;
-  int with_sasl=0;
-
-  if ((geteuid()==0)&&(nslcd_cfg->ldc_rootbinddn))
-  {
-    who=nslcd_cfg->ldc_rootbinddn;
-    with_sasl=nslcd_cfg->ldc_rootusesasl;
-    if (with_sasl)
-      cred=nslcd_cfg->ldc_rootsaslid;
-    else
-      cred=nslcd_cfg->ldc_rootbindpw;
-  }
-  else
-  {
-    who=nslcd_cfg->ldc_binddn;
-    with_sasl = nslcd_cfg->ldc_usesasl;
-    if (with_sasl)
-      cred = nslcd_cfg->ldc_saslid;
-    else
-      cred = nslcd_cfg->ldc_bindpw;
-  }
-
-  return do_bind(ld,nslcd_cfg->ldc_bind_timelimit,who,cred,with_sasl);
+  return do_bind((MYLDAP_SESSION *)arg);
 }
 
 /*
@@ -297,65 +261,10 @@ static void do_close(MYLDAP_SESSION *session)
 {
   log_log(LOG_DEBUG,"==> do_close");
   if (session->ls_conn!=NULL)
-  {
     ldap_unbind(session->ls_conn);
-    session->ls_conn=NULL;
-    session->ls_state=LS_UNINITIALIZED;
-  }
-  log_log(LOG_DEBUG,"<== do_close");
-}
-
-/* set up the session state, ensure that we have an LDAP connection */
-static int _nss_ldap_init(MYLDAP_SESSION *session)
-{
-  time_t current_time;
-  int rc;
-  log_log(LOG_DEBUG,"==> _nss_ldap_init");
-  /* check if the idle time for the connection has expired */
-  if ((session->ls_state==LS_CONNECTED_TO_DSA)&&nslcd_cfg->ldc_idle_timelimit)
-  {
-    time(&current_time);
-    if ((session->ls_timestamp+nslcd_cfg->ldc_idle_timelimit)<current_time)
-    {
-      log_log(LOG_DEBUG,"idle_timelimit reached");
-      do_close(session);
-    }
-  }
-  /* if the connection is still there (ie. do_close() wasn't
-     called) then we can return the cached connection */
-  if (session->ls_state==LS_CONNECTED_TO_DSA)
-  {
-    log_log(LOG_DEBUG,"<== _nss_ldap_init(cached session)");
-    return 0;
-  }
-  /* we should build a new session now */
   session->ls_conn=NULL;
-  session->ls_timestamp=0;
-  session->ls_state=LS_UNINITIALIZED;
-  /* turn on debugging */
-  if (nslcd_cfg->ldc_debug)
-  {
-    ber_set_option(NULL,LBER_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
-    ldap_set_option(NULL,LDAP_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
-  }
-  /* open the connection */
-  rc=ldap_initialize(&(session->ls_conn),nslcd_cfg->ldc_uris[session->ls_current_uri]);
-  if (rc!=LDAP_SUCCESS)
-  {
-    log_log(LOG_WARNING,"ldap_initialize(%s) failed: %s: %s",
-                        nslcd_cfg->ldc_uris[session->ls_current_uri],
-                        ldap_err2string(rc),strerror(errno));
-    return -1;
-  }
-  else if (session->ls_conn==NULL)
-  {
-    log_log(LOG_DEBUG,"ldap_initialize() returned NULL");
-    return -1;
-  }
-  /* flag the session as initialized */
-  session->ls_state=LS_INITIALIZED;
-  log_log(LOG_DEBUG,"<== _nss_ldap_init(initialized session)");
-  return 0;
+  session->is_connected=0;
+  log_log(LOG_DEBUG,"<== do_close");
 }
 
 static int do_ssl_options(void)
@@ -434,42 +343,70 @@ static int do_ssl_options(void)
 }
 
 /*
- * Opens connection to an LDAP server - should only be called from search
- * API. Other API that just needs access to configuration and schema should
- * call _nss_ldap_init().
+ * Opens connection to an LDAP server, sets all connection options
+ * and binds to the server. This returns a simple (0/-1) status code.
+ * TODO: this should return an LDAP error code
  */
-static enum nss_status do_open(MYLDAP_SESSION *session)
+static int do_open(MYLDAP_SESSION *session)
 {
-  char *binddn,*bindarg;
-  int usesasl;
   struct timeval tv;
   int rc;
+  time_t current_time;
   int sd=-1;
-  log_log(LOG_DEBUG,"==> do_open");
-  /* moved the head part of do_open() into _nss_ldap_init() */
-  if (_nss_ldap_init(session))
+  log_log(LOG_DEBUG,"do_open()");
+  /* check if the idle time for the connection has expired */
+  if (session->is_connected&&nslcd_cfg->ldc_idle_timelimit)
   {
-    log_log(LOG_DEBUG,"<== do_open(session initialization failed)");
-    return NSS_STATUS_UNAVAIL;
+    time(&current_time);
+    if ((session->ls_timestamp+nslcd_cfg->ldc_idle_timelimit)<current_time)
+    {
+      log_log(LOG_DEBUG,"do_open(): idle_timelimit reached");
+      do_close(session);
+    }
   }
-  assert(session->ls_conn!=NULL);
-  assert(nslcd_cfg!=NULL);
-  assert(session->ls_state!=LS_UNINITIALIZED);
-  if (session->ls_state==LS_CONNECTED_TO_DSA)
+  /* if the connection is still there (ie. do_close() wasn't
+     called) then we can return the cached connection */
+  if (session->is_connected)
   {
-    log_log(LOG_DEBUG,"<== do_open(cached session)");
-    return NSS_STATUS_SUCCESS;
+    log_log(LOG_DEBUG,"do_open(): using cached session");
+    return 0;
+  }
+  /* we should build a new session now */
+  session->ls_conn=NULL;
+  session->ls_timestamp=0;
+  session->is_connected=0;
+  /* open the connection */
+  rc=ldap_initialize(&(session->ls_conn),nslcd_cfg->ldc_uris[session->ls_current_uri]);
+  if (rc!=LDAP_SUCCESS)
+  {
+    log_log(LOG_WARNING,"ldap_initialize(%s) failed: %s: %s",
+                        nslcd_cfg->ldc_uris[session->ls_current_uri],
+                        ldap_err2string(rc),strerror(errno));
+    return -1;
+  }
+  else if (session->ls_conn==NULL)
+  {
+    log_log(LOG_WARNING,"ldap_initialize() returned NULL");
+    return -1;
+  }
+  /* turn on debugging */
+  if (nslcd_cfg->ldc_debug)
+  {
+    ber_set_option(NULL,LBER_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
+    ldap_set_option(NULL,LDAP_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
   }
   /* the rebind function that is called when chasing referrals, see
      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/apis/ldap_set_rebind_proc.htm
      http://www.openldap.org/software/man.cgi?query=ldap_set_rebind_proc&manpath=OpenLDAP+2.4-Release */
-  ldap_set_rebind_proc(session->ls_conn,do_rebind,NULL);
+  /* TODO: probably only set this if we should chase referrals */
+  ldap_set_rebind_proc(session->ls_conn,do_rebind,session);
   /* set the protocol version to use */
   ldap_set_option(session->ls_conn,LDAP_OPT_PROTOCOL_VERSION,&nslcd_cfg->ldc_version);
   ldap_set_option(session->ls_conn,LDAP_OPT_DEREF,&nslcd_cfg->ldc_deref);
   ldap_set_option(session->ls_conn,LDAP_OPT_TIMELIMIT,&nslcd_cfg->ldc_timelimit);
   tv.tv_sec=nslcd_cfg->ldc_bind_timelimit;
   tv.tv_usec=0;
+  ldap_set_option(session->ls_conn,LDAP_OPT_TIMEOUT,&tv);
   ldap_set_option(session->ls_conn,LDAP_OPT_NETWORK_TIMEOUT,&tv);
   ldap_set_option(session->ls_conn,LDAP_OPT_REFERRALS,nslcd_cfg->ldc_referrals?LDAP_OPT_ON:LDAP_OPT_OFF);
   ldap_set_option(session->ls_conn,LDAP_OPT_RESTART,nslcd_cfg->ldc_restart?LDAP_OPT_ON:LDAP_OPT_OFF);
@@ -481,35 +418,18 @@ static enum nss_status do_open(MYLDAP_SESSION *session)
     {
       do_close(session);
       log_log(LOG_DEBUG,"<== do_open(TLS setup failed)");
-      return NSS_STATUS_UNAVAIL;
+      return -1;
     }
     /* set up SSL context */
     if (do_ssl_options()!=LDAP_SUCCESS)
     {
       do_close(session);
       log_log(LOG_DEBUG,"<== do_open(SSL setup failed)");
-      return NSS_STATUS_UNAVAIL;
+      return -1;
     }
   }
-  /*
-   * If we're running as root, let us bind as a special
-   * user, so we can fake shadow passwords.
-   * Thanks to Doug Nazar <nazard@dragoninc.on.ca> for this
-   * patch.
-   */
-  if ((geteuid()==0)&&(nslcd_cfg->ldc_rootbinddn!=NULL))
-  {
-    binddn=nslcd_cfg->ldc_rootbinddn;
-    usesasl=nslcd_cfg->ldc_rootusesasl;
-    bindarg=nslcd_cfg->ldc_rootusesasl?nslcd_cfg->ldc_rootsaslid:nslcd_cfg->ldc_rootbindpw;
-  }
-  else
-  {
-    binddn=nslcd_cfg->ldc_binddn;
-    usesasl=nslcd_cfg->ldc_usesasl;
-    bindarg=nslcd_cfg->ldc_usesasl?nslcd_cfg->ldc_saslid:nslcd_cfg->ldc_bindpw;
-  }
-  rc=do_bind(session->ls_conn,nslcd_cfg->ldc_bind_timelimit,binddn,bindarg,usesasl);
+  /* bind to the server */
+  rc=do_bind(session);
   if (rc!=LDAP_SUCCESS)
   {
     /* log actual LDAP error code */
@@ -517,8 +437,7 @@ static enum nss_status do_open(MYLDAP_SESSION *session)
             nslcd_cfg->ldc_uris[session->ls_current_uri],
             ldap_err2string(rc),strerror(errno));
     do_close(session);
-    log_log(LOG_DEBUG,"<== do_open(failed to bind to DSA");
-    return do_map_error(rc);
+    return -1;
   }
   /* disable keepalive on a LDAP connection socket */
   if (ldap_get_option(session->ls_conn,LDAP_OPT_DESC,&sd)==0)
@@ -530,9 +449,9 @@ static enum nss_status do_open(MYLDAP_SESSION *session)
   }
   /* update last activity and finish off state */
   time(&(session->ls_timestamp));
-  session->ls_state=LS_CONNECTED_TO_DSA;
-  log_log(LOG_DEBUG,"<== do_open(session connected to DSA)");
-  return NSS_STATUS_SUCCESS;
+  session->is_connected=1;
+  log_log(LOG_DEBUG,"do_open(): session connected to LDAP server");
+  return 0;
 }
 
 /*
@@ -759,8 +678,7 @@ static enum nss_status do_with_reconnect(
     do
     {
       /* open a connection and do the search */
-      stat=do_open(session);
-      if (stat==NSS_STATUS_SUCCESS)
+      if (do_open(session)==0)
       {
         if (res!=NULL)
         {
@@ -772,10 +690,10 @@ static enum nss_status do_with_reconnect(
           /* we're using the asycnhronous API */
           stat=do_map_error(do_search_async(session,base,scope,filter,attrs,sizelimit,msgid));
         }
+        /* if we got any feedback from the server, don't try other ones */
+        if (stat!=NSS_STATUS_UNAVAIL)
+          break;
       }
-      /* if we got any feedback from the server, don't try other ones */
-      if (stat!=NSS_STATUS_UNAVAIL)
-        break;
       log++;
       /* the currently configured uri should exist */
       assert(nslcd_cfg->ldc_uris[session->ls_current_uri]!=NULL);
@@ -897,43 +815,10 @@ static enum nss_status do_parse_sync(
 char **_nss_ldap_get_values(MYLDAP_SESSION *session,LDAPMessage *e,
                             const char *attr)
 {
-  if (session->ls_state!=LS_CONNECTED_TO_DSA)
+  if (!session->is_connected)
     return NULL;
   assert(session->ls_conn!=NULL);
   return ldap_get_values(session->ls_conn,e,attr);
-}
-
-/*
- * Simple wrapper around ldap_get_dn(). Requires that
- * session is already established.
- */
-static char *_nss_ldap_get_dn(MYLDAP_SESSION *session,LDAPMessage *e)
-{
-  if (session->ls_state!=LS_CONNECTED_TO_DSA)
-    return NULL;
-  assert(session->ls_conn!=NULL);
-  return ldap_get_dn(session->ls_conn,e);
-}
-
-/*
- * The generic synchronous lookup cover function.
- */
-static enum nss_status _nss_ldap_search_sync(
-        MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,const char **attrs,int sizelimit,
-        LDAPMessage **res)
-{
-  enum nss_status stat;
-  log_log(LOG_DEBUG,"_nss_ldap_search_sync(base=\"%s\", filter=\"%s\")",base,filter);
-  /* initilize session */
-  if (_nss_ldap_init(session))
-  {
-    log_log(LOG_DEBUG,"_nss_ldap_init() failed");
-    return NSS_STATUS_UNAVAIL;
-  }
-  /* synchronous search */
-  stat=do_with_reconnect(session,base,scope,filter,attrs,sizelimit,res,NULL);
-  return stat;
 }
 
 /* translates a nslcd return code (as defined in nslcd.h) to
@@ -968,12 +853,6 @@ int _nss_ldap_getent(
   /* if context->ec_msgid < 0, then we haven't searched yet */
   if (context->ec_msgid<0)
   {
-    /* initialize session */
-    if (_nss_ldap_init(context->session))
-    {
-      log_log(LOG_DEBUG,"_nss_ldap_init() failed");
-      return NSS_STATUS_UNAVAIL;
-    }
     /* set up a new search */
     stat=do_with_reconnect(context->session,base,scope,filter,attrs,LDAP_NO_LIMIT,NULL,&msgid);
     if (stat != NSS_STATUS_SUCCESS)
@@ -1066,18 +945,14 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
                         const char *base,int scope,const char *filter,const char **attrs,
                         parser_t parser)
 {
-
   enum nss_status stat = NSS_STATUS_NOTFOUND;
   struct ent_context context;
-
   log_log(LOG_DEBUG,"_nss_ldap_getbyname(base=\"%s\", filter=\"%s\"",base,filter);
-
   _nss_ldap_ent_context_init(&context,session);
-
-  stat=_nss_ldap_search_sync(context.session,base,scope,filter,attrs,1,&context.ec_res);
+  /* synchronous search */
+  stat=do_with_reconnect(context.session,base,scope,filter,attrs,1,&context.ec_res,NULL);
   if (stat!=NSS_STATUS_SUCCESS)
     return nss2nslcd(stat);
-
   /*
    * we pass this along for the benefit of the services parser,
    * which uses it to figure out which protocol we really wanted.
@@ -1087,11 +962,8 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
   LS_INIT(context.ec_state);
   context.ec_state.ls_type=LS_TYPE_KEY;
   context.ec_state.ls_info.ls_key=NULL /*was: args->la_arg2.la_string*/;
-
   stat=do_parse_sync(&context,result,buffer,buflen,parser);
-
   _nss_ldap_ent_context_cleanup(&context);
-
   return nss2nslcd(stat);
 }
 
@@ -1387,7 +1259,7 @@ enum nss_status _nss_ldap_getrdnvalue(
   enum nss_status status;
   size_t rdnlen;
 
-  dn=_nss_ldap_get_dn(session,entry);
+  dn=ldap_get_dn(session->ls_conn,entry);
   if (dn==NULL)
     return NSS_STATUS_NOTFOUND;
   status=do_getrdnvalue(dn,rdntype,rval,buffer,buflen);
