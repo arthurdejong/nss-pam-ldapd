@@ -191,7 +191,7 @@ enum nss_status _nss_ldap_assign_userpassword(
    return 0 for false, not-0 for true */
 int has_objectclass(MYLDAP_SESSION *session,LDAPMessage *entry,const char *objectclass);
 
-enum nss_status _nss_ldap_init(MYLDAP_SESSION *session);
+int _nss_ldap_init(MYLDAP_SESSION *session);
 
 /*
  * get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry)

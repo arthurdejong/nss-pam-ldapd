@@ -38,6 +38,7 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/param.h>
+#include <errno.h>
 #ifdef HAVE_SYS_UN_H
 #include <sys/un.h>
 #endif
@@ -289,25 +290,6 @@ static int do_rebind(LDAP *ld,LDAP_CONST char UNUSED(*url),
 }
 
 /*
- * Disable keepalive on a LDAP connection's socket.
- */
-static void do_set_sockopts(MYLDAP_SESSION *session)
-{
-  /* Netscape SSL-enabled LDAP library does not return the real socket */
-  int sd=-1;
-  log_log(LOG_DEBUG,"==> do_set_sockopts");
-  if (ldap_get_option(session->ls_conn,LDAP_OPT_DESC,&sd)==0)
-  {
-    int off=0;
-    /* ignore errors */
-    (void)setsockopt(sd,SOL_SOCKET,SO_KEEPALIVE,(void *)&off,sizeof(off));
-    (void)fcntl(sd,F_SETFD,FD_CLOEXEC);
-  }
-  log_log(LOG_DEBUG,"<== do_set_sockopts");
-  return;
-}
-
-/*
  * Close the global session, sending an unbind.
  * Closes connection to the LDAP server.
  */
@@ -323,20 +305,11 @@ static void do_close(MYLDAP_SESSION *session)
   log_log(LOG_DEBUG,"<== do_close");
 }
 
-static enum nss_status do_init_session(LDAP **ld,const char *uri)
-{
-  enum nss_status stat;
-  stat=do_map_error(ldap_initialize(ld,uri));
-  if ((stat==NSS_STATUS_SUCCESS)&&(*ld==NULL))
-    return NSS_STATUS_UNAVAIL;
-  return stat;
-}
-
 /* set up the session state, ensure that we have an LDAP connection */
-enum nss_status _nss_ldap_init(MYLDAP_SESSION *session)
+int _nss_ldap_init(MYLDAP_SESSION *session)
 {
-  enum nss_status stat;
   time_t current_time;
+  int rc;
   log_log(LOG_DEBUG,"==> _nss_ldap_init");
   /* check if the idle time for the connection has expired */
   if ((session->ls_state==LS_CONNECTED_TO_DSA)&&nslcd_cfg->ldc_idle_timelimit)
@@ -353,7 +326,7 @@ enum nss_status _nss_ldap_init(MYLDAP_SESSION *session)
   if (session->ls_state==LS_CONNECTED_TO_DSA)
   {
     log_log(LOG_DEBUG,"<== _nss_ldap_init(cached session)");
-    return NSS_STATUS_SUCCESS;
+    return 0;
   }
   /* we should build a new session now */
   session->ls_conn=NULL;
@@ -366,16 +339,23 @@ enum nss_status _nss_ldap_init(MYLDAP_SESSION *session)
     ldap_set_option(NULL,LDAP_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
   }
   /* open the connection */
-  stat=do_init_session(&(session->ls_conn),nslcd_cfg->ldc_uris[session->ls_current_uri]);
-  if (stat!=NSS_STATUS_SUCCESS)
+  rc=ldap_initialize(&(session->ls_conn),nslcd_cfg->ldc_uris[session->ls_current_uri]);
+  if (rc!=LDAP_SUCCESS)
   {
-    log_log(LOG_DEBUG,"<== _nss_ldap_init(failed to initialize LDAP session)");
-    return stat;
+    log_log(LOG_WARNING,"ldap_initialize(%s) failed: %s: %s",
+                        nslcd_cfg->ldc_uris[session->ls_current_uri],
+                        ldap_err2string(rc),strerror(errno));
+    return -1;
+  }
+  else if (session->ls_conn==NULL)
+  {
+    log_log(LOG_DEBUG,"ldap_initialize() returned NULL");
+    return -1;
   }
   /* flag the session as initialized */
   session->ls_state=LS_INITIALIZED;
   log_log(LOG_DEBUG,"<== _nss_ldap_init(initialized session)");
-  return NSS_STATUS_SUCCESS;
+  return 0;
 }
 
 static int do_ssl_options(void)
@@ -460,18 +440,17 @@ static int do_ssl_options(void)
  */
 static enum nss_status do_open(MYLDAP_SESSION *session)
 {
+  char *binddn,*bindarg;
   int usesasl;
-  char *bindarg;
-  enum nss_status stat;
   struct timeval tv;
   int rc;
+  int sd=-1;
   log_log(LOG_DEBUG,"==> do_open");
   /* moved the head part of do_open() into _nss_ldap_init() */
-  stat = _nss_ldap_init(session);
-  if (stat!=NSS_STATUS_SUCCESS)
+  if (_nss_ldap_init(session))
   {
     log_log(LOG_DEBUG,"<== do_open(session initialization failed)");
-    return stat;
+    return NSS_STATUS_UNAVAIL;
   }
   assert(session->ls_conn!=NULL);
   assert(nslcd_cfg!=NULL);
@@ -481,8 +460,9 @@ static enum nss_status do_open(MYLDAP_SESSION *session)
     log_log(LOG_DEBUG,"<== do_open(cached session)");
     return NSS_STATUS_SUCCESS;
   }
-  /* the rebind function that is called when chasing referrals */
-  /* http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/apis/ldap_set_rebind_proc.htm */
+  /* the rebind function that is called when chasing referrals, see
+     http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/apis/ldap_set_rebind_proc.htm
+     http://www.openldap.org/software/man.cgi?query=ldap_set_rebind_proc&manpath=OpenLDAP+2.4-Release */
   ldap_set_rebind_proc(session->ls_conn,do_rebind,NULL);
   /* set the protocol version to use */
   ldap_set_option(session->ls_conn,LDAP_OPT_PROTOCOL_VERSION,&nslcd_cfg->ldc_version);
@@ -517,36 +497,42 @@ static enum nss_status do_open(MYLDAP_SESSION *session)
    * Thanks to Doug Nazar <nazard@dragoninc.on.ca> for this
    * patch.
    */
-  if (geteuid()==0&&nslcd_cfg->ldc_rootbinddn!=NULL)
+  if ((geteuid()==0)&&(nslcd_cfg->ldc_rootbinddn!=NULL))
   {
+    binddn=nslcd_cfg->ldc_rootbinddn;
     usesasl=nslcd_cfg->ldc_rootusesasl;
     bindarg=nslcd_cfg->ldc_rootusesasl?nslcd_cfg->ldc_rootsaslid:nslcd_cfg->ldc_rootbindpw;
-    rc=do_bind(session->ls_conn,nslcd_cfg->ldc_bind_timelimit,nslcd_cfg->ldc_rootbinddn,bindarg,usesasl);
   }
   else
   {
+    binddn=nslcd_cfg->ldc_binddn;
     usesasl=nslcd_cfg->ldc_usesasl;
     bindarg=nslcd_cfg->ldc_usesasl?nslcd_cfg->ldc_saslid:nslcd_cfg->ldc_bindpw;
-    rc=do_bind(session->ls_conn,nslcd_cfg->ldc_bind_timelimit,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_bindpw,usesasl);
   }
+  rc=do_bind(session->ls_conn,nslcd_cfg->ldc_bind_timelimit,binddn,bindarg,usesasl);
   if (rc!=LDAP_SUCCESS)
   {
     /* log actual LDAP error code */
-    log_log(LOG_WARNING,"failed to bind to LDAP server %s: %s",
-            nslcd_cfg->ldc_uris[session->ls_current_uri],ldap_err2string(rc));
-    stat=do_map_error(rc);
+    log_log(LOG_WARNING,"failed to bind to LDAP server %s: %s: %s",
+            nslcd_cfg->ldc_uris[session->ls_current_uri],
+            ldap_err2string(rc),strerror(errno));
     do_close(session);
     log_log(LOG_DEBUG,"<== do_open(failed to bind to DSA");
+    return do_map_error(rc);
   }
-  else
+  /* disable keepalive on a LDAP connection socket */
+  if (ldap_get_option(session->ls_conn,LDAP_OPT_DESC,&sd)==0)
   {
-    do_set_sockopts(session);
-    time(&(session->ls_timestamp));
-    session->ls_state=LS_CONNECTED_TO_DSA;
-    stat=NSS_STATUS_SUCCESS;
-    log_log(LOG_DEBUG,"<== do_open(session connected to DSA)");
+    int off=0;
+    /* ignore errors */
+    (void)setsockopt(sd,SOL_SOCKET,SO_KEEPALIVE,(void *)&off,sizeof(off));
+    (void)fcntl(sd,F_SETFD,FD_CLOEXEC);
   }
-  return stat;
+  /* update last activity and finish off state */
+  time(&(session->ls_timestamp));
+  session->ls_state=LS_CONNECTED_TO_DSA;
+  log_log(LOG_DEBUG,"<== do_open(session connected to DSA)");
+  return NSS_STATUS_SUCCESS;
 }
 
 /*
@@ -777,9 +763,15 @@ static enum nss_status do_with_reconnect(
       if (stat==NSS_STATUS_SUCCESS)
       {
         if (res!=NULL)
+        {
+          /* we're using the sycnhronous API */
           stat=do_map_error(do_search_sync(session,base,scope,filter,attrs,sizelimit,res));
+        }
         else
+        {
+          /* we're using the asycnhronous API */
           stat=do_map_error(do_search_async(session,base,scope,filter,attrs,sizelimit,msgid));
+        }
       }
       /* if we got any feedback from the server, don't try other ones */
       if (stat!=NSS_STATUS_UNAVAIL)
@@ -811,13 +803,12 @@ static enum nss_status do_with_reconnect(
   {
     case NSS_STATUS_UNAVAIL:
       log_log(LOG_ERR,"could not search LDAP server - %s",ldap_err2string(rc));
-      break;
+      return NSS_STATUS_UNAVAIL;
     case NSS_STATUS_TRYAGAIN:
       log_log(LOG_ERR,"could not %s %sconnect to LDAP server - %s",
               hard?"hard":"soft", tries?"re":"",
               ldap_err2string(rc));
-      stat=NSS_STATUS_UNAVAIL;
-      break;
+      return NSS_STATUS_UNAVAIL;
     case NSS_STATUS_SUCCESS:
       if (log)
       {
@@ -832,78 +823,12 @@ static enum nss_status do_with_reconnect(
       }
       /* update the last activity on the connection */
       time(&session->ls_timestamp);
-      break;
+      return NSS_STATUS_SUCCESS;
+    case NSS_STATUS_NOTFOUND:
+    case NSS_STATUS_RETURN:
     default:
-      break;
+      return stat;
   }
-  return stat;
-}
-
-/*
- * Tries parser function "parser" on entries, calling do_result_async()
- * to retrieve them from the LDAP server until one parses
- * correctly or there is an exceptional condition.
- */
-static enum nss_status do_parse_async(
-        struct ent_context *context,void *result,
-        char *buffer,size_t buflen,parser_t parser)
-{
-  enum nss_status parseStat=NSS_STATUS_NOTFOUND;
-  log_log(LOG_DEBUG,"==> do_parse_async");
-  /*
-   * if ec_state.ls_info.ls_index is non-zero, then we don't collect another
-   * entry off the LDAP chain, and instead refeed the existing result to
-   * the parser. Once the parser has finished with it, it will return
-   * NSS_STATUS_NOTFOUND and reset the index to -1, at which point we'll retrieve
-   * another entry.
-   */
-  do
-  {
-    enum nss_status resultStat=NSS_STATUS_SUCCESS;
-
-    if ((context->ec_state.ls_retry==0) &&
-        ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
-          (context->ec_state.ls_info.ls_index==-1) ))
-    {
-      resultStat=do_result_async(context);
-    }
-
-    if (resultStat!=NSS_STATUS_SUCCESS)
-    {
-      /* Could not get a result; bail */
-      parseStat=resultStat;
-      break;
-    }
-
-    /*
-     * We have an entry; now, try to parse it.
-     *
-     * If we do not parse the entry because of a schema
-     * violation, the parser should return NSS_STATUS_NOTFOUND.
-     * We'll keep on trying subsequent entries until we
-     * find one which is parseable, or exhaust avialable
-     * entries, whichever is first.
-     */
-    parseStat=parser(context->session,context->ec_res,&(context->ec_state),result,buffer,buflen);
-
-    /* hold onto the state if we're out of memory XXX */
-    context->ec_state.ls_retry=(parseStat==NSS_STATUS_TRYAGAIN && buffer!=NULL?1:0);
-
-    /* free entry is we're moving on */
-    if ((context->ec_state.ls_retry==0) &&
-        ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
-          (context->ec_state.ls_info.ls_index==-1) ))
-    {
-      /* we don't need the result anymore, ditch it. */
-      ldap_msgfree(context->ec_res);
-      context->ec_res=NULL;
-    }
-  }
-  while (parseStat==NSS_STATUS_NOTFOUND);
-
-  log_log(LOG_DEBUG,"<== do_parse_async");
-
-  return parseStat;
 }
 
 /*
@@ -1043,56 +968,14 @@ enum nss_status _nss_ldap_search_sync(
   enum nss_status stat;
   log_log(LOG_DEBUG,"_nss_ldap_search_sync(base=\"%s\", filter=\"%s\")",base,filter);
   /* initilize session */
-  if ((stat=_nss_ldap_init(session))!=NSS_STATUS_SUCCESS)
+  if (_nss_ldap_init(session))
   {
     log_log(LOG_DEBUG,"_nss_ldap_init() failed");
-    return stat;
+    return NSS_STATUS_UNAVAIL;
   }
   /* synchronous search */
   stat=do_with_reconnect(session,base,scope,filter,attrs,sizelimit,res,NULL);
   return stat;
-}
-
-/*
- * The generic lookup cover function (asynchronous).
- */
-static enum nss_status _nss_ldap_search_async(
-        MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,const char **attrs,int sizelimit,int *msgid)
-{
-  enum nss_status stat;
-  log_log(LOG_DEBUG,"_nss_ldap_search_async(base=\"%s\", filter=\"%s\")",base,filter);
-  *msgid=-1;
-  /* initialize session */
-  if ((stat=_nss_ldap_init(session))!=NSS_STATUS_SUCCESS)
-  {
-    log_log(LOG_DEBUG,"_nss_ldap_init() failed");
-    return stat;
-  }
-  /* asynchronous search */
-  stat=do_with_reconnect(session,base,scope,filter,attrs,sizelimit,NULL,msgid);
-  log_log(LOG_DEBUG,"<== _nss_ldap_search");
-  return stat;
-}
-
-static enum nss_status do_next_page(
-        MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,const char **attrs,int sizelimit, int *msgid,
-        struct berval *pCookie)
-{
-  enum nss_status stat;
-  LDAPControl *serverctrls[2]={ NULL, NULL };
-  stat=ldap_create_page_control(session->ls_conn,
-                                nslcd_cfg->ldc_pagesize,
-                                pCookie,0,&serverctrls[0]);
-  if (stat != LDAP_SUCCESS)
-    return NSS_STATUS_UNAVAIL;
-  stat=ldap_search_ext(session->ls_conn,
-                       base,scope,filter,
-                       (char **)attrs,0,serverctrls,NULL,LDAP_NO_LIMIT,
-                       sizelimit,msgid);
-  ldap_control_free(serverctrls[0]);
-  return (*msgid<0)?NSS_STATUS_UNAVAIL:NSS_STATUS_SUCCESS;
 }
 
 /* translates a nslcd return code (as defined in nslcd.h) to
@@ -1122,13 +1005,19 @@ int _nss_ldap_getent(
         parser_t parser)
 {
   enum nss_status stat=NSS_STATUS_SUCCESS;
-  int msgid;
+  int msgid=-1;
   log_log(LOG_DEBUG,"_nss_ldap_getent(base=\"%s\", filter=\"%s\")",base,filter);
   /* if context->ec_msgid < 0, then we haven't searched yet */
   if (context->ec_msgid<0)
   {
+    /* initialize session */
+    if (_nss_ldap_init(context->session))
+    {
+      log_log(LOG_DEBUG,"_nss_ldap_init() failed");
+      return NSS_STATUS_UNAVAIL;
+    }
     /* set up a new search */
-    stat=_nss_ldap_search_async(context->session,base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid);
+    stat=do_with_reconnect(context->session,base,scope,filter,attrs,LDAP_NO_LIMIT,NULL,&msgid);
     if (stat != NSS_STATUS_SUCCESS)
       return nss2nslcd(stat);
     context->ec_msgid=msgid;
@@ -1136,14 +1025,75 @@ int _nss_ldap_getent(
   /* try to parse results until we have a final error or ok */
   while (1)
   {
-    /* parse a result */
-    stat=do_parse_async(context,result,buffer,buflen,parser);
+    /*
+     * Tries parser function "parser" on entries, calling do_result_async()
+     * to retrieve them from the LDAP server until one parses
+     * correctly or there is an exceptional condition.
+     */
+    stat=NSS_STATUS_NOTFOUND;
+    /*
+     * if ec_state.ls_info.ls_index is non-zero, then we don't collect another
+     * entry off the LDAP chain, and instead refeed the existing result to
+     * the parser. Once the parser has finished with it, it will return
+     * NSS_STATUS_NOTFOUND and reset the index to -1, at which point we'll retrieve
+     * another entry.
+     */
+    do
+    {
+      enum nss_status resultStat=NSS_STATUS_SUCCESS;
+      /* get an entry from the LDAP server */
+      if ((context->ec_state.ls_retry==0) &&
+          ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
+            (context->ec_state.ls_info.ls_index==-1) ))
+      {
+        resultStat=do_result_async(context);
+        if (resultStat!=NSS_STATUS_SUCCESS)
+        {
+          stat=resultStat;
+          break;
+        }
+      }
+      /*
+       * We have an entry; now, try to parse it.
+       *
+       * If we do not parse the entry because of a schema
+       * violation, the parser should return NSS_STATUS_NOTFOUND.
+       * We'll keep on trying subsequent entries until we
+       * find one which is parseable, or exhaust avialable
+       * entries, whichever is first.
+       */
+      stat=parser(context->session,context->ec_res,&(context->ec_state),result,buffer,buflen);
+
+      /* hold onto the state if we're out of memory XXX */
+      context->ec_state.ls_retry=(stat==NSS_STATUS_TRYAGAIN)&&(buffer!=NULL);
+
+      /* free entry is we're moving on */
+      if ((context->ec_state.ls_retry==0) &&
+          ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
+            (context->ec_state.ls_info.ls_index==-1) ))
+      {
+        /* we don't need the result anymore, ditch it. */
+        ldap_msgfree(context->ec_res);
+        context->ec_res=NULL;
+      }
+    }
+    while (stat==NSS_STATUS_NOTFOUND);
     /* if this had no more results, try the next page */
     if ((stat==NSS_STATUS_NOTFOUND)&&(context->ec_cookie!=NULL)&&(context->ec_cookie->bv_len!=0))
     {
-      stat=do_next_page(context->session,base,scope,filter,attrs,LDAP_NO_LIMIT,&msgid,context->ec_cookie);
-      if (stat!=NSS_STATUS_SUCCESS)
-        return nss2nslcd(stat);
+      LDAPControl *serverctrls[2]={ NULL, NULL };
+      stat=ldap_create_page_control(context->session->ls_conn,
+                                    nslcd_cfg->ldc_pagesize,
+                                    context->ec_cookie,0,&serverctrls[0]);
+      if (stat!=LDAP_SUCCESS)
+        return NSS_STATUS_UNAVAIL;
+      stat=ldap_search_ext(context->session->ls_conn,
+                           base,scope,filter,
+                           (char **)attrs,0,serverctrls,NULL,LDAP_NO_LIMIT,
+                           LDAP_NO_LIMIT,&msgid);
+      ldap_control_free(serverctrls[0]);
+      if (msgid<0)
+        return nss2nslcd(NSS_STATUS_UNAVAIL);
       context->ec_msgid=msgid;
     }
     else
@@ -1410,116 +1360,64 @@ int has_objectclass(MYLDAP_SESSION *session,LDAPMessage *entry,const char *objec
   return 0;
 }
 
-static enum nss_status
-do_getrdnvalue (const char *dn,
-                const char *rdntype,
-                char **rval, char **buffer, size_t * buflen)
+static enum nss_status do_getrdnvalue(
+        const char *dn,const char *rdntype,
+        char **rval,char **buffer,size_t *buflen)
 {
   char **exploded_dn;
-  char *rdnvalue = NULL;
+  char *rdnvalue=NULL;
   char rdnava[64];
-  size_t rdnlen = 0, rdnavalen;
+  size_t rdnlen=0,rdnavalen;
 
-  snprintf (rdnava, sizeof rdnava, "%s=", rdntype);
-  rdnavalen = strlen (rdnava);
+  snprintf(rdnava,sizeof(rdnava),"%s=",rdntype);
+  rdnavalen=strlen(rdnava);
 
-  exploded_dn = ldap_explode_dn (dn, 0);
+  exploded_dn=ldap_explode_dn(dn,0);
 
-  if (exploded_dn != NULL)
+  if (exploded_dn!=NULL)
+  {
+    /*
+     * attempt to get the naming attribute's principal
+     * value by parsing the RDN. We need to support
+     * multivalued RDNs (as they're essentially mandated
+     * for services)
+     */
+    char **p, **exploded_rdn;
+    exploded_rdn=ldap_explode_rdn(*exploded_dn,0);
+    if (exploded_rdn!=NULL)
     {
-      /*
-       * attempt to get the naming attribute's principal
-       * value by parsing the RDN. We need to support
-       * multivalued RDNs (as they're essentially mandated
-       * for services)
-       */
-#ifdef HAVE_LDAP_EXPLODE_RDN
-      /*
-       * use ldap_explode_rdn() API, as it's cleaner than
-       * strtok(). This code has not been tested!
-       */
-      char **p, **exploded_rdn;
-
-      exploded_rdn = ldap_explode_rdn (*exploded_dn, 0);
-      if (exploded_rdn != NULL)
-        {
-          for (p = exploded_rdn; *p != NULL; p++)
-            {
-              if (strncasecmp (*p, rdnava, rdnavalen) == 0)
-                {
-                  char *r = *p + rdnavalen;
-
-                  rdnlen = strlen (r);
-                  if (*buflen <= rdnlen)
-                    {
-                      ldap_value_free (exploded_rdn);
-                      ldap_value_free (exploded_dn);
-                      return NSS_STATUS_TRYAGAIN;
-                    }
-                  rdnvalue = *buffer;
-                  strncpy (rdnvalue, r, rdnlen);
-                  break;
-                }
-            }
-          ldap_value_free (exploded_rdn);
-        }
-#else /* HAVE_LDAP_EXPLODE_RDN */
-      /*
-       * we don't have Netscape's ldap_explode_rdn() API,
-       * so we fudge it with strtok(). Note that this will
-       * not handle escaping properly.
-       */
-      char *p, *r = *exploded_dn;
-#ifdef HAVE_STRTOK_R
-      char *st = NULL;
-#endif /* HAVE_STRTOK_R */
-
-#ifndef HAVE_STRTOK_R
-      for (p = strtok (r, "+");
-#else /* HAVE_STRTOK_R */
-      for (p = strtok_r (r, "+", &st);
-#endif /* not HAVE_STRTOK_R */
-           p != NULL;
-#ifndef HAVE_STRTOK_R
-           p = strtok (NULL, "+"))
-#else /* HAVE_STRTOK_R */
-           p = strtok_r (NULL, "+", &st))
-#endif /* not HAVE_STRTOK_R */
+      for (p=exploded_rdn;*p!=NULL;p++)
       {
-        if (strncasecmp (p, rdnava, rdnavalen) == 0)
+        if (strncasecmp(*p,rdnava,rdnavalen) == 0)
+        {
+          char *r=*p+rdnavalen;
+          rdnlen=strlen(r);
+          if (*buflen<=rdnlen)
           {
-            p += rdnavalen;
-            rdnlen = strlen (p);
-            if (*buflen <= rdnlen)
-              {
-                ldap_value_free (exploded_dn);
-                return NSS_STATUS_TRYAGAIN;
-              }
-            rdnvalue = *buffer;
-            strncpy (rdnvalue, p, rdnlen);
-            break;
+            ldap_value_free(exploded_rdn);
+            ldap_value_free(exploded_dn);
+            return NSS_STATUS_TRYAGAIN;
           }
-        if (r != NULL)
-          r = NULL;
+          rdnvalue=*buffer;
+          strncpy(rdnvalue,r,rdnlen);
+          break;
+        }
       }
-#endif /* not HAVE_LDAP_EXPLODE_RDN */
+      ldap_value_free(exploded_rdn);
     }
+  }
 
-  if (exploded_dn != NULL)
-    {
-      ldap_value_free (exploded_dn);
-    }
+  if (exploded_dn!=NULL)
+    ldap_value_free (exploded_dn);
 
-  if (rdnvalue != NULL)
-    {
-      rdnvalue[rdnlen] = '\0';
-      *buffer += rdnlen + 1;
-      *buflen -= rdnlen + 1;
-      *rval = rdnvalue;
-      return NSS_STATUS_SUCCESS;
-    }
+  if (rdnvalue!=NULL)
+    return NSS_STATUS_NOTFOUND;
 
-  return NSS_STATUS_NOTFOUND;
+  rdnvalue[rdnlen]='\0';
+  *buffer+=rdnlen+1;
+  *buflen-=rdnlen+1;
+  *rval=rdnvalue;
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status _nss_ldap_getrdnvalue(
@@ -1533,46 +1431,36 @@ enum nss_status _nss_ldap_getrdnvalue(
   dn=_nss_ldap_get_dn(session,entry);
   if (dn==NULL)
     return NSS_STATUS_NOTFOUND;
-
-  status = do_getrdnvalue (dn, rdntype, rval, buffer, buflen);
-#ifdef HAVE_LDAP_MEMFREE
-  ldap_memfree (dn);
-#else /* HAVE_LDAP_MEMFREE */
-  free (dn);
-#endif /* not HAVE_LDAP_MEMFREE */
+  status=do_getrdnvalue(dn,rdntype,rval,buffer,buflen);
+  ldap_memfree(dn);
 
   /*
    * If examining the DN failed, then pick the nominal first
    * value of cn as the canonical name (recall that attributes
    * are sets, not sequences)
    */
-  if (status == NSS_STATUS_NOTFOUND)
+  if (status==NSS_STATUS_NOTFOUND)
+  {
+    char **vals;
+    vals=_nss_ldap_get_values(session,entry,rdntype);
+    if (vals != NULL)
     {
-      char **vals;
-
-      vals=_nss_ldap_get_values(session,entry,rdntype);
-
-      if (vals != NULL)
-        {
-          rdnlen = strlen (*vals);
-          if (*buflen > rdnlen)
-            {
-              char *rdnvalue = *buffer;
-              strncpy (rdnvalue, *vals, rdnlen);
-              rdnvalue[rdnlen] = '\0';
-              *buffer += rdnlen + 1;
-              *buflen -= rdnlen + 1;
-              *rval = rdnvalue;
-              status = NSS_STATUS_SUCCESS;
-            }
-          else
-            {
-              status = NSS_STATUS_TRYAGAIN;
-            }
-          ldap_value_free (vals);
-        }
+      rdnlen = strlen (*vals);
+      if (*buflen > rdnlen)
+      {
+        char *rdnvalue = *buffer;
+        strncpy (rdnvalue, *vals, rdnlen);
+        rdnvalue[rdnlen] = '\0';
+        *buffer += rdnlen + 1;
+        *buflen -= rdnlen + 1;
+        *rval = rdnvalue;
+        status = NSS_STATUS_SUCCESS;
+      }
+      else
+        status=NSS_STATUS_TRYAGAIN;
+      ldap_value_free (vals);
     }
-
+  }
   return status;
 }
 

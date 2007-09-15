@@ -1131,8 +1131,7 @@ static int group_bymember(MYLDAP_SESSION *session,const char *user)
   lia.depth = 0;
   lia.known_groups=NULL;
   /* initialize schema */
-  stat=_nss_ldap_init(session);
-  if (stat!=NSS_STATUS_SUCCESS)
+  if (_nss_ldap_init(session))
   {
     log_log(LOG_DEBUG,"<== group_bymember (init failed)");
     return -1;
