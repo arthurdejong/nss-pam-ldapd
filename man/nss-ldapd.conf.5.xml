@@ -563,19 +563,6 @@
      </listitem>
     </varlistentry>
 
-     <varlistentry>
-     <term><emphasis remap="B">nss_schema &lt;rfc2307bis|rfc2307&gt;</emphasis></term>
-     <listitem>
-   <para>If the value of this option is
-   <emphasis remap="B">rfc2307bis</emphasis>
-   then support for the RFC2307bis schema (distinguished names in
-   groups) will be enabled.</para>
-     </listitem>
-     </varlistentry>
-
-TODO: remove the above option and always support mulitple schema checking based on the contenst of the directory
-
-
    </variablelist>
   </refsect2>
 -->
