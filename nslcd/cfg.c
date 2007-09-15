@@ -637,19 +637,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_pagesize=atoi(opts[1]);
     }
-    else if (strcasecmp(opts[0],"nss_schema")==0)
-    {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      if (strcasecmp(opts[1],"rfc2307bis")==0)
-        cfg->ldc_flags|=NSS_LDAP_FLAGS_RFC2307BIS;
-      else if (strcasecmp(opts[1],"rfc2307")==0)
-        cfg->ldc_flags&=~(NSS_LDAP_FLAGS_RFC2307BIS);
-      else
-      {
-        log_log(LOG_ERR,"%s:%d: wrong argument: '%s'",filename,lnr,opts[1]);
-        exit(EXIT_FAILURE);
-      }
-    }
     /* undocumented options */
     else if (strcasecmp(opts[0],"nss_reconnect_tries")==0)
     {

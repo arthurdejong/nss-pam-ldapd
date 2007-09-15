@@ -306,7 +306,7 @@ static void do_close(MYLDAP_SESSION *session)
 }
 
 /* set up the session state, ensure that we have an LDAP connection */
-int _nss_ldap_init(MYLDAP_SESSION *session)
+static int _nss_ldap_init(MYLDAP_SESSION *session)
 {
   time_t current_time;
   int rc;
@@ -891,20 +891,6 @@ static enum nss_status do_parse_sync(
 }
 
 /*
- * Read an entry from the directory, a la X.500. This is used
- * for functions that need to retrieve attributes from a DN,
- * such as the RFC2307bis group expansion function.
- */
-enum nss_status _nss_ldap_read_sync(
-        MYLDAP_SESSION *session,const char *dn,const char **attributes,
-        LDAPMessage ** res)
-{
-  /* synchronous search */
-  return do_with_reconnect(session,dn,LDAP_SCOPE_BASE,"(objectclass=*)",
-                           attributes,1 /* sizelimit */,res,NULL);
-}
-
-/*
  * Simple wrapper around ldap_get_values(). Requires that
  * session is already established.
  */
@@ -921,7 +907,7 @@ char **_nss_ldap_get_values(MYLDAP_SESSION *session,LDAPMessage *e,
  * Simple wrapper around ldap_get_dn(). Requires that
  * session is already established.
  */
-char *_nss_ldap_get_dn(MYLDAP_SESSION *session,LDAPMessage *e)
+static char *_nss_ldap_get_dn(MYLDAP_SESSION *session,LDAPMessage *e)
 {
   if (session->ls_state!=LS_CONNECTED_TO_DSA)
     return NULL;
@@ -930,37 +916,9 @@ char *_nss_ldap_get_dn(MYLDAP_SESSION *session,LDAPMessage *e)
 }
 
 /*
- * Simple wrapper around ldap_first_entry(). Requires that
- * session is already established.
- */
-LDAPMessage *_nss_ldap_first_entry(MYLDAP_SESSION *session,LDAPMessage *res)
-{
-  if (session->ls_state!=LS_CONNECTED_TO_DSA)
-    return NULL;
-  assert(session->ls_conn!=NULL);
-  return ldap_first_entry(session->ls_conn,res);
-}
-
-char *_nss_ldap_first_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement **berptr)
-{
-  if (session->ls_state!=LS_CONNECTED_TO_DSA)
-    return NULL;
-  assert(session->ls_conn!=NULL);
-  return ldap_first_attribute(session->ls_conn,entry,berptr);
-}
-
-char *_nss_ldap_next_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement *ber)
-{
-  if (session->ls_state!=LS_CONNECTED_TO_DSA)
-    return NULL;
-  assert(session->ls_conn!=NULL);
-  return ldap_next_attribute(session->ls_conn,entry,ber);
-}
-
-/*
  * The generic synchronous lookup cover function.
  */
-enum nss_status _nss_ldap_search_sync(
+static enum nss_status _nss_ldap_search_sync(
         MYLDAP_SESSION *session,const char *base,int scope,
         const char *filter,const char **attrs,int sizelimit,
         LDAPMessage **res)
@@ -1276,6 +1234,7 @@ static const char *_nss_ldap_locate_userpassword(char **vals)
         token_length = sizeof("CRYPT$") - 1;
         break;
       case LU_OTHER_PASSWORD:
+      default:
         break;
     }
   }

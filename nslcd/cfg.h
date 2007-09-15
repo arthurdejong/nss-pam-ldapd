@@ -117,7 +117,7 @@ struct ldap_config
   int ldc_bind_timelimit;
   /* reconnect policy */
   enum ldap_reconnect_policy ldc_reconnect_pol;
-  /* for nss_connect_policy and nss_schema */
+  /* for nss_connect_policy */
   unsigned int ldc_flags;
   /* idle timeout */
   time_t ldc_idle_timelimit;
@@ -166,7 +166,6 @@ extern struct ldap_config *nslcd_cfg;
 /*
  * Flags that are exposed via _nss_ldap_test_config_flag()
  */
-#define NSS_LDAP_FLAGS_RFC2307BIS               0x0004
 #define NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT   0x0008
 
 int _nss_ldap_test_config_flag(unsigned int flag)

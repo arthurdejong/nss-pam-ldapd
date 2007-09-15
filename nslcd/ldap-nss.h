@@ -117,20 +117,6 @@ void _nss_ldap_ent_context_init(struct ent_context *context,MYLDAP_SESSION *sess
  */
 void _nss_ldap_ent_context_cleanup(struct ent_context *context);
 
-enum nss_status _nss_ldap_search_sync(
-        MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,const char **attrs,int sizelimit,
-        LDAPMessage **res);
-
-/*
- * Emulate X.500 read operation.
- */
-enum nss_status _nss_ldap_read_sync(
-        MYLDAP_SESSION *session,
-        const char *dn, /* IN */
-        const char **attributes,     /* IN */
-        LDAPMessage ** res /* OUT */ );
-
 /*
  * common enumeration routine; uses asynchronous API.
  */
@@ -156,10 +142,6 @@ int _nss_ldap_getbyname(
 /* parsing utility functions */
 
 char **_nss_ldap_get_values(MYLDAP_SESSION *session,LDAPMessage *e,const char *attr);
-char *_nss_ldap_get_dn(MYLDAP_SESSION *session,LDAPMessage *e);
-LDAPMessage *_nss_ldap_first_entry(MYLDAP_SESSION *session,LDAPMessage *res);
-char *_nss_ldap_first_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement **berptr);
-char *_nss_ldap_next_attribute(MYLDAP_SESSION *session,LDAPMessage *entry,BerElement *ber);
 
 enum nss_status _nss_ldap_assign_attrvals (
         MYLDAP_SESSION *session,
@@ -190,8 +172,6 @@ enum nss_status _nss_ldap_assign_userpassword(
 /* check that the entry has the specified objectclass
    return 0 for false, not-0 for true */
 int has_objectclass(MYLDAP_SESSION *session,LDAPMessage *entry,const char *objectclass);
-
-int _nss_ldap_init(MYLDAP_SESSION *session);
 
 /*
  * get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry)

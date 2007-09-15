@@ -146,8 +146,10 @@ const char **attmap_get_var(enum ldap_map_selector map,const char *name)
     if (strcasecmp(name,"userPassword")==0)      return &attmap_group_userPassword;
     if (strcasecmp(name,"gidNumber")==0)         return &attmap_group_gidNumber;
     if (strcasecmp(name,"memberUid")==0)         return &attmap_group_memberUid;
+/*
     if (strcasecmp(name,"uniqueMember")==0)      return &attmap_group_uniqueMember;
     if (strcasecmp(name,"memberOf")==0)          return &attmap_group_memberOf;
+*/
   }
   else if (map==LM_HOSTS)
   {

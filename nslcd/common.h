@@ -85,7 +85,4 @@ int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
 
-/* Note that our caller has to free the returned value with ldap_free() */
-char *passwd_username2dn(MYLDAP_SESSION *session,const char *username);
-
 #endif /* not _SERVER_COMMON_H */
