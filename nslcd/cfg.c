@@ -664,7 +664,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
   fclose(fp);
 }
 
-void cfg_init(void)
+void cfg_init(const char *fname)
 {
   if (nslcd_cfg==NULL)
   {
@@ -678,7 +678,7 @@ void cfg_init(void)
     /* clear configuration */
     cfg_defaults(nslcd_cfg);
     /* read configfile */
-    cfg_read(NSS_LDAP_PATH_CONF,nslcd_cfg);
+    cfg_read(fname,nslcd_cfg);
     /* do some sanity checks */
     if (nslcd_cfg->ldc_uris[0] == NULL)
     {

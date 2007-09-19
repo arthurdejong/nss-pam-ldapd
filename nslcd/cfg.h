@@ -174,6 +174,6 @@ int _nss_ldap_test_config_flag(unsigned int flag)
 /* Initialize the configuration in nslcd_cfg. This method
    will read the default configuration file and call exit()
    if an error occurs. */
-void cfg_init(void);
+void cfg_init(const char *fname);
 
 #endif /* _CFG_H */

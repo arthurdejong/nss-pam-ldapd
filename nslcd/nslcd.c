@@ -544,7 +544,7 @@ int main(int argc,char *argv[])
     log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
 
   /* read configuration file */
-  cfg_init();
+  cfg_init(NSS_LDAP_PATH_CONF);
   nslcd_cfg->ldc_debug=nslcd_debugging?nslcd_debugging-1:0;
 
   /* daemonize */
