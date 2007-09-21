@@ -191,9 +191,6 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
 static int do_bind(MYLDAP_SESSION *session)
 {
   int rc;
-  int msgid;
-  struct timeval tv;
-  LDAPMessage *result;
   char *binddn,*bindarg;
   int usesasl;
   /*
@@ -450,7 +447,7 @@ static int do_open(MYLDAP_SESSION *session)
   /* update last activity and finish off state */
   time(&(session->ls_timestamp));
   session->is_connected=1;
-  log_log(LOG_DEBUG,"do_open(): session connected to LDAP server");
+  log_log(LOG_DEBUG,"do_open(): connected to %s",nslcd_cfg->ldc_uris[session->ls_current_uri]);
   return 0;
 }
 
@@ -465,8 +462,6 @@ static enum nss_status do_result_async(struct ent_context *context)
   struct timeval tv, *tvp;
   int parserc;
   LDAPControl **resultControls;
-
-  log_log(LOG_DEBUG,"==> do_result_async");
 
   if (nslcd_cfg->ldc_timelimit==LDAP_NO_LIMIT)
     tvp=NULL;
@@ -484,7 +479,6 @@ static enum nss_status do_result_async(struct ent_context *context)
       ldap_msgfree(context->ec_res);
       context->ec_res=NULL;
     }
-
     rc=ldap_result(context->session->ls_conn,context->ec_msgid,LDAP_MSG_ONE,tvp,&(context->ec_res));
     switch (rc)
     {
@@ -535,8 +529,6 @@ static enum nss_status do_result_async(struct ent_context *context)
   /* update timestamp on success */
   if (stat==NSS_STATUS_SUCCESS)
     time(&(context->session->ls_timestamp));
-
-  log_log(LOG_DEBUG,"<== do_result_async");
 
   return stat;
 }
@@ -634,7 +626,7 @@ static int do_search_async(
   }
   else
     pServerCtrls=NULL;
-  rc=ldap_search_ext(session->ls_conn,base,scope,filter,(char **) attrs,
+  rc=ldap_search_ext(session->ls_conn,base,scope,filter,(char **)attrs,
                      0,pServerCtrls,NULL,LDAP_NO_LIMIT,sizelimit,msgid);
   if (pServerCtrls!=NULL)
   {
