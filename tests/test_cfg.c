@@ -163,32 +163,6 @@ static void test_parse_map_statement(void)
   /* FIXME: implement */
 }
 
-static void test_alloc_lsd(void)
-{
-  struct ldap_service_search_descriptor mylsd;
-  struct ldap_service_search_descriptor *lsd;
-  /* set up mylsd */
-  mylsd.lsd_base="mybase";
-  mylsd.lsd_scope=-2;
-  mylsd.lsd_filter="myfilter";
-  mylsd.lsd_next=NULL;
-  /* test passing existing lsd */
-  lsd=&mylsd;
-  alloc_lsd(&lsd);
-  assert(lsd==&mylsd);
-  assertstreq(lsd->lsd_base,"mybase");
-  assertstreq(lsd->lsd_filter,"myfilter");
-  /* try passing a NULL value */
-  lsd=NULL;
-  alloc_lsd(&lsd);
-  assert(lsd!=NULL);
-  assert(lsd!=&mylsd);
-  assert(lsd->lsd_base==NULL);
-  assert(lsd->lsd_scope==-1);
-  assert(lsd->lsd_filter==NULL);
-  assert(lsd->lsd_next==NULL);
-}
-
 static void test_tokenize(void)
 {
   const char **opts;
@@ -217,7 +191,6 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   test_parse_scope();
   test_parse_map();
   test_parse_map_statement();
-  test_alloc_lsd();
   test_tokenize();
   return EXIT_SUCCESS;
 }
