@@ -39,7 +39,13 @@ test_tio_CFLAGS = -pthread
 test_tio_LDFLAGS = -pthread
 
 test_cfg_SOURCES = test_cfg.c
-test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o
+test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o \
+                 ../nslcd/common.o ../nslcd/ldap-nss.o ../nslcd/pagectrl.o \
+                 ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
+                 ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
+                 ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
+                 ../nslcd/service.o ../nslcd/shadow.o \
+                 @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a
 
 common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h \
                  ../common/tio.c ../common/tio.h
