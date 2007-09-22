@@ -24,6 +24,7 @@ AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = $(PTHREAD_CFLAGS)
 
 nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
+                ../compat/attrs.h ../compat/ldap.h \
                 log.c log.h \
                 common.c common.h \
                 ldap-nss.c ldap-nss.h \
