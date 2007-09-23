@@ -60,7 +60,7 @@ nss_enable()
     if grep -q '^'$name':' /etc/nsswitch.conf
     then
       # modify an existing entry by just adding ldap to the end
-      sed -i 's/^\('$name':.*\)[[:space:]]*$/\1 ldap/' /etc/nsswitch.conf
+      sed -i 's/^\('$name':.*[^[:space:]]\)[[:space:]]*$/\1 ldap/' /etc/nsswitch.conf
     else
       # append a new line
       printf '%-15s ldap\n' $name':' >> /etc/nsswitch.conf
