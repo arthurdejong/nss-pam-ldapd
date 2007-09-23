@@ -73,10 +73,6 @@ changelog:
 flawfinder.html:
 	flawfinder --quiet --html --context --followdotdir . > $@
 
-pscan.txt:
-	find . -name '*.[ch]' -print0 | \
-	  xargs -0 pscan -w > $@
-
 rats.html:
 	rats --quiet --html --context . > $@
 
@@ -92,4 +88,4 @@ splint.txt:
 	           -D__u16=uint16_t -D__u32=uint32_t \
 	           *.[ch] nss/*.[ch] nslcd/*.[ch] > $@ 2>&1
 
-.PHONY: flawfinder.html pscan.txt rats.html splint.txt
+.PHONY: flawfinder.html rats.html splint.txt
