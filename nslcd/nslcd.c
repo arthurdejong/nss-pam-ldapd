@@ -268,7 +268,8 @@ static int open_socket(void)
   /* create socket address structure */
   memset(&addr,0,sizeof(struct sockaddr_un));
   addr.sun_family=AF_UNIX;
-  strcpy(addr.sun_path,NSLCD_SOCKET);
+  strncpy(addr.sun_path,NSLCD_SOCKET,sizeof(addr.sun_path));
+  addr.sun_path[sizeof(addr.sun_path)-1]='\0';
 
   /* bind to the named socket */
   if (bind(sock,(struct sockaddr *)&addr,sizeof(struct sockaddr_un)))

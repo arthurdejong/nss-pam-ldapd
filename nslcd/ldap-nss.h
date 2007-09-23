@@ -184,6 +184,6 @@ enum nss_status _nss_ldap_getrdnvalue(
 /*
  * Escape '*' in a string for use as a filter
  */
-int myldap_escape(const char *src,char *buffer,size_t buflen);
+MUST_USE int myldap_escape(const char *src,char *buffer,size_t buflen);
 
 #endif /* _LDAP_NSS_LDAP_LDAP_NSS_H */

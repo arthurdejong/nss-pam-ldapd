@@ -35,6 +35,8 @@
 
 /* buffer size for both read and write buffers */
 /* TODO: pass this along with the open function */
+/* Note that this size should not be larger than SSIZE_MAX because otherwise
+   write() of such blocks is undefined */
 #define TIO_BUFFERSIZE (4*1024)
 
 /* structure that holds a buffer */
