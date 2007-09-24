@@ -281,6 +281,7 @@ FIXME: we have a race condition here (setting and restoring the signal mask), th
 
   /* set up sigaction */
   memset(&act,0,sizeof(struct sigaction));
+  act.sa_sigaction=NULL;
   act.sa_handler=SIG_IGN;
   sigemptyset(&act.sa_mask);
   act.sa_flags=SA_RESTART;
