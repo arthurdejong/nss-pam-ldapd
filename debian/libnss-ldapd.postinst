@@ -10,6 +10,7 @@ cfg_set()
   parameter="$1"
   value="$2"
   # make matching of spaces better in parameter
+  # this is complicated becase of the "base [map] dn" keyword
   param_re=`echo "$parameter" | sed -s 's#[[:space:]][[:space:]]*#[[:space:]][[:space:]]*#g'`
   # check if the parameter is defined
   replace=`sed -n 's/^\('"$param_re"'\)[[:space:]]*\([^[:space:]]*\|".*"\)[[:space:]]*$/\1/ip' "$CONFFILE" | head -n 1`
@@ -44,6 +45,30 @@ cfg_disable()
   sed -i 's/^\('"$param_re"'[[:space:]]*[^[:space:]]*\)[[:space:]]*$/#\1/i' "$CONFFILE"
   # we're done
   return 0
+}
+
+# set the list of uris
+cfg_uris()
+{
+  uris="$1"
+  # escape all uri directives
+  sed -i 's/^uri /_uri_ /i' $CONFFILE
+  # set the uri options
+  echo "$uris" | sed 's/  */\n/g' | while read uri
+  do
+    if grep -qi '^_uri_ ' $CONFFILE
+    then
+      # escape uri for use in regexp replacement
+      uri=`echo "$uri" | sed -s 's#\\\#\\\\\\\#g;s#|#\\\|#g;s#&#\\\&#g'`
+      # replace the first occurrence of _uri_
+      sed -i '1,/^_uri_ / s|^_uri_ .*$|uri '"$uri"'|i' "$CONFFILE"
+    else
+      # append new uri
+      echo "uri $uri" >> $CONFFILE
+    fi
+  done
+  # comment out the remaining escaped uris
+  sed -i 's/^_uri_ /#uri /' $CONFFILE
 }
 
 # editing nsswitch.conf seems to be ok
@@ -140,7 +165,7 @@ then
   create_config
   # set server uri
   db_get libnss-ldapd/ldap-uris
-  cfg_set uri "$RET"
+  cfg_uris "$RET"
   # set search base
   db_get libnss-ldapd/ldap-base
   cfg_set base "$RET"
