@@ -111,7 +111,6 @@
    <variablelist>
 
     <varlistentry>
- <!-- <term>uri &lt;ldap[is]://[name[:port]]&gt;</term> -->
      <term><option>uri</option> <emphasis remap="I">URI</emphasis></term>
      <listitem>
       <para>
@@ -159,7 +158,6 @@
     </varlistentry>
 
     <varlistentry>
-<!-- <option><optional>root</optional>bindpw</option> -->
      <term><option>bindpw</option> <emphasis remap="I">PASSWORD</emphasis></term>
      <listitem>
       <para>
@@ -358,7 +356,10 @@
 
 <!--
     <varlistentry>
-     <term><option>default</option> <emphasis remap="I">MAP.ATTRIBUTE</emphasis> "<emphasis remap="I">VALUE</emphasis>"</term>
+     <term><option>default</option>
+           <emphasis remap="I">MAP</emphasis>
+           <emphasis remap="I">ATTRIBUTE</emphasis>
+           "<emphasis remap="I">VALUE</emphasis>"</term>
      <listitem>
       <para>
        Specifies the default value to use for entries that lack the
@@ -381,28 +382,35 @@
    <variablelist>
 
     <varlistentry>
-     <term><emphasis remap="B">timelimit &lt;timelimit&gt;</emphasis></term>
+     <term><option>bind_timelimit</option> <emphasis remap="I">SECONDS</emphasis></term>
      <listitem>
-      <para>Specifies the time limit (in seconds) to use when performing searches. A value
-      of zero (0), which is the default, is to wait indefinitely for
-      searches to be completed.</para>
+      <para>
+       Specifies the time limit (in seconds) to use when connecting to the
+       directory server.
+       This is distinct from the time limit specified in
+       <option>timelimit</option> and affects the setup of the connection only.
+       Note that not all <acronym>LDAP</acronym> client libraries have support
+       for setting the connection timeout.
+       The default bind timelimit is 30 seconds.
+      </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><emphasis remap="B">bind_timelimit &lt;timelimit&gt;</emphasis></term>
+     <term><option>timelimit</option> <emphasis remap="I">SECONDS</emphasis></term>
      <listitem>
-      <para>Specifies the time limit (in seconds) to use when connecting to the directory
-      server. This is distinct from the time limit specified in
-      <emphasis remap="B">timelimit</emphasis>
-      and affects the initial server connection only. (Server connections
-      are otherwise cached.) Only some
-      <acronym>LDAP</acronym>
-      client libraries have the underlying functionality necessary to
-      support this option. The default bind timelimit is 30 seconds.</para>
+      <para>
+       Specifies the time limit (in seconds) to wait for a response from the
+       <acronym>LDAP</acronym> server for a response.
+       A value of zero (0), which is the default, is to wait indefinitely for
+       searches to be completed.
+      </para>
      </listitem>
     </varlistentry>
 
+<!-- FIXME: change the defaults to 10 and 20 seconds respectively -->
+
+<!-- DO NOT DOCUMENT BECAUSE THIS WILL CHANGE SOON ANYWAY
     <varlistentry>
      <term><emphasis remap="B">bind_policy &lt;hard_open|hard_init|soft&gt;</emphasis></term>
      <listitem>
@@ -432,14 +440,16 @@
       the first request.</para>
      </listitem>
     </varlistentry>
+-->
 
     <varlistentry>
-     <term><emphasis remap="B">idle_timelimit &lt;timelimit&gt;</emphasis></term>
+     <term><option>idle_timelimit</option> <emphasis remap="I">SECONDS</emphasis></term>
      <listitem>
-      <para>Specifies the time (in seconds) after which
-      <emphasis remap="B">nss_ldap</emphasis>
-      will close connections to the directory server. The default is not to
-      time out connections.</para>
+      <para>
+       Specifies the period if inactivity (in seconds) after which the
+       connection to the <acronym>LDAP</acronym> server will be closed.
+       The default is not to time out connections.
+      </para>
      </listitem>
     </varlistentry>
 
@@ -573,7 +583,7 @@
   <title>Supported maps</title>
   <para>
    The following maps are supported. They are referenced as
-   <emphasis remap="I">MAP</emphasis> withthe options.
+   <emphasis remap="I">MAP</emphasis> in the options above.
   </para>
   <variablelist remap="TP">
    <varlistentry>
@@ -630,12 +640,6 @@
     <term><filename>/etc/nss-ldapd.conf</filename></term>
     <listitem><para>the main configuration file</para></listitem>
    </varlistentry>
-<!--
-   <varlistentry>
-    <term><filename>/etc/nss-ldapd.secret</filename></term>
-    <listitem><para>password configuration file</para></listitem>
-   </varlistentry>
--->
    <varlistentry>
     <term><filename>/etc/nsswitch.conf</filename></term>
     <listitem><para>Name Service Switch configuration file</para></listitem>
