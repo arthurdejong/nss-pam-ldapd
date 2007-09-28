@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap 238-1\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-08-19 11:09+0200\n"
+"POT-Creation-Date: 2007-09-28 10:02+0200\n"
 "PO-Revision-Date: 2005-06-08 15:25+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -43,15 +43,6 @@ msgid ""
 msgstr ""
 "Ghi chú: thường là ý kiến tốt để sử dụng một địa chỉ dạng IP vì sẽ gặp ít "
 "lỗi hơn nếu dịch vụ tên miền không sẵn sàng."
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:1001
-#, no-c-format
-msgid ""
-"When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
-"ldapi://%2fvar%2frun%2fldapi_sock/)"
-msgstr ""
 
 #. Type: string
 #. Description

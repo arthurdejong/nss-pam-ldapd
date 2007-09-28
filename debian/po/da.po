@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap_211-4_da\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-08-19 11:09+0200\n"
+"POT-Creation-Date: 2007-09-28 10:02+0200\n"
 "PO-Revision-Date: 2004-02-28 18:38+0100\n"
 "Last-Translator: Claus Hindsgaul <claus_h@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -48,15 +48,6 @@ msgid ""
 msgstr ""
 "Bemærk: Det er normalt en god idé at bruge en IP-adresse: det reducerer "
 "risikoen for fejl hvis navneservicen ikke er tilgængelig."
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:1001
-#, no-c-format
-msgid ""
-"When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
-"ldapi://%2fvar%2frun%2fldapi_sock/)"
-msgstr ""
 
 #. Type: string
 #. Description

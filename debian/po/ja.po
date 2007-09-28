@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-08-19 11:09+0200\n"
+"POT-Creation-Date: 2007-09-28 10:02+0200\n"
 "PO-Revision-Date: 2003-09-15 11:02+0900\n"
 "Last-Translator: Kenshi Muto <kmuto@debian.org>\n"
 "Language-Team: Japanese <debian-japanese@lists.debian.org>\n"
@@ -51,15 +51,6 @@ msgid ""
 msgstr ""
 "注意: IP アドレスを使うのは、通常、良い考えです。これはネームサービスが利用で"
 "きないときの障害の危険を減らします。"
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:1001
-#, no-c-format
-msgid ""
-"When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
-"ldapi://%2fvar%2frun%2fldapi_sock/)"
-msgstr ""
 
 #. Type: string
 #. Description

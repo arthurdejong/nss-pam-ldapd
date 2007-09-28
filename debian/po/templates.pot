@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.3\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-08-19 11:09+0200\n"
+"POT-Creation-Date: 2007-09-28 10:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,15 +37,6 @@ msgstr ""
 msgid ""
 "When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
-msgstr ""
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:1001
-#, no-c-format
-msgid ""
-"When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
-"ldapi://%2fvar%2frun%2fldapi_sock/)"
 msgstr ""
 
 #. Type: string

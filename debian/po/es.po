@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-08-19 11:09+0200\n"
+"POT-Creation-Date: 2007-09-28 10:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Debian Description Translation Project <debconf@ddtp.debian."
 "org>\n"
@@ -46,15 +46,6 @@ msgstr ""
 "NOTA: Es siempre una buena idea especificar una dirección IP en vez de un "
 "nombre, ya que reduce el riesgo de fallos en caso de que el servicio de "
 "nombres no esté disponible."
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:1001
-#, no-c-format
-msgid ""
-"When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
-"ldapi://%2fvar%2frun%2fldapi_sock/)"
-msgstr ""
 
 #. Type: string
 #. Description

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.3\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-08-19 11:09+0200\n"
+"POT-Creation-Date: 2007-09-28 10:02+0200\n"
 "PO-Revision-Date: 2007-08-19 14:06+0100\n"
 "Last-Translator: Américo Monteiro <a_monteiro@netcabo.pt>\n"
 "Language-Team: Portuguese <traduz@debianpt.org>\n"
@@ -44,17 +44,6 @@ msgstr ""
 "Geralmente é boa ideia usar um endereço IP quando se usa o ldap ou "
 "esquemasdo ldap; isto reduz riscos de falhas quando o serviço de nomes não "
 "está disponível."
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:1001
-#, no-c-format
-msgid ""
-"When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
-"ldapi://%2fvar%2frun%2fldapi_sock/)"
-msgstr ""
-"Quando se usa o esquema ldapi, %2f deverá ser usado para substituir barras "
-"(ex. ldapi://%2fvar%2frun%2fldapi_sock/)"
 
 #. Type: string
 #. Description
@@ -189,3 +178,10 @@ msgstr ""
 "Você pode seleccionar os serviços que deverão estar activos ou inactivos "
 "para buscas LDAP. Novas buscas LDAP serão adicionadas como últimas opções."
 "Certifique-se de rever estas alterações."
+
+#~ msgid ""
+#~ "When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
+#~ "ldapi://%2fvar%2frun%2fldapi_sock/)"
+#~ msgstr ""
+#~ "Quando se usa o esquema ldapi, %2f deverá ser usado para substituir "
+#~ "barras (ex. ldapi://%2fvar%2frun%2fldapi_sock/)"

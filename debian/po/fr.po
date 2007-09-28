@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldapd 0.1.0\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-08-19 11:09+0200\n"
+"POT-Creation-Date: 2007-09-28 10:02+0200\n"
 "PO-Revision-Date: 2007-07-11 11:51+0200\n"
 "Last-Translator: Cyril Brulebois <cyril.brulebois@enst-bretagne.fr\n"
 "Language-Team: French <debian-l10n-french@lists.debian.org\n"
@@ -57,15 +57,6 @@ msgid ""
 msgstr ""
 "Il est recommandé d'utiliser une adresse IP plutôt qu'un nom d'hôte ; les "
 "risques d'échec sont réduits en cas d'indisponibilité du service de noms."
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:1001
-#, no-c-format
-msgid ""
-"When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
-"ldapi://%2fvar%2frun%2fldapi_sock/)"
-msgstr ""
 
 #. Type: string
 #. Description

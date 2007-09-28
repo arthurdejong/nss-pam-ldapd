@@ -9,9 +9,6 @@ _Description: LDAP server Uniform Resource Identifier:
  When useing the ldap or ldaps schemes it is usually a good idea to use an IP
  address; this reduces the risk of failure when name services are unavailable.
  .
- When using the ldapi scheme, %2f should be used to escape slashes
- (e.g. ldapi://%2fvar%2frun%2fldapi_sock/)
- .
  Multiple URIs can be be specified by separating them with spaces.
 
 Template: libnss-ldapd/ldap-base
