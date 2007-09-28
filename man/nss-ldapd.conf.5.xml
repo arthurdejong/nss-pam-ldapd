@@ -123,6 +123,11 @@
        supported by the <acronym>LDAP</acronym> library).
       </para>
       <para>
+       When using the ldapi scheme, %2f should be used to escape slashes
+       (e.g. ldapi://%2fvar%2frun%2fslapd%2fldapi/), although most of the
+       time this should not be needed.
+      </para>
+      <para>
        This option may be specified multiple times. Normally, only the first
        server will be used with the following servers as fallback (see
        <option>bind_timelimit</option> below).
