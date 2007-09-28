@@ -357,8 +357,9 @@ static void parse_map_statement(const char *filename,int lnr,
 }
 
 /* split a line from the configuration file
-   note that this code is not thread safe!
-   the line value will be rewritten! */
+   note that this code is not thread safe since a pointer to the same
+   storage will be returned with each call
+   the line string is modified */
 static const char **tokenize(const char *filename,int lnr,char *line,int *nopt)
 {
   static const char *retv[MAX_LINE_OPTIONS];
@@ -461,37 +462,48 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(opts[0],"rootbinddn")==0)
     {
+      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,opts[0]);
+      exit(EXIT_FAILURE);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_rootbinddn=xstrdup(opts[1]);
     }
     else if (strcasecmp(opts[0],"rootbindpw")==0)
     {
+      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,opts[0]);
+      exit(EXIT_FAILURE);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_rootbindpw=xstrdup(opts[1]);
     }
     /* SASL authentication options */
     else if (strcasecmp(opts[0], "sasl_authid")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_saslid=xstrdup(opts[1]);
     }
     else if (strcasecmp(opts[0],"rootsasl_authid")==0)
     {
+      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,opts[0]);
+      exit(EXIT_FAILURE);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_rootsaslid=xstrdup(opts[1]);
     }
     else if (strcasecmp(opts[0],"sasl_secprops")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_sasl_secprops=xstrdup(opts[1]);
     }
     else if (strcasecmp(opts[0],"use_sasl")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_usesasl=parse_boolean(filename,lnr,opts[1]);
     }
     else if (strcasecmp(opts[0],"rootuse_sasl")==0)
     {
+      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,opts[0]);
+      exit(EXIT_FAILURE);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_rootusesasl=parse_boolean(filename,lnr,opts[1]);
     }
@@ -499,6 +511,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     /* Kerberos authentication options */
     else if (strcasecmp(opts[0],"krb5_ccname")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_krb5_ccname=xstrdup(opts[1]);
     }
@@ -555,6 +568,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(opts[0],"bind_policy")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (and may be removed in an upcoming release)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       if ( (strcasecmp(opts[1],"hard")==0) ||
            (strcasecmp(opts[1],"hard_open")==0) )
@@ -566,6 +580,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(opts[0],"nss_connect_policy")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (and may be removed in an upcoming release)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       if (!strcasecmp(opts[1],"oneshot"))
         cfg->ldc_flags|=NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT;
@@ -580,6 +595,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     /* SSL/TLS options */
     else if (strcasecmp(opts[0],"ssl")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       if (strcasecmp(opts[1],"start_tls")==0)
         cfg->ldc_ssl_on=SSL_START_TLS;
@@ -588,47 +604,56 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(opts[0],"sslpath")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_sslpath=xstrdup(opts[1]);
     }
     else if (strcasecmp(opts[0],"tls_checkpeer")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_tls_checkpeer=parse_boolean(filename,lnr,opts[1]);
     }
     else if (strcasecmp(opts[0],"tls_cacertdir")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_tls_cacertdir=xstrdup(opts[1]);
     }
     else if (strcasecmp(opts[0],"tls_cacertfile")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_tls_cacertfile=xstrdup(opts[1]);
     }
     else if (strcasecmp(opts[0],"tls_randfile")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_tls_randfile=xstrdup(opts[1]);
     }
     else if (strcasecmp(opts[0],"tls_ciphers")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_tls_ciphers=xstrdup(opts[1]);
     }
     else if (strcasecmp(opts[0],"tls_cert")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_tls_cert=xstrdup(opts[1]);
     }
     else if (strcasecmp(opts[0],"tls_key")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_tls_key=xstrdup(opts[1]);
     }
     /* other options */
     else if (strcasecmp(opts[0],"restart")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (and may be removed in an upcoming release)",filename,lnr,opts[0]);
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_restart=parse_boolean(filename,lnr,opts[1]);
     }
