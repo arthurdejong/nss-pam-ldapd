@@ -28,6 +28,7 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
+
 INTRODUCTION
 ============
 
@@ -45,9 +46,9 @@ the flat, single domain policy of NIS. LDAP has many of the advantages of NIS+
 (security and scalability) without the complexity. The system will work
 alongside your existing NIS, NIS+, DNS and flat file name services.
 
-This library consists of a thin NSS part that communicates with a local server
+This library consists of a thin NSS part that communicates with a local daemon
 that handles the LDAP lookups. This simplifies the architecture and fixes some
-scalability and locking problems with the original design.
+scalability and locking problems in the original design.
 
 improvements over nss_ldap
 --------------------------
@@ -55,9 +56,9 @@ improvements over nss_ldap
 The fork from nss_ldap was done to implement some major design changes to fix
 some structural problems in the library.
 
-The biggest of those problems were host name lookups through LDAP (which could
-cause deadlocks in most cases) and problems during booting (when the LDAP
-server was not started or not yet reachable).
+The biggest of those problems were host name lookups through LDAP which could
+cause deadlocks in most cases and some general name lookup problems during
+booting (when the LDAP server was not started or not yet reachable).
 
 With nss-ldapd a number of refactoring steps were taken to simplify the code
 and improve maintainability. Legacy code was removed and support for non-Linux
@@ -65,13 +66,12 @@ operating systems was initially removed to make the code more readable.
 Portability will be re-added once the architecture stabilises.
 
 The most practical improvements of nss-ldapd over nss_ldap are:
-
 * the LDAP library is not loaded for every process doing LDAP lookups
 * the number of connections to the LDAP server is limited, because not every
   process will open it's own connection (this problem is also mitigated by
   using nscd)
-* hostname lookups should now be deadlock-free because the LDAP server name
-  lookup no longer uses the ldap method
+* hostname lookups should now be deadlock-free because the LDAP server name is
+  no lonker looked up using the ldap method
 * the setup is easier to debug because loggin on the server component can be
   enabled without affecting "normal" processes
 
@@ -88,7 +88,7 @@ supported C libraries
 
 This library currently only supports the GNU C Library. Support for other C
 libraries has been removed in a refactoring step. Compatibility code and
-support for other C libraries will be added in due time.
+support for other C libraries will be added in due time upon request.
 
 supported name databases
 ------------------------
@@ -108,7 +108,8 @@ and
 
 automounter map lookups (which are also defined in /etc/nsswitch.conf) are not
 supported because the NSS interface is not used for these. The common autofs
-implementation currently uses it's own method for getting the maps from LDAP.
+implementation (on GNU/Linux) currently uses it's own method for getting the
+maps from LDAP.
 
 The publickey, bootparams and netmasks are currently also unsupported. Some
 investigation should be done if these are needed for anything, which
@@ -117,7 +118,7 @@ interfaces should be exported and how the LDAP schema part should look like.
 supported LDAP libraries
 ------------------------
 
-The current version of nss-ldapd has been developed with OpenLDAP 2.1.30 but
+The current version of nss-ldapd has been developed with OpenLDAP 2.1 but
 adding support for other LDAP libraries with similar interfaces should not be
 too hard.
 
@@ -131,15 +132,16 @@ Since nss-ldapd was forked from nss_ldap most of the features that came with
 nss_ldap are available. However, not all features have extensively tested yet
 and may cause problems.
 
-- attribute mapping should work but did not receive adequate testing
-  (but the configuration syntax has changed)
-- attribute value default and overrides are not supported and may be removed
-  in a coming release (but may reappear some day if requested)
-- the manual page for nss-ldap.conf is horribly outdated and includes
-  incorrect information
-- paged results support is untested
+- attribute value default and overrides have been removed (but may reappear
+  some day if requested)
 - SSL/TLS support is untested but will be tested when the core code stabilizes
-- the configuration file formats will change
+- the configuration file formats may undergo some more changes
+- group membership lookups with the uniqueMember and memberOf attribute as
+  well as nested groups are currently unsupported (support will be re-added
+  later)
+- SASL and Kerberos configuration is untested
+- server discovery using DNS has been removed
+- rootbinddn/rootbindpw support is disabled (support will be added later)
 
 In general, development is ongoing and a lot has to be cleaned up. The focus
 is to have the functionality that is present be well tested and supported.
@@ -196,8 +198,8 @@ on the format. As an example the file could look a little like this:
   # whether alias lookups really use NSS depends on the mail server
   aliases:        files ldap
 
-Furthermore a LDAP configuration file (by default /etc/nss-ldapd.conf) needs
-to be made. The location of this file can be specified with configure. See the
+Furthermore a configuration file (by default /etc/nss-ldapd.conf) needs to be
+made. The location of this file can be specified with configure. See the
 shipped manual page for details on the format and options. It should at least
 contain something like:
 
@@ -207,9 +209,6 @@ contain something like:
   # search base for all queries.
   base dc=example,dc=net
 
-  # LDAP protocol version
-  ldap_version 3
-
 
 LDAP SCHEMA
 ===========
@@ -217,8 +216,8 @@ LDAP SCHEMA
 nss-ldapd supports a wide range of possible LDAP schema configurations.
 Furthermore it can be customized heavily. The LDAP schema used is described in
 RFC 2307. Groups with distinguished name members (instead of login names) (RFC
-2307bis) is also supported. A posixGroup can thus have the both memberUid and
-uniqueMember attributes.
+2307bis) are currently unsupported. Support for a posixGroup with both
+memberUid and uniqueMember attributes will be added later.
 
 default attributes
 ------------------
@@ -287,6 +286,7 @@ When using Microsoft Active Directory server (typically on Microsoft Windows
 2000) some changes need to be made to the nss-ldapd.conf configuration file.
 The default configuration file has some commented out attribute mappings for
 such a setup.
+
 
 MISC NOTES
 ==========
