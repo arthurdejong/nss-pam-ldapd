@@ -170,12 +170,15 @@ AC_CHECK_HEADERS(gsssasl.h)
 AC_CHECK_HEADERS(gssapi/gssapi_krb5.h gssapi.h)
 AC_CHECK_HEADERS(grp.h)
 
+# set up directory with compatibility replacement files
+AC_CONFIG_LIBOBJ_DIR([compat])
+
 # checks for availability of system libraries for nslcd
 save_LIBS="$LIBS"
 LIBS="$nslcd_LIBS"
 AC_SEARCH_LIBS(gethostbyname,nsl socket)
 AC_SEARCH_LIBS(socket,socket)
-AC_CHECK_LIB(resolv,main)
+#AC_CHECK_LIB(resolv,main)
 AC_SEARCH_LIBS(daemon,bsd)
 nslcd_LIBS="$LIBS"
 LIBS="$save_LIBS"
