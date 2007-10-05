@@ -6,7 +6,8 @@ probably before we can call this stable
 * error out quickly when the LDAP server is down
 * fix race condition when setting signal mask in common/tio.c
 * find problem with reachability of LDAP server
-* fix usage of filter configfile keyword
+* get root/nonroot connections working properly
+* fix a problem with spaces in DNs in configfile (base and binddn keywors)
 
 other items
 -----------
@@ -14,7 +15,6 @@ other items
 * Debian packaging: maybe remove stuff from /etc/nsswitch.conf on remove or
   purge (maybe prompt?)
 * support IPv6 in name (host address) lookups
-* support IPv6 in LDAP connections (investigate if OpenLDAP supports it)
 * probably document that you should use libpam-ldap for authentication without
   exposing the passwords through NSS
 * make a test suite (instructions for setting up environment (server), LDIF
@@ -24,7 +24,7 @@ other items
 * maybe support publickey (check README also)
 * maybe support netmasks (check README also)
 * reserve some threads in the server for root users (probably set up
-  connection pools)
+  connection pools) (we currently have a connection per thread)
 * add sanity checking code (e.g. not too large buffer allocation and checking
   that host, user, etc do not contain funky characters) in all server modules
 * implement running under a different uid/gid (maybe chroot jail)
@@ -35,4 +35,17 @@ other items
   a separate thread so our workers are available to handle new requests
 * reconfigure or upgrade of Debian package should restart nslcd instead of
   stop and later on start
-* fix a problem with spaces in DNs in configfile
+* tune the filter and parameter buffer sizes
+* in mkfilter_*() functions: add some check to see if the filter fits and log
+  an error (also see to it that the caller exists (e.g. declare return value
+  as must use))
+* update online documentation
+* maybe document how to set up automounting in LDAP (Linux and Solaris)
+* make sure to translate timelimit 0 into timelimit -1 where needed
+* split out idle checking into separate function so we may be able to call it
+  periodically from elsewhere (e.g. the main loop)
+* add an option to create an extra socket somewhere (so it may be used with
+  chroot jails)
+* make number of thread configurable in config
+* make I/O timeout between NSS lib and daemon configurable at configure
+* check for memory leaks

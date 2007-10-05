@@ -1,3 +1,24 @@
+changes from 0.3 to 0.4
+-----------------------
+
+* remove nss_schema configfile option
+* temporary remove support for uniqueMember group membership attributes (will
+  be re-added in a later release)
+* removed support for nested groups, if this is really needed (please ask or
+  file a bug if you want it) it can be re-added later on
+* added missing docbook sources for manual pages to tarball
+* major cleanups and simplifications in the core LDAP query code (we don't
+  need to worry about SIGPIPE because nslcd does that globally, locking
+  because a connection is only used by one thread  and simplifications the the
+  LDAP connection and query state)
+* get base, scope, filter and map configfile directives properly working
+* simplifications in LDAP reconnect logic (some work remains to be done in
+  this area)
+* issue warnings or errors for untested or unsupported configuration options
+* properly handle multiple URIs in Debian configuration
+* documentation improvements
+
+
 changes from 0.2.1 to 0.3
 -------------------------
 
