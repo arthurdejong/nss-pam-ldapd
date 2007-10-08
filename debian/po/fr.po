@@ -1,26 +1,16 @@
-#
-#    Translators, if you are not familiar with the PO format, gettext
-#    documentation is worth reading, especially sections dedicated to
-#    this format, e.g. by running:
-#         info -n '(gettext)PO Files'
-#         info -n '(gettext)Header Entry'
-#
-#    Some information specific to po-debconf are available at
-#            /usr/share/doc/po-debconf/README-trans
-#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
-#
-#    Developers do not need to manually edit POT or PO files.
-#
-# Philippe Batailler <philippe.batailler@free.fr>, until 2007
+# Translation of nss-ldapd debconf templates to French
+# Copyright (C) 2007 Cyril Brulebois <cyril.brulebois@enst-bretagne.fr>
+# Copyright (C) 2007 Philippe Batailler <philippe.batailler@free.fr>
+# This file is distributed under the same license as the nss-ldapd package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: libnss-ldapd 0.1.0\n"
+"Project-Id-Version: nss-ldapd 0.3\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
 "POT-Creation-Date: 2007-09-28 10:02+0200\n"
-"PO-Revision-Date: 2007-07-11 11:51+0200\n"
-"Last-Translator: Cyril Brulebois <cyril.brulebois@enst-bretagne.fr\n"
-"Language-Team: French <debian-l10n-french@lists.debian.org\n"
+"PO-Revision-Date: 2007-10-13 12:31+0200\n"
+"Last-Translator: Cyril Brulebois <cyril.brulebois@enst-bretagne.fr>\n"
+"Language-Team: French <debian-l10n-french@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -42,29 +32,25 @@ msgstr ""
 "Veuillez indiquer l'adresse du serveur LDAP à utiliser. Il s'agit d'une "
 "chaîne de la forme « ldap://<nom de machine ou IP>:<port>/ ». Des adresses "
 "sous la forme « ldaps:// » et « ldapi:// » peuvent aussi être utilisées. Le "
-"numéro de port est optionnel."
+"numéro de port est facultatif."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Note: It is usually a good idea to use an IP address; this reduces risks "
-#| "of failure in the event name service is unavailable."
 msgid ""
 "When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
-"Il est recommandé d'utiliser une adresse IP plutôt qu'un nom d'hôte ; les "
-"risques d'échec sont réduits en cas d'indisponibilité du service de noms."
+"Lorsque le protocole utilisé est « ldap » ou « ldaps », il est recommandé "
+"d'utiliser une adresse IP plutôt qu'un nom d'hôte ; les risques d'échec sont "
+"réduits en cas d'indisponibilité du service de noms."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
 msgstr ""
-"Des adresses multiples peuvent être indiquées, en les séparant par des "
-"espaces."
+"Des adresses multiples peuvent être indiquées, séparées par des espaces."
 
 #. Type: string
 #. Description
@@ -99,9 +85,9 @@ msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
 msgstr ""
-"Si le serveur LDAP nécessite un identifiant pour les recherches normales, "
-"indiquez le compte qui doit être utilisé. N'indiquez rien dans le cas "
-"contraire."
+"Si le serveur LDAP nécessite un identifiant pour les recherches ordinaires, "
+"veuillez indiquer le compte qui doit être utilisé. N'indiquez rien dans le "
+"cas contraire."
 
 #. Type: string
 #. Description
@@ -139,10 +125,11 @@ msgid ""
 "used to give root processes more information (e.g. users' shadow entries or "
 "group passwords)."
 msgstr ""
-"Ce compte sera utilisé pour les requêtes NSS avec les droits "
-"superutilisateur. Ceci peut être utilisé pour fournir plus d'informations à "
-"des processus lancés avec les droits superutilisateur (p. ex. les entrées "
-"des utilisateurs dans « shadow » ou les mots de passe de groupe)."
+"Veuillez indiquer l'identifiant à utiliser pour les requêtes NSS avec les "
+"droits superutilisateur. Cela peut être utilisé pour fournir plus "
+"d'informations à des processus lancés avec les droits superutilisateur "
+"(p. ex. les entrées des utilisateurs dans « shadow » ou les mots de passe de "
+"groupe)."
 
 #. Type: string
 #. Description
@@ -181,15 +168,12 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
+"Le fichier /etc/nsswitch.conf doit être modifié pour rendre ce paquet "
+"fonctionnel."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:7001
-#, fuzzy
-#| msgid ""
-#| "You can also select the services that should be enabled or disabled for "
-#| "LDAP lookups. New LDAP lookups will be added as last option. Be sure to "
-#| "review these changes."
 msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
@@ -199,6 +183,14 @@ msgstr ""
 "désactivés pour les requêtes LDAP. Les nouvelles requêtes LDAP seront "
 "ajoutées comme dernière option. Il est important de bien contrôler ces "
 "modifications."
+
+#~ msgid ""
+#~ "When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
+#~ "ldapi://%2fvar%2frun%2fldapi_sock/)"
+#~ msgstr ""
+#~ "Lorsque le protocole « ldapi » est utilisé, %2f doit être utilisé pour "
+#~ "remplacer les barres obliques (« slashes »), par exemple : « ldapi://%"
+#~ "2fvar%2frun%2fldapi_sock/ »."
 
 #~ msgid "LDAP version to use:"
 #~ msgstr "Version du protocole LDAP :"
