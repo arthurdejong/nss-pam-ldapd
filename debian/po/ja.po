@@ -13,21 +13,21 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: nss-ldapd 0.3\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
 "POT-Creation-Date: 2007-09-28 10:02+0200\n"
-"PO-Revision-Date: 2003-09-15 11:02+0900\n"
+"PO-Revision-Date: 2007-10-14 16:31+0900\n"
 "Last-Translator: Kenshi Muto <kmuto@debian.org>\n"
 "Language-Team: Japanese <debian-japanese@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=EUC-JP\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "LDAP server Uniform Resource Identifier:"
-msgstr ""
+msgstr "LDAP ã‚µãƒ¼ãƒã® Uniform Resource Identifier:"
 
 #. Type: string
 #. Description
@@ -36,34 +36,27 @@ msgid ""
 "Please enter the URI of the LDAP server used. This is a string in the form "
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
 "port number is optional."
-msgstr ""
+msgstr "åˆ©ç”¨ã™ã‚‹LDAP ã‚µãƒ¼ãƒã® URI ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚ã“ã‚Œã¯ ldap://<ãƒ›ã‚¹ãƒˆåã¾ãŸã¯ IP>:<ãƒãƒ¼ãƒˆ>/ å½¢å¼ã®æ–‡å­—åˆ—ã§ã™ã€‚ldaps:// ã¾ãŸã¯ ldapi:// ã‚‚åˆ©ç”¨ã§ãã¾ã™ã€‚ãƒãƒ¼ãƒˆç•ªå·ã¯çœç•¥ã§ãã¾ã™ã€‚"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Note: It is usually a good idea to use an IP address; this reduces risks "
-#| "of failure in the event name service is unavailable."
 msgid ""
 "When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
-msgstr ""
-"Ãí°Õ: IP ¥¢¥É¥ì¥¹¤ò»È¤¦¤Î¤Ï¡¢ÄÌ¾ï¡¢ÎÉ¤¤¹Í¤¨¤Ç¤¹¡£¤³¤ì¤Ï¥Í¡¼¥à¥µ¡¼¥Ó¥¹¤¬ÍøÍÑ¤Ç"
-"¤­¤Ê¤¤¤È¤­¤Î¾ã³²¤Î´í¸±¤ò¸º¤é¤·¤Ş¤¹¡£"
+msgstr "ldap ã¾ãŸã¯ ldaps ã‚¹ã‚­ãƒ¼ãƒã‚’ä½¿ã†ã¨ãã€IP ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’ä½¿ã†ã®ã¯ã€é€šå¸¸ã€è‰¯ã„è€ƒãˆã§ã™ã€‚ã“ã‚Œã¯ãƒãƒ¼ãƒ ã‚µãƒ¼ãƒ“ã‚¹ãŒåˆ©ç”¨ã§ããªã„ã¨ãã®éšœå®³ã®å±é™ºã‚’æ¸›ã‚‰ã—ã¾ã™ã€‚"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
-msgstr ""
+msgstr "ã‚¹ãƒšãƒ¼ã‚¹ã§åŒºåˆ‡ã£ã¦ã€è¤‡æ•°ã® URI ã‚’æŒ‡å®šã§ãã¾ã™ã€‚"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:2001
-#, fuzzy
 msgid "LDAP server search base:"
-msgstr "LDAP ¥µ¡¼¥Ğ¤Î¥Û¥¹¥È¥¢¥É¥ì¥¹"
+msgstr "LDAP ã‚µãƒ¼ãƒã®æ¤œç´¢ãƒ™ãƒ¼ã‚¹:"
 
 #. Type: string
 #. Description
@@ -74,16 +67,15 @@ msgid ""
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
 msgstr ""
-"LDAP ¸¡º÷¥Ù¡¼¥¹¤Î¼±ÊÌÌ¾¤òÆşÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£Â¿¤¯¤Î¥µ¥¤¥È¤Ç¤Ï¤½¤Î¥É¥á¥¤¥óÌ¾¤ÎÍ×"
-"ÁÇ¤ò¤³¤ÎÌÜÅª¤Ë»È¤Ã¤Æ¤¤¤Ş¤¹¡£¤¿¤È¤¨¤Ğ¡¢¥É¥á¥¤¥ó \"example.net\" ¤Ç¤Ï¸¡º÷¥Ù¡¼¥¹"
-"¤Î¼±ÊÌÌ¾¤È¤·¤Æ \"dc=example,dc=net\" ¤ò»È¤Ã¤Æ¤¤¤ë¤Ç¤·¤ç¤¦¡£"
+"LDAP æ¤œç´¢ãƒ™ãƒ¼ã‚¹ã®è­˜åˆ¥åã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚å¤šãã®ã‚µã‚¤ãƒˆã§ã¯ãã®ãƒ‰ãƒ¡ã‚¤ãƒ³åã®è¦"
+"ç´ ã‚’ã“ã®ç›®çš„ã«ä½¿ã£ã¦ã„ã¾ã™ã€‚ãŸã¨ãˆã°ã€ãƒ‰ãƒ¡ã‚¤ãƒ³ \"example.net\" ã§ã¯æ¤œç´¢ãƒ™ãƒ¼ã‚¹"
+"ã®è­˜åˆ¥åã¨ã—ã¦ \"dc=example,dc=net\" ã‚’ä½¿ã£ã¦ã„ã‚‹ã§ã—ã‚‡ã†ã€‚"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:3001
-#, fuzzy
 msgid "LDAP database user:"
-msgstr "ÆÃ¸¢¤Î¤Ê¤¤¥Ç¡¼¥¿¥Ù¡¼¥¹¥æ¡¼¥¶"
+msgstr "LDAP ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ãƒ¦ãƒ¼ã‚¶:"
 
 #. Type: string
 #. Description
@@ -91,7 +83,7 @@ msgstr "ÆÃ¸¢¤Î¤Ê¤¤¥Ç¡¼¥¿¥Ù¡¼¥¹¥æ¡¼¥¶"
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
-msgstr ""
+msgstr "é€šå¸¸ã®ãƒ«ãƒƒã‚¯ã‚¢ãƒƒãƒ—ã« LDAP ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ãŒãƒ­ã‚°ã‚¤ãƒ³ã‚’å¿…è¦ã¨ã™ã‚‹ã®ã§ã‚ã‚Œã°ã€åˆ©ç”¨ã™ã‚‹ã‚¢ã‚«ã‚¦ãƒ³ãƒˆåã‚’ã“ã“ã«å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚ãã†ã§ãªã‘ã‚Œã°ç©ºã®ã¾ã¾ã«ã—ã¾ã™ã€‚"
 
 #. Type: string
 #. Description
@@ -99,25 +91,25 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:3001 ../libnss-ldapd.templates:5001
 msgid "This value should be specified as a DN (distinguished name)."
-msgstr ""
+msgstr "ã“ã®å€¤ã¯ DN (è­˜åˆ¥å) ã¨ã—ã¦æŒ‡å®šã™ã¹ãã§ã™ã€‚"
 
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:4001
 msgid "LDAP user password:"
-msgstr ""
+msgstr "LDAP ãƒ¦ãƒ¼ã‚¶ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰:"
 
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr "LDAP ¥Ç¡¼¥¿¥Ù¡¼¥¹¤Ë¥í¥°¥¤¥ó¤¹¤ë¤Î¤Ë»È¤¦¥Ñ¥¹¥ï¡¼¥É¤òÆşÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£"
+msgstr "LDAP ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã«ãƒ­ã‚°ã‚¤ãƒ³ã™ã‚‹ã®ã«ä½¿ã†ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:5001
 msgid "LDAP account for root:"
-msgstr ""
+msgstr "root ç”¨ã® LDAP ã‚¢ã‚«ã‚¦ãƒ³ãƒˆ:"
 
 #. Type: string
 #. Description
@@ -126,34 +118,33 @@ msgid ""
 "This account will be used for nss requests with root privileges. This can be "
 "used to give root processes more information (e.g. users' shadow entries or "
 "group passwords)."
-msgstr ""
+msgstr "ã“ã®ã‚¢ã‚«ã‚¦ãƒ³ãƒˆã¯ root æ¨©é™ã§ nss è¦æ±‚ã™ã‚‹ã®ã«ä½¿ã‚ã‚Œã¾ã™ã€‚ã“ã‚Œã¯ root ã®ãƒ—ãƒ­ã‚»ã‚¹ã«ã€ã‚ˆã‚Šå¤šãã®æƒ…å ± (ãƒ¦ãƒ¼ã‚¶ã®ã‚·ãƒ£ãƒ‰ã‚¦ã‚¨ãƒ³ãƒˆãƒªã‚„ã‚°ãƒ«ãƒ¼ãƒ—ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãªã©) ã‚’ä¸ãˆã‚‹ã®ã«ä½¿ã†ã“ã¨ãŒã§ãã¾ã™ã€‚"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:5001
 msgid "Leave this empty to not do anything special for root lookups."
-msgstr ""
+msgstr "root ã®ãƒ«ãƒƒã‚¯ã‚¢ãƒƒãƒ—ã«ä½•ã‚‚ç‰¹åˆ¥ãªã“ã¨ã‚’ã•ã›ãªã„ã®ã§ã‚ã‚Œã°ã€ã“ã“ã¯ç©ºã®ã¾ã¾ã«ã—ã¾ã™ã€‚"
 
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:6001
 msgid "LDAP root account password:"
-msgstr ""
+msgstr "LDAP ã® root ã‚¢ã‚«ã‚¦ãƒ³ãƒˆãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰:"
 
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:6001
-#, fuzzy
 msgid ""
 "Enter the password that will be used to log in to the LDAP database when the "
 "root process does lookups."
-msgstr "LDAP ¥Ç¡¼¥¿¥Ù¡¼¥¹¤Ë¥í¥°¥¤¥ó¤¹¤ë¤Î¤Ë»È¤¦¥Ñ¥¹¥ï¡¼¥É¤òÆşÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£"
+msgstr "root ãƒ—ãƒ­ã‚»ã‚¹ãŒãƒ«ãƒƒã‚¯ã‚¢ãƒƒãƒ—ã‚’è¡Œã†ã¨ãã« LDAP ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã«ãƒ­ã‚°ã‚¤ãƒ³ã™ã‚‹ã®ã«ä½¿ã†ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚"
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:7001
 msgid "Name services to configure:"
-msgstr ""
+msgstr "è¨­å®šã™ã‚‹åå‰ã‚µãƒ¼ãƒ“ã‚¹:"
 
 #. Type: multiselect
 #. Description
@@ -161,7 +152,7 @@ msgstr ""
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
-msgstr ""
+msgstr "ã“ã®ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ãŒå‹•ä½œã™ã‚‹ãŸã‚ã«ã€ldap ãƒ‡ãƒ¼ã‚¿ã‚½ãƒ¼ã‚¹ã‚’ä½¿ã†ã‚ˆã†ã‚ãªãŸã® /etc/nsswitch.conf ã‚’å¤‰æ›´ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 
 #. Type: multiselect
 #. Description
@@ -170,128 +161,4 @@ msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
-msgstr ""
-
-#, fuzzy
-#~ msgid "LDAP version to use:"
-#~ msgstr "ÍøÍÑ¤¹¤ë LDAP ¥Ğ¡¼¥¸¥ç¥ó"
-
-#, fuzzy
-#~ msgid ""
-#~ "Please enter which version of the LDAP protocol is to use.  It is usually "
-#~ "a good idea to set this to highest available version number."
-#~ msgstr ""
-#~ "ÍøÍÑ¤¹¤ë LDAP ¥×¥í¥È¥³¥ë ldapns ¤Î¥Ğ¡¼¥¸¥ç¥ó¤òÆşÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£ÍøÍÑ¤Ç¤­¤ë"
-#~ "ºÇ¤â¹â¤¤¥Ğ¡¼¥¸¥ç¥óÈÖ¹æ¤ò¤³¤³¤ËÀßÄê¤¹¤ë¤Î¤Ï¡¢ÄÌ¾ï¡¢ÎÉ¤¤¹Í¤¨¤Ç¤¹¡£"
-
-#, fuzzy
-#~ msgid ""
-#~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
-#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
-#~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
-#~ "your nsswitch setup."
-#~ msgstr ""
-#~ "¤³¤Î¥Ñ¥Ã¥±¡¼¥¸¤¬Æ°ºî¤¹¤ë¤¿¤á¤Ë¡¢ldap ¥Ç¡¼¥¿¥ê¥½¡¼¥¹¤ò»È¤¦¤è¤¦ /etc/"
-#~ "nsswitch.conf ¤òÊÑ¹¹¤¹¤ëÉ¬Í×¤¬¤¢¤ê¤Ş¤¹¡£/usr/share/doc/libnss-ldap/"
-#~ "examples/nsswitch.ldap ¤Ë¡¢¤¢¤Ê¤¿¤Î nsswitch ¤Î¥»¥Ã¥È¥¢¥Ã¥×¤ÎÎã¤È¤·¤ÆÍø"
-#~ "ÍÑ¡¢¤¢¤ë¤¤¤Ï¸½ºß¤Î¥»¥Ã¥È¥¢¥Ã¥×¤Ë¾å½ñ¤­¥³¥Ô¡¼¤Ç¤­¤ë¸«ËÜ¥Õ¥¡¥¤¥ë¤¬¤¢¤ê¤Ş¤¹¡£"
-
-#~ msgid "distinguished name of the search base"
-#~ msgstr "¸¡º÷¥Ù¡¼¥¹¤Î¼±ÊÌÌ¾"
-
-#~ msgid "password for database login account"
-#~ msgstr "¥Ç¡¼¥¿¥Ù¡¼¥¹¥í¥°¥¤¥ó¥¢¥«¥¦¥ó¥È¤Î¥Ñ¥¹¥ï¡¼¥É"
-
-#~ msgid "nsswitch.conf is not managed automatically"
-#~ msgstr "nsswitch.conf ¤Ï¼«Æ°Åª¤Ë¤Ï´ÉÍı¤µ¤ì¤Ş¤»¤ó"
-
-#~ msgid "make configuration readable/writeable by owner only"
-#~ msgstr "¥ª¡¼¥Ê¤Î¤ßÀßÄê¥Õ¥¡¥¤¥ë¤ÎÆÉ¤ß½ñ¤­¤¬¤Ç¤­¤ë¤è¤¦¤Ë¤¹¤ë"
-
-#~ msgid ""
-#~ "Should the libnss-ldap configuration file be readable and writable only "
-#~ "by the file owner?"
-#~ msgstr ""
-#~ "¥Õ¥¡¥¤¥ë¤Î¥ª¡¼¥Ê¤Î¤ß libnss-ldap ÀßÄê¥Õ¥¡¥¤¥ë¤ÎÆÉ¤ß½ñ¤­¤¬¤Ç¤­¤ë¤è¤¦¤Ë¤·¤Ş"
-#~ "¤¹¤«?"
-
-#~ msgid ""
-#~ "If you use passwords in your libnss-ldap configuration, it is usually a "
-#~ "good idea to have the configuration set with mode 0600 (readable and "
-#~ "writable only by the file's owner)."
-#~ msgstr ""
-#~ "libnss-ldap ÀßÄê¤Ç¥Ñ¥¹¥ï¡¼¥É¤ò»È¤¦¾ì¹ç¡¢ÀßÄê¤Ë¥â¡¼¥É 0600 (¥Õ¥¡¥¤¥ë¤Î¥ª¡¼"
-#~ "¥Ê¤Î¤ßÆÉ¤ß½ñ¤­²ÄÇ½) ¤ò¥»¥Ã¥È¤¹¤ë¤Î¤ÏÎÉ¤¤¹Í¤¨¤Ç¤¹¡£"
-
-#~ msgid ""
-#~ "Note: As a sanity check, libnss-ldap will check if you have nscd "
-#~ "installed and will only set the mode to 0600 if nscd is present."
-#~ msgstr ""
-#~ "Ãí°Õ: ·òÁ´À­¥Á¥§¥Ã¥¯¤È¤·¤Æ¡¢libnss-ldap ¤Ï nscd ¤ò¥¤¥ó¥¹¥È¡¼¥ë¤·¤Æ¤¤¤ë¤«¤ò"
-#~ "¥Á¥§¥Ã¥¯¤·¡¢nscd ¤¬Äó¶¡¤µ¤ì¤Æ¤¤¤ë¾ì¹ç¤Ï 0600 ¤Ë¥â¡¼¥É¤ò¥»¥Ã¥È¤¹¤ë¤À¤±¤Ë¤·"
-#~ "¤Ş¤¹¡£"
-
-#~ msgid "database requires login"
-#~ msgstr "¥Ç¡¼¥¿¥Ù¡¼¥¹¤Î¥í¥°¥¤¥ó¤ÎÉ¬Í×"
-
-#~ msgid "Does the LDAP database require login?"
-#~ msgstr "LDAP ¥Ç¡¼¥¿¥Ù¡¼¥¹¤Ï¥í¥°¥¤¥ó¤òÉ¬Í×¤È¤·¤Ş¤¹¤«?"
-
-#~ msgid ""
-#~ "Answer this question affirmatively only if you can't retreive entries "
-#~ "from the database without logging in."
-#~ msgstr ""
-#~ "¥í¥°¥¤¥ó¤Ê¤·¤Ë¥Ç¡¼¥¿¥Ù¡¼¥¹¤«¤é¥¨¥ó¥È¥ê¤ò¼èÆÀ¤Ç¤­¤Ê¤¤¤È¤¤¤¦¤È¤­¤Ë¸Â¤ê¡¢¡Ö¤Ï"
-#~ "¤¤¡×¤ò¤³¤Î¼ÁÌä¤ËÅú¤¨¤Æ¤¯¤À¤µ¤¤¡£"
-
-#~ msgid "Note: Under a normal setup, this is not needed."
-#~ msgstr "Ãí°Õ: ÄÌ¾ï¤Î¥»¥Ã¥È¥¢¥Ã¥×²¼¤Ç¤Ï¡¢¤³¤ì¤ÏÉ¬Í×¤¢¤ê¤Ş¤»¤ó¡£"
-
-#~ msgid "enable automatic configuration updates by debconf"
-#~ msgstr "debconf ¤Ë¤è¤ë¼«Æ°ÀßÄê¹¹¿·¤òÍ­¸ú¤Ë¤¹¤ë"
-
-#~ msgid ""
-#~ "Should debconf automatically update libnss-ldap's configuration file?"
-#~ msgstr "debconf ¤Ç libnss-ldap ¤ÎÀßÄê¥Õ¥¡¥¤¥ë¤ò¼«Æ°Åª¤Ë¹¹¿·¤·¤Ş¤¹¤«?"
-
-#~ msgid "libnss-ldap has been moved to use debconf for its configuration."
-#~ msgstr "libnss-ldap ¤Ï¤½¤ÎÀßÄê¤Ë debconf ¤ò»È¤¦¤è¤¦¤ËÊÑ¹¹¤µ¤ì¤Ş¤·¤¿¡£"
-
-#~ msgid ""
-#~ "The file will be prepended with \"###DEBCONF###\"; you can disable the "
-#~ "debconf updates by removing that line."
-#~ msgstr ""
-#~ "¥Õ¥¡¥¤¥ë¤Ë¤Ï \"###DEBCONF###\" ¤¬Á°¤ËÉÕ²Ã¤µ¤ì¤Æ¤¤¤Ş¤¹¡£¤³¤Î¹Ô¤òºï½ü¤¹¤ë¤³"
-#~ "¤È¤Ç¡¢debconf ¤Î¹¹¿·¤òÌµ¸ú¤Ë¤Ç¤­¤Ş¤¹¡£"
-
-#~ msgid "All new installations will have this by default."
-#~ msgstr "¿·µ¬¤Î¥¤¥ó¥¹¥È¡¼¥ë¤Ç¤Ï¤¹¤Ù¤Æ¡¢¤³¤ì¤¬¥Ç¥Õ¥©¥ë¥È¤ÇÂ¸ºß¤·¤Ş¤¹¡£"
-
-#~ msgid ""
-#~ "Enter the name of the account that will be used to log in to the LDAP "
-#~ "database."
-#~ msgstr ""
-#~ "LDAP ¥Ç¡¼¥¿¥Ù¡¼¥¹¤Ë¥í¥°¥¤¥ó¤¹¤ë¤Î¤Ë»È¤¦¥¢¥«¥¦¥ó¥ÈÌ¾¤òÆşÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£"
-
-#~ msgid ""
-#~ "Also, before removing this package, it is wise to remove the ldap entries "
-#~ "from nsswitch.conf to keep basic services functioning."
-#~ msgstr ""
-#~ "¤Ş¤¿¡¢¤³¤Î¥Ñ¥Ã¥±¡¼¥¸¤òºï½ü¤¹¤ëÁ°¤Ë¤Ï¡¢´ğËÜÅª¤Ê¥µ¡¼¥Ó¥¹µ¡Ç½¤òÊİ»ı¤¹¤ë¤¿¤á"
-#~ "¤Ë nsswitch.conf ¤«¤é ldap ¥¨¥ó¥È¥ê¤òºï½ü¤·¤Æ¤ª¤¯¤Î¤¬¸­ÌÀ¤Ç¤¹¡£"
-
-#~ msgid "dc=example,dc=net"
-#~ msgstr "dc=example,dc=net"
-
-#~ msgid "cn=proxyuser,dc=example,dc=net"
-#~ msgstr "cn=proxyuser,dc=example,dc=net"
-
-#~ msgid "3, 2"
-#~ msgstr "3, 2"
-
-#, fuzzy
-#~ msgid "ldap://127.0.0.1/"
-#~ msgstr "127.0.0.1"
-
-#~ msgid "Please enter the address of the LDAP server used."
-#~ msgstr "ÍøÍÑ¤¹¤ë LDAP ¥µ¡¼¥Ğ¤Î¥¢¥É¥ì¥¹¤òÆşÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£"
+msgstr "LDAP ãƒ«ãƒƒã‚¯ã‚¢ãƒƒãƒ—ã‚’æœ‰åŠ¹ã¾ãŸã¯ç„¡åŠ¹ã«ã—ãŸã„ã‚µãƒ¼ãƒ“ã‚¹ã‚’é¸æŠã§ãã¾ã™ã€‚æ–°ã—ã„ LDAP ãƒ«ãƒƒã‚¯ã‚¢ãƒƒãƒ—ã¯æœ€å¾Œã®é¸æŠè‚¢ã¨ã—ã¦è¿½åŠ ã•ã‚Œã¾ã™ã€‚ã“ã‚Œã‚‰ã®å¤‰æ›´ã‚’è¦‹ã¦ç¢ºèªã—ã¦ãã ã•ã„ã€‚"
