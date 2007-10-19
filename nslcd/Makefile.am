@@ -28,6 +28,7 @@ nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
                 log.c log.h \
                 common.c common.h \
                 ldap-nss.c ldap-nss.h \
+                myldap.h \
                 pagectrl.c pagectrl.h \
                 cfg.c cfg.h \
                 attmap.c attmap.h \

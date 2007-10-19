@@ -35,6 +35,7 @@
 #include <ldap.h>
 
 #include "cfg.h"
+#include "myldap.h"
 
 #ifdef __GNUC__
 #define alignof(ptr) __alignof__(ptr)
@@ -55,9 +56,6 @@
 /* worst case */
 #define bytesleft(ptr, blen, TYPE) \
   ( (blen < alignof(TYPE)) ? 0 : (blen - alignof(TYPE) + 1))
-
-/* This a a generic session handle. */
-typedef struct ldap_session MYLDAP_SESSION;
 
 /*
  * the state consists of the desired attribute value or an offset into a list of
@@ -98,9 +96,6 @@ struct ent_context
   LDAPMessage *ec_res;               /* result chain */
   struct berval *ec_cookie;          /* cookie for paged searches */
 };
-
-/* create a new session, this does not yet connect to the LDAP server */
-MUST_USE MYLDAP_SESSION *myldap_create_session(void);
 
 /* this a a parser function for LDAP results */
 typedef enum nss_status (*parser_t)(MYLDAP_SESSION *session,LDAPMessage *e,
@@ -180,10 +175,5 @@ int has_objectclass(MYLDAP_SESSION *session,LDAPMessage *entry,const char *objec
 enum nss_status _nss_ldap_getrdnvalue(
         MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype,
         char **rval,char **buffer,size_t * buflen);
-
-/*
- * Escape '*' in a string for use as a filter
- */
-MUST_USE int myldap_escape(const char *src,char *buffer,size_t buflen);
 
 #endif /* _LDAP_NSS_LDAP_LDAP_NSS_H */
