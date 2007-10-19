@@ -889,65 +889,6 @@ static enum nss_status do_with_reconnect(
 }
 
 /*
- * Parse, fetching reuslts from chain instead of server.
- */
-static enum nss_status do_parse_sync(
-        struct ent_context *context,void *result,
-        char *buffer,size_t buflen,parser_t parser)
-{
-  enum nss_status parseStat=NSS_STATUS_NOTFOUND;
-  LDAPMessage *e=NULL;
-
-  log_log(LOG_DEBUG,"==> do_parse_sync");
-
-  /*
-   * if ec_state.ls_info.ls_index is non-zero, then we don't collect another
-   * entry off the LDAP chain, and instead refeed the existing result to
-   * the parser. Once the parser has finished with it, it will return
-   * NSS_STATUS_NOTFOUND and reset the index to -1, at which point we'll retrieve
-   * another entry.
-   */
-  do
-  {
-    if ((context->ec_state.ls_retry==0) &&
-        ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
-          (context->ec_state.ls_info.ls_index==-1) ))
-    {
-      if (e==NULL)
-        e=ldap_first_entry(context->session->ls_conn,context->ec_res);
-      else
-        e=ldap_next_entry(context->session->ls_conn,e);
-    }
-
-    if (e==NULL)
-    {
-      /* Could not get a result; bail */
-      parseStat=NSS_STATUS_NOTFOUND;
-      break;
-    }
-
-    /*
-     * We have an entry; now, try to parse it.
-     *
-     * If we do not parse the entry because of a schema
-     * violation, the parser should return NSS_STATUS_NOTFOUND.
-     * We'll keep on trying subsequent entries until we
-     * find one which is parseable, or exhaust avialable
-     * entries, whichever is first.
-     */
-    parseStat=parser(context->session,e,&(context->ec_state),result,buffer,buflen);
-
-    /* hold onto the state if we're out of memory XXX */
-    context->ec_state.ls_retry=(parseStat==NSS_STATUS_TRYAGAIN)&&(buffer!=NULL);
-  }
-  while (parseStat==NSS_STATUS_NOTFOUND);
-
-  log_log(LOG_DEBUG,"<== do_parse_sync");
-
-  return parseStat;
-}
-
-/*
  * Simple wrapper around ldap_get_values(). Requires that
  * session is already established.
  */
@@ -1416,25 +1357,34 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
                         const char *base,int scope,const char *filter,const char **attrs,
                         parser_t parser)
 {
-  enum nss_status stat = NSS_STATUS_NOTFOUND;
-  struct ent_context context;
-  log_log(LOG_DEBUG,"_nss_ldap_getbyname(base=\"%s\", filter=\"%s\"",base,filter);
-  _nss_ldap_ent_context_init(&context,session);
-  /* synchronous search */
-  stat=do_with_reconnect(context.session,base,scope,filter,(char **)attrs,1,&context.ec_res,NULL);
-  if (stat!=NSS_STATUS_SUCCESS)
-    return nss2nslcd(stat);
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  enum nss_status stat;
+  /* do the search */
+  search=myldap_search(session,base,scope,filter,attrs);
+  if (search==NULL)
+    return NSLCD_RESULT_UNAVAIL;
   /*
    * we pass this along for the benefit of the services parser,
    * which uses it to figure out which protocol we really wanted.
    * we only pass the second argument along, as that's what we need
    * in services.
    */
-  LS_INIT(context.ec_state);
-  context.ec_state.ls_type=LS_TYPE_KEY;
-  context.ec_state.ls_info.ls_key=NULL /*was: args->la_arg2.la_string*/;
-  stat=do_parse_sync(&context,result,buffer,buflen,parser);
-  _nss_ldap_ent_context_cleanup(&context);
+  search->context.ec_state.ls_type=LS_TYPE_KEY;
+  search->context.ec_state.ls_info.ls_key=NULL /*was: args->la_arg2.la_string*/;
+  do
+  {
+    entry = myldap_get_entry(search);
+    if (entry!=NULL)
+    {
+      stat=parser(session,entry->msg,&(search->context.ec_state),result,buffer,buflen);
+      /* hold onto the state if we're out of memory XXX */
+      search->context.ec_state.ls_retry=(stat==NSS_STATUS_TRYAGAIN)&&(buffer!=NULL);
+    }
+  }
+  while ((stat==NSS_STATUS_NOTFOUND)&&(entry!=NULL));
+  /* clean up this search */
+  myldap_search_close(search);
   return nss2nslcd(stat);
 }
 
