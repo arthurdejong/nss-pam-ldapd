@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
+#include <stdio.h>
 
 #include "tio.h"
 
@@ -150,10 +151,10 @@ TFILE *tio_fdopen(int fd,struct timeval *readtimeout,struct timeval *writetimeou
   fp->readtimeout.tv_usec=readtimeout->tv_usec;
   fp->writetimeout.tv_sec=writetimeout->tv_sec;
   fp->writetimeout.tv_usec=writetimeout->tv_usec;
-#ifdef TIO_STATS
+#ifdef DEBUG_TIO_STATS
   fp->byteswritten=0;
   fp->bytesread=0;
-#endif
+#endif /* DEBUG_TIO_STATS */
   return fp;
 }
 
