@@ -104,10 +104,10 @@ static int mkfilter_passwd_byname(const char *name,
 static int mkfilter_passwd_byuid(uid_t uid,
                                  char *buffer,size_t buflen)
 {
-  return snprintf(buffer,buflen,
-                  "(&%s(%s=%d))",
-                  passwd_filter,
-                  attmap_passwd_uidNumber,uid);
+  return mysnprintf(buffer,buflen,
+                    "(&%s(%s=%d))",
+                    passwd_filter,
+                    attmap_passwd_uidNumber,uid);
 }
 
 static void passwd_init(void)

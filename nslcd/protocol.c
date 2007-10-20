@@ -94,10 +94,10 @@ static int mkfilter_protocol_byname(const char *name,
 static int mkfilter_protocol_bynumber(int protocol,
                                       char *buffer,size_t buflen)
 {
-  return snprintf(buffer,buflen,
-                  "(&%s(%s=%d))",
-                  protocol_filter,
-                  attmap_protocol_ipProtocolNumber,protocol);
+  return mysnprintf(buffer,buflen,
+                    "(&%s(%s=%d))",
+                    protocol_filter,
+                    attmap_protocol_ipProtocolNumber,protocol);
 }
 
 static void protocol_init(void)
