@@ -110,7 +110,7 @@ static enum nss_status read_netent(
 
 enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,
+  NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,
              name,
              read_netent(fp,result,buffer,buflen,errnop,h_errnop));
 }
@@ -125,8 +125,8 @@ enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,
 /* TODO: implement handling of af parameter */
 enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int UNUSED(af),struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
-            addr=htonl(addr);WRITE_ADDRESS(fp,AF_INET,4,&addr),
+  NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,
+            WRITE_ADDRESS(fp,AF_INET,4,&addr),
             read_netent(fp,result,buffer,buflen,errnop,h_errnop))
 }
 
