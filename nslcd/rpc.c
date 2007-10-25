@@ -73,10 +73,9 @@ const char *rpc_base = NULL;
 int rpc_scope = LDAP_SCOPE_DEFAULT;
 
 /* the basic search filter for searches */
-const char *rpc_filter = "(objectClass=ipService)";
+const char *rpc_filter = "(objectClass=oncRpc)";
 
 /* the attributes to request with searches */
-const char *attmap_rpc_objectClass      = "oncRpc";
 const char *attmap_rpc_cn               = "cn";
 const char *attmap_rpc_oncRpcNumber     = "oncRpcNumber";
 
