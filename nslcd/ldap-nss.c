@@ -704,17 +704,17 @@ void _nss_ldap_ent_context_cleanup(struct ent_context *context)
 {
   if (context==NULL)
     return;
-  /* free read messages */
-  if (context->ec_res!=NULL)
-  {
-    ldap_msgfree(context->ec_res);
-    context->ec_res=NULL;
-  }
   /* abandon the search if there were more results to fetch */
   if ((context->ec_msgid>-1)&&(do_result_async(context)==NSS_STATUS_SUCCESS))
   {
     ldap_abandon(context->session->ls_conn,context->ec_msgid);
     context->ec_msgid=-1;
+  }
+  /* free read messages */
+  if (context->ec_res!=NULL)
+  {
+    ldap_msgfree(context->ec_res);
+    context->ec_res=NULL;
   }
   /* clean up cookie */
   if (context->ec_cookie!=NULL)
