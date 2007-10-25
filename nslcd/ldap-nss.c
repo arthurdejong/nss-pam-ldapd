@@ -642,6 +642,8 @@ static enum nss_status do_result_async(struct ent_context *context)
       case LDAP_RES_SEARCH_RESULT:
         /* NB: this frees context->ec_res */
         resultControls=NULL;
+        if (context->ec_cookie!=NULL)
+          ber_bvfree(context->ec_cookie);
         context->ec_cookie=NULL;
         parserc=ldap_parse_result(context->session->ls_conn,context->ec_res,&rc,NULL,
                                   NULL,NULL,&resultControls,1);
