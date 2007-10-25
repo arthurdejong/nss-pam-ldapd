@@ -26,7 +26,7 @@
 # Should-Start:      $remote_fs $network
 # Should-Stop:       $remote_fs
 # Default-Start:     2 3 4 5
-# Default-Stop:      S 0 1 6
+# Default-Stop:      0 1 6
 # Short-Description: nss-ldapd connection daemon
 # Description:       nslcd is a LDAP connection daemon that is used to
 #                    do LDAP queries for the NSS libraries.
