@@ -1361,7 +1361,7 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
 {
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
-  enum nss_status stat;
+  enum nss_status stat = NSS_STATUS_NOTFOUND;
   /* do the search */
   search=myldap_search(session,base,scope,filter,attrs);
   if (search==NULL)
