@@ -1022,7 +1022,8 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
     if (stat==NSS_STATUS_SUCCESS)
     {
       /* we have a normal entry, return it */
-      return myldap_entry_new(search,search->context.ec_res);
+      search->entry=myldap_entry_new(search,search->context.ec_res);
+      return search->entry;
     }
     else if ( (stat==NSS_STATUS_NOTFOUND) &&
               (search->context.ec_cookie!=NULL) &&
