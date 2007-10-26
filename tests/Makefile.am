@@ -20,7 +20,7 @@
 
 TESTS = test_dict test_tio test_cfg
 
-check_PROGRAMS = test_dict test_tio test_cfg test_myldap
+check_PROGRAMS = test_dict test_tio test_cfg
 
 noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                   test_netgroup test_networks test_passwd test_protocols \
@@ -49,12 +49,6 @@ test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o \
                  ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
                  ../nslcd/service.o ../nslcd/shadow.o \
                  @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a
-
-test_myldap_SOURCES = test_myldap.c
-test_myldap_CFLAGS = -pthread
-test_myldap_LDADD = ../nslcd/log.o ../common/dict.o \
-                    ../nslcd/common.o ../nslcd/cfg.o \
-                    ../nslcd/ldap-nss.o ../nslcd/pagectrl.o @nslcd_LIBS@
 
 common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h \
                  ../common/tio.c ../common/tio.h

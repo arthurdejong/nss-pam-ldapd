@@ -35,11 +35,13 @@
 #include <stdio.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <time.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/param.h>
 #include <errno.h>
+#ifdef HAVE_SYS_UN_H
+#include <sys/un.h>
+#endif
 #include <netinet/in.h>
 #include <ldap.h>
 #ifdef HAVE_LDAP_SSL_H
@@ -50,6 +52,14 @@
 #endif
 #ifdef HAVE_GSSSASL_H
 #include <gsssasl.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+#if defined(HAVE_THREAD_H)
+#include <thread.h>
+#elif defined(HAVE_PTHREAD_H)
+#include <pthread.h>
 #endif
 /* Try to handle systems with both SASL libraries installed */
 #if defined(HAVE_SASL_SASL_H) && defined(HAVE_SASL_AUXPROP_REQUEST)
@@ -63,25 +73,19 @@
 #include <gssapi/gssapi.h>
 #include <gssapi/gssapi_krb5.h>
 #endif
-#include <ctype.h>
 
 #include "ldap-nss.h"
-#include "myldap.h"
 #include "pagectrl.h"
 #include "common.h"
 #include "log.h"
 #include "cfg.h"
 #include "attmap.h"
 #include "compat/ldap.h"
-#include "common/dict.h"
 
 /*
  * LS_INIT only used for enumeration contexts
  */
 #define LS_INIT(state)  do { state.ls_type = LS_TYPE_INDEX; state.ls_retry = 0; state.ls_info.ls_index = -1; } while (0)
-
-/* the maximum number of searches per session */
-#define MAX_SEARCHES_IN_SESSION 4
 
 /*
  * convenient wrapper around pointer into global config list, and a
@@ -97,160 +101,11 @@ struct ldap_session
   int is_connected;
   /* index into ldc_uris: currently connected LDAP uri */
   int ls_current_uri;
-  /* a list of searches registered with this session */
-  struct myldap_search *searches[MAX_SEARCHES_IN_SESSION];
 };
 
-/* A search description set as returned by myldap_search(). */
-struct myldap_search
-{
-  /* reference to the session */
-  MYLDAP_SESSION *session;
-  /* the context used for this set, reused for later calls */
-  struct ent_context context;
-  /* the parameters descibing the search */
-  const char *base;
-  int scope;
-  const char *filter;
-  char **attrs;
-  /* a pointer to the current result entry, used for
-     freeing resource allocated with that entry */
-  MYLDAP_ENTRY *entry;
-};
-
-/* A single entry from the LDAP database as returned by
-   myldap_get_entry(). */
-struct myldap_entry
-{
-  /* reference to the search to be used to get parameters
-     (e.g. LDAP connection) for other calls */
-  MYLDAP_SEARCH *search;
-  /* reference to the LDAP message describing the result */
-  LDAPMessage *msg;
-  /* the DN */
-  const char *dn;
-  /* a cached version of the exploded rdn */
-  char **exploded_rdn;
-  /* a cache of attribute to value list */
-  DICT *attributevalues;
-};
-
-static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search,LDAPMessage *msg)
-{
-  MYLDAP_ENTRY *entry;
-  /* Note: as an alternative we could embed the myldap_entry into the
-     myldap_search struct to save on malloc() and free() calls. */
-  /* allocate new entry */
-  entry=(MYLDAP_ENTRY *)malloc(sizeof(struct myldap_entry));
-  if (entry==NULL)
-  {
-    log_log(LOG_CRIT,"myldap_entry_new(): malloc() failed to allocate memory");
-    exit(EXIT_FAILURE);
-  }
-  /* fill in fields */
-  entry->search=search;
-  entry->msg=msg;
-  entry->dn=NULL;
-  entry->exploded_rdn=NULL;
-  entry->attributevalues=dict_new();
-  /* return the fresh entry */
-  return entry;
-}
-
-static void myldap_entry_free(MYLDAP_ENTRY *entry)
-{
-  char **values;
-  /* free the DN */
-  if (entry->dn!=NULL)
-    ldap_memfree((char *)entry->dn);
-  /* free the exploded RDN */
-  if (entry->exploded_rdn!=NULL)
-    ldap_value_free(entry->exploded_rdn);
-  /* free all attribute values */
-  dict_values_first(entry->attributevalues);
-  while ((values=(char **)dict_values_next(entry->attributevalues))!=NULL)
-    ldap_value_free(values);
-  dict_free(entry->attributevalues);
-  /* we don't need the result anymore, ditch it. */
-  ldap_msgfree(entry->search->context.ec_res);
-  entry->search->context.ec_res=NULL;
-  /* apparently entry->msg does not need to be freed */
-  entry->msg=NULL;
-  /* free the actual memory for the struct */
-  free(entry);
-}
-
-static MYLDAP_SEARCH *myldap_search_new(
-        MYLDAP_SESSION *session,
-        const char *base,int scope,const char *filter,const char **attrs)
-{
-  char *buffer;
-  MYLDAP_SEARCH *search;
-  int i;
-  size_t sz;
-  /* figure out size for new memory block to allocate
-     this has the advantage that we can free the whole lot with one call */
-  sz=sizeof(struct myldap_search);
-  sz+=strlen(base)+1+strlen(filter)+1;
-  for (i=0;attrs[i]!=NULL;i++)
-    sz+=strlen(attrs[i])+1;
-  sz+=(i+1)*sizeof(char *);
-  /* allocate new results memory region */
-  buffer=(char *)malloc(sz);
-  if (buffer==NULL)
-  {
-    log_log(LOG_CRIT,"myldap_search_new(): malloc() failed to allocate memory");
-    exit(EXIT_FAILURE);
-  }
-  /* initialize struct */
-  search=(MYLDAP_SEARCH *)(buffer);
-  buffer+=sizeof(struct myldap_search);
-  /* save pointer to session */
-  search->session=session;
-  /* initialize array of attributes */
-  search->attrs=(char **)buffer;
-  buffer+=(i+1)*sizeof(char *);
-  /* copy base */
-  strcpy(buffer,base);
-  search->base=buffer;
-  buffer+=strlen(base)+1;
-  /* just plainly store scope */
-  search->scope=scope;
-  /* copy filter */
-  strcpy(buffer,filter);
-  search->filter=buffer;
-  buffer+=strlen(filter)+1;
-  /* copy attributes themselves */
-  for (i=0;attrs[i]!=NULL;i++)
-  {
-    strcpy(buffer,attrs[i]);
-    search->attrs[i]=buffer;
-    buffer+=strlen(attrs[i])+1;
-  }
-  search->attrs[i]=NULL;
-  /* initialize context */
-  _nss_ldap_ent_context_init(&(search->context),session);
-  /* clear result entry */
-  search->entry=NULL;
-  /* return the new search struct */
-  return search;
-}
-
-static void myldap_search_free(MYLDAP_SEARCH *search)
-{
-  /* free any search entries */
-  if (search->entry!=NULL)
-    myldap_entry_free(search->entry);
-  /* free the context */
-  _nss_ldap_ent_context_cleanup(&(search->context));
-  /* free the storage we allocated */
-  free(search);
-}
-
-static MYLDAP_SESSION *myldap_session_new(void)
+MYLDAP_SESSION *myldap_create_session(void)
 {
   MYLDAP_SESSION *session;
-  int i;
   /* allocate memory for the session storage */
   session=(struct ldap_session *)malloc(sizeof(struct ldap_session));
   if (session==NULL)
@@ -263,8 +118,6 @@ static MYLDAP_SESSION *myldap_session_new(void)
   session->ls_timestamp=0;
   session->is_connected=0;
   session->ls_current_uri=0;
-  for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
-    session->searches[i]=NULL;
   /* return the new session */
   return session;
 }
@@ -734,7 +587,7 @@ void _nss_ldap_ent_context_cleanup(struct ent_context *context)
  */
 static int do_search_sync(
         MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,char **attrs,int sizelimit,
+        const char *filter,const char **attrs,int sizelimit,
         LDAPMessage **res)
 {
   int rc;
@@ -759,7 +612,7 @@ static int do_search_sync(
  */
 static int do_search_async(
         MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,char **attrs,int sizelimit,int *msgid)
+        const char *filter,const char **attrs,int sizelimit,int *msgid)
 {
   int rc;
   LDAPControl *serverCtrls[2];
@@ -791,7 +644,7 @@ static int do_search_async(
  */
 static enum nss_status do_with_reconnect(
         MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,char **attrs,int sizelimit,
+        const char *filter,const char **attrs,int sizelimit,
         LDAPMessage **res,int *msgid)
 {
   int rc=LDAP_UNAVAILABLE, tries=0, backoff=0;
@@ -891,6 +744,65 @@ static enum nss_status do_with_reconnect(
 }
 
 /*
+ * Parse, fetching reuslts from chain instead of server.
+ */
+static enum nss_status do_parse_sync(
+        struct ent_context *context,void *result,
+        char *buffer,size_t buflen,parser_t parser)
+{
+  enum nss_status parseStat=NSS_STATUS_NOTFOUND;
+  LDAPMessage *e=NULL;
+
+  log_log(LOG_DEBUG,"==> do_parse_sync");
+
+  /*
+   * if ec_state.ls_info.ls_index is non-zero, then we don't collect another
+   * entry off the LDAP chain, and instead refeed the existing result to
+   * the parser. Once the parser has finished with it, it will return
+   * NSS_STATUS_NOTFOUND and reset the index to -1, at which point we'll retrieve
+   * another entry.
+   */
+  do
+  {
+    if ((context->ec_state.ls_retry==0) &&
+        ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
+          (context->ec_state.ls_info.ls_index==-1) ))
+    {
+      if (e==NULL)
+        e=ldap_first_entry(context->session->ls_conn,context->ec_res);
+      else
+        e=ldap_next_entry(context->session->ls_conn,e);
+    }
+
+    if (e==NULL)
+    {
+      /* Could not get a result; bail */
+      parseStat=NSS_STATUS_NOTFOUND;
+      break;
+    }
+
+    /*
+     * We have an entry; now, try to parse it.
+     *
+     * If we do not parse the entry because of a schema
+     * violation, the parser should return NSS_STATUS_NOTFOUND.
+     * We'll keep on trying subsequent entries until we
+     * find one which is parseable, or exhaust avialable
+     * entries, whichever is first.
+     */
+    parseStat=parser(context->session,e,&(context->ec_state),result,buffer,buflen);
+
+    /* hold onto the state if we're out of memory XXX */
+    context->ec_state.ls_retry=(parseStat==NSS_STATUS_TRYAGAIN)&&(buffer!=NULL);
+  }
+  while (parseStat==NSS_STATUS_NOTFOUND);
+
+  log_log(LOG_DEBUG,"<== do_parse_sync");
+
+  return parseStat;
+}
+
+/*
  * Simple wrapper around ldap_get_values(). Requires that
  * session is already established.
  */
@@ -918,339 +830,6 @@ static int nss2nslcd(enum nss_status code)
   }
 }
 
-MYLDAP_SESSION *myldap_create_session(void)
-{
-  return myldap_session_new();
-}
-
-void myldap_session_cleanup(MYLDAP_SESSION *session)
-{
-  int i;
-  /* go over all searches in the session */
-  for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
-  {
-    if (session->searches[i]!=NULL)
-    {
-      myldap_search_close(session->searches[i]);
-      session->searches[i]=NULL;
-    }
-  }
-}
-
-MYLDAP_SEARCH *myldap_search(
-        MYLDAP_SESSION *session,
-        const char *base,int scope,const char *filter,const char **attrs)
-{
-  MYLDAP_SEARCH *search;
-  int msgid;
-  int i;
-  /* check parameters */
-  if ((session==NULL)||(base==NULL)||(filter==NULL)||(attrs==NULL))
-  {
-    log_log(LOG_ERR,"myldap_search(): invalid parameter passed");
-    errno=EINVAL;
-    return NULL;
-  }
-  /* log the call */
-  log_log(LOG_DEBUG,"myldap_search(base=\"%s\", filter=\"%s\")",
-                    base,filter);
-  /* allocate a new search entry */
-  search=myldap_search_new(session,base,scope,filter,attrs);
-  /* set up a new search */
-  if (do_with_reconnect(search->session,search->base,
-                        search->scope,search->filter,search->attrs,
-                        LDAP_NO_LIMIT,NULL,&msgid)!=NSS_STATUS_SUCCESS)
-  {
-    myldap_search_free(search);
-    return NULL;
-  }
-  search->context.ec_msgid=msgid;
-  /* find a place in the session where we can register our search */
-  for (i=0;(session->searches[i]!=NULL)&&(i<MAX_SEARCHES_IN_SESSION);i++)
-    ;
-  if (i>=MAX_SEARCHES_IN_SESSION)
-  {
-    log_log(LOG_ERR,"too many searches registered with session (max %d)",MAX_SEARCHES_IN_SESSION);
-    myldap_search_free(search);
-    return NULL;
-  }
-  /* regsiter search with the session so we can free it later on */
-  session->searches[i]=search;
-  return search;
-}
-
-void myldap_search_close(MYLDAP_SEARCH *search)
-{
-  int i;
-  if ((search==NULL)||(search->session==NULL))
-    return;
-  /* find the reference to this search in the session */
-  for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
-  {
-    if (search->session->searches[i]==search)
-      search->session->searches[i]=NULL;
-  }
-  /* free this search */
-  myldap_search_free(search);
-}
-
-MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
-{
-  enum nss_status stat=NSS_STATUS_SUCCESS;
-  int msgid;
-  int rc;
-  /* check parameters */
-  if ((search==NULL)||(search->session==NULL)||(search->session->ls_conn==NULL))
-  {
-    log_log(LOG_ERR,"myldap_get_entry(): invalid search entry passed");
-    errno=EINVAL;
-    return NULL;
-  }
-  /* if we have an existing result entry, free it */
-  if (search->entry!=NULL)
-  {
-    myldap_entry_free(search->entry);
-    search->entry=NULL;
-  }
-  /* try to parse results until we have a final error or ok */
-  while (1)
-  {
-    /* get an entry from the LDAP server, the result
-       is stored in context->ec_res */
-    stat=do_result_async(&(search->context));
-    /* we we have an entry construct a search entry from it */
-    if (stat==NSS_STATUS_SUCCESS)
-    {
-      /* we have a normal entry, return it */
-      search->entry=myldap_entry_new(search,search->context.ec_res);
-      return search->entry;
-    }
-    else if ( (stat==NSS_STATUS_NOTFOUND) &&
-              (search->context.ec_cookie!=NULL) &&
-              (search->context.ec_cookie->bv_len!=0) )
-    {
-      /* we are using paged results, try the next page */
-      LDAPControl *serverctrls[2]={ NULL, NULL };
-      rc=ldap_create_page_control(search->session->ls_conn,
-                                  nslcd_cfg->ldc_pagesize,
-                                  search->context.ec_cookie,0,&serverctrls[0]);
-      if (rc!=LDAP_SUCCESS)
-      {
-        log_log(LOG_WARNING,"myldap_get_entry(): ldap_create_page_control() failed: %s",
-                            ldap_err2string(rc));
-        /* FIXME: figure out if we need to free something */
-        return NULL;
-      }
-      rc=ldap_search_ext(search->session->ls_conn,
-                         search->base,search->scope,search->filter,
-                         search->attrs,0,serverctrls,NULL,LDAP_NO_LIMIT,
-                         LDAP_NO_LIMIT,&msgid);
-      ldap_control_free(serverctrls[0]);
-      if (msgid<0)
-      {
-        log_log(LOG_WARNING,"myldap_get_entry(): ldap_search_ext() failed: %s",
-                            ldap_err2string(rc));
-        /* FIXME: figure out if we need to free something */
-        return NULL;
-      }
-      search->context.ec_msgid=msgid;
-      /* we continue with another pass */
-    }
-    else
-    {
-      log_log(LOG_DEBUG,"myldap_get_entry(): do_result_async() returned error code");
-      /* there was another problem, bail out */
-      return NULL;
-    }
-  }
-}
-
-/*
- * Get the DN from the entry. This function only returns NULL (and sets
- * errno) if an incorrect entry is passed. If the DN value cannot be
- * retreived "unknown" is returned instead.
- */
-const char *myldap_get_dn(MYLDAP_ENTRY *entry)
-{
-  int rc;
-  /* check parameters */
-  if ((entry==NULL)||(entry->search==NULL)||(entry->search->session==NULL)||
-      (entry->search->session->ls_conn==NULL)||(entry->msg==NULL))
-  {
-    log_log(LOG_ERR,"myldap_get_dn(): invalid result entry passed");
-    errno=EINVAL;
-    return NULL;
-  }
-  /* if we don't have it yet, retreive it */
-  if (entry->dn==NULL)
-  {
-    entry->dn=ldap_get_dn(entry->search->session->ls_conn,entry->msg);
-    if (entry->dn==NULL)
-    {
-      if (ldap_get_option(entry->search->session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
-        rc=LDAP_UNAVAILABLE;
-      log_log(LOG_WARNING,"ldap_get_dn() returned NULL: %s",ldap_err2string(rc));
-    }
-  }
-  /* if we still don't have it, return unknown */
-  if (entry->dn==NULL)
-    return "unknown";
-  /* return it */
-  return entry->dn;
-}
-
-/* Simple wrapper around ldap_get_values(). */
-const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
-{
-  char **values;
-  int rc;
-  /* check parameters */
-  if ((entry==NULL)||(entry->search==NULL)||(entry->search->session==NULL)||
-      (entry->search->session->ls_conn==NULL)||(entry->msg==NULL))
-  {
-    log_log(LOG_ERR,"myldap_get_values(): invalid result entry passed");
-    errno=EINVAL;
-    return NULL;
-  }
-  else if (attr==NULL)
-  {
-    log_log(LOG_ERR,"myldap_get_values(): invalid attribute name passed");
-    errno=EINVAL;
-    return NULL;
-  }
-  /* get the values from the cache */
-  values=(char **)dict_get(entry->attributevalues,attr);
-  if (values==NULL)
-  {
-    /* cache miss, get from LDAP */
-    values=ldap_get_values(entry->search->session->ls_conn,entry->msg,attr);
-    if (values==NULL)
-    {
-      if (ldap_get_option(entry->search->session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
-        rc=LDAP_UNAVAILABLE;
-      log_log(LOG_WARNING,"myldap_get_values(): ldap_get_values() returned NULL: %s",ldap_err2string(rc));
-    }
-    /* store values entry so we can free it later on */
-    if (values!=NULL)
-      dict_put(entry->attributevalues,attr,values);
-  }
-  return (const char **)values;
-}
-
-/* return the number of elements in the array returned by
-   by myldap_get_values() */
-int myldap_count_values(const char **vals)
-{
-  int i;
-  if (vals==NULL)
-    return 0;
-  for (i=0;vals[i]!=NULL;i++)
-    /* nothing here */;
-  return i;
-}
-
-/* Go over the entries in exploded_rdn and see if any start with
-   the requested attribute. Return a reference to the value part of
-   the DN (does not modify exploded_rdn). */
-static const char *find_rdn_value(char **exploded_rdn,const char *attr)
-{
-  int i,j;
-  int l;
-  if (exploded_rdn==NULL)
-    return NULL;
-  /* go over all RDNs */
-  l=strlen(attr);
-  for (i=0;exploded_rdn[i]!=NULL;i++)
-  {
-    /* check that RDN starts with attr */
-    if (strncasecmp(exploded_rdn[i],attr,l)!=0)
-      continue;
-    /* skip spaces */
-    for (j=l;isspace(exploded_rdn[i][j]);j++)
-      /* nothing here */;
-    /* ensure that we found an equals sign now */
-    if (exploded_rdn[i][j]!='=')
-    j++;
-    /* skip more spaces */
-    for (j++;isspace(exploded_rdn[i][j]);j++)
-      /* nothing here */;
-    /* ensure that we're not at the end of the string */
-    if (exploded_rdn[i][j]=='\0')
-      continue;
-    /* we found our value */
-    return exploded_rdn[i]+j;
-  }
-  /* fail */
-  return NULL;
-}
-
-const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr)
-{
-  const char *dn;
-  char **exploded_dn;
-  /* check parameters */
-  if ((entry==NULL)||(entry->search==NULL)||(entry->search->session==NULL)||
-      (entry->search->session->ls_conn==NULL)||(entry->msg==NULL))
-  {
-    log_log(LOG_ERR,"myldap_get_rdn_value(): invalid result entry passed");
-    errno=EINVAL;
-    return NULL;
-  }
-  else if (attr==NULL)
-  {
-    log_log(LOG_ERR,"myldap_get_rdn_value(): invalid attribute name passed");
-    errno=EINVAL;
-    return NULL;
-  }
-  /* check if entry contains exploded_rdn */
-  if (entry->exploded_rdn==NULL)
-  {
-    /* check if we have a DN */
-    dn=myldap_get_dn(entry);
-    if (dn==NULL)
-      return NULL;
-    /* explode dn into { "uid=test", "ou=people", ..., NULL } */
-    exploded_dn=ldap_explode_dn(dn,0);
-    if ((exploded_dn==NULL)||(exploded_dn[0]==NULL))
-    {
-      log_log(LOG_WARNING,"myldap_get_rdn_value(): ldap_explode_dn(%s) returned NULL: %s",
-                          dn,strerror(errno));
-      return NULL;
-    }
-    /* explode rdn (first part of exploded_dn),
-        e.g. "cn=Test User+uid=testusr" into
-       { "cn=Test User", "uid=testusr", NULL } */
-    entry->exploded_rdn=ldap_explode_rdn(exploded_dn[0],0);
-    ldap_value_free(exploded_dn);
-  }
-  /* find rnd value */
-  return find_rdn_value(entry->exploded_rdn,attr);
-}
-
-int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass)
-{
-  const char **values;
-  int i;
-  if ((entry==NULL)||(objectclass==NULL))
-  {
-    log_log(LOG_ERR,"myldap_has_objectclass(): invalid argument passed");
-    errno=EINVAL;
-    return 0;
-  }
-  values=myldap_get_values(entry,"objectClass");
-  if (values==NULL)
-  {
-    log_log(LOG_ERR,"myldap_has_objectclass(): myldap_get_values() returned NULL");
-    return 0;
-  }
-  for (i=0;values[i]!=NULL;i++)
-  {
-    if (strcasecmp(values[i],objectclass)==0)
-      return -1;
-  }
-  return 0;
-}
-
 /*
  * Internal entry point for enumeration routines.
  * This should really use the asynchronous LDAP search API to avoid
@@ -1269,7 +848,7 @@ int _nss_ldap_getent(
   if (context->ec_msgid<0)
   {
     /* set up a new search */
-    stat=do_with_reconnect(context->session,base,scope,filter,(char **)attrs,LDAP_NO_LIMIT,NULL,&msgid);
+    stat=do_with_reconnect(context->session,base,scope,filter,attrs,LDAP_NO_LIMIT,NULL,&msgid);
     if (stat != NSS_STATUS_SUCCESS)
       return nss2nslcd(stat);
     context->ec_msgid=msgid;
@@ -1360,34 +939,25 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
                         const char *base,int scope,const char *filter,const char **attrs,
                         parser_t parser)
 {
-  MYLDAP_SEARCH *search;
-  MYLDAP_ENTRY *entry;
   enum nss_status stat = NSS_STATUS_NOTFOUND;
-  /* do the search */
-  search=myldap_search(session,base,scope,filter,attrs);
-  if (search==NULL)
-    return NSLCD_RESULT_UNAVAIL;
+  struct ent_context context;
+  log_log(LOG_DEBUG,"_nss_ldap_getbyname(base=\"%s\", filter=\"%s\"",base,filter);
+  _nss_ldap_ent_context_init(&context,session);
+  /* synchronous search */
+  stat=do_with_reconnect(context.session,base,scope,filter,attrs,1,&context.ec_res,NULL);
+  if (stat!=NSS_STATUS_SUCCESS)
+    return nss2nslcd(stat);
   /*
    * we pass this along for the benefit of the services parser,
    * which uses it to figure out which protocol we really wanted.
    * we only pass the second argument along, as that's what we need
    * in services.
    */
-  search->context.ec_state.ls_type=LS_TYPE_KEY;
-  search->context.ec_state.ls_info.ls_key=NULL /*was: args->la_arg2.la_string*/;
-  do
-  {
-    entry = myldap_get_entry(search);
-    if (entry!=NULL)
-    {
-      stat=parser(session,entry->msg,&(search->context.ec_state),result,buffer,buflen);
-      /* hold onto the state if we're out of memory XXX */
-      search->context.ec_state.ls_retry=(stat==NSS_STATUS_TRYAGAIN)&&(buffer!=NULL);
-    }
-  }
-  while ((stat==NSS_STATUS_NOTFOUND)&&(entry!=NULL));
-  /* clean up this search */
-  myldap_search_close(search);
+  LS_INIT(context.ec_state);
+  context.ec_state.ls_type=LS_TYPE_KEY;
+  context.ec_state.ls_info.ls_key=NULL /*was: args->la_arg2.la_string*/;
+  stat=do_parse_sync(&context,result,buffer,buflen,parser);
+  _nss_ldap_ent_context_cleanup(&context);
   return nss2nslcd(stat);
 }
 
