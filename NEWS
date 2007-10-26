@@ -1,3 +1,15 @@
+changes from 0.4 to 0.4.1
+-------------------------
+
+* added French debconf translation by Cyril Brulebois
+* added Japanese debconf translation by Kenshi Muto
+* fix a problem with network name lookups where the lookup would result
+  in the wrong call to nslcd
+* fix wrong default filter for rpc lookups
+* fix a number of memory leaks (thanks valgrind)
+  (all memory leaks during normal operation should be fixed now)
+
+
 changes from 0.3 to 0.4
 -----------------------
 
@@ -9,7 +21,7 @@ changes from 0.3 to 0.4
 * added missing docbook sources for manual pages to tarball
 * major cleanups and simplifications in the core LDAP query code (we don't
   need to worry about SIGPIPE because nslcd does that globally, locking
-  because a connection is only used by one thread  and simplifications the the
+  because a connection is only used by one thread and simplifications the the
   LDAP connection and query state)
 * get base, scope, filter and map configfile directives properly working
 * simplifications in LDAP reconnect logic (some work remains to be done in

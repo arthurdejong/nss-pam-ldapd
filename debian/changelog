@@ -1,3 +1,16 @@
+nss-ldapd (0.4.1) unstable; urgency=low
+
+  * updated French debconf translation by Cyril Brulebois (closes: #433248)
+  * updated Japanese debconf translation by Kenshi Muto (closes: #446580)
+  * remove S runlevel from Default-Stop in init script (closes: #447949)
+  * fix a problem with network name lookups where the lookup would result
+    in the wrong call to nslcd
+  * fix wrong default filter for rpc lookups
+  * fix a number of memory leaks (thanks valgrind) (closes: #447997)
+    (all memory leaks during normal operation should be fixed now)
+
+ -- Arthur de Jong <adejong@debian.org>  Thu, 26 Oct 2007 10:00:00 +0200
+
 nss-ldapd (0.4) unstable; urgency=low
 
   * remove nss_schema configfile option

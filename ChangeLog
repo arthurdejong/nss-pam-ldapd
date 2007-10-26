@@ -1,3 +1,108 @@
+2007-10-26 07:36  arthur
+
+	* [r458] Makefile.am: fix generating changelog for this branch
+
+2007-10-26 07:32  arthur
+
+	* [r457] nslcd/Makefile.am, nslcd/ldap-nss.c, nslcd/ldap-nss.h,
+	  nslcd/myldap.h, tests, tests/Makefile.am,
+	  tests/nss-ldapd-test.conf, tests/test_myldap.c: revert myldap
+	  changes in revisions 443 and 444
+
+2007-10-26 07:16  arthur
+
+	* [r456] .: prepare a 0.4.1 branch
+
+2007-10-26 07:16  arthur
+
+	* [r456] prepare a 0.4.1 branch
+
+2007-10-25 21:55  arthur
+
+	* [r455] nslcd/rpc.c: fix rpc filter and remove unused objectClass
+	  attmap entry
+
+2007-10-25 21:19  arthur
+
+	* [r454] nslcd/ldap-nss.c: clean up any messages after abandoning
+	  the search because that returns a new message (fix memory leak)
+
+2007-10-25 20:25  arthur
+
+	* [r453] nslcd/ldap-nss.c: fix a memory leak, not storing search
+	  entries so they could be freed later on
+
+2007-10-25 20:18  arthur
+
+	* [r452] nslcd/ldap-nss.c: fix using unassigned status
+
+2007-10-25 20:17  arthur
+
+	* [r451] nslcd/ldap-nss.c: fix memory leak
+
+2007-10-25 09:02  arthur
+
+	* [r450] debian/libnss-ldapd.nslcd.init: remove S runlevel from
+	  Default-Stop in init script
+
+2007-10-21 07:43  arthur
+
+	* [r449] nss/networks.c: correct calls to
+	  NSLCD_ACTION_NETWORK_BYNAME and NSLCD_ACTION_NETWORK_BYADDR and
+	  get address in correct byte order with the last call
+
+2007-10-20 19:25  arthur
+
+	* [r448] nslcd/passwd.c, nslcd/protocol.c: call mysnprintf()
+	  instead of snprintf() where needed (bugfix)
+
+2007-10-19 22:04  arthur
+
+	* [r444] nslcd/ldap-nss.c: make a replacement for
+	  _nss_ldap_getbyname() which uses the myldap calls internally
+
+2007-10-19 10:35  arthur
+
+	* [r443] nslcd/Makefile.am, nslcd/ldap-nss.c, nslcd/ldap-nss.h,
+	  nslcd/myldap.h, tests, tests/Makefile.am,
+	  tests/nss-ldapd-test.conf, tests/test_myldap.c: integrate basic
+	  myldap interface (partially merged from dev-myldap branch)
+
+2007-10-19 09:39  arthur
+
+	* [r442] tests/Makefile.am: include debugging information in object
+	  files
+
+2007-10-19 09:36  arthur
+
+	* [r441] tests/Makefile.am: move most C[PP]FLAGS options to
+	  AM_C[PP]FLAGS and clean up a little
+
+2007-10-19 09:30  arthur
+
+	* [r440] common/tio.c: fix usage of DEBUG_TIO_STATS
+
+2007-10-14 07:59  arthur
+
+	* [r438] AUTHORS: add translator to Japanese of templates
+
+2007-10-14 07:57  arthur
+
+	* [r437] debian/po/ja.po: update Japanese (ja) translation of
+	  debconf templates by Kenshi Muto <kmuto@debian.org>
+
+2007-10-08 20:11  arthur
+
+	* [r436] debian/copyright, debian/po/fr.po: update French (fr)
+	  translation of debconf templates by Cyril Brulebois
+	  <cyril.brulebois@enst-bretagne.fr>
+
+2007-10-05 20:52  arthur
+
+	* [r434] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.4 release
+
 2007-10-04 19:52  arthur
 
 	* [r433] .: ignore tarballs
