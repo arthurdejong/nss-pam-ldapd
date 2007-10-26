@@ -39,7 +39,6 @@ other items
 * in mkfilter_*() functions: add some check to see if the filter fits and log
   an error (also see to it that the caller exists (e.g. declare return value
   as must use))
-* update online documentation
 * maybe document how to set up automounting in LDAP (Linux and Solaris)
 * make sure to translate timelimit 0 into timelimit -1 where needed
 * split out idle checking into separate function so we may be able to call it
@@ -48,4 +47,5 @@ other items
   chroot jails)
 * make number of thread configurable in config
 * make I/O timeout between NSS lib and daemon configurable at configure
-* check for memory leaks
+* document the timout mechanism between client and server and document some
+  cases where this may cause problems
