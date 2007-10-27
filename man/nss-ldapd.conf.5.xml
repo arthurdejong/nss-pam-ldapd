@@ -550,10 +550,11 @@
    </variablelist>
   </refsect2>
 
-<!-- do not document the following options for now as support for them is not finalized
   <refsect2 id='other_options'>
    <title>Other options</title>
    <variablelist>
+
+<!-- do not document this option for now as support it is not finalized
 
      <varlistentry>
      <term><emphasis remap="B">restart &lt;yes|no&gt;</emphasis></term>
@@ -566,12 +567,13 @@
    client libraries.</para>
      </listitem>
      </varlistentry>
+-->
 
     <varlistentry>
      <term><option>pagesize</option> <emphasis remap="I">NUMBER</emphasis></term>
      <listitem>
       <para>
-       Set this to a number greater than 0 to enable handling of paged
+       Set this to a number greater than 0 to request paged
        results from the LDAP server in accordance with RFC2696.
        The default (0) is to not request paged results.
       </para>
@@ -580,7 +582,6 @@
 
    </variablelist>
   </refsect2>
--->
 
  </refsect1>
 
