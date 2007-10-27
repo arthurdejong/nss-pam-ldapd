@@ -373,13 +373,16 @@ int tio_close(TFILE *fp)
   /* dump statistics to stderr */
   fprintf(stderr,"DEBUG_TIO_STATS READ=%d WRITTEN=%d\n",fp->bytesread,fp->byteswritten);
 #endif /* DEBUG_TIO_STATS */
+  /* close file descriptor */
+  if (close(fp->fd))
+    retv=-1;
   /* free any allocated buffers */
   if (fp->readbuffer!=NULL)
     tio_buffer_free(fp->readbuffer);
   if (fp->writebuffer!=NULL)
     tio_buffer_free(fp->writebuffer);
-  /* close file descriptor */
-  if (close(fp->fd))
-    return -1;
+  /* free the tio struct itself */
+  free(fp);
+  /* return the result of the earlier operations */
   return retv;
 }
