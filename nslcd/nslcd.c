@@ -421,6 +421,7 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
   }
 
   /* we're done with the request */
+  myldap_session_cleanup(session);
   (void)tio_close(fp);
   return;
 }
