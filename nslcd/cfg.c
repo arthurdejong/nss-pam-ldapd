@@ -691,24 +691,27 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
 
 void cfg_init(const char *fname)
 {
+  /* check if we were called before */
+  if (nslcd_cfg!=NULL)
+  {
+    log_log(LOG_CRIT,"cfg_init() may only be called once");
+    exit(EXIT_FAILURE);
+  }
+  /* allocate the memory (this memory is not freed anywhere) */
+  nslcd_cfg=(struct ldap_config *)malloc(sizeof(struct ldap_config));
   if (nslcd_cfg==NULL)
   {
-    /* allocate the memory */
-    nslcd_cfg=(struct ldap_config *)malloc(sizeof(struct ldap_config));
-    if (nslcd_cfg==NULL)
-    {
-      log_log(LOG_CRIT,"malloc() failed to allocate memory");
-      exit(EXIT_FAILURE);
-    }
-    /* clear configuration */
-    cfg_defaults(nslcd_cfg);
-    /* read configfile */
-    cfg_read(fname,nslcd_cfg);
-    /* do some sanity checks */
-    if (nslcd_cfg->ldc_uris[0] == NULL)
-    {
-      log_log(LOG_ERR,"no URIs defined in config");
-      exit(EXIT_FAILURE);
-    }
+    log_log(LOG_CRIT,"malloc() failed to allocate memory");
+    exit(EXIT_FAILURE);
+  }
+  /* clear configuration */
+  cfg_defaults(nslcd_cfg);
+  /* read configfile */
+  cfg_read(fname,nslcd_cfg);
+  /* do some sanity checks */
+  if (nslcd_cfg->ldc_uris[0] == NULL)
+  {
+    log_log(LOG_ERR,"no URIs defined in config");
+    exit(EXIT_FAILURE);
   }
 }
