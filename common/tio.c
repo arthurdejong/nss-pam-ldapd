@@ -34,6 +34,11 @@
 
 #include "tio.h"
 
+/* for platforms that don't have ETIME use ETIMEDOUT */
+#ifndef ETIME
+#define ETIME ETIMEDOUT
+#endif /* ETIME */
+
 /* buffer size for both read and write buffers */
 /* TODO: pass this along with the open function */
 /* Note that this size should not be larger than SSIZE_MAX because otherwise
