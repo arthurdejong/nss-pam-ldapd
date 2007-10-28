@@ -694,7 +694,7 @@ static enum nss_status do_result_async(MYLDAP_SEARCH *search)
  */
 static int do_search_async(
         MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,char **attrs,int sizelimit,int *msgid)
+        const char *filter,char **attrs,int *msgid)
 {
   int rc;
   LDAPControl *serverCtrls[2];
@@ -711,7 +711,7 @@ static int do_search_async(
   else
     pServerCtrls=NULL;
   rc=ldap_search_ext(session->ls_conn,base,scope,filter,(char **)attrs,
-                     0,pServerCtrls,NULL,LDAP_NO_LIMIT,sizelimit,msgid);
+                     0,pServerCtrls,NULL,LDAP_NO_LIMIT,LDAP_NO_LIMIT,msgid);
   if (pServerCtrls!=NULL)
   {
     ldap_control_free(serverCtrls[0]);
@@ -726,7 +726,7 @@ static int do_search_async(
  */
 static enum nss_status do_with_reconnect(
         MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,char **attrs,int sizelimit,
+        const char *filter,char **attrs,
         int *msgid)
 {
   int rc=LDAP_UNAVAILABLE, tries=0, backoff=0;
@@ -757,7 +757,7 @@ static enum nss_status do_with_reconnect(
       if (do_open(session)==0)
       {
         /* we're using the asycnhronous API */
-        stat=do_map_error(do_search_async(session,base,scope,filter,attrs,sizelimit,msgid));
+        stat=do_map_error(do_search_async(session,base,scope,filter,attrs,msgid));
         /* if we got any feedback from the server, don't try other ones */
         if (stat!=NSS_STATUS_UNAVAIL)
           break;
@@ -858,7 +858,7 @@ MYLDAP_SEARCH *myldap_search(
   /* set up a new search */
   if (do_with_reconnect(search->session,search->base,
                         search->scope,search->filter,search->attrs,
-                        LDAP_NO_LIMIT,&msgid)!=NSS_STATUS_SUCCESS)
+                        &msgid)!=NSS_STATUS_SUCCESS)
   {
     myldap_search_free(search);
     return NULL;
