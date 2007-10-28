@@ -75,16 +75,6 @@
 #include "compat/ldap.h"
 #include "common/dict.h"
 
-/*
- * thread specific context: result chain, and state data
- */
-struct ent_context
-{
-  int ec_msgid;                      /* message ID */
-  LDAPMessage *ec_res;               /* result chain */
-  struct berval *ec_cookie;          /* cookie for paged searches */
-};
-
 /* the maximum number of searches per session */
 #define MAX_SEARCHES_IN_SESSION 4
 
@@ -111,8 +101,6 @@ struct myldap_search
 {
   /* reference to the session */
   MYLDAP_SESSION *session;
-  /* the context used for this set, reused for later calls */
-  struct ent_context context;
   /* the parameters descibing the search */
   const char *base;
   int scope;
@@ -121,6 +109,12 @@ struct myldap_search
   /* a pointer to the current result entry, used for
      freeing resource allocated with that entry */
   MYLDAP_ENTRY *entry;
+  /* LDAP message id */
+  int msgid;
+  /* the last result that was returned by ldap_result() */
+  LDAPMessage *msg;
+  /* cookie for paged searches */
+  struct berval *cookie;
 };
 
 /* A single entry from the LDAP database as returned by
@@ -177,8 +171,8 @@ static void myldap_entry_free(MYLDAP_ENTRY *entry)
     ldap_value_free(values);
   dict_free(entry->attributevalues);
   /* we don't need the result anymore, ditch it. */
-  ldap_msgfree(entry->search->context.ec_res);
-  entry->search->context.ec_res=NULL;
+  ldap_msgfree(entry->search->msg);
+  entry->search->msg=NULL;
   /* apparently entry->msg does not need to be freed */
   entry->msg=NULL;
   /* free the actual memory for the struct */
@@ -234,9 +228,9 @@ static MYLDAP_SEARCH *myldap_search_new(
   }
   search->attrs[i]=NULL;
   /* initialize context */
-  search->context.ec_cookie=NULL;
-  search->context.ec_res=NULL;
-  search->context.ec_msgid=-1;
+  search->cookie=NULL;
+  search->msg=NULL;
+  search->msgid=-1;
   /* clear result entry */
   search->entry=NULL;
   /* return the new search struct */
@@ -249,11 +243,11 @@ static void myldap_search_free(MYLDAP_SEARCH *search)
   if (search->entry!=NULL)
     myldap_entry_free(search->entry);
   /* free read messages */
-  if (search->context.ec_res!=NULL)
-    ldap_msgfree(search->context.ec_res);
+  if (search->msg!=NULL)
+    ldap_msgfree(search->msg);
   /* clean up cookie */
-  if (search->context.ec_cookie!=NULL)
-    ber_bvfree(search->context.ec_cookie);
+  if (search->cookie!=NULL)
+    ber_bvfree(search->cookie);
   /* free the storage we allocated */
   free(search);
 }
@@ -632,12 +626,12 @@ static enum nss_status do_result_async(MYLDAP_SEARCH *search)
 
   do
   {
-    if (search->context.ec_res!=NULL)
+    if (search->msg!=NULL)
     {
-      ldap_msgfree(search->context.ec_res);
-      search->context.ec_res=NULL;
+      ldap_msgfree(search->msg);
+      search->msg=NULL;
     }
-    rc=ldap_result(search->session->ls_conn,search->context.ec_msgid,LDAP_MSG_ONE,tvp,&(search->context.ec_res));
+    rc=ldap_result(search->session->ls_conn,search->msgid,LDAP_MSG_ONE,tvp,&(search->msg));
     switch (rc)
     {
       case -1:
@@ -653,15 +647,15 @@ static enum nss_status do_result_async(MYLDAP_SEARCH *search)
       case LDAP_RES_SEARCH_RESULT:
         /* NB: this frees context->ec_res */
         resultControls=NULL;
-        if (search->context.ec_cookie!=NULL)
-          ber_bvfree(search->context.ec_cookie);
-        search->context.ec_cookie=NULL;
-        parserc=ldap_parse_result(search->session->ls_conn,search->context.ec_res,&rc,NULL,
+        if (search->cookie!=NULL)
+          ber_bvfree(search->cookie);
+        search->cookie=NULL;
+        parserc=ldap_parse_result(search->session->ls_conn,search->msg,&rc,NULL,
                                   NULL,NULL,&resultControls,1);
         if ((parserc!=LDAP_SUCCESS)&&(parserc!=LDAP_MORE_RESULTS_TO_RETURN))
         {
           stat = NSS_STATUS_UNAVAIL;
-          ldap_abandon(search->session->ls_conn,search->context.ec_msgid);
+          ldap_abandon(search->session->ls_conn,search->msgid);
           log_log(LOG_ERR,"could not get LDAP result: %s",ldap_err2string(rc));
         }
         else if (resultControls!=NULL)
@@ -669,15 +663,15 @@ static enum nss_status do_result_async(MYLDAP_SEARCH *search)
           /* See if there are any more pages to come */
           parserc=ldap_parse_page_control(search->session->ls_conn,
                                           resultControls,NULL,
-                                          &(search->context.ec_cookie));
+                                          &(search->cookie));
           /* TODO: handle the above return code?? */
           ldap_controls_free(resultControls);
           stat=NSS_STATUS_NOTFOUND;
         }
         else
           stat=NSS_STATUS_NOTFOUND;
-        search->context.ec_res=NULL;
-        search->context.ec_msgid=-1;
+        search->msg=NULL;
+        search->msgid=-1;
         break;
       default:
         stat = NSS_STATUS_UNAVAIL;
@@ -869,7 +863,7 @@ MYLDAP_SEARCH *myldap_search(
     myldap_search_free(search);
     return NULL;
   }
-  search->context.ec_msgid=msgid;
+  search->msgid=msgid;
   /* find a place in the session where we can register our search */
   for (i=0;(session->searches[i]!=NULL)&&(i<MAX_SEARCHES_IN_SESSION);i++)
     ;
@@ -890,8 +884,8 @@ void myldap_search_close(MYLDAP_SEARCH *search)
   if ((search==NULL)||(search->session==NULL))
     return;
   /* abandon the search if there were more results to fetch */
-  if ((search->context.ec_msgid>-1)&&(do_result_async(search)==NSS_STATUS_SUCCESS))
-    ldap_abandon(search->session->ls_conn,search->context.ec_msgid);
+  if ((search->msgid>-1)&&(do_result_async(search)==NSS_STATUS_SUCCESS))
+    ldap_abandon(search->session->ls_conn,search->msgid);
   /* find the reference to this search in the session */
   for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
   {
@@ -930,18 +924,18 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
     if (stat==NSS_STATUS_SUCCESS)
     {
       /* we have a normal entry, return it */
-      search->entry=myldap_entry_new(search,search->context.ec_res);
+      search->entry=myldap_entry_new(search,search->msg);
       return search->entry;
     }
     else if ( (stat==NSS_STATUS_NOTFOUND) &&
-              (search->context.ec_cookie!=NULL) &&
-              (search->context.ec_cookie->bv_len!=0) )
+              (search->cookie!=NULL) &&
+              (search->cookie->bv_len!=0) )
     {
       /* we are using paged results, try the next page */
       LDAPControl *serverctrls[2]={ NULL, NULL };
       rc=ldap_create_page_control(search->session->ls_conn,
                                   nslcd_cfg->ldc_pagesize,
-                                  search->context.ec_cookie,0,&serverctrls[0]);
+                                  search->cookie,0,&serverctrls[0]);
       if (rc!=LDAP_SUCCESS)
       {
         log_log(LOG_WARNING,"myldap_get_entry(): ldap_create_page_control() failed: %s",
@@ -961,7 +955,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
         /* FIXME: figure out if we need to free something */
         return NULL;
       }
-      search->context.ec_msgid=msgid;
+      search->msgid=msgid;
       /* we continue with another pass */
     }
     else
