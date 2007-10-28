@@ -80,7 +80,6 @@
  */
 struct ent_context
 {
-  MYLDAP_SESSION *session;           /* the connection to the LDAP server */
   int ec_msgid;                      /* message ID */
   LDAPMessage *ec_res;               /* result chain */
   struct berval *ec_cookie;          /* cookie for paged searches */
@@ -235,7 +234,6 @@ static MYLDAP_SEARCH *myldap_search_new(
   }
   search->attrs[i]=NULL;
   /* initialize context */
-  search->context.session=session;
   search->context.ec_cookie=NULL;
   search->context.ec_res=NULL;
   search->context.ec_msgid=-1;
@@ -696,31 +694,6 @@ static enum nss_status do_result_async(MYLDAP_SEARCH *search)
 }
 
 /*
- * Synchronous search function. Don't call this directly;
- * always wrap calls to this with do_with_reconnect(), or,
- * better still, use _nss_ldap_search().
- */
-static int do_search_sync(
-        MYLDAP_SESSION *session,const char *base,int scope,
-        const char *filter,char **attrs,int sizelimit,
-        LDAPMessage **res)
-{
-  int rc;
-  struct timeval tv, *tvp;
-  ldap_set_option(session->ls_conn,LDAP_OPT_SIZELIMIT,(void *)&sizelimit);
-  if (nslcd_cfg->ldc_timelimit==LDAP_NO_LIMIT)
-    tvp=NULL;
-  else
-  {
-    tv.tv_sec=nslcd_cfg->ldc_timelimit;
-    tv.tv_usec=0;
-    tvp=&tv;
-  }
-  rc=ldap_search_st(session->ls_conn,base,scope,filter,(char **)attrs,0,tvp,res);
-  return rc;
-}
-
-/*
  * Asynchronous search function. Don't call this directly;
  * always wrap calls to this with do_with_reconnect(), or,
  * better still, use _nss_ldap_search().
@@ -760,7 +733,7 @@ static int do_search_async(
 static enum nss_status do_with_reconnect(
         MYLDAP_SESSION *session,const char *base,int scope,
         const char *filter,char **attrs,int sizelimit,
-        LDAPMessage **res,int *msgid)
+        int *msgid)
 {
   int rc=LDAP_UNAVAILABLE, tries=0, backoff=0;
   int hard=1, start_uri=0, log=0;
@@ -789,16 +762,8 @@ static enum nss_status do_with_reconnect(
       /* open a connection and do the search */
       if (do_open(session)==0)
       {
-        if (res!=NULL)
-        {
-          /* we're using the sycnhronous API */
-          stat=do_map_error(do_search_sync(session,base,scope,filter,attrs,sizelimit,res));
-        }
-        else
-        {
-          /* we're using the asycnhronous API */
-          stat=do_map_error(do_search_async(session,base,scope,filter,attrs,sizelimit,msgid));
-        }
+        /* we're using the asycnhronous API */
+        stat=do_map_error(do_search_async(session,base,scope,filter,attrs,sizelimit,msgid));
         /* if we got any feedback from the server, don't try other ones */
         if (stat!=NSS_STATUS_UNAVAIL)
           break;
@@ -899,7 +864,7 @@ MYLDAP_SEARCH *myldap_search(
   /* set up a new search */
   if (do_with_reconnect(search->session,search->base,
                         search->scope,search->filter,search->attrs,
-                        LDAP_NO_LIMIT,NULL,&msgid)!=NSS_STATUS_SUCCESS)
+                        LDAP_NO_LIMIT,&msgid)!=NSS_STATUS_SUCCESS)
   {
     myldap_search_free(search);
     return NULL;
