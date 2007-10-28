@@ -436,15 +436,6 @@
       policies block with exponential backoff before retrying.</para>
      </listitem>
     </varlistentry>
-
-    <varlistentry>
-     <term><emphasis remap="B">nss_connect_policy &lt;persist|oneshot&gt;</emphasis></term>
-     <listitem>
-      <para>Determines whether nss_ldap persists connections. The default
-      is for the connection to the LDAP server to remain open after
-      the first request.</para>
-     </listitem>
-    </varlistentry>
 -->
 
     <varlistentry>

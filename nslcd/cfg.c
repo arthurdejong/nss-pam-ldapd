@@ -58,12 +58,6 @@ struct ldap_config *nslcd_cfg=NULL;
 /* the maximum number of keywords/options on the line */
 #define MAX_LINE_OPTIONS         10
 
-int _nss_ldap_test_config_flag(unsigned int flag)
-{
-  return nslcd_cfg != NULL &&
-         (nslcd_cfg->ldc_flags&flag);
-}
-
 /* clear the configuration information back to the defaults */
 static void cfg_defaults(struct ldap_config *cfg)
 {
@@ -577,15 +571,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
         cfg->ldc_reconnect_pol=LP_RECONNECT_HARD_INIT;
       else if (strcasecmp(opts[1],"soft")==0)
         cfg->ldc_reconnect_pol=LP_RECONNECT_SOFT;
-    }
-    else if (strcasecmp(opts[0],"nss_connect_policy")==0)
-    {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (and may be removed in an upcoming release)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      if (!strcasecmp(opts[1],"oneshot"))
-        cfg->ldc_flags|=NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT;
-      else if (!strcasecmp(opts[1],"persist"))
-        cfg->ldc_flags&=~(NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT);
     }
     else if (strcasecmp(opts[0],"idle_timelimit")==0)
     {

@@ -723,8 +723,6 @@ void _nss_ldap_ent_context_cleanup(struct ent_context *context)
     context->ec_cookie=NULL;
   }
   LS_INIT(context->ec_state);
-  if (_nss_ldap_test_config_flag(NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT))
-    do_close(context->session);
 }
 
 /*

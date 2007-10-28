@@ -163,14 +163,6 @@ struct ldap_config
    once cfg_init() was called */
 extern struct ldap_config *nslcd_cfg;
 
-/*
- * Flags that are exposed via _nss_ldap_test_config_flag()
- */
-#define NSS_LDAP_FLAGS_CONNECT_POLICY_ONESHOT   0x0008
-
-int _nss_ldap_test_config_flag(unsigned int flag)
-  MUST_USE;
-
 /* Initialize the configuration in nslcd_cfg. This method
    will read the default configuration file and call exit()
    if an error occurs. */
