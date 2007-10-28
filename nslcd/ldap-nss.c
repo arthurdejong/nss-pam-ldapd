@@ -894,13 +894,13 @@ static enum nss_status do_with_reconnect(
  * Simple wrapper around ldap_get_values(). Requires that
  * session is already established.
  */
-char **_nss_ldap_get_values(MYLDAP_SESSION *session,LDAPMessage *e,
+char **_nss_ldap_get_values(MYLDAP_ENTRY *entry,
                             const char *attr)
 {
-  if (!session->is_connected)
+  if (!entry->search->session->is_connected)
     return NULL;
-  assert(session->ls_conn!=NULL);
-  return ldap_get_values(session->ls_conn,e,attr);
+  assert(entry->search->session->ls_conn!=NULL);
+  return ldap_get_values(entry->search->session->ls_conn,entry->msg,attr);
 }
 
 /* translates a nslcd return code (as defined in nslcd.h) to
@@ -1362,7 +1362,7 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
 {
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
-  enum nss_status stat = NSS_STATUS_NOTFOUND;
+  enum nss_status stat=NSS_STATUS_NOTFOUND;
   /* do the search */
   search=myldap_search(session,base,scope,filter,attrs);
   if (search==NULL)
@@ -1400,8 +1400,8 @@ int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size
  * Assign all values, bar omitvalue (if not NULL), to *valptr.
  */
 enum nss_status _nss_ldap_assign_attrvals(
-        MYLDAP_SESSION *session,
-        LDAPMessage *e,const char *attr,const char *omitvalue,
+        MYLDAP_ENTRY *entry,
+        const char *attr,const char *omitvalue,
         char ***valptr,char **pbuffer,size_t *pbuflen,size_t *pvalcount)
 {
   char **vals;
@@ -1415,10 +1415,10 @@ enum nss_status _nss_ldap_assign_attrvals(
   if (pvalcount!=NULL)
     *pvalcount=0;
 
-  if (session->ls_conn==NULL)
+  if (entry->search->session->ls_conn==NULL)
     return NSS_STATUS_UNAVAIL;
 
-  vals=_nss_ldap_get_values(session,e,attr);
+  vals=_nss_ldap_get_values(entry,attr);
 
   valcount=(vals==NULL)?0:ldap_count_values(vals);
   if (bytesleft(buffer,buflen,char *)<(valcount+1)*sizeof(char *))
@@ -1485,14 +1485,14 @@ enum nss_status _nss_ldap_assign_attrvals(
 
 /* Assign a single value to *valptr. */
 enum nss_status _nss_ldap_assign_attrval(
-        MYLDAP_SESSION *session,LDAPMessage *e,const char *attr,char **valptr,
+        MYLDAP_ENTRY *entry,const char *attr,char **valptr,
         char **buffer,size_t *buflen)
 {
   char **vals;
   int vallen;
-  if (session->ls_conn==NULL)
+  if (entry->search->session->ls_conn==NULL)
     return NSS_STATUS_UNAVAIL;
-  vals=_nss_ldap_get_values(session,e,attr);
+  vals=_nss_ldap_get_values(entry,attr);
   if (vals==NULL)
     return NSS_STATUS_NOTFOUND;
   vallen=strlen(*vals);
@@ -1561,17 +1561,17 @@ static const char *_nss_ldap_locate_userpassword(char **vals)
  * a syntactically suitable value.
  */
 enum nss_status _nss_ldap_assign_userpassword(
-        MYLDAP_SESSION *session,
-        LDAPMessage *e,const char *attr,char **valptr,
+        MYLDAP_ENTRY *entry,
+        const char *attr,char **valptr,
         char **buffer,size_t *buflen)
 {
   char **vals;
   const char *pwd;
   int vallen;
   log_log(LOG_DEBUG,"==> _nss_ldap_assign_userpassword");
-  if (session->ls_conn==NULL)
+  if (entry->search->session->ls_conn==NULL)
     return NSS_STATUS_UNAVAIL;
-  vals=_nss_ldap_get_values(session,e,attr);
+  vals=_nss_ldap_get_values(entry,attr);
   pwd=_nss_ldap_locate_userpassword(vals);
   vallen=strlen(pwd);
   if (*buflen<(size_t)(vallen+1))
@@ -1590,29 +1590,6 @@ enum nss_status _nss_ldap_assign_userpassword(
     ldap_value_free(vals);
   log_log(LOG_DEBUG,"<== _nss_ldap_assign_userpassword");
   return NSS_STATUS_SUCCESS;
-}
-
-int has_objectclass(MYLDAP_SESSION *session,LDAPMessage *entry,const char *objectclass)
-{
-  char **vals;
-  int i;
-  LDAP *ld;
-  ld=session->ls_conn;
-  if (ld==NULL)
-    return 0;
-  vals=_nss_ldap_get_values(session,entry,"objectClass");
-  if (vals==NULL)
-    return 0;
-  for (i=0;vals[i]!=NULL;i++)
-  {
-    if (strcasecmp(vals[i],objectclass)==0)
-    {
-      ldap_value_free(vals);
-      return -1;
-    }
-  }
-  ldap_value_free(vals);
-  return 0;
 }
 
 static enum nss_status do_getrdnvalue(
@@ -1676,18 +1653,17 @@ static enum nss_status do_getrdnvalue(
 }
 
 enum nss_status _nss_ldap_getrdnvalue(
-        MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype,
+        MYLDAP_ENTRY *entry,const char *rdntype,
         char **rval,char **buffer,size_t *buflen)
 {
-  char *dn;
+  const char *dn;
   enum nss_status status;
   size_t rdnlen;
 
-  dn=ldap_get_dn(session->ls_conn,entry);
+  dn=myldap_get_dn(entry);
   if (dn==NULL)
     return NSS_STATUS_NOTFOUND;
   status=do_getrdnvalue(dn,rdntype,rval,buffer,buflen);
-  ldap_memfree(dn);
 
   /*
    * If examining the DN failed, then pick the nominal first
@@ -1697,7 +1673,7 @@ enum nss_status _nss_ldap_getrdnvalue(
   if (status==NSS_STATUS_NOTFOUND)
   {
     char **vals;
-    vals=_nss_ldap_get_values(session,entry,rdntype);
+    vals=_nss_ldap_get_values(entry,rdntype);
     if (vals != NULL)
     {
       rdnlen = strlen (*vals);

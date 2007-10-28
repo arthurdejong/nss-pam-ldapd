@@ -136,11 +136,10 @@ int _nss_ldap_getbyname(
 
 /* parsing utility functions */
 
-char **_nss_ldap_get_values(MYLDAP_SESSION *session,LDAPMessage *e,const char *attr);
+char **_nss_ldap_get_values(MYLDAP_ENTRY *entry,const char *attr);
 
 enum nss_status _nss_ldap_assign_attrvals (
-        MYLDAP_SESSION *session,
-        LDAPMessage *e,     /* IN */
+        MYLDAP_ENTRY *entry,
         const char *attr, /* IN */
         const char *omitvalue,    /* IN */
         char ***valptr,   /* OUT */
@@ -149,31 +148,25 @@ enum nss_status _nss_ldap_assign_attrvals (
         size_t * pvalcount /* OUT */ );
 
 enum nss_status _nss_ldap_assign_attrval(
-        MYLDAP_SESSION *session,
-        LDAPMessage *e,      /* IN */
+        MYLDAP_ENTRY *entry,
         const char *attr,  /* IN */
         char **valptr,     /* OUT */
         char **buffer,     /* IN/OUT */
         size_t * buflen /* IN/OUT */ );
 
 enum nss_status _nss_ldap_assign_userpassword(
-        MYLDAP_SESSION *session,
-        LDAPMessage *e,       /* IN */
+        MYLDAP_ENTRY *entry,
         const char *attr,     /* IN */
         char **valptr,        /* OUT */
         char **buffer,        /* IN/OUT */
         size_t * buflen);     /* IN/OUT */
-
-/* check that the entry has the specified objectclass
-   return 0 for false, not-0 for true */
-int has_objectclass(MYLDAP_SESSION *session,LDAPMessage *entry,const char *objectclass);
 
 /*
  * get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry)
  * would return lukeh.
  */
 enum nss_status _nss_ldap_getrdnvalue(
-        MYLDAP_SESSION *session,LDAPMessage *entry,const char *rdntype,
+        MYLDAP_ENTRY *entry,const char *rdntype,
         char **rval,char **buffer,size_t * buflen);
 
 #endif /* _LDAP_NSS_LDAP_LDAP_NSS_H */

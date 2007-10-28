@@ -85,4 +85,42 @@ int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
 
+/* macro for generating service handling code */
+#define NSLCD_HANDLE(db,fn,readfn,logcall,action,mkfilter,writefn) \
+  int nslcd_##db##_##fn(TFILE *fp,MYLDAP_SESSION *session) \
+  { \
+    /* define commong variables */ \
+    int32_t tmpint32; \
+    MYLDAP_SEARCH *search; \
+    MYLDAP_ENTRY *entry; \
+    /* read request parameters */ \
+    readfn; \
+    /* log call */ \
+    logcall; \
+    /* write the response header */ \
+    WRITE_INT32(fp,NSLCD_VERSION); \
+    WRITE_INT32(fp,action); \
+    /* prepare the search filter */ \
+    if (mkfilter) \
+    { \
+      log_log(LOG_WARNING,"nslcd_" __STRING(db) "_" __STRING(fn) "(): filter buffer too small"); \
+      return -1; \
+    } \
+    /* build the list of attributes */ \
+    db##_init(); \
+    /* do the LDAP search */ \
+    if ((search=myldap_search(session,db##_base,db##_scope,filter,db##_attrs))==NULL) \
+      return -1; \
+    /* go over results */ \
+    while ((entry=myldap_get_entry(search))!=NULL) \
+    { \
+      writefn; \
+    } \
+    /* write the final result code */ \
+    WRITE_INT32(fp,NSLCD_RESULT_NOTFOUND); \
+    /* we're done */ \
+    WRITE_FLUSH(fp); \
+    return 0; \
+  }
+
 #endif /* not _SERVER_COMMON_H */

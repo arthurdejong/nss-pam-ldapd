@@ -115,26 +115,6 @@ static void shadow_init(void)
   shadow_attrs[9]=NULL;
 }
 
-/* macros for expanding the NSLCD_SHADOW macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define SHADOW_NAME             result->sp_namp
-#define SHADOW_PASSWD           result->sp_pwdp
-#define SHADOW_LASTCHANGE       result->sp_lstchg
-#define SHADOW_MINDAYS          result->sp_min
-#define SHADOW_MAXDAYS          result->sp_max
-#define SHADOW_WARN             result->sp_warn
-#define SHADOW_INACT            result->sp_inact
-#define SHADOW_EXPIRE           result->sp_expire
-#define SHADOW_FLAG             result->sp_flag
-
-static int write_spwd(TFILE *fp,struct spwd *result)
-{
-  int32_t tmpint32;
-  NSLCD_SHADOW;
-  return 0;
-}
-
 static int
 _nss_ldap_shadow_date (const char *val)
 {
@@ -169,40 +149,39 @@ _nss_ldap_shadow_handle_flag (struct spwd *sp)
 }
 
 static enum nss_status _nss_ldap_parse_sp(
-        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
-        void *result,char *buffer,size_t buflen)
+        MYLDAP_ENTRY *entry,
+        struct spwd *sp,char *buffer,size_t buflen)
 {
-  struct spwd *sp = (struct spwd *) result;
   enum nss_status stat;
   char *tmp = NULL;
 
-  stat=_nss_ldap_assign_userpassword(session,e,attmap_shadow_userPassword,&sp->sp_pwdp,&buffer,&buflen);
+  stat=_nss_ldap_assign_userpassword(entry,attmap_shadow_userPassword,&sp->sp_pwdp,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_shadow_uid,&sp->sp_namp,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_uid,&sp->sp_namp,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_shadow_shadowLastChange,&tmp,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowLastChange,&tmp,&buffer,&buflen);
   sp->sp_lstchg = (stat == NSS_STATUS_SUCCESS) ? _nss_ldap_shadow_date (tmp) : -1;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_shadow_shadowMax,&tmp,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowMax,&tmp,&buffer,&buflen);
   sp->sp_max = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_shadow_shadowMin,&tmp,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowMin,&tmp,&buffer,&buflen);
   sp->sp_min = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_shadow_shadowWarning,&tmp,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowWarning,&tmp,&buffer,&buflen);
   sp->sp_warn = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_shadow_shadowInactive,&tmp,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowInactive,&tmp,&buffer,&buflen);
   sp->sp_inact = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_shadow_shadowExpire,&tmp,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowExpire,&tmp,&buffer,&buflen);
   sp->sp_expire = (stat == NSS_STATUS_SUCCESS) ? _nss_ldap_shadow_date (tmp) : -1;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_shadow_shadowFlag,&tmp,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowFlag,&tmp,&buffer,&buflen);
   sp->sp_flag = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : 0;
 
   _nss_ldap_shadow_handle_flag(sp);
@@ -210,66 +189,50 @@ static enum nss_status _nss_ldap_parse_sp(
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session)
+/* macros for expanding the NSLCD_SHADOW macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
+#define SHADOW_NAME             result.sp_namp
+#define SHADOW_PASSWD           result.sp_pwdp
+#define SHADOW_LASTCHANGE       result.sp_lstchg
+#define SHADOW_MINDAYS          result.sp_min
+#define SHADOW_MAXDAYS          result.sp_max
+#define SHADOW_WARN             result.sp_warn
+#define SHADOW_INACT            result.sp_inact
+#define SHADOW_EXPIRE           result.sp_expire
+#define SHADOW_FLAG             result.sp_flag
+
+static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry)
 {
   int32_t tmpint32;
-  char name[256];
-  char filter[1024];
-  int retv;
   struct spwd result;
   char buffer[1024];
-  /* read request parameters */
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_shadow_byname(%s)",name);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_SHADOW_BYNAME);
-  /* do the LDAP request */
-  mkfilter_shadow_byname(name,filter,sizeof(filter));
-  shadow_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           shadow_base,shadow_scope,filter,shadow_attrs,
-                           _nss_ldap_parse_sp);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_spwd(fp,&result))
-      return -1;
-  /* we're done */
+  if (_nss_ldap_parse_sp(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+    return 0;
+  /* write the result code */
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  /* write the entry */
+  NSLCD_SHADOW;
   return 0;
 }
 
-int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  struct ent_context context;
-  /* these are here for now until we rewrite the LDAP code */
-  struct spwd result;
-  char buffer[1024];
-  int retv;
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_shadow_all()");
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_SHADOW_ALL);
-  /* initialize context */
-  _nss_ldap_ent_context_init(&context,session);
-  /* loop over all results */
-  shadow_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
-                                shadow_base,shadow_scope,shadow_filter,shadow_attrs,
-                                _nss_ldap_parse_sp))==NSLCD_RESULT_SUCCESS)
-  {
-    /* write the result */
-    WRITE_INT32(fp,retv);
-    if (write_spwd(fp,&result))
-      return -1;
-  }
-  /* write the final result code */
-  WRITE_INT32(fp,retv);
-  /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_ent_context_cleanup(&context);
-  /* we're done */
-  return 0;
-}
+NSLCD_HANDLE(
+  shadow,byname,
+  char name[256];
+  char filter[1024];
+  READ_STRING_BUF2(fp,name,sizeof(name));,
+  log_log(LOG_DEBUG,"nslcd_shadow_byname(%s)",name);,
+  NSLCD_ACTION_SHADOW_BYNAME,
+  mkfilter_shadow_byname(name,filter,sizeof(filter)),
+  write_shadow(fp,entry)
+)
+
+NSLCD_HANDLE(
+  shadow,all,
+  const char *filter;
+  /* no parameters to read */,
+  log_log(LOG_DEBUG,"nslcd_shadow_all()");,
+  NSLCD_ACTION_SHADOW_ALL,
+  (filter=shadow_filter,0),
+  write_shadow(fp,entry)
+)

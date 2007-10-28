@@ -121,25 +121,8 @@ static void network_init(void)
   network_attrs[2]=NULL;
 }
 
-/* write a single network entry to the stream */
-static int write_netent(TFILE *fp,struct netent *result)
-{
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  /* write the network name */
-  WRITE_STRING(fp,result->n_name);
-  /* write the alias list */
-  WRITE_STRINGLIST_NULLTERM(fp,result->n_aliases);
-  /* write the number of addresses */
-  WRITE_INT32(fp,1);
-  /* write the addresses in network byte order */
-  WRITE_INT32(fp,result->n_addrtype);
-  WRITE_INT32(fp,sizeof(unsigned long int));
-  result->n_net=htonl(result->n_net);
-  WRITE_INT32(fp,result->n_net);
-  return 0;
-}
 static enum nss_status _nss_ldap_parse_net(
-        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
+        MYLDAP_ENTRY *entry,
         void *result,char *buffer,size_t buflen)
 {
 
@@ -150,148 +133,115 @@ static enum nss_status _nss_ldap_parse_net(
   /* IPv6 support ? XXX */
   network->n_addrtype = AF_INET;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_network_cn,&network->n_name,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_network_cn,&network->n_name,&buffer,&buflen);
   if (stat!=NSS_STATUS_SUCCESS)
     return stat;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_network_ipNetworkNumber,&tmp,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_network_ipNetworkNumber,&tmp,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   network->n_net = inet_network (tmp);
 
-  stat=_nss_ldap_assign_attrvals(session,e,attmap_network_cn,network->n_name,&network->n_aliases,&buffer,&buflen,NULL);
+  stat=_nss_ldap_assign_attrvals(entry,attmap_network_cn,network->n_name,&network->n_aliases,&buffer,&buflen,NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_network_byname(TFILE *fp,MYLDAP_SESSION *session)
+/* write a single network entry to the stream */
+static int write_network(TFILE *fp,MYLDAP_ENTRY *entry)
 {
-  int32_t tmpint32;
-  char name[256];
-  char filter[1024];
-  int retv;
+  int32_t tmpint32,tmp2int32,tmp3int32;
   struct netent result;
   char buffer[1024];
-  /* read request parameters */
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_network_byname(%s)",name);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_NETWORK_BYNAME);
-  /* do the LDAP request */
-  mkfilter_network_byname(name,filter,sizeof(filter));
-  network_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           network_base,network_scope,filter,network_attrs,
-                           _nss_ldap_parse_net);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    write_netent(fp,&result);
-  /* we're done */
+  if (_nss_ldap_parse_net(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+    return 0;
+  /* write the result code */
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  /* write the entry */
+  /* write the network name */
+  WRITE_STRING(fp,result.n_name);
+  /* write the alias list */
+  WRITE_STRINGLIST_NULLTERM(fp,result.n_aliases);
+  /* write the number of addresses */
+  WRITE_INT32(fp,1);
+  /* write the addresses in network byte order */
+  WRITE_INT32(fp,result.n_addrtype);
+  WRITE_INT32(fp,sizeof(unsigned long int));
+  result.n_net=htonl(result.n_net);
+  WRITE_INT32(fp,result.n_net);
   return 0;
 }
 
-int nslcd_network_byaddr(TFILE *fp,MYLDAP_SESSION *session)
+static int read_address(TFILE *fp,char *addr,int *addrlen,int *af)
 {
   int32_t tmpint32;
-  int af;
   int len;
-  char addr[64],name[1024];
-  char filter[1024];
-  int retv=456;
-  struct netent result;
-  char buffer[1024];
   /* read address family */
-  READ_INT32(fp,af);
-  if (af!=AF_INET)
+  READ_INT32(fp,*af);
+  if (*af!=AF_INET)
   {
-    log_log(LOG_WARNING,"incorrect address family specified: %d",af);
+    log_log(LOG_WARNING,"incorrect address family specified: %d",*af);
     return -1;
   }
   /* read address length */
   READ_INT32(fp,len);
-  if ((len>64)||(len<=0))
+  if ((len>*addrlen)||(len<=0))
   {
     log_log(LOG_WARNING,"address length incorrect: %d",len);
     return -1;
   }
+  *addrlen=len;
   /* read address */
   READ(fp,addr,len);
-  /* translate the address to a string */
-  if (inet_ntop(af,addr,name,1024)==NULL)
-  {
-    log_log(LOG_WARNING,"unable to convert address to string");
-    return -1;
-  }
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_network_byaddr(%s)",name);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_NETWORK_BYADDR);
-  /* do requests until we find a result */
-  /* TODO: probably do more sofisticated queries */
-  while (retv==456)
-  {
-    /* do the request */
-    mkfilter_network_byaddr(name,filter,sizeof(filter));
-    network_init();
-    retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                             network_base,network_scope,filter,network_attrs,
-                             _nss_ldap_parse_net);
-    /* if no entry was found, retry with .0 stripped from the end */
-    if ((retv==NSLCD_RESULT_NOTFOUND) &&
-        (strlen(name)>2) &&
-        (strncmp(name+strlen(name)-2,".0",2)==0))
-    {
-      /* strip .0 and try again */
-      name[strlen(name)-2]='\0';
-      retv=456;
-    }
-  }
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_netent(fp,&result))
-      return -1;
   /* we're done */
   return 0;
 }
 
-int nslcd_network_all(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  struct ent_context context;
-  /* these are here for now until we rewrite the LDAP code */
-  struct netent result;
-  char buffer[1024];
-  int retv;
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_network_all()");
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_NETWORK_ALL);
-  /* initialize context */
-  _nss_ldap_ent_context_init(&context,session);
-  /* loop over all results */
-  network_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
-                                network_base,network_scope,network_filter,network_attrs,
-                                _nss_ldap_parse_net))==NSLCD_RESULT_SUCCESS)
+#define READ_ADDRESS(fp,addr,len,af) \
+  len=(int)sizeof(addr); \
+  if (read_address(fp,addr,&(len),&(af))) \
+    return -1;
+
+NSLCD_HANDLE(
+  network,byname,
+  char name[256];
+  char filter[1024];
+  READ_STRING_BUF2(fp,name,sizeof(name));,
+  log_log(LOG_DEBUG,"nslcd_network_byname(%s)",name);,
+  NSLCD_ACTION_NETWORK_BYNAME,
+  mkfilter_network_byname(name,filter,sizeof(filter)),
+  write_network(fp,entry)
+)
+
+NSLCD_HANDLE(
+  network,byaddr,
+  int af;
+  char addr[64];
+  int len=sizeof(addr);
+  char name[1024];
+  char filter[1024];
+  READ_ADDRESS(fp,addr,len,af);
+  /* translate the address to a string */
+  if (inet_ntop(af,addr,name,sizeof(name))==NULL)
   {
-    /* write the result */
-    WRITE_INT32(fp,retv);
-    if (write_netent(fp,&result))
-      return -1;
-  }
-  /* write the final result code */
-  WRITE_INT32(fp,retv);
-  /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_ent_context_cleanup(&context);
-  /* we're done */
-  return 0;
-}
+    log_log(LOG_WARNING,"unable to convert address to string");
+    return -1;
+  },
+  log_log(LOG_DEBUG,"nslcd_network_byaddr(%s)",name);,
+  NSLCD_ACTION_NETWORK_BYADDR,
+  mkfilter_network_byaddr(name,filter,sizeof(filter)),
+  write_network(fp,entry)
+)
+
+NSLCD_HANDLE(
+  network,all,
+  const char *filter;
+  /* no parameters to read */,
+  log_log(LOG_DEBUG,"nslcd_network_all()");,
+  NSLCD_ACTION_NETWORK_ALL,
+  (filter=network_filter,0),
+  write_network(fp,entry)
+)

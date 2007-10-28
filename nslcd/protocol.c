@@ -114,140 +114,80 @@ static void protocol_init(void)
   protocol_attrs[2]=NULL;
 }
 
-/* macros for expanding the NSLCD_PROTOCOL macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define PROTOCOL_NAME           result->p_name
-#define PROTOCOL_ALIASES        result->p_aliases
-#define PROTOCOL_NUMBER         result->p_proto
-
-static int write_protoent(TFILE *fp,struct protoent *result)
-{
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  NSLCD_PROTOCOL;
-  return 0;
-}
-
 static enum nss_status _nss_ldap_parse_proto(
-        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
-        void *result,char *buffer,size_t buflen)
+        MYLDAP_ENTRY *entry,
+        struct protoent *proto,char *buffer,size_t buflen)
 {
-
-  struct protoent *proto = (struct protoent *) result;
   char *number;
   enum nss_status stat;
 
-  stat=_nss_ldap_getrdnvalue(session,e,attmap_protocol_cn,&proto->p_name,&buffer,&buflen);
+  stat=_nss_ldap_getrdnvalue(entry,attmap_protocol_cn,&proto->p_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_protocol_ipProtocolNumber,&number,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_protocol_ipProtocolNumber,&number,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   proto->p_proto = atoi (number);
 
-  stat=_nss_ldap_assign_attrvals (session,e,attmap_protocol_cn,proto->p_name,&proto->p_aliases,&buffer,&buflen,NULL);
+  stat=_nss_ldap_assign_attrvals (entry,attmap_protocol_cn,proto->p_name,&proto->p_aliases,&buffer,&buflen,NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_protocol_byname(TFILE *fp,MYLDAP_SESSION *session)
+/* macros for expanding the NSLCD_PROTOCOL macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
+#define PROTOCOL_NAME           result.p_name
+#define PROTOCOL_ALIASES        result.p_aliases
+#define PROTOCOL_NUMBER         result.p_proto
+
+static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry)
 {
-  int32_t tmpint32;
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  struct protoent result;
+  char buffer[1024];
+  if (_nss_ldap_parse_proto(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+    return 0;
+  /* write the result code */
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  /* write the entry */
+  NSLCD_PROTOCOL;
+  return 0;
+}
+
+NSLCD_HANDLE(
+  protocol,byname,
   char name[256];
   char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
-  struct protoent result;
-  char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_protocol_byname(%s)",name);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_BYNAME);
-  /* do the LDAP request */
-  mkfilter_protocol_byname(name,filter,sizeof(filter));
-  protocol_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           protocol_base,protocol_scope,filter,protocol_attrs,
-                           _nss_ldap_parse_proto);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_protoent(fp,&result))
-      return -1;
-  /* we're done */
-  return 0;
-}
+  READ_STRING_BUF2(fp,name,sizeof(name));,
+  log_log(LOG_DEBUG,"nslcd_protocol_byname(%s)",name);,
+  NSLCD_ACTION_PROTOCOL_BYNAME,
+  mkfilter_protocol_byname(name,filter,sizeof(filter)),
+  write_protocol(fp,entry)
+)
 
-int nslcd_protocol_bynumber(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
+NSLCD_HANDLE(
+  protocol,bynumber,
   int protocol;
   char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
-  struct protoent result;
-  char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_INT32(fp,protocol);
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_protocol_bynumber(%d)",protocol);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_BYNUMBER);
-  /* do the LDAP request */
-  mkfilter_protocol_bynumber(protocol,filter,sizeof(filter));
-  protocol_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           protocol_base,protocol_scope,filter,protocol_attrs,
-                           _nss_ldap_parse_proto);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_protoent(fp,&result))
-      return -1;
-  /* we're done */
-  return 0;
-}
+  READ_INT32(fp,protocol);,
+  log_log(LOG_DEBUG,"nslcd_protocol_bynumber(%d)",protocol);,
+  NSLCD_ACTION_PROTOCOL_BYNUMBER,
+  mkfilter_protocol_bynumber(protocol,filter,sizeof(filter)),
+  write_protocol(fp,entry)
+)
 
-int nslcd_protocol_all(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  struct ent_context context;
-  /* these are here for now until we rewrite the LDAP code */
-  struct protoent result;
-  char buffer[1024];
-  int retv;
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_protocol_all()");
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_PROTOCOL_ALL);
-  /* initialize context */
-  _nss_ldap_ent_context_init(&context,session);
-  /* loop over all results */
-  protocol_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
-                                protocol_base,protocol_scope,protocol_filter,protocol_attrs,
-                                _nss_ldap_parse_proto))==NSLCD_RESULT_SUCCESS)
-  {
-    /* write the result code */
-    WRITE_INT32(fp,retv);
-    /* write the entry */
-    if (write_protoent(fp,&result))
-      return -1;
-  }
-  /* write the final result code */
-  WRITE_INT32(fp,retv);
-  /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_ent_context_cleanup(&context);
-  /* we're done */
-  return 0;
-}
+NSLCD_HANDLE(
+  protocol,all,
+  const char *filter;
+  /* no parameters to read */,
+  log_log(LOG_DEBUG,"nslcd_protocol_all()");,
+  NSLCD_ACTION_PROTOCOL_ALL,
+  (filter=protocol_filter,0),
+  write_protocol(fp,entry)
+)

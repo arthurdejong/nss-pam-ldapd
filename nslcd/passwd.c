@@ -131,24 +131,6 @@ static void passwd_init(void)
   passwd_attrs[9]=NULL;
 }
 
-/* macros for expanding the NSLCD_PASSWD macro */
-#define NSLCD_STRING(field)    WRITE_STRING(fp,field)
-#define NSLCD_TYPE(field,type) WRITE_TYPE(fp,field,type)
-#define PASSWD_NAME            result->pw_name
-#define PASSWD_PASSWD          result->pw_passwd
-#define PASSWD_UID             result->pw_uid
-#define PASSWD_GID             result->pw_gid
-#define PASSWD_GECOS           result->pw_gecos
-#define PASSWD_DIR             result->pw_dir
-#define PASSWD_SHELL           result->pw_shell
-
-static int write_passwd(TFILE *fp,struct passwd *result)
-{
-  int32_t tmpint32;
-  NSLCD_PASSWD;
-  return 0;
-}
-
 static inline enum nss_status _nss_ldap_assign_emptystring(
                char **valptr, char **buffer, size_t * buflen)
 {
@@ -166,15 +148,14 @@ static inline enum nss_status _nss_ldap_assign_emptystring(
 }
 
 static enum nss_status _nss_ldap_parse_pw(
-        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
-        void *result,char *buffer,size_t buflen)
+        MYLDAP_ENTRY *entry,
+        struct passwd *pw,char *buffer,size_t buflen)
 {
   /* FIXME: fix following problem:
             if the entry has multiple uid fields we may end up
             sending the wrong uid, we should return the requested
             uid instead, otherwise write an entry for each uid
             (maybe also for uidNumber) */
-  struct passwd *pw=(struct passwd *)result;
   char *uid, *gid;
   enum nss_status stat;
   char tmpbuf[ sizeof( uid_t ) * 8 / 3 + 2 ];
@@ -183,7 +164,7 @@ static enum nss_status _nss_ldap_parse_pw(
 
   tmpbuf[ sizeof(tmpbuf) - 1 ] = '\0';
 
-  if (has_objectclass(session,e,"shadowAccount"))
+  if (myldap_has_objectclass(entry,"shadowAccount"))
     {
       /* don't include password for shadowAccount */
       if (buflen < 3)
@@ -196,140 +177,102 @@ static enum nss_status _nss_ldap_parse_pw(
     }
   else
     {
-      stat=_nss_ldap_assign_userpassword(session,e,attmap_passwd_userPassword,&pw->pw_passwd,&buffer,&buflen);
+      stat=_nss_ldap_assign_userpassword(entry,attmap_passwd_userPassword,&pw->pw_passwd,&buffer,&buflen);
       if (stat != NSS_STATUS_SUCCESS)
         return stat;
     }
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_uid,&pw->pw_name,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_uid,&pw->pw_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   tmp = tmpbuf;
   tmplen = sizeof (tmpbuf) - 1;
-  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_uidNumber,&uid,&tmp,&tmplen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_uidNumber,&uid,&tmp,&tmplen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
   pw->pw_uid = (*uid == '\0') ? UID_NOBODY : (uid_t) atol (uid);
 
   tmp = tmpbuf;
   tmplen = sizeof (tmpbuf) - 1;
-  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_gidNumber,&gid,&tmp,&tmplen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_gidNumber,&gid,&tmp,&tmplen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
   pw->pw_gid = (*gid == '\0') ? GID_NOBODY : (gid_t) atol (gid);
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_gecos,&pw->pw_gecos,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_gecos,&pw->pw_gecos,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     {
       pw->pw_gecos = NULL;
-      stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_cn,&pw->pw_gecos,&buffer,&buflen);
+      stat=_nss_ldap_assign_attrval(entry,attmap_passwd_cn,&pw->pw_gecos,&buffer,&buflen);
       if (stat != NSS_STATUS_SUCCESS)
         return stat;
     }
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_homeDirectory,&pw->pw_dir,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_homeDirectory,&pw->pw_dir,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     (void) _nss_ldap_assign_emptystring (&pw->pw_dir, &buffer, &buflen);
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_passwd_loginShell,&pw->pw_shell,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_loginShell,&pw->pw_shell,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     (void) _nss_ldap_assign_emptystring (&pw->pw_shell, &buffer, &buflen);
 
   return NSS_STATUS_SUCCESS;
 }
 
-/* the caller should take care of opening and closing the stream */
-int nslcd_passwd_byname(TFILE *fp,MYLDAP_SESSION *session)
+/* macros for expanding the NSLCD_PASSWD macro */
+#define NSLCD_STRING(field)    WRITE_STRING(fp,field)
+#define NSLCD_TYPE(field,type) WRITE_TYPE(fp,field,type)
+#define PASSWD_NAME            result.pw_name
+#define PASSWD_PASSWD          result.pw_passwd
+#define PASSWD_UID             result.pw_uid
+#define PASSWD_GID             result.pw_gid
+#define PASSWD_GECOS           result.pw_gecos
+#define PASSWD_DIR             result.pw_dir
+#define PASSWD_SHELL           result.pw_shell
+
+static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry)
 {
   int32_t tmpint32;
+  struct passwd result;
+  char buffer[1024];
+  if (_nss_ldap_parse_pw(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+    return 0;
+  /* write the result code */
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  /* write the entry */
+  NSLCD_PASSWD;
+  return 0;
+}
+
+NSLCD_HANDLE(
+  passwd,byname,
   char name[256];
   char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
-  struct passwd result;
-  char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);
-  /* do the LDAP request */
-  mkfilter_passwd_byname(name,filter,sizeof(filter));
-  passwd_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           passwd_base,passwd_scope,filter,passwd_attrs,
-                           _nss_ldap_parse_pw);
-  /* write the response */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYNAME);
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_passwd(fp,&result))
-      return -1;
-  /* we're done */
-  return 0;
-}
+  READ_STRING_BUF2(fp,name,sizeof(name));,
+  log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);,
+  NSLCD_ACTION_PASSWD_BYNAME,
+  mkfilter_passwd_byname(name,filter,sizeof(filter)),
+  write_passwd(fp,entry)
+)
 
-int nslcd_passwd_byuid(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
+NSLCD_HANDLE(
+  passwd,byuid,
   uid_t uid;
-  /* these are here for now until we rewrite the LDAP code */
-  struct passwd result;
-  char buffer[1024];
   char filter[1024];
-  int retv;
-  /* read request parameters */
-  READ_TYPE(fp,uid,uid_t);
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_passwd_byuid(%d)",(int)uid);
-  /* do the LDAP request */
-  mkfilter_passwd_byuid(uid,filter,sizeof(filter));
-  passwd_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           passwd_base,passwd_scope,filter,passwd_attrs,
-                           _nss_ldap_parse_pw);
-  /* write the response */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_passwd(fp,&result))
-      return -1;
-  /* we're done */
-  return 0;
-}
+  READ_TYPE(fp,uid,uid_t);,
+  log_log(LOG_DEBUG,"nslcd_passwd_byuid(%d)",(int)uid);,
+  NSLCD_ACTION_PASSWD_BYUID,
+  mkfilter_passwd_byuid(uid,filter,sizeof(filter)),
+  write_passwd(fp,entry)
+)
 
-int nslcd_passwd_all(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  struct ent_context context;
-  /* these are here for now until we rewrite the LDAP code */
-  struct passwd result;
-  char buffer[1024];
-  int retv;
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_passwd_all()");
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_PASSWD_ALL);
-  /* initialize context */
-  _nss_ldap_ent_context_init(&context,session);
-  /* go over results */
-  passwd_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
-                                passwd_base,passwd_scope,passwd_filter,passwd_attrs,
-                                _nss_ldap_parse_pw))==NSLCD_RESULT_SUCCESS)
-  {
-    /* write the result */
-    WRITE_INT32(fp,retv);
-    if (write_passwd(fp,&result))
-      return -1;
-  }
-  /* write the final result code */
-  WRITE_INT32(fp,retv);
-  /* FIXME: if some statement returns what happens to the context? */
-  _nss_ldap_ent_context_cleanup(&context);
-  /* we're done */
-  return 0;
-}
+NSLCD_HANDLE(
+  passwd,all,
+  const char *filter;
+  /* no parameters to read */,
+  log_log(LOG_DEBUG,"nslcd_passwd_all()");,
+  NSLCD_ACTION_PASSWD_ALL,
+  (filter=passwd_filter,0),
+  write_passwd(fp,entry)
+)

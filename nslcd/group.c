@@ -47,6 +47,7 @@
 #include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
+#include "myldap.h"
 #include "cfg.h"
 #include "attmap.h"
 
@@ -185,117 +186,51 @@ static void group_init(void)
 /* group_attrs[4]=attmap_group_uniqueMember; */
 }
 
-/* macros for expanding the NSLCD_GROUP macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define GROUP_NAME              result->gr_name
-#define GROUP_PASSWD            result->gr_passwd
-#define GROUP_GID               result->gr_gid
-#define GROUP_MEMBERS           result->gr_mem
-
-static int write_group(TFILE *fp,struct group *result)
-{
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  NSLCD_GROUP;
-  return 0;
-}
-
 static enum nss_status _nss_ldap_parse_gr(
-        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
-        void *result,char *buffer,size_t buflen)
+        MYLDAP_ENTRY *entry,
+        struct group *gr,char *buffer,size_t buflen)
 {
-  struct group *gr=(struct group *)result;
   char *gid;
   enum nss_status stat;
   /* get group gid (gidNumber) */
-  stat=_nss_ldap_assign_attrval(session,e,attmap_group_gidNumber,&gid,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_group_gidNumber,&gid,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
   gr->gr_gid=(*gid=='\0')?(unsigned)GID_NOBODY:(gid_t)strtoul(gid,NULL,10);
   /* get group name (cn) */
-  stat=_nss_ldap_getrdnvalue(session,e,attmap_group_cn,&gr->gr_name,&buffer,&buflen);
+  stat=_nss_ldap_getrdnvalue(entry,attmap_group_cn,&gr->gr_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
   /* get group passwd (userPassword) */
-  stat=_nss_ldap_assign_userpassword(session,e,attmap_group_userPassword,&gr->gr_passwd,&buffer,&buflen);
+  stat=_nss_ldap_assign_userpassword(entry,attmap_group_userPassword,&gr->gr_passwd,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
   /* get group memebers (memberUid) */
-  stat=_nss_ldap_assign_attrvals(session,e,attmap_group_memberUid,NULL,
+  stat=_nss_ldap_assign_attrvals(entry,attmap_group_memberUid,NULL,
                                  &gr->gr_mem,&buffer,&buflen,NULL);
   return stat;
 }
 
-int nslcd_group_byname(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  char name[256];
-  char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
-  struct group result;
-  char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_group_byname(%s)",name);
-  /* static buffer size check */
-  if (1024<LDAP_NSS_BUFLEN_GROUP)
-  {
-    log_log(LOG_CRIT,"allocated buffer in nslcd_group_byname() too small");
-    exit(EXIT_FAILURE);
-  }
-  /* do the LDAP request */
-  mkfilter_group_byname(name,filter,sizeof(filter));
-  group_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           group_base,group_scope,filter,group_attrs,
-                           _nss_ldap_parse_gr);
-  /* write the response */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYNAME);
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_group(fp,&result))
-      return -1;
-  /* we're done */
-  return 0;
-}
+/* macros for expanding the NSLCD_GROUP macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define GROUP_NAME              result.gr_name
+#define GROUP_PASSWD            result.gr_passwd
+#define GROUP_GID               result.gr_gid
+#define GROUP_MEMBERS           result.gr_mem
 
-int nslcd_group_bygid(TFILE *fp,MYLDAP_SESSION *session)
+static int write_group(TFILE *fp,MYLDAP_ENTRY *entry)
 {
-  int32_t tmpint32;
-  gid_t gid;
-  char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
+  int32_t tmpint32,tmp2int32,tmp3int32;
   struct group result;
   char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_TYPE(fp,gid,gid_t);
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_group_bygid(%d)",(int)gid);
-  /* static buffer size check */
-  if (1024<LDAP_NSS_BUFLEN_GROUP)
-  {
-    log_log(LOG_CRIT,"allocated buffer in nslcd_group_byname() too small");
-    exit(EXIT_FAILURE);
-  }
-  /* do the LDAP request */
-  mkfilter_group_bygid(gid,filter,sizeof(filter));
-  group_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           group_base,group_scope,filter,
-                           group_attrs,_nss_ldap_parse_gr);
-  /* write the response */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYGID);
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_group(fp,&result))
-      return -1;
-  /* we're done */
+  if (_nss_ldap_parse_gr(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+    return 0;
+  /* write the result code */
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  /* write the entry */
+  NSLCD_GROUP;
   return 0;
 }
 
@@ -353,36 +288,48 @@ int nslcd_group_bymember(TFILE *fp,MYLDAP_SESSION *session)
   return 0;
 }
 
-int nslcd_group_all(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  struct ent_context context;
-  /* these are here for now until we rewrite the LDAP code */
-  struct group result;
-  char buffer[1024];
-  int retv;
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_group_all()");
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_GROUP_ALL);
-  /* initialize context */
-  _nss_ldap_ent_context_init(&context,session);
-  /* loop over all results */
-  group_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
-                                group_base,group_scope,group_filter,group_attrs,
-                                _nss_ldap_parse_gr))==NSLCD_RESULT_SUCCESS)
-  {
-    /* write the result */
-    WRITE_INT32(fp,retv);
-    if (write_group(fp,&result))
-      return -1;
-  }
-  /* write the final result code */
-  WRITE_INT32(fp,retv);
-  /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_ent_context_cleanup(&context);
-  /* we're done */
-  return 0;
-}
+NSLCD_HANDLE(
+  group,byname,
+  char name[256];
+  char filter[1024];
+  READ_STRING_BUF2(fp,name,sizeof(name));,
+  log_log(LOG_DEBUG,"nslcd_group_byname(%s)",name);,
+  NSLCD_ACTION_GROUP_BYNAME,
+  mkfilter_group_byname(name,filter,sizeof(filter)),
+  write_group(fp,entry)
+)
+
+NSLCD_HANDLE(
+  group,bygid,
+  gid_t gid;
+  char filter[1024];
+  READ_TYPE(fp,gid,gid_t);,
+  log_log(LOG_DEBUG,"nslcd_group_bygid(%d)",(int)gid);,
+  NSLCD_ACTION_GROUP_BYGID,
+  mkfilter_group_bygid(gid,filter,sizeof(filter)),
+  write_group(fp,entry)
+)
+
+/*
+NSLCD_HANDLE(
+  group,bymember,
+  char name[256];
+  char filter[1024];
+  READ_STRING_BUF2(fp,name,sizeof(name)),
+  log_log(LOG_DEBUG,"nslcd_group_bymember(%s)",name);,
+  NSLCD_ACTION_GROUP_BYMEMBER,
+  mkfilter_group_bymember(name,filter,sizeof(filter)),
+  write_group(fp,entry)
+)
+*/
+
+NSLCD_HANDLE(
+  group,all,
+  const char *filter;
+  /* no parameters to read */,
+  log_log(LOG_DEBUG,"nslcd_group_all()");,
+  NSLCD_ACTION_GROUP_ALL,
+  (filter=group_filter,0),
+  write_group(fp,entry)
+)
+

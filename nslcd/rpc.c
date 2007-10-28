@@ -119,138 +119,81 @@ static void rpc_init(void)
   rpc_attrs[2]=NULL;
 }
 
-/* macros for expanding the NSLCD_RPC macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define RPC_NAME                result->r_name
-#define RPC_ALIASES             result->r_aliases
-#define RPC_NUMBER              result->r_number
-
-/* write a single rpc entry to the stream */
-static int write_rpcent(TFILE *fp,struct rpcent *result)
-{
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  NSLCD_RPC;
-  return 0;
-}
-
 static enum nss_status _nss_ldap_parse_rpc(
-        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),
-        void *result,char *buffer,size_t buflen)
+        MYLDAP_ENTRY *entry,
+        struct rpcent *rpc,char *buffer,size_t buflen)
 {
-
-  struct rpcent *rpc = (struct rpcent *) result;
   char *number;
   enum nss_status stat;
 
-  stat=_nss_ldap_getrdnvalue(session,e,attmap_rpc_cn,&rpc->r_name,&buffer,&buflen);
+  stat=_nss_ldap_getrdnvalue(entry,attmap_rpc_cn,&rpc->r_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_rpc_oncRpcNumber,&number,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_rpc_oncRpcNumber,&number,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   rpc->r_number = atol (number);
 
-  stat=_nss_ldap_assign_attrvals(session,e,attmap_rpc_cn,rpc->r_name,&rpc->r_aliases,&buffer,&buflen,NULL);
+  stat=_nss_ldap_assign_attrvals(entry,attmap_rpc_cn,rpc->r_name,&rpc->r_aliases,&buffer,&buflen,NULL);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_rpc_byname(TFILE *fp,MYLDAP_SESSION *session)
+/* macros for expanding the NSLCD_RPC macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
+#define RPC_NAME                result.r_name
+#define RPC_ALIASES             result.r_aliases
+#define RPC_NUMBER              result.r_number
+
+/* write a single rpc entry to the stream */
+static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry)
 {
-  int32_t tmpint32;
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  struct rpcent result;
+  char buffer[1024];
+  if (_nss_ldap_parse_rpc(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+    return 0;
+  /* write the result code */
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  /* write the entry */
+  NSLCD_RPC;
+  return 0;
+}
+
+NSLCD_HANDLE(
+  rpc,byname,
   char name[256];
   char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
-  struct rpcent result;
-  char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_rpc_byname(%s)",name);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_RPC_BYNAME);
-  /* do the LDAP request */
-  mkfilter_rpc_byname(name,filter,sizeof(filter));
-  rpc_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           rpc_base,rpc_scope,filter,rpc_attrs,
-                           _nss_ldap_parse_rpc);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    write_rpcent(fp,&result);
-  /* we're done */
-  return 0;
-}
+  READ_STRING_BUF2(fp,name,sizeof(name));,
+  log_log(LOG_DEBUG,"nslcd_rpc_byname(%s)",name);,
+  NSLCD_ACTION_RPC_BYNAME,
+  mkfilter_rpc_byname(name,filter,sizeof(filter)),
+  write_rpc(fp,entry)
+)
 
-int nslcd_rpc_bynumber(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
+NSLCD_HANDLE(
+  rpc,bynumber,
   int number;
   char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
-  struct rpcent result;
-  char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_INT32(fp,number);
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_rpc_bynumber(%d)",number);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_RPC_BYNUMBER);
-  /* do the LDAP request */
-  mkfilter_rpc_bynumber(number,filter,sizeof(filter));
-  rpc_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           rpc_base,rpc_scope,filter,rpc_attrs,
-                           _nss_ldap_parse_rpc);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    write_rpcent(fp,&result);
-  /* we're done */
-  return 0;
-}
+  READ_INT32(fp,number);,
+  log_log(LOG_DEBUG,"nslcd_rpc_bynumber(%d)",number);,
+  NSLCD_ACTION_RPC_BYNUMBER,
+  mkfilter_rpc_bynumber(number,filter,sizeof(filter)),
+  write_rpc(fp,entry)
+)
 
-int nslcd_rpc_all(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  struct ent_context context;
-  /* these are here for now until we rewrite the LDAP code */
-  struct rpcent result;
-  char buffer[1024];
-  int retv;
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_rpc_all()");
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_RPC_ALL);
-  /* initialize context */
-  _nss_ldap_ent_context_init(&context,session);
-  /* loop over all results */
-  rpc_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
-                                rpc_base,rpc_scope,rpc_filter,rpc_attrs,
-                                _nss_ldap_parse_rpc))==NSLCD_RESULT_SUCCESS)
-  {
-    /* write the result code */
-    WRITE_INT32(fp,retv);
-    /* write the entry */
-    write_rpcent(fp,&result);
-  }
-  /* write the final result code */
-  WRITE_INT32(fp,retv);
-  /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_ent_context_cleanup(&context);
-  /* we're done */
-  return 0;
-}
+NSLCD_HANDLE(
+  rpc,all,
+  const char *filter;
+  /* no parameters to read */,
+  log_log(LOG_DEBUG,"nslcd_rpc_all()");,
+  NSLCD_ACTION_RPC_ALL,
+  (filter=rpc_filter,0),
+  write_rpc(fp,entry)
+)

@@ -40,6 +40,7 @@
 #include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
+#include "myldap.h"
 #include "attmap.h"
 
 /* Vendor-specific attributes and object classes.
@@ -96,100 +97,62 @@ static void alias_init(void)
   alias_attrs[2]=NULL;
 }
 
-/* macros for expanding the NSLCD_ALIAS macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NUM(fp,field,result->alias_members_len)
-#define ALIAS_NAME              result->alias_name
-#define ALIAS_RCPTS             result->alias_members
-
-static int write_aliasent(TFILE *fp,struct aliasent *result)
-{
-  int32_t tmpint32,tmp2int32;
-  NSLCD_ALIAS;
-  return 0;
-}
-
 static enum nss_status _nss_ldap_parse_alias(
-        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state UNUSED(*state),void *result,
+        MYLDAP_ENTRY *entry,struct aliasent *result,
         char *buffer,size_t buflen)
 {
   /* FIXME: fix following problem:
             if the entry has multiple cn fields we may end up
             sending the wrong cn, we should return the requested
             CN instead, otherwise write an entry for each cn */
-  struct aliasent *alias=(struct aliasent *)result;
   enum nss_status stat;
 
-  stat=_nss_ldap_getrdnvalue(session,e,attmap_alias_cn,&alias->alias_name,&buffer,&buflen);
+  stat=_nss_ldap_getrdnvalue(entry,attmap_alias_cn,&result->alias_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     return stat;
 
-  stat=_nss_ldap_assign_attrvals(session,e,attmap_alias_rfc822MailMember,NULL,&alias->alias_members,&buffer,&buflen,&alias->alias_members_len);
+  stat=_nss_ldap_assign_attrvals(entry,attmap_alias_rfc822MailMember,NULL,&result->alias_members,&buffer,&buflen,&result->alias_members_len);
 
   return stat;
 }
 
-int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session)
+/* macros for expanding the NSLCD_ALIAS macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NUM(fp,field,result.alias_members_len)
+#define ALIAS_NAME              result.alias_name
+#define ALIAS_RCPTS             result.alias_members
+
+static int write_alias(TFILE *fp,MYLDAP_ENTRY *entry)
 {
-  int32_t tmpint32;
-  char name[256];
-  char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
   struct aliasent result;
   char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_alias_byname(%s)",name);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_ALIAS_BYNAME);
-  /* do the LDAP request */
-  mkfilter_alias_byname(name,filter,sizeof(filter));
-  alias_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           alias_base,alias_scope,filter,alias_attrs,
-                           _nss_ldap_parse_alias);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_aliasent(fp,&result))
-      return -1;
-  /* we're done */
+  int32_t tmpint32,tmp2int32;
+  if (_nss_ldap_parse_alias(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+    return 0;
+  /* write the result code */
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  /* write the entry */
+  NSLCD_ALIAS;
   return 0;
 }
 
-int nslcd_alias_all(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  struct ent_context context;
-  /* these are here for now until we rewrite the LDAP code */
-  struct aliasent result;
-  char buffer[1024];
-  int retv;
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_alias_all()");
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_ALIAS_ALL);
-  /* initialize context */
-  _nss_ldap_ent_context_init(&context,session);
-  /* loop over all results */
-  alias_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
-                                alias_base,alias_scope,alias_filter,alias_attrs,
-                                _nss_ldap_parse_alias))==NSLCD_RESULT_SUCCESS)
-  {
-    /* write the result */
-    WRITE_INT32(fp,retv);
-    if (write_aliasent(fp,&result))
-      return -1;
-  }
-  /* write the final result code */
-  WRITE_INT32(fp,retv);
-  /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_ent_context_cleanup(&context);
-  /* we're done */
-  return 0;
-}
+NSLCD_HANDLE(
+  alias,byname,
+  char name[256];
+  char filter[1024];
+  READ_STRING_BUF2(fp,name,sizeof(name));,
+  log_log(LOG_DEBUG,"nslcd_alias_byname(%s)",name);,
+  NSLCD_ACTION_ALIAS_BYNAME,
+  mkfilter_alias_byname(name,filter,sizeof(filter)),
+  write_alias(fp,entry)
+)
+
+NSLCD_HANDLE(
+  alias,all,
+  const char *filter;
+  /* no parameters to read */,
+  log_log(LOG_DEBUG,"nslcd_alias_all()");,
+  NSLCD_ACTION_ALIAS_ALL,
+  (filter=alias_filter,0),
+  write_alias(fp,entry)
+)

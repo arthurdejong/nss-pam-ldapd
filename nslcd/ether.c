@@ -57,6 +57,7 @@
 #include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
+#include "myldap.h"
 #include "attmap.h"
 
 #ifndef HAVE_STRUCT_ETHER_ADDR
@@ -140,130 +141,72 @@ static void ether_init(void)
   ether_attrs[2]=NULL;
 }
 
-/* macros for expanding the NSLCD_ETHER macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
-#define ETHER_NAME              result->e_name
-#define ETHER_ADDR              result->e_addr
-
-static int write_ether(TFILE *fp,struct ether *result)
-{
-  int32_t tmpint32;
-  NSLCD_ETHER;
-  return 0;
-}
-
 static enum nss_status _nss_ldap_parse_ether(
-        MYLDAP_SESSION *session,LDAPMessage *e,
-        struct ldap_state UNUSED(*state),void *result,char *buffer,
+        MYLDAP_ENTRY *entry,
+        struct ether *ether,char *buffer,
         size_t buflen)
 {
-  struct ether *ether=(struct ether *)result;
   char *saddr;
   enum nss_status stat;
   struct ether_addr *addr;
-  stat=_nss_ldap_assign_attrval(session,e,attmap_ether_cn,&ether->e_name,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_ether_cn,&ether->e_name,&buffer,&buflen);
   if (stat!=NSS_STATUS_SUCCESS)
     return stat;
-  stat=_nss_ldap_assign_attrval(session,e,attmap_ether_macAddress,&saddr,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrval(entry,attmap_ether_macAddress,&saddr,&buffer,&buflen);
   if ((stat!=NSS_STATUS_SUCCESS)||((addr=ether_aton(saddr))==NULL))
     return NSS_STATUS_NOTFOUND;
   memcpy(&ether->e_addr,addr,sizeof(*addr));
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_ether_byname(TFILE *fp,MYLDAP_SESSION *session)
+/* macros for expanding the NSLCD_ETHER macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
+#define ETHER_NAME              result.e_name
+#define ETHER_ADDR              result.e_addr
+
+static int write_ether(TFILE *fp,MYLDAP_ENTRY *entry)
 {
   int32_t tmpint32;
+  struct ether result;
+  char buffer[1024];
+  if (_nss_ldap_parse_ether(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+    return 0;
+  /* write the result code */
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  /* write the entry */
+  NSLCD_ETHER;
+  return 0;
+}
+
+NSLCD_HANDLE(
+  ether,byname,
   char name[256];
   char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
-  struct ether result;
-  char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_ether_byname(%s)",name);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_ETHER_BYNAME);
-  /* do the LDAP request */
-  mkfilter_ether_byname(name,filter,sizeof(filter));
-  ether_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           ether_base,ether_scope,filter,ether_attrs,
-                           _nss_ldap_parse_ether);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_ether(fp,&result))
-      return -1;
-  /* we're done */
-  return 0;
-}
+  READ_STRING_BUF2(fp,name,sizeof(name));,
+  log_log(LOG_DEBUG,"nslcd_ether_byname(%s)",name);,
+  NSLCD_ACTION_ETHER_BYNAME,
+  mkfilter_ether_byname(name,filter,sizeof(filter)),
+  write_ether(fp,entry)
+)
 
-int nslcd_ether_byether(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
+NSLCD_HANDLE(
+  ether,byether,
   struct ether_addr addr;
   char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
-  struct ether result;
-  char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_TYPE(fp,addr,u_int8_t[6]);
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_ether_byether(%s)",ether_ntoa(&addr));
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_ETHER_BYETHER);
-  /* do the LDAP request */
-  mkfilter_ether_byether(&addr,filter,sizeof(filter));
-  ether_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           ether_base,ether_scope,filter,ether_attrs,
-                           _nss_ldap_parse_ether);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_ether(fp,&result))
-      return -1;
-  /* we're done */
-  return 0;
-}
+  READ_TYPE(fp,addr,u_int8_t[6]);,
+  log_log(LOG_DEBUG,"nslcd_ether_byether(%s)",ether_ntoa(&addr));,
+  NSLCD_ACTION_ETHER_BYETHER,
+  mkfilter_ether_byether(&addr,filter,sizeof(filter)),
+  write_ether(fp,entry)
+)
 
-int nslcd_ether_all(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  struct ent_context context;
-  /* these are here for now until we rewrite the LDAP code */
-  struct ether result;
-  char buffer[1024];
-  int retv;
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_ether_all()");
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_ETHER_ALL);
-  /* initialize context */
-  _nss_ldap_ent_context_init(&context,session);
-  /* loop over all results */
-  ether_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
-                                ether_base,ether_scope,ether_filter,ether_attrs,
-                                _nss_ldap_parse_ether))==NSLCD_RESULT_SUCCESS)
-  {
-    /* write the result */
-    WRITE_INT32(fp,retv);
-    if (write_ether(fp,&result))
-      return -1;
-  }
-  /* write the final result code */
-  WRITE_INT32(fp,retv);
-  /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_ent_context_cleanup(&context);
-  /* we're done */
-  return 0;
-}
+NSLCD_HANDLE(
+  ether,all,
+  const char *filter;
+  /* no parameters to read */,
+  log_log(LOG_DEBUG,"nslcd_ether_all()");,
+  NSLCD_ACTION_ETHER_ALL,
+  (filter=ether_filter,0),
+  write_ether(fp,entry)
+)

@@ -146,27 +146,10 @@ static void service_init(void)
   service_attrs[3]=NULL;
 }
 
-/* macros for expanding the NSLCD_SERVICE macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define SERVICE_NAME            result->s_name
-#define SERVICE_ALIASES         result->s_aliases
-#define SERVICE_NUMBER          htons(result->s_port)
-#define SERVICE_PROTOCOL        result->s_proto
-
-static int write_servent(TFILE *fp,struct servent *result)
-{
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  NSLCD_SERVICE;
-  return 0;
-}
-
 static enum nss_status _nss_ldap_parse_serv(
-        MYLDAP_SESSION *session,LDAPMessage *e,struct ldap_state *state,
-        void *result,char *buffer,size_t buflen)
+        MYLDAP_ENTRY *entry,const char *protocol,
+        struct servent *service,char *buffer,size_t buflen)
 {
-  struct servent *service = (struct servent *)result;
   char *port;
   enum nss_status stat = NSS_STATUS_SUCCESS;
 
@@ -175,196 +158,118 @@ static enum nss_status _nss_ldap_parse_serv(
    * ipServiceProtocol fields.
    */
 
-  if (state->ls_type==LS_TYPE_KEY)
+  if ((protocol!=NULL)&&(*protocol!='\0'))
     {
-      if (state->ls_info.ls_key == NULL)
-        {
-          /* non-deterministic behaviour is ok */
-          stat=_nss_ldap_assign_attrval(session,e,attmap_service_ipServiceProtocol,&service->s_proto,&buffer,&buflen);
-          if (stat != NSS_STATUS_SUCCESS)
-            {
-              return stat;
-            }
-        }
-      else
-        {
           register int len;
-          len = strlen (state->ls_info.ls_key);
+          len = strlen (protocol);
           if (buflen < (size_t) (len + 1))
             {
               return NSS_STATUS_TRYAGAIN;
             }
-          strncpy (buffer, state->ls_info.ls_key, len);
+          strncpy (buffer, protocol, len);
           buffer[len] = '\0';
           service->s_proto = buffer;
           buffer += len + 1;
           buflen -= len + 1;
-        }
     }
   else
     {
-      char **vals=_nss_ldap_get_values(session,e,attmap_service_ipServiceProtocol);
+      char **vals=_nss_ldap_get_values(entry,attmap_service_ipServiceProtocol);
       int len;
       if (vals == NULL)
         {
-          state->ls_info.ls_index = -1;
           return NSS_STATUS_NOTFOUND;
         }
+        /* FIXME: write an antry for each protocol */
 
-      switch (state->ls_info.ls_index)
-        {
-        case 0:
-          /* last time. decrementing ls_index to -1 AND returning !NSS_STATUS_SUCCESS
-             will force this entry to be discarded.
-           */
-          stat = NSS_STATUS_NOTFOUND;
-          break;
-        case -1:
-          /* first time */
-          state->ls_info.ls_index = ldap_count_values (vals);
-          /* fall off to default ... */
-        default:
-          len = strlen (vals[state->ls_info.ls_index - 1]);
-          if (buflen < (size_t) (len + 1))
-            {
-              return NSS_STATUS_TRYAGAIN;
-            }
-          strncpy (buffer, vals[state->ls_info.ls_index - 1], len);
+          len = strlen (vals[0]);
+          strncpy (buffer, vals[0], len);
           buffer[len] = '\0';
           service->s_proto = buffer;
           buffer += len + 1;
           buflen -= len + 1;
-          stat = NSS_STATUS_SUCCESS;
-        }
 
       ldap_value_free (vals);
-      state->ls_info.ls_index--;
     }
 
+  stat=_nss_ldap_getrdnvalue(entry,attmap_service_cn,&service->s_name,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     {
       return stat;
     }
 
-  stat=_nss_ldap_getrdnvalue(session,e,attmap_service_cn,&service->s_name,&buffer,&buflen);
+  stat=_nss_ldap_assign_attrvals(entry,attmap_service_cn,service->s_name,&service->s_aliases,&buffer,&buflen,NULL);
   if (stat != NSS_STATUS_SUCCESS)
     {
       return stat;
     }
 
-  stat=_nss_ldap_assign_attrvals(session,e,attmap_service_cn,service->s_name,&service->s_aliases,&buffer,&buflen,NULL);
+  stat=_nss_ldap_assign_attrval(entry,attmap_service_ipServicePort,&port,&buffer,&buflen);
   if (stat != NSS_STATUS_SUCCESS)
     {
       return stat;
     }
 
-  stat=_nss_ldap_assign_attrval(session,e,attmap_service_ipServicePort,&port,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    {
-      return stat;
-    }
-
-  service->s_port = htons (atoi (port));
+  service->s_port = atoi(port);
 
   return NSS_STATUS_SUCCESS;
 }
 
-int nslcd_service_byname(TFILE *fp,MYLDAP_SESSION *session)
+/* macros for expanding the NSLCD_SERVICE macro */
+#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
+#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
+#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
+#define SERVICE_NAME            result.s_name
+#define SERVICE_ALIASES         result.s_aliases
+#define SERVICE_NUMBER          result.s_port
+#define SERVICE_PROTOCOL        result.s_proto
+
+static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,const char *protocol)
 {
-  int32_t tmpint32;
-  char name[256],protocol[256];
-  char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
+  int32_t tmpint32,tmp2int32,tmp3int32;
   struct servent result;
   char buffer[1024];
-  int retv;
-  /* read request parameters */
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  READ_STRING_BUF2(fp,protocol,sizeof(protocol));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_service_byname(%s,%s)",name,protocol);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_SERVICE_BYNAME);
-  /* do the LDAP request */
-  mkfilter_service_byname(name,protocol,filter,sizeof(filter));
-  service_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           service_base,service_scope,filter,service_attrs,
-                           _nss_ldap_parse_serv);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_servent(fp,&result))
-      return -1;
-  /* we're done */
+  if (_nss_ldap_parse_serv(entry,protocol,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+    return 0;
+  /* write the result code */
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  /* write the entry */
+  NSLCD_SERVICE;
   return 0;
 }
 
-int nslcd_service_bynumber(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
+NSLCD_HANDLE(
+  service,byname,
+  char name[256];
+  char protocol[256];
+  char filter[1024];
+  READ_STRING_BUF2(fp,name,sizeof(name));
+  READ_STRING_BUF2(fp,protocol,sizeof(protocol));,
+  log_log(LOG_DEBUG,"nslcd_service_byname(%s,%s)",name,protocol);,
+  NSLCD_ACTION_SERVICE_BYNAME,
+  mkfilter_service_byname(name,protocol,filter,sizeof(filter)),
+  write_service(fp,entry,protocol)
+)
+
+NSLCD_HANDLE(
+  service,bynumber,
   int number;
   char protocol[256];
   char filter[1024];
-  /* these are here for now until we rewrite the LDAP code */
-  struct servent result;
-  char buffer[1024];
-  int retv;
-  /* read request parameters */
   READ_INT32(fp,number);
-  READ_STRING_BUF2(fp,protocol,sizeof(protocol));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_service_bynumber(%d,%s)",number,protocol);
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_SERVICE_BYNUMBER);
-  /* do the LDAP request */
-  mkfilter_service_bynumber(number,protocol,filter,sizeof(filter));
-  service_init();
-  retv=_nss_ldap_getbyname(session,&result,buffer,1024,
-                           service_base,service_scope,filter,service_attrs,
-                           _nss_ldap_parse_serv);
-  /* write the response */
-  WRITE_INT32(fp,retv);
-  if (retv==NSLCD_RESULT_SUCCESS)
-    if (write_servent(fp,&result))
-      return -1;
-  /* we're done */
-  return 0;
-}
+  READ_STRING_BUF2(fp,protocol,sizeof(protocol));,
+  log_log(LOG_DEBUG,"nslcd_service_bynumber(%d,%s)",number,protocol);,
+  NSLCD_ACTION_SERVICE_BYNUMBER,
+  mkfilter_service_bynumber(number,protocol,filter,sizeof(filter)),
+  write_service(fp,entry,protocol)
+)
 
-int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  struct ent_context context;
-  /* these are here for now until we rewrite the LDAP code */
-  struct servent result;
-  char buffer[1024];
-  int retv;
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_service_all()");
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_SERVICE_ALL);
-  /* initialize context */
-  _nss_ldap_ent_context_init(&context,session);
-  /* loop over all results */
-  service_init();
-  while ((retv=_nss_ldap_getent(&context,&result,buffer,sizeof(buffer),
-                                service_base,service_scope,service_filter,service_attrs,
-                                _nss_ldap_parse_serv))==NSLCD_RESULT_SUCCESS)
-  {
-    /* write the result code */
-    WRITE_INT32(fp,retv);
-    /* write the entry */
-    if (write_servent(fp,&result))
-      return -1;
-  }
-  /* write the final result code */
-  WRITE_INT32(fp,retv);
-  /* FIXME: if a previous call returns what happens to the context? */
-  _nss_ldap_ent_context_cleanup(&context);
-  /* we're done */
-  return 0;
-}
+NSLCD_HANDLE(
+  service,all,
+  const char *filter;
+  /* no parameters to read */,
+  log_log(LOG_DEBUG,"nslcd_service_all()");,
+  NSLCD_ACTION_SERVICE_ALL,
+  (filter=service_filter,0),
+  write_service(fp,entry,NULL)
+)
