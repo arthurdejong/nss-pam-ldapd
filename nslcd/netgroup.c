@@ -273,8 +273,8 @@ static enum nss_status _nss_ldap_load_netgr(
   int attr;
   int nvals;
   int valcount = 0;
-  char **vals;
-  char **valiter;
+  const char **vals;
+  const char **valiter;
   enum nss_status stat = NSS_STATUS_SUCCESS;
   /* FIXME: this function is wrong because it can segfault on some occasions */
 
@@ -283,23 +283,20 @@ static enum nss_status _nss_ldap_load_netgr(
       switch (attr)
         {
         case 1:
-          vals=_nss_ldap_get_values(entry,attmap_netgroup_nisNetgroupTriple);
+          vals=myldap_get_values(entry,attmap_netgroup_nisNetgroupTriple);
           break;
         default:
-          vals=_nss_ldap_get_values(entry,attmap_netgroup_memberNisNetgroup);
+          vals=myldap_get_values(entry,attmap_netgroup_memberNisNetgroup);
           break;
         }
 
-      nvals = ldap_count_values (vals);
+      nvals=myldap_count_values(vals);
 
       if (vals == NULL)
         continue;
 
       if (nvals == 0)
-        {
-          ldap_value_free (vals);
-          continue;
-        }
+        continue;
 
       if (result->data_size > 0
           && result->cursor - result->data + 1 > result->data_size)
@@ -322,7 +319,6 @@ static enum nss_status _nss_ldap_load_netgr(
           if (*valiter != NULL)
             *result->cursor++ = ' ';
         }
-      ldap_value_free (vals);
     }
 
   result->first = 1;

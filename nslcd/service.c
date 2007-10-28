@@ -174,12 +174,10 @@ static enum nss_status _nss_ldap_parse_serv(
     }
   else
     {
-      char **vals=_nss_ldap_get_values(entry,attmap_service_ipServiceProtocol);
+      char **vals=myldap_get_values(entry,attmap_service_ipServiceProtocol);
       int len;
-      if (vals == NULL)
-        {
-          return NSS_STATUS_NOTFOUND;
-        }
+      if ((vals==NULL)||(vals[0]==NULL))
+        return NSS_STATUS_NOTFOUND;
         /* FIXME: write an antry for each protocol */
 
           len = strlen (vals[0]);
@@ -189,7 +187,6 @@ static enum nss_status _nss_ldap_parse_serv(
           buffer += len + 1;
           buflen -= len + 1;
 
-      ldap_value_free (vals);
     }
 
   stat=_nss_ldap_getrdnvalue(entry,attmap_service_cn,&service->s_name,&buffer,&buflen);

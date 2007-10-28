@@ -76,9 +76,15 @@
 #include "common/dict.h"
 
 /*
- * LS_INIT only used for enumeration contexts
+ * thread specific context: result chain, and state data
  */
-#define LS_INIT(state)  do { state.ls_type = LS_TYPE_INDEX; state.ls_retry = 0; state.ls_info.ls_index = -1; } while (0)
+struct ent_context
+{
+  MYLDAP_SESSION *session;           /* the connection to the LDAP server */
+  int ec_msgid;                      /* message ID */
+  LDAPMessage *ec_res;               /* result chain */
+  struct berval *ec_cookie;          /* cookie for paged searches */
+};
 
 /* the maximum number of searches per session */
 #define MAX_SEARCHES_IN_SESSION 4
@@ -229,7 +235,10 @@ static MYLDAP_SEARCH *myldap_search_new(
   }
   search->attrs[i]=NULL;
   /* initialize context */
-  _nss_ldap_ent_context_init(&(search->context),session);
+  search->context.session=session;
+  search->context.ec_cookie=NULL;
+  search->context.ec_res=NULL;
+  search->context.ec_msgid=-1;
   /* clear result entry */
   search->entry=NULL;
   /* return the new search struct */
@@ -241,8 +250,12 @@ static void myldap_search_free(MYLDAP_SEARCH *search)
   /* free any search entries */
   if (search->entry!=NULL)
     myldap_entry_free(search->entry);
-  /* free the context */
-  _nss_ldap_ent_context_cleanup(&(search->context));
+  /* free read messages */
+  if (search->context.ec_res!=NULL)
+    ldap_msgfree(search->context.ec_res);
+  /* clean up cookie */
+  if (search->context.ec_cookie!=NULL)
+    ber_bvfree(search->context.ec_cookie);
   /* free the storage we allocated */
   free(search);
 }
@@ -602,7 +615,7 @@ static int do_open(MYLDAP_SESSION *session)
  * Wrapper around ldap_result() to skip over search references
  * and deal transparently with the last entry.
  */
-static enum nss_status do_result_async(struct ent_context *context)
+static enum nss_status do_result_async(MYLDAP_SEARCH *search)
 {
   int rc = LDAP_UNAVAILABLE;
   enum nss_status stat = NSS_STATUS_TRYAGAIN;
@@ -621,17 +634,17 @@ static enum nss_status do_result_async(struct ent_context *context)
 
   do
   {
-    if (context->ec_res!=NULL)
+    if (search->context.ec_res!=NULL)
     {
-      ldap_msgfree(context->ec_res);
-      context->ec_res=NULL;
+      ldap_msgfree(search->context.ec_res);
+      search->context.ec_res=NULL;
     }
-    rc=ldap_result(context->session->ls_conn,context->ec_msgid,LDAP_MSG_ONE,tvp,&(context->ec_res));
+    rc=ldap_result(search->session->ls_conn,search->context.ec_msgid,LDAP_MSG_ONE,tvp,&(search->context.ec_res));
     switch (rc)
     {
       case -1:
       case 0:
-        if (ldap_get_option(context->session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
+        if (ldap_get_option(search->session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
           rc=LDAP_UNAVAILABLE;
         log_log(LOG_ERR,"could not get LDAP result: %s",ldap_err2string(rc));
         stat=NSS_STATUS_UNAVAIL;
@@ -642,31 +655,31 @@ static enum nss_status do_result_async(struct ent_context *context)
       case LDAP_RES_SEARCH_RESULT:
         /* NB: this frees context->ec_res */
         resultControls=NULL;
-        if (context->ec_cookie!=NULL)
-          ber_bvfree(context->ec_cookie);
-        context->ec_cookie=NULL;
-        parserc=ldap_parse_result(context->session->ls_conn,context->ec_res,&rc,NULL,
+        if (search->context.ec_cookie!=NULL)
+          ber_bvfree(search->context.ec_cookie);
+        search->context.ec_cookie=NULL;
+        parserc=ldap_parse_result(search->session->ls_conn,search->context.ec_res,&rc,NULL,
                                   NULL,NULL,&resultControls,1);
         if ((parserc!=LDAP_SUCCESS)&&(parserc!=LDAP_MORE_RESULTS_TO_RETURN))
         {
           stat = NSS_STATUS_UNAVAIL;
-          ldap_abandon(context->session->ls_conn, context->ec_msgid);
+          ldap_abandon(search->session->ls_conn,search->context.ec_msgid);
           log_log(LOG_ERR,"could not get LDAP result: %s",ldap_err2string(rc));
         }
         else if (resultControls!=NULL)
         {
           /* See if there are any more pages to come */
-          parserc=ldap_parse_page_control(context->session->ls_conn,
+          parserc=ldap_parse_page_control(search->session->ls_conn,
                                           resultControls,NULL,
-                                          &(context->ec_cookie));
+                                          &(search->context.ec_cookie));
           /* TODO: handle the above return code?? */
           ldap_controls_free(resultControls);
           stat=NSS_STATUS_NOTFOUND;
         }
         else
           stat=NSS_STATUS_NOTFOUND;
-        context->ec_res=NULL;
-        context->ec_msgid=-1;
+        search->context.ec_res=NULL;
+        search->context.ec_msgid=-1;
         break;
       default:
         stat = NSS_STATUS_UNAVAIL;
@@ -677,52 +690,9 @@ static enum nss_status do_result_async(struct ent_context *context)
 
   /* update timestamp on success */
   if (stat==NSS_STATUS_SUCCESS)
-    time(&(context->session->ls_timestamp));
+    time(&(search->session->ls_timestamp));
 
   return stat;
-}
-
-/*
- * This function initializes an enumeration context.
- *
- * It could be done from the default constructor, under Solaris, but we
- * delay it until the setXXent() function is called.
- */
-void _nss_ldap_ent_context_init(struct ent_context *context,MYLDAP_SESSION *session)
-{
-  context->session=session;
-  context->ec_cookie=NULL;
-  context->ec_res=NULL;
-  context->ec_msgid=-1;
-  LS_INIT(context->ec_state);
-}
-
-/*
- * Clears a given context.
- */
-void _nss_ldap_ent_context_cleanup(struct ent_context *context)
-{
-  if (context==NULL)
-    return;
-  /* abandon the search if there were more results to fetch */
-  if ((context->ec_msgid>-1)&&(do_result_async(context)==NSS_STATUS_SUCCESS))
-  {
-    ldap_abandon(context->session->ls_conn,context->ec_msgid);
-    context->ec_msgid=-1;
-  }
-  /* free read messages */
-  if (context->ec_res!=NULL)
-  {
-    ldap_msgfree(context->ec_res);
-    context->ec_res=NULL;
-  }
-  /* clean up cookie */
-  if (context->ec_cookie!=NULL)
-  {
-    ber_bvfree(context->ec_cookie);
-    context->ec_cookie=NULL;
-  }
-  LS_INIT(context->ec_state);
 }
 
 /*
@@ -888,34 +858,6 @@ static enum nss_status do_with_reconnect(
   }
 }
 
-/*
- * Simple wrapper around ldap_get_values(). Requires that
- * session is already established.
- */
-char **_nss_ldap_get_values(MYLDAP_ENTRY *entry,
-                            const char *attr)
-{
-  if (!entry->search->session->is_connected)
-    return NULL;
-  assert(entry->search->session->ls_conn!=NULL);
-  return ldap_get_values(entry->search->session->ls_conn,entry->msg,attr);
-}
-
-/* translates a nslcd return code (as defined in nslcd.h) to
-   a nss code (as defined in nss.h) */
-/* FIXME: this is a temporary hack, get rid of it */
-static int nss2nslcd(enum nss_status code)
-{
-  switch (code)
-  {
-    case NSS_STATUS_UNAVAIL:  return NSLCD_RESULT_UNAVAIL;
-    case NSS_STATUS_NOTFOUND: return NSLCD_RESULT_NOTFOUND;
-    case NSS_STATUS_SUCCESS:  return NSLCD_RESULT_SUCCESS;
-/*    case NSS_STATUS_TRYAGAIN: return NSLCD_RS_SMALLBUF; */
-    default:                  return NSLCD_RESULT_UNAVAIL;
-  }
-}
-
 MYLDAP_SESSION *myldap_create_session(void)
 {
   return myldap_session_new();
@@ -982,6 +924,9 @@ void myldap_search_close(MYLDAP_SEARCH *search)
   int i;
   if ((search==NULL)||(search->session==NULL))
     return;
+  /* abandon the search if there were more results to fetch */
+  if ((search->context.ec_msgid>-1)&&(do_result_async(search)==NSS_STATUS_SUCCESS))
+    ldap_abandon(search->session->ls_conn,search->context.ec_msgid);
   /* find the reference to this search in the session */
   for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
   {
@@ -1015,7 +960,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
   {
     /* get an entry from the LDAP server, the result
        is stored in context->ec_res */
-    stat=do_result_async(&(search->context));
+    stat=do_result_async(search);
     /* we we have an entry construct a search entry from it */
     if (stat==NSS_STATUS_SUCCESS)
     {
@@ -1250,146 +1195,6 @@ int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass)
 }
 
 /*
- * Internal entry point for enumeration routines.
- * This should really use the asynchronous LDAP search API to avoid
- * pulling down all the entries at once, particularly if the
- * enumeration is not completed.
- */
-int _nss_ldap_getent(
-        struct ent_context *context,void *result,char *buffer,size_t buflen,
-        const char *base,int scope,const char *filter,const char **attrs,
-        parser_t parser)
-{
-  enum nss_status stat=NSS_STATUS_SUCCESS;
-  int msgid=-1;
-  log_log(LOG_DEBUG,"_nss_ldap_getent(base=\"%s\", filter=\"%s\")",base,filter);
-  /* if context->ec_msgid < 0, then we haven't searched yet */
-  if (context->ec_msgid<0)
-  {
-    /* set up a new search */
-    stat=do_with_reconnect(context->session,base,scope,filter,(char **)attrs,LDAP_NO_LIMIT,NULL,&msgid);
-    if (stat != NSS_STATUS_SUCCESS)
-      return nss2nslcd(stat);
-    context->ec_msgid=msgid;
-  }
-  /* try to parse results until we have a final error or ok */
-  while (1)
-  {
-    /*
-     * Tries parser function "parser" on entries, calling do_result_async()
-     * to retrieve them from the LDAP server until one parses
-     * correctly or there is an exceptional condition.
-     */
-    stat=NSS_STATUS_NOTFOUND;
-    /*
-     * if ec_state.ls_info.ls_index is non-zero, then we don't collect another
-     * entry off the LDAP chain, and instead refeed the existing result to
-     * the parser. Once the parser has finished with it, it will return
-     * NSS_STATUS_NOTFOUND and reset the index to -1, at which point we'll retrieve
-     * another entry.
-     */
-    do
-    {
-      enum nss_status resultStat=NSS_STATUS_SUCCESS;
-      /* get an entry from the LDAP server */
-      if ((context->ec_state.ls_retry==0) &&
-          ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
-            (context->ec_state.ls_info.ls_index==-1) ))
-      {
-        resultStat=do_result_async(context);
-        if (resultStat!=NSS_STATUS_SUCCESS)
-        {
-          stat=resultStat;
-          break;
-        }
-      }
-      /*
-       * We have an entry; now, try to parse it.
-       *
-       * If we do not parse the entry because of a schema
-       * violation, the parser should return NSS_STATUS_NOTFOUND.
-       * We'll keep on trying subsequent entries until we
-       * find one which is parseable, or exhaust avialable
-       * entries, whichever is first.
-       */
-      stat=parser(context->session,context->ec_res,&(context->ec_state),result,buffer,buflen);
-
-      /* hold onto the state if we're out of memory XXX */
-      context->ec_state.ls_retry=(stat==NSS_STATUS_TRYAGAIN)&&(buffer!=NULL);
-
-      /* free entry is we're moving on */
-      if ((context->ec_state.ls_retry==0) &&
-          ( (context->ec_state.ls_type==LS_TYPE_KEY) ||
-            (context->ec_state.ls_info.ls_index==-1) ))
-      {
-        /* we don't need the result anymore, ditch it. */
-        ldap_msgfree(context->ec_res);
-        context->ec_res=NULL;
-      }
-    }
-    while (stat==NSS_STATUS_NOTFOUND);
-    /* if this had no more results, try the next page */
-    if ((stat==NSS_STATUS_NOTFOUND)&&(context->ec_cookie!=NULL)&&(context->ec_cookie->bv_len!=0))
-    {
-      LDAPControl *serverctrls[2]={ NULL, NULL };
-      stat=ldap_create_page_control(context->session->ls_conn,
-                                    nslcd_cfg->ldc_pagesize,
-                                    context->ec_cookie,0,&serverctrls[0]);
-      if (stat!=LDAP_SUCCESS)
-        return NSS_STATUS_UNAVAIL;
-      stat=ldap_search_ext(context->session->ls_conn,
-                           base,scope,filter,
-                           (char **)attrs,0,serverctrls,NULL,LDAP_NO_LIMIT,
-                           LDAP_NO_LIMIT,&msgid);
-      ldap_control_free(serverctrls[0]);
-      if (msgid<0)
-        return nss2nslcd(NSS_STATUS_UNAVAIL);
-      context->ec_msgid=msgid;
-    }
-    else
-      return nss2nslcd(stat);
-  }
-}
-
-/*
- * General match function.
- */
-int _nss_ldap_getbyname(MYLDAP_SESSION *session,void *result, char *buffer, size_t buflen,
-                        const char *base,int scope,const char *filter,const char **attrs,
-                        parser_t parser)
-{
-  MYLDAP_SEARCH *search;
-  MYLDAP_ENTRY *entry;
-  enum nss_status stat=NSS_STATUS_NOTFOUND;
-  /* do the search */
-  search=myldap_search(session,base,scope,filter,attrs);
-  if (search==NULL)
-    return NSLCD_RESULT_UNAVAIL;
-  /*
-   * we pass this along for the benefit of the services parser,
-   * which uses it to figure out which protocol we really wanted.
-   * we only pass the second argument along, as that's what we need
-   * in services.
-   */
-  search->context.ec_state.ls_type=LS_TYPE_KEY;
-  search->context.ec_state.ls_info.ls_key=NULL /*was: args->la_arg2.la_string*/;
-  do
-  {
-    entry = myldap_get_entry(search);
-    if (entry!=NULL)
-    {
-      stat=parser(session,entry->msg,&(search->context.ec_state),result,buffer,buflen);
-      /* hold onto the state if we're out of memory XXX */
-      search->context.ec_state.ls_retry=(stat==NSS_STATUS_TRYAGAIN)&&(buffer!=NULL);
-    }
-  }
-  while ((stat==NSS_STATUS_NOTFOUND)&&(entry!=NULL));
-  /* clean up this search */
-  myldap_search_close(search);
-  return nss2nslcd(stat);
-}
-
-/*
  * These functions are called from within the parser, where it is assumed
  * to be safe to use the connection and the respective message.
  */
@@ -1402,8 +1207,8 @@ enum nss_status _nss_ldap_assign_attrvals(
         const char *attr,const char *omitvalue,
         char ***valptr,char **pbuffer,size_t *pbuflen,size_t *pvalcount)
 {
-  char **vals;
-  char **valiter;
+  const char **vals;
+  const char **valiter;
   size_t valcount;
   char **p=NULL;
 
@@ -1416,12 +1221,11 @@ enum nss_status _nss_ldap_assign_attrvals(
   if (entry->search->session->ls_conn==NULL)
     return NSS_STATUS_UNAVAIL;
 
-  vals=_nss_ldap_get_values(entry,attr);
+  vals=myldap_get_values(entry,attr);
 
-  valcount=(vals==NULL)?0:ldap_count_values(vals);
+  valcount=myldap_count_values(vals);
   if (bytesleft(buffer,buflen,char *)<(valcount+1)*sizeof(char *))
   {
-    ldap_value_free(vals);
     return NSS_STATUS_TRYAGAIN;
   }
 
@@ -1453,7 +1257,6 @@ enum nss_status _nss_ldap_assign_attrvals(
       vallen=strlen(*valiter);
       if (buflen<(vallen+1))
       {
-        ldap_value_free(vals);
         return NSS_STATUS_TRYAGAIN;
       }
 
@@ -1477,7 +1280,6 @@ enum nss_status _nss_ldap_assign_attrvals(
   if (pvalcount!=NULL)
     *pvalcount=valcount;
 
-  ldap_value_free(vals);
   return NSS_STATUS_SUCCESS;
 }
 
@@ -1486,17 +1288,16 @@ enum nss_status _nss_ldap_assign_attrval(
         MYLDAP_ENTRY *entry,const char *attr,char **valptr,
         char **buffer,size_t *buflen)
 {
-  char **vals;
+  const char **vals;
   int vallen;
   if (entry->search->session->ls_conn==NULL)
     return NSS_STATUS_UNAVAIL;
-  vals=_nss_ldap_get_values(entry,attr);
-  if (vals==NULL)
+  vals=myldap_get_values(entry,attr);
+  if ((vals==NULL)||(vals[0]==NULL))
     return NSS_STATUS_NOTFOUND;
-  vallen=strlen(*vals);
+  vallen=strlen(vals[0]);
   if (*buflen<(size_t)(vallen+1))
   {
-    ldap_value_free(vals);
     return NSS_STATUS_TRYAGAIN;
   }
   *valptr=*buffer;
@@ -1504,15 +1305,14 @@ enum nss_status _nss_ldap_assign_attrval(
   (*valptr)[vallen]='\0';
   *buffer+=vallen + 1;
   *buflen-=vallen + 1;
-  ldap_value_free(vals);
   return NSS_STATUS_SUCCESS;
 }
 
-static const char *_nss_ldap_locate_userpassword(char **vals)
+static const char *_nss_ldap_locate_userpassword(const char **vals)
 {
   const char *token=NULL;
   size_t token_length=0;
-  char **valiter;
+  const char **valiter;
   const char *pwd=NULL;
 
   if (nslcd_cfg!=NULL)
@@ -1563,19 +1363,17 @@ enum nss_status _nss_ldap_assign_userpassword(
         const char *attr,char **valptr,
         char **buffer,size_t *buflen)
 {
-  char **vals;
+  const char **vals;
   const char *pwd;
   int vallen;
   log_log(LOG_DEBUG,"==> _nss_ldap_assign_userpassword");
   if (entry->search->session->ls_conn==NULL)
     return NSS_STATUS_UNAVAIL;
-  vals=_nss_ldap_get_values(entry,attr);
+  vals=myldap_get_values(entry,attr);
   pwd=_nss_ldap_locate_userpassword(vals);
   vallen=strlen(pwd);
   if (*buflen<(size_t)(vallen+1))
   {
-    if (vals!=NULL)
-      ldap_value_free(vals);
     log_log(LOG_DEBUG,"<== _nss_ldap_assign_userpassword");
     return NSS_STATUS_TRYAGAIN;
   }
@@ -1584,69 +1382,7 @@ enum nss_status _nss_ldap_assign_userpassword(
   (*valptr)[vallen]='\0';
   *buffer+=vallen+1;
   *buflen-=vallen+1;
-  if (vals!=NULL)
-    ldap_value_free(vals);
   log_log(LOG_DEBUG,"<== _nss_ldap_assign_userpassword");
-  return NSS_STATUS_SUCCESS;
-}
-
-static enum nss_status do_getrdnvalue(
-        const char *dn,const char *rdntype,
-        char **rval,char **buffer,size_t *buflen)
-{
-  char **exploded_dn;
-  char *rdnvalue=NULL;
-  char rdnava[64];
-  size_t rdnlen=0,rdnavalen;
-
-  snprintf(rdnava,sizeof(rdnava),"%s=",rdntype);
-  rdnavalen=strlen(rdnava);
-
-  exploded_dn=ldap_explode_dn(dn,0);
-
-  if (exploded_dn!=NULL)
-  {
-    /*
-     * attempt to get the naming attribute's principal
-     * value by parsing the RDN. We need to support
-     * multivalued RDNs (as they're essentially mandated
-     * for services)
-     */
-    char **p, **exploded_rdn;
-    exploded_rdn=ldap_explode_rdn(*exploded_dn,0);
-    if (exploded_rdn!=NULL)
-    {
-      for (p=exploded_rdn;*p!=NULL;p++)
-      {
-        if (strncasecmp(*p,rdnava,rdnavalen) == 0)
-        {
-          char *r=*p+rdnavalen;
-          rdnlen=strlen(r);
-          if (*buflen<=rdnlen)
-          {
-            ldap_value_free(exploded_rdn);
-            ldap_value_free(exploded_dn);
-            return NSS_STATUS_TRYAGAIN;
-          }
-          rdnvalue=*buffer;
-          strncpy(rdnvalue,r,rdnlen);
-          break;
-        }
-      }
-      ldap_value_free(exploded_rdn);
-    }
-  }
-
-  if (exploded_dn!=NULL)
-    ldap_value_free (exploded_dn);
-
-  if (rdnvalue!=NULL)
-    return NSS_STATUS_NOTFOUND;
-
-  rdnvalue[rdnlen]='\0';
-  *buffer+=rdnlen+1;
-  *buflen-=rdnlen+1;
-  *rval=rdnvalue;
   return NSS_STATUS_SUCCESS;
 }
 
@@ -1654,43 +1390,38 @@ enum nss_status _nss_ldap_getrdnvalue(
         MYLDAP_ENTRY *entry,const char *rdntype,
         char **rval,char **buffer,size_t *buflen)
 {
-  const char *dn;
-  enum nss_status status;
   size_t rdnlen;
+  const char *rdnval;
+  const char **vals;
 
-  dn=myldap_get_dn(entry);
-  if (dn==NULL)
-    return NSS_STATUS_NOTFOUND;
-  status=do_getrdnvalue(dn,rdntype,rval,buffer,buflen);
-
-  /*
-   * If examining the DN failed, then pick the nominal first
-   * value of cn as the canonical name (recall that attributes
-   * are sets, not sequences)
-   */
-  if (status==NSS_STATUS_NOTFOUND)
+  rdnval=myldap_get_rdn_value(entry,rdntype);
+  if (rdnval==NULL)
   {
-    char **vals;
-    vals=_nss_ldap_get_values(entry,rdntype);
-    if (vals != NULL)
-    {
-      rdnlen = strlen (*vals);
-      if (*buflen > rdnlen)
-      {
-        char *rdnvalue = *buffer;
-        strncpy (rdnvalue, *vals, rdnlen);
-        rdnvalue[rdnlen] = '\0';
-        *buffer += rdnlen + 1;
-        *buflen -= rdnlen + 1;
-        *rval = rdnvalue;
-        status = NSS_STATUS_SUCCESS;
-      }
-      else
-        status=NSS_STATUS_TRYAGAIN;
-      ldap_value_free (vals);
-    }
+    /*
+     * If examining the DN failed, then pick the nominal first
+     * value of cn as the canonical name (recall that attributes
+     * are sets, not sequences)
+     */
+    vals=myldap_get_values(entry,rdntype);
+    if ((vals==NULL)||(vals[0]==NULL))
+      return NSS_STATUS_NOTFOUND;
+    rdnval=vals[0];
   }
-  return status;
+
+  /* copy the value into the destination buffer */
+  rdnlen = strlen(rdnval);
+  if (*buflen > rdnlen)
+  {
+    char *rdnvalue=*buffer;
+    strncpy(rdnvalue,rdnval,rdnlen);
+    rdnvalue[rdnlen] = '\0';
+    *buffer += rdnlen + 1;
+    *buflen -= rdnlen + 1;
+    *rval = rdnvalue;
+    return NSS_STATUS_SUCCESS;
+  }
+  else
+    return NSS_STATUS_TRYAGAIN;
 }
 
 int myldap_escape(const char *src,char *buffer,size_t buflen)
