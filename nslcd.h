@@ -42,23 +42,26 @@
      [result value(s)]
    If a response would return multiple values (e.g. for NSLCD_ACTION_*_ALL
    functions) each return value will be preceded by a NSLCD_RESULT_* value.
+   The last value will be marked by a result value other than
+   NSLCD_RESULT_SUCCESS. Note that the server may including a trailing
+   NSLCD_RESULT_NOTFOUND after all the results.
 
    These are the available data types:
      INT32  - 32-bit integer value
      TYPE   - a typed field that is transferred using sizeof()
      STRING - a string length (32bit) followed by the string value (not
               null-terminted) the string itself is assumed to be UTF-8
-     STRINGLIST - a 32-bit number noting the number of strings followed by the
-                  strings one at a time
+     STRINGLIST - a 32-bit number noting the number of strings followed by
+                  the strings one at a time
 
    Compound datatypes (such as PASSWD) are defined below as a combination of
-   the above types. They are defined as macros so they can be expanded to code
-   later on.
+   the above types. They are defined as macros so they can be expanded to
+   code later on.
 
-   The protocol is described in this generic fashion (instead of just
-   transferring the allocated memory) because pointers will not be valid
-   between transfers and this also makes the server independant of the NSS
-   implementation.
+   The protocol uses host-byte order for all types (except where the normal
+   value in-memory is already in network-byte order like with some
+   addresses). This simple protocol makes it easy to support diffenrent NSS
+   implementations.
 */
 
 /* used for transferring alias information */
