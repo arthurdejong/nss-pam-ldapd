@@ -30,8 +30,8 @@ BUILD DEPENDENCIES
 For building svn snapshots the following tools are needed:
 
 * autoconf (2.61 is used but 2.59 is minimal)
-* automake (1.9.6 is used, considering switching to 1.10)
-* check (0.9.4 is used)
+* automake (1.10 is used)
+* check (0.9.5 is used)
 
 and of course the usual build tools (gcc/make/etc). To build the svn snapshot
 run the autogen.sh shell script to build the configure script. When developing
