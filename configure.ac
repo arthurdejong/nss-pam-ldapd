@@ -310,6 +310,7 @@ AC_CHECK_FUNCS(ldap_init ldap_get_lderrno ldap_parse_result ldap_memfree ldap_co
 AC_CHECK_FUNCS(ldap_ld_free ldap_explode_rdn ldap_set_option ldap_get_option)
 AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s ldap_initialize ldap_search_ext)
 AC_CHECK_FUNCS(ldap_create_control ldap_create_page_control ldap_parse_page_control)
+AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)
 AC_CHECK_FUNCS(ldap_set_rebind_proc)
 AC_CACHE_CHECK(whether ldap_set_rebind_proc takes 3 arguments, nss_ldap_cv_ldap_set_rebind_proc, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[

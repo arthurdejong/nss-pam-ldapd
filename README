@@ -140,7 +140,6 @@ and may cause problems.
   well as nested groups are currently unsupported (support will be re-added
   later)
 - SASL and Kerberos configuration is untested
-- server discovery using DNS has been removed
 - rootbinddn/rootbindpw support is disabled (support will be added later)
 
 In general, development is ongoing and a lot has to be cleaned up. The focus
@@ -208,6 +207,19 @@ contain something like:
 
   # search base for all queries.
   base dc=example,dc=net
+
+service discovery through DNS
+-----------------------------
+
+nss-ldapd supports looking up LDAP server names through DNS SRV records as
+specified in RFC 2782, except that Priority and Weight are not considered
+separately and a single list of servers in added as if they had been specified
+with uri options in the configuration file.
+
+To use this feature specify DNS as an uri in the configuration file and
+include something like the following in your zone:
+
+  _ldap._tcp  SRV  10 0  389  bobo
 
 
 LDAP SCHEMA

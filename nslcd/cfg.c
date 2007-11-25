@@ -148,6 +148,71 @@ static void add_uri(const char *filename,int lnr,
   cfg->ldc_uris[i+1]=NULL;
 }
 
+/* return the domain name of the current host
+   we return part of the structure that is retured by gethostbyname()
+   so there should be no need to free() this entry, however we should
+   use the value before any other call to gethostbyname() */
+static const char *cfg_getdomainname(const char *filename,int lnr)
+{
+  char hostname[HOST_NAME_MAX],*domain;
+  struct hostent *host;
+  /* lookup the hostname and with that the fqdn to extract the domain */
+  if (gethostname(hostname,sizeof(hostname))<0)
+  {
+    log_log(LOG_ERR,"%s:%d: gethostname(): %s",filename,lnr,strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  if ((host=gethostbyname(hostname))==NULL)
+  {
+    log_log(LOG_ERR,"%s:%d: gethostbyname(%s): %s",filename,lnr,hostname,hstrerror(h_errno));
+    exit(EXIT_FAILURE);
+  }
+  /* TODO: this may fail if the fqdn is in h_aliases */
+  if ((domain=strchr(host->h_name,'.'))==NULL)
+  {
+    log_log(LOG_ERR,"%s:%d: host name %s is not in fqdn form",filename,lnr,host->h_name);
+    exit(EXIT_FAILURE);
+  }
+  /* we're done */
+  return domain+1;
+}
+
+/* add URIs by doing DNS queries for SRV records */
+static void add_uris_from_dns(const char *filename,int lnr,
+                        struct ldap_config *cfg)
+{
+  int ret=0;
+  const char *domain;
+  char *hostlist=NULL,*nxt;
+  char buf[HOST_NAME_MAX+sizeof("ldap://")];
+  domain=cfg_getdomainname(filename,lnr);
+  ret=ldap_domain2hostlist(domain,&hostlist);
+  /* FIXME: have better error handling */
+  if ((hostlist==NULL)||(*hostlist=='\0'))
+  {
+    log_log(LOG_ERR,"%s:%d: no servers found in DNS zone %s",filename,lnr,domain);
+    exit(EXIT_FAILURE);
+  }
+  /* hostlist is a space-separated list of host names that we use to build
+     URIs */
+  while(hostlist!=NULL)
+  {
+    /* find the next space and split the string there */
+    nxt=strchr(hostlist,' ');
+    if (nxt!=NULL)
+    {
+      *nxt='\0';
+      nxt++;
+    }
+    /* add the URI */
+    snprintf(buf,sizeof(buf),"ldap://%s",hostlist);
+    log_log(LOG_DEBUG,"add_uris_from_dns(): found uri: %s",buf);
+    add_uri(filename,lnr,cfg,buf);
+    /* get next entry from list */
+    hostlist=nxt;
+  }
+}
+
 static int parse_boolean(const char *filename,int lnr,const char *value)
 {
   if ( (strcasecmp(value,"on")==0) ||
@@ -225,6 +290,28 @@ static inline void check_argumentcount(const char *filename,int lnr,
   }
 }
 
+/* assigns the base to the specified variable doing domain expansion
+   and a simple check to avoid overwriting duplicate values */
+static void set_base(const char *filename,int lnr,
+                     const char *value,const char **var)
+{
+  char *domaindn=NULL;
+  /* if the base is "DOMAIN" use the domain name */
+  if (strcasecmp(value,"domain")==0)
+  {
+    ldap_domain2dn(cfg_getdomainname(filename,lnr),&domaindn);
+    log_log(LOG_DEBUG,"set_base(): setting base to %s from domain",domaindn);
+    value=domaindn;
+  }
+  /* check if the value will be changed */
+  if ((*var==NULL)||(strcmp(*var,value)!=0))
+  {
+    /* Note: we have a memory leak here if a single mapping is changed
+             multiple times in one config (deemed not a problem) */
+    *var=xstrdup(value);
+  }
+}
+
 static void parse_base_statement(const char *filename,int lnr,
                                  const char **opts,int nopts,
                                  struct ldap_config *cfg)
@@ -232,7 +319,7 @@ static void parse_base_statement(const char *filename,int lnr,
   enum ldap_map_selector map;
   const char **var;
   if (nopts==2)
-    cfg->ldc_base=xstrdup(opts[1]);
+    set_base(filename,lnr,opts[1],(const char **)&(cfg->ldc_base));
   else if (nopts==3)
   {
     /* get the map */
@@ -244,13 +331,7 @@ static void parse_base_statement(const char *filename,int lnr,
       log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,opts[1]);
       exit(EXIT_FAILURE);
     }
-    /* check if the value will be changed */
-    if ((*var==NULL)||(strcmp(*var,opts[2])!=0))
-    {
-      /* Note: we have a memory leak here if a single mapping is changed
-               multiple times in one config (deemed not a problem) */
-      *var=xstrdup(opts[2]);
-    }
+    set_base(filename,lnr,opts[2],var);
   }
   else
     check_argumentcount(filename,lnr,opts[0],0);
@@ -437,7 +518,12 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     {
       check_argumentcount(filename,lnr,opts[0],nopts>1);
       for (i=1;i<nopts;i++)
-        add_uri(filename,lnr,cfg,opts[i]);
+      {
+        if (strcasecmp(opts[i],"dns")==0)
+          add_uris_from_dns(filename,lnr,cfg);
+        else
+          add_uri(filename,lnr,cfg,opts[i]);
+      }
     }
     else if (strcasecmp(opts[0],"ldap_version")==0)
     {
@@ -694,7 +780,7 @@ void cfg_init(const char *fname)
   /* read configfile */
   cfg_read(fname,nslcd_cfg);
   /* do some sanity checks */
-  if (nslcd_cfg->ldc_uris[0] == NULL)
+  if (nslcd_cfg->ldc_uris[0]==NULL)
   {
     log_log(LOG_ERR,"no URIs defined in config");
     exit(EXIT_FAILURE);

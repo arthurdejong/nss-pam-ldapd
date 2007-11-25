@@ -121,6 +121,9 @@
        <acronym>LDAP</acronym> over <acronym>TCP</acronym>,
        <acronym>ICP</acronym> or <acronym>SSL</acronym> respectively (if
        supported by the <acronym>LDAP</acronym> library).
+       Alternitively, the value <emphasis remap="I">DNS</emphasis> may be
+       used to try to lookup the server using <acronym>DNS</acronym>
+       <acronym>SRV</acronym> records.
       </para>
       <para>
        When using the ldapi scheme, %2f should be used to escape slashes
@@ -280,6 +283,11 @@
        to use as search base.
        A global search base may be specified or a MAP-specific one.
        If no MAP-specific search base is defined the global one is used.
+      </para>
+      <para>
+       If, instead of a <acronym>DN</acronym>, the value
+       <emphasis remap="I">DOMAIN</emphasis> is specified, the hosts
+       <acronym>DNS</acronym> domain is used to construct a basedn.
       </para>
      </listitem>
     </varlistentry>
