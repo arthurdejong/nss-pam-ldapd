@@ -78,21 +78,6 @@ AC_ARG_ENABLE(warnings,
                              [enable extra compiler warnings (gcc)]),
               [if test "x$enableval" != "no" ; then CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations -Wunused -Wformat=2 -Wswitch-default -Wswitch-enum -Wfloat-equal -Wdeclaration-after-statement -Wextra -Wpointer-arith -Wbad-function-cast -Wunreachable-code -Wredundant-decls -Wredundant-decls" ; fi])
 
-dnl
-dnl XXX TODO make configurable-krb5-ccname-* configurable at runtime
-dnl
-AC_ARG_ENABLE(configurable-krb5-ccname-env,
-              AS_HELP_STRING([--enable-configurable-krb5-ccname-env],
-                             [enable configurable Kerberos V credentials cache name (putenv method)]),
-              [ AC_DEFINE(CONFIGURE_KRB5_CCNAME,1,[Define to enable configurable Kerberos credentials cache.])
-                AC_DEFINE(CONFIGURE_KRB5_CCNAME_ENV,1,[Define to enable configurable Kerberos credentials cache (putenv method).]) ])
-
-AC_ARG_ENABLE(configurable-krb5-ccname-gssapi,
-              AS_HELP_STRING([--enable-configurable-krb5-ccname-gssapi],
-                             [enable configurable Kerberos V credentials cache name (gssapi method)]),
-              [ AC_DEFINE(CONFIGURE_KRB5_CCNAME)
-                AC_DEFINE(CONFIGURE_KRB5_CCNAME_GSSAPI,1,[Define to enable configurable Kerberos credentials cache (gssapi method).]) ])
-
 AC_ARG_WITH(ldap-lib,
             AS_HELP_STRING([--with-ldap-lib=TYPE],
                            [select ldap library (auto|netscape5|netscape4|netscape3|umich|openldap) @<:@auto@:>@]))
@@ -123,10 +108,6 @@ AC_ARG_WITH(nslcd-socket,
             [ NSLCD_SOCKET="/var/run/nslcd/socket" ])
 AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used for communicating.])
 AC_SUBST(NSLCD_SOCKET)
-
-AC_ARG_WITH(gssapi-dir,
-            AS_HELP_STRING([--with-gssapi-dir=PATH],
-                           [base directory of gssapi SDK]))
 
 ldap_nss_ngroups=64
 AC_ARG_WITH(ngroups,
@@ -306,6 +287,7 @@ fi
 AC_CHECK_LIB(gssldap, ldap_gss_bind,[LIBS="-lgssldap $LIBS"],,$LIBS)
 
 AC_CHECK_FUNCS(sasl_auxprop_request)
+AC_CHECK_FUNCS(gss_krb5_ccache_name)
 AC_CHECK_FUNCS(ldap_init ldap_get_lderrno ldap_parse_result ldap_memfree ldap_controls_free)
 AC_CHECK_FUNCS(ldap_ld_free ldap_explode_rdn ldap_set_option ldap_get_option)
 AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s ldap_initialize ldap_search_ext)

@@ -33,8 +33,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
+#ifdef HAVE_GSSAPI_H
+#include <gssapi.h>
+#endif /* HAVE_GSSAPI_H */
+#ifdef HAVE_GSSAPI_GSSAPI_KRB5_H
+#include <gssapi/gssapi.h>
+#include <gssapi/gssapi_krb5.h>
+#endif /* HAVE_GSSAPI_GSSAPI_KRB5_H */
 
 #include "ldap-nss.h"
+#include "common.h"
 #include "log.h"
 #include "cfg.h"
 #include "attmap.h"
@@ -79,9 +87,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_sasl_secprops=NULL;
   cfg->ldc_usesasl=0;
   cfg->ldc_rootusesasl=0;
-#ifdef CONFIGURE_KRB5_CCNAME
-  cfg->ldc_krb5_ccname=NULL;
-#endif /* CONFIGURE_KRB5_CCNAME */
   cfg->ldc_base=NULL;
   cfg->ldc_scope=LDAP_SCOPE_SUBTREE;
   cfg->ldc_deref=LDAP_DEREF_NEVER;
@@ -205,7 +210,7 @@ static void add_uris_from_dns(const char *filename,int lnr,
       nxt++;
     }
     /* add the URI */
-    snprintf(buf,sizeof(buf),"ldap://%s",hostlist);
+    mysnprintf(buf,sizeof(buf),"ldap://%s",hostlist);
     log_log(LOG_DEBUG,"add_uris_from_dns(): found uri: %s",buf);
     add_uri(filename,lnr,cfg,buf);
     /* get next entry from list */
@@ -288,6 +293,50 @@ static inline void check_argumentcount(const char *filename,int lnr,
     log_log(LOG_ERR,"%s:%d: %s: wrong number of arguments",filename,lnr,keyword);
     exit(EXIT_FAILURE);
   }
+}
+
+static void parse_krb5_ccname_statement(const char *filename,int lnr,
+                                        const char **opts,int nopts)
+{
+  const char *ccname;
+  const char *ccfile;
+  size_t ccenvlen;
+  char *ccenv;
+  OM_uint32 minor_status;
+  /* set default kerberos ticket cache for SASL-GSSAPI */
+  log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
+  check_argumentcount(filename,lnr,opts[0],nopts==2);
+  ccname=opts[1];
+  /* check that cache exists and is readable if it is a file */
+  if ( (strncasecmp(ccname,"FILE:",sizeof("FILE:")-1)==0) ||
+       (strncasecmp(ccname,"WRFILE:",sizeof("WRFILE:")-1)==0))
+  {
+    ccfile=strchr(ccname,':')+1;
+    if (access(ccfile,R_OK)!=0)
+    {
+      log_log(LOG_ERR,"%s:%d: error accessing %s: %s",filename,lnr,ccfile,strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+  }
+  /* set the environment variable (we have a memory leak if this option
+     is set multiple times) */
+  ccenvlen=strlen(ccname)+sizeof("KRB5CCNAME=");
+  ccenv=(char *)malloc(ccenvlen);
+  if (ccenv==NULL)
+  {
+    log_log(LOG_CRIT,"malloc() failed to allocate memory");
+    exit(EXIT_FAILURE);
+  }
+  mysnprintf(ccenv,ccenvlen,"KRB5CCNAME=%s",ccname);
+  putenv(ccenv);
+#ifdef HAVE_GSS_KRB5_CCACHE_NAME
+  /* set the name with gss_krb5_ccache_name() */
+  if (gss_krb5_ccache_name(&minor_status,ccname,NULL)!=GSS_S_COMPLETE)
+  {
+    log_log(LOG_ERR,"%s:%d: unable to set default credential cache: %s",filename,lnr,ccname);
+    exit(EXIT_FAILURE);
+  }
+# endif /* HAVE_GSS_KRB5_CCACHE_NAME */
 }
 
 /* assigns the base to the specified variable doing domain expansion
@@ -587,15 +636,11 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_rootusesasl=parse_boolean(filename,lnr,opts[1]);
     }
-#ifdef CONFIGURE_KRB5_CCNAME
     /* Kerberos authentication options */
     else if (strcasecmp(opts[0],"krb5_ccname")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_krb5_ccname=xstrdup(opts[1]);
+      parse_krb5_ccname_statement(filename,lnr,opts,nopts);
     }
-#endif /* CONFIGURE_KRB5_CCNAME */
     /* search/mapping options */
     else if (strcasecmp(opts[0],"base")==0)
     {

@@ -57,12 +57,6 @@
 #elif defined(HAVE_SASL_H)
 #include <sasl.h>
 #endif
-#ifdef HAVE_GSSAPI_H
-#include <gssapi.h>
-#elif defined(HAVE_GSSAPI_GSSAPI_KRB5_H)
-#include <gssapi/gssapi.h>
-#include <gssapi/gssapi_krb5.h>
-#endif
 #include <ctype.h>
 
 #include "ldap-nss.h"
@@ -342,13 +336,6 @@ static int do_bind(MYLDAP_SESSION *session)
   int rc;
   char *binddn,*bindarg;
   int usesasl;
-#ifdef CONFIGURE_KRB5_CCNAME
-#ifndef CONFIGURE_KRB5_CCNAME_GSSAPI
-  char tmpbuf[256];
-#endif
-  char *ccname;
-  const char *oldccname = NULL;
-#endif /* CONFIGURE_KRB5_CCNAME */
   /*
    * If we're running as root, let us bind as a special
    * user, so we can fake shadow passwords.
@@ -388,42 +375,6 @@ static int do_bind(MYLDAP_SESSION *session)
         return -1;
       }
     }
-# ifdef CONFIGURE_KRB5_CCNAME
-    /* Set default Kerberos ticket cache for SASL-GSSAPI */
-    ccname = nslcd_cfg->ldc_krb5_ccname;
-    if (ccname != NULL)
-    {
-      char *ccfile = ccname;
-      /* Check that cache exists and is readable */
-      if ((strncasecmp(ccfile, "FILE:", sizeof("FILE:") - 1) == 0)
-          || (strncasecmp(ccfile, "WRFILE:", sizeof("WRFILE:") - 1) == 0))
-      {
-        ccfile = strchr(ccfile, ':') + 1;
-      }
-      if (access(ccfile, R_OK) == 0)
-      {
-# ifdef CONFIGURE_KRB5_CCNAME_ENV
-        oldccname = getenv ("KRB5CCNAME");
-        if (oldccname != NULL)
-        {
-          strncpy (tmpbuf, oldccname, sizeof (tmpbuf));
-          tmpbuf[sizeof (tmpbuf) - 1] = '\0';
-        } else {
-          tmpbuf[0] = '\0';
-        }
-        oldccname = tmpbuf;
-        snprintf(tmpbuf, sizeof (tmpbuf), "KRB5CCNAME=%s", ccname);
-        putenv (tmpbuf);
-# elif defined(CONFIGURE_KRB5_CCNAME_GSSAPI)
-        if (gss_krb5_ccache_name(&rc, ccname, &oldccname) != GSS_S_COMPLETE)
-        {
-          log_log(LOG_ERR, "do_bind: unable to set default credential cache");
-          return -1;
-        }
-# endif
-      }
-    }
-# endif /* CONFIGURE_KRB5_CCNAME */
     rc=ldap_sasl_interactive_bind_s(session->ls_conn,binddn,"GSSAPI",NULL,NULL,
                                     LDAP_SASL_QUIET,
                                     do_sasl_interact,(void *)bindarg);

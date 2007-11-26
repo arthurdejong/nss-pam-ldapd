@@ -255,15 +255,14 @@
    <title>Kerberos authentication options</title>
    <variablelist>
 
-     <varlistentry>
-     <term><emphasis remap="B">krb5_ccname &lt;PREFIX:args&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>krb5_ccname</option> <emphasis remap="I">NAME</emphasis></term>
      <listitem>
-   <para>If
-   <emphasis remap="B">nss_ldap</emphasis>
-   is built with configurable GSS-API credentials cache name support,
-   specifies the Kerberos credentials cache to use.</para>
+      <para>
+       Set the name for the GSS-API Kerberos credentials cache.
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
    </variablelist>
   </refsect2>

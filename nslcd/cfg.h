@@ -99,10 +99,6 @@ struct ldap_config
   int ldc_usesasl;
   /* do we use sasl for root? */
   int ldc_rootusesasl;
-#ifdef CONFIGURE_KRB5_CCNAME
-  /* krb5 ccache name */
-  char *ldc_krb5_ccname;
-#endif /* CONFIGURE_KRB5_CCNAME */
   /* base DN, eg. dc=gnu,dc=org */
   char *ldc_base;
   /* scope for searches */
