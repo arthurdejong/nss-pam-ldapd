@@ -91,6 +91,8 @@ DICT *dict_new(void)
 int dict_put(DICT *dict,const char *key,void *value)
 {
   struct dict_entry *entry;
+  if (key==NULL)
+    return -1;
   entry=dict_entry_find(dict,key);
   if ((entry==NULL)&&(value==NULL))
   {
