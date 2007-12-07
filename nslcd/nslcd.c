@@ -130,7 +130,7 @@ static void parse_cmdline(int argc,char *argv[])
     case ':': /* missing required parameter */
     case '?': /* unknown option character or extraneous parameter */
     default:
-      fprintf(stderr,"Try `%s --help' for more information.\n",
+      fprintf(stderr,"Try '%s --help' for more information.\n",
               argv[0]);
       exit(EXIT_FAILURE);
     }
@@ -138,9 +138,9 @@ static void parse_cmdline(int argc,char *argv[])
   /* check for remaining arguments */
   if (optind<argc)
   {
-    fprintf(stderr,"%s: unrecognized option `%s'\n",
+    fprintf(stderr,"%s: unrecognized option '%s'\n",
             argv[0],argv[optind]);
-    fprintf(stderr,"Try `%s --help' for more information.\n",
+    fprintf(stderr,"Try '%s --help' for more information.\n",
             argv[0]);
     exit(EXIT_FAILURE);
   }
