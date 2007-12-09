@@ -80,12 +80,8 @@ MUST_USE MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search);
 MUST_USE const char *myldap_get_dn(MYLDAP_ENTRY *entry);
 
 /* Get the attribute values from a ceirtain entry as
-   a NULL terminated list. */
+   a NULL terminated list. May return NULL or an empty array. */
 MUST_USE const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr);
-
-/* Return the number of elements in the array returned by
-   by myldap_get_values(). */
-MUST_USE int myldap_count_values(const char **vals);
 
 /* Checks to see if the entry has the specified object class. */
 MUST_USE int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass);

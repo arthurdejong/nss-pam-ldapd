@@ -208,7 +208,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
       WRITE_STRING(fp,passwd);
       WRITE_TYPE(fp,gids[j],gid_t);
       if (memberuidvalues!=NULL)
-        { WRITE_STRINGLIST_NULLTERM(fp,memberuidvalues); }
+        { WRITE_STRINGLIST(fp,memberuidvalues); }
       else
         { WRITE_INT32(fp,0); }
     }

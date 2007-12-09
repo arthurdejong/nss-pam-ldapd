@@ -119,7 +119,7 @@ static int write_alias(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqalias)
   {
     WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
     WRITE_STRING(fp,names[i]);
-    WRITE_STRINGLIST_NULLTERM(fp,members);
+    WRITE_STRINGLIST(fp,members);
   }
   return 0;
 }

@@ -99,17 +99,7 @@ static void debug_dump(const void *ptr,size_t size)
     ERROR_OUT_WRITEERROR(fp); \
   }
 
-#define WRITE_STRINGLIST_NUM(fp,arr,num) \
-  /* write number of strings */ \
-  DEBUG_PRINT("WRITE_STRLST: var="__STRING(arr)" num=%d",(int)num); \
-  WRITE_INT32(fp,num); \
-  /* write strings */ \
-  for (tmp2int32=0;tmp2int32<(num);tmp2int32++) \
-  { \
-    WRITE_STRING(fp,(arr)[tmp2int32]); \
-  }
-
-#define WRITE_STRINGLIST_NULLTERM(fp,arr) \
+#define WRITE_STRINGLIST(fp,arr) \
   /* first determin length of array */ \
   for (tmp3int32=0;(arr)[tmp3int32]!=NULL;tmp3int32++) \
     /*noting*/ ; \
@@ -183,15 +173,6 @@ static void debug_dump(const void *ptr,size_t size)
 /* move the buffer pointer */
 #define BUF_SKIP(sz) \
   bufptr+=(size_t)(sz);
-
-/* move BUF_CUR foreward so that it is aligned to the specified
-   type width */
-#define BUF_ALIGN(fp,type) \
-  /* figure out number of bytes to skip foreward */ \
-  tmp2int32=(sizeof(type)-((BUF_CUR-(char *)NULL)%sizeof(type)))%sizeof(type); \
-  /* check and skip */ \
-  BUF_CHECK(fp,tmp2int32); \
-  BUF_SKIP(tmp2int32);
 
 /* move BUF_CUR foreward so that it is aligned to the specified
    type width */

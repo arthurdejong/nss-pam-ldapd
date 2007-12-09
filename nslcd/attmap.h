@@ -23,7 +23,7 @@
 #ifndef _ATTMAP_H
 #define _ATTMAP_H 1
 
-#include "ldap-nss.h"
+#include "cfg.h"
 
 /* these are the attribute names per database */
 extern const char *attmap_alias_cn;

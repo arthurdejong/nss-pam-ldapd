@@ -27,8 +27,7 @@ nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
                 ../compat/attrs.h ../compat/ldap.h \
                 log.c log.h \
                 common.c common.h \
-                ldap-nss.c ldap-nss.h \
-                myldap.h \
+                myldap.c myldap.h \
                 pagectrl.c pagectrl.h \
                 cfg.c cfg.h \
                 attmap.c attmap.h \

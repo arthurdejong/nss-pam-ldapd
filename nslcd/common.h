@@ -28,7 +28,7 @@
 #include "nslcd-common.h"
 #include "common/tio.h"
 #include "compat/attrs.h"
-#include "ldap-nss.h"
+#include "myldap.h"
 
 /* macros for basic read and write operations, the following
    ERROR_OUT* marcos define the action taken on errors

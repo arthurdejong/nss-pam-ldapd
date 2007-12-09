@@ -25,14 +25,16 @@
 
 #include "config.h"
 
-#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <errno.h>
+#include <netdb.h>
+#include <sys/socket.h>
 #ifdef HAVE_GSSAPI_H
 #include <gssapi.h>
 #endif /* HAVE_GSSAPI_H */
@@ -41,7 +43,6 @@
 #include <gssapi/gssapi_krb5.h>
 #endif /* HAVE_GSSAPI_GSSAPI_KRB5_H */
 
-#include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
 #include "cfg.h"
