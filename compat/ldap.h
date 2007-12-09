@@ -36,10 +36,10 @@
 #endif
 
 #if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
-extern int ldap_ld_free (LDAP * ld, int close, LDAPControl **,
-                         LDAPControl **);
+extern int ldap_ld_free(LDAP * ld, int close, LDAPControl **,
+                        LDAPControl **);
 #else
-extern int ldap_ld_free (LDAP * ld, int close);
+extern int ldap_ld_free(LDAP * ld, int close);
 #endif /* OPENLDAP 2.x */
 
 #endif /* not _COMPAT_LDAP_H */

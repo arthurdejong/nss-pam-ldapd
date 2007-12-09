@@ -1,6 +1,6 @@
 /*
    cfg.h - definition of configuration information
-   This file contains parts that were part of the nss-ldap
+   This file contains parts that were part of the nss_ldap
    library which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard

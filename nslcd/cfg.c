@@ -1,6 +1,6 @@
 /*
    cfg.c - functions for configuration information
-   This file contains parts that were part of the nss-ldap
+   This file contains parts that were part of the nss_ldap
    library which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
@@ -536,7 +536,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
   int nopts;
 
   /* open config file */
-  if ((fp=fopen (filename, "r"))==NULL)
+  if ((fp=fopen(filename,"r"))==NULL)
   {
     log_log(LOG_ERR,"cannot open config file (%s): %s",filename,strerror(errno));
     exit(EXIT_FAILURE);
