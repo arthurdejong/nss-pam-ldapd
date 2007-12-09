@@ -1,6 +1,6 @@
 /*
    network.c - network address entry lookup routines
-   This file was part of the nss_ldap library (as ldap-network.c)
+   Parts of this file were part of the nss_ldap library (as ldap-network.c)
    which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
@@ -28,32 +28,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <arpa/nameser.h>
+#include <sys/types.h>
 #include <sys/socket.h>
-#ifdef HAVE_LBER_H
-#include <lber.h>
-#endif
-#ifdef HAVE_LDAP_H
-#include <ldap.h>
-#endif
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
+#include <arpa/inet.h>
 
-#include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
+#include "myldap.h"
+#include "cfg.h"
 #include "attmap.h"
 
-#if defined(HAVE_USERSEC_H)
-#define MAXALIASES 35
-#define MAXADDRSIZE 4
-#endif /* HAVE_USERSEC_H */
+/* ( nisSchema.2.7 NAME 'ipNetwork' SUP top STRUCTURAL
+ *   DESC 'Abstraction of a network. The distinguished value of
+ *   MUST ( cn $ ipNetworkNumber )
+ *   MAY ( ipNetmaskNumber $ l $ description $ manager ) )
+ */
 
 /* the search base for searches */
 const char *network_base = NULL;
@@ -64,12 +53,7 @@ int network_scope = LDAP_SCOPE_DEFAULT;
 /* the basic search filter for searches */
 const char *network_filter = "(objectClass=ipNetwork)";
 
-/* the attributes used in searches
- * ( nisSchema.2.7 NAME 'ipNetwork' SUP top STRUCTURAL
- *   DESC 'Abstraction of a network. The distinguished value of
- *   MUST ( cn $ ipNetworkNumber )
- *   MAY ( ipNetmaskNumber $ l $ description $ manager ) )
- */
+/* the attributes used in searches */
 const char *attmap_network_cn              = "cn";
 const char *attmap_network_ipNetworkNumber = "ipNetworkNumber";
 /*const char *attmap_network_ipNetmaskNumber = "ipNetmaskNumber"; */
@@ -121,89 +105,48 @@ static void network_init(void)
   network_attrs[2]=NULL;
 }
 
-static enum nss_status _nss_ldap_parse_net(
-        MYLDAP_ENTRY *entry,
-        void *result,char *buffer,size_t buflen)
-{
-
-  char *tmp;
-  struct netent *network=(struct netent *)result;
-  enum nss_status stat;
-
-  /* IPv6 support ? XXX */
-  network->n_addrtype = AF_INET;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_network_cn,&network->n_name,&buffer,&buflen);
-  if (stat!=NSS_STATUS_SUCCESS)
-    return stat;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_network_ipNetworkNumber,&tmp,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-
-  network->n_net = inet_network (tmp);
-
-  stat=_nss_ldap_assign_attrvals(entry,attmap_network_cn,network->n_name,&network->n_aliases,&buffer,&buflen,NULL);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-
-  return NSS_STATUS_SUCCESS;
-}
-
 /* write a single network entry to the stream */
 static int write_network(TFILE *fp,MYLDAP_ENTRY *entry)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  struct netent result;
-  char buffer[1024];
-  if (_nss_ldap_parse_net(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+  int numaddr,i;
+  const char *networkname;
+  const char **networknames;
+  const char **addresses;
+  /* get the most canonical name */
+  networkname=myldap_get_rdn_value(entry,attmap_network_cn);
+  /* get the other names for the network */
+  networknames=myldap_get_values(entry,attmap_network_cn);
+  if ((networknames==NULL)||(networknames[0]==NULL))
+  {
+    log_log(LOG_WARNING,"network entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_network_cn);
     return 0;
-  /* write the result code */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  }
+  /* if the networkname is not yet found, get the first entry from networknames */
+  if (networkname==NULL)
+    networkname=networknames[0];
+  /* get the addresses */
+  addresses=myldap_get_values(entry,attmap_network_ipNetworkNumber);
+  if ((addresses==NULL)||(addresses[0]==NULL))
+  {
+    log_log(LOG_WARNING,"network entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_network_ipNetworkNumber);
+    return 0;
+  }
   /* write the entry */
-  /* write the network name */
-  WRITE_STRING(fp,result.n_name);
-  /* write the alias list */
-  WRITE_STRINGLIST_NULLTERM(fp,result.n_aliases);
-  /* write the number of addresses */
-  WRITE_INT32(fp,1);
-  /* write the addresses in network byte order */
-  WRITE_INT32(fp,result.n_addrtype);
-  WRITE_INT32(fp,sizeof(unsigned long int));
-  result.n_net=htonl(result.n_net);
-  WRITE_INT32(fp,result.n_net);
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  WRITE_STRING(fp,networkname);
+  WRITE_STRINGLIST_EXCEPT(fp,networknames,networkname);
+  for (numaddr=0;addresses[numaddr]!=NULL;numaddr++)
+    /*noting*/ ;
+  WRITE_INT32(fp,numaddr);
+  for (i=0;i<numaddr;i++)
+  {
+    WRITE_ADDRESS(fp,addresses[i]);
+  }
   return 0;
 }
-
-static int read_address(TFILE *fp,char *addr,int *addrlen,int *af)
-{
-  int32_t tmpint32;
-  int len;
-  /* read address family */
-  READ_INT32(fp,*af);
-  if (*af!=AF_INET)
-  {
-    log_log(LOG_WARNING,"incorrect address family specified: %d",*af);
-    return -1;
-  }
-  /* read address length */
-  READ_INT32(fp,len);
-  if ((len>*addrlen)||(len<=0))
-  {
-    log_log(LOG_WARNING,"address length incorrect: %d",len);
-    return -1;
-  }
-  *addrlen=len;
-  /* read address */
-  READ(fp,addr,len);
-  /* we're done */
-  return 0;
-}
-
-#define READ_ADDRESS(fp,addr,len,af) \
-  len=(int)sizeof(addr); \
-  if (read_address(fp,addr,&(len),&(af))) \
-    return -1;
 
 NSLCD_HANDLE(
   network,byname,

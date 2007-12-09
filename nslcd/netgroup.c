@@ -1,11 +1,8 @@
 /*
    netgroup.c - netgroup lookup routines
-   This file was part of the nss_ldap library (as ldap-netgrp.c)
+   Parts of this file were part of the nss_ldap library (as ldap-netgrp.c)
    which has been forked into the nss-ldapd library.
-   This file also contains code that is taken from the GNU C
-   Library (nss/nss_files/files-netgrp.c).
 
-   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007 Arthur de Jong
@@ -29,88 +26,18 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <string.h>
-#include <assert.h>
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-#ifdef HAVE_LBER_H
-#include <lber.h>
-#endif
-#ifdef HAVE_LDAP_H
-#include <ldap.h>
-#endif
 
-#include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
+#include "myldap.h"
+#include "cfg.h"
 #include "attmap.h"
-
-/* A netgroup can consist of names of other netgroups.  We have to
-   track which netgroups were read and which still have to be read.  */
-
-/* Dataset for iterating netgroups.  */
-struct mynetgrent
-{
-  enum
-  { triple_val, group_val }
-  type;
-
-  union
-  {
-    struct
-    {
-      const char *host;
-      const char *user;
-      const char *domain;
-    }
-    triple;
-
-    const char *group;
-  }
-  val;
-
-  /* Room for the data kept between the calls to the netgroup
-     functions.  We must avoid global variables.  */
-  char *data;
-  size_t data_size;
-  char *cursor;
-  int first;
-};
-
-/*
- * I (Luke Howard) pulled the following macro (EXPAND), functions
- * (strip_whitespace and _nss_netgroup_parseline) and structures
- * (name_list and mynetgrent) from glibc-2.2.x.  _nss_netgroup_parseline
- * became _nss_ldap_parse_netgr after some modification.
- *
- * The rest of the code is modeled on various other _nss_ldap functions.
- */
-
-#define EXPAND(needed)                                                        \
-  do                                                                          \
-    {                                                                         \
-      size_t old_cursor = result->cursor - result->data;                      \
-                                                                              \
-      result->data_size += 512 > 2 * needed ? 512 : 2 * needed;               \
-      result->data = realloc (result->data, result->data_size);               \
-                                                                              \
-      if (result->data == NULL)                                               \
-        {                                                                     \
-          stat = NSS_STATUS_UNAVAIL;                                          \
-          goto out;                                                           \
-        }                                                                     \
-                                                                              \
-      result->cursor = result->data + old_cursor;                             \
-    }                                                                         \
-  while (0)
 
 /* ( nisSchema.2.8 NAME 'nisNetgroup' SUP top STRUCTURAL
  *   DESC 'Abstraction of a netgroup. May refer to other netgroups'
@@ -164,213 +91,140 @@ static void netgroup_init(void)
   netgroup_attrs[3]=NULL;
 }
 
-static char *
-strip_whitespace (char *str)
+static int write_string_stripspace_len(TFILE *fp,const char *str,int len)
 {
-  char *cp = str;
-
-  /* Skip leading spaces.  */
-  while (isspace ((int) *cp))
-    cp++;
-
-  str = cp;
-  while (*cp != '\0' && !isspace ((int) *cp))
-    cp++;
-
-  /* Null-terminate, stripping off any trailing spaces.  */
-  *cp = '\0';
-
-  return *str == '\0' ? NULL : str;
-}
-
-static enum nss_status
-_nss_ldap_parse_netgr (void *vresultp, char *buffer, size_t buflen)
-{
-  struct mynetgrent *result = (struct mynetgrent *) vresultp;
-  char *cp = result->cursor;
-  char *user, *host, *domain;
-
-  /* The netgroup either doesn't exist or is empty. */
-  if (cp == NULL)
-    return NSS_STATUS_RETURN;
-
-  /* First skip leading spaces. */
-  while (isspace ((int) *cp))
-    ++cp;
-
-  if (*cp != '(')
+  int32_t tmpint32;
+  int i,j;
+  DEBUG_PRINT("WRITE_STRING: var="__STRING(str)" string=\"%s\"",str);
+  if (str==NULL)
+  {
+    WRITE_INT32(fp,0);
+  }
+  else
+  {
+    /* skip leading spaces */
+    for (i=0;(str[i]!='\0')&&(isspace(str[i]));i++)
+      /* nothing else to do */ ;
+    /* skip trailing spaces */
+    for (j=len;(j>i)&&(isspace(str[j-1]));j--)
+      /* nothing else to do */ ;
+    /* write length of string */
+    WRITE_INT32(fp,j-i);
+    /* write string itself */
+    if (j>i)
     {
-      /* We have a list of other netgroups. */
-      char *name = cp;
-
-      while (*cp != '\0' && !isspace ((int) *cp))
-        ++cp;
-
-      if (name != cp)
-        {
-          /* It is another netgroup name. */
-          int last = *cp == '\0';
-
-          result->type = group_val;
-          result->val.group = name;
-          *cp = '\0';
-          if (!last)
-            ++cp;
-          result->cursor = cp;
-          result->first = 0;
-
-          return NSS_STATUS_SUCCESS;
-        }
-      return result->first ? NSS_STATUS_NOTFOUND : NSS_STATUS_RETURN;
+      WRITE(fp,str+i,j-i);
     }
-
-  /* Match host name. */
-  host = ++cp;
-  while (*cp != ',')
-    if (*cp++ == '\0')
-      return result->first ? NSS_STATUS_NOTFOUND : NSS_STATUS_RETURN;
-
-  /* Match user name. */
-  user = ++cp;
-  while (*cp != ',')
-    if (*cp++ == '\0')
-      return result->first ? NSS_STATUS_NOTFOUND : NSS_STATUS_RETURN;
-
-  /* Match domain name. */
-  domain = ++cp;
-  while (*cp != ')')
-    if (*cp++ == '\0')
-      return result->first ? NSS_STATUS_NOTFOUND : NSS_STATUS_RETURN;
-  ++cp;
-
-  /* When we got here we have found an entry.  Before we can copy it
-     to the private buffer we have to make sure it is big enough.  */
-  if (cp - host > buflen)
-    return NSS_STATUS_TRYAGAIN;
-
-  strncpy (buffer, host, cp - host);
-  result->type = triple_val;
-
-  buffer[(user - host) - 1] = '\0';
-  result->val.triple.host = strip_whitespace (buffer);
-
-  buffer[(domain - host) - 1] = '\0';
-  result->val.triple.user = strip_whitespace (buffer + (user - host));
-
-  buffer[(cp - host) - 1] = '\0';
-  result->val.triple.domain = strip_whitespace (buffer + (domain - host));
-
-  /* Remember where we stopped reading. */
-  result->cursor = cp;
-  result->first = 0;
-
-  return NSS_STATUS_SUCCESS;
+  }
+  /* we're done */
+  return 0;
 }
 
-static enum nss_status _nss_ldap_load_netgr(
-        MYLDAP_ENTRY *entry,struct mynetgrent *result)
+#define WRITE_STRING_STRIPSPACE_LEN(fp,str,len) \
+  if (write_string_stripspace_len(fp,str,len)) \
+    return -1;
+
+#define WRITE_STRING_STRIPSPACE(fp,str) \
+  WRITE_STRING_STRIPSPACE_LEN(fp,str,strlen(str))
+
+static int write_netgroup_triple(TFILE *fp,const char *triple)
 {
-  int attr;
-  int nvals;
-  int valcount = 0;
-  const char **vals;
-  const char **valiter;
-  enum nss_status stat = NSS_STATUS_SUCCESS;
-  /* FIXME: this function is wrong because it can segfault on some occasions */
-
-  for (attr = 0; attr < 2; attr++)
-    {
-      switch (attr)
-        {
-        case 1:
-          vals=myldap_get_values(entry,attmap_netgroup_nisNetgroupTriple);
-          break;
-        default:
-          vals=myldap_get_values(entry,attmap_netgroup_memberNisNetgroup);
-          break;
-        }
-
-      nvals=myldap_count_values(vals);
-
-      if (vals == NULL)
-        continue;
-
-      if (nvals == 0)
-        continue;
-
-      if (result->data_size > 0
-          && result->cursor - result->data + 1 > result->data_size)
-        EXPAND (1);
-
-      if (result->data_size > 0)
-        *result->cursor++ = ' ';
-
-      valcount += nvals;
-      valiter = vals;
-
-      while (*valiter != NULL)
-        {
-          int curlen = strlen (*valiter);
-          if (result->cursor - result->data + curlen + 1 > result->data_size)
-            EXPAND (curlen + 1);
-          memcpy (result->cursor, *valiter, curlen + 1);
-          result->cursor += curlen;
-          valiter++;
-          if (*valiter != NULL)
-            *result->cursor++ = ' ';
-        }
-    }
-
-  result->first = 1;
-  result->cursor = result->data;
-
-out:
-
-  return stat;
+  int32_t tmpint32;
+  int i;
+  int hostb,hoste,userb,usere,domainb,domaine;
+  /* skip leading spaces */
+  for (i=0;(triple[i]!='\0')&&(isspace(triple[i]));i++)
+    /* nothing else to do */ ;
+  /* we should have a bracket now */
+  if (triple[i]!='(')
+  {
+    log_log(LOG_WARNING,"write_netgroup_triple(): entry does not begin with '(' (entry skipped)");
+    return 0;
+  }
+  i++;
+  hostb=i;
+  /* find comma (end of host string) */
+  for (;(triple[i]!='\0')&&(triple[i]!=',');i++)
+    /* nothing else to do */ ;
+  if (triple[i]!=',')
+  {
+    log_log(LOG_WARNING,"write_netgroup_triple(): missing ',' (entry skipped)");
+    return 0;
+  }
+  hoste=i;
+  i++;
+  userb=i;
+  /* find comma (end of user string) */
+  for (;(triple[i]!='\0')&&(triple[i]!=',');i++)
+    /* nothing else to do */ ;
+  if (triple[i]!=',')
+  {
+    log_log(LOG_WARNING,"write_netgroup_triple(): missing ',' (entry skipped)");
+    return 0;
+  }
+  usere=i;
+  i++;
+  domainb=i;
+  /* find closing bracket (end of domain string) */
+  for (;(triple[i]!='\0')&&(triple[i]!=')');i++)
+    /* nothing else to do */ ;
+  if (triple[i]!=')')
+  {
+    log_log(LOG_WARNING,"write_netgroup_triple(): missing ')' (entry skipped)");
+    return 0;
+  }
+  domaine=i;
+  i++;
+  /* skip trailing spaces */
+  for (;(triple[i]!='\0')&&(isspace(triple[i]));i++)
+    /* nothing else to do */ ;
+  /* if anything is left in the string we have a problem */
+  if (triple[i]!='\0')
+  {
+    log_log(LOG_WARNING,"write_netgroup_triple(): string contains trailing data (entry skipped)");
+    return 0;
+  }
+  /* write strings */
+  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  WRITE_INT32(fp,NETGROUP_TYPE_TRIPLE);
+  WRITE_STRING_STRIPSPACE_LEN(fp,triple+hostb,hoste-hostb)
+  WRITE_STRING_STRIPSPACE_LEN(fp,triple+userb,usere-userb)
+  WRITE_STRING_STRIPSPACE_LEN(fp,triple+domainb,domaine-domainb)
+  /* we're done */
+  return 0;
 }
+
+#define WRITE_NETGROUP_TRIPLE(fp,triple) \
+  if (write_netgroup_triple(fp,triple)) \
+    return -1;
 
 static int write_netgroup(TFILE *fp,MYLDAP_ENTRY *entry)
 {
   int32_t tmpint32;
-  struct mynetgrent result;
-  char buffer[1024];
-  enum nss_status stat=NSS_STATUS_SUCCESS;
-  result.data_size=0;
-  if (_nss_ldap_load_netgr(entry,&result)!=NSS_STATUS_SUCCESS)
-    return 0;
-  /* write the result code */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-  /* write the entry */
-  /* loop over all results */
-  while ((stat=_nss_ldap_parse_netgr(&result,buffer,1024))==NSS_STATUS_SUCCESS)
-  {
-    if (result.type==triple_val)
+  int i;
+  const char **triples;
+  const char **members;
+  /* get the netgroup triples and member */
+  triples=myldap_get_values(entry,attmap_netgroup_nisNetgroupTriple);
+  members=myldap_get_values(entry,attmap_netgroup_memberNisNetgroup);
+  /* write the netgroup triples */
+  if (triples!=NULL)
+    for (i=0;triples[i]!=NULL;i++)
     {
-      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-      WRITE_INT32(fp,NETGROUP_TYPE_TRIPLE);
-      if (result.val.triple.host==NULL)
-        { WRITE_STRING(fp,""); }
-      else
-        { WRITE_STRING(fp,result.val.triple.host); }
-      if (result.val.triple.user==NULL)
-        {  WRITE_STRING(fp,""); }
-      else
-        { WRITE_STRING(fp,result.val.triple.user); }
-      if (result.val.triple.domain==NULL)
-        { WRITE_STRING(fp,""); }
-      else
-        { WRITE_STRING(fp,result.val.triple.domain); }
+      WRITE_NETGROUP_TRIPLE(fp,triples[i]);
     }
-    else if (result.type==group_val)
+  /* write netgroup members */
+  if (members!=NULL)
+    for (i=0;members[i]!=NULL;i++)
     {
+      /* write the result code */
       WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      /* write triple indicator */
       WRITE_INT32(fp,NETGROUP_TYPE_NETGROUP);
-      WRITE_STRING(fp,result.val.group);
+      /* write netgroup name */
+      WRITE_STRING_STRIPSPACE(fp,members[i]);
     }
-  }
-  /* free data */
-  if (result.data!=NULL)
-    free(result.data);
+  /* we're done */
   return 0;
 }
 

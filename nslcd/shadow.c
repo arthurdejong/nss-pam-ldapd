@@ -1,7 +1,7 @@
 /*
    shadow.c - service entry lookup routines
-   This file was part of the nss_ldap library (as ldap-spwd.c) which
-   has been forked into the nss-ldapd library.
+   Parts of this file were part of the nss_ldap library (as ldap-spwd.c)
+   which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
@@ -25,29 +25,15 @@
 
 #include "config.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <shadow.h>
-#ifdef HAVE_PROT_H
-#define _PROT_INCLUDED
-#endif
-#ifdef HAVE_LBER_H
-#include <lber.h>
-#endif
-#ifdef HAVE_LDAP_H
-#include <ldap.h>
-#endif
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
 
-#include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
-#include "attmap.h"
+#include "myldap.h"
 #include "cfg.h"
+#include "attmap.h"
 
 /* ( nisSchema.2.1 NAME 'shadowAccount' SUP top AUXILIARY
  *   DESC 'Additional attributes for shadow passwords'
@@ -76,6 +62,16 @@ const char *attmap_shadow_shadowWarning    = "shadowWarning";
 const char *attmap_shadow_shadowInactive   = "shadowInactive";
 const char *attmap_shadow_shadowExpire     = "shadowExpire";
 const char *attmap_shadow_shadowFlag       = "shadowFlag";
+
+/* default values for attributes */
+static const char *default_shadow_userPassword     = "*"; /* unmatchable */
+static const char *default_shadow_shadowLastChange = "-1";
+static const char *default_shadow_shadowMin        = "-1";
+static const char *default_shadow_shadowMax        = "-1";
+static const char *default_shadow_shadowWarning    = "-1";
+static const char *default_shadow_shadowInactive   = "-1";
+static const char *default_shadow_shadowExpire     = "-1";
+static const char *default_shadow_shadowFlag       = "0";
 
 /* the attribute list to request with searches */
 static const char *shadow_attrs[10];
@@ -115,21 +111,15 @@ static void shadow_init(void)
   shadow_attrs[9]=NULL;
 }
 
-static int
-_nss_ldap_shadow_date (const char *val)
+static long to_date(long date)
 {
-  int date;
-
-  if (nslcd_cfg->ldc_shadow_type == LS_AD_SHADOW)
-    {
-      date = atoll (val) / 864000000000LL - 134774LL;
-      date = (date > 99999) ? 99999 : date;
-    }
-  else
-    {
-      date = atol (val);
-    }
-
+  /* do some special handling for date values on AD */
+  if (strcasecmp(attmap_shadow_shadowLastChange,"pwdLastSet")==0)
+  {
+    date=date/864000000000LL-134774LL;
+    if (date>99999)
+      date=99999;
+  }
   return date;
 }
 
@@ -137,82 +127,118 @@ _nss_ldap_shadow_date (const char *val)
 #define UF_DONT_EXPIRE_PASSWD 0x10000
 #endif
 
-static void
-_nss_ldap_shadow_handle_flag (struct spwd *sp)
-{
-  if (nslcd_cfg->ldc_shadow_type == LS_AD_SHADOW)
-    {
-      if (sp->sp_flag & UF_DONT_EXPIRE_PASSWD)
-        sp->sp_max = 99999;
-      sp->sp_flag = 0;
-    }
-}
+#define GET_OPTIONAL_DATE(var,att) \
+  tmpvalues=myldap_get_values(entry,attmap_shadow_##att); \
+  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL)) \
+    var=to_date(strtol(default_shadow_##att,NULL,0)); \
+  else \
+  { \
+    if (tmpvalues[1]!=NULL) \
+    { \
+      log_log(LOG_WARNING,"shadow entry %s contains multiple %s values", \
+                          myldap_get_dn(entry),attmap_shadow_##att); \
+    } \
+    var=to_date(strtol(tmpvalues[0],&tmp,0)); \
+    if ((*(tmpvalues[0])=='\0')||(*tmp!='\0')) \
+    { \
+      log_log(LOG_WARNING,"shadow entry %s contains non-numeric %s value", \
+                          myldap_get_dn(entry),attmap_shadow_##att); \
+      return 0; \
+    } \
+  }
 
-static enum nss_status _nss_ldap_parse_sp(
-        MYLDAP_ENTRY *entry,
-        struct spwd *sp,char *buffer,size_t buflen)
-{
-  enum nss_status stat;
-  char *tmp = NULL;
+#define GET_OPTIONAL_LONG(var,att) \
+  tmpvalues=myldap_get_values(entry,attmap_shadow_##att); \
+  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL)) \
+    var=strtol(default_shadow_##att,NULL,0); \
+  else \
+  { \
+    if (tmpvalues[1]!=NULL) \
+    { \
+      log_log(LOG_WARNING,"shadow entry %s contains multiple %s values", \
+                          myldap_get_dn(entry),attmap_shadow_##att); \
+    } \
+    var=strtol(tmpvalues[0],&tmp,0); \
+    if ((*(tmpvalues[0])=='\0')||(*tmp!='\0')) \
+    { \
+      log_log(LOG_WARNING,"shadow entry %s contains non-numeric %s value", \
+                          myldap_get_dn(entry),attmap_shadow_##att); \
+      return 0; \
+    } \
+  }
 
-  stat=_nss_ldap_assign_userpassword(entry,attmap_shadow_userPassword,&sp->sp_pwdp,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_uid,&sp->sp_namp,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowLastChange,&tmp,&buffer,&buflen);
-  sp->sp_lstchg = (stat == NSS_STATUS_SUCCESS) ? _nss_ldap_shadow_date (tmp) : -1;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowMax,&tmp,&buffer,&buflen);
-  sp->sp_max = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowMin,&tmp,&buffer,&buflen);
-  sp->sp_min = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowWarning,&tmp,&buffer,&buflen);
-  sp->sp_warn = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowInactive,&tmp,&buffer,&buflen);
-  sp->sp_inact = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : -1;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowExpire,&tmp,&buffer,&buflen);
-  sp->sp_expire = (stat == NSS_STATUS_SUCCESS) ? _nss_ldap_shadow_date (tmp) : -1;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_shadow_shadowFlag,&tmp,&buffer,&buflen);
-  sp->sp_flag = (stat == NSS_STATUS_SUCCESS) ? atol (tmp) : 0;
-
-  _nss_ldap_shadow_handle_flag(sp);
-
-  return NSS_STATUS_SUCCESS;
-}
-
-/* macros for expanding the NSLCD_SHADOW macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define SHADOW_NAME             result.sp_namp
-#define SHADOW_PASSWD           result.sp_pwdp
-#define SHADOW_LASTCHANGE       result.sp_lstchg
-#define SHADOW_MINDAYS          result.sp_min
-#define SHADOW_MAXDAYS          result.sp_max
-#define SHADOW_WARN             result.sp_warn
-#define SHADOW_INACT            result.sp_inact
-#define SHADOW_EXPIRE           result.sp_expire
-#define SHADOW_FLAG             result.sp_flag
-
-static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry)
+static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
 {
   int32_t tmpint32;
-  struct spwd result;
-  char buffer[1024];
-  if (_nss_ldap_parse_sp(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
-    return 0;
-  /* write the result code */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-  /* write the entry */
-  NSLCD_SHADOW;
+  const char *tmparr[2];
+  const char **tmpvalues;
+  char *tmp;
+  const char **usernames;
+  const char *passwd;
+  long lastchangedate;
+  long mindays;
+  long maxdays;
+  long warndays;
+  long inactdays;
+  long expiredate;
+  unsigned long flag;
+  int i;
+  /* get username */
+  if (requser!=NULL)
+  {
+    usernames=tmparr;
+    usernames[0]=requser;
+    usernames[1]=NULL;
+  }
+  else
+  {
+    usernames=myldap_get_values(entry,attmap_passwd_uid);
+    if ((usernames==NULL)||(usernames[0]==NULL))
+    {
+      log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_passwd_uid);
+      return 0;
+    }
+  }
+  /* get password */
+  passwd=get_userpassword(entry,attmap_passwd_userPassword);
+  if (passwd==NULL)
+    passwd=default_shadow_userPassword;
+  /* get lastchange */
+  GET_OPTIONAL_DATE(lastchangedate,shadowLastChange);
+  /* get mindays */
+  GET_OPTIONAL_LONG(mindays,shadowMin);
+  /* get maxdays */
+  GET_OPTIONAL_LONG(maxdays,shadowMax);
+  /* get warndays */
+  GET_OPTIONAL_LONG(warndays,shadowWarning);
+  /* get inactdays */
+  GET_OPTIONAL_LONG(inactdays,shadowInactive);
+  /* get expire */
+  GET_OPTIONAL_DATE(expiredate,shadowExpire);
+  /* get flag */
+  GET_OPTIONAL_LONG(flag,shadowFlag);
+  /* if we're using AD handle the flag specially */
+  if (strcasecmp(attmap_shadow_shadowLastChange,"pwdLastSet")==0)
+  {
+    if (flag&UF_DONT_EXPIRE_PASSWD)
+      maxdays=99999;
+    flag=0;
+  }
+  /* write the entries */
+  for (i=0;usernames[i]!=NULL;i++)
+  {
+    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+    WRITE_STRING(fp,usernames[i]);
+    WRITE_STRING(fp,passwd);
+    WRITE_INT32(fp,lastchangedate);
+    WRITE_INT32(fp,mindays);
+    WRITE_INT32(fp,maxdays);
+    WRITE_INT32(fp,warndays);
+    WRITE_INT32(fp,inactdays);
+    WRITE_INT32(fp,expiredate);
+    WRITE_INT32(fp,flag);
+  }
   return 0;
 }
 
@@ -224,7 +250,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_shadow_byname(%s)",name);,
   NSLCD_ACTION_SHADOW_BYNAME,
   mkfilter_shadow_byname(name,filter,sizeof(filter)),
-  write_shadow(fp,entry)
+  write_shadow(fp,entry,name)
 )
 
 NSLCD_HANDLE(
@@ -234,5 +260,5 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_shadow_all()");,
   NSLCD_ACTION_SHADOW_ALL,
   (filter=shadow_filter,0),
-  write_shadow(fp,entry)
+  write_shadow(fp,entry,NULL)
 )

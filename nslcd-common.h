@@ -122,6 +122,24 @@ static void debug_dump(const void *ptr,size_t size)
     WRITE_STRING(fp,(arr)[tmp2int32]); \
   }
 
+#define WRITE_STRINGLIST_EXCEPT(fp,arr,not) \
+  /* first determin length of array */ \
+  for (tmp3int32=0;(arr)[tmp3int32]!=NULL;tmp3int32++) \
+    /*noting*/ ; \
+  /* write number of strings (mius one because we intend to skip one) */ \
+  tmp3int32--; \
+  DEBUG_PRINT("WRITE_STRLST: var="__STRING(arr)" num=%d",(int)tmp3int32); \
+  WRITE_TYPE(fp,tmp3int32,int32_t); \
+  tmp3int32++; \
+  /* write strings */ \
+  for (tmp2int32=0;tmp2int32<tmp3int32;tmp2int32++) \
+  { \
+    if (strcmp((arr)[tmp2int32],(not))!=0) \
+    { \
+      WRITE_STRING(fp,(arr)[tmp2int32]); \
+    } \
+  }
+
 /* READ macros, used for reading data, on read error they will
    call the ERROR_OUT_READERROR or ERROR_OUT_BUFERROR macro
    these macros may require the availability of the following

@@ -1,6 +1,6 @@
 /*
    alias.c - alias entry lookup routines
-   This file was part of the nss_ldap library (as ldap-alias.c)
+   Parts of this file were part of the nss_ldap library (as ldap-alias.c)
    which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
@@ -28,19 +28,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <lber.h>
-#include <ldap.h>
-#include <aliases.h>
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
 
-#include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
 #include "myldap.h"
+#include "cfg.h"
 #include "attmap.h"
 
 /* Vendor-specific attributes and object classes.
@@ -97,42 +89,38 @@ static void alias_init(void)
   alias_attrs[2]=NULL;
 }
 
-static enum nss_status _nss_ldap_parse_alias(
-        MYLDAP_ENTRY *entry,struct aliasent *result,
-        char *buffer,size_t buflen)
+static int write_alias(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqalias)
 {
-  /* FIXME: fix following problem:
-            if the entry has multiple cn fields we may end up
-            sending the wrong cn, we should return the requested
-            CN instead, otherwise write an entry for each cn */
-  enum nss_status stat;
-
-  stat=_nss_ldap_getrdnvalue(entry,attmap_alias_cn,&result->alias_name,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-
-  stat=_nss_ldap_assign_attrvals(entry,attmap_alias_rfc822MailMember,NULL,&result->alias_members,&buffer,&buflen,&result->alias_members_len);
-
-  return stat;
-}
-
-/* macros for expanding the NSLCD_ALIAS macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NUM(fp,field,result.alias_members_len)
-#define ALIAS_NAME              result.alias_name
-#define ALIAS_RCPTS             result.alias_members
-
-static int write_alias(TFILE *fp,MYLDAP_ENTRY *entry)
-{
-  struct aliasent result;
-  char buffer[1024];
-  int32_t tmpint32,tmp2int32;
-  if (_nss_ldap_parse_alias(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
-    return 0;
-  /* write the result code */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-  /* write the entry */
-  NSLCD_ALIAS;
+  int32_t tmpint32,tmp2int32,tmp3int32;
+  const char *tmparr[2];
+  const char **names,**members;
+  int i;
+  /* get the name of the alias */
+  if (reqalias!=NULL)
+  {
+    names=tmparr;
+    names[0]=reqalias;
+    names[1]=NULL;
+  }
+  else
+  {
+    names=myldap_get_values(entry,attmap_alias_cn);
+    if ((names==NULL)||(names[0]==NULL))
+    {
+      log_log(LOG_WARNING,"alias entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_alias_cn);
+      return 0;
+    }
+  }
+  /* get the members of the alias */
+  members=myldap_get_values(entry,attmap_alias_rfc822MailMember);
+  /* for each name, write an entry */
+  for (i=0;names[i]!=NULL;i++)
+  {
+    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+    WRITE_STRING(fp,names[i]);
+    WRITE_STRINGLIST_NULLTERM(fp,members);
+  }
   return 0;
 }
 
@@ -144,7 +132,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_alias_byname(%s)",name);,
   NSLCD_ACTION_ALIAS_BYNAME,
   mkfilter_alias_byname(name,filter,sizeof(filter)),
-  write_alias(fp,entry)
+  write_alias(fp,entry,name)
 )
 
 NSLCD_HANDLE(
@@ -154,5 +142,5 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_alias_all()");,
   NSLCD_ACTION_ALIAS_ALL,
   (filter=alias_filter,0),
-  write_alias(fp,entry)
+  write_alias(fp,entry,NULL)
 )

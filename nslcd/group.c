@@ -1,6 +1,6 @@
 /*
    group.c - group entry lookup routines
-   This file was part of the nss_ldap library (as ldap-grp.c) which
+   Parts of this file were part of the nss_ldap library (as ldap-grp.c) which
    has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2006 Luke Howard
@@ -25,87 +25,17 @@
 
 #include "config.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/param.h>
+/* for gid_t */
 #include <grp.h>
-#include <errno.h>
-#ifdef HAVE_LBER_H
-#include <lber.h>
-#endif
-#ifdef HAVE_LDAP_H
-#include <ldap.h>
-#endif
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
 
-#include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
 #include "myldap.h"
 #include "cfg.h"
 #include "attmap.h"
-
-/* FIXME: fix following problem:
-          if the entry has multiple cn fields we may end up
-          sending the wrong cn, we should return the requested
-          cn instead, otherwise write an entry for each cn */
-
-struct name_list
-{
-  char *name;
-  struct name_list *next;
-};
-
-#ifdef HAVE_USERSEC_H
-typedef struct ldap_initgroups_args
-{
-  char *grplist;
-  size_t listlen;
-  int depth;
-  struct name_list *known_groups;
-  int backlink;
-}
-ldap_initgroups_args_t;
-#else
-typedef struct ldap_initgroups_args
-{
-  gid_t group;
-  long int *start;
-  long int *size;
-  gid_t **groups;
-  long int limit;
-  int depth;
-  struct name_list *known_groups;
-  int backlink;
-}
-ldap_initgroups_args_t;
-#endif /* HAVE_USERSEC_H */
-
-#define LDAP_NSS_MAXGR_DEPTH     16     /* maximum depth of group nesting for getgrent()/initgroups() */
-
-#if LDAP_NSS_NGROUPS > 64
-#define LDAP_NSS_BUFLEN_GROUP   (1024 + (LDAP_NSS_NGROUPS * (sizeof (char *) + LOGNAME_MAX)))
-#else
-#define LDAP_NSS_BUFLEN_GROUP   1024
-#endif /* LDAP_NSS_NGROUPS > 64 */
-
-#ifndef LOGNAME_MAX
-#define LOGNAME_MAX 8
-#endif /* LOGNAME_MAX */
-
-#ifndef UID_NOBODY
-#define UID_NOBODY      (-2)
-#endif
-
-#ifndef GID_NOBODY
-#define GID_NOBODY     UID_NOBODY
-#endif
 
 /* ( nisSchema.2.2 NAME 'posixGroup' SUP top STRUCTURAL
  *   DESC 'Abstraction of a group of accounts'
@@ -139,6 +69,10 @@ const char *attmap_group_uniqueMember  = "uniqueMember";
 const char *attmap_group_memberOf      = "memberOf";
 */
 
+/* default values for attributes */
+static const char *default_group_userPassword     = "*"; /* unmatchable */
+
+
 /* the attribute list to request with searches */
 static const char *group_attrs[6];
 
@@ -169,6 +103,17 @@ static int mkfilter_group_bygid(gid_t gid,
                     attmap_group_gidNumber,gid);
 }
 
+/* create a search filter for searching a group entry
+   by member uid, return -1 on errors */
+static int mkfilter_group_bymember(const char *uid,
+                                   char *buffer,size_t buflen)
+{
+  return mysnprintf(buffer,buflen,
+                    "(&%s(%s=%s))",
+                    group_filter,
+                    attmap_group_memberUid,uid);
+}
+
 static void group_init(void)
 {
   /* set up base */
@@ -186,105 +131,87 @@ static void group_init(void)
 /* group_attrs[4]=attmap_group_uniqueMember; */
 }
 
-static enum nss_status _nss_ldap_parse_gr(
-        MYLDAP_ENTRY *entry,
-        struct group *gr,char *buffer,size_t buflen)
-{
-  char *gid;
-  enum nss_status stat;
-  /* get group gid (gidNumber) */
-  stat=_nss_ldap_assign_attrval(entry,attmap_group_gidNumber,&gid,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-  gr->gr_gid=(*gid=='\0')?(unsigned)GID_NOBODY:(gid_t)strtoul(gid,NULL,10);
-  /* get group name (cn) */
-  stat=_nss_ldap_getrdnvalue(entry,attmap_group_cn,&gr->gr_name,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-  /* get group passwd (userPassword) */
-  stat=_nss_ldap_assign_userpassword(entry,attmap_group_userPassword,&gr->gr_passwd,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-  /* get group memebers (memberUid) */
-  stat=_nss_ldap_assign_attrvals(entry,attmap_group_memberUid,NULL,
-                                 &gr->gr_mem,&buffer,&buflen,NULL);
-  return stat;
-}
+/* the maximum number of gidNumber attributes per entry */
+#define MAXGIDS_PER_ENTRY 5
 
-/* macros for expanding the NSLCD_GROUP macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define GROUP_NAME              result.gr_name
-#define GROUP_PASSWD            result.gr_passwd
-#define GROUP_GID               result.gr_gid
-#define GROUP_MEMBERS           result.gr_mem
-
-static int write_group(TFILE *fp,MYLDAP_ENTRY *entry)
+static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
+                       const gid_t *reqgid,int wantmembers)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  struct group result;
-  char buffer[1024];
-  if (_nss_ldap_parse_gr(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
-    return 0;
-  /* write the result code */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-  /* write the entry */
-  NSLCD_GROUP;
-  return 0;
-}
-
-int nslcd_group_bymember(TFILE *fp,MYLDAP_SESSION *session)
-{
-  int32_t tmpint32;
-  char name[256];
-  /* these are here for now until we rewrite the LDAP code */
-  int retv;
-  long int start=0,size=1024;
-  long int i;
-  gid_t groupsp[1024];
-  /* read request parameters */
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  /* log call */
-  log_log(LOG_DEBUG,"nslcd_group_bymember(%s)",name);
-  /* do the LDAP request */
-  retv=NSLCD_RESULT_NOTFOUND;
-  /*
-  retv=group_bymember(name,&start,&size,size);
-  */
-  /* Note: we write some garbadge here to ensure protocol error as this
-           function currently returns incorrect data */
-  /* Note: what to do with group ids that are not listed as supplemental
-           groups but are the user's primary group id? */
-  WRITE_INT32(fp,1234);
-  start=0;
-  /* TODO: fix this to actually work */
-  /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYNAME);
-  if (retv==NSLCD_RESULT_SUCCESS)
+  const char *tmparr[2];
+  const char **names,**gidvalues;
+  const char *passwd;
+  const char **memberuidvalues;
+  gid_t gids[MAXGIDS_PER_ENTRY];
+  int numgids;
+  char *tmp;
+  int i,j;
+  /* get group name (cn) */
+  if (reqname!=NULL)
   {
-    /* loop over the returned gids */
-    for (i=0;i<start;i++)
-    {
-      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-      /* Note: we will write a fake record here for now. This is because
-               we want to keep the protocol but currently the only
-               client application available discards non-gid information */
-      WRITE_STRING(fp,""); /* group name */
-      WRITE_STRING(fp,"*"); /* group passwd */
-      WRITE_TYPE(fp,groupsp[i],gid_t); /* gid */
-      WRITE_INT32(fp,1); /* number of members */
-      WRITE_STRING(fp,name); /* member=user requested */
-    }
-    WRITE_INT32(fp,NSLCD_RESULT_NOTFOUND);
+    names=tmparr;
+    names[0]=reqname;
+    names[1]=NULL;
   }
   else
   {
-    /* some error occurred */
-    WRITE_INT32(fp,retv);
+    names=myldap_get_values(entry,attmap_group_cn);
+    if ((names==NULL)||(names[0]==NULL))
+    {
+      log_log(LOG_WARNING,"alias entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_group_cn);
+      return 0;
+    }
   }
-  /* we're done */
+  /* get the group id(s) */
+  if (reqgid!=NULL)
+  {
+    gids[0]=*reqgid;
+    numgids=1;
+  }
+  else
+  {
+    gidvalues=myldap_get_values(entry,attmap_group_gidNumber);
+    if ((gidvalues==NULL)||(gidvalues[0]==NULL))
+    {
+      log_log(LOG_WARNING,"alias entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_group_gidNumber);
+      return 0;
+    }
+    for (numgids=0;(gidvalues[numgids]!=NULL)&&(numgids<=MAXGIDS_PER_ENTRY);numgids++)
+    {
+      gids[numgids]=(gid_t)strtol(gidvalues[numgids],&tmp,0);
+      if ((*(gidvalues[numgids])=='\0')||(*tmp!='\0'))
+      {
+        log_log(LOG_WARNING,"group entry %s contains non-numeric %s value",
+                            myldap_get_dn(entry),attmap_group_gidNumber);
+        return 0;
+      }
+    }
+  }
+  /* get group passwd (userPassword) (use only first entry) */
+  passwd=get_userpassword(entry,attmap_group_userPassword);
+  if (passwd==NULL)
+    passwd=default_group_userPassword;
+  /* TODO: translate passwd value into something returnable */
+  /* get group memebers (memberUid) */
+  if (wantmembers)
+    memberuidvalues=myldap_get_values(entry,attmap_group_memberUid);
+  else
+    memberuidvalues=NULL;
+  /* write entries for all names and gids */
+  for (i=0;names[i]!=NULL;i++)
+    for (j=0;j<numgids;j++)
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_STRING(fp,names[i]);
+      WRITE_STRING(fp,passwd);
+      WRITE_TYPE(fp,gids[j],gid_t);
+      if (memberuidvalues!=NULL)
+        { WRITE_STRINGLIST_NULLTERM(fp,memberuidvalues); }
+      else
+        { WRITE_INT32(fp,0); }
+    }
   return 0;
 }
 
@@ -296,7 +223,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_group_byname(%s)",name);,
   NSLCD_ACTION_GROUP_BYNAME,
   mkfilter_group_byname(name,filter,sizeof(filter)),
-  write_group(fp,entry)
+  write_group(fp,entry,name,NULL,1)
 )
 
 NSLCD_HANDLE(
@@ -307,10 +234,9 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_group_bygid(%d)",(int)gid);,
   NSLCD_ACTION_GROUP_BYGID,
   mkfilter_group_bygid(gid,filter,sizeof(filter)),
-  write_group(fp,entry)
+  write_group(fp,entry,NULL,&gid,1)
 )
 
-/*
 NSLCD_HANDLE(
   group,bymember,
   char name[256];
@@ -319,9 +245,8 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_group_bymember(%s)",name);,
   NSLCD_ACTION_GROUP_BYMEMBER,
   mkfilter_group_bymember(name,filter,sizeof(filter)),
-  write_group(fp,entry)
+  write_group(fp,entry,NULL,NULL,0)
 )
-*/
 
 NSLCD_HANDLE(
   group,all,
@@ -330,6 +255,6 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_group_all()");,
   NSLCD_ACTION_GROUP_ALL,
   (filter=group_filter,0),
-  write_group(fp,entry)
+  write_group(fp,entry,NULL,NULL,1)
 )
 

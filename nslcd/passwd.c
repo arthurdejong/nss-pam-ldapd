@@ -1,6 +1,6 @@
 /*
    passwd.c - password entry lookup routines
-   This file was part of the nss_ldap library (as ldap-pwd.c)
+   Parts of this file were part of the nss_ldap library (as ldap-pwd.c)
    which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
@@ -25,36 +25,23 @@
 
 #include "config.h"
 
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/param.h>
-#include <string.h>
-#include <pwd.h>
-#ifdef HAVE_LBER_H
-#include <lber.h>
-#endif
-#ifdef HAVE_LDAP_H
-#include <ldap.h>
-#endif
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <string.h>
 
-#include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
+#include "myldap.h"
+#include "cfg.h"
 #include "attmap.h"
 
-#ifndef UID_NOBODY
-#define UID_NOBODY      (uid_t)(-2)
-#endif
-
-#ifndef GID_NOBODY
-#define GID_NOBODY     (gid_t)UID_NOBODY
-#endif
+/* ( nisSchema.2.0 NAME 'posixAccount' SUP top AUXILIARY
+ *   DESC 'Abstraction of an account with POSIX attributes'
+ *   MUST ( cn $ uid $ uidNumber $ gidNumber $ homeDirectory )
+ *   MAY ( userPassword $ loginShell $ gecos $ description ) )
+ */
 
 /* the search base for searches */
 const char *passwd_base = NULL;
@@ -65,12 +52,7 @@ int passwd_scope = LDAP_SCOPE_DEFAULT;
 /* the basic search filter for searches */
 const char *passwd_filter = "(objectClass=posixAccount)";
 
-/* the attributes used in searches
- * ( nisSchema.2.0 NAME 'posixAccount' SUP top AUXILIARY
- *   DESC 'Abstraction of an account with POSIX attributes'
- *   MUST ( cn $ uid $ uidNumber $ gidNumber $ homeDirectory )
- *   MAY ( userPassword $ loginShell $ gecos $ description ) )
- */
+/* the attributes used in searches */
 const char *attmap_passwd_uid           = "uid";
 const char *attmap_passwd_userPassword  = "userPassword";
 const char *attmap_passwd_uidNumber     = "uidNumber";
@@ -79,6 +61,11 @@ const char *attmap_passwd_gecos         = "gecos";
 const char *attmap_passwd_cn            = "cn";
 const char *attmap_passwd_homeDirectory = "homeDirectory";
 const char *attmap_passwd_loginShell    = "loginShell";
+
+/* default values for attributes */
+static const char *default_passwd_userPassword     = "*"; /* unmatchable */
+static const char *default_passwd_homeDirectory    = "";
+static const char *default_passwd_loginShell       = "";
 
 /* the attribute list to request with searches */
 static const char *passwd_attrs[10];
@@ -131,117 +118,167 @@ static void passwd_init(void)
   passwd_attrs[9]=NULL;
 }
 
-static inline enum nss_status _nss_ldap_assign_emptystring(
-               char **valptr, char **buffer, size_t * buflen)
-{
-  if (*buflen < 2)
-    return NSS_STATUS_TRYAGAIN;
+/* the maximum number of uidNumber attributes per entry */
+#define MAXUIDS_PER_ENTRY 5
 
-  *valptr = *buffer;
-
-  **valptr = '\0';
-
-  (*buffer)++;
-  (*buflen)--;
-
-  return NSS_STATUS_SUCCESS;
-}
-
-static enum nss_status _nss_ldap_parse_pw(
-        MYLDAP_ENTRY *entry,
-        struct passwd *pw,char *buffer,size_t buflen)
-{
-  /* FIXME: fix following problem:
-            if the entry has multiple uid fields we may end up
-            sending the wrong uid, we should return the requested
-            uid instead, otherwise write an entry for each uid
-            (maybe also for uidNumber) */
-  char *uid, *gid;
-  enum nss_status stat;
-  char tmpbuf[ sizeof( uid_t ) * 8 / 3 + 2 ];
-  size_t tmplen;
-  char *tmp;
-
-  tmpbuf[ sizeof(tmpbuf) - 1 ] = '\0';
-
-  if (myldap_has_objectclass(entry,"shadowAccount"))
-    {
-      /* don't include password for shadowAccount */
-      if (buflen < 3)
-        return NSS_STATUS_TRYAGAIN;
-
-      pw->pw_passwd = buffer;
-      strcpy (buffer, "x");
-      buffer += 2;
-      buflen -= 2;
-    }
-  else
-    {
-      stat=_nss_ldap_assign_userpassword(entry,attmap_passwd_userPassword,&pw->pw_passwd,&buffer,&buflen);
-      if (stat != NSS_STATUS_SUCCESS)
-        return stat;
-    }
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_uid,&pw->pw_name,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-
-  tmp = tmpbuf;
-  tmplen = sizeof (tmpbuf) - 1;
-  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_uidNumber,&uid,&tmp,&tmplen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-  pw->pw_uid = (*uid == '\0') ? UID_NOBODY : (uid_t) atol (uid);
-
-  tmp = tmpbuf;
-  tmplen = sizeof (tmpbuf) - 1;
-  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_gidNumber,&gid,&tmp,&tmplen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-  pw->pw_gid = (*gid == '\0') ? GID_NOBODY : (gid_t) atol (gid);
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_gecos,&pw->pw_gecos,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    {
-      pw->pw_gecos = NULL;
-      stat=_nss_ldap_assign_attrval(entry,attmap_passwd_cn,&pw->pw_gecos,&buffer,&buflen);
-      if (stat != NSS_STATUS_SUCCESS)
-        return stat;
-    }
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_homeDirectory,&pw->pw_dir,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    (void) _nss_ldap_assign_emptystring (&pw->pw_dir, &buffer, &buflen);
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_passwd_loginShell,&pw->pw_shell,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    (void) _nss_ldap_assign_emptystring (&pw->pw_shell, &buffer, &buflen);
-
-  return NSS_STATUS_SUCCESS;
-}
-
-/* macros for expanding the NSLCD_PASSWD macro */
-#define NSLCD_STRING(field)    WRITE_STRING(fp,field)
-#define NSLCD_TYPE(field,type) WRITE_TYPE(fp,field,type)
-#define PASSWD_NAME            result.pw_name
-#define PASSWD_PASSWD          result.pw_passwd
-#define PASSWD_UID             result.pw_uid
-#define PASSWD_GID             result.pw_gid
-#define PASSWD_GECOS           result.pw_gecos
-#define PASSWD_DIR             result.pw_dir
-#define PASSWD_SHELL           result.pw_shell
-
-static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry)
+static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
+                        const uid_t *requid)
 {
   int32_t tmpint32;
-  struct passwd result;
-  char buffer[1024];
-  if (_nss_ldap_parse_pw(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+  const char *tmparr[2];
+  const char **tmpvalues;
+  char *tmp;
+  const char **usernames;
+  const char *passwd;
+  uid_t uids[MAXUIDS_PER_ENTRY];
+  int numuids;
+  gid_t gid;
+  const char *gecos;
+  const char *homedir;
+  const char *shell;
+  int i,j;
+  /* get the usernames for this entry */
+  if (requser!=NULL)
+  {
+    usernames=tmparr;
+    usernames[0]=requser;
+    usernames[1]=NULL;
+  }
+  else
+  {
+    usernames=myldap_get_values(entry,attmap_passwd_uid);
+    if ((usernames==NULL)||(usernames[0]==NULL))
+    {
+      log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_passwd_uid);
+      return 0;
+    }
+  }
+  /* get the password for this entry */
+  if (myldap_has_objectclass(entry,"shadowAccount"))
+  {
+    /* if the entry has a shadowAccount entry, point to that instead */
+    passwd="x";
+  }
+  else
+  {
+    passwd=get_userpassword(entry,attmap_passwd_userPassword);
+    if (passwd==NULL)
+      passwd=default_passwd_userPassword;
+  }
+  /* get the uids for this entry */
+  if (requid!=NULL)
+  {
+    uids[0]=*requid;
+    numuids=1;
+  }
+  else
+  {
+    tmpvalues=myldap_get_values(entry,attmap_passwd_uidNumber);
+    if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
+    {
+      log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_passwd_uidNumber);
+      return 0;
+    }
+    for (numuids=0;(numuids<=MAXUIDS_PER_ENTRY)&&(tmpvalues[numuids]!=NULL);numuids++)
+    {
+      uids[numuids]=(uid_t)strtol(tmpvalues[numuids],&tmp,0);
+      if ((*(tmpvalues[numuids])=='\0')||(*tmp!='\0'))
+      {
+        log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+                            myldap_get_dn(entry),attmap_passwd_uidNumber);
+        return 0;
+      }
+    }
+  }
+  /* get the gid for this entry */
+  tmpvalues=myldap_get_values(entry,attmap_passwd_gidNumber);
+  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
+  {
+    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_passwd_gidNumber);
     return 0;
-  /* write the result code */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-  /* write the entry */
-  NSLCD_PASSWD;
+  }
+  else if (tmpvalues[1]!=NULL)
+  {
+    log_log(LOG_WARNING,"passwd entry %s contains multiple %s values",
+                        myldap_get_dn(entry),attmap_passwd_gidNumber);
+  }
+  gid=(gid_t)strtol(tmpvalues[0],&tmp,0);
+  if ((*(tmpvalues[0])=='\0')||(*tmp!='\0'))
+  {
+    log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+                        myldap_get_dn(entry),attmap_passwd_gidNumber);
+    return 0;
+  }
+  /* get the gecos for this entry (fall back to cn) */
+  tmpvalues=myldap_get_values(entry,attmap_passwd_gecos);
+  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
+    tmpvalues=myldap_get_values(entry,attmap_passwd_cn);
+  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
+  {
+    log_log(LOG_WARNING,"passwd entry %s does not contain %s or %s value",
+                        myldap_get_dn(entry),attmap_passwd_gecos,attmap_passwd_cn);
+    return 0;
+  }
+  else if (tmpvalues[1]!=NULL)
+  {
+    log_log(LOG_WARNING,"passwd entry %s contains multiple %s or %s values",
+                        myldap_get_dn(entry),attmap_passwd_gecos,attmap_passwd_cn);
+  }
+  gecos=tmpvalues[0];
+  /* get the home directory for this entry */
+  tmpvalues=myldap_get_values(entry,attmap_passwd_homeDirectory);
+  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
+  {
+    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_passwd_homeDirectory);
+    homedir=default_passwd_homeDirectory;
+  }
+  else
+  {
+    if (tmpvalues[1]!=NULL)
+    {
+      log_log(LOG_WARNING,"passwd entry %s contains multiple %s values",
+                          myldap_get_dn(entry),attmap_passwd_homeDirectory);
+    }
+    homedir=tmpvalues[0];
+    if (*homedir=='\0')
+      homedir=default_passwd_homeDirectory;
+  }
+  /* get the shell for this entry */
+  tmpvalues=myldap_get_values(entry,attmap_passwd_loginShell);
+  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
+  {
+    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_passwd_loginShell);
+    shell=default_passwd_loginShell;
+  }
+  else
+  {
+    if (tmpvalues[1]!=NULL)
+    {
+      log_log(LOG_WARNING,"passwd entry %s contains multiple %s values",
+                          myldap_get_dn(entry),attmap_passwd_loginShell);
+    }
+    shell=tmpvalues[0];
+    if (*shell=='\0')
+      shell=default_passwd_loginShell;
+  }
+  /* write the entries */
+  for (i=0;usernames[i]!=NULL;i++)
+    for (j=0;j<numuids;j++)
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_STRING(fp,usernames[i]);
+      WRITE_STRING(fp,passwd);
+      WRITE_TYPE(fp,uids[j],uid_t);
+      WRITE_TYPE(fp,gid,gid_t);
+      WRITE_STRING(fp,gecos);
+      WRITE_STRING(fp,homedir);
+      WRITE_STRING(fp,shell);
+    }
   return 0;
 }
 
@@ -253,7 +290,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);,
   NSLCD_ACTION_PASSWD_BYNAME,
   mkfilter_passwd_byname(name,filter,sizeof(filter)),
-  write_passwd(fp,entry)
+  write_passwd(fp,entry,name,NULL)
 )
 
 NSLCD_HANDLE(
@@ -264,7 +301,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_passwd_byuid(%d)",(int)uid);,
   NSLCD_ACTION_PASSWD_BYUID,
   mkfilter_passwd_byuid(uid,filter,sizeof(filter)),
-  write_passwd(fp,entry)
+  write_passwd(fp,entry,NULL,&uid)
 )
 
 NSLCD_HANDLE(
@@ -274,5 +311,5 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_passwd_all()");,
   NSLCD_ACTION_PASSWD_ALL,
   (filter=passwd_filter,0),
-  write_passwd(fp,entry)
+  write_passwd(fp,entry,NULL,NULL)
 )

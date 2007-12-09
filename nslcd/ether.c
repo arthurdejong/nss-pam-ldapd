@@ -1,6 +1,6 @@
 /*
    ether.c - ethernet address entry lookup routines
-   This file was part of the nss_ldap library (as ldap-ethers.c)
+   Parts of this file were part of the nss_ldap library (as ldap-ethers.c)
    which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
@@ -28,36 +28,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#ifdef HAVE_LBER_H
-#include <lber.h>
-#endif
-#ifdef HAVE_LDAP_H
-#include <ldap.h>
-#endif
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
-#ifdef HAVE_NET_ROUTE_H
-#include <net/route.h>
-#endif
-#ifdef HAVE_NETINET_IF_ETHER_H
-#include <netinet/if_ether.h>
-#endif
 #ifdef HAVE_NETINET_ETHER_H
 #include <netinet/ether.h>
 #endif
 
-#include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
 #include "myldap.h"
+#include "cfg.h"
 #include "attmap.h"
 
 #ifndef HAVE_STRUCT_ETHER_ADDR
@@ -65,12 +43,6 @@ struct ether_addr {
   u_int8_t ether_addr_octet[6];
 };
 #endif
-
-struct ether
-{
-  char *e_name;
-  struct ether_addr e_addr;
-};
 
 /* ( nisSchema.2.11 NAME 'ieee802Device' SUP top AUXILIARY
  *   DESC 'A device with a MAC address; device SHOULD be
@@ -141,41 +113,62 @@ static void ether_init(void)
   ether_attrs[2]=NULL;
 }
 
-static enum nss_status _nss_ldap_parse_ether(
-        MYLDAP_ENTRY *entry,
-        struct ether *ether,char *buffer,
-        size_t buflen)
-{
-  char *saddr;
-  enum nss_status stat;
-  struct ether_addr *addr;
-  stat=_nss_ldap_assign_attrval(entry,attmap_ether_cn,&ether->e_name,&buffer,&buflen);
-  if (stat!=NSS_STATUS_SUCCESS)
-    return stat;
-  stat=_nss_ldap_assign_attrval(entry,attmap_ether_macAddress,&saddr,&buffer,&buflen);
-  if ((stat!=NSS_STATUS_SUCCESS)||((addr=ether_aton(saddr))==NULL))
-    return NSS_STATUS_NOTFOUND;
-  memcpy(&ether->e_addr,addr,sizeof(*addr));
-  return NSS_STATUS_SUCCESS;
-}
+/* TODO: check for errors in aton() */
+#define WRITE_ETHER(fp,addr) \
+  ether_aton_r(addr,&tmpaddr); \
+  WRITE_TYPE(fp,tmpaddr,u_int8_t[6]);
 
-/* macros for expanding the NSLCD_ETHER macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_TYPE(field,type)  WRITE_TYPE(fp,field,type)
-#define ETHER_NAME              result.e_name
-#define ETHER_ADDR              result.e_addr
-
-static int write_ether(TFILE *fp,MYLDAP_ENTRY *entry)
+static int write_ether(TFILE *fp,MYLDAP_ENTRY *entry,
+                       const char *reqname,const char *reqether)
 {
   int32_t tmpint32;
-  struct ether result;
-  char buffer[1024];
-  if (_nss_ldap_parse_ether(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
-    return 0;
-  /* write the result code */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-  /* write the entry */
-  NSLCD_ETHER;
+  struct ether_addr tmpaddr;
+  const char *tmparr[2];
+  const char **names,**ethers;
+  int i,j;
+  /* get the name of the ether entry */
+  if (reqname!=NULL)
+  {
+    names=tmparr;
+    names[0]=reqname;
+    names[1]=NULL;
+  }
+  else
+  {
+    names=myldap_get_values(entry,attmap_ether_cn);
+    if ((names==NULL)||(names[0]==NULL))
+    {
+      log_log(LOG_WARNING,"ether entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_ether_cn);
+      return 0;
+    }
+  }
+  /* get the addresses */
+  if (reqether!=NULL)
+  {
+    ethers=tmparr;
+    ethers[0]=reqether;
+    ethers[1]=NULL;
+  }
+  else
+  {
+    ethers=myldap_get_values(entry,attmap_ether_macAddress);
+    if ((ethers==NULL)||(ethers[0]==NULL))
+    {
+      log_log(LOG_WARNING,"ether entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_ether_macAddress);
+      return 0;
+    }
+    /* TODO: move parsing of addresses up here */
+  }
+  /* write entries for all names and addresses */
+  for (i=0;names[i]!=NULL;i++)
+    for (j=0;ethers[j]!=NULL;j++)
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_STRING(fp,names[i]);
+      WRITE_ETHER(fp,ethers[j]);
+    }
   return 0;
 }
 
@@ -187,7 +180,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_ether_byname(%s)",name);,
   NSLCD_ACTION_ETHER_BYNAME,
   mkfilter_ether_byname(name,filter,sizeof(filter)),
-  write_ether(fp,entry)
+  write_ether(fp,entry,name,NULL)
 )
 
 NSLCD_HANDLE(
@@ -198,7 +191,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_ether_byether(%s)",ether_ntoa(&addr));,
   NSLCD_ACTION_ETHER_BYETHER,
   mkfilter_ether_byether(&addr,filter,sizeof(filter)),
-  write_ether(fp,entry)
+  write_ether(fp,entry,NULL,ether_ntoa(&addr))
 )
 
 NSLCD_HANDLE(
@@ -208,5 +201,5 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_ether_all()");,
   NSLCD_ACTION_ETHER_ALL,
   (filter=ether_filter,0),
-  write_ether(fp,entry)
+  write_ether(fp,entry,NULL,NULL)
 )

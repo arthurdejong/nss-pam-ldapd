@@ -1,6 +1,6 @@
 /*
    service.c - service entry lookup routines
-   This file was part of the nss_ldap library (as ldap-service.c)
+   Parts of this file were part of the nss_ldap library (as ldap-service.c)
    which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
@@ -23,37 +23,16 @@
    02110-1301 USA
 */
 
-/*
-   Determine the canonical name of the RPC with _nss_ldap_getrdnvalue(),
-   and assign any values of "cn" which do NOT match this canonical name
-   as aliases.
- */
-
 #include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#ifdef HAVE_SYS_BYTEORDER_H
-#include <sys/byteorder.h>
-#endif
-#ifdef HAVE_LBER_H
-#include <lber.h>
-#endif
-#ifdef HAVE_LDAP_H
-#include <ldap.h>
-#endif
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
 
-#include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
+#include "myldap.h"
+#include "cfg.h"
 #include "attmap.h"
 
 /* ( nisSchema.2.3 NAME 'ipService' SUP top STRUCTURAL
@@ -146,92 +125,76 @@ static void service_init(void)
   service_attrs[3]=NULL;
 }
 
-static enum nss_status _nss_ldap_parse_serv(
-        MYLDAP_ENTRY *entry,const char *protocol,
-        struct servent *service,char *buffer,size_t buflen)
-{
-  char *port;
-  enum nss_status stat = NSS_STATUS_SUCCESS;
-
-  /* this is complicated and ugly, because some git (me) specified that service
-   * entries should expand to two entities (or more) if they have multi-valued
-   * ipServiceProtocol fields.
-   */
-
-  if ((protocol!=NULL)&&(*protocol!='\0'))
-    {
-          register int len;
-          len = strlen (protocol);
-          if (buflen < (size_t) (len + 1))
-            {
-              return NSS_STATUS_TRYAGAIN;
-            }
-          strncpy (buffer, protocol, len);
-          buffer[len] = '\0';
-          service->s_proto = buffer;
-          buffer += len + 1;
-          buflen -= len + 1;
-    }
-  else
-    {
-      char **vals=myldap_get_values(entry,attmap_service_ipServiceProtocol);
-      int len;
-      if ((vals==NULL)||(vals[0]==NULL))
-        return NSS_STATUS_NOTFOUND;
-        /* FIXME: write an antry for each protocol */
-
-          len = strlen (vals[0]);
-          strncpy (buffer, vals[0], len);
-          buffer[len] = '\0';
-          service->s_proto = buffer;
-          buffer += len + 1;
-          buflen -= len + 1;
-
-    }
-
-  stat=_nss_ldap_getrdnvalue(entry,attmap_service_cn,&service->s_name,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    {
-      return stat;
-    }
-
-  stat=_nss_ldap_assign_attrvals(entry,attmap_service_cn,service->s_name,&service->s_aliases,&buffer,&buflen,NULL);
-  if (stat != NSS_STATUS_SUCCESS)
-    {
-      return stat;
-    }
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_service_ipServicePort,&port,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    {
-      return stat;
-    }
-
-  service->s_port = atoi(port);
-
-  return NSS_STATUS_SUCCESS;
-}
-
-/* macros for expanding the NSLCD_SERVICE macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define SERVICE_NAME            result.s_name
-#define SERVICE_ALIASES         result.s_aliases
-#define SERVICE_NUMBER          result.s_port
-#define SERVICE_PROTOCOL        result.s_proto
-
-static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,const char *protocol)
+static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqprotocol)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  struct servent result;
-  char buffer[1024];
-  if (_nss_ldap_parse_serv(entry,protocol,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+  const char *name;
+  const char **aliases;
+  const char **ports;
+  const char **protocols;
+  const char *tmparr[2];
+  char *tmp;
+  int port;
+  int i;
+  /* get the most canonical name */
+  name=myldap_get_rdn_value(entry,attmap_service_cn);
+  /* get the other names for the service entries */
+  aliases=myldap_get_values(entry,attmap_service_cn);
+  if ((aliases==NULL)||(aliases[0]==NULL))
+  {
+    log_log(LOG_WARNING,"service entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_service_cn);
     return 0;
-  /* write the result code */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-  /* write the entry */
-  NSLCD_SERVICE;
+  }
+  /* if the service name is not yet found, get the first entry */
+  if (name==NULL)
+    name=aliases[0];
+  /* get the service number */
+  ports=myldap_get_values(entry,attmap_service_ipServicePort);
+  if ((ports==NULL)||(ports[0]==NULL))
+  {
+    log_log(LOG_WARNING,"service entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_service_ipServicePort);
+    return 0;
+  }
+  else if (ports[1]!=NULL)
+  {
+    log_log(LOG_WARNING,"service entry %s contains multiple %s values",
+                        myldap_get_dn(entry),attmap_service_ipServicePort);
+  }
+  port=(int)strtol(ports[0],&tmp,0);
+  if ((*(ports[0])=='\0')||(*tmp!='\0'))
+  {
+    log_log(LOG_WARNING,"service entry %s contains non-numeric %s value",
+                        myldap_get_dn(entry),attmap_service_ipServicePort);
+    return 0;
+  }
+  /* get protocols */
+  if ((reqprotocol!=NULL)&&(*reqprotocol!='\0'))
+  {
+    protocols=tmparr;
+    protocols[0]=reqprotocol;
+    protocols[1]=NULL;
+  }
+  else
+  {
+    protocols=myldap_get_values(entry,attmap_service_ipServiceProtocol);
+    if ((protocols==NULL)||(protocols[0]==NULL))
+    {
+      log_log(LOG_WARNING,"service entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_service_ipServiceProtocol);
+      return 0;
+    }
+  }
+  /* write the entries */
+  for (i=0;protocols[i]!=NULL;i++)
+  {
+    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+    WRITE_STRING(fp,name);
+    WRITE_STRINGLIST_EXCEPT(fp,aliases,name);
+    WRITE_INT32(fp,port);
+    WRITE_STRING(fp,protocols[i]);
+  }
   return 0;
 }
 

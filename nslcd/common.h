@@ -52,6 +52,30 @@
 int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
   LIKE_PRINTF(3,4);
 
+/* This tries to get the user password attribute from the entry.
+   It will try to return an encrypted password as it is used in /etc/passwd,
+   /etc/group or /etc/shadow depending upon what is in the directory.
+   This function will return NULL if no passwd and will return the literal
+   value in the directory if conversion is not possible. */
+const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr);
+
+/* write out an address, parsing the addr value */
+int write_address(TFILE *fp,const char *addr);
+
+/* a helper macro to write out addresses and bail out on errors */
+#define WRITE_ADDRESS(fp,addr) \
+  if (write_address(fp,addr)) \
+    return -1;
+
+/* read an address from the stream */
+int read_address(TFILE *fp,char *addr,int *addrlen,int *af);
+
+/* helper macro to read an address from the stream */
+#define READ_ADDRESS(fp,addr,len,af) \
+  len=(int)sizeof(addr); \
+  if (read_address(fp,addr,&(len),&(af))) \
+    return -1;
+
 /* these are the different functions that handle the database
    specific actions, see nslcd.h for the action descriptions */
 int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session);

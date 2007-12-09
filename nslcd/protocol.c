@@ -1,6 +1,6 @@
 /*
    protocol.c - network address entry lookup routines
-   This file was part of the nss_ldap library (as ldap-proto.c)
+   Parts of this file were part of the nss_ldap library (as ldap-proto.c)
    which has been forked into the nss-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
@@ -23,34 +23,25 @@
    02110-1301 USA
 */
 
-/*
-   Determine the canonical name of the RPC with _nss_ldap_getrdnvalue(),
-   and assign any values of "cn" which do NOT match this canonical name
-   as aliases.
- */
-
 #include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <netdb.h>
-#ifdef HAVE_LBER_H
-#include <lber.h>
-#endif
-#ifdef HAVE_LDAP_H
-#include <ldap.h>
-#endif
-#if defined(HAVE_THREAD_H)
-#include <thread.h>
-#elif defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-#endif
 
-#include "ldap-nss.h"
 #include "common.h"
 #include "log.h"
+#include "myldap.h"
+#include "cfg.h"
 #include "attmap.h"
+
+/* ( nisSchema.2.4 NAME 'ipProtocol' SUP top STRUCTURAL
+ *   DESC 'Abstraction of an IP protocol. Maps a protocol number
+ *         to one or more names. The distinguished value of the cn
+ *         attribute denotes the protocol's canonical name'
+ *   MUST ( cn $ ipProtocolNumber )
+ *    MAY description )
+ */
 
 /* the search base for searches */
 const char *protocol_base = NULL;
@@ -61,14 +52,7 @@ int protocol_scope = LDAP_SCOPE_DEFAULT;
 /* the basic search filter for searches */
 const char *protocol_filter = "(objectClass=ipProtocol)";
 
-/* the attributes used in searches
- * ( nisSchema.2.4 NAME 'ipProtocol' SUP top STRUCTURAL
- *   DESC 'Abstraction of an IP protocol. Maps a protocol number
- *         to one or more names. The distinguished value of the cn
- *         attribute denotes the protocol's canonical name'
- *   MUST ( cn $ ipProtocolNumber )
- *    MAY description )
- */
+/* the attributes used in searches */
 const char *attmap_protocol_cn               = "cn";
 const char *attmap_protocol_ipProtocolNumber = "ipProtocolNumber";
 
@@ -114,49 +98,52 @@ static void protocol_init(void)
   protocol_attrs[2]=NULL;
 }
 
-static enum nss_status _nss_ldap_parse_proto(
-        MYLDAP_ENTRY *entry,
-        struct protoent *proto,char *buffer,size_t buflen)
-{
-  char *number;
-  enum nss_status stat;
-
-  stat=_nss_ldap_getrdnvalue(entry,attmap_protocol_cn,&proto->p_name,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-
-  stat=_nss_ldap_assign_attrval(entry,attmap_protocol_ipProtocolNumber,&number,&buffer,&buflen);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-
-  proto->p_proto = atoi (number);
-
-  stat=_nss_ldap_assign_attrvals (entry,attmap_protocol_cn,proto->p_name,&proto->p_aliases,&buffer,&buflen,NULL);
-  if (stat != NSS_STATUS_SUCCESS)
-    return stat;
-
-  return NSS_STATUS_SUCCESS;
-}
-
-/* macros for expanding the NSLCD_PROTOCOL macro */
-#define NSLCD_STRING(field)     WRITE_STRING(fp,field)
-#define NSLCD_STRINGLIST(field) WRITE_STRINGLIST_NULLTERM(fp,field)
-#define NSLCD_INT32(field)      WRITE_INT32(fp,field)
-#define PROTOCOL_NAME           result.p_name
-#define PROTOCOL_ALIASES        result.p_aliases
-#define PROTOCOL_NUMBER         result.p_proto
-
 static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  struct protoent result;
-  char buffer[1024];
-  if (_nss_ldap_parse_proto(entry,&result,buffer,sizeof(buffer))!=NSS_STATUS_SUCCESS)
+  const char *name;
+  const char **aliases;
+  const char **protos;
+  char *tmp;
+  int proto;
+  /* get the most canonical name */
+  name=myldap_get_rdn_value(entry,attmap_protocol_cn);
+  /* get the other names for the protocol */
+  aliases=myldap_get_values(entry,attmap_protocol_cn);
+  if ((aliases==NULL)||(aliases[0]==NULL))
+  {
+    log_log(LOG_WARNING,"protocol entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_protocol_cn);
     return 0;
-  /* write the result code */
+  }
+  /* if the protocol name is not yet found, get the first entry */
+  if (name==NULL)
+    name=aliases[0];
+  /* get the protocol number */
+  protos=myldap_get_values(entry,attmap_protocol_ipProtocolNumber);
+  if ((protos==NULL)||(protos[0]==NULL))
+  {
+    log_log(LOG_WARNING,"protocol entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
+    return 0;
+  }
+  else if (protos[1]!=NULL)
+  {
+    log_log(LOG_WARNING,"protocol entry %s contains multiple %s values",
+                        myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
+  }
+  proto=(int)strtol(protos[0],&tmp,0);
+  if ((*(protos[0])=='\0')||(*tmp!='\0'))
+  {
+    log_log(LOG_WARNING,"protocol entry %s contains non-numeric %s value",
+                        myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
+    return 0;
+  }
+  /* write entry */
   WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-  /* write the entry */
-  NSLCD_PROTOCOL;
+  WRITE_STRING(fp,name);
+  WRITE_STRINGLIST_EXCEPT(fp,aliases,name);
+  WRITE_INT32(fp,proto);
   return 0;
 }
 
