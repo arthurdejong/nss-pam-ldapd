@@ -43,7 +43,7 @@ test_tio_LDFLAGS = -pthread
 
 test_cfg_SOURCES = test_cfg.c
 test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o \
-                 ../nslcd/common.o ../nslcd/ldap-nss.o ../nslcd/pagectrl.o \
+                 ../nslcd/common.o ../nslcd/myldap.o ../nslcd/pagectrl.o \
                  ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
                  ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
                  ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
@@ -52,9 +52,9 @@ test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o \
 
 test_myldap_SOURCES = test_myldap.c
 test_myldap_CFLAGS = -pthread
-test_myldap_LDADD = ../nslcd/log.o ../common/dict.o \
+test_myldap_LDADD = ../nslcd/log.o ../common/dict.o ../common/tio.o \
                     ../nslcd/common.o ../nslcd/cfg.o \
-                    ../nslcd/ldap-nss.o ../nslcd/pagectrl.o @nslcd_LIBS@
+                    ../nslcd/myldap.o ../nslcd/pagectrl.o @nslcd_LIBS@
 
 common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h \
                  ../common/tio.c ../common/tio.h
