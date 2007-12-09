@@ -292,7 +292,7 @@ check "getent services barsrv/udp" << EOM
 barsrv                15350/udp
 EOM
 
-check "getent services | egrep '(foo|bar)srv' | sort " << EOM
+check "getent services | egrep '(foo|bar)srv' | sort" << EOM
 barsrv                15350/tcp
 barsrv                15350/udp
 foosrv                15349/tcp
