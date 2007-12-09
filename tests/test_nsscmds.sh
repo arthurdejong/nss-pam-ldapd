@@ -62,44 +62,49 @@ check() {
 
 echo "testing aliases..."
 
-check "getent aliases" << EOM
-foo:            bar@example.com
+# check all aliases
+check "getent aliases|sort" << EOM
+bar2:           foobar@example.com
 bar:            foobar@example.com
+foo:            bar@example.com
 EOM
 
+# get alias by name
 check "getent aliases foo" << EOM
 foo:            bar@example.com
 EOM
 
+# get alias by second name
 check "getent aliases bar2" << EOM
-bar:            foobar@example.com
+bar2:           foobar@example.com
 EOM
 
 ###########################################################################
 
 echo "testing ether..."
 
+# get an entry by hostname
 check "getent ethers testhost" << EOM
 0:18:8a:54:1a:8e testhost
 EOM
 
-# this does not work, but maybe it should
-#check "getent ethers testhostalias" << EOM
-#0:18:8a:54:1a:8e testhost
-#EOM
+# get an entry by alias name
+check "getent ethers testhostalias" << EOM
+0:18:8a:54:1a:8e testhostalias
+EOM
 
+# get an entry by ethernet address
 check "getent ethers 0:18:8a:54:1a:8b" << EOM
 0:18:8a:54:1a:8b testhost2
 EOM
 
+# get entry by ip address
 # this does not currently work, but maybe it should
 #check "getent ethers 10.0.0.1" << EOM
 #0:18:8a:54:1a:8e testhost
 #EOM
 
-# TODO: ether addresses as 00:18:8a:54:1a:8e (always with two digits) in
-# the LDAP database should be supported
-
+# get all ethers (unsupported)
 check "getent ethers" << EOM
 Enumeration not supported on ethers
 EOM
@@ -125,20 +130,6 @@ EOM
 check "groups arthur" << EOM
 arthur : users testgroup
 EOM
-
-# this does not work, but maybe should
-#check "getent ethers testhostalias" << EOM
-#0:18:8a:54:1a:8e testhost
-#EOM
-
-# this does not currently work, but maybe should
-#check "getent ethers 10.0.0.1" << EOM
-#0:18:8a:54:1a:8e testhost
-#EOM
-
-# TODO: ether addresses as
-# 00:18:8a:54:1a:8e (always with two digits) in the LDAP
-# database should be supported
 
 check "getent group | egrep '^(testgroup|users):'" << EOM
 users:x:100:
@@ -175,16 +166,16 @@ check "getent hosts ::1" << EOM
 ::1             ip6-localhost ip6-loopback
 EOM
 
-# TODO: add tests for IPv6 support
+# TODO: add more tests for IPv6 support
 
 ###########################################################################
 
 echo "testing netgroup..."
 
-# this is a known failure and currently causes segfaults in nslcd
-#check "getent netgroup tstnetgroup" << EOM
-#tstnetgroup          (aap, , ) (noot, , )
-#EOM
+# check netgroup lookup of test netgroup
+check "getent netgroup tstnetgroup" << EOM
+tstnetgroup          (aap, , ) (noot, , )
+EOM
 
 ###########################################################################
 
@@ -275,6 +266,13 @@ check "getent services foosrv" << EOM
 foosrv                15349/tcp
 EOM
 
+check "getent services foosrv/tcp" << EOM
+foosrv                15349/tcp
+EOM
+
+check "getent services foosrv/udp" << EOM
+EOM
+
 check "getent services 15349/tcp" << EOM
 foosrv                15349/tcp
 EOM
@@ -282,12 +280,26 @@ EOM
 check "getent services 15349/udp" << EOM
 EOM
 
-check "getent services | grep foosrv" << EOM
+check "getent services barsrv" << EOM
+barsrv                15350/tcp
+EOM
+
+check "getent services barsrv/tcp" << EOM
+barsrv                15350/tcp
+EOM
+
+check "getent services barsrv/udp" << EOM
+barsrv                15350/udp
+EOM
+
+check "getent services | egrep '(foo|bar)srv' | sort " << EOM
+barsrv                15350/tcp
+barsrv                15350/udp
 foosrv                15349/tcp
 EOM
 
 check "getent services | wc -l" << EOM
-503
+505
 EOM
 
 ###########################################################################
@@ -298,6 +310,10 @@ echo "testing shadow..."
 
 check "getent shadow ecordas" << EOM
 ecordas:*::::7:2::0
+EOM
+
+check "getent shadow arthur" << EOM
+arthur:*::100:200:7:2::0
 EOM
 
 # check if the number of passwd entries matches the number of shadow entries
