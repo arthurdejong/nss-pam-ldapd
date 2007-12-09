@@ -1007,7 +1007,9 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
     {
       if (ldap_get_option(entry->search->session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
         rc=LDAP_UNAVAILABLE;
-      log_log(LOG_WARNING,"myldap_get_values(): ldap_get_values() returned NULL: %s",ldap_err2string(rc));
+      /* ignore decoding errors as they are just nonexisting attribute values */
+      if (rc!=LDAP_DECODING_ERROR)
+        log_log(LOG_WARNING,"myldap_get_values(): ldap_get_values() returned NULL: %s",ldap_err2string(rc));
     }
     /* store values entry so we can free it later on */
     if (values!=NULL)
