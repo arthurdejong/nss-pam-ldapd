@@ -49,14 +49,15 @@ typedef struct myldap_entry MYLDAP_ENTRY;
 
 /* Create a new session, this does not yet connect to the LDAP server.
    The connection to the server is made on-demand when a search is
-   performed. */
+   performed. This uses the configuration to find the URLs to attempt
+   connections to. */
 MUST_USE MYLDAP_SESSION *myldap_create_session(void);
 
 /* Closes all pending searches and deallocates any memory that is
    allocated with these searches. This does not close the session. */
 void myldap_session_cleanup(MYLDAP_SESSION *session);
 
-/* Do an LDAP search and returns a reference to the results
+/* Do an LDAP search and return a reference to the results
    (returns NULL on error).
    This function uses paging, and does reconnects to the configured
    URLs transparently. */
@@ -71,7 +72,7 @@ void myldap_search_close(MYLDAP_SEARCH *search);
 /* Get an entry from the result set, going over all results
    (returns NULL if no more entries are available).
    Note that any memory allocated to return information
-   about the entry (e.g. with myldap_get_values()) is freed
+   about the previous entry (e.g. with myldap_get_values()) is freed
    with this call. */
 MUST_USE MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search);
 
@@ -79,7 +80,7 @@ MUST_USE MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search);
    NULL (on error "unknown" is returned). */
 MUST_USE const char *myldap_get_dn(MYLDAP_ENTRY *entry);
 
-/* Get the attribute values from a ceirtain entry as
+/* Get the attribute values from a certain entry as
    a NULL terminated list. May return NULL or an empty array. */
 MUST_USE const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr);
 
@@ -87,12 +88,12 @@ MUST_USE const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr);
 MUST_USE int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass);
 
 /* Get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry,cn)
-   would return lukeh. If the attribute was not found in the DN or on other
-   errors NULL is returned. This method may be used to get the "most authorative"
+   would return lukeh. If the attribute was not found in the DN or on error
+   NULL is returned. This method may be used to get the "most authorative"
    value for an attribute. */
 MUST_USE const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr);
 
-/* Escapes characters in a string for use in a filter. */
+/* Escapes characters in a string for use in a search filter. */
 MUST_USE int myldap_escape(const char *src,char *buffer,size_t buflen);
 
 #endif /* not _MYLDAP_H */
