@@ -236,12 +236,12 @@ static void myldap_search_free(MYLDAP_SEARCH *search)
   /* free any search entries */
   if (search->entry!=NULL)
     myldap_entry_free(search->entry);
-  /* free read messages */
-  if (search->msg!=NULL)
-    ldap_msgfree(search->msg);
   /* clean up cookie */
   if (search->cookie!=NULL)
     ber_bvfree(search->cookie);
+  /* free read messages */
+  if (search->msg!=NULL)
+    ldap_msgfree(search->msg);
   /* free the storage we allocated */
   free(search);
 }
