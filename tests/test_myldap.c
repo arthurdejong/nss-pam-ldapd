@@ -43,7 +43,7 @@ int *scope_get_var(int map) {return NULL;}
 const char **filter_get_var(int map) {return NULL;}
 const char **attmap_get_var(int map,const char *name) {return NULL;}
 
-/* This is a very basic search test, it performs a test to get ceirtain
+/* This is a very basic search test, it performs a test to get certain
    entries from the database. It currently just prints out the DNs for
    the entries. */
 static void test_search(void)
