@@ -105,7 +105,9 @@ int write_address(TFILE *fp,const char *addr)
   }
   else
   {
-    /* failure, log but write simple invalid address */
+    /* failure, log but write simple invalid address
+       (otherwise the address list is messed up) */
+    /* TODO: have error message in correct format */
     log_log(LOG_WARNING,"unparseble address: %s",addr);
     /* write an illegal address type */
     WRITE_INT32(fp,-1);
