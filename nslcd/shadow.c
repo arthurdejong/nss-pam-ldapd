@@ -127,26 +127,6 @@ static long to_date(long date)
 #define UF_DONT_EXPIRE_PASSWD 0x10000
 #endif
 
-#define GET_OPTIONAL_DATE(var,att) \
-  tmpvalues=myldap_get_values(entry,attmap_shadow_##att); \
-  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL)) \
-    var=to_date(strtol(default_shadow_##att,NULL,0)); \
-  else \
-  { \
-    if (tmpvalues[1]!=NULL) \
-    { \
-      log_log(LOG_WARNING,"shadow entry %s contains multiple %s values", \
-                          myldap_get_dn(entry),attmap_shadow_##att); \
-    } \
-    var=to_date(strtol(tmpvalues[0],&tmp,0)); \
-    if ((*(tmpvalues[0])=='\0')||(*tmp!='\0')) \
-    { \
-      log_log(LOG_WARNING,"shadow entry %s contains non-numeric %s value", \
-                          myldap_get_dn(entry),attmap_shadow_##att); \
-      return 0; \
-    } \
-  }
-
 #define GET_OPTIONAL_LONG(var,att) \
   tmpvalues=myldap_get_values(entry,attmap_shadow_##att); \
   if ((tmpvalues==NULL)||(tmpvalues[0]==NULL)) \
@@ -166,6 +146,10 @@ static long to_date(long date)
       return 0; \
     } \
   }
+
+#define GET_OPTIONAL_DATE(var,att) \
+  GET_OPTIONAL_LONG(var,att); \
+  var=to_date(var);
 
 static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
 {
