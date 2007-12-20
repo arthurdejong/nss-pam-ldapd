@@ -23,9 +23,9 @@
 #ifndef _MYLDAP_H
 #define _MYLDAP_H
 
-/* for size_t: */
+/* for size_t */
 #include <stdlib.h>
-/* for LDAP_SCOPE_*: */
+/* for LDAP_SCOPE_* */
 #include <ldap.h>
 
 #include "compat/attrs.h"
