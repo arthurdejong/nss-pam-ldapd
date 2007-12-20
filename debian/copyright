@@ -40,7 +40,6 @@ debian/po/pt.po:  Copyright (C) 2007 Américo Monteiro
 debian/po/vi.po:  Copyright (C) 2005 Free Software Foundation, Inc.
 debian/po/fr.po:  Copyright (C) 2007 Cyril Brulebois
 debian/po/fr.po:  Copyright (C) 2007 Philippe Batailler
-nslcd/netgroup.c: Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
 nslcd/pagectrl.c: Copyright (C) 2002 Max Caines
 
 The distribution includes code from the Autoconf and Automake suites. This
