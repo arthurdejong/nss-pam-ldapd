@@ -186,12 +186,15 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   ether,byether,
   struct ether_addr addr;
+  char ether[20];
   char filter[1024];
-  READ_TYPE(fp,addr,u_int8_t[6]);,
-  log_log(LOG_DEBUG,"nslcd_ether_byether(%s)",ether_ntoa(&addr));,
+  READ_TYPE(fp,addr,u_int8_t[6]);
+  if (ether_ntoa_r(&addr,ether)==NULL)
+    return -1;,
+  log_log(LOG_DEBUG,"nslcd_ether_byether(%s)",ether);,
   NSLCD_ACTION_ETHER_BYETHER,
   mkfilter_ether_byether(&addr,filter,sizeof(filter)),
-  write_ether(fp,entry,NULL,ether_ntoa(&addr))
+  write_ether(fp,entry,NULL,ether)
 )
 
 NSLCD_HANDLE(
