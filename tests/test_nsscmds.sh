@@ -24,9 +24,13 @@
 # FIXME: update the above description and provide actual LDIF file
 # It's probably best to run this in an environment without nscd.
 
+set -e
+
 # check if LDAP is configured correctly
-uri=`sed -n 's/^uri *//p' /etc/nss-ldapd.conf`
-base='dc=test,dc=tld'
+cfgfile="/etc/nss-ldapd.conf"
+uri=`sed -n 's/^uri *//p' "$cfgfile"`
+base="dc=test,dc=tld"
+
 # try to fetch the base DN (fail with exit 77 to indicate problem)
 ldapsearch -b "$base" -s base -x -H "$uri" > /dev/null 2>&1 || {
   echo "LDAP server $uri not available for $base"
