@@ -28,18 +28,5 @@
 #ifndef LDAP_MSG_ONE
 #define LDAP_MSG_ONE            0x00
 #endif
-#ifndef LDAP_MSG_ALL
-#define LDAP_MSG_ALL            0x01
-#endif
-#ifndef LDAP_MSG_RECEIVED
-#define LDAP_MSG_RECEIVED       0x02
-#endif
-
-#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
-extern int ldap_ld_free(LDAP * ld, int close, LDAPControl **,
-                        LDAPControl **);
-#else
-extern int ldap_ld_free(LDAP * ld, int close);
-#endif /* OPENLDAP 2.x */
 
 #endif /* not _COMPAT_LDAP_H */
