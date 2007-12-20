@@ -262,6 +262,26 @@ static MYLDAP_SESSION *myldap_session_new(void)
   return session;
 }
 
+PURE static inline int is_valid_session(MYLDAP_SESSION *session)
+{
+  return (session!=NULL);
+}
+
+PURE static inline int is_open_session(MYLDAP_SESSION *session)
+{
+  return is_valid_session(session)&&(session->ls_conn!=NULL);
+}
+
+PURE static inline int is_valid_search(MYLDAP_SEARCH *search)
+{
+  return (search!=NULL)&&is_open_session(search->session);
+}
+
+PURE static inline int is_valid_entry(MYLDAP_ENTRY *entry)
+{
+  return (entry!=NULL)&&is_valid_search(entry->search)&&(entry->search->msg!=NULL);
+}
+
 static enum nss_status do_map_error(int rc)
 {
   switch (rc)
@@ -801,6 +821,12 @@ MYLDAP_SESSION *myldap_create_session(void)
 void myldap_session_cleanup(MYLDAP_SESSION *session)
 {
   int i;
+  /* check parameter */
+  if (!is_valid_session(session))
+  {
+    log_log(LOG_ERR,"myldap_session_cleanup(): invalid session passed");
+    return;
+  }
   /* go over all searches in the session and close them */
   for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
   {
@@ -819,7 +845,7 @@ MYLDAP_SEARCH *myldap_search(
   MYLDAP_SEARCH *search;
   int i;
   /* check parameters */
-  if ((session==NULL)||(base==NULL)||(filter==NULL)||(attrs==NULL))
+  if (!is_valid_session(session)||(base==NULL)||(filter==NULL)||(attrs==NULL))
   {
     log_log(LOG_ERR,"myldap_search(): invalid parameter passed");
     errno=EINVAL;
@@ -853,7 +879,7 @@ MYLDAP_SEARCH *myldap_search(
 void myldap_search_close(MYLDAP_SEARCH *search)
 {
   int i;
-  if ((search==NULL)||(search->session==NULL))
+  if (!is_valid_search(search))
     return;
   /* abandon the search if there were more results to fetch */
   if ((search->msgid>-1)&&(do_result(search)==NSS_STATUS_SUCCESS))
@@ -874,7 +900,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
   int msgid;
   int rc;
   /* check parameters */
-  if ((search==NULL)||(search->session==NULL)||(search->session->ls_conn==NULL))
+  if (!is_valid_search(search))
   {
     log_log(LOG_ERR,"myldap_get_entry(): invalid search entry passed");
     errno=EINVAL;
@@ -948,8 +974,7 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
 {
   int rc;
   /* check parameters */
-  if ((entry==NULL)||(entry->search==NULL)||(entry->search->session==NULL)||
-      (entry->search->session->ls_conn==NULL)||(entry->search->msg==NULL))
+  if (!is_valid_entry(entry))
   {
     log_log(LOG_ERR,"myldap_get_dn(): invalid result entry passed");
     errno=EINVAL;
@@ -979,8 +1004,7 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
   char **values;
   int rc;
   /* check parameters */
-  if ((entry==NULL)||(entry->search==NULL)||(entry->search->session==NULL)||
-      (entry->search->session->ls_conn==NULL)||(entry->search->msg==NULL))
+  if (!is_valid_entry(entry))
   {
     log_log(LOG_ERR,"myldap_get_values(): invalid result entry passed");
     errno=EINVAL;
@@ -1053,8 +1077,7 @@ const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr)
   const char *dn;
   char **exploded_dn;
   /* check parameters */
-  if ((entry==NULL)||(entry->search==NULL)||(entry->search->session==NULL)||
-      (entry->search->session->ls_conn==NULL)||(entry->search->msg==NULL))
+  if (!is_valid_entry(entry))
   {
     log_log(LOG_ERR,"myldap_get_rdn_value(): invalid result entry passed");
     errno=EINVAL;
@@ -1095,7 +1118,7 @@ int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass)
 {
   const char **values;
   int i;
-  if ((entry==NULL)||(objectclass==NULL))
+  if ((!is_valid_entry(entry))||(objectclass==NULL))
   {
     log_log(LOG_ERR,"myldap_has_objectclass(): invalid argument passed");
     errno=EINVAL;
