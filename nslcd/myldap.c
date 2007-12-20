@@ -838,6 +838,25 @@ void myldap_session_cleanup(MYLDAP_SESSION *session)
   }
 }
 
+void myldap_session_close(MYLDAP_SESSION *session)
+{
+  /* check parameter */
+  if (!is_valid_session(session))
+  {
+    log_log(LOG_ERR,"myldap_session_cleanup(): invalid session passed");
+    return;
+  }
+  /* close pending searches */
+  myldap_session_cleanup(session);
+  /* close any open connections */
+  if (session->ls_conn!=NULL)
+  {
+    ldap_unbind(session->ls_conn);
+  }
+  /* free allocated memory */
+  free(session);
+}
+
 MYLDAP_SEARCH *myldap_search(
         MYLDAP_SESSION *session,
         const char *base,int scope,const char *filter,const char **attrs)

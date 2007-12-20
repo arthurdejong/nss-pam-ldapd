@@ -57,6 +57,10 @@ MUST_USE MYLDAP_SESSION *myldap_create_session(void);
    allocated with these searches. This does not close the session. */
 void myldap_session_cleanup(MYLDAP_SESSION *session);
 
+/* Close the session and free all the resources allocated for the session.
+   After a call to this function the referenced handle is invalid. */
+void myldap_session_close(MYLDAP_SESSION *session);
+
 /* Do an LDAP search and return a reference to the results
    (returns NULL on error).
    This function uses paging, and does reconnects to the configured
