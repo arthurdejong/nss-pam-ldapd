@@ -118,8 +118,6 @@ struct myldap_entry
   /* reference to the search to be used to get parameters
      (e.g. LDAP connection) for other calls */
   MYLDAP_SEARCH *search;
-  /* reference to the LDAP message describing the result */
-  LDAPMessage *msg;
   /* the DN */
   const char *dn;
   /* a cached version of the exploded rdn */
@@ -128,7 +126,7 @@ struct myldap_entry
   DICT *attributevalues;
 };
 
-static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search,LDAPMessage *msg)
+static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search)
 {
   MYLDAP_ENTRY *entry;
   /* Note: as an alternative we could embed the myldap_entry into the
@@ -142,7 +140,6 @@ static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search,LDAPMessage *msg)
   }
   /* fill in fields */
   entry->search=search;
-  entry->msg=msg;
   entry->dn=NULL;
   entry->exploded_rdn=NULL;
   entry->attributevalues=dict_new();
@@ -167,8 +164,6 @@ static void myldap_entry_free(MYLDAP_ENTRY *entry)
   /* we don't need the result anymore, ditch it. */
   ldap_msgfree(entry->search->msg);
   entry->search->msg=NULL;
-  /* apparently entry->msg does not need to be freed */
-  entry->msg=NULL;
   /* free the actual memory for the struct */
   free(entry);
 }
@@ -901,7 +896,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
     if (stat==NSS_STATUS_SUCCESS)
     {
       /* we have a normal entry, return it */
-      search->entry=myldap_entry_new(search,search->msg);
+      search->entry=myldap_entry_new(search);
       return search->entry;
     }
     else if ( (stat==NSS_STATUS_NOTFOUND) &&
@@ -954,7 +949,7 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
   int rc;
   /* check parameters */
   if ((entry==NULL)||(entry->search==NULL)||(entry->search->session==NULL)||
-      (entry->search->session->ls_conn==NULL)||(entry->msg==NULL))
+      (entry->search->session->ls_conn==NULL)||(entry->search->msg==NULL))
   {
     log_log(LOG_ERR,"myldap_get_dn(): invalid result entry passed");
     errno=EINVAL;
@@ -963,7 +958,7 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
   /* if we don't have it yet, retreive it */
   if (entry->dn==NULL)
   {
-    entry->dn=ldap_get_dn(entry->search->session->ls_conn,entry->msg);
+    entry->dn=ldap_get_dn(entry->search->session->ls_conn,entry->search->msg);
     if (entry->dn==NULL)
     {
       if (ldap_get_option(entry->search->session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
@@ -985,7 +980,7 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
   int rc;
   /* check parameters */
   if ((entry==NULL)||(entry->search==NULL)||(entry->search->session==NULL)||
-      (entry->search->session->ls_conn==NULL)||(entry->msg==NULL))
+      (entry->search->session->ls_conn==NULL)||(entry->search->msg==NULL))
   {
     log_log(LOG_ERR,"myldap_get_values(): invalid result entry passed");
     errno=EINVAL;
@@ -1002,7 +997,7 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
   if (values==NULL)
   {
     /* cache miss, get from LDAP */
-    values=ldap_get_values(entry->search->session->ls_conn,entry->msg,attr);
+    values=ldap_get_values(entry->search->session->ls_conn,entry->search->msg,attr);
     if (values==NULL)
     {
       if (ldap_get_option(entry->search->session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
@@ -1059,7 +1054,7 @@ const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr)
   char **exploded_dn;
   /* check parameters */
   if ((entry==NULL)||(entry->search==NULL)||(entry->search->session==NULL)||
-      (entry->search->session->ls_conn==NULL)||(entry->msg==NULL))
+      (entry->search->session->ls_conn==NULL)||(entry->search->msg==NULL))
   {
     log_log(LOG_ERR,"myldap_get_rdn_value(): invalid result entry passed");
     errno=EINVAL;
