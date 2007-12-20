@@ -177,7 +177,7 @@ static void test_two_searches(void)
                         LDAP_SCOPE_SUBTREE,
                         "(&(objectclass=posixGroup)(gidNumber=6100))",
                         attrs);
-  assert(search1!=NULL);
+  assert(search2!=NULL);
 
   /* get a result from search2 */
   entry=myldap_get_entry(search2);
@@ -194,7 +194,6 @@ static void test_two_searches(void)
   vals=myldap_get_values(entry,"cn");
   assert((vals!=NULL)&&(vals[0]!=NULL));
   printf("test_two_searches(): [search1] cn=%s\n",vals[0]);
-
 
   /* TODO: call myldap_session_cleanup() or myldap_search_free() */
 
