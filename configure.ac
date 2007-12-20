@@ -135,6 +135,7 @@ AC_CHECK_HEADERS(gssldap.h)
 AC_CHECK_HEADERS(gsssasl.h)
 AC_CHECK_HEADERS(gssapi/gssapi_krb5.h gssapi.h)
 AC_CHECK_HEADERS(grp.h)
+AC_CHECK_HEADERS(sys/socket.h)
 
 # set up directory with compatibility replacement files
 AC_CONFIG_LIBOBJ_DIR([compat])
@@ -163,8 +164,8 @@ LIBS="$save_LIBS"
 AC_CHECK_FUNCS(sigaction)
 AC_CHECK_FUNCS(snprintf)
 AC_CHECK_FUNCS(gethostbyname)
-AC_CHECK_FUNCS(ether_aton)
-AC_CHECK_FUNCS(ether_ntoa)
+AC_CHECK_FUNCS(ether_aton_r)
+AC_CHECK_FUNCS(ether_ntoa_r)
 AC_CHECK_FUNCS(setgroups)
 
 # checks for types
@@ -186,38 +187,24 @@ then
 fi
 
 # check for support for the struct ether_addr structure
-AC_MSG_CHECKING(for struct ether_addr)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
-        #include <sys/socket.h>
-        #include <net/if.h>
-        #include <netinet/in.h>
-        #include <netinet/if_ether.h>]], [[struct ether_addr x;]])],[
-                AC_MSG_RESULT(yes)
-                AC_DEFINE(HAVE_STRUCT_ETHER_ADDR,1,[Define to enable struct ether_addr definition.])
-        ],[AC_MSG_RESULT(no)])
-
-AC_MSG_CHECKING(for socklen_t)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
-        #include <sys/socket.h>]], [[socklen_t len;]])],[
-                AC_MSG_RESULT(yes)
-                AC_DEFINE(HAVE_SOCKLEN_T, 1, [Define to enable socklen_t definition.])
-        ],[AC_MSG_RESULT(no)])
+AC_CHECK_TYPE(struct ether_addr,
+    AC_DEFINE(HAVE_STRUCT_ETHER_ADDR,1,[Define to 1 if you have a `struct ether_addr' definition.]),,[
+    #include <sys/socket.h>
+    #include <net/if.h>
+    #include <netinet/in.h>
+    #include <netinet/if_ether.h>])
 
 # check to see if socklen_t is defined
 AC_CHECK_TYPE(socklen_t,,
-    AC_DEFINE(socklen_t, size_t,
-    [Define to `size_t' if not defined elswhere.]),
-    [
-#include <sys/types.h>
-#include <sys/socket.h>])
+    AC_DEFINE(socklen_t,size_t,[Define to `size_t' if not defined elswhere.]),[
+    #include <sys/types.h>
+    #include <sys/socket.h>])
 
 # check to see if struct sockaddr_storage is defined
 AC_CHECK_TYPE(struct sockaddr_storage,,
-    AC_DEFINE(sockaddr_storage,sockaddr_in,
-    [Define to 'sockaddr_in' if not defined elsewhere.]),
-    [
-#include <sys/types.h>
-#include <sys/socket.h>])
+    AC_DEFINE(sockaddr_storage,sockaddr_in,[Define to `sockaddr_in' if not defined elsewhere.]),[
+    #include <sys/types.h>
+    #include <sys/socket.h>])
 
 # checks for LDAP library
 save_LIBS="$LIBS"
@@ -274,11 +261,20 @@ AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s ldap_initialize ldap_search_ext)
 AC_CHECK_FUNCS(ldap_create_control ldap_create_page_control ldap_parse_page_control)
 AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)
 AC_CHECK_FUNCS(ldap_set_rebind_proc)
-AC_CACHE_CHECK(whether ldap_set_rebind_proc takes 3 arguments, nss_ldap_cv_ldap_set_rebind_proc, [
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include <lber.h>
-#include <ldap.h>]], [[ldap_set_rebind_proc(0, 0, 0);]])],[nss_ldap_cv_ldap_set_rebind_proc=3],[nss_ldap_cv_ldap_set_rebind_proc=2]) ])
-AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS, $nss_ldap_cv_ldap_set_rebind_proc,[Define to the number of arguments to ldap_set_rebindproc.])
+
+# check the number of arguments that ldap_set_rebind_proc() uses
+AC_CACHE_CHECK(
+    [number of arguments to ldap_set_rebind_proc],
+    nss_ldapd_cv_ldap_set_rebind_proc,
+    [AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([[
+            #include <lber.h>
+            #include <ldap.h>]],
+            [[ldap_set_rebind_proc(0, 0, 0);]])],
+        [nss_ldapd_cv_ldap_set_rebind_proc=3],
+        [nss_ldapd_cv_ldap_set_rebind_proc=2]) ])
+AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS,$nss_ldapd_cv_ldap_set_rebind_proc,
+                   [Define to the number of arguments to ldap_set_rebindproc.])
 
 CFLAGS="$save_CFLAGS"
 nslcd_LIBS="$LIBS"
