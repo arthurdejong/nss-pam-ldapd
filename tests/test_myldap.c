@@ -38,10 +38,10 @@ struct worker_args {
 
 /* this is a simple way to get this into an executable,
    we should probably read a valid config instead */
-const char **base_get_var(int map) {return NULL;}
-int *scope_get_var(int map) {return NULL;}
-const char **filter_get_var(int map) {return NULL;}
-const char **attmap_get_var(int map,const char *name) {return NULL;}
+const char **base_get_var(int UNUSED(map)) {return NULL;}
+int *scope_get_var(int UNUSED(map)) {return NULL;}
+const char **filter_get_var(int UNUSED(map)) {return NULL;}
+const char **attmap_get_var(int UNUSED(map),const char UNUSED(*name)) {return NULL;}
 
 /* This is a very basic search test, it performs a test to get certain
    entries from the database. It currently just prints out the DNs for
@@ -52,12 +52,11 @@ static void test_search(void)
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   const char *attrs[] = { "uid", "cn", "gid", NULL };
-
+  int i;
   /* initialize session */
   printf("test_search(): getting session...\n");
   session=myldap_create_session();
   assert(session!=NULL);
-
   /* perform search */
   printf("test_search(): doing search...\n");
   search=myldap_search(session,nslcd_cfg->ldc_base,
@@ -65,13 +64,16 @@ static void test_search(void)
                        "(objectclass=posixaccount)",
                        attrs);
   assert(search!=NULL);
-
   /* go over results */
   printf("test_search(): get results...\n");
-  while ((entry=myldap_get_entry(search))!=NULL)
+  for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
   {
-    printf("test_search(): DN %s\n",myldap_get_dn(entry));
+    if (i<10)
+      printf("test_search(): [%d] DN %s\n",i,myldap_get_dn(entry));
+    else if (i==10)
+      printf("test_search(): ...\n");
   }
+  printf("test_search(): %d entries returned\n",i);
   /* perform another search */
   printf("test_search(): doing search...\n");
   search=myldap_search(session,nslcd_cfg->ldc_base,
@@ -79,15 +81,18 @@ static void test_search(void)
                        "(objectclass=posixGroup)",
                        attrs);
   assert(search!=NULL);
-
   /* go over results */
   printf("test_search(): get results...\n");
-  while ((entry=myldap_get_entry(search))!=NULL)
+  for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
   {
-    printf("test_search(): DN %s\n",myldap_get_dn(entry));
+    if (i<10)
+      printf("test_search(): [%d] DN %s\n",i,myldap_get_dn(entry));
+    else if (i==10)
+      printf("test_search(): ...\n");
   }
-
-  /* TODO: call myldap_session_cleanup() or myldap_search_free() */
+  printf("test_search(): %d entries returned\n",i);
+  /* clean up */
+  myldap_session_close(session);
 }
 
 /* This search prints a number of attributes from a search */
@@ -99,21 +104,19 @@ static void test_get_values(void)
   const char *attrs[] = { "uidNumber", "cn", "gidNumber", "uid", "objectClass", NULL };
   const char **vals;
   const char *rdnval;
-
+  int i;
   /* initialize session */
   printf("test_get_values(): getting session...\n");
   session=myldap_create_session();
   assert(session!=NULL);
-
   /* perform search */
   search=myldap_search(session,nslcd_cfg->ldc_base,
                           LDAP_SCOPE_SUBTREE,
                           "(&(objectClass=posixAccount)(uid=*))",
                           attrs);
   assert(search!=NULL);
-
   /* go over results */
-  while ((entry=myldap_get_entry(search))!=NULL)
+  for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
   {
     printf("test_get_values(): DN %s\n",myldap_get_dn(entry));
     /* try to get uid from attribute */
@@ -136,9 +139,8 @@ static void test_get_values(void)
     /* check objectclass */
     assert(myldap_has_objectclass(entry,"posixAccount"));
   }
-
-  /* TODO: call myldap_session_cleanup() or myldap_search_free() */
-
+  /* clean up */
+  myldap_session_close(session);
 }
 
 /* this method tests to see if we can perform two searches within
@@ -150,20 +152,16 @@ static void test_two_searches(void)
   MYLDAP_ENTRY *entry;
   const char *attrs[] = { "uidNumber", "cn", "gidNumber", "uid", "objectClass", NULL };
   const char **vals;
-  const char *rdnval;
-
   /* initialize session */
   printf("test_two_searches(): getting session...\n");
   session=myldap_create_session();
   assert(session!=NULL);
-
   /* perform search1 */
   search1=myldap_search(session,nslcd_cfg->ldc_base,
                         LDAP_SCOPE_SUBTREE,
                         "(&(objectClass=posixAccount)(uid=*))",
                         attrs);
   assert(search1!=NULL);
-
   /* get a result from search1 */
   entry=myldap_get_entry(search1);
   assert(entry!=NULL);
@@ -171,14 +169,12 @@ static void test_two_searches(void)
   vals=myldap_get_values(entry,"cn");
   assert((vals!=NULL)&&(vals[0]!=NULL));
   printf("test_two_searches(): [search1] cn=%s\n",vals[0]);
-
   /* start a second search */
   search2=myldap_search(session,nslcd_cfg->ldc_base,
                         LDAP_SCOPE_SUBTREE,
                         "(&(objectclass=posixGroup)(gidNumber=6100))",
                         attrs);
   assert(search2!=NULL);
-
   /* get a result from search2 */
   entry=myldap_get_entry(search2);
   assert(entry!=NULL);
@@ -186,7 +182,6 @@ static void test_two_searches(void)
   vals=myldap_get_values(entry,"cn");
   assert((vals!=NULL)&&(vals[0]!=NULL));
   printf("test_two_searches(): [search2] cn=%s\n",vals[0]);
-
   /* get another result from search1 */
   entry=myldap_get_entry(search1);
   assert(entry!=NULL);
@@ -194,9 +189,8 @@ static void test_two_searches(void)
   vals=myldap_get_values(entry,"cn");
   assert((vals!=NULL)&&(vals[0]!=NULL));
   printf("test_two_searches(): [search1] cn=%s\n",vals[0]);
-
-  /* TODO: call myldap_session_cleanup() or myldap_search_free() */
-
+  /* clean up */
+  myldap_session_close(session);
 }
 
 /* perform a simple search */
@@ -207,26 +201,23 @@ static void *worker(void *arg)
   MYLDAP_ENTRY *entry;
   const char *attrs[] = { "uid", "cn", "gid", NULL };
   struct worker_args *args=(struct worker_args *)arg;
-
   /* initialize session */
   session=myldap_create_session();
   assert(session!=NULL);
-
   /* perform search */
   search=myldap_search(session,nslcd_cfg->ldc_base,
                        LDAP_SCOPE_SUBTREE,
                        "(objectclass=posixaccount)",
                        attrs);
   assert(search!=NULL);
-
   /* go over results */
   while ((entry=myldap_get_entry(search))!=NULL)
   {
     printf("test_threads(): [worker %d] DN %s\n",args->id,myldap_get_dn(entry));
   }
-
   printf("test_threads(): [worker %d] DONE\n",args->id);
-
+  /* clean up */
+  myldap_session_close(session);
   return 0;
 }
 
@@ -238,7 +229,6 @@ static void test_threads(void)
 {
   int i;
   struct worker_args args[NUM_THREADS];
-
   /* partially initialize logging */
   log_setdefaultloglevel(LOG_DEBUG);
 
@@ -252,7 +242,6 @@ static void test_threads(void)
       exit(1);
     }
   }
-
   /* wait for all threads to die */
   for (i=0;i<NUM_THREADS;i++)
   {
@@ -262,13 +251,13 @@ static void test_threads(void)
       exit(1);
     }
   }
-
 }
 
 /* the main program... */
 int main(int argc,char *argv[])
 {
-  cfg_init("nss-ldapd-test.conf");
+  assert(argc==2);
+  cfg_init(argv[1]);
   /* partially initialize logging */
   log_setdefaultloglevel(LOG_DEBUG);
   test_search();
