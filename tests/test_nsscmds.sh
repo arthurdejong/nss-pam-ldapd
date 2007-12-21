@@ -28,7 +28,7 @@ set -e
 
 # check if LDAP is configured correctly
 cfgfile="/etc/nss-ldapd.conf"
-uri=`sed -n 's/^uri *//p' "$cfgfile"`
+uri=`sed -n 's/^uri *//p' "$cfgfile" | head -n 1`
 base="dc=test,dc=tld"
 
 # try to fetch the base DN (fail with exit 77 to indicate problem)
