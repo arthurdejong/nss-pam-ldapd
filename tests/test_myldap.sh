@@ -26,16 +26,17 @@
 set -e
 
 # get LDAP config
+srcdir="${srcdir-"."}"
 cfgfile="$srcdir/nss-ldapd-test.conf"
 uri=`sed -n 's/^uri *//p' "$cfgfile" | head -n 1`
 base="dc=test,dc=tld"
 
 # try to fetch the base DN (fail with exit 77 to indicate problem)
 ldapsearch -b "$base" -s base -x -H "$uri" > /dev/null 2>&1 || {
-  echo "LDAP server $uri not available for $base"
+  echo "test_myldap.sh: LDAP server $uri not available for $base"
   exit 77
 }
-echo "using LDAP server $uri"
+echo "test_myldap.sh: using LDAP server $uri"
 
 # just execute test_myldap
 exec ./test_myldap "$cfgfile"
