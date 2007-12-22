@@ -50,17 +50,6 @@
 
 struct ldap_config *nslcd_cfg=NULL;
 
-/*
- * Timeouts for reconnecting code. Similar to rebind
- * logic in Darwin NetInfo. Some may find sleeping
- * unacceptable, in which case you may wish to adjust
- * the constants below.
- */
-#define LDAP_NSS_TRIES           5      /* number of sleeping reconnect attempts */
-#define LDAP_NSS_SLEEPTIME       1      /* seconds to sleep; doubled until max */
-#define LDAP_NSS_MAXSLEEPTIME    32     /* maximum seconds to sleep */
-#define LDAP_NSS_MAXCONNTRIES    2      /* reconnect attempts before sleeping */
-
 /* the maximum line length in the configuration file */
 #define MAX_LINE_LENGTH          4096
 
@@ -92,10 +81,13 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_scope=LDAP_SCOPE_SUBTREE;
   cfg->ldc_deref=LDAP_DEREF_NEVER;
   cfg->ldc_referrals=1;
-  cfg->ldc_timelimit=LDAP_NO_LIMIT;
   cfg->ldc_bind_timelimit=30;
   cfg->ldc_reconnect_pol=LP_RECONNECT_HARD_OPEN;
+  cfg->ldc_timelimit=LDAP_NO_LIMIT;
   cfg->ldc_idle_timelimit=0;
+  cfg->ldc_reconnect_tries=4;
+  cfg->ldc_reconnect_sleeptime=1;
+  cfg->ldc_reconnect_maxsleeptime=30;
   cfg->ldc_ssl_on=SSL_OFF;
   cfg->ldc_sslpath=NULL;
   cfg->ldc_tls_checkpeer=-1;
@@ -107,9 +99,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_tls_key=NULL;
   cfg->ldc_restart=1;
   cfg->ldc_pagesize=0;
-  cfg->ldc_reconnect_tries=LDAP_NSS_TRIES;
-  cfg->ldc_reconnect_sleeptime=LDAP_NSS_SLEEPTIME;
-  cfg->ldc_reconnect_maxsleeptime=LDAP_NSS_MAXSLEEPTIME;
   cfg->ldc_debug=0;
 }
 
@@ -660,11 +649,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       parse_map_statement(filename,lnr,opts,nopts);
     }
     /* timing/reconnect options */
-    else if (strcasecmp(opts[0],"timelimit")==0)
-    {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_timelimit=atoi(opts[1]);
-    }
     else if (strcasecmp(opts[0],"bind_timelimit")==0)
     {
       check_argumentcount(filename,lnr,opts[0],nopts==2);
@@ -682,10 +666,30 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       else if (strcasecmp(opts[1],"soft")==0)
         cfg->ldc_reconnect_pol=LP_RECONNECT_SOFT;
     }
+    else if (strcasecmp(opts[0],"timelimit")==0)
+    {
+      check_argumentcount(filename,lnr,opts[0],nopts==2);
+      cfg->ldc_timelimit=atoi(opts[1]);
+    }
     else if (strcasecmp(opts[0],"idle_timelimit")==0)
     {
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_idle_timelimit=atoi(opts[1]);
+    }
+    else if (strcasecmp(opts[0],"reconnect_tries")==0)
+    {
+      check_argumentcount(filename,lnr,opts[0],nopts==2);
+      cfg->ldc_reconnect_tries=atoi(opts[1]);
+    }
+    else if (!strcasecmp(opts[0],"reconnect_sleeptime"))
+    {
+      check_argumentcount(filename,lnr,opts[0],nopts==2);
+      cfg->ldc_reconnect_sleeptime=atoi(opts[1]);
+    }
+    else if (strcasecmp(opts[0],"reconnect_maxsleeptime")==0)
+    {
+      check_argumentcount(filename,lnr,opts[0],nopts==2);
+      cfg->ldc_reconnect_maxsleeptime=atoi(opts[1]);
     }
     /* SSL/TLS options */
     else if (strcasecmp(opts[0],"ssl")==0)
@@ -757,22 +761,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_pagesize=atoi(opts[1]);
     }
-    /* undocumented options */
-    else if (strcasecmp(opts[0],"nss_reconnect_tries")==0)
-    {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_reconnect_tries=atoi(opts[1]);
-    }
-    else if (!strcasecmp(opts[0],"nss_reconnect_sleeptime"))
-    {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_reconnect_sleeptime=atoi(opts[1]);
-    }
-    else if (strcasecmp(opts[0],"nss_reconnect_maxsleeptime")==0)
-    {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_reconnect_maxsleeptime=atoi(opts[1]);
-    }
+    /* fallthrough */
     else
     {
       log_log(LOG_ERR,"%s:%d: unknown keyword: '%s'",filename,lnr,opts[0]);

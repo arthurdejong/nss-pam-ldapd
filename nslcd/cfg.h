@@ -92,16 +92,22 @@ struct ldap_config
   int ldc_scope;
   /* dereference aliases/links */
   int ldc_deref;
-  /* Chase referrals */
+  /* chase referrals */
   int ldc_referrals;
-  /* search timelimit */
-  int ldc_timelimit;
   /* bind timelimit */
   int ldc_bind_timelimit;
   /* reconnect policy */
   enum ldap_reconnect_policy ldc_reconnect_pol;
+  /* search timelimit */
+  int ldc_timelimit;
   /* idle timeout */
   time_t ldc_idle_timelimit;
+  /* number of sleeping reconnect attempts */
+  int ldc_reconnect_tries;
+  /* seconds to sleep; doubled until max */
+  int ldc_reconnect_sleeptime;
+  /* maximum seconds to sleep */
+  int ldc_reconnect_maxsleeptime;
   /* SSL enabled */
   enum ldap_ssl_options ldc_ssl_on;
   /* SSL certificate path */
@@ -124,12 +130,6 @@ struct ldap_config
   int ldc_restart;
   /* set to a greater than 0 to enable handling of paged results with the specified size */
   int ldc_pagesize;
-  /* number of sleeping reconnect attempts */
-  int ldc_reconnect_tries;
-  /* seconds to sleep; doubled until max */
-  int ldc_reconnect_sleeptime;
-  /* maximum seconds to sleep */
-  int ldc_reconnect_maxsleeptime;
   /* LDAP debug level */
   int ldc_debug;
 };
