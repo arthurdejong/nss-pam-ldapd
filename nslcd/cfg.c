@@ -95,7 +95,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_timelimit=LDAP_NO_LIMIT;
   cfg->ldc_bind_timelimit=30;
   cfg->ldc_reconnect_pol=LP_RECONNECT_HARD_OPEN;
-  cfg->ldc_flags=0;
   cfg->ldc_idle_timelimit=0;
   cfg->ldc_ssl_on=SSL_OFF;
   cfg->ldc_sslpath=NULL;
@@ -112,8 +111,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_reconnect_sleeptime=LDAP_NSS_SLEEPTIME;
   cfg->ldc_reconnect_maxsleeptime=LDAP_NSS_MAXSLEEPTIME;
   cfg->ldc_debug=0;
-  cfg->ldc_password_type=LU_RFC2307_USERPASSWORD;
-  cfg->ldc_shadow_type=LS_RFC2307_SHADOW;
 }
 
 /* simple strdup wrapper */
@@ -439,32 +436,13 @@ static void parse_filter_statement(const char *filename,int lnr,
 
 /* this function modifies the statement argument passed */
 static void parse_map_statement(const char *filename,int lnr,
-                                const char **opts,int nopts,
-                                struct ldap_config *cfg)
+                                const char **opts,int nopts)
 {
   enum ldap_map_selector map;
   const char **var;
   check_argumentcount(filename,lnr,opts[0],nopts==4);
   /* get the map */
   map=parse_map(filename,lnr,opts[1]);
-  /* special handling for some attribute mappings */
-  /* TODO: move this stuff to passwd.c or shadow.c or wherever it's used */
-  if ((map==LM_PASSWD)&&(strcasecmp(opts[2],"userPassword")==0))
-  {
-    if (strcasecmp(opts[3],"userPassword")==0)
-      cfg->ldc_password_type=LU_RFC2307_USERPASSWORD;
-    else if (strcasecmp(opts[3],"authPassword")==0)
-      cfg->ldc_password_type=LU_RFC3112_AUTHPASSWORD;
-    else
-      cfg->ldc_password_type=LU_OTHER_PASSWORD;
-  }
-  else if ((map==LM_SHADOW)&&(strcasecmp(opts[2],"shadowLastChange")==0))
-  {
-    if (strcasecmp(opts[3],"shadowLastChange")==0)
-      cfg->ldc_shadow_type=LS_RFC2307_SHADOW;
-    else if (strcasecmp(opts[3],"pwdLastSet")==0)
-      cfg->ldc_shadow_type=LS_AD_SHADOW;
-  }
   /* get the attribute variable to set */
   var=attmap_get_var(map,opts[2]);
   if (var==NULL)
@@ -679,7 +657,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(opts[0],"map")==0)
     {
-      parse_map_statement(filename,lnr,opts,nopts,cfg);
+      parse_map_statement(filename,lnr,opts,nopts);
     }
     /* timing/reconnect options */
     else if (strcasecmp(opts[0],"timelimit")==0)

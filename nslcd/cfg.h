@@ -45,19 +45,6 @@ enum ldap_reconnect_policy
   LP_RECONNECT_SOFT
 };
 
-enum ldap_userpassword_selector
-{
-  LU_RFC2307_USERPASSWORD,
-  LU_RFC3112_AUTHPASSWORD,
-  LU_OTHER_PASSWORD
-};
-
-enum ldap_shadow_selector
-{
-  LS_RFC2307_SHADOW,
-  LS_AD_SHADOW
-};
-
 /* selectors for different maps */
 enum ldap_map_selector
 {
@@ -113,8 +100,6 @@ struct ldap_config
   int ldc_bind_timelimit;
   /* reconnect policy */
   enum ldap_reconnect_policy ldc_reconnect_pol;
-  /* for nss_connect_policy */
-  unsigned int ldc_flags;
   /* idle timeout */
   time_t ldc_idle_timelimit;
   /* SSL enabled */
@@ -147,12 +132,6 @@ struct ldap_config
   int ldc_reconnect_maxsleeptime;
   /* LDAP debug level */
   int ldc_debug;
-  /* is userPassword "userPassword" or not? ie. do we need {crypt} to be stripped
-     (silently set when mapping is done) TODO: replace this with some runtime detection */
-  enum ldap_userpassword_selector ldc_password_type;
-  /* Use active directory time offsets?
-     (silently set when mapping is done) TODO: replace this with some runtime detection */
-  enum ldap_shadow_selector ldc_shadow_type;
 };
 
 /* this is a pointer to the global configuration, it should be available
