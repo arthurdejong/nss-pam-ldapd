@@ -83,11 +83,11 @@
 struct ldap_session
 {
   /* the connection */
-  LDAP *ls_conn;
+  LDAP *ld;
   /* timestamp of last activity */
-  time_t ls_timestamp;
+  time_t lastactivity;
   /* index into ldc_uris: currently connected LDAP uri */
-  int ls_current_uri;
+  int current_uri;
   /* a list of searches registered with this session */
   struct myldap_search *searches[MAX_SEARCHES_IN_SESSION];
 };
@@ -255,9 +255,9 @@ static MYLDAP_SESSION *myldap_session_new(void)
     exit(EXIT_FAILURE);
   }
   /* initialize the session */
-  session->ls_conn=NULL;
-  session->ls_timestamp=0;
-  session->ls_current_uri=0;
+  session->ld=NULL;
+  session->lastactivity=0;
+  session->current_uri=0;
   for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
     session->searches[i]=NULL;
   /* return the new session */
@@ -271,7 +271,7 @@ PURE static inline int is_valid_session(MYLDAP_SESSION *session)
 
 PURE static inline int is_open_session(MYLDAP_SESSION *session)
 {
-  return is_valid_session(session)&&(session->ls_conn!=NULL);
+  return is_valid_session(session)&&(session->ld!=NULL);
 }
 
 PURE static inline int is_valid_search(MYLDAP_SEARCH *search)
@@ -348,7 +348,7 @@ static int do_bind(MYLDAP_SESSION *session)
   {
     /* do a simple bind */
     log_log(LOG_DEBUG,"simple bind as %s",binddn);
-    rc=ldap_simple_bind_s(session->ls_conn,binddn,bindarg);
+    rc=ldap_simple_bind_s(session->ld,binddn,bindarg);
     if (rc!=LDAP_SUCCESS)
       log_log(LOG_ERR,"ldap_simple_bind_s() failed: %s: %s",ldap_err2string(rc),strerror(errno));
     return rc;
@@ -359,9 +359,9 @@ static int do_bind(MYLDAP_SESSION *session)
     log_log(LOG_DEBUG,"SASL bind as %s",binddn);
     if (nslcd_cfg->ldc_sasl_secprops!=NULL)
     {
-      LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
+      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
     }
-    rc=ldap_sasl_interactive_bind_s(session->ls_conn,binddn,"GSSAPI",NULL,NULL,
+    rc=ldap_sasl_interactive_bind_s(session->ld,binddn,"GSSAPI",NULL,NULL,
                                     LDAP_SASL_QUIET,
                                     do_sasl_interact,(void *)bindarg);
     return rc;
@@ -400,62 +400,62 @@ static int do_set_options(MYLDAP_SESSION *session)
      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/apis/ldap_set_rebind_proc.htm
      http://www.openldap.org/software/man.cgi?query=ldap_set_rebind_proc&manpath=OpenLDAP+2.4-Release */
   /* TODO: probably only set this if we should chase referrals */
-  rc=ldap_set_rebind_proc(session->ls_conn,do_rebind,session);
+  rc=ldap_set_rebind_proc(session->ld,do_rebind,session);
   if (rc!=LDAP_SUCCESS)
   {
     log_log(LOG_ERR,"ldap_set_rebind_proc() failed: %s",ldap_err2string(rc));
     return rc;
   }
   /* set the protocol version to use */
-  LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_PROTOCOL_VERSION,&nslcd_cfg->ldc_version);
+  LDAP_SET_OPTION(session->ld,LDAP_OPT_PROTOCOL_VERSION,&nslcd_cfg->ldc_version);
   /* set some other options */
-  LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_DEREF,&nslcd_cfg->ldc_deref);
-  LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_TIMELIMIT,&nslcd_cfg->ldc_timelimit);
+  LDAP_SET_OPTION(session->ld,LDAP_OPT_DEREF,&nslcd_cfg->ldc_deref);
+  LDAP_SET_OPTION(session->ld,LDAP_OPT_TIMELIMIT,&nslcd_cfg->ldc_timelimit);
   tv.tv_sec=nslcd_cfg->ldc_bind_timelimit;
   tv.tv_usec=0;
-  LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_TIMEOUT,&tv);
-  LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_NETWORK_TIMEOUT,&tv);
-  LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_REFERRALS,nslcd_cfg->ldc_referrals?LDAP_OPT_ON:LDAP_OPT_OFF);
-  LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_RESTART,nslcd_cfg->ldc_restart?LDAP_OPT_ON:LDAP_OPT_OFF);
+  LDAP_SET_OPTION(session->ld,LDAP_OPT_TIMEOUT,&tv);
+  LDAP_SET_OPTION(session->ld,LDAP_OPT_NETWORK_TIMEOUT,&tv);
+  LDAP_SET_OPTION(session->ld,LDAP_OPT_REFERRALS,nslcd_cfg->ldc_referrals?LDAP_OPT_ON:LDAP_OPT_OFF);
+  LDAP_SET_OPTION(session->ld,LDAP_OPT_RESTART,nslcd_cfg->ldc_restart?LDAP_OPT_ON:LDAP_OPT_OFF);
   /* if SSL is desired, then enable it */
   if (nslcd_cfg->ldc_ssl_on==SSL_LDAPS)
   {
     /* use tls */
-    LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_X_TLS,&tls);
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS,&tls);
     /* rand file */
     if (nslcd_cfg->ldc_tls_randfile!=NULL)
     {
-      LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_X_TLS_RANDOM_FILE,nslcd_cfg->ldc_tls_randfile);
+      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_RANDOM_FILE,nslcd_cfg->ldc_tls_randfile);
     }
     /* ca cert file */
     if (nslcd_cfg->ldc_tls_cacertfile!=NULL)
     {
-      LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_X_TLS_CACERTFILE,nslcd_cfg->ldc_tls_cacertfile);
+      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTFILE,nslcd_cfg->ldc_tls_cacertfile);
     }
     /* ca cert directory */
     if (nslcd_cfg->ldc_tls_cacertdir!=NULL)
     {
-      LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_X_TLS_CACERTDIR,nslcd_cfg->ldc_tls_cacertdir);
+      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTDIR,nslcd_cfg->ldc_tls_cacertdir);
     }
     /* require cert? */
     if (nslcd_cfg->ldc_tls_checkpeer>-1)
     {
-      LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_X_TLS_REQUIRE_CERT,&nslcd_cfg->ldc_tls_checkpeer);
+      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_REQUIRE_CERT,&nslcd_cfg->ldc_tls_checkpeer);
     }
     /* set cipher suite, certificate and private key */
     if (nslcd_cfg->ldc_tls_ciphers!=NULL)
     {
-      LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_X_TLS_CIPHER_SUITE,nslcd_cfg->ldc_tls_ciphers);
+      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CIPHER_SUITE,nslcd_cfg->ldc_tls_ciphers);
     }
     /* set certificate */
     if (nslcd_cfg->ldc_tls_cert!=NULL)
     {
-      LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_X_TLS_CERTFILE,nslcd_cfg->ldc_tls_cert);
+      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CERTFILE,nslcd_cfg->ldc_tls_cert);
     }
     /* set up key */
     if (nslcd_cfg->ldc_tls_key!=NULL)
     {
-      LDAP_SET_OPTION(session->ls_conn,LDAP_OPT_X_TLS_KEYFILE,nslcd_cfg->ldc_tls_key);
+      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_KEYFILE,nslcd_cfg->ldc_tls_key);
     }
   }
   /* if nothing above failed, everything should be fine */
@@ -470,38 +470,38 @@ static int do_open(MYLDAP_SESSION *session)
   time_t current_time;
   int sd=-1;
   /* check if the idle time for the connection has expired */
-  if ((session->ls_conn!=NULL)&&nslcd_cfg->ldc_idle_timelimit)
+  if ((session->ld!=NULL)&&nslcd_cfg->ldc_idle_timelimit)
   {
     time(&current_time);
-    if ((session->ls_timestamp+nslcd_cfg->ldc_idle_timelimit)<current_time)
+    if ((session->lastactivity+nslcd_cfg->ldc_idle_timelimit)<current_time)
     {
       log_log(LOG_DEBUG,"do_open(): idle_timelimit reached");
-      ldap_unbind(session->ls_conn);
-      session->ls_conn=NULL;
+      ldap_unbind(session->ld);
+      session->ld=NULL;
     }
   }
   /* if the connection is still there (ie. ldap_unbind() wasn't
      called) then we can return the cached connection */
-  if (session->ls_conn!=NULL)
+  if (session->ld!=NULL)
     return LDAP_SUCCESS;
   /* we should build a new session now */
-  session->ls_conn=NULL;
-  session->ls_timestamp=0;
+  session->ld=NULL;
+  session->lastactivity=0;
   /* open the connection */
-  rc=ldap_initialize(&(session->ls_conn),nslcd_cfg->ldc_uris[session->ls_current_uri]);
+  rc=ldap_initialize(&(session->ld),nslcd_cfg->ldc_uris[session->current_uri]);
   if (rc!=LDAP_SUCCESS)
   {
     log_log(LOG_WARNING,"ldap_initialize(%s) failed: %s: %s",
-                        nslcd_cfg->ldc_uris[session->ls_current_uri],
+                        nslcd_cfg->ldc_uris[session->current_uri],
                         ldap_err2string(rc),strerror(errno));
-    if (session->ls_conn!=NULL)
+    if (session->ld!=NULL)
     {
-      ldap_unbind(session->ls_conn);
-      session->ls_conn=NULL;
+      ldap_unbind(session->ld);
+      session->ld=NULL;
     }
     return rc;
   }
-  else if (session->ls_conn==NULL)
+  else if (session->ld==NULL)
   {
     log_log(LOG_WARNING,"ldap_initialize() returned NULL");
     return LDAP_LOCAL_ERROR;
@@ -510,8 +510,8 @@ static int do_open(MYLDAP_SESSION *session)
   rc=do_set_options(session);
   if (rc!=LDAP_SUCCESS)
   {
-    ldap_unbind(session->ls_conn);
-    session->ls_conn=NULL;
+    ldap_unbind(session->ld);
+    session->ld=NULL;
     return rc;
   }
   /* bind to the server */
@@ -520,22 +520,22 @@ static int do_open(MYLDAP_SESSION *session)
   {
     /* log actual LDAP error code */
     log_log(LOG_WARNING,"failed to bind to LDAP server %s: %s: %s",
-            nslcd_cfg->ldc_uris[session->ls_current_uri],
+            nslcd_cfg->ldc_uris[session->current_uri],
             ldap_err2string(rc),strerror(errno));
-    ldap_unbind(session->ls_conn);
-    session->ls_conn=NULL;
+    ldap_unbind(session->ld);
+    session->ld=NULL;
     return rc;
   }
   /* disable keepalive on the LDAP connection socket */
-  if (ldap_get_option(session->ls_conn,LDAP_OPT_DESC,&sd)==0)
+  if (ldap_get_option(session->ld,LDAP_OPT_DESC,&sd)==0)
   {
     int off=0;
     /* ignore errors */
     (void)setsockopt(sd,SOL_SOCKET,SO_KEEPALIVE,(void *)&off,sizeof(off));
   }
   /* update last activity and finish off state */
-  time(&(session->ls_timestamp));
-  log_log(LOG_DEBUG,"do_open(): connected to %s",nslcd_cfg->ldc_uris[session->ls_current_uri]);
+  time(&(session->lastactivity));
+  log_log(LOG_DEBUG,"do_open(): connected to %s",nslcd_cfg->ldc_uris[session->current_uri]);
   return LDAP_SUCCESS;
 }
 
@@ -566,14 +566,14 @@ static int do_result(MYLDAP_SEARCH *search)
       search->msg=NULL;
     }
     /* get the next result */
-    rc=ldap_result(search->session->ls_conn,search->msgid,LDAP_MSG_ONE,tvp,&(search->msg));
+    rc=ldap_result(search->session->ld,search->msgid,LDAP_MSG_ONE,tvp,&(search->msg));
   }
   /* handle result */
   switch (rc)
   {
     case -1:
       /* we have an error condition, try to get error code */
-      if (ldap_get_option(search->session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
+      if (ldap_get_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
         rc=LDAP_UNAVAILABLE;
       log_log(LOG_ERR,"ldap_result(): %s",ldap_err2string(rc));
       return rc;
@@ -583,7 +583,7 @@ static int do_result(MYLDAP_SEARCH *search)
       return LDAP_TIMELIMIT_EXCEEDED;
     case LDAP_RES_SEARCH_ENTRY:
       /* we have a normal search entry, update timestamp and we're done */
-      time(&(search->session->ls_timestamp));
+      time(&(search->session->lastactivity));
       return LDAP_SUCCESS;
     case LDAP_RES_SEARCH_RESULT:
       /* we have a search result, parse it */
@@ -594,7 +594,7 @@ static int do_result(MYLDAP_SEARCH *search)
         search->cookie=NULL;
       }
       /* NB: this frees search->msg */
-      parserc=ldap_parse_result(search->session->ls_conn,search->msg,&rc,NULL,
+      parserc=ldap_parse_result(search->session->ld,search->msg,&rc,NULL,
                                 NULL,NULL,&resultcontrols,1);
       search->msg=NULL;
       /* check for errors during parsing */
@@ -602,7 +602,7 @@ static int do_result(MYLDAP_SEARCH *search)
       {
         if (resultcontrols!=NULL)
           ldap_controls_free(resultcontrols);
-        ldap_abandon(search->session->ls_conn,search->msgid);
+        ldap_abandon(search->session->ld,search->msgid);
         log_log(LOG_ERR,"could not parse LDAP result: %s",ldap_err2string(parserc));
         return parserc;
       }
@@ -611,7 +611,7 @@ static int do_result(MYLDAP_SEARCH *search)
       {
         if (resultcontrols!=NULL)
           ldap_controls_free(resultcontrols);
-        ldap_abandon(search->session->ls_conn,search->msgid);
+        ldap_abandon(search->session->ld,search->msgid);
         log_log(LOG_ERR,"could not get LDAP result: %s",ldap_err2string(rc));
         return rc;
       }
@@ -619,7 +619,7 @@ static int do_result(MYLDAP_SEARCH *search)
       if (resultcontrols!=NULL)
       {
         /* see if there are any more pages to come */
-        ldap_parse_page_control(search->session->ls_conn,
+        ldap_parse_page_control(search->session->ld,
                                 resultcontrols,NULL,
                                 &(search->cookie));
         /* TODO: handle the above return code?? */
@@ -698,7 +698,7 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
       (void)sleep(backoff);
     }
     /* try each configured URL once */
-    start_uri=search->session->ls_current_uri;
+    start_uri=search->session->current_uri;
     do
     {
       /* ensure that we have an open connection */
@@ -708,7 +708,7 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
         /* if we're using paging, build a page control */
         if (nslcd_cfg->ldc_pagesize>0)
         {
-          rc=ldap_create_page_control(search->session->ls_conn,nslcd_cfg->ldc_pagesize,
+          rc=ldap_create_page_control(search->session->ld,nslcd_cfg->ldc_pagesize,
                                       NULL,0,&serverCtrls[0]);
           if (rc!=LDAP_SUCCESS)
             return rc;
@@ -718,7 +718,7 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
         else
           pServerCtrls=NULL;
         /* perform the search */
-        rc=ldap_search_ext(search->session->ls_conn,
+        rc=ldap_search_ext(search->session->ld,
                            search->base,search->scope,search->filter,
                            search->attrs,0,pServerCtrls,NULL,NULL,
                            LDAP_NO_LIMIT,&msgid);
@@ -735,11 +735,11 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
         break;
       log++;
       /* try the next URI (with wrap-around) */
-      search->session->ls_current_uri++;
-      if (nslcd_cfg->ldc_uris[search->session->ls_current_uri]==NULL)
-        search->session->ls_current_uri=0;
+      search->session->current_uri++;
+      if (nslcd_cfg->ldc_uris[search->session->current_uri]==NULL)
+        search->session->current_uri=0;
     }
-    while (search->session->ls_current_uri != start_uri);
+    while (search->session->current_uri != start_uri);
     /* if we had reachability problems with the server close the connection */
     /* TODO: we should probably close in the loop above */
     if (stat==NSS_STATUS_UNAVAIL)
@@ -747,8 +747,8 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
       /* close the connection */
       if (search->session!=NULL)
       {
-        ldap_unbind(search->session->ls_conn);
-        search->session->ls_conn=NULL;
+        ldap_unbind(search->session->ld);
+        search->session->ld=NULL;
       }
       /* If a soft reconnect policy is specified, then do not
          try to reconnect to the LDAP server if it is down. */
@@ -770,7 +770,7 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
     case NSS_STATUS_SUCCESS:
       if (log)
       {
-        char *uri=nslcd_cfg->ldc_uris[search->session->ls_current_uri];
+        char *uri=nslcd_cfg->ldc_uris[search->session->current_uri];
         if (uri==NULL)
           uri = "(null)";
         if (tries)
@@ -780,7 +780,7 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
           log_log(LOG_INFO,"reconnected to LDAP server %s", uri);
       }
       /* update the last activity on the connection */
-      time(&(search->session->ls_timestamp));
+      time(&(search->session->lastactivity));
       search->msgid=msgid;
       return LDAP_SUCCESS;
     case NSS_STATUS_NOTFOUND:
@@ -826,9 +826,9 @@ void myldap_session_close(MYLDAP_SESSION *session)
   /* close pending searches */
   myldap_session_cleanup(session);
   /* close any open connections */
-  if (session->ls_conn!=NULL)
+  if (session->ld!=NULL)
   {
-    ldap_unbind(session->ls_conn);
+    ldap_unbind(session->ld);
   }
   /* free allocated memory */
   free(session);
@@ -886,7 +886,7 @@ void myldap_search_close(MYLDAP_SEARCH *search)
   /* abandon the search if there were more results to fetch */
   if (search->msgid!=-1)
   {
-    ldap_abandon(search->session->ls_conn,search->msgid);
+    ldap_abandon(search->session->ld,search->msgid);
     search->msgid=-1;
   }
   /* find the reference to this search in the session */
@@ -936,7 +936,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
     {
       /* we are using paged results, try the next page */
       LDAPControl *serverctrls[2]={ NULL, NULL };
-      rc=ldap_create_page_control(search->session->ls_conn,
+      rc=ldap_create_page_control(search->session->ld,
                                   nslcd_cfg->ldc_pagesize,
                                   search->cookie,0,&serverctrls[0]);
       if (rc!=LDAP_SUCCESS)
@@ -947,7 +947,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
         return NULL;
       }
       /* set up a new search for the next page */
-      rc=ldap_search_ext(search->session->ls_conn,
+      rc=ldap_search_ext(search->session->ld,
                          search->base,search->scope,search->filter,
                          search->attrs,0,serverctrls,NULL,NULL,
                          LDAP_NO_LIMIT,&msgid);
@@ -987,10 +987,10 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
   /* if we don't have it yet, retreive it */
   if (entry->dn==NULL)
   {
-    entry->dn=ldap_get_dn(entry->search->session->ls_conn,entry->search->msg);
+    entry->dn=ldap_get_dn(entry->search->session->ld,entry->search->msg);
     if (entry->dn==NULL)
     {
-      if (ldap_get_option(entry->search->session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
+      if (ldap_get_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
         rc=LDAP_UNAVAILABLE;
       log_log(LOG_WARNING,"ldap_get_dn() returned NULL: %s",ldap_err2string(rc));
     }
@@ -1025,10 +1025,10 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
   if (values==NULL)
   {
     /* cache miss, get from LDAP */
-    values=ldap_get_values(entry->search->session->ls_conn,entry->search->msg,attr);
+    values=ldap_get_values(entry->search->session->ld,entry->search->msg,attr);
     if (values==NULL)
     {
-      if (ldap_get_option(entry->search->session->ls_conn,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
+      if (ldap_get_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
         rc=LDAP_UNAVAILABLE;
       /* ignore decoding errors as they are just nonexisting attribute values */
       if (rc!=LDAP_DECODING_ERROR)
