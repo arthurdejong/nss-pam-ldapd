@@ -82,7 +82,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_deref=LDAP_DEREF_NEVER;
   cfg->ldc_referrals=1;
   cfg->ldc_bind_timelimit=30;
-  cfg->ldc_reconnect_pol=LP_RECONNECT_HARD_OPEN;
   cfg->ldc_timelimit=LDAP_NO_LIMIT;
   cfg->ldc_idle_timelimit=0;
   cfg->ldc_reconnect_tries=4;
@@ -653,18 +652,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     {
       check_argumentcount(filename,lnr,opts[0],nopts==2);
       cfg->ldc_bind_timelimit=atoi(opts[1]);
-    }
-    else if (strcasecmp(opts[0],"bind_policy")==0)
-    {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (and may be removed in an upcoming release)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      if ( (strcasecmp(opts[1],"hard")==0) ||
-           (strcasecmp(opts[1],"hard_open")==0) )
-        cfg->ldc_reconnect_pol=LP_RECONNECT_HARD_OPEN;
-      else if (strcasecmp(opts[1],"hard_init")==0)
-        cfg->ldc_reconnect_pol=LP_RECONNECT_HARD_INIT;
-      else if (strcasecmp(opts[1],"soft")==0)
-        cfg->ldc_reconnect_pol=LP_RECONNECT_SOFT;
     }
     else if (strcasecmp(opts[0],"timelimit")==0)
     {

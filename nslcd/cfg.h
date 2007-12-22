@@ -38,13 +38,6 @@ enum ldap_ssl_options
   SSL_START_TLS
 };
 
-enum ldap_reconnect_policy
-{
-  LP_RECONNECT_HARD_INIT,
-  LP_RECONNECT_HARD_OPEN,
-  LP_RECONNECT_SOFT
-};
-
 /* selectors for different maps */
 enum ldap_map_selector
 {
@@ -96,8 +89,6 @@ struct ldap_config
   int ldc_referrals;
   /* bind timelimit */
   int ldc_bind_timelimit;
-  /* reconnect policy */
-  enum ldap_reconnect_policy ldc_reconnect_pol;
   /* search timelimit */
   int ldc_timelimit;
   /* idle timeout */

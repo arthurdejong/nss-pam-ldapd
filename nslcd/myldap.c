@@ -589,7 +589,7 @@ static enum nss_status do_map_error(int rc)
 static int do_with_reconnect(MYLDAP_SEARCH *search)
 {
   int rc=LDAP_UNAVAILABLE, tries=0, backoff=0;
-  int hard=1, start_uri=0, log=0;
+  int start_uri=0, log=0;
   enum nss_status stat=NSS_STATUS_UNAVAIL;
   int msgid;
   int maxtries;
@@ -598,7 +598,7 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
   /* get the maximum number of tries */
   maxtries=nslcd_cfg->ldc_reconnect_tries;
   /* keep trying until we have success or a hard failure */
-  while ((stat==NSS_STATUS_UNAVAIL)&&(hard)&&(tries<maxtries))
+  while ((stat==NSS_STATUS_UNAVAIL)&&(tries<maxtries))
   {
     /* sleep between tries */
     if (tries>0)
@@ -666,10 +666,6 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
         ldap_unbind(search->session->ld);
         search->session->ld=NULL;
       }
-      /* If a soft reconnect policy is specified, then do not
-         try to reconnect to the LDAP server if it is down. */
-      if (nslcd_cfg->ldc_reconnect_pol == LP_RECONNECT_SOFT)
-        hard = 0;
       ++tries;
     }
   }
@@ -679,9 +675,8 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
       log_log(LOG_ERR,"could not search LDAP server - %s",ldap_err2string(rc));
       return rc;
     case NSS_STATUS_TRYAGAIN:
-      log_log(LOG_ERR,"could not %s %sconnect to LDAP server - %s",
-              hard?"hard":"soft", tries?"re":"",
-              ldap_err2string(rc));
+      log_log(LOG_ERR,"could not %sconnect to LDAP server - %s",
+              tries?"re":"",ldap_err2string(rc));
       return rc;
     case NSS_STATUS_SUCCESS:
       if (log)
