@@ -43,6 +43,9 @@ int *scope_get_var(int UNUSED(map)) {return NULL;}
 const char **filter_get_var(int UNUSED(map)) {return NULL;}
 const char **attmap_get_var(int UNUSED(map),const char UNUSED(*name)) {return NULL;}
 
+/* the maxium number of results to print (all results are retrieved) */
+#define MAXRESULTS 10
+
 /* This is a very basic search test, it performs a test to get certain
    entries from the database. It currently just prints out the DNs for
    the entries. */
@@ -68,9 +71,9 @@ static void test_search(void)
   printf("test_search(): get results...\n");
   for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
   {
-    if (i<10)
+    if (i<MAXRESULTS)
       printf("test_search(): [%d] DN %s\n",i,myldap_get_dn(entry));
-    else if (i==10)
+    else if (i==MAXRESULTS)
       printf("test_search(): ...\n");
   }
   printf("test_search(): %d entries returned\n",i);
@@ -85,9 +88,9 @@ static void test_search(void)
   printf("test_search(): get results...\n");
   for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
   {
-    if (i<10)
+    if (i<MAXRESULTS)
       printf("test_search(): [%d] DN %s\n",i,myldap_get_dn(entry));
-    else if (i==10)
+    else if (i==MAXRESULTS)
       printf("test_search(): ...\n");
   }
   printf("test_search(): %d entries returned\n",i);
@@ -118,24 +121,32 @@ static void test_get_values(void)
   /* go over results */
   for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
   {
-    printf("test_get_values(): DN %s\n",myldap_get_dn(entry));
+    if (i<MAXRESULTS)
+      printf("test_get_values(): [%d] DN %s\n",i,myldap_get_dn(entry));
+    else if (i==MAXRESULTS)
+      printf("test_get_values(): ...\n");
     /* try to get uid from attribute */
     vals=myldap_get_values(entry,"uidNumber");
     assert((vals!=NULL)&&(vals[0]!=NULL));
-    printf("test_get_values(): uidNumber=%s\n",vals[0]);
+    if (i<MAXRESULTS)
+      printf("test_get_values(): [%d] uidNumber=%s\n",i,vals[0]);
     /* try to get gid from attribute */
     vals=myldap_get_values(entry,"gidNumber");
     assert((vals!=NULL)&&(vals[0]!=NULL));
-    printf("test_get_values(): gidNumber=%s\n",vals[0]);
+    if (i<MAXRESULTS)
+      printf("test_get_values(): [%d] gidNumber=%s\n",i,vals[0]);
     /* write LDF_STRING(PASSWD_NAME) */
     vals=myldap_get_values(entry,"uid");
     assert((vals!=NULL)&&(vals[0]!=NULL));
-    printf("test_get_values(): uid=%s\n",vals[0]);
+    if (i<MAXRESULTS)
+      printf("test_get_values(): [%d] uid=%s\n",i,vals[0]);
     /* get rdn values */
     rdnval=myldap_get_rdn_value(entry,"cn");
-    printf("test_get_values(): cdrdn=%s\n",rdnval);
+    if (i<MAXRESULTS)
+      printf("test_get_values(): [%d] cdrdn=%s\n",i,rdnval);
     rdnval=myldap_get_rdn_value(entry,"uid");
-    printf("test_get_values(): uidrdn=%s\n",rdnval);
+    if (i<MAXRESULTS)
+      printf("test_get_values(): [%d] uidrdn=%s\n",i,rdnval);
     /* check objectclass */
     assert(myldap_has_objectclass(entry,"posixAccount"));
   }
@@ -201,6 +212,7 @@ static void *worker(void *arg)
   MYLDAP_ENTRY *entry;
   const char *attrs[] = { "uid", "cn", "gid", NULL };
   struct worker_args *args=(struct worker_args *)arg;
+  int i;
   /* initialize session */
   session=myldap_create_session();
   assert(session!=NULL);
@@ -211,9 +223,12 @@ static void *worker(void *arg)
                        attrs);
   assert(search!=NULL);
   /* go over results */
-  while ((entry=myldap_get_entry(search))!=NULL)
+  for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
   {
-    printf("test_threads(): [worker %d] DN %s\n",args->id,myldap_get_dn(entry));
+    if (i<MAXRESULTS)
+      printf("test_threads(): [worker %d] [%d] DN %s\n",args->id,i,myldap_get_dn(entry));
+    else if (i==MAXRESULTS)
+      printf("test_threads(): [worker %d] ...\n",args->id);
   }
   printf("test_threads(): [worker %d] DONE\n",args->id);
   /* clean up */
@@ -229,27 +244,16 @@ static void test_threads(void)
 {
   int i;
   struct worker_args args[NUM_THREADS];
-  /* partially initialize logging */
-  log_setdefaultloglevel(LOG_DEBUG);
-
   /* start worker threads */
   for (i=0;i<NUM_THREADS;i++)
   {
     args[i].id=i;
-    if (pthread_create(&my_threads[i],NULL,worker,&(args[i])))
-    {
-      log_log(LOG_ERR,"unable to start worker thread %d: %s",i,strerror(errno));
-      exit(1);
-    }
+    assert(pthread_create(&my_threads[i],NULL,worker,&(args[i]))==0);
   }
   /* wait for all threads to die */
   for (i=0;i<NUM_THREADS;i++)
   {
-    if (pthread_join(my_threads[i],NULL))
-    {
-      log_log(LOG_ERR,"unable to wait for worker thread %d: %s",i,strerror(errno));
-      exit(1);
-    }
+    assert(pthread_join(my_threads[i],NULL)==0);
   }
 }
 
