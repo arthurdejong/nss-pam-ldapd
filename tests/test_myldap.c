@@ -257,6 +257,45 @@ static void test_threads(void)
   }
 }
 
+static void test_connections(void)
+{
+  MYLDAP_SESSION *session;
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  const char *attrs[] = { "uid", "cn", "gid", NULL };
+  char *old_uris[NSS_LDAP_CONFIG_URI_MAX+1];
+  int i;
+  /* save the old URIs */
+  for (i=0;i<(NSS_LDAP_CONFIG_URI_MAX+1);i++)
+  {
+    old_uris[i]=nslcd_cfg->ldc_uris[i];
+    nslcd_cfg->ldc_uris[i]=NULL;
+  }
+  /* set new URIs */
+  i=0;
+  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnull/";
+  nslcd_cfg->ldc_uris[i++]="ldap://10.10.10.10/";
+  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnonexistent/";
+  nslcd_cfg->ldc_uris[i++]="ldap://nosuchhost/";
+  nslcd_cfg->ldc_uris[i++]=NULL;
+  /* initialize session */
+  printf("test_connections(): getting session...\n");
+  session=myldap_create_session();
+  assert(session!=NULL);
+  /* perform search */
+  printf("test_connections(): doing search...\n");
+  search=myldap_search(session,nslcd_cfg->ldc_base,
+                       LDAP_SCOPE_SUBTREE,
+                       "(objectclass=posixaccount)",
+                       attrs);
+  assert(search==NULL);
+  /* clean up */
+  myldap_session_close(session);
+  /* restore the old URIs */
+  for (i=0;i<(NSS_LDAP_CONFIG_URI_MAX+1);i++)
+    nslcd_cfg->ldc_uris[i]=old_uris[i];
+}
+
 /* the main program... */
 int main(int argc,char *argv[])
 {
@@ -268,5 +307,6 @@ int main(int argc,char *argv[])
   test_get_values();
   test_two_searches();
   test_threads();
+  test_connections();
   return 0;
 }
