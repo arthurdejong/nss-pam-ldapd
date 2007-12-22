@@ -546,100 +546,6 @@ static int do_open(MYLDAP_SESSION *session)
   return LDAP_SUCCESS;
 }
 
-/* Wrapper around ldap_result() to skip over search references and deal
-   transparently with the last entry. */
-static int do_result(MYLDAP_SEARCH *search)
-{
-  int rc=LDAP_RES_SEARCH_REFERENCE;
-  struct timeval tv,*tvp;
-  int parserc;
-  LDAPControl **resultcontrols;
-  /* set up a timelimit value for operations */
-  if (nslcd_cfg->ldc_timelimit==LDAP_NO_LIMIT)
-    tvp=NULL;
-  else
-  {
-    tv.tv_sec=nslcd_cfg->ldc_timelimit;
-    tv.tv_usec=0;
-    tvp=&tv;
-  }
-  /* loop while we have search references */
-  while (rc==LDAP_RES_SEARCH_REFERENCE)
-  {
-    /* free the previous message if there was any */
-    if (search->msg!=NULL)
-    {
-      ldap_msgfree(search->msg);
-      search->msg=NULL;
-    }
-    /* get the next result */
-    rc=ldap_result(search->session->ld,search->msgid,LDAP_MSG_ONE,tvp,&(search->msg));
-  }
-  /* handle result */
-  switch (rc)
-  {
-    case -1:
-      /* we have an error condition, try to get error code */
-      if (ldap_get_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
-        rc=LDAP_UNAVAILABLE;
-      log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
-      return rc;
-    case 0:
-      /* the timeout expired */
-      log_log(LOG_ERR,"ldap_result() timed out");
-      return LDAP_TIMELIMIT_EXCEEDED;
-    case LDAP_RES_SEARCH_ENTRY:
-      /* we have a normal search entry, update timestamp and we're done */
-      time(&(search->session->lastactivity));
-      return LDAP_SUCCESS;
-    case LDAP_RES_SEARCH_RESULT:
-      /* we have a search result, parse it */
-      resultcontrols=NULL;
-      if (search->cookie!=NULL)
-      {
-        ber_bvfree(search->cookie);
-        search->cookie=NULL;
-      }
-      /* NB: this frees search->msg */
-      parserc=ldap_parse_result(search->session->ld,search->msg,&rc,NULL,
-                                NULL,NULL,&resultcontrols,1);
-      search->msg=NULL;
-      /* check for errors during parsing */
-      if ((parserc!=LDAP_SUCCESS)&&(parserc!=LDAP_MORE_RESULTS_TO_RETURN))
-      {
-        if (resultcontrols!=NULL)
-          ldap_controls_free(resultcontrols);
-        ldap_abandon(search->session->ld,search->msgid);
-        log_log(LOG_ERR,"ldap_parse_result() failed: %s",ldap_err2string(parserc));
-        return parserc;
-      }
-      /* check for errors in message */
-      if ((rc!=LDAP_SUCCESS)&&(rc!=LDAP_MORE_RESULTS_TO_RETURN))
-      {
-        if (resultcontrols!=NULL)
-          ldap_controls_free(resultcontrols);
-        ldap_abandon(search->session->ld,search->msgid);
-        log_log(LOG_ERR,"ldap_parse_result() returned: %s",ldap_err2string(rc));
-        return rc;
-      }
-      /* handle result controls */
-      if (resultcontrols!=NULL)
-      {
-        /* see if there are any more pages to come */
-        ldap_parse_page_control(search->session->ld,
-                                resultcontrols,NULL,
-                                &(search->cookie));
-        /* TODO: handle the above return code?? */
-        ldap_controls_free(resultcontrols);
-      }
-      search->msgid=-1;
-      return LDAP_SUCCESS;
-    default:
-      log_log(LOG_WARNING,"ldap_result() returned unexpected result type");
-      return LDAP_LOCAL_ERROR;
-  }
-}
-
 /* TODO: this is only called from do_with_reconnect(), we should probably move it there */
 static enum nss_status do_map_error(int rc)
 {
@@ -912,14 +818,27 @@ void myldap_search_close(MYLDAP_SEARCH *search)
 
 MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
 {
-  int msgid;
   int rc;
+  int parserc;
+  int msgid;
+  struct timeval tv,*tvp;
+  LDAPControl **resultcontrols;
+  LDAPControl *serverctrls[2];
   /* check parameters */
   if (!is_valid_search(search))
   {
     log_log(LOG_ERR,"myldap_get_entry(): invalid search passed");
     errno=EINVAL;
     return NULL;
+  }
+  /* set up a timelimit value for operations */
+  if (nslcd_cfg->ldc_timelimit==LDAP_NO_LIMIT)
+    tvp=NULL;
+  else
+  {
+    tv.tv_sec=nslcd_cfg->ldc_timelimit;
+    tv.tv_usec=0;
+    tvp=&tv;
   }
   /* if we have an existing result entry, free it */
   if (search->entry!=NULL)
@@ -930,54 +849,116 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
   /* try to parse results until we have a final error or ok */
   while (1)
   {
-    /* get an entry from the LDAP server, the result
-       is stored in context->ec_res */
-    rc=do_result(search);
-    /* we we have an entry construct a search entry from it */
-    if ((rc==LDAP_SUCCESS)&&(search->msg!=NULL))
+    /* free the previous message if there was any */
+    if (search->msg!=NULL)
     {
-      /* we have a normal entry, return it */
-      search->entry=myldap_entry_new(search);
-      return search->entry;
+      ldap_msgfree(search->msg);
+      search->msg=NULL;
     }
-    else if ( (rc==LDAP_SUCCESS) &&
-              (search->msgid==-1) &&
-              (search->cookie!=NULL) &&
-              (search->cookie->bv_len!=0) )
+    /* get the next result */
+    rc=ldap_result(search->session->ld,search->msgid,LDAP_MSG_ONE,tvp,&(search->msg));
+    /* handle result */
+    switch (rc)
     {
-      /* we are using paged results, try the next page */
-      LDAPControl *serverctrls[2]={ NULL, NULL };
-      rc=ldap_create_page_control(search->session->ld,
-                                  nslcd_cfg->ldc_pagesize,
-                                  search->cookie,0,&serverctrls[0]);
-      if (rc!=LDAP_SUCCESS)
-      {
-        log_log(LOG_WARNING,"ldap_create_page_control() failed: %s",
-                            ldap_err2string(rc));
-        /* FIXME: figure out if we need to free something */
+      case -1:
+        /* we have an error condition, try to get error code */
+        if (ldap_get_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
+          rc=LDAP_UNAVAILABLE;
+        log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
+        myldap_search_close(search);
         return NULL;
-      }
-      /* set up a new search for the next page */
-      rc=ldap_search_ext(search->session->ld,
-                         search->base,search->scope,search->filter,
-                         search->attrs,0,serverctrls,NULL,NULL,
-                         LDAP_NO_LIMIT,&msgid);
-      ldap_control_free(serverctrls[0]);
-      if (rc!=LDAP_SUCCESS)
-      {
-        log_log(LOG_WARNING,"ldap_search_ext() failed: %s",
-                            ldap_err2string(rc));
+      case 0:
+        /* the timeout expired */
+        log_log(LOG_ERR,"ldap_result() timed out");
+        myldap_search_close(search);
         return NULL;
-      }
-      search->msgid=msgid;
-      /* we continue with another pass */
-    }
-    else
-    {
-      /* there was another problem, bail out
-         (do_result() already logged an error if any)
-         most likely there were no more results */
-      return NULL;
+      case LDAP_RES_SEARCH_ENTRY:
+        /* we have a normal search entry, update timestamp and return result */
+        time(&(search->session->lastactivity));
+        search->entry=myldap_entry_new(search);
+        return search->entry;
+      case LDAP_RES_SEARCH_RESULT:
+        /* we have a search result, parse it */
+        resultcontrols=NULL;
+        if (search->cookie!=NULL)
+        {
+          ber_bvfree(search->cookie);
+          search->cookie=NULL;
+        }
+        /* NB: this frees search->msg */
+        parserc=ldap_parse_result(search->session->ld,search->msg,&rc,NULL,
+                                  NULL,NULL,&resultcontrols,1);
+        search->msg=NULL;
+        /* check for errors during parsing */
+        if ((parserc!=LDAP_SUCCESS)&&(parserc!=LDAP_MORE_RESULTS_TO_RETURN))
+        {
+          if (resultcontrols!=NULL)
+            ldap_controls_free(resultcontrols);
+          log_log(LOG_ERR,"ldap_parse_result() failed: %s",ldap_err2string(parserc));
+          myldap_search_close(search);
+          return NULL;
+        }
+        /* check for errors in message */
+        if ((rc!=LDAP_SUCCESS)&&(rc!=LDAP_MORE_RESULTS_TO_RETURN))
+        {
+          if (resultcontrols!=NULL)
+            ldap_controls_free(resultcontrols);
+          log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
+          myldap_search_close(search);
+          return NULL;
+        }
+        /* handle result controls */
+        if (resultcontrols!=NULL)
+        {
+          /* see if there are any more pages to come */
+          ldap_parse_page_control(search->session->ld,
+                                  resultcontrols,NULL,
+                                  &(search->cookie));
+          /* TODO: handle the above return code?? */
+          ldap_controls_free(resultcontrols);
+        }
+        search->msgid=-1;
+        /* check if there are more pages to come */
+        if ((search->cookie==NULL)||(search->cookie->bv_len==0))
+          return NULL;
+        /* try the next page */
+        serverctrls[0]=NULL;
+        serverctrls[1]=NULL;
+        rc=ldap_create_page_control(search->session->ld,
+                                    nslcd_cfg->ldc_pagesize,
+                                    search->cookie,0,&serverctrls[0]);
+        if (rc!=LDAP_SUCCESS)
+        {
+          if (serverctrls[0]!=NULL)
+            ldap_control_free(serverctrls[0]);
+          log_log(LOG_WARNING,"ldap_create_page_control() failed: %s",
+                              ldap_err2string(rc));
+          myldap_search_close(search);
+          return NULL;
+        }
+        /* set up a new search for the next page */
+        rc=ldap_search_ext(search->session->ld,
+                           search->base,search->scope,search->filter,
+                           search->attrs,0,serverctrls,NULL,NULL,
+                           LDAP_NO_LIMIT,&msgid);
+        ldap_control_free(serverctrls[0]);
+        if (rc!=LDAP_SUCCESS)
+        {
+          log_log(LOG_WARNING,"ldap_search_ext() failed: %s",
+                              ldap_err2string(rc));
+          myldap_search_close(search);
+          return NULL;
+        }
+        search->msgid=msgid;
+
+        /* we continue with another pass */
+        break;
+      case LDAP_RES_SEARCH_REFERENCE:
+        break; /* just ignore search references */
+      default:
+        log_log(LOG_WARNING,"ldap_result() returned unexpected result type");
+        myldap_search_close(search);
+        return NULL;
     }
   }
 }
