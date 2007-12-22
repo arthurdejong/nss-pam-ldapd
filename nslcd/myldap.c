@@ -347,7 +347,6 @@ static int do_bind(MYLDAP_SESSION *session)
   if (!usesasl)
   {
     /* do a simple bind */
-    /* do a simple bind */
     if (binddn)
       log_log(LOG_DEBUG,"simple bind to %s as %s",
                         nslcd_cfg->ldc_uris[session->current_uri],
