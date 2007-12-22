@@ -251,7 +251,7 @@ static MYLDAP_SESSION *myldap_session_new(void)
   session=(struct ldap_session *)malloc(sizeof(struct ldap_session));
   if (session==NULL)
   {
-    log_log(LOG_CRIT,"malloc() failed to allocate memory");
+    log_log(LOG_CRIT,"myldap_session_new(): malloc() failed to allocate memory");
     exit(EXIT_FAILURE);
   }
   /* initialize the session */
@@ -347,16 +347,23 @@ static int do_bind(MYLDAP_SESSION *session)
   if (!usesasl)
   {
     /* do a simple bind */
-    log_log(LOG_DEBUG,"simple bind as %s",binddn);
+    /* do a simple bind */
+    if (binddn)
+      log_log(LOG_DEBUG,"simple bind to %s as %s",
+                        nslcd_cfg->ldc_uris[session->current_uri],
+                        binddn);
+    else
+      log_log(LOG_DEBUG,"simple anonymous bind to %s",
+                        nslcd_cfg->ldc_uris[session->current_uri]);
     rc=ldap_simple_bind_s(session->ld,binddn,bindarg);
-    if (rc!=LDAP_SUCCESS)
-      log_log(LOG_ERR,"ldap_simple_bind_s() failed: %s: %s",ldap_err2string(rc),strerror(errno));
     return rc;
   }
   else
   {
     /* do a SASL bind */
-    log_log(LOG_DEBUG,"SASL bind as %s",binddn);
+    log_log(LOG_DEBUG,"SASL bind to %s as %s",
+                      nslcd_cfg->ldc_uris[session->current_uri],
+                      binddn);
     if (nslcd_cfg->ldc_sasl_secprops!=NULL)
     {
       LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
@@ -535,7 +542,8 @@ static int do_open(MYLDAP_SESSION *session)
   }
   /* update last activity and finish off state */
   time(&(session->lastactivity));
-  log_log(LOG_DEBUG,"do_open(): connected to %s",nslcd_cfg->ldc_uris[session->current_uri]);
+  log_log(LOG_DEBUG,"do_open(): connected to %s",
+                    nslcd_cfg->ldc_uris[session->current_uri]);
   return LDAP_SUCCESS;
 }
 
@@ -575,7 +583,7 @@ static int do_result(MYLDAP_SEARCH *search)
       /* we have an error condition, try to get error code */
       if (ldap_get_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
         rc=LDAP_UNAVAILABLE;
-      log_log(LOG_ERR,"ldap_result(): %s",ldap_err2string(rc));
+      log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
       return rc;
     case 0:
       /* the timeout expired */
@@ -603,7 +611,7 @@ static int do_result(MYLDAP_SEARCH *search)
         if (resultcontrols!=NULL)
           ldap_controls_free(resultcontrols);
         ldap_abandon(search->session->ld,search->msgid);
-        log_log(LOG_ERR,"could not parse LDAP result: %s",ldap_err2string(parserc));
+        log_log(LOG_ERR,"ldap_parse_result() failed: %s",ldap_err2string(parserc));
         return parserc;
       }
       /* check for errors in message */
@@ -612,7 +620,7 @@ static int do_result(MYLDAP_SEARCH *search)
         if (resultcontrols!=NULL)
           ldap_controls_free(resultcontrols);
         ldap_abandon(search->session->ld,search->msgid);
-        log_log(LOG_ERR,"could not get LDAP result: %s",ldap_err2string(rc));
+        log_log(LOG_ERR,"ldap_parse_result() returned: %s",ldap_err2string(rc));
         return rc;
       }
       /* handle result controls */
@@ -711,7 +719,10 @@ static int do_with_reconnect(MYLDAP_SEARCH *search)
           rc=ldap_create_page_control(search->session->ld,nslcd_cfg->ldc_pagesize,
                                       NULL,0,&serverCtrls[0]);
           if (rc!=LDAP_SUCCESS)
+          {
+            log_log(LOG_ERR,"ldap_create_page_control() failed: %s",ldap_err2string(rc));
             return rc;
+          }
           serverCtrls[1]=NULL;
           pServerCtrls=serverCtrls;
         }
@@ -863,7 +874,8 @@ MYLDAP_SEARCH *myldap_search(
     ;
   if (i>=MAX_SEARCHES_IN_SESSION)
   {
-    log_log(LOG_ERR,"too many searches registered with session (max %d)",MAX_SEARCHES_IN_SESSION);
+    log_log(LOG_ERR,"myldap_search(): too many searches registered with session (max %d)",
+                    MAX_SEARCHES_IN_SESSION);
     myldap_search_free(search);
     return NULL;
   }
@@ -941,7 +953,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
                                   search->cookie,0,&serverctrls[0]);
       if (rc!=LDAP_SUCCESS)
       {
-        log_log(LOG_WARNING,"myldap_get_entry(): ldap_create_page_control() failed: %s",
+        log_log(LOG_WARNING,"ldap_create_page_control() failed: %s",
                             ldap_err2string(rc));
         /* FIXME: figure out if we need to free something */
         return NULL;
@@ -954,7 +966,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
       ldap_control_free(serverctrls[0]);
       if (rc!=LDAP_SUCCESS)
       {
-        log_log(LOG_WARNING,"myldap_get_entry(): ldap_search_ext() failed: %s",
+        log_log(LOG_WARNING,"ldap_search_ext() failed: %s",
                             ldap_err2string(rc));
         return NULL;
       }
@@ -1032,7 +1044,7 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
         rc=LDAP_UNAVAILABLE;
       /* ignore decoding errors as they are just nonexisting attribute values */
       if (rc!=LDAP_DECODING_ERROR)
-        log_log(LOG_WARNING,"myldap_get_values(): ldap_get_values() returned NULL: %s",ldap_err2string(rc));
+        log_log(LOG_WARNING,"ldap_get_values() returned NULL: %s",ldap_err2string(rc));
     }
     /* store values entry so we can free it later on */
     if (values!=NULL)
@@ -1104,7 +1116,7 @@ const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr)
     exploded_dn=ldap_explode_dn(dn,0);
     if ((exploded_dn==NULL)||(exploded_dn[0]==NULL))
     {
-      log_log(LOG_WARNING,"myldap_get_rdn_value(): ldap_explode_dn(%s) returned NULL: %s",
+      log_log(LOG_WARNING,"ldap_explode_dn(%s) returned NULL: %s",
                           dn,strerror(errno));
       return NULL;
     }
