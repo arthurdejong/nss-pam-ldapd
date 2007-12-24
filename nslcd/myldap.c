@@ -63,9 +63,6 @@
 #endif
 #include <ctype.h>
 
-/* FIXME: get rid of this */
-#include <nss.h>
-
 #include "myldap.h"
 #include "pagectrl.h"
 #include "common.h"
@@ -475,6 +472,7 @@ static int do_open(MYLDAP_SESSION *session)
   int rc;
   time_t current_time;
   int sd=-1;
+  int off=0;
   /* check if the idle time for the connection has expired */
   if ((session->ld!=NULL)&&nslcd_cfg->ldc_idle_timelimit)
   {
@@ -526,16 +524,15 @@ static int do_open(MYLDAP_SESSION *session)
   {
     /* log actual LDAP error code */
     log_log(LOG_WARNING,"failed to bind to LDAP server %s: %s: %s",
-            nslcd_cfg->ldc_uris[session->current_uri],
-            ldap_err2string(rc),strerror(errno));
+                        nslcd_cfg->ldc_uris[session->current_uri],
+                        ldap_err2string(rc),strerror(errno));
     ldap_unbind(session->ld);
     session->ld=NULL;
     return rc;
   }
-  /* disable keepalive on the LDAP connection socket */
-  if (ldap_get_option(session->ld,LDAP_OPT_DESC,&sd)==0)
+  /* disable keepalive on the LDAP connection socket (why?) */
+  if (ldap_get_option(session->ld,LDAP_OPT_DESC,&sd)==LDAP_SUCCESS)
   {
-    int off=0;
     /* ignore errors */
     (void)setsockopt(sd,SOL_SOCKET,SO_KEEPALIVE,(void *)&off,sizeof(off));
   }
@@ -546,159 +543,72 @@ static int do_open(MYLDAP_SESSION *session)
   return LDAP_SUCCESS;
 }
 
-/* TODO: this is only called from do_with_reconnect(), we should probably move it there */
-static enum nss_status do_map_error(int rc)
+static MYLDAP_SEARCH *do_try_search(
+        MYLDAP_SESSION *session,
+        const char *base,int scope,const char *filter,const char **attrs)
 {
-  switch (rc)
-  {
-    case LDAP_SUCCESS:
-    case LDAP_SIZELIMIT_EXCEEDED:
-    case LDAP_TIMELIMIT_EXCEEDED:
-      return NSS_STATUS_SUCCESS;
-      break;
-    case LDAP_NO_SUCH_ATTRIBUTE:
-    case LDAP_UNDEFINED_TYPE:
-    case LDAP_INAPPROPRIATE_MATCHING:
-    case LDAP_CONSTRAINT_VIOLATION:
-    case LDAP_TYPE_OR_VALUE_EXISTS:
-    case LDAP_INVALID_SYNTAX:
-    case LDAP_NO_SUCH_OBJECT:
-    case LDAP_ALIAS_PROBLEM:
-    case LDAP_INVALID_DN_SYNTAX:
-    case LDAP_IS_LEAF:
-    case LDAP_ALIAS_DEREF_PROBLEM:
-    case LDAP_FILTER_ERROR:
-      return NSS_STATUS_NOTFOUND;
-      break;
-    case LDAP_SERVER_DOWN:
-    case LDAP_TIMEOUT:
-    case LDAP_UNAVAILABLE:
-    case LDAP_BUSY:
-#ifdef LDAP_CONNECT_ERROR
-    case LDAP_CONNECT_ERROR:
-#endif /* LDAP_CONNECT_ERROR */
-    case LDAP_LOCAL_ERROR:
-    case LDAP_INVALID_CREDENTIALS:
-    default:
-      return NSS_STATUS_UNAVAIL;
-  }
-}
-
-/* Perform a search with reconnection logic.
-   TODO: this is only called from myldap_search(), probably move the code there */
-static int do_with_reconnect(MYLDAP_SEARCH *search)
-{
-  int rc=LDAP_UNAVAILABLE, tries=0, backoff=0;
-  int start_uri=0, log=0;
-  enum nss_status stat=NSS_STATUS_UNAVAIL;
-  int msgid;
-  int maxtries;
+  int rc;
   LDAPControl *serverCtrls[2];
   LDAPControl **pServerCtrls;
-  /* get the maximum number of tries */
-  maxtries=nslcd_cfg->ldc_reconnect_tries;
-  /* keep trying until we have success or a hard failure */
-  while ((stat==NSS_STATUS_UNAVAIL)&&(tries<maxtries))
+  int msgid;
+  MYLDAP_SEARCH *search;
+  int i;
+  /* ensure that we have an open connection */
+  rc=do_open(session);
+  if (rc!=LDAP_SUCCESS)
+    return NULL;
+  /* if we're using paging, build a page control */
+  if (nslcd_cfg->ldc_pagesize>0)
   {
-    /* sleep between tries */
-    if (tries>0)
+    rc=ldap_create_page_control(session->ld,nslcd_cfg->ldc_pagesize,
+                                NULL,0,&serverCtrls[0]);
+    if (rc!=LDAP_SUCCESS)
     {
-      if (backoff==0)
-        backoff=nslcd_cfg->ldc_reconnect_sleeptime;
-      else if (backoff<nslcd_cfg->ldc_reconnect_maxsleeptime)
-        backoff*=2;
-      log_log(LOG_INFO,"reconnecting to LDAP server (sleeping %d seconds)...",backoff);
-      (void)sleep(backoff);
+      log_log(LOG_ERR,"ldap_create_page_control() failed: %s",ldap_err2string(rc));
+      return NULL;
     }
-    /* try each configured URL once */
-    start_uri=search->session->current_uri;
-    do
-    {
-      /* ensure that we have an open connection */
-      rc=do_open(search->session);
-      if (rc==LDAP_SUCCESS)
-      {
-        /* if we're using paging, build a page control */
-        if (nslcd_cfg->ldc_pagesize>0)
-        {
-          rc=ldap_create_page_control(search->session->ld,nslcd_cfg->ldc_pagesize,
-                                      NULL,0,&serverCtrls[0]);
-          if (rc!=LDAP_SUCCESS)
-          {
-            log_log(LOG_ERR,"ldap_create_page_control() failed: %s",ldap_err2string(rc));
-            return rc;
-          }
-          serverCtrls[1]=NULL;
-          pServerCtrls=serverCtrls;
-        }
-        else
-          pServerCtrls=NULL;
-        /* perform the search */
-        rc=ldap_search_ext(search->session->ld,
-                           search->base,search->scope,search->filter,
-                           search->attrs,0,pServerCtrls,NULL,NULL,
-                           LDAP_NO_LIMIT,&msgid);
-        /* free the controls if we had them */
-        if (pServerCtrls!=NULL)
-        {
-          ldap_control_free(serverCtrls[0]);
-          serverCtrls[0]=NULL;
-        }
-      }
-      stat=do_map_error(rc);
-      /* if we got any feedback from the server, don't try any other URIs */
-      if (stat!=NSS_STATUS_UNAVAIL)
-        break;
-      log++;
-      /* try the next URI (with wrap-around) */
-      search->session->current_uri++;
-      if (nslcd_cfg->ldc_uris[search->session->current_uri]==NULL)
-        search->session->current_uri=0;
-    }
-    while (search->session->current_uri != start_uri);
-    /* if we had reachability problems with the server close the connection */
-    /* TODO: we should probably close in the loop above */
-    if (stat==NSS_STATUS_UNAVAIL)
-    {
-      /* close the connection */
-      if (search->session!=NULL)
-      {
-        ldap_unbind(search->session->ld);
-        search->session->ld=NULL;
-      }
-      ++tries;
-    }
+    serverCtrls[1]=NULL;
+    pServerCtrls=serverCtrls;
   }
-  switch (stat)
+  else
+    pServerCtrls=NULL;
+  /* perform the search */
+  rc=ldap_search_ext(session->ld,
+                     base,scope,filter,(char **)attrs,
+                     0,pServerCtrls,NULL,NULL,
+                     LDAP_NO_LIMIT,&msgid);
+  /* free the controls if we had them */
+  if (pServerCtrls!=NULL)
   {
-    case NSS_STATUS_UNAVAIL:
-      log_log(LOG_ERR,"could not search LDAP server - %s",ldap_err2string(rc));
-      return rc;
-    case NSS_STATUS_TRYAGAIN:
-      log_log(LOG_ERR,"could not %sconnect to LDAP server - %s",
-              tries?"re":"",ldap_err2string(rc));
-      return rc;
-    case NSS_STATUS_SUCCESS:
-      if (log)
-      {
-        char *uri=nslcd_cfg->ldc_uris[search->session->current_uri];
-        if (uri==NULL)
-          uri = "(null)";
-        if (tries)
-          log_log(LOG_INFO,"reconnected to LDAP server %s after %d attempt%s",
-            uri, tries,(tries == 1) ? "" : "s");
-        else
-          log_log(LOG_INFO,"reconnected to LDAP server %s", uri);
-      }
-      /* update the last activity on the connection */
-      time(&(search->session->lastactivity));
-      search->msgid=msgid;
-      return LDAP_SUCCESS;
-    case NSS_STATUS_NOTFOUND:
-    case NSS_STATUS_RETURN:
-    default:
-      return rc;
+    ldap_control_free(serverCtrls[0]);
+    serverCtrls[0]=NULL;
   }
+  /* handle errors */
+  if (rc!=LDAP_SUCCESS)
+  {
+    log_log(LOG_WARNING,"ldap_search_ext() failed: %s",ldap_err2string(rc));
+    return NULL;
+  }
+  /* update the last activity on the connection */
+  time(&(session->lastactivity));
+  /* allocate a new search entry */
+  search=myldap_search_new(session,base,scope,filter,attrs);
+  /* save msgid */
+  search->msgid=msgid;
+  /* find a place in the session where we can register our search */
+  for (i=0;(session->searches[i]!=NULL)&&(i<MAX_SEARCHES_IN_SESSION);i++)
+    ;
+  if (i>=MAX_SEARCHES_IN_SESSION)
+  {
+    log_log(LOG_ERR,"myldap_search(): too many searches registered with session (max %d)",
+                    MAX_SEARCHES_IN_SESSION);
+    myldap_search_close(search);
+    return NULL;
+  }
+  /* regsiter search with the session so we can free it later on */
+  session->searches[i]=search;
+  /* return the new search */
+  return search;
 }
 
 MYLDAP_SESSION *myldap_create_session(void)
@@ -750,7 +660,9 @@ MYLDAP_SEARCH *myldap_search(
         const char *base,int scope,const char *filter,const char **attrs)
 {
   MYLDAP_SEARCH *search;
-  int i;
+  int sleeptime=0;
+  int try;
+  int start_uri;
   /* check parameters */
   if (!is_valid_session(session)||(base==NULL)||(filter==NULL)||(attrs==NULL))
   {
@@ -761,27 +673,48 @@ MYLDAP_SEARCH *myldap_search(
   /* log the call */
   log_log(LOG_DEBUG,"myldap_search(base=\"%s\", filter=\"%s\")",
                     base,filter);
-  /* allocate a new search entry */
-  search=myldap_search_new(session,base,scope,filter,attrs);
-  /* set up a new search */
-  if (do_with_reconnect(search)!=LDAP_SUCCESS)
+  /* keep trying a number of times */
+  for (try=0;try<(nslcd_cfg->ldc_reconnect_tries);try++)
   {
-    myldap_search_free(search);
-    return NULL;
+    /* sleep between tries */
+    if (try>0)
+    {
+      if (sleeptime==0)
+        sleeptime=nslcd_cfg->ldc_reconnect_sleeptime;
+      else
+        sleeptime*=2;
+      if (sleeptime>(nslcd_cfg->ldc_reconnect_maxsleeptime))
+        sleeptime=nslcd_cfg->ldc_reconnect_maxsleeptime;
+      log_log(LOG_WARNING,"no available LDAP server found, sleeping %d seconds",sleeptime);
+      (void)sleep(sleeptime);
+    }
+    /* try each configured URL once */
+    start_uri=session->current_uri;
+    do
+    {
+      /* try to start the search */
+      search=do_try_search(session,base,scope,filter,attrs);
+      if (search!=NULL)
+      {
+        log_log(LOG_INFO,"connected to LDAP server %s",
+                         nslcd_cfg->ldc_uris[session->current_uri]);
+        return search;
+      }
+      /* try the next URI (with wrap-around) */
+      session->current_uri++;
+      if (nslcd_cfg->ldc_uris[session->current_uri]==NULL)
+        session->current_uri=0;
+    }
+    while (session->current_uri!=start_uri);
+    /* if we had reachability problems with the server close the connection */
+    if (session->ld!=NULL)
+    {
+      ldap_unbind(session->ld);
+      session->ld=NULL;
+    }
   }
-  /* find a place in the session where we can register our search */
-  for (i=0;(session->searches[i]!=NULL)&&(i<MAX_SEARCHES_IN_SESSION);i++)
-    ;
-  if (i>=MAX_SEARCHES_IN_SESSION)
-  {
-    log_log(LOG_ERR,"myldap_search(): too many searches registered with session (max %d)",
-                    MAX_SEARCHES_IN_SESSION);
-    myldap_search_free(search);
-    return NULL;
-  }
-  /* regsiter search with the session so we can free it later on */
-  session->searches[i]=search;
-  return search;
+  log_log(LOG_ERR,"no available LDAP server found");
+  return NULL;
 }
 
 void myldap_search_close(MYLDAP_SEARCH *search)
