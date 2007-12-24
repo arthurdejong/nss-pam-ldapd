@@ -56,51 +56,13 @@
    <acronym>NIS</acronym>.)
   </para>
   <para>
-    The file <filename>nss-ldapd.conf</filename> contains the configuration
-    information for running
-    <command>nslcd</command> (see <citerefentry><refentrytitle>nslcd</refentrytitle><manvolnum>8</manvolnum></citerefentry>).
-    The file contains options, one on each line, defining the way
-    <acronym>NSS</acronym> lookups are translated into <acronym>LDAP</acronym>
-    lookups.
+    The file <filename>nss-ldapd.conf</filename> contains the 
+    configuration information for running <command>nslcd</command> (see 
+    <citerefentry><refentrytitle>nslcd</refentrytitle><manvolnum>8</manvolnum></citerefentry>).
+    The file contains options, one on each line, defining the way 
+    <acronym>NSS</acronym> lookups are mapped onto 
+    <acronym>LDAP</acronym> lookups.
   </para>
-<!--
-  TODO: replace this part with a pointer to configuring nss-ldapd (maybe a
-        separate manual page)
-  TODO: add somewhere some documentation on the split setup with a minimal
-        NSS library that connects to nslcd
-  <para>
-   Because <acronym>LDAP</acronym> is a hierarchical directory service, one
-   can distribute the information in a manner which reflects organizational
-   structure. This contrasts with the flat, single domain policy of
-   <acronym>NIS</acronym>. <acronym>LDAP</acronym> has many of the advantages
-   of <acronym>NIS+</acronym> (security and scalability) without the
-   complexity.
-  </para>
-  <para><emphasis remap="B">nss_ldap</emphasis>
-  will work alongside existing NIS, NIS+, DNS and flat file
-  name services. More importantly, because it builds as a shared library,
-  it is not necessary to recompile any applications to take advantage
-  of LDAP.</para>
-  <para>The present version of
-  <emphasis remap="B">nss_ldap</emphasis>
-  supports AIX 4.3.3 and above, FreeBSD 5.1, HP-UX 11i, Linux and
-  Solaris 2.6 and above. Many vendors provide their own LDAP nameservice
-  providers, often also called nss_ldap. This manual page applies to the
-  PADL
-  <emphasis remap="B">nss_ldap</emphasis>
-  module only. If you are using a vendor provided module, consult the
-  relevant documentation instead.</para>
-  <para>The features supported by the version of
-  <emphasis remap="B">nss_ldap</emphasis>
-  depend on which flags
-  were enabled when the software was built. Most features are enabled
-  in the configuration file, described below. (The location of the
-  configuration file is
-  configurable at compile time; the default path is /etc/nss-ldapd.conf.)
-  Also, some features may be unavailable on certain
-  operating systems or with certain LDAP libraries. For more information,
-  consult your vendor.</para>
--->
  </refsect1>
 
  <refsect1 id="options">
@@ -253,7 +215,6 @@
   </refsect2>
 -->
 
-<!-- DO NOT DOCUMENT FOR NOW BECAUSE IT'S NOT SUPPORTED
   <refsect2 id='kerberos_authentication_options'>
    <title>Kerberos authentication options</title>
    <variablelist>
@@ -269,7 +230,6 @@
 
    </variablelist>
   </refsect2>
--->
 
   <refsect2 id='search_mapping_options'>
    <title>Search/mapping options</title>
@@ -350,7 +310,7 @@
      <listitem>
       <para>
        This option allows for custom attributes to be looked up instead of
-       the default RFC 2307 attributes that are used.
+       the default RFC 2307 attributes.
        The <emphasis remap="I">MAP</emphasis> may be one of
        the supported maps below.
        The <emphasis remap="I">ATTRIBUTE</emphasis> is the one as
@@ -431,7 +391,7 @@
       <para>
        Specifies the period if inactivity (in seconds) after which the
        connection to the <acronym>LDAP</acronym> server will be closed.
-       The default is not to timeout connections.
+       The default is not to time out connections.
       </para>
      </listitem>
     </varlistentry>
@@ -441,8 +401,8 @@
      <listitem>
       <para>
        Specifies the number of times each <acronym>LDAP</acronym> server is
-       tried when connections to all <acronym>LDAP</acronym> server fail.
-       By default 4 tries are done.
+       tried when connections to all <acronym>LDAP</acronym> servers fail.
+       By default each <acronym>URI</acronym> is tried 4 times.
       </para>
      </listitem>
     </varlistentry>
@@ -481,25 +441,25 @@
     is used between <command>nslcd</command> and the <acronym>LDAP</acronym>
     server. The mechanism between the <acronym>NSS</acronym> client library
     and <command>nslcd</command> is simpler with a fixed compiled-in
-    value of a 1.5 seconds timeout value for writing to
-    <command>nslcd</command> and a 2 seconds timeout value for reading
-    answers. <command>nslcd</command> itself has a read timeout of 0.5 seconds
+    timeout of a 1.5 seconds for writing to <command>nslcd</command> and
+    a timeout of 2 seconds for reading answers.
+    <command>nslcd</command> itself has a read timeout of 0.5 seconds
     and a write timeout of 5 seconds.
    </para>
 
   </refsect2>
 
   <refsect2 id='ssl_tls_options'>
-   <title>SSL/TLS options</title>
+   <title><acronym>SSL</acronym>/<acronym>TLS</acronym> options</title>
    <variablelist>
 
     <varlistentry>
      <term><emphasis remap="B">ssl &lt;on|off|start_tls&gt;</emphasis></term>
      <listitem>
-      <para>Specifies whether to use SSL/TLS or not (the default is not to). If
+      <para>Specifies whether to use <acronym>SSL</acronym>/<acronym>TLS</acronym> or not (the default is not to). If
       <emphasis remap="B">start_tls</emphasis>
-      is specified then StartTLS is used rather than raw LDAP over SSL.
-      Not all <acronym>LDAP</acronym> client libraries support both SSL
+      is specified then StartTLS is used rather than raw <acronym>LDAP</acronym> over <acronym>SSL</acronym>.
+      Not all <acronym>LDAP</acronym> client libraries support both <acronym>SSL</acronym>
       and StartTLS, and all related configuration options.</para>
      </listitem>
     </varlistentry>
@@ -518,7 +478,8 @@
      <term><emphasis remap="B">tls_checkpeer &lt;yes|no&gt;</emphasis></term>
      <listitem>
       <para>Specifies whether to require and verify the server certificate
-      or not, when using SSL/TLS with the OpenLDAP client library.
+      or not, when using <acronym>SSL</acronym>/<acronym>TLS</acronym>
+      with the OpenLDAP client library.
       The default is to use the default behaviour of the client
       library; for OpenLDAP 2.0 and earlier it is "no", for OpenLDAP
       2.1 and later it is "yes". At least one of
@@ -554,7 +515,8 @@
     <varlistentry>
      <term><emphasis remap="B">tls_ciphers &lt;ciphers&gt;</emphasis></term>
      <listitem>
-      <para>Specifies the ciphers to use for TLS. See your TLS implementation's
+      <para>Specifies the ciphers to use for <acronym>TLS</acronym>.
+      See your <acronym>TLS</acronym> implementation's
       documentation for further information.</para>
      </listitem>
     </varlistentry>
@@ -563,7 +525,7 @@
      <term><emphasis remap="B">tls_cert &lt;certificate_file&gt;</emphasis></term>
      <listitem>
       <para>Specifies the path to the file containing the local certificate for
-      client TLS authentication.</para>
+      client <acronym>TLS</acronym> authentication.</para>
      </listitem>
     </varlistentry>
 
@@ -571,7 +533,7 @@
      <term><emphasis remap="B">tls_key &lt;key_file&gt;</emphasis></term>
      <listitem>
       <para>Specifies the path to the file containing the private key for client
-      TLS authentication.</para>
+      <acronym>TLS</acronym> authentication.</para>
      </listitem>
     </varlistentry>
 
@@ -588,7 +550,7 @@
      <term><emphasis remap="B">restart &lt;yes|no&gt;</emphasis></term>
      <listitem>
    <para>Specifies whether the
-   <emphasis remap="I">LDAP</emphasis>
+   <acronym>LDAP</acronym>
    client library should restart the
    <emphasis remap="B">select(2)</emphasis>
    system call when interrupted. This feature is not supported by all
@@ -601,8 +563,8 @@
      <term><option>pagesize</option> <emphasis remap="I">NUMBER</emphasis></term>
      <listitem>
       <para>
-       Set this to a number greater than 0 to request paged
-       results from the LDAP server in accordance with RFC2696.
+       Set this to a number greater than 0 to request paged results from 
+       the <acronym>LDAP</acronym> server in accordance with RFC2696. 
        The default (0) is to not request paged results.
       </para>
      </listitem>
@@ -622,7 +584,12 @@
   <variablelist remap="TP">
    <varlistentry>
     <term>alias<optional>es</optional></term>
-    <listitem><para>Mail aliases (ignored by most mail servers).</para></listitem>
+    <listitem><para>
+     Mail aliases.
+     Note that most mail servers do not use the <acronym>NSS</acronym> 
+     interface for requesting mail aliases and parse 
+     <filename>/etc/aliases</filename> on their own.
+    </para></listitem>
    </varlistentry>
    <varlistentry>
     <term>ether<optional>s</optional></term>
@@ -700,9 +667,10 @@
  <refsect1 id="known_bugs">
   <title>Known Bugs</title>
   <para>
-   This manual page is probably outdated and inaccurate and will be improved in an upcoming release.
-   The features of the <emphasis>nss-ldapd</emphasis> module are still under development so
-   these options may change in a future release.
+   This manual page may be outdated and inaccurate and will be improved 
+   in upcoming releases.
+   The features of <emphasis>nss-ldapd</emphasis> are still under 
+   development so these options may change in a future release.
   </para>
  </refsect1>
 
