@@ -158,9 +158,10 @@
      <listitem>
       <para>
        Specifies the distinguished name with which to bind to the directory
-       server for normal (non-root) lookups.
+       server for <!-- normal (non-root) -->lookups.
+       server for lookups.
        The default is to bind anonymously.
-       Also see the <option>rootbinddn</option> option below.
+       <!-- Also see the <option>rootbinddn</option> option below. -->
       </para>
      </listitem>
     </varlistentry>
@@ -180,6 +181,7 @@
      </listitem>
     </varlistentry>
 
+<!-- DO NOT DOCUMENT FOR NOW BECAUSE IT'S NOT SUPPORTED
     <varlistentry>
      <term><option>rootbinddn</option> <emphasis remap="I">DN</emphasis></term>
      <listitem>
@@ -203,6 +205,7 @@
       </para>
      </listitem>
     </varlistentry>
+-->
 
    </variablelist>
   </refsect2>
@@ -413,7 +416,7 @@
      <listitem>
       <para>
        Specifies the time limit (in seconds) to wait for a response from the
-       <acronym>LDAP</acronym> server for a response.
+       <acronym>LDAP</acronym> server.
        A value of zero (0), which is the default, is to wait indefinitely for
        searches to be completed.
       </para>
@@ -422,41 +425,68 @@
 
 <!-- FIXME: change the defaults to 10 and 20 seconds respectively -->
 
-<!-- DO NOT DOCUMENT BECAUSE THIS WILL CHANGE SOON ANYWAY
-    <varlistentry>
-     <term><emphasis remap="B">bind_policy &lt;hard_open|hard_init|soft&gt;</emphasis></term>
-     <listitem>
-      <para>Specifies the policy to use for reconnecting to an unavailable
-      <acronym>LDAP</acronym>
-      server. The default is
-      <emphasis remap="B">hard_open,</emphasis>
-      which reconnects if opening the connection to the directory server
-      failed. By contrast,
-      <emphasis remap="B">hard_init</emphasis>
-      reconnects if initializing the connection failed. Initializing may not
-      actually contact the directory server, and it is possible that a
-      malformed configuration file will trigger reconnection. If
-      <emphasis remap="B">soft</emphasis>
-      is specified, then
-      <emphasis remap="B">nss_ldap</emphasis>
-      will return immediately on server failure. All "hard" reconnect
-      policies block with exponential backoff before retrying.</para>
-     </listitem>
-    </varlistentry>
--->
-
     <varlistentry>
      <term><option>idle_timelimit</option> <emphasis remap="I">SECONDS</emphasis></term>
      <listitem>
       <para>
        Specifies the period if inactivity (in seconds) after which the
        connection to the <acronym>LDAP</acronym> server will be closed.
-       The default is not to time out connections.
+       The default is not to timeout connections.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>reconnect_tries</option> <emphasis remap="I">NUMBER</emphasis></term>
+     <listitem>
+      <para>
+       Specifies the number of times each <acronym>LDAP</acronym> server is
+       tried when connections to all <acronym>LDAP</acronym> server fail.
+       By default 4 tries are done.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>reconnect_sleeptime</option> <emphasis remap="I">SECONDS</emphasis></term>
+     <listitem>
+      <para>
+       Specifies the number of seconds to sleep between reconnection tries
+       if the connection to all <acronym>LDAP</acronym> servers fail.
+       This value is doubled with each try up to the value of the
+       <option>reconnect_maxsleeptime</option> option.
+       By default 1 second is waited between the first failure and the first
+       retry.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>reconnect_maxsleeptime</option> <emphasis remap="I">SECONDS</emphasis></term>
+     <listitem>
+      <para>
+       Specifies the maximum number of seconds to sleep between reconnection
+       tries if the connection to all <acronym>LDAP</acronym> servers fail.
+       This value limits the doubling mechanism described with the
+       <option>reconnect_maxsleeptime</option> option.
+       The default value is 30 seconds.
       </para>
      </listitem>
     </varlistentry>
 
    </variablelist>
+
+   <para>
+    Note that the reconnect logic as described above is the mechanism that
+    is used between <command>nslcd</command> and the <acronym>LDAP</acronym>
+    server. The mechanism between the <acronym>NSS</acronym> client library
+    and <command>nslcd</command> is simpler with a fixed compiled-in
+    value of a 1.5 seconds timeout value for writing to
+    <command>nslcd</command> and a 2 seconds timeout value for reading
+    answers. <command>nslcd</command> itself has a read timeout of 0.5 seconds
+    and a write timeout of 5 seconds.
+   </para>
+
   </refsect2>
 
   <refsect2 id='ssl_tls_options'>
@@ -591,11 +621,11 @@
   </para>
   <variablelist remap="TP">
    <varlistentry>
-    <term>alias(es)</term>
+    <term>alias<optional>es</optional></term>
     <listitem><para>Mail aliases (ignored by most mail servers).</para></listitem>
    </varlistentry>
    <varlistentry>
-    <term>ether(s)</term>
+    <term>ether<optional>s</optional></term>
     <listitem><para>Ethernet numbers (mac addresses).</para></listitem>
    </varlistentry>
    <varlistentry>
@@ -603,7 +633,7 @@
     <listitem><para>Posix groups.</para></listitem>
    </varlistentry>
    <varlistentry>
-    <term>host(s)</term>
+    <term>host<optional>s</optional></term>
     <listitem><para>Host names.</para></listitem>
    </varlistentry>
    <varlistentry>
@@ -611,7 +641,7 @@
     <listitem><para>Host and user groups used for access control.</para></listitem>
    </varlistentry>
    <varlistentry>
-    <term>network(s)</term>
+    <term>network<optional>s</optional></term>
     <listitem><para>Network numbers.</para></listitem>
    </varlistentry>
    <varlistentry>
@@ -619,7 +649,7 @@
     <listitem><para>Posix users.</para></listitem>
    </varlistentry>
    <varlistentry>
-    <term>protocol(s)</term>
+    <term>protocol<optional>s</optional></term>
     <listitem><para>Protocol definitions (like in <filename>/etc/protocols</filename>).</para></listitem>
    </varlistentry>
    <varlistentry>
@@ -627,7 +657,7 @@
     <listitem><para>Remote procedure call names and numbers.</para></listitem>
    </varlistentry>
    <varlistentry>
-    <term>service(s)</term>
+    <term>service<optional>s</optional></term>
     <listitem><para>Network service names and numbers.</para></listitem>
    </varlistentry>
    <varlistentry>
