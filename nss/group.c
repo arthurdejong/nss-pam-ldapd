@@ -77,7 +77,7 @@ static enum nss_status read_gids(
     READ_TYPE(fp,res,int32_t);
   }
   /* return the proper status code */
-  return (res==(int32_t)NSLCD_RESULT_NOTFOUND)?NSS_STATUS_SUCCESS:nslcd2nss(res);
+  return (res==(int32_t)NSLCD_RESULT_END)?NSS_STATUS_SUCCESS:nslcd2nss(res);
 }
 #endif /* REENABLE_WHEN_WORKING */
 

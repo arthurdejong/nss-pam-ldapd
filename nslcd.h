@@ -37,14 +37,15 @@
      int32 NSLCD_VERSION
      int32 NSLCD_ACTION_* (the original request type)
      [result(s)]
+     NSLCD_RESULT_END
    A result looks like:
-     int32 NSLCD_RESULT_* (response code)
+     int32 NSLCD_RESULT_SUCCESS
      [result value(s)]
    If a response would return multiple values (e.g. for NSLCD_ACTION_*_ALL
-   functions) each return value will be preceded by a NSLCD_RESULT_* value.
-   The last value will be marked by a result value other than
-   NSLCD_RESULT_SUCCESS. Note that the server may including a trailing
-   NSLCD_RESULT_NOTFOUND after all the results.
+   functions) each return value will be preceded by a NSLCD_RESULT_SUCCESS
+   value. After the last returned result the server sends
+   NSLCD_RESULT_END. If some error occurs the server terminates the
+   connection to signal an error condition (breaking the protocol).
 
    These are the available data types:
      INT32  - 32-bit integer value
@@ -197,10 +198,7 @@
 #define NSLCD_ACTION_SHADOW_ALL         2005
 
 /* Request result codes. */
-#define NSLCD_RESULT_NOTFOUND              3 /* key was not found */
+#define NSLCD_RESULT_END              3 /* key was not found */
 #define NSLCD_RESULT_SUCCESS               0 /* everything ok */
-
-/* We need this for now, get rid of it later. */
-#define NSLCD_RESULT_UNAVAIL               2 /* sevice unavailable */
 
 #endif /* not _NSLCD_H */

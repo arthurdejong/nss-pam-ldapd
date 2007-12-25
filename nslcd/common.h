@@ -141,7 +141,7 @@ int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
       writefn; \
     } \
     /* write the final result code */ \
-    WRITE_INT32(fp,NSLCD_RESULT_NOTFOUND); \
+    WRITE_INT32(fp,NSLCD_RESULT_END); \
     return 0; \
   }
 
