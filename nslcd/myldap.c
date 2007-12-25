@@ -744,7 +744,7 @@ void myldap_search_close(MYLDAP_SEARCH *search)
   myldap_search_free(search);
 }
 
-MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
+MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
 {
   int rc;
   int parserc;
@@ -757,6 +757,8 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
   {
     log_log(LOG_ERR,"myldap_get_entry(): invalid search passed");
     errno=EINVAL;
+    if (rcp!=NULL)
+      *rcp=LDAP_OPERATIONS_ERROR;
     return NULL;
   }
   /* set up a timelimit value for operations */
@@ -794,16 +796,22 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
           rc=LDAP_UNAVAILABLE;
         log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
         myldap_search_close(search);
+        if (rcp!=NULL)
+          *rcp=rc;
         return NULL;
       case 0:
         /* the timeout expired */
         log_log(LOG_ERR,"ldap_result() timed out");
         myldap_search_close(search);
+        if (rcp!=NULL)
+          *rcp=LDAP_TIMELIMIT_EXCEEDED;
         return NULL;
       case LDAP_RES_SEARCH_ENTRY:
         /* we have a normal search entry, update timestamp and return result */
         time(&(search->session->lastactivity));
         search->entry=myldap_entry_new(search);
+        if (rcp!=NULL)
+          *rcp=LDAP_SUCCESS;
         return search->entry;
       case LDAP_RES_SEARCH_RESULT:
         /* we have a search result, parse it */
@@ -824,6 +832,8 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
             ldap_controls_free(resultcontrols);
           log_log(LOG_ERR,"ldap_parse_result() failed: %s",ldap_err2string(parserc));
           myldap_search_close(search);
+          if (rcp!=NULL)
+            *rcp=parserc;
           return NULL;
         }
         /* check for errors in message */
@@ -833,6 +843,8 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
             ldap_controls_free(resultcontrols);
           log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
           myldap_search_close(search);
+          if (rcp!=NULL)
+            *rcp=rc;
           return NULL;
         }
         /* handle result controls */
@@ -848,7 +860,13 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
         search->msgid=-1;
         /* check if there are more pages to come */
         if ((search->cookie==NULL)||(search->cookie->bv_len==0))
+        {
+          /* we are at the end of the search, no more results */
+          myldap_search_close(search);
+          if (rcp!=NULL)
+            *rcp=LDAP_SUCCESS;
           return NULL;
+        }
         /* try the next page */
         serverctrls[0]=NULL;
         serverctrls[1]=NULL;
@@ -862,6 +880,8 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
           log_log(LOG_WARNING,"ldap_create_page_control() failed: %s",
                               ldap_err2string(rc));
           myldap_search_close(search);
+          if (rcp!=NULL)
+            *rcp=rc;
           return NULL;
         }
         /* set up a new search for the next page */
@@ -875,10 +895,11 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
           log_log(LOG_WARNING,"ldap_search_ext() failed: %s",
                               ldap_err2string(rc));
           myldap_search_close(search);
+          if (rcp!=NULL)
+            *rcp=rc;
           return NULL;
         }
         search->msgid=msgid;
-
         /* we continue with another pass */
         break;
       case LDAP_RES_SEARCH_REFERENCE:
@@ -886,6 +907,8 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search)
       default:
         log_log(LOG_WARNING,"ldap_result() returned unexpected result type");
         myldap_search_close(search);
+        if (rcp!=NULL)
+          *rcp=LDAP_PROTOCOL_ERROR;
         return NULL;
     }
   }

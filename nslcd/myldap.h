@@ -20,7 +20,7 @@
    02110-1301 USA
 */
 
-/* 
+/*
    This file describes the API of the myldap module which takes the complexity
    out of using the OpenLDAP library. Memory management, paging, reconnect
    logic, idle timeout of connections, etc is taken care of by the module.
@@ -86,8 +86,9 @@ void myldap_search_close(MYLDAP_SEARCH *search);
    no more entries are available). Note that any memory allocated to return
    information about the previous entry (e.g. with myldap_get_values()) is
    freed with this call. The search is autoamtically closed when no more
-   results are available. */
-MUST_USE MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search);
+   results are available. The function returns an LDAP status code in the
+   location pointed to by rcp if it is non-NULL. */
+MUST_USE MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp);
 
 /* Get the DN from the entry. This function does not return NULL (on error
    "unknown" is returned). */

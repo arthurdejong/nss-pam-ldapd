@@ -113,10 +113,11 @@ int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
 #define NSLCD_HANDLE(db,fn,readfn,logcall,action,mkfilter,writefn) \
   int nslcd_##db##_##fn(TFILE *fp,MYLDAP_SESSION *session) \
   { \
-    /* define commong variables */ \
+    /* define common variables */ \
     int32_t tmpint32; \
     MYLDAP_SEARCH *search; \
     MYLDAP_ENTRY *entry; \
+    int rc; \
     /* read request parameters */ \
     readfn; \
     /* log call */ \
@@ -136,12 +137,15 @@ int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
     if ((search=myldap_search(session,db##_base,db##_scope,filter,db##_attrs))==NULL) \
       return -1; \
     /* go over results */ \
-    while ((entry=myldap_get_entry(search))!=NULL) \
+    while ((entry=myldap_get_entry(search,&rc))!=NULL) \
     { \
       writefn; \
     } \
     /* write the final result code */ \
-    WRITE_INT32(fp,NSLCD_RESULT_END); \
+    if (rc==LDAP_SUCCESS) \
+    { \
+      WRITE_INT32(fp,NSLCD_RESULT_END); \
+    } \
     return 0; \
   }
 

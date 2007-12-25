@@ -56,6 +56,7 @@ static void test_search(void)
   MYLDAP_ENTRY *entry;
   const char *attrs[] = { "uid", "cn", "gid", NULL };
   int i;
+  int rc;
   /* initialize session */
   printf("test_search(): getting session...\n");
   session=myldap_create_session();
@@ -69,14 +70,14 @@ static void test_search(void)
   assert(search!=NULL);
   /* go over results */
   printf("test_search(): get results...\n");
-  for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
+  for (i=0;(entry=myldap_get_entry(search,&rc))!=NULL;i++)
   {
     if (i<MAXRESULTS)
       printf("test_search(): [%d] DN %s\n",i,myldap_get_dn(entry));
     else if (i==MAXRESULTS)
       printf("test_search(): ...\n");
   }
-  printf("test_search(): %d entries returned\n",i);
+  printf("test_search(): %d entries returned: %s\n",i,ldap_err2string(rc));
   /* perform another search */
   printf("test_search(): doing search...\n");
   search=myldap_search(session,nslcd_cfg->ldc_base,
@@ -86,14 +87,14 @@ static void test_search(void)
   assert(search!=NULL);
   /* go over results */
   printf("test_search(): get results...\n");
-  for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
+  for (i=0;(entry=myldap_get_entry(search,&rc))!=NULL;i++)
   {
     if (i<MAXRESULTS)
       printf("test_search(): [%d] DN %s\n",i,myldap_get_dn(entry));
     else if (i==MAXRESULTS)
       printf("test_search(): ...\n");
   }
-  printf("test_search(): %d entries returned\n",i);
+  printf("test_search(): %d entries returned: %s\n",i,ldap_err2string(rc));
   /* clean up */
   myldap_session_close(session);
 }
@@ -119,7 +120,7 @@ static void test_get_values(void)
                           attrs);
   assert(search!=NULL);
   /* go over results */
-  for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
+  for (i=0;(entry=myldap_get_entry(search,NULL))!=NULL;i++)
   {
     if (i<MAXRESULTS)
       printf("test_get_values(): [%d] DN %s\n",i,myldap_get_dn(entry));
@@ -174,7 +175,7 @@ static void test_two_searches(void)
                         attrs);
   assert(search1!=NULL);
   /* get a result from search1 */
-  entry=myldap_get_entry(search1);
+  entry=myldap_get_entry(search1,NULL);
   assert(entry!=NULL);
   printf("test_two_searches(): [search1] DN %s\n",myldap_get_dn(entry));
   vals=myldap_get_values(entry,"cn");
@@ -187,14 +188,14 @@ static void test_two_searches(void)
                         attrs);
   assert(search2!=NULL);
   /* get a result from search2 */
-  entry=myldap_get_entry(search2);
+  entry=myldap_get_entry(search2,NULL);
   assert(entry!=NULL);
   printf("test_two_searches(): [search2] DN %s\n",myldap_get_dn(entry));
   vals=myldap_get_values(entry,"cn");
   assert((vals!=NULL)&&(vals[0]!=NULL));
   printf("test_two_searches(): [search2] cn=%s\n",vals[0]);
   /* get another result from search1 */
-  entry=myldap_get_entry(search1);
+  entry=myldap_get_entry(search1,NULL);
   assert(entry!=NULL);
   printf("test_two_searches(): [search1] DN %s\n",myldap_get_dn(entry));
   vals=myldap_get_values(entry,"cn");
@@ -213,6 +214,7 @@ static void *worker(void *arg)
   const char *attrs[] = { "uid", "cn", "gid", NULL };
   struct worker_args *args=(struct worker_args *)arg;
   int i;
+  int rc;
   /* initialize session */
   session=myldap_create_session();
   assert(session!=NULL);
@@ -223,14 +225,14 @@ static void *worker(void *arg)
                        attrs);
   assert(search!=NULL);
   /* go over results */
-  for (i=0;(entry=myldap_get_entry(search))!=NULL;i++)
+  for (i=0;(entry=myldap_get_entry(search,&rc))!=NULL;i++)
   {
     if (i<MAXRESULTS)
       printf("test_threads(): [worker %d] [%d] DN %s\n",args->id,i,myldap_get_dn(entry));
     else if (i==MAXRESULTS)
       printf("test_threads(): [worker %d] ...\n",args->id);
   }
-  printf("test_threads(): [worker %d] DONE\n",args->id);
+  printf("test_threads(): [worker %d] DONE: %s\n",args->id,ldap_err2string(rc));
   /* clean up */
   myldap_session_close(session);
   return 0;
@@ -261,7 +263,6 @@ static void test_connections(void)
 {
   MYLDAP_SESSION *session;
   MYLDAP_SEARCH *search;
-  MYLDAP_ENTRY *entry;
   const char *attrs[] = { "uid", "cn", "gid", NULL };
   char *old_uris[NSS_LDAP_CONFIG_URI_MAX+1];
   int i;
