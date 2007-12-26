@@ -210,6 +210,8 @@ static void test_read(void)
   assert(cfg.ldc_uris[3]==NULL);
   assertstreq(cfg.ldc_base,"dc=test, dc=tld");
   assertstreq(passwd_base,"ou=Some People,dc=test,dc=tld");
+  /* remove temporary file */
+  remove("temp.cfg");
 }
 
 /* the main program... */
