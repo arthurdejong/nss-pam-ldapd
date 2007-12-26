@@ -574,8 +574,8 @@ static int do_open(MYLDAP_SESSION *session)
   }
   /* update last activity and finish off state */
   time(&(session->lastactivity));
-  log_log(LOG_DEBUG,"do_open(): connected to %s",
-                    nslcd_cfg->ldc_uris[session->current_uri]);
+  log_log(LOG_INFO,"connected to LDAP server %s",
+                   nslcd_cfg->ldc_uris[session->current_uri]);
   return LDAP_SUCCESS;
 }
 
@@ -732,11 +732,7 @@ MYLDAP_SEARCH *myldap_search(
       /* try to start the search */
       search=do_try_search(session,base,scope,filter,attrs);
       if (search!=NULL)
-      {
-        log_log(LOG_INFO,"connected to LDAP server %s",
-                         nslcd_cfg->ldc_uris[session->current_uri]);
         return search;
-      }
       /* try the next URI (with wrap-around) */
       session->current_uri++;
       if (nslcd_cfg->ldc_uris[session->current_uri]==NULL)
