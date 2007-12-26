@@ -24,6 +24,8 @@
 # FIXME: update the above description and provide actual LDIF file
 # It's probably best to run this in an environment without nscd.
 
+# note that nscd should not be running
+
 set -e
 
 # check if LDAP is configured correctly
@@ -52,7 +54,7 @@ check() {
   # run the command
   echo 'checking "'"$cmd"'"'
   actualfile=`mktemp -t actual.XXXXXX 2> /dev/null || tempfile -s .actual 2> /dev/null`
-  eval "$cmd" > "$actualfile" 2>&1
+  eval "$cmd" > "$actualfile" 2>&1 || true
   # check for differences
   if ! diff -Nauwi "$expectfile" "$actualfile"
   then
