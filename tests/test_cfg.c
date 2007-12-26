@@ -127,35 +127,36 @@ static void test_parse_map(void)
          (LM_NETGROUP!=LM_RPC)&&(LM_NETGROUP!=LM_SERVICES)&&(LM_NETGROUP!=LM_SHADOW));
   assert((LM_NETWORKS!=LM_PASSWD)&&(LM_NETWORKS!=LM_PROTOCOLS)&&(LM_NETWORKS!=LM_RPC)&&
          (LM_NETWORKS!=LM_SERVICES)&&(LM_NETWORKS!=LM_SHADOW));
-  assert((LM_PASSWD!=LM_PROTOCOLS)&&(LM_PASSWD!=LM_RPC)&&(LM_PASSWD!=LM_SERVICES)&&         (LM_PASSWD!=LM_SHADOW));
+  assert((LM_PASSWD!=LM_PROTOCOLS)&&(LM_PASSWD!=LM_RPC)&&(LM_PASSWD!=LM_SERVICES)&&
+         (LM_PASSWD!=LM_SHADOW));
   assert((LM_PROTOCOLS!=LM_RPC)&&(LM_PROTOCOLS!=LM_SERVICES)&&(LM_PROTOCOLS!=LM_SHADOW));
   assert((LM_RPC!=LM_SERVICES)&&(LM_RPC!=LM_SHADOW));
   assert((LM_SERVICES!=LM_SHADOW));
   /* test supported names */
-  assert(parse_map(__FILE__,__LINE__,"alIas")==LM_ALIASES);
-  assert(parse_map(__FILE__,__LINE__,"AliasES")==LM_ALIASES);
-  assert(parse_map(__FILE__,__LINE__,"ether")==LM_ETHERS);
-  assert(parse_map(__FILE__,__LINE__,"ethers")==LM_ETHERS);
-  assert(parse_map(__FILE__,__LINE__,"group")==LM_GROUP);
-  /* assert(parse_map(__FILE__,__LINE__,"groups")==LM_GROUP); */
-  assert(parse_map(__FILE__,__LINE__,"host")==LM_HOSTS);
-  assert(parse_map(__FILE__,__LINE__,"hosts")==LM_HOSTS);
-  assert(parse_map(__FILE__,__LINE__,"netgroup")==LM_NETGROUP);
-  /* assert(parse_map(__FILE__,__LINE__,"netgroups")==LM_NETGROUP); */
-  assert(parse_map(__FILE__,__LINE__,"network")==LM_NETWORKS);
-  assert(parse_map(__FILE__,__LINE__,"networks")==LM_NETWORKS);
-  assert(parse_map(__FILE__,__LINE__,"passwd")==LM_PASSWD);
-  /* assert(parse_map(__FILE__,__LINE__,"passwds")==LM_PASSWD); */
-  assert(parse_map(__FILE__,__LINE__,"protocol")==LM_PROTOCOLS);
-  assert(parse_map(__FILE__,__LINE__,"protocols")==LM_PROTOCOLS);
-  assert(parse_map(__FILE__,__LINE__,"rpc")==LM_RPC);
-  /* assert(parse_map(__FILE__,__LINE__,"rpcs")==LM_RPC); */
-  assert(parse_map(__FILE__,__LINE__,"service")==LM_SERVICES);
-  assert(parse_map(__FILE__,__LINE__,"services")==LM_SERVICES);
-  assert(parse_map(__FILE__,__LINE__,"shadow")==LM_SHADOW);
-  /* assert(parse_map(__FILE__,__LINE__,"shadows")==LM_SHADOW); */
+  assert(parse_map("alIas")==LM_ALIASES);
+  assert(parse_map("AliasES")==LM_ALIASES);
+  assert(parse_map("ether")==LM_ETHERS);
+  assert(parse_map("ethers")==LM_ETHERS);
+  assert(parse_map("group")==LM_GROUP);
+  /* assert(parse_map("groups")==LM_GROUP); */
+  assert(parse_map("host")==LM_HOSTS);
+  assert(parse_map("hosts")==LM_HOSTS);
+  assert(parse_map("netgroup")==LM_NETGROUP);
+  /* assert(parse_map("netgroups")==LM_NETGROUP); */
+  assert(parse_map("network")==LM_NETWORKS);
+  assert(parse_map("networks")==LM_NETWORKS);
+  assert(parse_map("passwd")==LM_PASSWD);
+  /* assert(parse_map("passwds")==LM_PASSWD); */
+  assert(parse_map("protocol")==LM_PROTOCOLS);
+  assert(parse_map("protocols")==LM_PROTOCOLS);
+  assert(parse_map("rpc")==LM_RPC);
+  /* assert(parse_map("rpcs")==LM_RPC); */
+  assert(parse_map("service")==LM_SERVICES);
+  assert(parse_map("services")==LM_SERVICES);
+  assert(parse_map("shadow")==LM_SHADOW);
+  /* assert(parse_map("shadows")==LM_SHADOW); */
   /* most other values should call exit():
-  assert(parse_map(__FILE__,__LINE__,"publickey")==LM_SERVICES); */
+  assert(parse_map("publickey")==LM_SERVICES); */
 }
 
 static void test_parse_map_statement(void)
@@ -165,21 +166,50 @@ static void test_parse_map_statement(void)
 
 static void test_tokenize(void)
 {
-  const char **opts;
-  int nopts;
-  /* this also has memory leaks (the strdup() calls) */
-  opts=tokenize(__FILE__,__LINE__,strdup("this is a simple line"),&nopts);
-  assert(nopts==5);
-  assertstreq(opts[0],"this");
-  assertstreq(opts[1],"is");
-  assertstreq(opts[2],"a");
-  assertstreq(opts[3],"simple");
-  assertstreq(opts[4],"line");
-  opts=tokenize(__FILE__,__LINE__,strdup("this contains \"quoted text\""),&nopts);
-  assert(nopts==3);
-  assertstreq(opts[0],"this");
-  assertstreq(opts[1],"contains");
-  assertstreq(opts[2],"\"quoted text\"");
+  /* this leaks memory all over the place */
+  char *line=strdup("yes this is 1 simple line");
+  char *str;
+  int i;
+  get_boolean(__FILE__,__LINE__,__PRETTY_FUNCTION__,&line,&i);
+  assert(i==1);
+  get_strdup(__FILE__,__LINE__,__PRETTY_FUNCTION__,&line,&str);
+  assertstreq(str,"this");
+  get_strdup(__FILE__,__LINE__,__PRETTY_FUNCTION__,&line,&str);
+  assertstreq(str,"is");
+  get_int(__FILE__,__LINE__,__PRETTY_FUNCTION__,&line,&i);
+  assert(i==1);
+  get_restdup(__FILE__,__LINE__,__PRETTY_FUNCTION__,&line,&str);
+  assertstreq(str,"simple line");
+}
+
+extern const char *passwd_base;
+
+static void test_read(void)
+{
+  FILE *fp;
+  struct ldap_config cfg;
+  /* write some stuff to a temporary file */
+  fp=fopen("temp.cfg","w");
+  assert(fp!=NULL);
+  fprintf(fp,"# a line of comments\n"
+             "uri ldap://127.0.0.1/\n"
+             "uri ldap:/// ldaps://127.0.0.1/\n"
+             "base dc=test, dc=tld\n"
+             "base passwd ou=Some People,dc=test,dc=tld\n");
+  fclose(fp);
+  /* parse the file */
+  cfg_defaults(&cfg);
+  cfg_read("temp.cfg",&cfg);
+  /* check results */
+  assert(cfg.ldc_uris[0]!=NULL);
+  assert(cfg.ldc_uris[1]!=NULL);
+  assert(cfg.ldc_uris[2]!=NULL);
+  assertstreq(cfg.ldc_uris[0],"ldap://127.0.0.1/");
+  assertstreq(cfg.ldc_uris[1],"ldap:///");
+  assertstreq(cfg.ldc_uris[2],"ldaps://127.0.0.1/");
+  assert(cfg.ldc_uris[3]==NULL);
+  assertstreq(cfg.ldc_base,"dc=test, dc=tld");
+  assertstreq(passwd_base,"ou=Some People,dc=test,dc=tld");
 }
 
 /* the main program... */
@@ -192,5 +222,6 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   test_parse_map();
   test_parse_map_statement();
   test_tokenize();
+  test_read();
   return EXIT_SUCCESS;
 }

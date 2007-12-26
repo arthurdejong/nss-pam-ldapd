@@ -92,7 +92,7 @@ struct ldap_config
   /* search timelimit */
   int ldc_timelimit;
   /* idle timeout */
-  time_t ldc_idle_timelimit;
+  int ldc_idle_timelimit;
   /* number of sleeping reconnect attempts */
   int ldc_reconnect_tries;
   /* seconds to sleep; doubled until max */

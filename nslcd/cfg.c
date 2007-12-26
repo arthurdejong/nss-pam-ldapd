@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -53,10 +54,10 @@ struct ldap_config *nslcd_cfg=NULL;
 /* the maximum line length in the configuration file */
 #define MAX_LINE_LENGTH          4096
 
-/* the maximum number of keywords/options on the line */
-#define MAX_LINE_OPTIONS         10
+/* the delimiters of tokens */
+#define TOKEN_DELIM " \t\n\r"
 
-/* clear the configuration information back to the defaults */
+/* set the configuration information to the defaults */
 static void cfg_defaults(struct ldap_config *cfg)
 {
   int i;
@@ -238,7 +239,39 @@ static int parse_scope(const char *filename,int lnr,const char *value)
   }
 }
 
-static enum ldap_map_selector parse_map(const char *filename,int lnr,const char *value)
+/* This function works like strtok() except that the original string is
+   not modified and a pointer within str to where the next token begins
+   is returned (this can be used to pass to the function on the next
+   iteration). If no more tokens are found or the token will not fit in
+   the buffer, NULL is returned. */
+static char *get_token(char **line,char *buf,size_t buflen)
+{
+  size_t len;
+  if ((line==NULL)||(*line==NULL)||(**line=='\0')||(buf==NULL))
+    return NULL;
+  /* find the beginning and length of the token */
+  *line+=strspn(*line,TOKEN_DELIM);
+  len=strcspn(*line,TOKEN_DELIM);
+  /* check if there is a token */
+  if (len==0)
+  {
+    *line=NULL;
+    return NULL;
+  }
+  /* limit the token length */
+  if (len>=buflen)
+    len=buflen-1;
+  /* copy the token */
+  strncpy(buf,*line,len);
+  buf[len]='\0';
+  /* skip to the next token */
+  *line+=len;
+  *line+=strspn(*line,TOKEN_DELIM);
+  /* return the token */
+  return buf;
+}
+
+static enum ldap_map_selector parse_map(const char *value)
 {
   if ( (strcasecmp(value,"alias")==0) || (strcasecmp(value,"aliases")==0) )
     return LM_ALIASES;
@@ -263,10 +296,25 @@ static enum ldap_map_selector parse_map(const char *filename,int lnr,const char 
   else if (strcasecmp(value,"shadow")==0)
     return LM_SHADOW;
   else
-  {
-    log_log(LOG_ERR,"%s:%d: unknown mapping: '%s'",filename,lnr,value);
-    exit(EXIT_FAILURE);
-  }
+    return LM_NONE;
+}
+
+/* check to see if the line begins with a named map */
+static enum ldap_map_selector get_map(char **line)
+{
+  char token[32];
+  char *old;
+  enum ldap_map_selector map;
+  /* get the token */
+  old=*line;
+  if (get_token(line,token,sizeof(token))==NULL)
+    return LM_NONE;
+  /* find the map if any */
+  map=parse_map(token);
+  /* unknown map, return to the previous state */
+  if (map==LM_NONE)
+    *line=old;
+  return map;
 }
 
 /* check that the condition is true and otherwise log an error
@@ -282,17 +330,19 @@ static inline void check_argumentcount(const char *filename,int lnr,
 }
 
 static void parse_krb5_ccname_statement(const char *filename,int lnr,
-                                        const char **opts,int nopts)
+                                        const char *keyword,char *line)
 {
+  char token[80];
   const char *ccname;
   const char *ccfile;
   size_t ccenvlen;
   char *ccenv;
   OM_uint32 minor_status;
+  /* get token */
+  check_argumentcount(filename,lnr,keyword,
+      (get_token(&line,token,sizeof(token))!=NULL)&&(*line=='\0'));
   /* set default kerberos ticket cache for SASL-GSSAPI */
-  log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-  check_argumentcount(filename,lnr,opts[0],nopts==2);
-  ccname=opts[1];
+  ccname=token;
   /* check that cache exists and is readable if it is a file */
   if ( (strncasecmp(ccname,"FILE:",sizeof("FILE:")-1)==0) ||
        (strncasecmp(ccname,"WRFILE:",sizeof("WRFILE:")-1)==0))
@@ -348,170 +398,163 @@ static void set_base(const char *filename,int lnr,
 }
 
 static void parse_base_statement(const char *filename,int lnr,
-                                 const char **opts,int nopts,
+                                 const char *keyword,char *line,
                                  struct ldap_config *cfg)
 {
-  enum ldap_map_selector map;
   const char **var;
-  if (nopts==2)
-    set_base(filename,lnr,opts[1],(const char **)&(cfg->ldc_base));
-  else if (nopts==3)
-  {
-    /* get the map */
-    map=parse_map(filename,lnr,opts[1]);
-    /* get the base variable to set */
-    var=base_get_var(map);
-    if (var==NULL)
-    {
-      log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,opts[1]);
-      exit(EXIT_FAILURE);
-    }
-    set_base(filename,lnr,opts[2],var);
-  }
-  else
-    check_argumentcount(filename,lnr,opts[0],0);
+  var=base_get_var(get_map(&line));
+  if (var==NULL)
+    var=(const char **)&(cfg->ldc_base);
+  check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
+  set_base(filename,lnr,line,var);
 }
 
 static void parse_scope_statement(const char *filename,int lnr,
-                                  const char **opts,int nopts,
+                                  const char *keyword,char *line,
                                   struct ldap_config *cfg)
 {
-  enum ldap_map_selector map;
   int *var;
-  if (nopts==2)
-    cfg->ldc_scope=parse_scope(filename,lnr,opts[1]);
-  else if (nopts==3)
-  {
-    /* get the map */
-    map=parse_map(filename,lnr,opts[1]);
-    /* get the scope variable to set */
-    var=scope_get_var(map);
-    if (var==NULL)
-    {
-      log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,opts[1]);
-      exit(EXIT_FAILURE);
-    }
-    /* set the scope */
-    *var=parse_scope(filename,lnr,opts[2]);
-  }
-  else
-    check_argumentcount(filename,lnr,opts[0],0);
+  var=scope_get_var(get_map(&line));
+  if (var==NULL)
+    var=&cfg->ldc_scope;
+  check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
+  *var=parse_scope(filename,lnr,line);
 }
 
 static void parse_filter_statement(const char *filename,int lnr,
-                                   const char **opts,int nopts)
+                                   const char *keyword,char *line)
 {
-  enum ldap_map_selector map;
   const char **var;
-  check_argumentcount(filename,lnr,opts[0],nopts==3);
-  /* get the map */
-  map=parse_map(filename,lnr,opts[1]);
-  /* get the filter variable to set */
-  var=filter_get_var(map);
+  var=filter_get_var(get_map(&line));
   if (var==NULL)
   {
-    log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,opts[1]);
+    log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,line);
     exit(EXIT_FAILURE);
   }
+  check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
   /* check if the value will be changed */
-  if (strcmp(*var,opts[2])!=0)
+  if (strcmp(*var,line)!=0)
   {
     /* Note: we have a memory leak here if a single mapping is changed
              multiple times in one config (deemed not a problem) */
-    *var=xstrdup(opts[2]);
+    *var=xstrdup(line);
   }
 }
 
 /* this function modifies the statement argument passed */
 static void parse_map_statement(const char *filename,int lnr,
-                                const char **opts,int nopts)
+                                const char *keyword,char *line)
 {
   enum ldap_map_selector map;
   const char **var;
-  check_argumentcount(filename,lnr,opts[0],nopts==4);
+  char oldatt[32], newatt[32];
   /* get the map */
-  map=parse_map(filename,lnr,opts[1]);
+  if ((map=get_map(&line))==LM_NONE)
+  {
+    log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,line);
+    exit(EXIT_FAILURE);
+  }
+  /* read the other tokens */
+  check_argumentcount(filename,lnr,keyword,
+      (get_token(&line,oldatt,sizeof(oldatt))!=NULL)&&
+      (get_token(&line,newatt,sizeof(newatt))!=NULL));
+  check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
   /* get the attribute variable to set */
-  var=attmap_get_var(map,opts[2]);
+  var=attmap_get_var(map,oldatt);
   if (var==NULL)
   {
-    log_log(LOG_ERR,"%s:%d: unknown attribute to map: '%s'",filename,lnr,opts[2]);
+    log_log(LOG_ERR,"%s:%d: unknown attribute to map: '%s'",filename,lnr,oldatt);
     exit(EXIT_FAILURE);
   }
   /* check if the value will be changed */
-  if (strcmp(*var,opts[3])!=0)
+  if (strcmp(*var,newatt)!=0)
   {
     /* Note: we have a memory leak here if a single mapping is changed
              multiple times in one config (deemed not a problem) */
-    *var=xstrdup(opts[3]);
+    *var=xstrdup(newatt);
   }
 }
 
-/* split a line from the configuration file
-   note that this code is not thread safe since a pointer to the same
-   storage will be returned with each call
-   the line string is modified */
-static const char **tokenize(const char *filename,int lnr,char *line,int *nopt)
+static void get_int(const char *filename,int lnr,
+                    const char *keyword,char **line,
+                    int *var)
 {
-  static const char *retv[MAX_LINE_OPTIONS];
-  int opt;
-  for (opt=0;opt<MAX_LINE_OPTIONS;opt++)
+  /* TODO: refactor to have less overhead */
+  char token[32];
+  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
+  /* TODO: replace with correct numeric parse */
+  *var=atoi(token);
+}
+
+static void get_boolean(const char *filename,int lnr,
+                        const char *keyword,char **line,
+                        int *var)
+{
+  /* TODO: refactor to have less overhead */
+  char token[32];
+  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
+  *var=parse_boolean(filename,lnr,token);
+}
+
+static void get_strdup(const char *filename,int lnr,
+                    const char *keyword,char **line,
+                    char **var)
+{
+  /* TODO: refactor to have less overhead */
+  char token[64];
+  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
+  if ((*var==NULL)||(strcmp(*var,token)!=0))
   {
-    /* skip beginning spaces */
-    while ((*line==' ')||(*line=='\t'))
-      line++;
-    /* check for end of line or comment */
-    if ((*line=='\0')||(*line=='#'))
-      break; /* we're done */
-    /* we have a new keyword */
-    retv[opt]=line;
-    if (*line=='"')
-    {
-      line++;
-      /* find end quote */
-      while ((*line!='"')&&(*line!='\0'))
-        line++;
-      if (*line!='"')
-      {
-        log_log(LOG_ERR,"%s:%d: quoted value not terminated",filename,lnr);
-        exit(EXIT_FAILURE);
-      }
-      line++;
-    }
-    else
-    {
-      /* find the end of the token */
-      while ((*line!=' ')&&(*line!='\t')&&(*line!='\0'))
-        line++;
-    }
-    /* mark the end of the token */
-    if (*line!='\0')
-      *line++='\0';
+    /* Note: we have a memory leak here if a single mapping is changed
+             multiple times in one config (deemed not a problem) */
+    *var=xstrdup(token);
   }
-  *nopt=opt;
-  return retv;
+}
+
+static void get_restdup(const char *filename,int lnr,
+                     const char *keyword,char **line,
+                     char **var)
+{
+  check_argumentcount(filename,lnr,keyword,(*line!=NULL)&&(**line!='\0'));
+  if ((*var==NULL)||(strcmp(*var,*line)!=0))
+  {
+    /* Note: we have a memory leak here if a single mapping is changed
+             multiple times in one config (deemed not a problem) */
+    *var=xstrdup(*line);
+  }
+  *line=NULL;
+}
+
+static void get_eol(const char *filename,int lnr,
+                   const char *keyword,char **line)
+{
+  if ((line!=NULL)&&(*line!=NULL)&&(**line!='\0'))
+  {
+    log_log(LOG_ERR,"%s:%d: %s: too may arguments",filename,lnr,keyword);
+    exit(EXIT_FAILURE);
+  }
 }
 
 static void cfg_read(const char *filename,struct ldap_config *cfg)
 {
   FILE *fp;
   int lnr=0;
-  char line[MAX_LINE_LENGTH];
+  char linebuf[MAX_LINE_LENGTH];
+  char *line;
+  char keyword[32];
+  char token[64];
   int i;
-  const char **opts;
-  int nopts;
-
   /* open config file */
   if ((fp=fopen(filename,"r"))==NULL)
   {
     log_log(LOG_ERR,"cannot open config file (%s): %s",filename,strerror(errno));
     exit(EXIT_FAILURE);
   }
-
   /* read file and parse lines */
-  while (fgets(line,MAX_LINE_LENGTH,fp)!=NULL)
+  while (fgets(linebuf,MAX_LINE_LENGTH,fp)!=NULL)
   {
     lnr++;
+    line=linebuf;
     /* strip newline */
     i=(int)strlen(line);
     if ((i<=0)||(line[i-1]!='\n'))
@@ -520,242 +563,246 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       exit(EXIT_FAILURE);
     }
     line[i-1]='\0';
-    /* split the line in tokens */
-    opts=tokenize(filename,lnr,line,&nopts);
-
-    /* ignore empty lines */
-    if (nopts==0)
+    /* ignore comment lines */
+    if (line[0]=='#')
       continue;
-
-    /* TODO: replace atoi() calls with proper parser routine with checks */
-
+    /* strip trailing spaces */
+    for (i--;(i>0)&&isspace(line[i-1]);i--)
+      line[i-1]='\0';
+    /* get keyword from line and ignore empty lines */
+    if (get_token(&line,keyword,sizeof(keyword))==NULL)
+      continue;
     /* general connection options */
-    if (strcasecmp(opts[0],"uri")==0)
+    if (strcasecmp(keyword,"uri")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts>1);
-      for (i=1;i<nopts;i++)
+      check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
+      while (get_token(&line,token,sizeof(token))!=NULL)
       {
-        if (strcasecmp(opts[i],"dns")==0)
+        if (strcasecmp(token,"dns")==0)
           add_uris_from_dns(filename,lnr,cfg);
         else
-          add_uri(filename,lnr,cfg,opts[i]);
+          add_uri(filename,lnr,cfg,token);
       }
     }
-    else if (strcasecmp(opts[0],"ldap_version")==0)
+    else if (strcasecmp(keyword,"ldap_version")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_version=atoi(opts[1]);
+      get_int(filename,lnr,keyword,&line,&cfg->ldc_version);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"binddn")==0)
+    else if (strcasecmp(keyword,"binddn")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_binddn=xstrdup(opts[1]);
+      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_binddn);
     }
-    else if (strcasecmp(opts[0],"bindpw")==0)
+    else if (strcasecmp(keyword,"bindpw")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_bindpw=xstrdup(opts[1]);
+      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_bindpw);
     }
-    else if (strcasecmp(opts[0],"rootbinddn")==0)
+    else if (strcasecmp(keyword,"rootbinddn")==0)
     {
-      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,opts[0]);
+      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,keyword);
       exit(EXIT_FAILURE);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_rootbinddn=xstrdup(opts[1]);
+      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_rootbinddn);
     }
-    else if (strcasecmp(opts[0],"rootbindpw")==0)
+    else if (strcasecmp(keyword,"rootbindpw")==0)
     {
-      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,opts[0]);
+      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,keyword);
       exit(EXIT_FAILURE);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_rootbindpw=xstrdup(opts[1]);
+      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_rootbinddn);
     }
     /* SASL authentication options */
-    else if (strcasecmp(opts[0], "sasl_authid")==0)
+    else if (strcasecmp(keyword,"sasl_authid")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_saslid=xstrdup(opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_saslid);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"rootsasl_authid")==0)
+    else if (strcasecmp(keyword,"rootsasl_authid")==0)
     {
-      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,opts[0]);
+      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,keyword);
       exit(EXIT_FAILURE);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_rootsaslid=xstrdup(opts[1]);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_rootsaslid);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"sasl_secprops")==0)
+    else if (strcasecmp(keyword,"sasl_secprops")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_sasl_secprops=xstrdup(opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_secprops);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"use_sasl")==0)
+    else if (strcasecmp(keyword,"use_sasl")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_usesasl=parse_boolean(filename,lnr,opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_usesasl);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"rootuse_sasl")==0)
+    else if (strcasecmp(keyword,"rootuse_sasl")==0)
     {
-      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,opts[0]);
+      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,keyword);
       exit(EXIT_FAILURE);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_rootusesasl=parse_boolean(filename,lnr,opts[1]);
+      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_rootusesasl);
+      get_eol(filename,lnr,keyword,&line);
     }
     /* Kerberos authentication options */
-    else if (strcasecmp(opts[0],"krb5_ccname")==0)
+    else if (strcasecmp(keyword,"krb5_ccname")==0)
     {
-      parse_krb5_ccname_statement(filename,lnr,opts,nopts);
+      parse_krb5_ccname_statement(filename,lnr,keyword,line);
     }
     /* search/mapping options */
-    else if (strcasecmp(opts[0],"base")==0)
+    else if (strcasecmp(keyword,"base")==0)
     {
-      parse_base_statement(filename,lnr,opts,nopts,cfg);
+      parse_base_statement(filename,lnr,keyword,line,cfg);
     }
-    else if (strcasecmp(opts[0],"scope")==0)
+    else if (strcasecmp(keyword,"scope")==0)
     {
-      parse_scope_statement(filename,lnr,opts,nopts,cfg);
+      parse_scope_statement(filename,lnr,keyword,line,cfg);
     }
-    else if (strcasecmp(opts[0],"deref")==0)
+    else if (strcasecmp(keyword,"deref")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      if (strcasecmp(opts[1],"never")==0)
+      check_argumentcount(filename,lnr,keyword,
+          (get_token(&line,token,sizeof(token))!=NULL));
+      if (strcasecmp(token,"never")==0)
         cfg->ldc_deref=LDAP_DEREF_NEVER;
-      else if (strcasecmp(opts[1],"searching")==0)
+      else if (strcasecmp(token,"searching")==0)
         cfg->ldc_deref=LDAP_DEREF_SEARCHING;
-      else if (strcasecmp(opts[1],"finding")==0)
+      else if (strcasecmp(token,"finding")==0)
         cfg->ldc_deref=LDAP_DEREF_FINDING;
-      else if (strcasecmp(opts[1],"always")==0)
+      else if (strcasecmp(token,"always")==0)
         cfg->ldc_deref=LDAP_DEREF_ALWAYS;
       else
       {
-        log_log(LOG_ERR,"%s:%d: wrong argument: '%s'",filename,lnr,opts[1]);
+        log_log(LOG_ERR,"%s:%d: wrong argument: '%s'",filename,lnr,token);
         exit(EXIT_FAILURE);
       }
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"referrals")==0)
+    else if (strcasecmp(keyword,"referrals")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_referrals=parse_boolean(filename,lnr,opts[1]);
+      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_referrals);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"filter")==0)
+    else if (strcasecmp(keyword,"filter")==0)
     {
-      parse_filter_statement(filename,lnr,opts,nopts);
+      parse_filter_statement(filename,lnr,keyword,line);
     }
-    else if (strcasecmp(opts[0],"map")==0)
+    else if (strcasecmp(keyword,"map")==0)
     {
-      parse_map_statement(filename,lnr,opts,nopts);
+      parse_map_statement(filename,lnr,keyword,line);
     }
     /* timing/reconnect options */
-    else if (strcasecmp(opts[0],"bind_timelimit")==0)
+    else if (strcasecmp(keyword,"bind_timelimit")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_bind_timelimit=atoi(opts[1]);
+      get_int(filename,lnr,keyword,&line,&cfg->ldc_bind_timelimit);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"timelimit")==0)
+    else if (strcasecmp(keyword,"timelimit")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_timelimit=atoi(opts[1]);
+      get_int(filename,lnr,keyword,&line,&cfg->ldc_timelimit);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"idle_timelimit")==0)
+    else if (strcasecmp(keyword,"idle_timelimit")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_idle_timelimit=atoi(opts[1]);
+      get_int(filename,lnr,keyword,&line,&cfg->ldc_idle_timelimit);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"reconnect_tries")==0)
+    else if (strcasecmp(keyword,"reconnect_tries")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_reconnect_tries=atoi(opts[1]);
+      get_int(filename,lnr,keyword,&line,&cfg->ldc_reconnect_tries);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (!strcasecmp(opts[0],"reconnect_sleeptime"))
+    else if (!strcasecmp(keyword,"reconnect_sleeptime"))
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_reconnect_sleeptime=atoi(opts[1]);
+      get_int(filename,lnr,keyword,&line,&cfg->ldc_reconnect_sleeptime);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"reconnect_maxsleeptime")==0)
+    else if (strcasecmp(keyword,"reconnect_maxsleeptime")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_reconnect_maxsleeptime=atoi(opts[1]);
+      get_int(filename,lnr,keyword,&line,&cfg->ldc_reconnect_maxsleeptime);
+      get_eol(filename,lnr,keyword,&line);
     }
     /* SSL/TLS options */
-    else if (strcasecmp(opts[0],"ssl")==0)
+    else if (strcasecmp(keyword,"ssl")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      if (strcasecmp(opts[1],"start_tls")==0)
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      check_argumentcount(filename,lnr,keyword,
+          (get_token(&line,token,sizeof(token))!=NULL));
+      if (strcasecmp(token,"start_tls")==0)
         cfg->ldc_ssl_on=SSL_START_TLS;
-      else if (parse_boolean(filename,lnr,opts[1]))
+      else if (parse_boolean(filename,lnr,token))
         cfg->ldc_ssl_on=SSL_LDAPS;
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"sslpath")==0)
+    else if (strcasecmp(keyword,"sslpath")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_sslpath=xstrdup(opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sslpath);
+      get_eol(filename,lnr,keyword,&line);
+      /* TODO: check that the path is valid */
     }
-    else if (strcasecmp(opts[0],"tls_checkpeer")==0)
+    else if (strcasecmp(keyword,"tls_checkpeer")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_tls_checkpeer=parse_boolean(filename,lnr,opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_tls_checkpeer);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"tls_cacertdir")==0)
+    else if (strcasecmp(keyword,"tls_cacertdir")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_tls_cacertdir=xstrdup(opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_tls_cacertdir);
+      get_eol(filename,lnr,keyword,&line);
+      /* TODO: check that the path is valid */
     }
-    else if (strcasecmp(opts[0],"tls_cacertfile")==0)
+    else if (strcasecmp(keyword,"tls_cacertfile")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_tls_cacertfile=xstrdup(opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_tls_cacertfile);
+      get_eol(filename,lnr,keyword,&line);
+      /* TODO: check that the path is valid */
     }
-    else if (strcasecmp(opts[0],"tls_randfile")==0)
+    else if (strcasecmp(keyword,"tls_randfile")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_tls_randfile=xstrdup(opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_tls_randfile);
+      get_eol(filename,lnr,keyword,&line);
+      /* TODO: check that the path is valid */
     }
-    else if (strcasecmp(opts[0],"tls_ciphers")==0)
+    else if (strcasecmp(keyword,"tls_ciphers")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_tls_ciphers=xstrdup(opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_tls_ciphers);
     }
-    else if (strcasecmp(opts[0],"tls_cert")==0)
+    else if (strcasecmp(keyword,"tls_cert")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_tls_cert=xstrdup(opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_tls_cert);
+      get_eol(filename,lnr,keyword,&line);
+      /* TODO: check that the path is valid */
     }
-    else if (strcasecmp(opts[0],"tls_key")==0)
+    else if (strcasecmp(keyword,"tls_key")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_tls_key=xstrdup(opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_tls_key);
+      get_eol(filename,lnr,keyword,&line);
+      /* TODO: check that the path is valid */
     }
     /* other options */
-    else if (strcasecmp(opts[0],"restart")==0)
+    else if (strcasecmp(keyword,"restart")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (and may be removed in an upcoming release)",filename,lnr,opts[0]);
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_restart=parse_boolean(filename,lnr,opts[1]);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (and may be removed in an upcoming release)",filename,lnr,keyword);
+      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_restart);
+      get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(opts[0],"pagesize")==0)
+    else if (strcasecmp(keyword,"pagesize")==0)
     {
-      check_argumentcount(filename,lnr,opts[0],nopts==2);
-      cfg->ldc_pagesize=atoi(opts[1]);
+      get_int(filename,lnr,keyword,&line,&cfg->ldc_pagesize);
+      get_eol(filename,lnr,keyword,&line);
     }
     /* fallthrough */
     else
     {
-      log_log(LOG_ERR,"%s:%d: unknown keyword: '%s'",filename,lnr,opts[0]);
+      log_log(LOG_ERR,"%s:%d: unknown keyword: '%s'",filename,lnr,keyword);
       exit(EXIT_FAILURE);
     }
   }
-
   /* we're done reading file, close */
   fclose(fp);
 }
