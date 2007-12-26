@@ -184,7 +184,7 @@ static void test_two_searches(void)
   /* start a second search */
   search2=myldap_search(session,nslcd_cfg->ldc_base,
                         LDAP_SCOPE_SUBTREE,
-                        "(&(objectclass=posixGroup)(gidNumber=6100))",
+                        "(&(objectclass=posixGroup)(gidNumber=*))",
                         attrs);
   assert(search2!=NULL);
   /* get a result from search2 */
@@ -201,6 +201,15 @@ static void test_two_searches(void)
   vals=myldap_get_values(entry,"cn");
   assert((vals!=NULL)&&(vals[0]!=NULL));
   printf("test_two_searches(): [search1] cn=%s\n",vals[0]);
+  /* stop search1 */
+  myldap_search_close(search1);
+  /* get another result from search2 */
+  entry=myldap_get_entry(search2,NULL);
+  assert(entry!=NULL);
+  printf("test_two_searches(): [search2] DN %s\n",myldap_get_dn(entry));
+  vals=myldap_get_values(entry,"cn");
+  assert((vals!=NULL)&&(vals[0]!=NULL));
+  printf("test_two_searches(): [search2] cn=%s\n",vals[0]);
   /* clean up */
   myldap_session_close(session);
 }
