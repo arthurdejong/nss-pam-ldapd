@@ -94,6 +94,8 @@ struct myldap_search
 {
   /* reference to the session */
   MYLDAP_SESSION *session;
+  /* indicator that the search is still valid */
+  int valid;
   /* the parameters descibing the search */
   const char *base;
   int scope;
@@ -194,6 +196,8 @@ static MYLDAP_SEARCH *myldap_search_new(
   buffer+=sizeof(struct myldap_search);
   /* save pointer to session */
   search->session=session;
+  /* flag as valid search */
+  search->valid=1;
   /* initialize array of attributes */
   search->attrs=(char **)buffer;
   buffer+=(i+1)*sizeof(char *);
@@ -271,6 +275,7 @@ PURE static inline int is_open_session(MYLDAP_SESSION *session)
   return is_valid_session(session)&&(session->ld!=NULL);
 }
 
+/* note that this does not check the valid flag of the search */
 PURE static inline int is_valid_search(MYLDAP_SEARCH *search)
 {
   return (search!=NULL)&&is_open_session(search->session);
@@ -465,25 +470,56 @@ static int do_set_options(MYLDAP_SESSION *session)
   return LDAP_SUCCESS;
 }
 
+/* This checks the timeout value of the session and closes the connection
+   to the LDAP server if the timeout has expired and there are no pending
+   searches. */
+static void myldap_session_check(MYLDAP_SESSION *session)
+{
+  int i;
+  int runningsearches=0;
+  time_t current_time;
+  /* check parameters */
+  if (!is_valid_session(session))
+  {
+    log_log(LOG_ERR,"myldap_session_check(): invalid parameter passed");
+    errno=EINVAL;
+    return;
+  }
+  /* check if we should time out the connection */
+  if ((session->ld!=NULL)&&(nslcd_cfg->ldc_idle_timelimit>0))
+  {
+    /* check if we have any running searches */
+    for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
+    {
+      if ((session->searches[i]!=NULL)&&(session->searches[i]->valid))
+      {
+        runningsearches=1;
+        break;
+      }
+    }
+    /* only consider timeout if we have no running searches */
+    if (!runningsearches)
+    {
+      time(&current_time);
+      if ((session->lastactivity+nslcd_cfg->ldc_idle_timelimit)<current_time)
+      {
+        log_log(LOG_DEBUG,"do_open(): idle_timelimit reached");
+        ldap_unbind(session->ld);
+        session->ld=NULL;
+      }
+    }
+  }
+}
+
 /* This opens connection to an LDAP server, sets all connection options
    and binds to the server. This returns an LDAP status code. */
 static int do_open(MYLDAP_SESSION *session)
 {
   int rc;
-  time_t current_time;
   int sd=-1;
   int off=0;
   /* check if the idle time for the connection has expired */
-  if ((session->ld!=NULL)&&nslcd_cfg->ldc_idle_timelimit)
-  {
-    time(&current_time);
-    if ((session->lastactivity+nslcd_cfg->ldc_idle_timelimit)<current_time)
-    {
-      log_log(LOG_DEBUG,"do_open(): idle_timelimit reached");
-      ldap_unbind(session->ld);
-      session->ld=NULL;
-    }
-  }
+  myldap_session_check(session);
   /* if the connection is still there (ie. ldap_unbind() wasn't
      called) then we can return the cached connection */
   if (session->ld!=NULL)
@@ -663,6 +699,7 @@ MYLDAP_SEARCH *myldap_search(
   int sleeptime=0;
   int try;
   int start_uri;
+  int i;
   /* check parameters */
   if (!is_valid_session(session)||(base==NULL)||(filter==NULL)||(attrs==NULL))
   {
@@ -709,6 +746,28 @@ MYLDAP_SEARCH *myldap_search(
     /* if we had reachability problems with the server close the connection */
     if (session->ld!=NULL)
     {
+      /* go over the other searches and partially close them */
+      for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
+      {
+        if (session->searches[i]!=NULL)
+        {
+          /* free any messages (because later ld is no longer valid) */
+          if (session->searches[i]->msg!=NULL)
+          {
+            ldap_msgfree(session->searches[i]->msg);
+            session->searches[i]->msg=NULL;
+          }
+          /* abandon the search if there were more results to fetch */
+          if (session->searches[i]->msgid!=-1)
+          {
+            ldap_abandon(session->searches[i]->session->ld,session->searches[i]->msgid);
+            session->searches[i]->msgid=-1;
+          }
+          /* flag the search as invalid */
+          session->searches[i]->valid=0;
+        }
+      }
+      /* close the connection to the server */
       ldap_unbind(session->ld);
       session->ld=NULL;
     }
@@ -759,6 +818,15 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
     errno=EINVAL;
     if (rcp!=NULL)
       *rcp=LDAP_OPERATIONS_ERROR;
+    return NULL;
+  }
+  /* check if the connection wasn't closed in another search */
+  if (!search->valid)
+  {
+    log_log(LOG_WARNING,"myldap_get_entry(): connection was closed");
+    myldap_search_close(search);
+    if (rcp!=NULL)
+      *rcp=LDAP_SERVER_DOWN;
     return NULL;
   }
   /* set up a timelimit value for operations */
@@ -925,10 +993,10 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
   {
     log_log(LOG_ERR,"myldap_get_dn(): invalid result entry passed");
     errno=EINVAL;
-    return NULL;
+    return "unknown";
   }
   /* if we don't have it yet, retreive it */
-  if (entry->dn==NULL)
+  if ((entry->dn==NULL)&&(entry->search->valid))
   {
     entry->dn=ldap_get_dn(entry->search->session->ld,entry->search->msg);
     if (entry->dn==NULL)
@@ -965,7 +1033,7 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
   }
   /* get the values from the cache */
   values=(char **)dict_get(entry->attributevalues,attr);
-  if (values==NULL)
+  if ((values==NULL)&&(entry->search->valid))
   {
     /* cache miss, get from LDAP */
     values=ldap_get_values(entry->search->session->ld,entry->search->msg,attr);
@@ -1041,7 +1109,7 @@ const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr)
   {
     /* check if we have a DN */
     dn=myldap_get_dn(entry);
-    if (dn==NULL)
+    if ((dn==NULL)||(strcasecmp(dn,"unknown")==0))
       return NULL;
     /* explode dn into { "uid=test", "ou=people", ..., NULL } */
     exploded_dn=ldap_explode_dn(dn,0);
