@@ -1,6 +1,6 @@
 This is nss-ldapd, a library for doging NSS name lookups using an LDAP server.
 
-nss-ldapd is a fork from nss_ldap which was orignally written by Luke Howard
+nss-ldapd is a fork from nss_ldap which was originally written by Luke Howard
 of PADL Software Pty Ltd. http://www.padl.com/OSS/nss_ldap.html
 
 In 2006 Arthur de Jong of West Consuling forked the library to split it into a

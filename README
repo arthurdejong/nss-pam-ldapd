@@ -1,7 +1,8 @@
    nss-ldapd - NSS library for name lookups using LDAP
 
-   nss-ldapd is a fork from nss_ldap which was orignally written by
+   nss-ldapd is a fork from nss_ldap which was originally written by
    Luke Howard of PADL Software Pty Ltd.
+
    http://www.padl.com/OSS/nss_ldap.html
 
    In 2006 Arthur de Jong of West Consuling forked the library to
@@ -66,13 +67,13 @@ operating systems was initially removed to make the code more readable.
 Portability will be re-added once the architecture stabilises.
 
 The most practical improvements of nss-ldapd over nss_ldap are:
-* the LDAP library is not loaded for every process doing LDAP lookups
-* the number of connections to the LDAP server is limited, because not every
+- the LDAP library is not loaded for every process doing LDAP lookups
+- the number of connections to the LDAP server is limited, because not every
   process will open it's own connection (this problem is also mitigated by
   using nscd)
-* hostname lookups should now be deadlock-free because the LDAP server name is
+- hostname lookups should now be deadlock-free because the LDAP server name is
   no lonker looked up using the ldap method
-* the setup is easier to debug because loggin on the server component can be
+- the setup is easier to debug because logging on the server component can be
   enabled without affecting "normal" processes
 
 This package runs a local daemon that will be enabled during the boot process.
@@ -131,11 +132,10 @@ unsupported features
 Since nss-ldapd was forked from nss_ldap most of the features that came with
 nss_ldap are available. However, not all features have extensively tested yet
 and may cause problems.
-
 - attribute value default and overrides have been removed (but may reappear
   some day if requested)
 - SSL/TLS support is untested but will be tested when the core code stabilizes
-- the configuration file formats may undergo some more changes
+- the configuration file formats are not fully compatible
 - group membership lookups with the uniqueMember and memberOf attribute as
   well as nested groups are currently unsupported (support will be re-added
   later)
@@ -212,14 +212,14 @@ service discovery through DNS
 -----------------------------
 
 nss-ldapd supports looking up LDAP server names through DNS SRV records as
-specified in RFC 2782, except that Priority and Weight are not considered
+specified in RFC 2782. However Priority and Weight are not considered
 separately and a single list of servers in added as if they had been specified
 with uri options in the configuration file.
 
 To use this feature specify DNS as an uri in the configuration file and
 include something like the following in your zone:
 
-  _ldap._tcp  SRV  10 0  389  bobo
+  _ldap._tcp  SRV  10 0  389  ldapserver
 
 
 LDAP SCHEMA
@@ -296,8 +296,8 @@ using Microsoft Active Directory
 
 When using Microsoft Active Directory server (typically on Microsoft Windows
 2000) some changes need to be made to the nss-ldapd.conf configuration file.
-The default configuration file has some commented out attribute mappings for
-such a setup.
+The included sample configuration file has some commented out attribute
+mappings for such a set-up.
 
 
 MISC NOTES
@@ -306,5 +306,5 @@ MISC NOTES
 Most values in the NSS databases are considered case-sensitive (e.g. the user
 "Foo" is a different user from "foo"). Values in an LDAP database are however
 case-insensitive. This may cause problems in some corner cases, especially
-when nscd is used for caching. For example when doing a lookup for the user
+when nscd is used for caching. For example, when doing a lookup for the user
 "Foo" the user "foo" will be returned if it exists in the database.
