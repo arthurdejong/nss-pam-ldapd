@@ -337,7 +337,9 @@ static void parse_krb5_ccname_statement(const char *filename,int lnr,
   const char *ccfile;
   size_t ccenvlen;
   char *ccenv;
+#ifdef HAVE_GSS_KRB5_CCACHE_NAME
   OM_uint32 minor_status;
+# endif /* HAVE_GSS_KRB5_CCACHE_NAME */
   /* get token */
   check_argumentcount(filename,lnr,keyword,
       (get_token(&line,token,sizeof(token))!=NULL)&&(*line=='\0'));
