@@ -255,12 +255,15 @@ AC_CHECK_LIB(gssldap, ldap_gss_bind,[LIBS="-lgssldap $LIBS"],,$LIBS)
 
 AC_CHECK_FUNCS(sasl_auxprop_request)
 AC_CHECK_FUNCS(gss_krb5_ccache_name)
-AC_CHECK_FUNCS(ldap_parse_result ldap_memfree ldap_controls_free)
-AC_CHECK_FUNCS(ldap_explode_rdn ldap_set_option ldap_get_option)
+AC_CHECK_FUNCS(ldap_parse_result ldap_memfree ldap_controls_free ldap_control_free)
+AC_CHECK_FUNCS(ldap_explode_dn ldap_explode_rdn ldap_set_option ldap_get_option)
+AC_CHECK_FUNCS(ldap_abandon ldap_simple_bind_s ldap_unbind ldap_set_rebind_proc)
 AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s ldap_initialize ldap_search_ext)
 AC_CHECK_FUNCS(ldap_create_control ldap_create_page_control ldap_parse_page_control)
 AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)
 AC_CHECK_FUNCS(ldap_set_rebind_proc)
+AC_CHECK_FUNCS(ldap_get_values ldap_value_free ldap_get_dn)
+AC_CHECK_FUNCS(ldap_err2string ldap_msgfree ldap_result)
 
 # check the number of arguments that ldap_set_rebind_proc() uses
 AC_CACHE_CHECK(
