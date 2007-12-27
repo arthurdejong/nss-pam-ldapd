@@ -36,9 +36,9 @@
  <refmeta>
   <refentrytitle>nslcd</refentrytitle>
   <manvolnum>8</manvolnum>
-  <refmiscinfo class="version">Version 0.4.1</refmiscinfo>
+  <refmiscinfo class="version">Version 0.5</refmiscinfo>
   <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
-  <refmiscinfo class="date">Oct 2007</refmiscinfo>
+  <refmiscinfo class="date">Dec 2007</refmiscinfo>
  </refmeta>
 
  <refnamediv id="name">
@@ -82,9 +82,9 @@
     </term>
     <listitem>
      <para>
-      Enable debugging mode. 
+      Enable debugging mode.
       <command>nslcd</command> will not put itself in the background and sends
-      verbose debugging info to stderr. 
+      verbose debugging info to stderr.
       <command>nslcd</command> will handle connections as usual.
       This option is for debugging purposes only.
      </para>

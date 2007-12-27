@@ -1,3 +1,32 @@
+nss-ldapd (0.5) unstable; urgency=low
+
+  * major structural changes in the LDAP lookup code using a newly implemented
+    module that does memory management, session handling, paging and all other
+    painful things with a simple interface
+  * rewritten LDAP query and result handling code, now generating warnings
+    about incorrect entries in the LDAP directory
+  * IPv6 addresses in host lookups are now supported
+  * added Kerberos ccname support (with the krb5_ccname option) thanks to
+    Andreas Schneider and Ralf Haferkamp from SuSE and remove
+    --with-gssapi-dir, --enable-configurable-krb5-ccname-gssapi and
+    --enable-configurable-krb5-ccname-env configure options and having
+    automatic detection instead
+  * added support for DNS SRV record lookups by specifying DNS as uri thanks
+    to Ralf Haferkamp and Michael Calmer from SuSE
+  * added support for DOMAIN as base DN which uses the host's domain to
+    construct a DN
+  * removed nss_connect_policy, bind_policy and sizelimit options
+  * cleaned up and documented reconnect logic with reconnect_tries,
+    reconnect_sleeptime and reconnect_maxsleeptime options
+  * configuration values with spaces in them (e.g. distinguished names) are
+    now handled properly
+  * fix a small memory leak in the I/O module
+  * miscellaneous code improvements (better source code comments, more
+    consistent logging, portability improvements, more tests, etc)
+  * improvements to documentation
+
+ -- Arthur de Jong <adejong@debian.org>  Wed, 27 Dec 2007 11:00:00 +0100
+
 nss-ldapd (0.4.1) unstable; urgency=low
 
   * updated French debconf translation by Cyril Brulebois (closes: #433248)
@@ -21,8 +50,8 @@ nss-ldapd (0.4) unstable; urgency=low
   * added missing docbook sources for manual pages to tarball (closes: #442688)
   * major cleanups and simplifications in the core LDAP query code (we don't
     need to worry about SIGPIPE because nslcd does that globally, locking
-    because a connection is only used by one thread  and simplifications the
-    the LDAP connection and query state)
+    because a connection is only used by one thread) and more simplifications
+    in the the LDAP connection and query state
   * get base, scope, filter and map configfile directives properly working
   * simplifications in LDAP reconnect logic (some work remains to be done in
     this area)

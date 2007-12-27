@@ -1,3 +1,503 @@
+2007-12-26 22:35  arthur
+
+	* [r538] tests/test_cfg.c: remove temporary file to make distcheck
+	  succeed
+
+2007-12-26 21:55  arthur
+
+	* [r537] README, debian/copyright: some documentation cleanups
+
+2007-12-26 20:36  arthur
+
+	* [r536] tests/test_nsscmds.sh: ignore erros in nss commands
+
+2007-12-26 20:35  arthur
+
+	* [r535] nslcd/myldap.c: only log "connected to LDAP server" if it
+	  is a new connection
+
+2007-12-26 17:58  arthur
+
+	* [r534] nslcd/cfg.c, nslcd/cfg.h, tests, tests/test_cfg.c:
+	  properly handle spaces in some configuration options (major
+	  change in code in cfg module)
+
+2007-12-26 10:54  arthur
+
+	* [r533] tests/test_myldap.c: in test_two_searches() test that we
+	  can read from the second search if the first search as abandoned
+
+2007-12-26 10:52  arthur
+
+	* [r532] nslcd/myldap.c: properly flag running searches as invalid
+	  if the connection to the LDAP server is reset
+
+2007-12-25 17:10  arthur
+
+	* [r531] nslcd/common.h, nslcd/myldap.c, nslcd/myldap.h,
+	  tests/test_myldap.c: have myldap_get_entry() return an LDAP
+	  status code that can signal errors in the lookup
+
+2007-12-25 17:02  arthur
+
+	* [r530] nslcd.h, nslcd/common.h, nss/common.c, nss/group.c: remove
+	  NSLCD_RESULT_UNAVAIL because it's not needed anymore (the
+	  connection is broken when an error occurs) and rename
+	  NSLCD_RESULT_NOTFOUND into NSLCD_RESULT_END to better match its
+	  meaning
+
+2007-12-25 16:53  arthur
+
+	* [r529] nslcd/common.h: no need for us to flush the buffer since
+	  our caller closes the stream immediatly (or could otherwise pass
+	  the flushing to another thread)
+
+2007-12-24 23:29  arthur
+
+	* [r528] man/nss-ldapd.conf.5.xml: some general cleanups and
+	  document the krb5_ccname option
+
+2007-12-24 21:50  arthur
+
+	* [r527] debian/libnss-ldapd.config: disable rootbinddn and
+	  rootbindpw questions for now because they are not supported
+
+2007-12-24 17:11  arthur
+
+	* [r526] man/nss-ldapd.conf.5.xml: document current timing and
+	  reconnect options
+
+2007-12-24 16:58  arthur
+
+	* [r525] nslcd/myldap.c: merge the do_map_error(),
+	  do_with_reconnect() into the myldap_search() and do_try_search()
+	  functions having more understandable reconnect and retry logic
+
+2007-12-24 16:41  arthur
+
+	* [r524] nslcd/myldap.h: add some more documentation for using the
+	  myldap module
+
+2007-12-22 21:05  arthur
+
+	* [r523] tests/nss-ldapd-test.conf, tests/test_myldap.c: add
+	  limited test for reconnect logic
+
+2007-12-22 21:02  arthur
+
+	* [r522] nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c: remove
+	  bind_policy option because the same effect is achieved by setting
+	  reconnect_tries to 1
+
+2007-12-22 20:52  arthur
+
+	* [r521] nslcd/cfg.c, nslcd/cfg.h: reorder timing and reconnect
+	  options to be more logical and remove nss_ prefix from reconnect
+	  options
+
+2007-12-22 20:38  arthur
+
+	* [r520] tests/test_myldap.c: limit printing of results in test to
+	  just 10
+
+2007-12-22 20:35  arthur
+
+	* [r519] tests/test_myldap.sh: include script name in messages and
+	  have srcdir default to .
+
+2007-12-22 20:32  arthur
+
+	* [r518] nslcd/myldap.c: integrate do_result() into
+	  myldap_get_entry() reducing complexity and improving error
+	  handling
+
+2007-12-22 13:36  arthur
+
+	* [r517] nslcd/myldap.c: remove duplicate comment
+
+2007-12-22 13:34  arthur
+
+	* [r516] nslcd/cfg.c, nslcd/cfg.h: remove some unused configuration
+	  file options
+
+2007-12-22 13:21  arthur
+
+	* [r515] nslcd/myldap.c: bring more uniformity to log messages
+
+2007-12-22 13:09  arthur
+
+	* [r514] nslcd/myldap.c: give struct myldap_session members more
+	  logical names
+
+2007-12-21 09:48  arthur
+
+	* [r513] tests/test_myldap.sh, tests/test_nsscmds.sh: only test the
+	  first URI in the configfile
+
+2007-12-20 19:30  arthur
+
+	* [r512] tests/Makefile.am, tests/test_myldap.c,
+	  tests/test_myldap.sh: pass configfile to use as a command-line
+	  paramter to test_myldap, use the myldap_session_close() function,
+	  print a limited number of results, add a wrapper script to test
+	  whether the LDAP server is available for the test and ship all
+	  needed files in the tarball
+
+2007-12-20 19:25  arthur
+
+	* [r511] tests/test_nsscmds.sh: fail on any command and specify
+	  configfile separately
+
+2007-12-20 17:00  arthur
+
+	* [r510] debian/copyright: remove FSF copyright since we no longer
+	  use their code
+
+2007-12-20 16:58  arthur
+
+	* [r509] nslcd/myldap.c, nslcd/myldap.h: refactor myldap code to
+	  get rid of most of the old nss status codes, properly handle
+	  failures of ldap function calls and improve sourcecode comments
+
+2007-12-20 16:57  arthur
+
+	* [r508] nslcd/myldap.c, nslcd/myldap.h: add myldap_session_close()
+	  function (mainly for testing purposes)
+
+2007-12-20 16:53  arthur
+
+	* [r507] nslcd/myldap.c: move checks of validity of passed entries
+	  to separate functions
+
+2007-12-20 16:46  arthur
+
+	* [r506] nslcd/myldap.c: remove msg member from struct myldap_entry
+	  and just reference the same message in the search
+
+2007-12-20 15:29  arthur
+
+	* [r505] nslcd/shadow.c: rewrite GET_OPTIONAL_DATE() as an
+	  extension to GET_OPTIONAL_LONG()
+
+2007-12-20 15:28  arthur
+
+	* [r504] configure.ac: add/change some tests for currently used
+	  functions, relayout some complexer tests and use AC_CHECK_TYPE
+	  instead of custom test
+
+2007-12-20 15:25  arthur
+
+	* [r503] nslcd/ether.c: use ether_ntoa_r() instead of ether_ntoa()
+
+2007-12-20 15:17  arthur
+
+	* [r502] compat/ldap.h, configure.ac: remove unused tests and
+	  compatibility code
+
+2007-12-20 15:08  arthur
+
+	* [r501] tests/nss-ldapd-test.conf: set pagesize to some more
+	  reasonable value
+
+2007-12-20 13:55  arthur
+
+	* [r500] tests/test_myldap.c: have assertion on correct search
+
+2007-12-16 16:43  arthur
+
+	* [r498] nss-ldapd.conf: fix typo in description
+
+2007-12-14 16:41  arthur
+
+	* [r497] nslcd/myldap.c: potential fix for double free() bug like
+	  in nss_ldap (Debian bug #366172)
+
+2007-12-14 16:19  arthur
+
+	* [r496] nslcd/myldap.h: improve description of myldap interface in
+	  comments
+
+2007-12-14 16:12  arthur
+
+	* [r495] nslcd/common.c: explain why we write an invalid address
+	  (in comment) and add TODO to describe we need to change the log
+	  format
+
+2007-12-14 16:07  arthur
+
+	* [r494] tests/test_myldap.c: fix typo in comment
+
+2007-12-09 22:13  arthur
+
+	* [r493] debian/control: update package description
+
+2007-12-09 16:24  arthur
+
+	* [r492] tests/Makefile.am: fix objects that are needed to get
+	  tests linkable (due to namechange from ldap-nss to myldap)
+
+2007-12-09 15:50  arthur
+
+	* [r491] compat/ldap.h, nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c:
+	  some small layout changes
+
+2007-12-09 15:32  arthur
+
+	* [r490] tests/test_nsscmds.sh: remove ugly space
+
+2007-12-09 15:23  arthur
+
+	* [r489] nslcd-common.h, nslcd/Makefile.am, nslcd/alias.c,
+	  nslcd/attmap.h, nslcd/cfg.c, nslcd/common.h, nslcd/group.c,
+	  nslcd/ldap-nss.c, nslcd/ldap-nss.h, nslcd/myldap.c,
+	  nslcd/myldap.h: get rid of some old code and rename ldap-nss to
+	  myldap since there is no more NSS-related code in there
+
+2007-12-09 14:49  arthur
+
+	* [r488] nslcd-common.h, nslcd/alias.c, nslcd/common.c,
+	  nslcd/common.h, nslcd/ether.c, nslcd/group.c, nslcd/host.c,
+	  nslcd/netgroup.c, nslcd/network.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  switch to new LDAP entry parsing code that is much simpler and
+	  more readable
+
+2007-12-09 14:36  arthur
+
+	* [r487] tests/test_nsscmds.sh: add some comments to tests, enable
+	  netgroup tests and extend ether and services tests
+
+2007-12-09 14:34  arthur
+
+	* [r486] nslcd/ldap-nss.c: ignore decoding errors from
+	  ldap_get_values() as they are just nonexisting attribute values
+
+2007-12-07 16:49  arthur
+
+	* [r485] debian/control: fix Vcs-* links to point to the trunk
+
+2007-12-07 16:49  arthur
+
+	* [r484] debian/control: upgrade to standards-version 3.7.3 (no
+	  changes needed)
+
+2007-12-07 13:10  arthur
+
+	* [r483] nslcd/nslcd.c: don't use backticks as quote mark
+
+2007-12-01 22:03  arthur
+
+	* [r482] common/dict.c: simple check for validity of key value in
+	  dict_put()
+
+2007-11-26 22:38  arthur
+
+	* [r481] configure.ac, man/nss-ldapd.conf.5.xml, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/ldap-nss.c: clean up Kerberos ccname code,
+	  moving it to cfg.c, fixing some bugs in the putenv() code, making
+	  the gss_krb5_ccache_name() automatically used if the function is
+	  available and removing the --with-gssapi-dir,
+	  --enable-configurable-krb5-ccname-gssapi and
+	  --enable-configurable-krb5-ccname-env configure options
+
+2007-11-25 15:21  arthur
+
+	* [r480] AUTHORS, README, configure.ac, man/nss-ldapd.conf.5.xml,
+	  nslcd/cfg.c: implement LDAP server discovery through DNS, based
+	  on a patch by Ralf Haferkamp <rhafer@suse.de> and Michael Calmer
+	  <mc@suse.de>
+
+2007-11-24 15:26  arthur
+
+	* [r479] HACKING: update versions of used tools
+
+2007-11-20 21:53  arthur
+
+	* [r478] debian/control: remove XS- prefix from version control
+	  fields
+
+2007-11-20 21:49  arthur
+
+	* [r477] debian/control: put Homepage field in source stanza
+
+2007-11-16 11:43  arthur
+
+	* [r476] AUTHORS, nslcd/ldap-nss.c: patch from Andreas Schneider
+	  <anschneider@suse.de> to get krb5_ccname option working
+
+2007-10-31 22:12  arthur
+
+	* [r475] nslcd.h: improve comments about protocol, also describing
+	  the final NSLCD_RESULT_NOTFOUND
+
+2007-10-28 14:50  arthur
+
+	* [r474] nslcd/ldap-nss.c: some smaller cleanups and
+	  simplifications to the code (getting rid of the is_connected flag
+
+2007-10-28 13:33  arthur
+
+	* [r473] nslcd/ldap-nss.c: remove sizelimit parameter
+
+2007-10-28 13:17  arthur
+
+	* [r472] nslcd/ldap-nss.c: integrate ent_context attributes into
+	  ldap_search
+
+2007-10-28 12:54  arthur
+
+	* [r471] nslcd/ldap-nss.c: remove session from context and remove
+	  sycnhronous search functions
+
+2007-10-28 12:37  arthur
+
+	* [r470] nslcd/ldap-nss.c, nslcd/ldap-nss.h, nslcd/netgroup.c,
+	  nslcd/service.c: replace calls to _nss_ldap_get_values() by
+	  myldap_get_values(), remove unused functions, remove struct
+	  ldap_state and replace remaining references to context to use
+	  search instead
+
+2007-10-28 11:39  arthur
+
+	* [r469] man/nss-ldapd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/ldap-nss.c: remove support for nss_connect_policy
+	  configfile option and remove some supporting code for it
+
+2007-10-28 10:57  arthur
+
+	* [r468] nslcd/alias.c, nslcd/common.h, nslcd/ether.c,
+	  nslcd/group.c, nslcd/host.c, nslcd/ldap-nss.c, nslcd/ldap-nss.h,
+	  nslcd/netgroup.c, nslcd/network.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  first step to use the new myldap interface
+
+2007-10-28 10:56  arthur
+
+	* [r467] tests/test_nsscmds.sh: script to run a number of NSS
+	  commands (mainly getent) and check the result (this requires an
+	  LDAP setup that is yet to be documented)
+
+2007-10-27 16:54  arthur
+
+	* [r466] man/nss-ldapd.conf.5.xml: include pagesize option in
+	  manual page since this is tested now
+
+2007-10-27 16:53  arthur
+
+	* [r465] nss-ldapd.conf: add pointer to pagesize in AD section of
+	  sample configfile
+
+2007-10-27 16:28  arthur
+
+	* [r464] nslcd/nslcd.c: clean up myldap session after each request
+
+2007-10-27 15:56  arthur
+
+	* [r463] nslcd/cfg.c: make cfg_init() only callable once and add
+	  note about not free()ing memory
+
+2007-10-27 15:48  arthur
+
+	* [r462] common/tio.c: fix memory leak in I/O module not free()ing
+	  allocated storage for file info on file close
+
+2007-10-27 15:36  arthur
+
+	* [r461] common/tio.c: portability improvement to fall back to
+	  ETIMEDOUT when ETIME is unavailable
+
+2007-10-26 08:46  arthur
+
+	* [r460] NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: integrate changes from
+	  0.4.1 release
+
+2007-10-25 21:55  arthur
+
+	* [r455] nslcd/rpc.c: fix rpc filter and remove unused objectClass
+	  attmap entry
+
+2007-10-25 21:19  arthur
+
+	* [r454] nslcd/ldap-nss.c: clean up any messages after abandoning
+	  the search because that returns a new message (fix memory leak)
+
+2007-10-25 20:25  arthur
+
+	* [r453] nslcd/ldap-nss.c: fix a memory leak, not storing search
+	  entries so they could be freed later on
+
+2007-10-25 20:18  arthur
+
+	* [r452] nslcd/ldap-nss.c: fix using unassigned status
+
+2007-10-25 20:17  arthur
+
+	* [r451] nslcd/ldap-nss.c: fix memory leak
+
+2007-10-25 09:02  arthur
+
+	* [r450] debian/libnss-ldapd.nslcd.init: remove S runlevel from
+	  Default-Stop in init script
+
+2007-10-21 07:43  arthur
+
+	* [r449] nss/networks.c: correct calls to
+	  NSLCD_ACTION_NETWORK_BYNAME and NSLCD_ACTION_NETWORK_BYADDR and
+	  get address in correct byte order with the last call
+
+2007-10-20 19:25  arthur
+
+	* [r448] nslcd/passwd.c, nslcd/protocol.c: call mysnprintf()
+	  instead of snprintf() where needed (bugfix)
+
+2007-10-19 22:04  arthur
+
+	* [r444] nslcd/ldap-nss.c: make a replacement for
+	  _nss_ldap_getbyname() which uses the myldap calls internally
+
+2007-10-19 10:35  arthur
+
+	* [r443] nslcd/Makefile.am, nslcd/ldap-nss.c, nslcd/ldap-nss.h,
+	  nslcd/myldap.h, tests, tests/Makefile.am,
+	  tests/nss-ldapd-test.conf, tests/test_myldap.c: integrate basic
+	  myldap interface (partially merged from dev-myldap branch)
+
+2007-10-19 09:39  arthur
+
+	* [r442] tests/Makefile.am: include debugging information in object
+	  files
+
+2007-10-19 09:36  arthur
+
+	* [r441] tests/Makefile.am: move most C[PP]FLAGS options to
+	  AM_C[PP]FLAGS and clean up a little
+
+2007-10-19 09:30  arthur
+
+	* [r440] common/tio.c: fix usage of DEBUG_TIO_STATS
+
+2007-10-14 07:59  arthur
+
+	* [r438] AUTHORS: add translator to Japanese of templates
+
+2007-10-14 07:57  arthur
+
+	* [r437] debian/po/ja.po: update Japanese (ja) translation of
+	  debconf templates by Kenshi Muto <kmuto@debian.org>
+
+2007-10-08 20:11  arthur
+
+	* [r436] debian/copyright, debian/po/fr.po: update French (fr)
+	  translation of debconf templates by Cyril Brulebois
+	  <cyril.brulebois@enst-bretagne.fr>
+
+2007-10-05 20:52  arthur
+
+	* [r434] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.4 release
+
 2007-10-04 19:52  arthur
 
 	* [r433] .: ignore tarballs
