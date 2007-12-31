@@ -176,16 +176,16 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   }
   else
   {
-    usernames=myldap_get_values(entry,attmap_passwd_uid);
+    usernames=myldap_get_values(entry,attmap_shadow_uid);
     if ((usernames==NULL)||(usernames[0]==NULL))
     {
       log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
-                          myldap_get_dn(entry),attmap_passwd_uid);
+                          myldap_get_dn(entry),attmap_shadow_uid);
       return 0;
     }
   }
   /* get password */
-  passwd=get_userpassword(entry,attmap_passwd_userPassword);
+  passwd=get_userpassword(entry,attmap_shadow_userPassword);
   if (passwd==NULL)
     passwd=default_shadow_userPassword;
   /* get lastchange */
