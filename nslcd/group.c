@@ -193,7 +193,6 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   passwd=get_userpassword(entry,attmap_group_userPassword);
   if (passwd==NULL)
     passwd=default_group_userPassword;
-  /* TODO: translate passwd value into something returnable */
   /* get group memebers (memberUid) */
   if (wantmembers)
     memberuidvalues=myldap_get_values(entry,attmap_group_memberUid);
