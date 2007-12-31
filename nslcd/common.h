@@ -55,8 +55,8 @@ int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
 /* This tries to get the user password attribute from the entry.
    It will try to return an encrypted password as it is used in /etc/passwd,
    /etc/group or /etc/shadow depending upon what is in the directory.
-   This function will return NULL if no passwd and will return the literal
-   value in the directory if conversion is not possible. */
+   This function will return NULL if no passwd is found and will return the
+   literal value in the directory if conversion is not possible. */
 const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr);
 
 /* write out an address, parsing the addr value */
