@@ -2,7 +2,7 @@
 
 # test.sh - simple test script to check output of name lookup commands
 #
-# Copyright (C) 2007 Arthur de Jong
+# Copyright (C) 2007, 2008 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@
 # FIXME: update the above description and provide actual LDIF file
 # It's probably best to run this in an environment without nscd.
 
-# note that nscd should not be running
+# note that nscd should not be running (breaks services test)
 
 set -e
 
@@ -38,8 +38,20 @@ ldapsearch -b "$base" -s base -x -H "$uri" > /dev/null 2>&1 || {
   echo "LDAP server $uri not available for $base"
   exit 77
 }
-# TODO: check if nslcd is running
+
+# basic check to see if nslcd is running
+if ! [ -S /var/run/nslcd/socket ] || \
+   ! [ -f /var/run/nslcd/nslcd.pid ] || \
+   ! kill -s 0 `cat /var/run/nslcd/nslcd.pid` > /dev/null 2>&1
+then
+  echo "nslcd not running"
+  exit 77
+fi
+
 # TODO: check if nscd is running
+
+# TODO: check if /etc/nsswitch.conf is correct
+
 echo "using LDAP server $uri"
 
 # the total number of errors
@@ -144,7 +156,15 @@ users:*:100:arthur,test
 EOM
 
 check "getent group | wc -l" << EOM
-43
+44
+EOM
+
+check "getent group | grep ^largegroup" << EOM
+largegroup:*:1005:akraskouskas,alat,ameisinger,bdevera,behrke,bmoldan,btempel,cjody,clouder,cmanno,dbye,dciviello,dfirpo,dgivliani,dgosser,emcquiddy,enastasi,fcunard,gcubbison,gdaub,gdreitzler,ghanauer,gpomerance,gsusoev,gtinnel,gvollrath,gzuhlke,hgalavis,hhaffey,hhydrick,hmachesky,hpaek,hpolk,hsweezer,htomlinson,hzagami,igurwell,ihashbarger,jyeater,kbradbury,khathway,kklavetter,lbuchtel,lgandee,lkhubba,lmauracher,lseehafer,lvittum,mblanchet,mbodley,mciaccia,mjuris,ndipanfilo,nfilipek,nfunchess,ngata,ngullett,nkraker,nriofrio,nroepke,nrybij,oclunes,oebrani,okveton,osaines,otrevor,pdossous,phaye,psowa,purquilla,rkoonz,rlatessa,rworkowski,sdebry,sgurski,showe,slaforge,tabdelal,testusr2,testusr3,tfalconeri,tpaa,uschweyen,utrezize,vchevalier,vdelnegro,vleyton,vmedici,vmigliori,vpender,vwaltmann,wbrettschneide,wselim,wvalcin,wworf,yautin,ykisak,zgingrich,znightingale,zwinterbottom
+EOM
+
+check "getent group largegroup" << EOM
+largegroup:*:1005:akraskouskas,alat,ameisinger,bdevera,behrke,bmoldan,btempel,cjody,clouder,cmanno,dbye,dciviello,dfirpo,dgivliani,dgosser,emcquiddy,enastasi,fcunard,gcubbison,gdaub,gdreitzler,ghanauer,gpomerance,gsusoev,gtinnel,gvollrath,gzuhlke,hgalavis,hhaffey,hhydrick,hmachesky,hpaek,hpolk,hsweezer,htomlinson,hzagami,igurwell,ihashbarger,jyeater,kbradbury,khathway,kklavetter,lbuchtel,lgandee,lkhubba,lmauracher,lseehafer,lvittum,mblanchet,mbodley,mciaccia,mjuris,ndipanfilo,nfilipek,nfunchess,ngata,ngullett,nkraker,nriofrio,nroepke,nrybij,oclunes,oebrani,okveton,osaines,otrevor,pdossous,phaye,psowa,purquilla,rkoonz,rlatessa,rworkowski,sdebry,sgurski,showe,slaforge,tabdelal,testusr2,testusr3,tfalconeri,tpaa,uschweyen,utrezize,vchevalier,vdelnegro,vleyton,vmedici,vmigliori,vpender,vwaltmann,wbrettschneide,wselim,wvalcin,wworf,yautin,ykisak,zgingrich,znightingale,zwinterbottom
 EOM
 
 ###########################################################################
