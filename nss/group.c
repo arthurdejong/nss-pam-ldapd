@@ -2,7 +2,7 @@
    group.c - NSS lookup functions for group database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -43,7 +43,6 @@ static enum nss_status read_group(
   return NSS_STATUS_SUCCESS;
 }
 
-#ifdef REENABLE_WHEN_WORKING
 /* read all group entries from the stream and add
    gids of these groups to the list */
 static enum nss_status read_gids(
@@ -79,7 +78,6 @@ static enum nss_status read_gids(
   /* return the proper status code */
   return (res==(int32_t)NSLCD_RESULT_END)?NSS_STATUS_SUCCESS:nslcd2nss(res);
 }
-#endif /* REENABLE_WHEN_WORKING */
 
 enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop)
 {
@@ -95,7 +93,6 @@ enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer
              read_group(fp,result,buffer,buflen,errnop));
 }
 
-#ifdef REENABLE_WHEN_WORKING
 /* this function returns a list of groups, documentation for the
    interface is scarce (any pointers are welcome) but this is
    what is assumed the parameters mean:
@@ -120,7 +117,6 @@ enum nss_status _nss_ldap_initgroups_dyn(
              user,
              read_gids(fp,start,size,groupsp,limit,errnop));
 }
-#endif /* REENABLE_WHEN_WORKING */
 
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *grentfp;

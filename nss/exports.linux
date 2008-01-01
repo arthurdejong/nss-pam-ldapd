@@ -19,7 +19,7 @@ EXPORTED {
     # group - groups of users
     _nss_ldap_getgrnam_r;
     _nss_ldap_getgrgid_r;
-#    _nss_ldap_initgroups_dyn;
+    _nss_ldap_initgroups_dyn;
     _nss_ldap_setgrent;
     _nss_ldap_getgrent_r;
     _nss_ldap_endgrent;
