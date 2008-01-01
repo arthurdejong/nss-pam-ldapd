@@ -2,7 +2,7 @@
    tio.c - timed io functions
    This file is part of the nss-ldapd library.
 
-   Copyright (C) 2007 Arthur de Jong
+   Copyright (C) 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -60,6 +60,7 @@ struct tio_fileinfo {
   struct tio_buffer *writebuffer;
   struct timeval readtimeout;
   struct timeval writetimeout;
+  int read_resettable; /* whether the tio_reset() function can be called */
 #ifdef DEBUG_TIO_STATS
   /* this is used to collect statistics on the use of the streams
      and can be used to tune the buffer sizes */
@@ -156,6 +157,7 @@ TFILE *tio_fdopen(int fd,struct timeval *readtimeout,struct timeval *writetimeou
   fp->readtimeout.tv_usec=readtimeout->tv_usec;
   fp->writetimeout.tv_sec=writetimeout->tv_sec;
   fp->writetimeout.tv_usec=writetimeout->tv_usec;
+  fp->read_resettable=0;
 #ifdef DEBUG_TIO_STATS
   fp->byteswritten=0;
   fp->bytesread=0;
@@ -221,10 +223,9 @@ int tio_read(TFILE *fp, void *buf, size_t count)
   /* loop until we have returned all the needed data */
   while (1)
   {
-    /* return any data already in the buffer */
+    /* check if we have enough data in the buffer */
     if (fp->readbuffer->len >= count)
     {
-      /* we have enough data in our buffer */
       if (count>0)
       {
         if (ptr!=NULL)
@@ -235,26 +236,32 @@ int tio_read(TFILE *fp, void *buf, size_t count)
       }
       return 0;
     }
+    /* empty what we have and continue from there */
+    if (fp->readbuffer->len > 0)
+    {
+      if (ptr!=NULL)
+      {
+        memcpy(ptr,fp->readbuffer->buffer+fp->readbuffer->start,fp->readbuffer->len);
+        ptr+=fp->readbuffer->len;
+      }
+      count-=fp->readbuffer->len;
+    }
+    /* if we have room in the buffer for more don't clear the buffer */
+    if ((fp->read_resettable)&&((fp->readbuffer->start+fp->readbuffer->len)<TIO_BUFFERSIZE))
+    {
+      fp->readbuffer->start+=fp->readbuffer->len;
+    }
     else
     {
-      /* empty what we have and continue from there */
-      if (fp->readbuffer->len > 0)
-      {
-        if (ptr!=NULL)
-          memcpy(ptr,fp->readbuffer->buffer+fp->readbuffer->start,fp->readbuffer->len);
-        count-=fp->readbuffer->len;
-        if (ptr!=NULL)
-          ptr+=fp->readbuffer->len;
-      }
-      /* flag the buffer as empty */
       fp->readbuffer->start=0;
-      fp->readbuffer->len=0;
+      fp->read_resettable=0;
     }
+    fp->readbuffer->len=0;
     /* wait until we have input */
     if (tio_select(fp->fd,1,&deadline))
       return -1;
     /* read the input in the buffer */
-    rv=read(fp->fd,fp->readbuffer->buffer,TIO_BUFFERSIZE);
+    rv=read(fp->fd,fp->readbuffer->buffer+fp->readbuffer->start,TIO_BUFFERSIZE-fp->readbuffer->start);
     /* check for errors */
     if ((rv==0)||((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN)))
       return -1; /* something went wrong with the read */
@@ -385,4 +392,34 @@ int tio_close(TFILE *fp)
   free(fp);
   /* return the result of the earlier operations */
   return retv;
+}
+
+void tio_mark(TFILE *fp)
+{
+  /* ensure that we have a read buffer */
+  if (fp->readbuffer==NULL)
+  {
+    fp->readbuffer=tio_buffer_new();
+    if (fp->readbuffer==NULL)
+      return; /* error allocating buffer */
+  }
+  /* move any data in the buffer to the start of the buffer */
+  if ((fp->readbuffer->start>0)&&(fp->readbuffer->len>0))
+  {
+    memmove(fp->readbuffer->buffer,fp->readbuffer->buffer+fp->readbuffer->start,fp->readbuffer->len);
+    fp->readbuffer->start=0;
+  }
+  /* mark the stream as resettable */
+  fp->read_resettable=1;
+}
+
+int tio_reset(TFILE *fp)
+{
+  /* check if the stream is (still) resettable */
+  if ((!fp->read_resettable)||(fp->readbuffer==NULL))
+    return -1;
+  /* reset the buffer */
+  fp->readbuffer->len+=fp->readbuffer->start;
+  fp->readbuffer->start=0;
+  return 0;
 }
