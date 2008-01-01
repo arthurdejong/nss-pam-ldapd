@@ -2,7 +2,7 @@
    common.h - common functions for NSS lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -94,8 +94,6 @@ TFILE *nslcd_client_open(void)
    Something more inteligent (e.g. ungetting the read data from
    the stream) should be implemented. */
 #define ERROR_OUT_BUFERROR(fp) \
-  (void)tio_close(fp); \
-  fp=NULL; \
   *errnop=ERANGE; \
   return NSS_STATUS_TRYAGAIN;
 
@@ -125,14 +123,14 @@ TFILE *nslcd_client_open(void)
    the result structure, the user buffer with length and the
    errno to return. This macro should be called through some of
    the customized ones below. */
-#define NSS_BYGEN(action,param,readfn) \
+#define NSS_BYGEN(action,writefn,readfn) \
   TFILE *fp; \
   int32_t tmpint32; \
   enum nss_status retv; \
   /* open socket and write request */ \
   OPEN_SOCK(fp); \
   WRITE_REQUEST(fp,action); \
-  param; \
+  writefn; \
   WRITE_FLUSH(fp); \
   /* read response header */ \
   READ_RESPONSEHEADER(fp,action); \
@@ -140,7 +138,7 @@ TFILE *nslcd_client_open(void)
   READ_RESPONSE_CODE(fp); \
   retv=readfn; \
   /* close socket and we're done */ \
-  if (retv==NSS_STATUS_SUCCESS) \
+  if ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_TRYAGAIN)) \
     (void)tio_close(fp); \
   return retv;
 
@@ -189,11 +187,22 @@ TFILE *nslcd_client_open(void)
     *errnop=ENOENT; \
     return NSS_STATUS_UNAVAIL; \
   } \
+  /* prepare for buffer errors */ \
+  tio_mark(fp); \
   /* read a response */ \
   READ_RESPONSE_CODE(fp); \
   retv=readfn; \
   /* check read result */ \
-  if (retv!=NSS_STATUS_SUCCESS) \
+  if (retv==NSS_STATUS_TRYAGAIN) \
+  { \
+    /* if we have a full buffer try to reset the stream */ \
+    if (tio_reset(fp)) \
+    { \
+      tio_close(fp); \
+      fp=NULL; \
+    } \
+  } \
+  else if (retv!=NSS_STATUS_SUCCESS) \
     fp=NULL; /* file should be closed by now */ \
   return retv;
 
