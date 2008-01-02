@@ -139,7 +139,8 @@ int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
     /* go over results */ \
     while ((entry=myldap_get_entry(search,&rc))!=NULL) \
     { \
-      writefn; \
+      if (writefn) \
+        return -1; \
     } \
     /* write the final result code */ \
     if (rc==LDAP_SUCCESS) \
