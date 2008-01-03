@@ -477,17 +477,26 @@ static void install_sighandler(int signum,RETSIGTYPE (*handler) (int))
   }
 }
 
+static void worker_cleanup(void *arg)
+{
+  MYLDAP_SESSION *session=(MYLDAP_SESSION *)arg;
+  myldap_session_close(session);
+}
+
 static void *worker(void UNUSED(*arg))
 {
   MYLDAP_SESSION *session;
   /* create a new LDAP session */
   session=myldap_create_session();
+  /* clean up the session if we're done */
+  pthread_cleanup_push(worker_cleanup,session);
   /* start waiting for incoming connections */
-  while (nslcd_exitsignal==0)
+  while (1)
   {
     /* wait for a new connection */
     acceptconnection(session);
   }
+  pthread_cleanup_pop(1);
   return NULL;
 }
 
