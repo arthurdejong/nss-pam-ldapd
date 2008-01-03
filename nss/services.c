@@ -2,7 +2,7 @@
    service.c - NSS lookup functions for services database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -66,12 +66,13 @@ static __thread TFILE *protoentfp;
 
 enum nss_status _nss_ldap_setservent(int UNUSED(stayopen))
 {
-  NSS_SETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL);
+  NSS_SETENT(protoentfp);
 }
 
 enum nss_status _nss_ldap_getservent_r(struct servent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(protoentfp,read_servent(protoentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL,
+             read_servent(protoentfp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_endservent(void)

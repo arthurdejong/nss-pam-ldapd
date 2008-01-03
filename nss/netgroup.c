@@ -2,7 +2,7 @@
    netgroup.c - NSS lookup functions for netgroup entries
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -100,7 +100,8 @@ static __thread TFILE *netgrentfp;
 
 enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *result)
 {
-  /* we cannot use NSS_SETENT() here because we have a parameter */
+  /* we cannot use NSS_SETENT() here because we have a parameter that is only
+     available in this function and we set result->first */
   int32_t tmpint32;
   int errnocp;
   int *errnop;
@@ -124,7 +125,8 @@ enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *resul
 
 enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(netgrentfp,read_netgrent(netgrentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,
+             read_netgrent(netgrentfp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_endnetgrent(struct __netgrent UNUSED(* result))

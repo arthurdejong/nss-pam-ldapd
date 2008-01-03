@@ -160,32 +160,28 @@ TFILE *nslcd_client_open(void)
 /* This macro generates a simple setent() function body. A stream
    is opened, a request is written and a check is done for
    a response header. */
-#define NSS_SETENT(fp,action) \
-  int32_t tmpint32; \
-  int errnocp; \
-  int *errnop; \
-  errnop=&errnocp; \
-  /* close the existing stream if it is still open */ \
+#define NSS_SETENT(fp) \
   if (fp!=NULL) \
+  { \
     (void)tio_close(fp); \
-  /* open a new stream and write the request */ \
-  OPEN_SOCK(fp); \
-  WRITE_REQUEST(fp,action); \
-  WRITE_FLUSH(fp); \
-  /* read response header */ \
-  READ_RESPONSEHEADER(fp,action); \
+    fp=NULL; \
+  } \
   return NSS_STATUS_SUCCESS;
 
 /* This macro generates a getent() function body. A single entry
    is read with the readfn() function. */
-#define NSS_GETENT(fp,readfn) \
+#define NSS_GETENT(fp,action,readfn) \
   int32_t tmpint32; \
   enum nss_status retv; \
   /* check that we have a valid file descriptor */ \
   if (fp==NULL) \
   { \
-    *errnop=ENOENT; \
-    return NSS_STATUS_UNAVAIL; \
+    /* open a new stream and write the request */ \
+    OPEN_SOCK(fp); \
+    WRITE_REQUEST(fp,action); \
+    WRITE_FLUSH(fp); \
+    /* read response header */ \
+    READ_RESPONSEHEADER(fp,action); \
   } \
   /* prepare for buffer errors */ \
   tio_mark(fp); \

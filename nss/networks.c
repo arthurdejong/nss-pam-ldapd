@@ -2,7 +2,7 @@
    networks.c - NSS lookup functions for networks database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -135,17 +135,12 @@ static __thread TFILE *netentfp;
 
 enum nss_status _nss_ldap_setnetent(int UNUSED(stayopen))
 {
-  /* temporary storage for h_errno
-     (used in NSS_SETENT error handling) */
-  int h_errnotmp;
-  int *h_errnop=&h_errnotmp;
-  /* setent is normal enough */
-  NSS_SETENT(netentfp,NSLCD_ACTION_NETWORK_ALL);
+  NSS_SETENT(netentfp);
 }
 
 enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  NSS_GETENT(netentfp,
+  NSS_GETENT(netentfp,NSLCD_ACTION_NETWORK_ALL,
              read_netent(netentfp,result,buffer,buflen,errnop,h_errnop));
 }
 

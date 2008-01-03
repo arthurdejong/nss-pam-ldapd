@@ -2,7 +2,7 @@
    hosts.c - NSS lookup functions for hosts database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -223,11 +223,7 @@ static __thread TFILE *hostentfp;
 
 enum nss_status _nss_ldap_sethostent(int UNUSED(stayopen))
 {
-  /* temporary storage for h_errno
-     (used in NSS_SETENT error handling) */
-  int h_errnotmp;
-  int *h_errnop=&h_errnotmp;
-  NSS_SETENT(hostentfp,NSLCD_ACTION_HOST_ALL);
+  NSS_SETENT(hostentfp);
 }
 
 /* this function only returns addresses of the AF_INET address family */
@@ -235,7 +231,7 @@ enum nss_status _nss_ldap_gethostent_r(
         struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  NSS_GETENT(hostentfp,
+  NSS_GETENT(hostentfp,NSLCD_ACTION_HOST_ALL,
              read_hostent_nextonempty(hostentfp,AF_INET,result,buffer,buflen,errnop,h_errnop));
 }
 

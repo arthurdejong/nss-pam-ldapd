@@ -2,7 +2,7 @@
    shadow.c - NSS lookup functions for shadow database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -60,12 +60,13 @@ static __thread TFILE *spentfp;
 
 enum nss_status _nss_ldap_setspent(int UNUSED(stayopen))
 {
-  NSS_SETENT(spentfp,NSLCD_ACTION_SHADOW_ALL);
+  NSS_SETENT(spentfp);
 }
 
 enum nss_status _nss_ldap_getspent_r(struct spwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(spentfp,read_spwd(spentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,
+             read_spwd(spentfp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_endspent(void)

@@ -2,7 +2,7 @@
    aliases.c - NSS lookup functions for aliases database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -58,12 +58,12 @@ static __thread TFILE *aliasentfp;
 
 enum nss_status _nss_ldap_setaliasent(void)
 {
-  NSS_SETENT(aliasentfp,NSLCD_ACTION_ALIAS_ALL);
+  NSS_SETENT(aliasentfp);
 }
 
 enum nss_status _nss_ldap_getaliasent_r(struct aliasent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(aliasentfp,
+  NSS_GETENT(aliasentfp,NSLCD_ACTION_ALIAS_ALL,
              read_aliasent(aliasentfp,result,buffer,buflen,errnop));
 }
 

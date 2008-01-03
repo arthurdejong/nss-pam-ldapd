@@ -123,12 +123,13 @@ static __thread TFILE *grentfp;
 
 enum nss_status _nss_ldap_setgrent(int UNUSED(stayopen))
 {
-  NSS_SETENT(grentfp,NSLCD_ACTION_GROUP_ALL);
+  NSS_SETENT(grentfp);
 }
 
 enum nss_status _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(grentfp,read_group(grentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,
+             read_group(grentfp,result,buffer,buflen,errnop));
 }
 
 enum nss_status _nss_ldap_endgrent(void)

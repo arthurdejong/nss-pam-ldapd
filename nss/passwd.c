@@ -2,7 +2,7 @@
    passwd.c - NSS lookup functions for passwd database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -66,13 +66,14 @@ static __thread TFILE *pwentfp;
 /* open a connection to the nslcd and write the request */
 enum nss_status _nss_ldap_setpwent(int UNUSED(stayopen))
 {
-  NSS_SETENT(pwentfp,NSLCD_ACTION_PASSWD_ALL);
+  NSS_SETENT(pwentfp);
 }
 
 /* read password data from an opened stream */
 enum nss_status _nss_ldap_getpwent_r(struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(pwentfp,read_passwd(pwentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(pwentfp,NSLCD_ACTION_PASSWD_ALL,
+             read_passwd(pwentfp,result,buffer,buflen,errnop));
 }
 
 /* close the stream opened with setpwent() above */
