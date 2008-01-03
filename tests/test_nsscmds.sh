@@ -156,7 +156,7 @@ users:*:100:arthur,test
 EOM
 
 check "getent group | wc -l" << EOM
-`wc -l /etc/group | awk '{print $1 + 3}'`
+`grep -c : /etc/group | awk '{print $1 + 3}'`
 EOM
 
 check "getent group | grep ^largegroup" << EOM
