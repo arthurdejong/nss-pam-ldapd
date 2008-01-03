@@ -156,7 +156,7 @@ users:*:100:arthur,test
 EOM
 
 check "getent group | wc -l" << EOM
-44
+`wc -l /etc/group | awk '{print $1 + 3}'`
 EOM
 
 check "getent group | grep ^largegroup" << EOM
@@ -325,7 +325,7 @@ foosrv                15349/tcp
 EOM
 
 check "getent services | wc -l" << EOM
-505
+`grep -c '^[^#].' /etc/services | awk '{print $1 + 3}'`
 EOM
 
 ###########################################################################
@@ -343,9 +343,8 @@ arthur:*::100:200:7:2::0
 EOM
 
 # check if the number of passwd entries matches the number of shadow entries
-numpasswd=`getent passwd | wc -l`
 check "getent shadow | wc -l" << EOM
-$numpasswd
+`getent passwd | wc -l`
 EOM
 
 # check if the names of users match between passwd and shadow
