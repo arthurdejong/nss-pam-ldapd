@@ -2,7 +2,7 @@
    nslcd.c - ldap local connection daemon
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -52,27 +52,21 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-
 /* the definition of the environment */
 extern char **environ;
-
 
 /* flag to indictate if we are in debugging mode */
 static int nslcd_debugging=0;
 
-
 /* the exit flag to indicate that a signal was received */
 static volatile int nslcd_exitsignal=0;
-
 
 /* the server socket used for communication */
 static int nslcd_serversocket=-1;
 
-
 /* thread ids of all running threads */
 #define NUM_THREADS 5
 static pthread_t nslcd_threads[NUM_THREADS];
-
 
 /* display version information */
 static void display_version(FILE *fp)
@@ -83,7 +77,6 @@ static void display_version(FILE *fp)
              "This is free software; see the source for copying conditions.  There is NO\n"
              "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
-
 
 /* display usage information to stdout and exit(status) */
 static void display_usage(FILE *fp,const char *program_name)
@@ -97,7 +90,6 @@ static void display_usage(FILE *fp,const char *program_name)
              "Report bugs to <%s>.\n",PACKAGE_BUGREPORT);
 }
 
-
 /* the definition of options for getopt(). see getopt(2) */
 static struct option const nslcd_options[] =
 {
@@ -107,7 +99,6 @@ static struct option const nslcd_options[] =
   { NULL, 0, NULL, 0 }
 };
 #define NSLCD_OPTIONSTRING "dhV"
-
 
 /* parse command line options and save settings in struct  */
 static void parse_cmdline(int argc,char *argv[])
@@ -145,7 +136,6 @@ static void parse_cmdline(int argc,char *argv[])
     exit(EXIT_FAILURE);
   }
 }
-
 
 /* get a name of a signal with a given signal number */
 static const char *signame(int signum)
@@ -202,7 +192,6 @@ static const char *signame(int signum)
   }
 }
 
-
 /* signal handler for closing down */
 static RETSIGTYPE sigexit_handler(int signum)
 {
@@ -216,7 +205,6 @@ static RETSIGTYPE sigexit_handler(int signum)
       log_log(LOG_WARNING,"failed to stop thread %d (ignored): %s",i,strerror(errno));
     }
 }
-
 
 /* do some cleaning up before terminating */
 static void exithandler(void)
@@ -250,27 +238,23 @@ static int open_socket(void)
 {
   int sock;
   struct sockaddr_un addr;
-
   /* create a socket */
   if ( (sock=socket(PF_UNIX,SOCK_STREAM,0))<0 )
   {
     log_log(LOG_ERR,"cannot create socket: %s",strerror(errno));
     exit(EXIT_FAILURE);
   }
-
   /* remove existing named socket */
   if (unlink(NSLCD_SOCKET)<0)
   {
     log_log(LOG_DEBUG,"unlink() of "NSLCD_SOCKET" failed (ignored): %s",
             strerror(errno));
   }
-
   /* create socket address structure */
   memset(&addr,0,sizeof(struct sockaddr_un));
   addr.sun_family=AF_UNIX;
   strncpy(addr.sun_path,NSLCD_SOCKET,sizeof(addr.sun_path));
   addr.sun_path[sizeof(addr.sun_path)-1]='\0';
-
   /* bind to the named socket */
   if (bind(sock,(struct sockaddr *)&addr,sizeof(struct sockaddr_un)))
   {
@@ -280,7 +264,6 @@ static int open_socket(void)
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     exit(EXIT_FAILURE);
   }
-
   /* close the file descriptor on exit */
   if (fcntl(sock,F_SETFD,FD_CLOEXEC)<0)
   {
@@ -289,7 +272,6 @@ static int open_socket(void)
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     exit(EXIT_FAILURE);
   }
-
   /* set permissions of socket so anybody can do requests */
   /* Note: we use chmod() here instead of fchmod() because
      fchmod does not work on sockets
@@ -302,7 +284,6 @@ static int open_socket(void)
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     exit(EXIT_FAILURE);
   }
-
   /* start listening for connections */
   if (listen(sock,SOMAXCONN)<0)
   {
@@ -311,7 +292,6 @@ static int open_socket(void)
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     exit(EXIT_FAILURE);
   }
-
   /* we're done */
   return sock;
 }
@@ -342,12 +322,10 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
   struct ucred client;
   int32_t action;
   struct timeval readtimeout,writetimeout;
-
   /* initialize client information (in case getsockopt() breaks) */
   client.pid=(pid_t)0;
   client.uid=(uid_t)-1;
   client.gid=(gid_t)-1;
-
   /* look up process information from client */
   alen=(socklen_t)sizeof(struct ucred);
   if (getsockopt(sock,SOL_SOCKET,SO_PEERCRED,&client,&alen) < 0)
@@ -357,11 +335,9 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     return;
   }
-
   /* log connection */
   log_log(LOG_DEBUG,"connection from pid=%d uid=%d gid=%d",
                     (int)client.pid,(int)client.uid,(int)client.gid);
-
   /* set the timeouts */
   readtimeout.tv_sec=0; /* clients should send there request quickly */
   readtimeout.tv_usec=500000;
@@ -374,14 +350,12 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
     (void)close(sock);
     return;
   }
-
   /* read request */
   if (read_header(fp,&action))
   {
     (void)tio_close(fp);
     return;
   }
-
   /* handle request */
   switch (action)
   {
@@ -419,7 +393,6 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
       log_log(LOG_WARNING,"invalid request id: %d",(int)action);
       break;
   }
-
   /* we're done with the request */
   myldap_session_cleanup(session);
   (void)tio_close(fp);
@@ -433,7 +406,6 @@ static void acceptconnection(MYLDAP_SESSION *session)
   int j;
   struct sockaddr_storage addr;
   socklen_t alen;
-
   /* accept a new connection */
   alen=(socklen_t)sizeof(struct sockaddr_storage);
   csock=accept(nslcd_serversocket,(struct sockaddr *)&addr,&alen);
@@ -441,13 +413,12 @@ static void acceptconnection(MYLDAP_SESSION *session)
   {
     if ((errno==EINTR)||(errno==EAGAIN)||(errno==EWOULDBLOCK))
     {
-      log_log(LOG_DEBUG,"debug: accept() failed (ignored): %s",strerror(errno));
+      log_log(LOG_DEBUG,"accept() failed (ignored): %s",strerror(errno));
       return;
     }
     log_log(LOG_ERR,"accept() failed: %s",strerror(errno));
     return;
   }
-
   /* make sure O_NONBLOCK is not inherited */
   if ((j=fcntl(csock,F_GETFL,0))<0)
   {
@@ -463,11 +434,9 @@ static void acceptconnection(MYLDAP_SESSION *session)
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     return;
   }
-
   /* handle the connection */
   handleconnection(csock,session);
 }
-
 
 /* write the current process id to the specified file */
 static void write_pidfile(const char *filename)
@@ -492,7 +461,6 @@ static void write_pidfile(const char *filename)
     }
   }
 }
-
 
 /* try to install signal handler and check result */
 static void install_sighandler(int signum,RETSIGTYPE (*handler) (int))
@@ -529,83 +497,51 @@ int main(int argc,char *argv[])
   gid_t mygid=(gid_t)-1;
   uid_t myuid=(uid_t)-1;
   int i;
-
   /* parse the command line */
   parse_cmdline(argc,argv);
-
   /* clear the environment */
   /* TODO:implement */
-
   /* check if we are already running */
   /* FIXME: implement (maybe pass along options or commands) */
-
   /* disable ldap lookups of host names to avoid lookup loop
      and fall back to files dns (a sensible default) */
   /* TODO: parse /etc/nsswitch ourselves and just remove ldap from the list */
   if (__nss_configure_lookup("hosts","files dns"))
     log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
-
   /* read configuration file */
   cfg_init(NSS_LDAP_PATH_CONF);
   nslcd_cfg->ldc_debug=nslcd_debugging?nslcd_debugging-1:0;
-
   /* daemonize */
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
   {
     log_log(LOG_ERR,"unable to daemonize: %s",strerror(errno));
     exit(EXIT_FAILURE);
   }
-
   /* set default mode for pidfile and socket */
   (void)umask((mode_t)0022);
-
   /* intilialize logging */
   if (!nslcd_debugging)
     log_startlogging();
   log_log(LOG_INFO,"version %s starting",VERSION);
-
   /* install handler to close stuff off on exit and log notice */
   if (atexit(exithandler))
   {
     log_log(LOG_ERR,"atexit() failed: %s",strerror(errno));
     exit(EXIT_FAILURE);
   }
-
   /* write pidfile */
   write_pidfile(NSLCD_PIDFILE);
-
   /* create socket */
   nslcd_serversocket=open_socket();
-
 #ifdef HAVE_SETGROUPS
   /* drop all supplemental groups */
   if (setgroups(0,NULL)<0)
-  {
     log_log(LOG_WARNING,"cannot setgroups(0,NULL) (ignored): %s",strerror(errno));
-  }
   else
-  {
-    log_log(LOG_DEBUG,"debug: setgroups(0,NULL) done");
-  }
+    log_log(LOG_DEBUG,"setgroups(0,NULL) done");
 #else /* HAVE_SETGROUPS */
-  log_log(LOG_DEBUG,"debug: setgroups() not available");
+  log_log(LOG_DEBUG,"setgroups() not available");
 #endif /* not HAVE_SETGROUPS */
-
-#ifdef USE_CAPABILITIES
-  /* if we are using capbilities, set them to be kept
-     across setuid() calls so we can limit them later on */
-  if (prctl(PR_SET_KEEPCAPS,1))
-  {
-    log_log(LOG_ERR,"cannot prctl(PR_SET_KEEPCAPS,1): %s",strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-  log_log(LOG_DEBUG,"debug: prctl(PR_SET_KEEPCAPS,1) done");
-  /* dump the current capabilities */
-  caps=cap_get_proc();
-  log_log(LOG_DEBUG,"debug: current capabilities: %s",cap_to_text(caps,NULL));
-  cap_free(caps);
-#endif /* USE_CAPABILITIES */
-
   /* change to nslcd gid */
   if (mygid!=((gid_t)-1))
   {
@@ -614,9 +550,8 @@ int main(int argc,char *argv[])
       log_log(LOG_ERR,"cannot setgid(%d): %s",(int)mygid,strerror(errno));
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG,"debug: setgid(%d) done",mygid);
+    log_log(LOG_DEBUG,"setgid(%d) done",mygid);
   }
-
   /* change to nslcd uid */
   if (myuid!=((uid_t)-1))
   {
@@ -625,25 +560,8 @@ int main(int argc,char *argv[])
       log_log(LOG_ERR,"cannot setuid(%d): %s",(int)myuid,strerror(errno));
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG,"debug: setuid(%d) done",myuid);
+    log_log(LOG_DEBUG,"setuid(%d) done",myuid);
   }
-
-#ifdef USE_CAPABILITIES
-  /* limit the capabilities */
-  if (cap_set_proc(mycapabilities)!=0)
-  {
-    log_log(LOG_ERR,"cannot cap_set_proc(%s): %s",cap_to_text(mycapabilities,NULL),strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-  log_log(LOG_DEBUG,"debug: cap_set_proc(%2) done",cap_to_text(mycapabilities,NULL));
-  /* we no longer need this so we should free it */
-  cap_free(mycapabilities);
-  /* dump the current capabilities */
-  caps=cap_get_proc();
-  log_log(LOG_DEBUG,"debug: current capabilities: %s",cap_to_text(caps,NULL));
-  cap_free(caps);
-#endif /* USE_CAPABILITIES */
-
   /* install signalhandlers for some signals */
   install_sighandler(SIGHUP, sigexit_handler);
   install_sighandler(SIGINT, sigexit_handler);
@@ -654,9 +572,7 @@ int main(int argc,char *argv[])
   install_sighandler(SIGUSR1,sigexit_handler);
   install_sighandler(SIGUSR2,sigexit_handler);
   /* TODO: install signal handlers for reloading configuration */
-
   log_log(LOG_INFO,"accepting connections");
-
   /* start worker threads */
   for (i=0;i<NUM_THREADS;i++)
   {
@@ -666,7 +582,6 @@ int main(int argc,char *argv[])
       exit(EXIT_FAILURE);
     }
   }
-
   /* wait for all threads to die */
   /* BUG: this causes problems if for some reason we want to exit but one
           of our threads hangs (e.g. has one of the LDAP locks)
@@ -682,13 +597,11 @@ int main(int argc,char *argv[])
       exit(EXIT_FAILURE);
     }
   }
-
   /* print something about received signals */
   if (nslcd_exitsignal!=0)
   {
     log_log(LOG_INFO,"caught signal %s (%d), shutting down",
                  signame(nslcd_exitsignal),nslcd_exitsignal);
   }
-
   return EXIT_FAILURE;
 }
