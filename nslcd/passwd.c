@@ -251,8 +251,6 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   tmpvalues=myldap_get_values(entry,attmap_passwd_loginShell);
   if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
   {
-    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
-                        myldap_get_dn(entry),attmap_passwd_loginShell);
     shell=default_passwd_loginShell;
   }
   else
