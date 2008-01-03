@@ -68,7 +68,7 @@ static enum nss_status read_gids(
     if ( ((*start)>=(*size)) || (num>=limit) )
       { ERROR_OUT_BUFERROR(fp); }
     /* add gid to list */
-    (*groupsp)[*start++]=gid;
+    (*groupsp)[(*start)++]=gid;
     num++;
     /* read next response code
       (don't bail out on not success since we just want to build
