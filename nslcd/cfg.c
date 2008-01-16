@@ -460,7 +460,8 @@ static void parse_map_statement(const char *filename,int lnr,
   check_argumentcount(filename,lnr,keyword,
       (get_token(&line,oldatt,sizeof(oldatt))!=NULL)&&
       (get_token(&line,newatt,sizeof(newatt))!=NULL));
-  check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
+  /* check that there are no more tokens left on the line */
+  check_argumentcount(filename,lnr,keyword,(line==NULL)||(*line=='\0'));
   /* get the attribute variable to set */
   var=attmap_get_var(map,oldatt);
   if (var==NULL)
