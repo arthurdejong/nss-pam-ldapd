@@ -195,7 +195,8 @@ static void test_read(void)
              "uri ldap://127.0.0.1/\n"
              "uri ldap:/// ldaps://127.0.0.1/\n"
              "base dc=test, dc=tld\n"
-             "base passwd ou=Some People,dc=test,dc=tld\n");
+             "base passwd ou=Some People,dc=test,dc=tld\n"
+             "map\tpasswd uid\t\tsAMAccountName\n");
   fclose(fp);
   /* parse the file */
   cfg_defaults(&cfg);
@@ -210,6 +211,7 @@ static void test_read(void)
   assert(cfg.ldc_uris[3]==NULL);
   assertstreq(cfg.ldc_base,"dc=test, dc=tld");
   assertstreq(passwd_base,"ou=Some People,dc=test,dc=tld");
+  assertstreq(attmap_passwd_uid,"sAMAccountName");
   /* remove temporary file */
   remove("temp.cfg");
 }
