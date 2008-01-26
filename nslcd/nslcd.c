@@ -325,7 +325,7 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
   pid_t pid;
   /* log connection */
   if (getpeercred(sock,&uid,&gid,&pid))
-    log_log(LOG_DEBUG,"connection from unknown client");
+    log_log(LOG_DEBUG,"connection from unknown client: %s",strerror(errno));
   else
     log_log(LOG_DEBUG,"connection from pid=%d uid=%d gid=%d",
                       (int)pid,(int)uid,(int)gid);
