@@ -140,6 +140,10 @@ static void add_uri(const char *filename,int lnr,
   cfg->ldc_uris[i+1]=NULL;
 }
 
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 255
+#endif /* not HOST_NAME_MAX */
+
 /* return the domain name of the current host
    we return part of the structure that is retured by gethostbyname()
    so there should be no need to free() this entry, however we should
