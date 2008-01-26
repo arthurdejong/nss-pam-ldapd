@@ -183,6 +183,8 @@ static void test_tokenize(void)
 }
 
 extern const char *passwd_base;
+extern const char *group_filter;
+extern int passwd_scope;
 
 static void test_read(void)
 {
@@ -196,7 +198,10 @@ static void test_read(void)
              "uri ldap:/// ldaps://127.0.0.1/\n"
              "base dc=test, dc=tld\n"
              "base passwd ou=Some People,dc=test,dc=tld\n"
-             "map\tpasswd uid\t\tsAMAccountName\n");
+             "map\tpasswd uid\t\tsAMAccountName\n"
+             "filter group (&(objeclClass=posixGroup)(gid=1*))\n"
+             "\n"
+             "scope passwd one\n");
   fclose(fp);
   /* parse the file */
   cfg_defaults(&cfg);
@@ -212,6 +217,8 @@ static void test_read(void)
   assertstreq(cfg.ldc_base,"dc=test, dc=tld");
   assertstreq(passwd_base,"ou=Some People,dc=test,dc=tld");
   assertstreq(attmap_passwd_uid,"sAMAccountName");
+  assertstreq(group_filter,"(&(objeclClass=posixGroup)(gid=1*))");
+  assert(passwd_scope==LDAP_SCOPE_ONELEVEL);
   /* remove temporary file */
   remove("temp.cfg");
 }
