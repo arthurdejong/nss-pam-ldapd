@@ -35,7 +35,7 @@ base="dc=test,dc=tld"
 
 # try to fetch the base DN (fail with exit 77 to indicate problem)
 ldapsearch -b "$base" -s base -x -H "$uri" > /dev/null 2>&1 || {
-  echo "LDAP server $uri not available for $base"
+  echo "test_nsscmds.sh: LDAP server $uri not available for $base"
   exit 77
 }
 
@@ -44,7 +44,7 @@ if ! [ -S /var/run/nslcd/socket ] || \
    ! [ -f /var/run/nslcd/nslcd.pid ] || \
    ! kill -s 0 `cat /var/run/nslcd/nslcd.pid` > /dev/null 2>&1
 then
-  echo "nslcd not running"
+  echo "test_nsscmds.sh: nslcd not running"
   exit 77
 fi
 
@@ -52,7 +52,7 @@ fi
 
 # TODO: check if /etc/nsswitch.conf is correct
 
-echo "using LDAP server $uri"
+echo "test_nsscmds.sh: using LDAP server $uri"
 
 # the total number of errors
 FAIL=0
@@ -64,7 +64,7 @@ check() {
   expectfile=`mktemp -t expected.XXXXXX 2> /dev/null || tempfile -s .expected 2> /dev/null`
   cat > "$expectfile"
   # run the command
-  echo 'checking "'"$cmd"'"'
+  echo 'test_nsscmds.sh: checking "'"$cmd"'"'
   actualfile=`mktemp -t actual.XXXXXX 2> /dev/null || tempfile -s .actual 2> /dev/null`
   eval "$cmd" > "$actualfile" 2>&1 || true
   # check for differences
@@ -78,7 +78,7 @@ check() {
 
 ###########################################################################
 
-echo "testing aliases..."
+echo "test_nsscmds.sh: testing aliases..."
 
 # check all aliases
 check "getent aliases|sort" << EOM
@@ -99,7 +99,7 @@ EOM
 
 ###########################################################################
 
-echo "testing ether..."
+echo "test_nsscmds.sh: testing ether..."
 
 # get an entry by hostname
 check "getent ethers testhost" << EOM
@@ -129,7 +129,7 @@ EOM
 
 ###########################################################################
 
-echo "testing group..."
+echo "test_nsscmds.sh: testing group..."
 
 check "getent group testgroup" << EOM
 testgroup:*:6100:arthur,test
@@ -169,7 +169,7 @@ EOM
 
 ###########################################################################
 
-echo "testing hosts..."
+echo "test_nsscmds.sh: testing hosts..."
 
 check "getent hosts testhost" << EOM
 10.0.0.1        testhost testhostalias
@@ -196,7 +196,7 @@ EOM
 
 ###########################################################################
 
-echo "testing netgroup..."
+echo "test_nsscmds.sh: testing netgroup..."
 
 # check netgroup lookup of test netgroup
 check "getent netgroup tstnetgroup" << EOM
@@ -205,7 +205,7 @@ EOM
 
 ###########################################################################
 
-echo "testing networks..."
+echo "test_nsscmds.sh: testing networks..."
 
 check "getent networks testnet" << EOM
 testnet               10.0.0.0
@@ -221,7 +221,7 @@ EOM
 
 ###########################################################################
 
-echo "testing passwd..."
+echo "test_nsscmds.sh: testing passwd..."
 
 check "getent passwd ecolden" << EOM
 ecolden:x:5972:1000:Estelle Colden:/home/ecolden:/bin/bash
@@ -242,7 +242,7 @@ EOM
 
 ###########################################################################
 
-echo "testing protocols..."
+echo "test_nsscmds.sh: testing protocols..."
 
 check "getent protocols protfoo" << EOM
 protfoo               140 protfooalias
@@ -266,7 +266,7 @@ EOM
 
 ###########################################################################
 
-echo "testing rpc..."
+echo "test_nsscmds.sh: testing rpc..."
 
 check "getent rpc rpcfoo" << EOM
 rpcfoo          160002  rpcfooalias
@@ -286,7 +286,7 @@ EOM
 
 ###########################################################################
 
-echo "testing services..."
+echo "test_nsscmds.sh: testing services..."
 
 check "getent services foosrv" << EOM
 foosrv                15349/tcp
@@ -330,7 +330,7 @@ EOM
 
 ###########################################################################
 
-echo "testing shadow..."
+echo "test_nsscmds.sh: testing shadow..."
 
 # NOTE: the output of this should depend on whether we are root or not
 
@@ -356,9 +356,9 @@ getent passwd | sed 's/:.*//' | sort | \
 
 if [ $FAIL -eq 0 ]
 then
-  echo "all tests passed"
+  echo "test_nsscmds.sh: all tests passed"
   exit 0
 else
-  echo "$FAIL tests failed"
+  echo "test_nsscmds.sh: $FAIL tests failed"
   exit 1
 fi

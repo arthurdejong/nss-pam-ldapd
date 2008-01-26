@@ -167,8 +167,8 @@ static int test_blocks(size_t wbs, size_t wbl, size_t rbs, size_t rbl)
   /* set up the socket pair */
   assert(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
   /* log */
-  printf("writing %d blocks of %d bytes (%d total)\n",wbl,wbs,wbl*wbs);
-  printf("reading %d blocks of %d bytes (%d total)\n",rbl,rbs,rbl*rbs);
+  printf("test_tio: writing %d blocks of %d bytes (%d total)\n",wbl,wbs,wbl*wbs);
+  printf("test_tio: reading %d blocks of %d bytes (%d total)\n",rbl,rbs,rbl*rbs);
   /* start the writer thread */
   wargs.fd=sp[0];
   wargs.blocksize=wbs;

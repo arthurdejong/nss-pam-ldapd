@@ -58,43 +58,43 @@ static void test_search(void)
   int i;
   int rc;
   /* initialize session */
-  printf("test_search(): getting session...\n");
+  printf("test_myldap: test_search(): getting session...\n");
   session=myldap_create_session();
   assert(session!=NULL);
   /* perform search */
-  printf("test_search(): doing search...\n");
+  printf("test_myldap: test_search(): doing search...\n");
   search=myldap_search(session,nslcd_cfg->ldc_base,
                        LDAP_SCOPE_SUBTREE,
                        "(objectclass=posixaccount)",
                        attrs);
   assert(search!=NULL);
   /* go over results */
-  printf("test_search(): get results...\n");
+  printf("test_myldap: test_search(): get results...\n");
   for (i=0;(entry=myldap_get_entry(search,&rc))!=NULL;i++)
   {
     if (i<MAXRESULTS)
-      printf("test_search(): [%d] DN %s\n",i,myldap_get_dn(entry));
+      printf("test_myldap: test_search(): [%d] DN %s\n",i,myldap_get_dn(entry));
     else if (i==MAXRESULTS)
-      printf("test_search(): ...\n");
+      printf("test_myldap: test_search(): ...\n");
   }
-  printf("test_search(): %d entries returned: %s\n",i,ldap_err2string(rc));
+  printf("test_myldap: test_search(): %d entries returned: %s\n",i,ldap_err2string(rc));
   /* perform another search */
-  printf("test_search(): doing search...\n");
+  printf("test_myldap: test_search(): doing search...\n");
   search=myldap_search(session,nslcd_cfg->ldc_base,
                        LDAP_SCOPE_SUBTREE,
                        "(objectclass=posixGroup)",
                        attrs);
   assert(search!=NULL);
   /* go over results */
-  printf("test_search(): get results...\n");
+  printf("test_myldap: test_search(): get results...\n");
   for (i=0;(entry=myldap_get_entry(search,&rc))!=NULL;i++)
   {
     if (i<MAXRESULTS)
-      printf("test_search(): [%d] DN %s\n",i,myldap_get_dn(entry));
+      printf("test_myldap: test_search(): [%d] DN %s\n",i,myldap_get_dn(entry));
     else if (i==MAXRESULTS)
-      printf("test_search(): ...\n");
+      printf("test_myldap: test_search(): ...\n");
   }
-  printf("test_search(): %d entries returned: %s\n",i,ldap_err2string(rc));
+  printf("test_myldap: test_search(): %d entries returned: %s\n",i,ldap_err2string(rc));
   /* clean up */
   myldap_session_close(session);
 }
@@ -110,7 +110,7 @@ static void test_get_values(void)
   const char *rdnval;
   int i;
   /* initialize session */
-  printf("test_get_values(): getting session...\n");
+  printf("test_myldap: test_get_values(): getting session...\n");
   session=myldap_create_session();
   assert(session!=NULL);
   /* perform search */
@@ -123,31 +123,31 @@ static void test_get_values(void)
   for (i=0;(entry=myldap_get_entry(search,NULL))!=NULL;i++)
   {
     if (i<MAXRESULTS)
-      printf("test_get_values(): [%d] DN %s\n",i,myldap_get_dn(entry));
+      printf("test_myldap: test_get_values(): [%d] DN %s\n",i,myldap_get_dn(entry));
     else if (i==MAXRESULTS)
-      printf("test_get_values(): ...\n");
+      printf("test_myldap: test_get_values(): ...\n");
     /* try to get uid from attribute */
     vals=myldap_get_values(entry,"uidNumber");
     assert((vals!=NULL)&&(vals[0]!=NULL));
     if (i<MAXRESULTS)
-      printf("test_get_values(): [%d] uidNumber=%s\n",i,vals[0]);
+      printf("test_myldap: test_get_values(): [%d] uidNumber=%s\n",i,vals[0]);
     /* try to get gid from attribute */
     vals=myldap_get_values(entry,"gidNumber");
     assert((vals!=NULL)&&(vals[0]!=NULL));
     if (i<MAXRESULTS)
-      printf("test_get_values(): [%d] gidNumber=%s\n",i,vals[0]);
+      printf("test_myldap: test_get_values(): [%d] gidNumber=%s\n",i,vals[0]);
     /* write LDF_STRING(PASSWD_NAME) */
     vals=myldap_get_values(entry,"uid");
     assert((vals!=NULL)&&(vals[0]!=NULL));
     if (i<MAXRESULTS)
-      printf("test_get_values(): [%d] uid=%s\n",i,vals[0]);
+      printf("test_myldap: test_get_values(): [%d] uid=%s\n",i,vals[0]);
     /* get rdn values */
     rdnval=myldap_get_rdn_value(entry,"cn");
     if (i<MAXRESULTS)
-      printf("test_get_values(): [%d] cdrdn=%s\n",i,rdnval);
+      printf("test_myldap: test_get_values(): [%d] cdrdn=%s\n",i,rdnval);
     rdnval=myldap_get_rdn_value(entry,"uid");
     if (i<MAXRESULTS)
-      printf("test_get_values(): [%d] uidrdn=%s\n",i,rdnval);
+      printf("test_myldap: test_get_values(): [%d] uidrdn=%s\n",i,rdnval);
     /* check objectclass */
     assert(myldap_has_objectclass(entry,"posixAccount"));
   }
@@ -165,7 +165,7 @@ static void test_two_searches(void)
   const char *attrs[] = { "uidNumber", "cn", "gidNumber", "uid", "objectClass", NULL };
   const char **vals;
   /* initialize session */
-  printf("test_two_searches(): getting session...\n");
+  printf("test_myldap: test_two_searches(): getting session...\n");
   session=myldap_create_session();
   assert(session!=NULL);
   /* perform search1 */
@@ -177,10 +177,10 @@ static void test_two_searches(void)
   /* get a result from search1 */
   entry=myldap_get_entry(search1,NULL);
   assert(entry!=NULL);
-  printf("test_two_searches(): [search1] DN %s\n",myldap_get_dn(entry));
+  printf("test_myldap: test_two_searches(): [search1] DN %s\n",myldap_get_dn(entry));
   vals=myldap_get_values(entry,"cn");
   assert((vals!=NULL)&&(vals[0]!=NULL));
-  printf("test_two_searches(): [search1] cn=%s\n",vals[0]);
+  printf("test_myldap: test_two_searches(): [search1] cn=%s\n",vals[0]);
   /* start a second search */
   search2=myldap_search(session,nslcd_cfg->ldc_base,
                         LDAP_SCOPE_SUBTREE,
@@ -190,26 +190,26 @@ static void test_two_searches(void)
   /* get a result from search2 */
   entry=myldap_get_entry(search2,NULL);
   assert(entry!=NULL);
-  printf("test_two_searches(): [search2] DN %s\n",myldap_get_dn(entry));
+  printf("test_myldap: test_two_searches(): [search2] DN %s\n",myldap_get_dn(entry));
   vals=myldap_get_values(entry,"cn");
   assert((vals!=NULL)&&(vals[0]!=NULL));
-  printf("test_two_searches(): [search2] cn=%s\n",vals[0]);
+  printf("test_myldap: test_two_searches(): [search2] cn=%s\n",vals[0]);
   /* get another result from search1 */
   entry=myldap_get_entry(search1,NULL);
   assert(entry!=NULL);
-  printf("test_two_searches(): [search1] DN %s\n",myldap_get_dn(entry));
+  printf("test_myldap: test_two_searches(): [search1] DN %s\n",myldap_get_dn(entry));
   vals=myldap_get_values(entry,"cn");
   assert((vals!=NULL)&&(vals[0]!=NULL));
-  printf("test_two_searches(): [search1] cn=%s\n",vals[0]);
+  printf("test_myldap: test_two_searches(): [search1] cn=%s\n",vals[0]);
   /* stop search1 */
   myldap_search_close(search1);
   /* get another result from search2 */
   entry=myldap_get_entry(search2,NULL);
   assert(entry!=NULL);
-  printf("test_two_searches(): [search2] DN %s\n",myldap_get_dn(entry));
+  printf("test_myldap: test_two_searches(): [search2] DN %s\n",myldap_get_dn(entry));
   vals=myldap_get_values(entry,"cn");
   assert((vals!=NULL)&&(vals[0]!=NULL));
-  printf("test_two_searches(): [search2] cn=%s\n",vals[0]);
+  printf("test_myldap: test_two_searches(): [search2] cn=%s\n",vals[0]);
   /* clean up */
   myldap_session_close(session);
 }
@@ -237,11 +237,11 @@ static void *worker(void *arg)
   for (i=0;(entry=myldap_get_entry(search,&rc))!=NULL;i++)
   {
     if (i<MAXRESULTS)
-      printf("test_threads(): [worker %d] [%d] DN %s\n",args->id,i,myldap_get_dn(entry));
+      printf("test_myldap: test_threads(): [worker %d] [%d] DN %s\n",args->id,i,myldap_get_dn(entry));
     else if (i==MAXRESULTS)
-      printf("test_threads(): [worker %d] ...\n",args->id);
+      printf("test_myldap: test_threads(): [worker %d] ...\n",args->id);
   }
-  printf("test_threads(): [worker %d] DONE: %s\n",args->id,ldap_err2string(rc));
+  printf("test_myldap: test_threads(): [worker %d] DONE: %s\n",args->id,ldap_err2string(rc));
   /* clean up */
   myldap_session_close(session);
   return 0;
@@ -289,11 +289,11 @@ static void test_connections(void)
   nslcd_cfg->ldc_uris[i++]="ldap://nosuchhost/";
   nslcd_cfg->ldc_uris[i++]=NULL;
   /* initialize session */
-  printf("test_connections(): getting session...\n");
+  printf("test_myldap: test_connections(): getting session...\n");
   session=myldap_create_session();
   assert(session!=NULL);
   /* perform search */
-  printf("test_connections(): doing search...\n");
+  printf("test_myldap: test_connections(): doing search...\n");
   search=myldap_search(session,nslcd_cfg->ldc_base,
                        LDAP_SCOPE_SUBTREE,
                        "(objectclass=posixaccount)",
