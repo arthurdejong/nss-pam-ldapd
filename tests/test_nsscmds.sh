@@ -30,6 +30,12 @@ set -e
 
 # check if LDAP is configured correctly
 cfgfile="/etc/nss-ldapd.conf"
+if ! [ -r "$cfgfile" ]
+then
+  echo "test_nsscmds.sh: $cfgfile: not found"
+  exit 77
+fi
+
 uri=`sed -n 's/^uri *//p' "$cfgfile" | head -n 1`
 base="dc=test,dc=tld"
 
