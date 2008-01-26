@@ -51,6 +51,7 @@
 #include "cfg.h"
 #include "common.h"
 #include "compat/attrs.h"
+#include "compat/getpeercred.h"
 
 /* the definition of the environment */
 extern char **environ;
@@ -231,7 +232,6 @@ static void exithandler(void)
   log_log(LOG_INFO,"version %s bailing out",VERSION);
 }
 
-
 /* returns a socket ready to answer requests from the client,
    exit()s on error */
 static int open_socket(void)
@@ -318,26 +318,17 @@ static int read_header(TFILE *fp,int32_t *action)
 static void handleconnection(int sock,MYLDAP_SESSION *session)
 {
   TFILE *fp;
-  socklen_t alen;
-  struct ucred client;
   int32_t action;
   struct timeval readtimeout,writetimeout;
-  /* initialize client information (in case getsockopt() breaks) */
-  client.pid=(pid_t)0;
-  client.uid=(uid_t)-1;
-  client.gid=(gid_t)-1;
-  /* look up process information from client */
-  alen=(socklen_t)sizeof(struct ucred);
-  if (getsockopt(sock,SOL_SOCKET,SO_PEERCRED,&client,&alen) < 0)
-  {
-    log_log(LOG_ERR,"getsockopt(SO_PEERCRED) failed: %s",strerror(errno));
-    if (close(sock))
-      log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
-    return;
-  }
+  uid_t uid;
+  gid_t gid;
+  pid_t pid;
   /* log connection */
-  log_log(LOG_DEBUG,"connection from pid=%d uid=%d gid=%d",
-                    (int)client.pid,(int)client.uid,(int)client.gid);
+  if (getpeercred(sock,&uid,&gid,&pid))
+    log_log(LOG_DEBUG,"connection from unknown client");
+  else
+    log_log(LOG_DEBUG,"connection from pid=%d uid=%d gid=%d",
+                      (int)pid,(int)uid,(int)gid);
   /* set the timeouts */
   readtimeout.tv_sec=0; /* clients should send there request quickly */
   readtimeout.tv_usec=500000;

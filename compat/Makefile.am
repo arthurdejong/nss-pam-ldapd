@@ -1,7 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2006, 2007 West Consulting
-# Copyright (C) 2006, 2007, 2008 Arthur de Jong
+# Copyright (C) 2008 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,20 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-sbin_PROGRAMS = nslcd
+noinst_LIBRARIES = libcompat.a
 
 AM_CPPFLAGS=-I$(top_srcdir)
-AM_CFLAGS = $(PTHREAD_CFLAGS)
+AM_CFLAGS = -fPIC
 
-nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
-                ../compat/attrs.h ../compat/ldap.h \
-                log.c log.h \
-                common.c common.h \
-                myldap.c myldap.h \
-                pagectrl.c pagectrl.h \
-                cfg.c cfg.h \
-                attmap.c attmap.h \
-                alias.c ether.c group.c host.c netgroup.c network.c \
-                passwd.c protocol.c rpc.c service.c shadow.c
-nslcd_LDADD = @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a \
-              ../compat/libcompat.a
+libcompat_a_SOURCES = getpeercred.c getpeercred.h
