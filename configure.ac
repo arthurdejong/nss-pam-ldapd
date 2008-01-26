@@ -137,6 +137,7 @@ AC_CHECK_HEADERS(gssapi/gssapi_krb5.h gssapi.h)
 AC_CHECK_HEADERS(grp.h)
 AC_CHECK_HEADERS(sys/socket.h)
 AC_CHECK_HEADERS(sys/ucred.h)
+AC_CHECK_HEADERS(ucred.h)
 
 # set up directory with compatibility replacement files
 AC_CONFIG_LIBOBJ_DIR([compat])
@@ -169,6 +170,7 @@ AC_CHECK_FUNCS(ether_aton_r)
 AC_CHECK_FUNCS(ether_ntoa_r)
 AC_CHECK_FUNCS(setgroups)
 AC_CHECK_FUNCS(getpeereid)
+AC_CHECK_FUNCS(getpeerucred)
 
 # checks for types
 AC_C_CONST

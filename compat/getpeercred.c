@@ -31,8 +31,14 @@
 #include <sys/ucred.h>
 #endif /* HAVE SYS_UCRED_H */
 #include <errno.h>
+#ifdef HAVE_UCRED_H
+#include <ucred.h>
+#endif /* HAVE_UCRED_H */
 
 #include "getpeercred.h"
+
+/* Note: most of this code is untested, except for the first
+         implementation (it may even fail to compile) */
 
 int getpeercred(int sock,uid_t *uid,gid_t *gid,pid_t *pid)
 {
@@ -72,6 +78,17 @@ int getpeercred(int sock,uid_t *uid,gid_t *gid,pid_t *pid)
   if (uid!=NULL) *uid=cred.uid;
   if (gid!=NULL) *gid=cred.gid;
   if (pid!=NULL) *pid=cred.pid;
+  return 0;
+#elif defined(HAVE_GETPEERUCRED)
+  ucred_t *cred=NULL;
+  if (getpeerucred(client,&cred))
+    return -1;
+  /* save the data */
+  if (uid!=NULL) *uid=ucred_geteuid(&cred);
+  if (gid!=NULL) *gid=ucred_getegid(&cred);
+  if (pid!=NULL) *pid=ucred_getpid(&cred);
+  /* free cred and return */
+  ucred_free(&ucred);
   return 0;
 #elif defined(HAVE_GETPEEREID)
   uid_t tuid;

@@ -24,8 +24,8 @@
 #ifndef _COMPAT_GETPEERCRED_H
 #define _COMPAT_GETPEERCRED_H 1
 
-/* This function tries to determine the user id, group id and process
-   id of the other end of the specified socket.
+/* This function tries to determine the (effective) user id, group id
+   and process id of the other end of the specified socket.
    Any of the uid, gid and pid paramaters may be NULL to not update
    that information.
    On success, zero is returned.  On error, -1 is returned, and errno
