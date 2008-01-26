@@ -171,7 +171,7 @@ static const char *cfg_getdomainname(const char *filename,int lnr)
 
 /* add URIs by doing DNS queries for SRV records */
 static void add_uris_from_dns(const char *filename,int lnr,
-                        struct ldap_config *cfg)
+                              struct ldap_config *cfg)
 {
   int ret=0;
   const char *domain;
@@ -329,6 +329,66 @@ static inline void check_argumentcount(const char *filename,int lnr,
   }
 }
 
+static void get_int(const char *filename,int lnr,
+                    const char *keyword,char **line,
+                    int *var)
+{
+  /* TODO: refactor to have less overhead */
+  char token[32];
+  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
+  /* TODO: replace with correct numeric parse */
+  *var=atoi(token);
+}
+
+static void get_boolean(const char *filename,int lnr,
+                        const char *keyword,char **line,
+                        int *var)
+{
+  /* TODO: refactor to have less overhead */
+  char token[32];
+  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
+  *var=parse_boolean(filename,lnr,token);
+}
+
+static void get_strdup(const char *filename,int lnr,
+                       const char *keyword,char **line,
+                       char **var)
+{
+  /* TODO: refactor to have less overhead */
+  char token[64];
+  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
+  if ((*var==NULL)||(strcmp(*var,token)!=0))
+  {
+    /* Note: we have a memory leak here if a single mapping is changed
+             multiple times in one config (deemed not a problem) */
+    *var=xstrdup(token);
+  }
+}
+
+static void get_restdup(const char *filename,int lnr,
+                        const char *keyword,char **line,
+                        char **var)
+{
+  check_argumentcount(filename,lnr,keyword,(*line!=NULL)&&(**line!='\0'));
+  if ((*var==NULL)||(strcmp(*var,*line)!=0))
+  {
+    /* Note: we have a memory leak here if a single mapping is changed
+             multiple times in one config (deemed not a problem) */
+    *var=xstrdup(*line);
+  }
+  *line=NULL;
+}
+
+static void get_eol(const char *filename,int lnr,
+                    const char *keyword,char **line)
+{
+  if ((line!=NULL)&&(*line!=NULL)&&(**line!='\0'))
+  {
+    log_log(LOG_ERR,"%s:%d: %s: too may arguments",filename,lnr,keyword);
+    exit(EXIT_FAILURE);
+  }
+}
+
 static void parse_krb5_ccname_statement(const char *filename,int lnr,
                                         const char *keyword,char *line)
 {
@@ -461,7 +521,7 @@ static void parse_map_statement(const char *filename,int lnr,
       (get_token(&line,oldatt,sizeof(oldatt))!=NULL)&&
       (get_token(&line,newatt,sizeof(newatt))!=NULL));
   /* check that there are no more tokens left on the line */
-  check_argumentcount(filename,lnr,keyword,(line==NULL)||(*line=='\0'));
+  get_eol(filename,lnr,keyword,&line);
   /* get the attribute variable to set */
   var=attmap_get_var(map,oldatt);
   if (var==NULL)
@@ -475,66 +535,6 @@ static void parse_map_statement(const char *filename,int lnr,
     /* Note: we have a memory leak here if a single mapping is changed
              multiple times in one config (deemed not a problem) */
     *var=xstrdup(newatt);
-  }
-}
-
-static void get_int(const char *filename,int lnr,
-                    const char *keyword,char **line,
-                    int *var)
-{
-  /* TODO: refactor to have less overhead */
-  char token[32];
-  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
-  /* TODO: replace with correct numeric parse */
-  *var=atoi(token);
-}
-
-static void get_boolean(const char *filename,int lnr,
-                        const char *keyword,char **line,
-                        int *var)
-{
-  /* TODO: refactor to have less overhead */
-  char token[32];
-  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
-  *var=parse_boolean(filename,lnr,token);
-}
-
-static void get_strdup(const char *filename,int lnr,
-                    const char *keyword,char **line,
-                    char **var)
-{
-  /* TODO: refactor to have less overhead */
-  char token[64];
-  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
-  if ((*var==NULL)||(strcmp(*var,token)!=0))
-  {
-    /* Note: we have a memory leak here if a single mapping is changed
-             multiple times in one config (deemed not a problem) */
-    *var=xstrdup(token);
-  }
-}
-
-static void get_restdup(const char *filename,int lnr,
-                     const char *keyword,char **line,
-                     char **var)
-{
-  check_argumentcount(filename,lnr,keyword,(*line!=NULL)&&(**line!='\0'));
-  if ((*var==NULL)||(strcmp(*var,*line)!=0))
-  {
-    /* Note: we have a memory leak here if a single mapping is changed
-             multiple times in one config (deemed not a problem) */
-    *var=xstrdup(*line);
-  }
-  *line=NULL;
-}
-
-static void get_eol(const char *filename,int lnr,
-                   const char *keyword,char **line)
-{
-  if ((line!=NULL)&&(*line!=NULL)&&(**line!='\0'))
-  {
-    log_log(LOG_ERR,"%s:%d: %s: too may arguments",filename,lnr,keyword);
-    exit(EXIT_FAILURE);
   }
 }
 
