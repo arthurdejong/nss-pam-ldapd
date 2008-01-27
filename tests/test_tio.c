@@ -28,7 +28,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <pthread.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif /* HAVE_STDINT_H */
 #include <stdlib.h>
 
 #include "common/tio.h"

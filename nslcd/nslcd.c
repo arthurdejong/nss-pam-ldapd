@@ -25,7 +25,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif /* HAVE_STDINT_H */
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/wait.h>

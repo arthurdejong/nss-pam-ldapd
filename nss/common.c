@@ -22,7 +22,9 @@
 
 #include "config.h"
 
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif /* HAVE_STDINT_H */
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/socket.h>

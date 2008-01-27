@@ -39,7 +39,9 @@
 
 #ifdef DEBUG_PROT_DUMP
 /* define a debugging macro to output detailed logging */
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif /* HAVE_STDINT_H */
 static void debug_dump(const void *ptr,size_t size)
 {
   int i;
