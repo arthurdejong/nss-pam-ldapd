@@ -69,13 +69,15 @@
 #include "log.h"
 #include "cfg.h"
 #include "attmap.h"
-#include "compat/ldap.h"
 #include "common/dict.h"
 
-/* compatibility */
+/* compatibility macros */
 #ifndef LDAP_CONST
-#define LDAP_CONST constructor
+#define LDAP_CONST const
 #endif /* not LDAP_CONST */
+#ifndef LDAP_MSG_ONE
+#define LDAP_MSG_ONE 0x00
+#endif /* not LDAP_MSG_ONE */
 
 /* the maximum number of searches per session */
 #define MAX_SEARCHES_IN_SESSION 4
