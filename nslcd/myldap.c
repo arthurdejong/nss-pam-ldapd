@@ -72,6 +72,11 @@
 #include "compat/ldap.h"
 #include "common/dict.h"
 
+/* compatibility */
+#ifndef LDAP_CONST
+#define LDAP_CONST constructor
+#endif /* not LDAP_CONST */
+
 /* the maximum number of searches per session */
 #define MAX_SEARCHES_IN_SESSION 4
 
@@ -396,13 +401,17 @@ static int do_set_options(MYLDAP_SESSION *session)
   /* turn on debugging */
   if (nslcd_cfg->ldc_debug)
   {
+#ifdef LBER_OPT_DEBUG_LEVEL
     rc=ber_set_option(NULL,LBER_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
     if (rc!=LDAP_SUCCESS)
     {
       log_log(LOG_ERR,"ber_set_option(LBER_OPT_DEBUG_LEVEL) failed: %s",ldap_err2string(rc));
       return rc;
     }
+#endif /* LBER_OPT_DEBUG_LEVEL */
+#ifdef LDAP_OPT_DEBUG_LEVEL
     LDAP_SET_OPTION(NULL,LDAP_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
+#endif /* LDAP_OPT_DEBUG_LEVEL */
   }
   /* the rebind function that is called when chasing referrals, see
      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/apis/ldap_set_rebind_proc.htm
@@ -421,8 +430,12 @@ static int do_set_options(MYLDAP_SESSION *session)
   LDAP_SET_OPTION(session->ld,LDAP_OPT_TIMELIMIT,&nslcd_cfg->ldc_timelimit);
   tv.tv_sec=nslcd_cfg->ldc_bind_timelimit;
   tv.tv_usec=0;
+#ifdef LDAP_OPT_TIMEOUT
   LDAP_SET_OPTION(session->ld,LDAP_OPT_TIMEOUT,&tv);
+#endif /* LDAP_OPT_TIMEOUT */
+#ifdef LDAP_OPT_NETWORK_TIMEOUT
   LDAP_SET_OPTION(session->ld,LDAP_OPT_NETWORK_TIMEOUT,&tv);
+#endif /* LDAP_OPT_NETWORK_TIMEOUT */
   LDAP_SET_OPTION(session->ld,LDAP_OPT_REFERRALS,nslcd_cfg->ldc_referrals?LDAP_OPT_ON:LDAP_OPT_OFF);
   LDAP_SET_OPTION(session->ld,LDAP_OPT_RESTART,nslcd_cfg->ldc_restart?LDAP_OPT_ON:LDAP_OPT_OFF);
   /* if SSL is desired, then enable it */
