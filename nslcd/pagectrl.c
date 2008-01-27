@@ -130,7 +130,7 @@ exit:
   ber_free (ber, 1);
   return (LDAP_ENCODING_ERROR);
 }
-#endif /* HAVE_LDAP_CREATE_PAGE_CONTROL */
+#endif /* not HAVE_LDAP_CREATE_PAGE_CONTROL */
 
 #ifndef HAVE_LDAP_PARSE_PAGE_CONTROL
 /*---
@@ -221,4 +221,4 @@ foundPageControl:
 
   return (LDAP_SUCCESS);
 }
-#endif /* HAVE_LDAP_PARSE_PAGE_CONTROL */
+#endif /* not HAVE_LDAP_PARSE_PAGE_CONTROL */

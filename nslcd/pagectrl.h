@@ -31,7 +31,7 @@ ldap_create_page_control( LDAP *ld,
     struct berval *cookiep,
     int iscritical,
     LDAPControl **ctrlp );
-#endif /* HAVE_LDAP_CREATE_PAGE_CONTROL */
+#endif /* not HAVE_LDAP_CREATE_PAGE_CONTROL */
 
 #ifndef HAVE_LDAP_PARSE_PAGE_CONTROL
 int
@@ -40,6 +40,6 @@ ldap_parse_page_control(
     LDAPControl    **ctrls,
     unsigned long  *list_countp,
     struct berval  **cookiep );
-#endif /* HAVE_LDAP_PARSE_PAGE_CONTROL */
+#endif /* not HAVE_LDAP_PARSE_PAGE_CONTROL */
 
 #endif /* _LDAP_NSS_LDAP_UTIL_H */
