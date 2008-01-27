@@ -119,7 +119,11 @@ AC_DEFINE_UNQUOTED(LDAP_NSS_NGROUPS,$ldap_nss_ngroups,[Maximum number of group m
 
 # checks for availability of header files
 AC_CHECK_HEADERS(lber.h)
-AC_CHECK_HEADERS(ldap.h,,AC_MSG_ERROR([could not locate <ldap.h>]))
+AC_CHECK_HEADERS(ldap.h,,AC_MSG_ERROR([could not locate <ldap.h>]),[
+    #if HAVE_LBER_H
+    #include <lber.h>
+    #endif
+    ])
 AC_CHECK_HEADERS(ldap_ssl.h)
 AC_CHECK_HEADERS(nss.h)
 AC_CHECK_HEADERS(pthread.h)

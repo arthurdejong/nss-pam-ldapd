@@ -38,6 +38,7 @@
 /* for size_t */
 #include <stdlib.h>
 /* for LDAP_SCOPE_* */
+#include <lber.h>
 #include <ldap.h>
 
 #include "compat/attrs.h"
