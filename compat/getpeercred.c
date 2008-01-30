@@ -61,13 +61,9 @@ int getpeercred(int sock,uid_t *uid,gid_t *gid,pid_t *pid)
 #elif defined(LOCAL_PEERCRED)
   socklen_t l;
   struct xucred cred;
-  /* initialize client information (in case getsockopt() breaks) */
-  cred.pid=(pid_t)0;
-  cred.uid=(uid_t)-1;
-  cred.gid=(gid_t)-1;
   /* look up process information from peer */
   l=(socklen_t)sizeof(struct xucred);
-  if (getsockopt(sock,SOL_SOCKET,LOCAL_PEERCRED,&cred,&l) < 0)
+  if (getsockopt(sock,0,LOCAL_PEERCRED,&cred,&l) < 0)
     return -1; /* errno already set */
   if (cred.cr_version!=XUCRED_VERSION)
   {
@@ -77,7 +73,7 @@ int getpeercred(int sock,uid_t *uid,gid_t *gid,pid_t *pid)
   /* return the data */
   if (uid!=NULL) *uid=cred.uid;
   if (gid!=NULL) *gid=cred.gid;
-  if (pid!=NULL) *pid=cred.pid;
+  if (pid!=NULL) *pid=(pid_t)-1;
   return 0;
 #elif defined(HAVE_GETPEERUCRED)
   ucred_t *cred=NULL;
