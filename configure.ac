@@ -152,7 +152,11 @@ LIBS="$nslcd_LIBS"
 AC_SEARCH_LIBS(gethostbyname,nsl socket)
 AC_SEARCH_LIBS(socket,socket)
 #AC_CHECK_LIB(resolv,main)
+# Replace getopt_long() function if it is not on the system
+AC_REPLACE_FUNCS(getopt_long)
 AC_SEARCH_LIBS(daemon,bsd)
+# Replace daemon() function if it is not on the system
+AC_REPLACE_FUNCS(daemon)
 nslcd_LIBS="$LIBS"
 LIBS="$save_LIBS"
 
