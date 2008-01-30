@@ -73,7 +73,7 @@
 /* used for transferring mac addresses */
 #define NSLCD_ETHER \
   NSLCD_STRING(ETHER_NAME) \
-  NSLCD_TYPE(ETHER_ADDR,u_int8_t[6])
+  NSLCD_TYPE(ETHER_ADDR,uint8_t[6])
 
 /* used for transferring group and membership information */
 #define NSLCD_GROUP \

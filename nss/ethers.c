@@ -37,7 +37,7 @@ static enum nss_status read_etherent(
   int32_t tmpint32;
   size_t bufptr=0;
   READ_STRING_BUF(fp,result->e_name);
-  READ_TYPE(fp,result->e_addr,u_int8_t[6]);
+  READ_TYPE(fp,result->e_addr,uint8_t[6]);
   return NSS_STATUS_SUCCESS;
 }
 
@@ -57,7 +57,7 @@ enum nss_status _nss_ldap_getntohost_r(
         char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,
-             *addr,u_int8_t[6],
+             *addr,uint8_t[6],
              read_etherent(fp,result,buffer,buflen,errnop));
 }
 
