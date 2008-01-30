@@ -32,8 +32,22 @@
 #include <stdint.h>
 #endif /* HAVE_STDINT_H */
 #include <stdlib.h>
+#include <errno.h>
 
 #include "common/tio.h"
+
+#define assertok(expr) \
+  ((expr) \
+   ? __ASSERT_VOID_CAST (0) \
+   : __assertok_fail(__STRING(expr),__FILE__,__LINE__,__ASSERT_FUNCTION))
+
+static void __assertok_fail(const char *expr,const char *file,
+                          int line,const char *function)
+{
+  char msg[120];
+  snprintf(msg,sizeof(msg),"%s (errno=\"%s\")",expr,strerror(errno));
+  __assert_fail(msg,file,line,function);
+}
 
 /* structure for passing arguments to helper (is a thread) */
 struct helper_args {
@@ -58,7 +72,7 @@ static void *help_tiowriter(void *arg)
   timeout.tv_usec=0;
   /* open the file */
   fp=tio_fdopen(hargs->fd,&timeout,&timeout);
-  assert(fp!=NULL);
+  assertok(fp!=NULL);
   /* write the blocks */
   i=0;
   for (k=0;k<hargs->blocks;k++)
@@ -66,10 +80,10 @@ static void *help_tiowriter(void *arg)
     /* fill the buffer */
     for (j=0;j<hargs->blocksize;j++)
       buf[j]=i++;
-    assert(tio_write(fp,buf,hargs->blocksize)==0);
+    assertok(tio_write(fp,buf,hargs->blocksize)==0);
   }
   /* close the file flushing the buffer */
-  assert(tio_close(fp)==0);
+  assertok(tio_close(fp)==0);
   /* we're done */
   free(buf);
   return NULL;
@@ -90,18 +104,18 @@ static void *help_tioreader(void *arg)
   timeout.tv_usec=0;
   /* open the file */
   fp=tio_fdopen(hargs->fd,&timeout,&timeout);
-  assert(fp!=NULL);
+  assertok(fp!=NULL);
   /* read the blocks */
   i=0;
   for (k=0;k<hargs->blocks;k++)
   {
-    assert(tio_read(fp,buf,hargs->blocksize)==0);
+    assertok(tio_read(fp,buf,hargs->blocksize)==0);
     /* check the buffer */
     for (j=0;j<hargs->blocksize;j++)
       assert(buf[j]==(uint8_t)(i++));
   }
   /* close the file */
-  assert(tio_close(fp)==0);
+  assertok(tio_close(fp)==0);
   /* we're done */
   free(buf);
   return NULL;
@@ -118,7 +132,7 @@ static void *help_normwriter(void *arg)
   assert(buf!=NULL);
   /* open the file */
   fp=fdopen(hargs->fd,"wb");
-  assert(fp!=NULL);
+  assertok(fp!=NULL);
   /* write the blocks */
   i=0;
   for (k=0;k<hargs->blocks;k++)
@@ -126,10 +140,10 @@ static void *help_normwriter(void *arg)
     /* fill the buffer */
     for (j=0;j<hargs->blocksize;j++)
       buf[j]=i++;
-    assert(fwrite(buf,hargs->blocksize,1,fp)==1);
+    assertok(fwrite(buf,hargs->blocksize,1,fp)==1);
   }
   /* close the file flushing the buffer */
-  assert(fclose(fp)==0);
+  assertok(fclose(fp)==0);
   /* we're done */
   free(buf);
   return NULL;
@@ -142,17 +156,17 @@ static void *help_normreader(void *arg)
   struct helper_args *hargs=(struct helper_args *)arg;
   /* open the file */
   fp=fdopen(hargs->fd,"rb");
-  assert(fp!=NULL);
+  assertok(fp!=NULL);
   /* read the blocks */
   i=0;
   for (k=0;k<hargs->blocks;k++)
   {
     /* check the buffer */
     for (j=0;j<hargs->blocksize;j++)
-      assert(fgetc(fp)==(uint8_t)(i++));
+      assertok(fgetc(fp)==(uint8_t)(i++));
   }
   /* close the file */
-  assert(fclose(fp)==0);
+  assertok(fclose(fp)==0);
   return NULL;
 }
 
@@ -167,7 +181,7 @@ static int test_blocks(size_t wbs, size_t wbl, size_t rbs, size_t rbl)
   pthread_t wthread, rthread;
   struct helper_args wargs,rargs;
   /* set up the socket pair */
-  assert(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
+  assertok(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
   /* log */
   printf("test_tio: writing %d blocks of %d bytes (%d total)\n",wbl,wbs,wbl*wbs);
   printf("test_tio: reading %d blocks of %d bytes (%d total)\n",rbl,rbs,rbl*rbs);
@@ -176,17 +190,17 @@ static int test_blocks(size_t wbs, size_t wbl, size_t rbs, size_t rbl)
   wargs.blocksize=wbs;
   wargs.blocks=wbl;
   wargs.timeout=2;
-  assert(pthread_create(&wthread,NULL,help_tiowriter,&wargs)==0);
+  assertok(pthread_create(&wthread,NULL,help_tiowriter,&wargs)==0);
 /*  sleep(1); */
   /* start the reader thread */
   rargs.fd=sp[1];
   rargs.blocksize=rbs;
   rargs.blocks=rbl;
   rargs.timeout=2;
-  assert(pthread_create(&rthread,NULL,help_tioreader,&rargs)==0);
+  assertok(pthread_create(&rthread,NULL,help_tioreader,&rargs)==0);
   /* wait for all threads to die */
-  assert(pthread_join(wthread,NULL)==0);
-  assert(pthread_join(rthread,NULL)==0);
+  assertok(pthread_join(wthread,NULL)==0);
+  assertok(pthread_join(rthread,NULL)==0);
   /* we're done */
   return 0;
 }
@@ -201,23 +215,23 @@ static void test_reset(void)
   size_t i,j,k,save;
   uint8_t buf[10];
   /* set up the socket pair */
-  assert(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
+  assertok(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
   /* start the writer thread */
   wargs.fd=sp[0];
   wargs.blocksize=4*1024; /* the current TIO_BUFFERSIZE */
   wargs.blocks=5;
   wargs.timeout=2;
-  assert(pthread_create(&wthread,NULL,help_tiowriter,&wargs)==0);
+  assertok(pthread_create(&wthread,NULL,help_tiowriter,&wargs)==0);
   /* set up read handle */
   timeout.tv_sec=2;
   timeout.tv_usec=0;
   fp=tio_fdopen(sp[1],&timeout,&timeout);
-  assert(fp!=NULL);
+  assertok(fp!=NULL);
   /* perform 20 reads */
   i=0;
   for (k=0;k<20;k++)
   {
-    assert(tio_read(fp,buf,sizeof(buf))==0);
+    assertok(tio_read(fp,buf,sizeof(buf))==0);
     /* check the buffer */
     for (j=0;j<sizeof(buf);j++)
       assert(buf[j]==(uint8_t)(i++));
@@ -227,13 +241,13 @@ static void test_reset(void)
   save=i;
   for (k=0;k<2;k++)
   {
-    assert(tio_read(fp,buf,sizeof(buf))==0);
+    assertok(tio_read(fp,buf,sizeof(buf))==0);
     /* check the buffer */
     for (j=0;j<sizeof(buf);j++)
       assert(buf[j]==(uint8_t)(i++));
   }
   /* reset and perform the same 2 reads again and 500 more */
-  assert(tio_reset(fp)==0);
+  assertok(tio_reset(fp)==0);
   i=save;
   for (k=0;k<502;k++)
   {
@@ -243,19 +257,19 @@ static void test_reset(void)
       assert(buf[j]==(uint8_t)(i++));
   }
   /* check that reset is no longer possible */
-  assert(tio_reset(fp)!=0);
+  assertok(tio_reset(fp)!=0);
   /* read the remainder of the data 1526 reads */
   for (k=0;k<1526;k++)
   {
-    assert(tio_read(fp,buf,sizeof(buf))==0);
+    assertok(tio_read(fp,buf,sizeof(buf))==0);
     /* check the buffer */
     for (j=0;j<sizeof(buf);j++)
       assert(buf[j]==(uint8_t)(i++));
   }
   /* close the file */
-  assert(tio_close(fp)==0);
+  assertok(tio_close(fp)==0);
   /* wait for the writer thread to die */
-  assert(pthread_join(wthread,NULL)==0);
+  assertok(pthread_join(wthread,NULL)==0);
 }
 
 /* the main program... */
