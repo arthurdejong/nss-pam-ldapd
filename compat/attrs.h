@@ -58,4 +58,13 @@
 
 #endif /* not __GNUC__ */
 
+/* define __STRING if it's not yet defined */
+#ifndef __STRING
+#ifdef __STDC__
+#define __STRING(x) #x
+#else /* __STDC__ */
+#define __STRING(x) "x"
+#endif /* not __STDC__ */
+#endif /* not __STRING */
+
 #endif /* not _COMPAT_ATTRS_H */
