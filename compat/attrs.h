@@ -1,7 +1,7 @@
 /*
    attrs.h - wrapper macros for the gcc __attribute__(()) directive
 
-   Copyright (C) 2007 Arthur de Jong
+   Copyright (C) 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -22,11 +22,15 @@
 #ifndef _COMPAT_ATTRS_H
 #define _COMPAT_ATTRS_H 1
 
+/* macro for testing the version of GCC */
+#define GCC_VERSION(major,minor) \
+  ((__GNUC__ > (major)) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
+
 /* These are macros to use some gcc-specific flags in case the're available
    and otherwise define them to empty strings. This allows us to give
    the compiler some extra information. */
 
-#if __GNUC__ >= 3
+#if GCC_VERSION(3,0) /* gcc >= 3.0 */
 
 /* this is used to flag function parameters that are not used in the function
    body. */
@@ -41,22 +45,29 @@
    the parameters and has no side effects or used static data */
 #define PURE        __attribute__((__pure__))
 
-/* the function's return value should be used by the caller */
-#define MUST_USE    __attribute__((__warn_unused_result__))
-
 /* the function returns a new data structure that has been freshly
    allocated */
 #define LIKE_MALLOC __attribute__((__malloc__))
 
-#else /* not __GNUC__ */
+#else /* not gcc >= 3.0 */
 
 #define UNUSED(x)   x
 #define LIKE_PRINTF(format_idx,arg_idx) /* no attribute */
 #define PURE        /* no attribute */
-#define MUST_USE    /* no attribute */
 #define LIKE_MALLOC /* no attribute */
 
-#endif /* not __GNUC__ */
+#endif /* not gcc >= 3.0 */
+
+#if GCC_VERSION(3,4) /* gcc >= 3.4 */
+
+/* the function's return value should be used by the caller */
+#define MUST_USE    __attribute__((__warn_unused_result__))
+
+#else /* not gcc >= 3.4 */
+
+#define MUST_USE    /* no attribute */
+
+#endif /* not gcc >= 3.4 */
 
 /* define __STRING if it's not yet defined */
 #ifndef __STRING
