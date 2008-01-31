@@ -23,9 +23,6 @@
    02110-1301 USA
 */
 
-/* TODO: move this to compat/ and add it only when needed */
-/* Note: this is only used in ldap-nss.c */
-
 #include "config.h"
 
 #include <stdio.h>
@@ -39,10 +36,6 @@
 
 #ifndef LDAP_CONTROL_PAGE_OID
 #define LDAP_CONTROL_PAGE_OID           "1.2.840.113556.1.4.319"
-#endif
-
-#ifndef HAVE_LDAP_CREATE_CONTROL
-#error LDAP client library does not support ldap_create_control()
 #endif
 
 #ifndef HAVE_LDAP_CREATE_PAGE_CONTROL

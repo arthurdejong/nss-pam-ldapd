@@ -64,7 +64,7 @@
 #include <ctype.h>
 
 #include "myldap.h"
-#include "pagectrl.h"
+#include "compat/pagectrl.h"
 #include "common.h"
 #include "log.h"
 #include "cfg.h"

@@ -23,7 +23,8 @@ AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = -fPIC
 
 EXTRA_DIST = getopt_long.c getopt_long.h \
-             daemon.c daemon.h
+             daemon.c daemon.h \
+             pagectrl.c pagectrl.h
 
 libcompat_a_SOURCES = getpeercred.c getpeercred.h
 libcompat_a_LIBADD = @LIBOBJS@
