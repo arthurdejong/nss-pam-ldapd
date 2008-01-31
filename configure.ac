@@ -55,7 +55,7 @@ AC_PROG_RANLIB
 AM_PROG_CC_C_O
 AC_USE_SYSTEM_EXTENSIONS
 
-# Checks for tool to convert docbook to man
+# checks for tool to convert docbook to man
 AC_PATH_PROGS(DOCBOOK2X_MAN, docbook2x-man)
 if test "x${DOCBOOK2X_MAN}" = x
 then
@@ -75,7 +75,7 @@ AC_ARG_ENABLE(debug,
 
 DESIRED_CFLAGS=""
 
-# Check for extra compiler warnings
+# check for extra compiler warnings
 AC_ARG_ENABLE(warnings,
               AS_HELP_STRING([--enable-warnings],
                              [enable extra compiler warnings (gcc)]),
@@ -203,9 +203,9 @@ AC_CHECK_FUNCS(setgroups)
 AC_CHECK_FUNCS(getpeereid)
 AC_CHECK_FUNCS(getpeerucred)
 
-# Replace getopt_long() function if it is not on the system
+# replace getopt_long() function if it is not on the system
 AC_REPLACE_FUNCS(getopt_long)
-# Replace daemon() function if it is not on the system
+# replace daemon() function if it is not on the system
 AC_SEARCH_LIBS(daemon,bsd)
 AC_REPLACE_FUNCS(daemon)
 
