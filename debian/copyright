@@ -16,7 +16,7 @@ Davide Puricelli (evo), Sami Haahtinen and Stephen Frost.
 
   Copyright (C) 1997-2006 Luke Howard
   Copyright (C) 2006, 2007 West Consulting
-  Copyright (C) 2006, 2007 Arthur de Jong
+  Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -35,19 +35,20 @@ Davide Puricelli (evo), Sami Haahtinen and Stephen Frost.
 The following files are also contain other copyright holders and are also
 covered by the GNU Lesser General Public License:
 
+compat/pagectrl.c: Copyright (C) 2002 Max Caines
 debian/po/ca.po:   Copyright (C) 2004 Free Software Foundation, Inc.
-debian/po/pt.po:   Copyright (C) 2007 Américo Monteiro
-debian/po/vi.po:   Copyright (C) 2005 Free Software Foundation, Inc.
+debian/po/de.po:   Copyright (C) 2004 Erik Schanze
 debian/po/fr.po:   Copyright (C) 2007 Cyril Brulebois
 debian/po/fr.po:   Copyright (C) 2007 Philippe Batailler
-compat/pagectrl.c: Copyright (C) 2002 Max Caines
+debian/po/pt.po:   Copyright (C) 2007 Américo Monteiro
+debian/po/vi.po:   Copyright (C) 2005 Free Software Foundation, Inc.
 
 The distribution includes code from the Autoconf and Automake suites. This
 code is either licensed under the GNU General Public License with the extra
 permission to use it in a configure script under the licensing terms of that
 configure script or gives unlimited permission to copy and/or distribute it
 with or without modifications. The code is
-  Copyright (C) 1996-2006 Free Software Foundation, Inc.
+  Copyright (C) 1996-2007 Free Software Foundation, Inc.
 (years aggregated).
 
 The file m4/acx_pthread.m4 contains the following copyright statement:
