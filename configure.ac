@@ -72,11 +72,37 @@ AC_ARG_ENABLE(debug,
                              [enable extensive debugging and logging]),
               [if test "x$enableval" != "xno" ; then CFLAGS="-g -DDEBUG $CFLAGS" ; fi])
 
+DESIRED_CFLAGS=""
+
 # Check for extra compiler warnings
 AC_ARG_ENABLE(warnings,
               AS_HELP_STRING([--enable-warnings],
                              [enable extra compiler warnings (gcc)]),
-              [if test "x$enableval" != "no" ; then CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations -Wunused -Wformat=2 -Wswitch-default -Wswitch-enum -Wfloat-equal -Wdeclaration-after-statement -Wextra -Wbad-function-cast -Wunreachable-code -Wredundant-decls" ; fi])
+              [if test "x$enableval" != "no"
+               then
+                 CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations -Wunused -Wformat=2 -Wswitch-default -Wswitch-enum -Wfloat-equal -Wbad-function-cast -Wunreachable-code -Wredundant-decls"
+                 DESIRED_CFLAGS="$DESIRED_CFLAGS -Wextra -Wdeclaration-after-statement"
+               fi])
+
+test_gcc_flag() {
+  AC_LANG_CONFTEST([int main() {}])
+  $CC -c conftest.c $CFLAGS $@ > /dev/null 2> /dev/null
+  ret=$?
+  rm -f conftest.o
+  return $ret
+}
+
+for flag in $DESIRED_CFLAGS
+do
+  AC_MSG_CHECKING([whether $CC accepts $flag])
+  if test_gcc_flag $flag
+  then
+    CFLAGS="$CFLAGS $flag"
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
+  fi
+done
 
 AC_ARG_WITH(ldap-lib,
             AS_HELP_STRING([--with-ldap-lib=TYPE],
