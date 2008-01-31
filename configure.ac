@@ -179,11 +179,6 @@ LIBS="$nslcd_LIBS"
 AC_SEARCH_LIBS(gethostbyname,nsl socket)
 AC_SEARCH_LIBS(socket,socket)
 #AC_CHECK_LIB(resolv,main)
-# Replace getopt_long() function if it is not on the system
-AC_REPLACE_FUNCS(getopt_long)
-AC_SEARCH_LIBS(daemon,bsd)
-# Replace daemon() function if it is not on the system
-AC_REPLACE_FUNCS(daemon)
 nslcd_LIBS="$LIBS"
 LIBS="$save_LIBS"
 
@@ -206,6 +201,12 @@ AC_CHECK_FUNCS(ether_ntoa_r)
 AC_CHECK_FUNCS(setgroups)
 AC_CHECK_FUNCS(getpeereid)
 AC_CHECK_FUNCS(getpeerucred)
+
+# Replace getopt_long() function if it is not on the system
+AC_REPLACE_FUNCS(getopt_long)
+# Replace daemon() function if it is not on the system
+AC_SEARCH_LIBS(daemon,bsd)
+AC_REPLACE_FUNCS(daemon)
 
 # checks for types
 AC_C_CONST
