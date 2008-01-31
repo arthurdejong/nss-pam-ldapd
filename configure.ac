@@ -53,6 +53,7 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 AM_PROG_CC_C_O
+AC_USE_SYSTEM_EXTENSIONS
 
 # Checks for tool to convert docbook to man
 AC_PATH_PROGS(DOCBOOK2X_MAN, docbook2x-man)
@@ -306,7 +307,6 @@ AC_CHECK_FUNCS(ldap_abandon ldap_simple_bind_s ldap_unbind ldap_set_rebind_proc)
 AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s ldap_initialize ldap_search_ext)
 AC_CHECK_FUNCS(ldap_create_control ldap_create_page_control ldap_parse_page_control)
 AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)
-AC_CHECK_FUNCS(ldap_set_rebind_proc)
 AC_CHECK_FUNCS(ldap_get_values ldap_value_free ldap_get_dn)
 AC_CHECK_FUNCS(ldap_err2string ldap_msgfree ldap_result)
 
