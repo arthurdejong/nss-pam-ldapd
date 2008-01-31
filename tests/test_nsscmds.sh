@@ -30,8 +30,10 @@ set -e
 
 # check if LDAP is configured correctly
 cfgfile="/etc/nss-ldapd.conf"
-if ! [ -r "$cfgfile" ]
+if [ -r "$cfgfile" ]
 then
+  :
+else
   echo "test_nsscmds.sh: $cfgfile: not found"
   exit 77
 fi
@@ -46,10 +48,12 @@ ldapsearch -b "$base" -s base -x -H "$uri" > /dev/null 2>&1 || {
 }
 
 # basic check to see if nslcd is running
-if ! [ -S /var/run/nslcd/socket ] || \
-   ! [ -f /var/run/nslcd/nslcd.pid ] || \
-   ! kill -s 0 `cat /var/run/nslcd/nslcd.pid` > /dev/null 2>&1
+if [ -S /var/run/nslcd/socket ] && \
+   [ -f /var/run/nslcd/nslcd.pid ] && \
+   kill -s 0 `cat /var/run/nslcd/nslcd.pid` > /dev/null 2>&1
 then
+  :
+else
   echo "test_nsscmds.sh: nslcd not running"
   exit 77
 fi
@@ -74,10 +78,7 @@ check() {
   actualfile=`mktemp -t actual.XXXXXX 2> /dev/null || tempfile -s .actual 2> /dev/null`
   eval "$cmd" > "$actualfile" 2>&1 || true
   # check for differences
-  if ! diff -Nauwi "$expectfile" "$actualfile"
-  then
-    FAIL=`expr $FAIL + 1`
-  fi
+  diff -Nauwi "$expectfile" "$actualfile" || FAIL=`expr $FAIL + 1`
   # remove temporary files
   rm "$expectfile" "$actualfile"
 }

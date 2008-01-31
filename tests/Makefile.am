@@ -29,7 +29,7 @@ noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
 EXTRA_DIST = nss-ldapd-test.conf test_myldap.sh test_nsscmds.sh
 
 AM_CPPFLAGS = -I$(top_srcdir)
-AM_CFLAGS = -pthread -g
+AM_CFLAGS = $(PTHREAD_CFLAGS) -g
 
 # the following enables verbose protocol debugging information to be dumped
 #AM_CPPFLAGS += -DDEBUG_PROT -DDEBUG_PROT_DUMP
@@ -41,7 +41,7 @@ test_dict_SOURCES = test_dict.c ../common/dict.h
 test_dict_LDADD = ../common/dict.o
 
 test_tio_SOURCES = test_tio.c ../common/tio.h ../common/tio.c
-test_tio_LDFLAGS = -pthread
+test_tio_LDFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 test_cfg_SOURCES = test_cfg.c
 test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o \
@@ -50,10 +50,10 @@ test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o \
                  ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
                  ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
                  ../nslcd/service.o ../nslcd/shadow.o \
-                 @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a
+                 @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a \
+                 ../compat/libcompat.a
 
 test_myldap_SOURCES = test_myldap.c
-test_myldap_CFLAGS = -pthread
 test_myldap_LDADD = ../nslcd/log.o ../common/dict.o ../common/tio.o \
                     ../nslcd/common.o ../nslcd/cfg.o \
                     ../nslcd/myldap.o ../nslcd/pagectrl.o @nslcd_LIBS@

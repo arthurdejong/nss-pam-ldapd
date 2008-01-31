@@ -29,9 +29,16 @@
 /* we include cfg.c because we want to test the static methods */
 #include "nslcd/cfg.c"
 
+#ifndef __ASSERT_FUNCTION
+#define __ASSERT_FUNCTION ""
+#endif /* not __ASSERT_FUNCTION */
+
 #define assertstreq(str1,str2) \
   (assertstreq_impl(str1,str2,"strcmp(" __STRING(str1) "," __STRING(str2) ")==0", \
                     __FILE__, __LINE__, __ASSERT_FUNCTION))
+
+/* for Solaris: */
+#define __assert_fail(assertion,file,line,function) __assert(assertion,file,line)
 
 /* method for determening string equalness */
 static void assertstreq_impl(const char *str1,const char *str2,

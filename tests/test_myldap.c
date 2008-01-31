@@ -144,10 +144,10 @@ static void test_get_values(void)
     /* get rdn values */
     rdnval=myldap_get_rdn_value(entry,"cn");
     if (i<MAXRESULTS)
-      printf("test_myldap: test_get_values(): [%d] cdrdn=%s\n",i,rdnval);
+      printf("test_myldap: test_get_values(): [%d] cdrdn=%s\n",i,rdnval==NULL?"NULL":rdnval);
     rdnval=myldap_get_rdn_value(entry,"uid");
     if (i<MAXRESULTS)
-      printf("test_myldap: test_get_values(): [%d] uidrdn=%s\n",i,rdnval);
+      printf("test_myldap: test_get_values(): [%d] uidrdn=%s\n",i,rdnval==NULL?"NULL":rdnval);
     /* check objectclass */
     assert(myldap_has_objectclass(entry,"posixAccount"));
   }
@@ -283,9 +283,9 @@ static void test_connections(void)
   }
   /* set new URIs */
   i=0;
-  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnull/";
+/*  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnull/";*/
   nslcd_cfg->ldc_uris[i++]="ldap://10.10.10.10/";
-  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnonexistent/";
+/*  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnonexistent/";*/
   nslcd_cfg->ldc_uris[i++]="ldap://nosuchhost/";
   nslcd_cfg->ldc_uris[i++]=NULL;
   /* initialize session */
