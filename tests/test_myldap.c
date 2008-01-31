@@ -283,9 +283,9 @@ static void test_connections(void)
   }
   /* set new URIs */
   i=0;
-/*  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnull/";*/
+  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnull/";
   nslcd_cfg->ldc_uris[i++]="ldap://10.10.10.10/";
-/*  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnonexistent/";*/
+  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnonexistent/";
   nslcd_cfg->ldc_uris[i++]="ldap://nosuchhost/";
   nslcd_cfg->ldc_uris[i++]=NULL;
   /* initialize session */
