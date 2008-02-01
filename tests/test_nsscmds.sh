@@ -152,8 +152,8 @@ check "getent group 6100" << EOM
 testgroup:*:6100:arthur,test
 EOM
 
-check "groups arthur" << EOM
-arthur : users testgroup
+check "groups arthur | sed 's/^.*://'" << EOM
+users testgroup
 EOM
 
 check "getent group | egrep '^(testgroup|users):'" << EOM
