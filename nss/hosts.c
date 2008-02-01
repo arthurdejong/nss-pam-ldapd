@@ -58,14 +58,6 @@
 #define ERROR_OUT_WRITEERROR(fp) \
   ERROR_OUT_READERROR(fp)
 
-#undef ERROR_OUT_NOSUCCESS
-#define ERROR_OUT_NOSUCCESS(fp,retv) \
-  (void)tio_close(fp); \
-  fp=NULL; \
-  *errnop=ENOENT; \
-  *h_errnop=HOST_NOT_FOUND; \
-  return NSS_STATUS_NOTFOUND;
-
 /* read a single host entry from the stream, filtering on the
    specified address family, result is stored in result
    it will an empty entry if no addresses in the address family

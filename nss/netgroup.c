@@ -37,13 +37,7 @@
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
   (void)tio_close(fp); \
   fp=NULL; \
-  if (result->first) \
-  { \
-    *errnop=ENOENT; \
-    return NSS_STATUS_NOTFOUND; \
-  } \
-  else \
-    return NSS_STATUS_RETURN;
+  return (result->first)?NSS_STATUS_NOTFOUND:NSS_STATUS_RETURN;
 
 /* function for reading a single result entry */
 static enum nss_status read_netgrent(

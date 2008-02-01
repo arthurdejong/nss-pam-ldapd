@@ -103,7 +103,6 @@ TFILE *nslcd_client_open(void)
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
   (void)tio_close(fp); \
   fp=NULL; \
-  *errnop=ENOENT; \
   return NSS_STATUS_NOTFOUND;
 
 /* The following macros to automatically generate get..byname(),

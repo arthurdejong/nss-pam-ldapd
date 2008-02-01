@@ -58,14 +58,6 @@
 #define ERROR_OUT_WRITEERROR(fp) \
   ERROR_OUT_READERROR(fp)
 
-#undef ERROR_OUT_NOSUCCESS
-#define ERROR_OUT_NOSUCCESS(fp,retv) \
-  (void)tio_close(fp); \
-  fp=NULL; \
-  *errnop=ENOENT; \
-  *h_errnop=HOST_NOT_FOUND; \
-  return NSS_STATUS_NOTFOUND;
-
 /* read a single network entry from the stream, ignoring entries
    that are not AF_INET (IPv4), result is stored in result */
 static enum nss_status read_netent(
