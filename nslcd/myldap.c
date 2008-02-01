@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006, 2007 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -496,6 +496,7 @@ static void myldap_session_check(MYLDAP_SESSION *session)
   int i;
   int runningsearches=0;
   time_t current_time;
+  int rc;
   /* check parameters */
   if (!is_valid_session(session))
   {
@@ -522,8 +523,10 @@ static void myldap_session_check(MYLDAP_SESSION *session)
       if ((session->lastactivity+nslcd_cfg->ldc_idle_timelimit)<current_time)
       {
         log_log(LOG_DEBUG,"do_open(): idle_timelimit reached");
-        ldap_unbind(session->ld);
+        rc=ldap_unbind(session->ld);
         session->ld=NULL;
+        if (rc!=LDAP_SUCCESS)
+          log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc));
       }
     }
   }
@@ -533,7 +536,7 @@ static void myldap_session_check(MYLDAP_SESSION *session)
    and binds to the server. This returns an LDAP status code. */
 static int do_open(MYLDAP_SESSION *session)
 {
-  int rc;
+  int rc,rc2;
   int sd=-1;
   int off=0;
   /* check if the idle time for the connection has expired */
@@ -554,8 +557,10 @@ static int do_open(MYLDAP_SESSION *session)
                         ldap_err2string(rc),strerror(errno));
     if (session->ld!=NULL)
     {
-      ldap_unbind(session->ld);
+      rc2=ldap_unbind(session->ld);
       session->ld=NULL;
+      if (rc2!=LDAP_SUCCESS)
+        log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc2));
     }
     return rc;
   }
@@ -568,8 +573,10 @@ static int do_open(MYLDAP_SESSION *session)
   rc=do_set_options(session);
   if (rc!=LDAP_SUCCESS)
   {
-    ldap_unbind(session->ld);
+    rc2=ldap_unbind(session->ld);
     session->ld=NULL;
+    if (rc2!=LDAP_SUCCESS)
+      log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc2));
     return rc;
   }
   /* bind to the server */
@@ -580,8 +587,10 @@ static int do_open(MYLDAP_SESSION *session)
     log_log(LOG_WARNING,"failed to bind to LDAP server %s: %s: %s",
                         nslcd_cfg->ldc_uris[session->current_uri],
                         ldap_err2string(rc),strerror(errno));
-    ldap_unbind(session->ld);
+    rc2=ldap_unbind(session->ld);
     session->ld=NULL;
+    if (rc2!=LDAP_SUCCESS)
+      log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc2));
     return rc;
   }
   /* disable keepalive on the LDAP connection socket (why?) */
@@ -692,6 +701,7 @@ void myldap_session_cleanup(MYLDAP_SESSION *session)
 
 void myldap_session_close(MYLDAP_SESSION *session)
 {
+  int rc;
   /* check parameter */
   if (!is_valid_session(session))
   {
@@ -703,7 +713,10 @@ void myldap_session_close(MYLDAP_SESSION *session)
   /* close any open connections */
   if (session->ld!=NULL)
   {
-    ldap_unbind(session->ld);
+    rc=ldap_unbind(session->ld);
+    session->ld=NULL;
+    if (rc!=LDAP_SUCCESS)
+      log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc));
   }
   /* free allocated memory */
   free(session);
@@ -718,6 +731,7 @@ MYLDAP_SEARCH *myldap_search(
   int try;
   int start_uri;
   int i;
+  int rc;
   /* check parameters */
   if (!is_valid_session(session)||(base==NULL)||(filter==NULL)||(attrs==NULL))
   {
@@ -774,7 +788,12 @@ MYLDAP_SEARCH *myldap_search(
           /* abandon the search if there were more results to fetch */
           if (session->searches[i]->msgid!=-1)
           {
-            ldap_abandon(session->searches[i]->session->ld,session->searches[i]->msgid);
+            if (ldap_abandon(session->searches[i]->session->ld,session->searches[i]->msgid))
+            {
+              if (ldap_get_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)==LDAP_SUCCESS)
+                rc=LDAP_OTHER;
+              log_log(LOG_WARNING,"ldap_abandon() failed to abandon search: %s",ldap_err2string(rc));
+            }
             session->searches[i]->msgid=-1;
           }
           /* flag the search as invalid */
@@ -782,8 +801,10 @@ MYLDAP_SEARCH *myldap_search(
         }
       }
       /* close the connection to the server */
-      ldap_unbind(session->ld);
+      rc=ldap_unbind(session->ld);
       session->ld=NULL;
+      if (rc!=LDAP_SUCCESS)
+        log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc));
     }
   }
   log_log(LOG_ERR,"no available LDAP server found");
