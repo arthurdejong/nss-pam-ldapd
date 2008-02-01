@@ -40,7 +40,7 @@
   if (result->first) \
   { \
     *errnop=ENOENT; \
-    return nslcd2nss(retv); \
+    return NSS_STATUS_NOTFOUND; \
   } \
   else \
     return NSS_STATUS_RETURN;

@@ -39,18 +39,6 @@
 #include "common.h"
 #include "common/tio.h"
 
-/* translates a nsklcd return code (as defined in nslcd.h) to
-   a nss code (as defined in nss.h) */
-enum nss_status nslcd2nss(int32_t code)
-{
-  switch (code)
-  {
-    case NSLCD_RESULT_END: return NSS_STATUS_NOTFOUND;
-    case NSLCD_RESULT_SUCCESS:  return NSS_STATUS_SUCCESS;
-    default:                    return NSS_STATUS_UNAVAIL;
-  }
-}
-
 /* returns a socket to the server or NULL on error (see errno),
    socket should be closed with fclose() */
 TFILE *nslcd_client_open()

@@ -64,7 +64,7 @@
   fp=NULL; \
   *errnop=ENOENT; \
   *h_errnop=HOST_NOT_FOUND; \
-  return nslcd2nss(retv);
+  return NSS_STATUS_NOTFOUND;
 
 /* read a single network entry from the stream, ignoring entries
    that are not AF_INET (IPv4), result is stored in result */

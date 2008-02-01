@@ -31,10 +31,6 @@
 #include "compat/attrs.h"
 #include "common/tio.h"
 
-/* This function maps an nslcd return code (as defined in nslcd.h)
-   to an nss code (as defined in nss.h). */
-enum nss_status nslcd2nss(int32_t code);
-
 /* returns a socket to the server or NULL on error (see errno),
    socket should be closed with tio_close() */
 TFILE *nslcd_client_open(void)
@@ -108,7 +104,7 @@ TFILE *nslcd_client_open(void)
   (void)tio_close(fp); \
   fp=NULL; \
   *errnop=ENOENT; \
-  return nslcd2nss(retv);
+  return NSS_STATUS_NOTFOUND;
 
 /* The following macros to automatically generate get..byname(),
    get..bynumber(), setent(), getent() and endent() function

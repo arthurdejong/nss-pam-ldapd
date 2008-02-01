@@ -64,7 +64,7 @@
   fp=NULL; \
   *errnop=ENOENT; \
   *h_errnop=HOST_NOT_FOUND; \
-  return nslcd2nss(retv);
+  return NSS_STATUS_NOTFOUND;
 
 /* read a single host entry from the stream, filtering on the
    specified address family, result is stored in result

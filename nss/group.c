@@ -76,7 +76,7 @@ static enum nss_status read_gids(
     READ_TYPE(fp,res,int32_t);
   }
   /* return the proper status code */
-  return (res==(int32_t)NSLCD_RESULT_END)?NSS_STATUS_SUCCESS:nslcd2nss(res);
+  return (res==(int32_t)NSLCD_RESULT_END)?NSS_STATUS_SUCCESS:NSS_STATUS_NOTFOUND;
 }
 
 enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop)
