@@ -168,7 +168,7 @@ static void debug_dump(const void *ptr,size_t size)
   if ((bufptr+(size_t)(sz))>buflen) \
   { \
     /* will not fit */ \
-    DEBUG_PRINT("READ       : buffer error: %d bytes too large",((sz)-(buflen))); \
+    DEBUG_PRINT("READ       : buffer error: %d bytes too small",(bufptr+(sz)-(buflen))); \
     ERROR_OUT_BUFERROR(fp); \
   }
 
