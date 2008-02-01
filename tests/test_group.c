@@ -65,11 +65,9 @@ int main(int argc,char *argv[])
   struct group groupresult;
   char buffer[1024];
   enum nss_status res;
-  int errnocp;
-#ifdef REENABLE_WHEN_WORKING
-  long int start,size=40;
+  int errnocp=0;
+  long int start=0,size=40;
   gid_t *gidlist=(gid_t *)buffer;
-#endif /* REENABLE_WHEN_WORKING */
 
   /* test getgrnam() */
   printf("\nTEST getgrnam()\n");
@@ -89,7 +87,6 @@ int main(int argc,char *argv[])
   else
     printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
 
-#ifdef REENABLE_WHEN_WORKING
   /* test initgroups() */
   printf("\nTEST initgroups()\n");
   res=_nss_ldap_initgroups_dyn("arthur",10,&start,&size,&gidlist,size,&errnocp);
@@ -103,7 +100,6 @@ int main(int argc,char *argv[])
   }
   else
     printf("errno=%d:%s\n",(int)errnocp,strerror(errnocp));
-#endif /* REENABLE_WHEN_WORKING */
 
   /* test {set,get,end}grent() */
   printf("\nTEST {set,get,end}grent()\n");
