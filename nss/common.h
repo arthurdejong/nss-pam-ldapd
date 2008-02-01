@@ -196,6 +196,9 @@ TFILE *nslcd_client_open(void)
     { \
       tio_close(fp); \
       fp=NULL; \
+      /* fail with permanent error to prevent retries */ \
+      *errnop=EINVAL; \
+      return NSS_STATUS_UNAVAIL; \
     } \
   } \
   else if (retv!=NSS_STATUS_SUCCESS) \
