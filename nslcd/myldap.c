@@ -1139,10 +1139,43 @@ static const char *find_rdn_value(char **exploded_rdn,const char *attr)
   return NULL;
 }
 
+/* explode the first part of DN into parts
+   (e.g. "cn=Test", "uid=test")
+   The returned value should be freed with ldap_value_free(). */
+static char **get_exploded_rdn(const char *dn)
+{
+  char **exploded_dn;
+  char **exploded_rdn;
+  /* check if we have a DN */
+  if ((dn==NULL)||(strcasecmp(dn,"unknown")==0))
+    return NULL;
+  /* explode dn into { "uid=test", "ou=people", ..., NULL } */
+  exploded_dn=ldap_explode_dn(dn,0);
+  if ((exploded_dn==NULL)||(exploded_dn[0]==NULL))
+  {
+    log_log(LOG_WARNING,"ldap_explode_dn(%s) returned NULL: %s",
+                        dn,strerror(errno));
+    return NULL;
+  }
+  /* explode rdn (first part of exploded_dn),
+      e.g. "cn=Test User+uid=testusr" into
+     { "cn=Test User", "uid=testusr", NULL } */
+  exploded_rdn=ldap_explode_rdn(exploded_dn[0],0);
+  if ((exploded_rdn==NULL)||(exploded_rdn[0]==NULL))
+  {
+    log_log(LOG_WARNING,"ldap_explode_rdn(%s) returned NULL: %s",
+                        exploded_dn[0],strerror(errno));
+    if (exploded_rdn!=NULL)
+      ldap_value_free(exploded_rdn);
+    ldap_value_free(exploded_dn);
+    return NULL;
+  }
+  ldap_value_free(exploded_dn);
+  return exploded_rdn;
+}
+
 const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr)
 {
-  const char *dn;
-  char **exploded_dn;
   /* check parameters */
   if (!is_valid_entry(entry))
   {
@@ -1159,26 +1192,34 @@ const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr)
   /* check if entry contains exploded_rdn */
   if (entry->exploded_rdn==NULL)
   {
-    /* check if we have a DN */
-    dn=myldap_get_dn(entry);
-    if ((dn==NULL)||(strcasecmp(dn,"unknown")==0))
+    entry->exploded_rdn=get_exploded_rdn(myldap_get_dn(entry));
+    if (entry->exploded_rdn==NULL)
       return NULL;
-    /* explode dn into { "uid=test", "ou=people", ..., NULL } */
-    exploded_dn=ldap_explode_dn(dn,0);
-    if ((exploded_dn==NULL)||(exploded_dn[0]==NULL))
-    {
-      log_log(LOG_WARNING,"ldap_explode_dn(%s) returned NULL: %s",
-                          dn,strerror(errno));
-      return NULL;
-    }
-    /* explode rdn (first part of exploded_dn),
-        e.g. "cn=Test User+uid=testusr" into
-       { "cn=Test User", "uid=testusr", NULL } */
-    entry->exploded_rdn=ldap_explode_rdn(exploded_dn[0],0);
-    ldap_value_free(exploded_dn);
   }
   /* find rnd value */
   return find_rdn_value(entry->exploded_rdn,attr);
+}
+
+const char *myldap_cpy_rdn_value(const char *dn,const char *attr,
+                                 char *buf,size_t buflen)
+{
+  char **exploded_rdn;
+  const char *value;
+  /* explode dn into { "cn=Test", "uid=test", NULL } */
+  exploded_rdn=get_exploded_rdn(dn);
+  if (exploded_rdn==NULL)
+    return NULL;
+  /* see if we have a match */
+  value=find_rdn_value(exploded_rdn,attr);
+  /* if we have something store it in the buffer */
+  if ((value!=NULL)&&(strlen(value)<buflen))
+    strcpy(buf,value);
+  else
+    value=NULL;
+  /* free allocated stuff */
+  ldap_value_free(exploded_rdn);
+  /* check if we have something to return */
+  return (value!=NULL)?buf:NULL;
 }
 
 int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass)

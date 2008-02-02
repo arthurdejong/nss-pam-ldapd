@@ -2,7 +2,7 @@
    myldap.h - simple interface to do LDAP requests
    This file is part of the nss-ldapd library.
 
-   Copyright (C) 2007 Arthur de Jong
+   Copyright (C) 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -107,6 +107,13 @@ MUST_USE int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass)
    NULL is returned. This method may be used to get the "most authorative"
    value for an attribute. */
 MUST_USE const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr);
+
+/* Just like myldap_get_rdn_value() but use the supplied character sequence
+   and copy the result into the buffer.
+   Returns a pointer to the start of the string on success and NULL on
+   failure. */
+MUST_USE const char *myldap_cpy_rdn_value(const char *dn,const char *attr,
+                                          char *buf,size_t buflen);
 
 /* Escapes characters in a string for use in a search filter. */
 MUST_USE int myldap_escape(const char *src,char *buffer,size_t buflen);
