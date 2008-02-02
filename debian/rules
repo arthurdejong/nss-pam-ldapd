@@ -25,9 +25,7 @@ configure-stamp:
 	            --with-ldap-lib=openldap \
 	            --with-ldap-conf-file=/etc/nss-ldapd.conf \
 	            --with-nslcd-pidfile=/var/run/nslcd/nslcd.pid \
-	            --with-nslcd-socket=/var/run/nslcd/socket \
-	            --enable-paged-results \
-	            --enable-configurable-krb5-ccname-gssapi
+	            --with-nslcd-socket=/var/run/nslcd/socket
 	touch configure-stamp
 
 build: configure-stamp build-stamp
