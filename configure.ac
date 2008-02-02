@@ -137,14 +137,6 @@ AC_ARG_WITH(nslcd-socket,
 AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used for communicating.])
 AC_SUBST(NSLCD_SOCKET)
 
-ldap_nss_ngroups=64
-AC_ARG_WITH(ngroups,
-            AS_HELP_STRING([--with-ngroups=NUM],
-                           [average group size hint, experts only]),
-            [ldap_nss_ngroups=$with_ngroups])
-AC_DEFINE_UNQUOTED(LDAP_NSS_NGROUPS,$ldap_nss_ngroups,[Maximum number of group members in static buffer.])
-
-
 # checks for availability of header files
 AC_CHECK_HEADERS(lber.h)
 AC_CHECK_HEADERS(ldap.h,,AC_MSG_ERROR([could not locate <ldap.h>]),[
