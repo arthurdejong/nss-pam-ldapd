@@ -634,7 +634,7 @@ static MYLDAP_SEARCH *do_try_search(
     {
       log_log(LOG_WARNING,"ldap_create_page_control() failed: %s",ldap_err2string(rc));
       rc=LDAP_SUCCESS;
-      ldap_set_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
+      ldap_set_option(session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
       pServerCtrls=NULL;
     }
   }
