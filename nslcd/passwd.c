@@ -118,6 +118,48 @@ static void passwd_init(void)
   passwd_attrs[9]=NULL;
 }
 
+char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
+{
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  static const char *attrs[2];
+  int rc;
+  const char **values;
+  /* set up attributes */
+  attrs[0]=attmap_passwd_uid;
+  attrs[1]=NULL;
+  /* try to look up uid within DN string */
+  if (myldap_cpy_rdn_value(dn,attmap_passwd_uid,buf,buflen)!=NULL)
+    return buf;
+  /* we have to look up the entry */
+  search=myldap_search(session,dn,LDAP_SCOPE_BASE,passwd_filter,attrs);
+  if (search==NULL)
+  {
+    log_log(LOG_WARNING,"lookup of %s failed",dn);
+    return NULL;
+  }
+  entry=myldap_get_entry(search,&rc);
+  if (entry==NULL)
+  {
+    log_log(LOG_WARNING,"lookup of %s failed: %s",dn,ldap_err2string(rc));
+    return NULL;
+  }
+  /* get uid (just use first one) */
+  values=myldap_get_values(entry,attmap_passwd_uid);
+  if ((values==NULL)||(values[0]==NULL))
+  {
+    myldap_search_close(search);
+    return NULL;
+  }
+  /* copy into buffer */
+  if (strlen(values[0])<buflen)
+    strcpy(buf,values[0]);
+  else
+    buf=NULL;
+  myldap_search_close(search);
+  return buf;
+}
+
 /* the maximum number of uidNumber attributes per entry */
 #define MAXUIDS_PER_ENTRY 5
 
