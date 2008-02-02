@@ -959,9 +959,16 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         if (resultcontrols!=NULL)
         {
           /* see if there are any more pages to come */
-          ldap_parse_page_control(search->session->ld,
-                                  resultcontrols,NULL,
-                                  &(search->cookie));
+          rc=ldap_parse_page_control(search->session->ld,
+                                    resultcontrols,NULL,
+                                    &(search->cookie));
+          if (rc!=LDAP_SUCCESS)
+          {
+            log_log(LOG_WARNING,"ldap_parse_page_control() failed: %s",
+                                ldap_err2string(rc));
+            rc=LDAP_SUCCESS;
+            ldap_set_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
+          }
           /* TODO: handle the above return code?? */
           ldap_controls_free(resultcontrols);
         }
