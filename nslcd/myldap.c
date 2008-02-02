@@ -621,17 +621,22 @@ static MYLDAP_SEARCH *do_try_search(
   if (rc!=LDAP_SUCCESS)
     return NULL;
   /* if we're using paging, build a page control */
-  if (nslcd_cfg->ldc_pagesize>0)
+  if ((nslcd_cfg->ldc_pagesize>0)&&(scope!=LDAP_SCOPE_BASE))
   {
     rc=ldap_create_page_control(session->ld,nslcd_cfg->ldc_pagesize,
                                 NULL,0,&serverCtrls[0]);
-    if (rc!=LDAP_SUCCESS)
+    if (rc==LDAP_SUCCESS)
     {
-      log_log(LOG_ERR,"ldap_create_page_control() failed: %s",ldap_err2string(rc));
-      return NULL;
+      serverCtrls[1]=NULL;
+      pServerCtrls=serverCtrls;
     }
-    serverCtrls[1]=NULL;
-    pServerCtrls=serverCtrls;
+    else
+    {
+      log_log(LOG_WARNING,"ldap_create_page_control() failed: %s",ldap_err2string(rc));
+      rc=LDAP_SUCCESS;
+      ldap_set_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
+      pServerCtrls=NULL;
+    }
   }
   else
     pServerCtrls=NULL;
