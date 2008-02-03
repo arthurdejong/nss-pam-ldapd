@@ -234,6 +234,10 @@ then
       /etc/init.d/nscd restart
     fi
   fi
+  # update the cache of the dynamic linker
+  # (we don't use dh_makeshlibs because that also installs a shlibs file
+  # which we don't need)
+  ldconfig
 fi
 
 #DEBHELPER#

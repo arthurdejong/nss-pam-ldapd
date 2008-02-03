@@ -8,4 +8,10 @@ then
   rm -f "$CONFFILE"
 fi
 
+# call ldconfig to signal the removal of out NSS library
+if [ "$1" = "remove" ]
+then
+  ldconfig
+fi
+
 #DEBHELPER#
