@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -64,10 +64,8 @@ const char *attmap_group_cn            = "cn";
 const char *attmap_group_userPassword  = "userPassword";
 const char *attmap_group_gidNumber     = "gidNumber";
 const char *attmap_group_memberUid     = "memberUid";
-/*
 const char *attmap_group_uniqueMember  = "uniqueMember";
-const char *attmap_group_memberOf      = "memberOf";
-*/
+/*const char *attmap_group_memberOf      = "memberOf";*/
 
 /* default values for attributes */
 static const char *default_group_userPassword     = "*"; /* unmatchable */
@@ -127,25 +125,143 @@ static void group_init(void)
   group_attrs[1]=attmap_group_userPassword;
   group_attrs[2]=attmap_group_memberUid;
   group_attrs[3]=attmap_group_gidNumber;
-  group_attrs[4]=NULL;
-/* group_attrs[4]=attmap_group_uniqueMember; */
+  group_attrs[4]=attmap_group_uniqueMember;
+  group_attrs[5]=NULL;
+}
+
+static int do_write_group(
+    TFILE *fp,const char **names,gid_t gids[],int numgids,const char *passwd,
+    const char *members)
+{
+  int32_t tmpint32;
+  int i,j;
+  int nummembers;
+  const char *tmp;
+  /* count the number of members */
+  nummembers=0;
+  if (members!=NULL)
+    for (tmp=members;*tmp!='\0';tmp+=strlen(tmp)+1)
+      nummembers++;
+  /* write entries for all names and gids */
+  for (i=0;names[i]!=NULL;i++)
+    for (j=0;j<numgids;j++)
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_STRING(fp,names[i]);
+      WRITE_STRING(fp,passwd);
+      WRITE_TYPE(fp,gids[j],gid_t);
+      /* write a list of values */
+      WRITE_INT32(fp,nummembers);
+      if (members!=NULL)
+        for (tmp=members;*tmp!='\0';tmp+=strlen(tmp)+1)
+          { WRITE_STRING(fp,tmp); }
+    }
+  return 0;
+}
+
+/* return the list of members as a \0 separated string with an extra \0
+   at the end (doing dn->uid lookups as needed) */
+static char *getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
+{
+  char *buf;
+  char *nw;
+  size_t bufalloc,bufsz;
+  int i;
+  const char **values;
+  /* allocate some memory */
+  bufalloc=64;
+  bufsz=0;
+  buf=(char *)malloc(bufalloc);
+  if (buf==NULL)
+  {
+    log_log(LOG_CRIT,"get_members(): malloc() failed to allocate memory");
+    return NULL;
+  }
+  buf[0]='\0';
+  /* add the memberUid values */
+  values=myldap_get_values(entry,attmap_group_memberUid);
+  if (values!=NULL)
+    for (i=0;values[i]!=NULL;i++)
+    {
+      /* ensure that we have enough space */
+      if ((strlen(values[i])+2)>=(bufalloc-bufsz))
+      {
+        bufalloc=((bufalloc+strlen(values[i])+2)*3)/2;
+        nw=(char *)realloc(buf,bufalloc);
+        if (nw==NULL)
+        {
+          free(buf);
+          log_log(LOG_CRIT,"get_members(): realloc() failed to allocate memory");
+          return NULL;
+        }
+        buf=nw;
+      }
+      /* only add non-emtpty values */
+      if (values[i][0]!='\0')
+      {
+        strcpy(buf+bufsz,values[i]);
+        bufsz+=strlen(buf+bufsz)+1;
+      }
+    }
+  /* add the uniqueMember values */
+  values=myldap_get_values(entry,attmap_group_uniqueMember);
+  if (values!=NULL)
+    for (i=0;values[i]!=NULL;i++)
+    {
+      /* ensure that we have enough space */
+      if ((strlen(values[i])+2)>=(bufalloc-bufsz))
+      {
+        bufalloc=((bufalloc+strlen(values[i])+2)*3)/2;
+        nw=(char *)realloc(buf,bufalloc);
+        if (nw==NULL)
+        {
+          free(buf);
+          log_log(LOG_CRIT,"get_members(): realloc() failed to allocate memory");
+          return NULL;
+        }
+      }
+      /* check the value */
+      if (values[i][0]=='\0')
+      { /* silently ignore empty values */ }
+      else if (strchr(values[i],'=')==NULL)
+      {
+        /* just add the value, it doesn't look like a DN */
+        strcpy(buf+bufsz,values[i]);
+        bufsz+=strlen(buf+bufsz)+1;
+      }
+      else
+      {
+        /* transform the DN into a uid */
+        dn2uid(session,values[i],buf+bufsz,bufalloc-bufsz);
+        bufsz+=strlen(buf+bufsz)+1;
+      }
+    }
+  /* if the buffer does not contain any data, return NULL */
+  if (buf[0]=='\0')
+  {
+    free(buf);
+    return NULL;
+  }
+  /* terminate the list with an empty string */
+  strcpy(buf+bufsz,"");
+  return buf;
 }
 
 /* the maximum number of gidNumber attributes per entry */
 #define MAXGIDS_PER_ENTRY 5
 
 static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
-                       const gid_t *reqgid,int wantmembers)
+                       const gid_t *reqgid,int wantmembers,
+                       MYLDAP_SESSION *session)
 {
-  int32_t tmpint32,tmp2int32,tmp3int32;
   const char *tmparr[2];
   const char **names,**gidvalues;
   const char *passwd;
-  const char **memberuidvalues;
+  char *members;
   gid_t gids[MAXGIDS_PER_ENTRY];
   int numgids;
   char *tmp;
-  int i,j;
+  int rc;
   /* get group name (cn) */
   if (reqname!=NULL)
   {
@@ -193,25 +309,18 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   passwd=get_userpassword(entry,attmap_group_userPassword);
   if (passwd==NULL)
     passwd=default_group_userPassword;
-  /* get group memebers (memberUid) */
+  /* get group memebers (memberUid&uniqueMember) */
   if (wantmembers)
-    memberuidvalues=myldap_get_values(entry,attmap_group_memberUid);
+    members=getmembers(entry,session);
   else
-    memberuidvalues=NULL;
-  /* write entries for all names and gids */
-  for (i=0;names[i]!=NULL;i++)
-    for (j=0;j<numgids;j++)
-    {
-      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-      WRITE_STRING(fp,names[i]);
-      WRITE_STRING(fp,passwd);
-      WRITE_TYPE(fp,gids[j],gid_t);
-      if (memberuidvalues!=NULL)
-        { WRITE_STRINGLIST(fp,memberuidvalues); }
-      else
-        { WRITE_INT32(fp,0); }
-    }
-  return 0;
+    members=NULL;
+  /* write entries (split to a separate function so we can ensure the call
+     to free() below in case a write fails) */
+  rc=do_write_group(fp,names,gids,numgids,passwd,members);
+  /* free and return */
+  if (members!=NULL)
+    free(members);
+  return rc;
 }
 
 NSLCD_HANDLE(
@@ -222,7 +331,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_group_byname(%s)",name);,
   NSLCD_ACTION_GROUP_BYNAME,
   mkfilter_group_byname(name,filter,sizeof(filter)),
-  write_group(fp,entry,name,NULL,1)
+  write_group(fp,entry,name,NULL,1,session)
 )
 
 NSLCD_HANDLE(
@@ -233,7 +342,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_group_bygid(%d)",(int)gid);,
   NSLCD_ACTION_GROUP_BYGID,
   mkfilter_group_bygid(gid,filter,sizeof(filter)),
-  write_group(fp,entry,NULL,&gid,1)
+  write_group(fp,entry,NULL,&gid,1,session)
 )
 
 NSLCD_HANDLE(
@@ -244,7 +353,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_group_bymember(%s)",name);,
   NSLCD_ACTION_GROUP_BYMEMBER,
   mkfilter_group_bymember(name,filter,sizeof(filter)),
-  write_group(fp,entry,NULL,NULL,0)
+  write_group(fp,entry,NULL,NULL,0,session)
 )
 
 NSLCD_HANDLE(
@@ -254,6 +363,5 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_group_all()");,
   NSLCD_ACTION_GROUP_ALL,
   (filter=group_filter,0),
-  write_group(fp,entry,NULL,NULL,1)
+  write_group(fp,entry,NULL,NULL,1,session)
 )
-

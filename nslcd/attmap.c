@@ -2,7 +2,7 @@
    attmap.c - attribute mapping values and functions
    This file is part of the nss-ldapd library.
 
-   Copyright (C) 2007 Arthur de Jong
+   Copyright (C) 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -146,10 +146,8 @@ const char **attmap_get_var(enum ldap_map_selector map,const char *name)
     if (strcasecmp(name,"userPassword")==0)      return &attmap_group_userPassword;
     if (strcasecmp(name,"gidNumber")==0)         return &attmap_group_gidNumber;
     if (strcasecmp(name,"memberUid")==0)         return &attmap_group_memberUid;
-/*
     if (strcasecmp(name,"uniqueMember")==0)      return &attmap_group_uniqueMember;
-    if (strcasecmp(name,"memberOf")==0)          return &attmap_group_memberOf;
-*/
+/*    if (strcasecmp(name,"memberOf")==0)          return &attmap_group_memberOf; */
   }
   else if (map==LM_HOSTS)
   {

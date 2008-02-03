@@ -2,7 +2,7 @@
    attmap.h - attribute mapping variables
    This file is part of the nss-ldapd library.
 
-   Copyright (C) 2007 Arthur de Jong
+   Copyright (C) 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -34,10 +34,8 @@ extern const char *attmap_group_cn;
 extern const char *attmap_group_userPassword;
 extern const char *attmap_group_gidNumber;
 extern const char *attmap_group_memberUid;
-/*
 extern const char *attmap_group_uniqueMember;
-extern const char *attmap_group_memberOf;
-*/
+/*extern const char *attmap_group_memberOf;*/
 extern const char *attmap_host_cn;
 extern const char *attmap_host_ipHostNumber;
 extern const char *attmap_netgroup_cn;
