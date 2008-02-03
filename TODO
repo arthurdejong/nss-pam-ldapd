@@ -1,13 +1,15 @@
 probably before we can call this stable
 ---------------------------------------
-* implement _nss_ldap_initgroups_dyn()
 * fix usage of strerror() as it is not thread safe
 * error out quickly when the LDAP server is down
 * fix race condition when setting signal mask in common/tio.c
   (using pthread_sigmask() adds a dependency on the pthread library,
-  maybe we should switch back to stdio)
+  we should probably just do locking)
 * find problem with reachability of LDAP server
 * get root/nonroot connections working
+* find out why HAVE_GSSPAI is not always set to what configure outputs
+* do not use LDAP_DEPRECATED enabled functions
+* make tio module use dynamically sized buffers
 
 other items
 -----------
@@ -16,7 +18,7 @@ other items
   purge (maybe prompt?)
 * probably document that you should use libpam-ldap for authentication without
   exposing the passwords through NSS
-* make a test suite (instructions for setting up environment (server), LDIF
+* document test suite (instructions for setting up environment (server), LDIF
   file, nsswitch.conf and nss-ldapd.conf)
 * write more unit tests
 * maybe support bootparams (check README also)
@@ -29,7 +31,6 @@ other items
 * add sanity checking code (e.g. not too large buffer allocation and checking
   that host, user, etc do not contain funky characters) in all server modules
 * implement running under a different uid/gid (maybe chroot jail)
-* maybe remove dh_makeshlibs from debian/rules (probably not needed)
 * include a generic init script
 * log some statistics: "passwd=100 shadow=10 host=20 rpc=10" (10 req/minute)
 * in the server: once the request is done pass the flushing of the buffers to
@@ -57,3 +58,4 @@ other items
 * test non-ASCII characters in fields (mostly cn)
 * implement attribute defaults (for when they're missing from the directory)
 * implement attribute overrides (to always return a specific value, not matter what the directory says)
+* see if we can use LD_LIBRARY_PATH to run our tests in so we don't need to install NSS library in system path

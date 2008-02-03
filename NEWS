@@ -1,3 +1,25 @@
+changes from 0.5 to 0.6
+-----------------------
+
+* fix parsing of map option in nss-ldapd.conf
+* fix bug in handling of userPassword values
+* remove warning about missing loginShell attribute
+* support the uniqueMember LDAP attribute that holds DN values
+* support ldap as a compat service in /etc/nsswitch.conf
+* implement _nss_ldap_initgroups_dyn() to allow username->groups searches
+* fix retry mechanism with get*ent() functions where a too small buffer was
+  passed by libc (to support groups with a lot of members)
+* fix a bug in reporting of communications problems between nslcd and the NSS
+  library
+* test and log failures of all LDAP library calls
+* improved tests
+* miscellaneous compatibility improvements to try to support more LDAP
+  libraries and platforms
+* support compilation with OpenLDAP 2.4 and newer
+* some configure script improvements
+* Debian packaging improvements
+
+
 changes from 0.4.1 to 0.5
 -------------------------
 

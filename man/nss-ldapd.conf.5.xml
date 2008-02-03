@@ -6,7 +6,7 @@
    nss-ldapd.conf.5.xml - docbook manual page for nss-ldapd.conf
 
    Copyright (C) 1997-2005 Luke Howard
-   Copyright (C) 2007 Arthur de Jong
+   Copyright (C) 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,9 +36,9 @@
  <refmeta>
   <refentrytitle>nss-ldapd.conf</refentrytitle>
   <manvolnum>5</manvolnum>
-  <refmiscinfo class="version">Version 0.5</refmiscinfo>
+  <refmiscinfo class="version">Version 0.6</refmiscinfo>
   <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
-  <refmiscinfo class="date">Dec 2007</refmiscinfo>
+  <refmiscinfo class="date">Feb 2008</refmiscinfo>
  </refmeta>
 
  <refnamediv id="name">

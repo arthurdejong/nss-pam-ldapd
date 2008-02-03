@@ -1,3 +1,31 @@
+nss-ldapd (0.6) unstable; urgency=low
+
+  * fix parsing of map option in nss-ldapd.conf
+  * fix bug in handling of userPassword values
+  * remove warning about missing loginShell attribute
+  * support the uniqueMember LDAP attribute that holds DN values
+  * support ldap as a compat service in /etc/nsswitch.conf
+  * implement _nss_ldap_initgroups_dyn() to allow username->groups searches
+  * fix retry mechanism with get*ent() functions where a too small buffer was
+    passed by libc (to support groups with a lot of members) (closes: #457936)
+  * fix a bug in reporting of communications problems between nslcd and the
+    NSS library
+  * test and log failures of all LDAP library calls
+  * improved tests
+  * miscellaneous compatibility improvements to try to support more LDAP
+    libraries and platforms
+  * support compilation with OpenLDAP 2.4 and newer
+  * define LDAP_DEPRECATED for now to have definitions for deprecated
+    functions (closes: #463421)
+  * some configure script improvements
+  * updated German debconf translation by Erik Schanze (closes: #462841)
+  * install the NSS library under /lib instead of /usr/lib to make it easier
+    to umount /usr if it's on a separate file system (closes: #439355)
+  * don't ship a shlibs file any more because we're not providing a normal
+    shared library
+
+ -- Arthur de Jong <adejong@debian.org>  Sun, 03 Feb 2008 22:00:00 +0100
+
 nss-ldapd (0.5) unstable; urgency=low
 
   * major structural changes in the LDAP lookup code using a newly implemented
