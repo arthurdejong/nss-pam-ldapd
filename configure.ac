@@ -301,6 +301,7 @@ then
   AC_CHECK_LIB(pthread, main)
 fi
 AC_CHECK_LIB(gssldap, ldap_gss_bind,[LIBS="-lgssldap $LIBS"],,$LIBS)
+AC_CHECK_LIB(sasl2, sasl_client_init)
 
 AC_CHECK_FUNCS(sasl_auxprop_request)
 AC_CHECK_FUNCS(gss_krb5_ccache_name)
