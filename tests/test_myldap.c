@@ -99,6 +99,52 @@ static void test_search(void)
   myldap_session_close(session);
 }
 
+static void test_get(void)
+{
+  MYLDAP_SESSION *session;
+  MYLDAP_SEARCH *search1,*search2;
+  MYLDAP_ENTRY *entry;
+  const char *attrs1[] = { "cn", "userPassword", "memberUid", "gidNumber", "uniqueMember", NULL };
+  const char *attrs2[] = { "uid", NULL };
+  int rc;
+  /* initialize session */
+  printf("test_myldap: test_get(): getting session...\n");
+  session=myldap_create_session();
+  assert(session!=NULL);
+  /* perform search */
+  printf("test_myldap: test_get(): doing search...\n");
+  search1=myldap_search(session,"dc=test,dc=tld",
+                        LDAP_SCOPE_SUBTREE,
+                        "(&(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))(cn=testgroup2))",
+                        attrs1);
+  assert(search1!=NULL);
+  /* get one entry */
+  entry=myldap_get_entry(search1,&rc);
+  assert(entry!=NULL);
+  printf("test_myldap: test_get(): got DN %s\n",myldap_get_dn(entry));
+  /* get some attribute values */
+  (void)myldap_get_values(entry,"gidNumber");
+  (void)myldap_get_values(entry,"userPassword");
+  (void)myldap_get_values(entry,"memberUid");
+  (void)myldap_get_values(entry,"uniqueMember");
+  /* perform another search */
+  printf("test_myldap: test_get(): doing get...\n");
+  search2=myldap_search(session,"cn=Test User2,ou=people,dc=test,dc=tld",
+                        LDAP_SCOPE_BASE,
+                        "(objectclass=posixAccount)",
+                        attrs2);
+  assert(search2!=NULL);
+  /* get one entry */
+  entry=myldap_get_entry(search2,&rc);
+  assert(entry!=NULL);
+  printf("test_myldap: test_get(): got DN %s\n",myldap_get_dn(entry));
+  /* test if searches are ok */
+  assert(myldap_get_entry(search1,&rc)==NULL);
+  assert(myldap_get_entry(search2,&rc)==NULL);
+  /* clean up */
+  myldap_session_close(session);
+}
+
 /* This search prints a number of attributes from a search */
 static void test_get_values(void)
 {
@@ -314,6 +360,7 @@ int main(int argc,char *argv[])
   /* partially initialize logging */
   log_setdefaultloglevel(LOG_DEBUG);
   test_search();
+  test_get();
   test_get_values();
   test_two_searches();
   test_threads();

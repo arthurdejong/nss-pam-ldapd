@@ -153,7 +153,7 @@ testgroup:*:6100:arthur,test
 EOM
 
 check "groups arthur | sed 's/^.*://'" << EOM
-users testgroup
+users testgroup testgroup2
 EOM
 
 check "getent group | egrep '^(testgroup|users):'" << EOM
@@ -163,7 +163,7 @@ users:*:100:arthur,test
 EOM
 
 check "getent group | wc -l" << EOM
-`grep -c : /etc/group | awk '{print $1 + 4}'`
+`grep -c : /etc/group | awk '{print $1 + 5}'`
 EOM
 
 check "getent group | grep ^largegroup" << EOM
