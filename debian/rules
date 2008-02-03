@@ -19,6 +19,7 @@ configure-stamp:
 	            --mandir=\$${prefix}/share/man \
 	            --sysconfdir=/etc \
 	            --localstatedir=/var \
+	            --libdir=/lib \
 	            --enable-warnings \
 	            --disable-maintainer-mode \
 	            --disable-dependency-tracking \
