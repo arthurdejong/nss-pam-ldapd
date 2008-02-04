@@ -47,6 +47,12 @@
 #endif /* HAVE_GRP_H */
 #include <nss.h>
 #include <pthread.h>
+#ifndef HAVE_GETOPT_LONG
+#include "compat/getopt_long.h"
+#endif /* not HAVE_GETOPT_LONG */
+#ifndef HAVE_DAEMON
+#include "compat/daemon.h"
+#endif /* not HAVE_DAEMON */
 
 #include "nslcd.h"
 #include "log.h"
