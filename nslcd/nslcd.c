@@ -558,7 +558,7 @@ int main(int argc,char *argv[])
       log_log(LOG_ERR,"cannot setgid(%d): %s",(int)mygid,strerror(errno));
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG,"setgid(%d) done",mygid);
+    log_log(LOG_DEBUG,"setgid(%d) done",(int)mygid);
   }
   /* change to nslcd uid */
   if (myuid!=((uid_t)-1))
@@ -568,7 +568,7 @@ int main(int argc,char *argv[])
       log_log(LOG_ERR,"cannot setuid(%d): %s",(int)myuid,strerror(errno));
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG,"setuid(%d) done",myuid);
+    log_log(LOG_DEBUG,"setuid(%d) done",(int)myuid);
   }
   /* install signalhandlers for some signals */
   install_sighandler(SIGHUP, sigexit_handler);
