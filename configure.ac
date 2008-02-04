@@ -194,6 +194,7 @@ AC_CHECK_FUNCS(ether_ntoa_r)
 AC_CHECK_FUNCS(setgroups)
 AC_CHECK_FUNCS(getpeereid)
 AC_CHECK_FUNCS(getpeerucred)
+AC_CHECK_FUNCS(__nss_configure_lookup)
 
 # replace getopt_long() function if it is not on the system
 AC_REPLACE_FUNCS(getopt_long)

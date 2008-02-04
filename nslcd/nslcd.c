@@ -45,7 +45,9 @@
 #ifdef HAVE_GRP_H
 #include <grp.h>
 #endif /* HAVE_GRP_H */
+#ifdef HAVE_NSS_H
 #include <nss.h>
+#endif /* HAVE_NSS_H */
 #include <pthread.h>
 #ifndef HAVE_GETOPT_LONG
 #include "compat/getopt_long.h"
@@ -514,8 +516,11 @@ int main(int argc,char *argv[])
   /* disable ldap lookups of host names to avoid lookup loop
      and fall back to files dns (a sensible default) */
   /* TODO: parse /etc/nsswitch ourselves and just remove ldap from the list */
+#ifdef HAVE___NSS_CONFIGURE_LOOKUP
   if (__nss_configure_lookup("hosts","files dns"))
     log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
+#endif /* HAVE___NSS_CONFIGURE_LOOKUP */
+  /* FIXME: have some other mechanism for systems that don't have this */
   /* read configuration file */
   cfg_init(NSS_LDAP_PATH_CONF);
   nslcd_cfg->ldc_debug=nslcd_debugging?nslcd_debugging-1:0;
