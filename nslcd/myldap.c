@@ -48,6 +48,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <errno.h>
+#include <lber.h>
 #include <ldap.h>
 #ifdef HAVE_LDAP_SSL_H
 #include <ldap_ssl.h>
@@ -202,14 +203,14 @@ static MYLDAP_SEARCH *myldap_search_new(
     exit(EXIT_FAILURE);
   }
   /* initialize struct */
-  search=(MYLDAP_SEARCH *)(buffer);
+  search=(MYLDAP_SEARCH *)(void *)(buffer);
   buffer+=sizeof(struct myldap_search);
   /* save pointer to session */
   search->session=session;
   /* flag as valid search */
   search->valid=1;
   /* initialize array of attributes */
-  search->attrs=(char **)buffer;
+  search->attrs=(char **)(void *)buffer;
   buffer+=(i+1)*sizeof(char *);
   /* copy base */
   strcpy(buffer,base);
@@ -851,6 +852,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
   struct timeval tv,*tvp;
   LDAPControl **resultcontrols;
   LDAPControl *serverctrls[2];
+  ber_int_t count;
   /* check parameters */
   if (!is_valid_search(search))
   {
@@ -960,7 +962,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         {
           /* see if there are any more pages to come */
           rc=ldap_parse_page_control(search->session->ld,
-                                    resultcontrols,NULL,
+                                    resultcontrols,&count,
                                     &(search->cookie));
           if (rc!=LDAP_SUCCESS)
           {
