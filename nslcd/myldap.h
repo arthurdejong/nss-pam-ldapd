@@ -43,6 +43,10 @@
 
 #include "compat/attrs.h"
 
+#ifndef LDAP_SCOPE_DEFAULT
+#define LDAP_SCOPE_DEFAULT LDAP_SCOPE_SUBTREE
+#endif /* not LDAP_SCOPE_DEFAULT */
+
 /* This a a generic session handle. */
 typedef struct ldap_session MYLDAP_SESSION;
 
