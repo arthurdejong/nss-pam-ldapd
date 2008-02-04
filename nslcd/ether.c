@@ -28,9 +28,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef HAVE_NETINET_ETHER_H
-#include <netinet/ether.h>
-#endif
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif /* HAVE_STDINT_H */
@@ -40,6 +37,7 @@
 #include "myldap.h"
 #include "cfg.h"
 #include "attmap.h"
+#include "compat/ether.h"
 
 #ifndef HAVE_STRUCT_ETHER_ADDR
 struct ether_addr {

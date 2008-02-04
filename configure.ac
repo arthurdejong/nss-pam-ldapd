@@ -189,18 +189,20 @@ LIBS="$save_LIBS"
 AC_CHECK_FUNCS(sigaction)
 AC_CHECK_FUNCS(snprintf)
 AC_CHECK_FUNCS(gethostbyname)
-AC_CHECK_FUNCS(ether_aton_r)
-AC_CHECK_FUNCS(ether_ntoa_r)
 AC_CHECK_FUNCS(setgroups)
 AC_CHECK_FUNCS(getpeereid)
 AC_CHECK_FUNCS(getpeerucred)
 AC_CHECK_FUNCS(__nss_configure_lookup)
+
 
 # replace getopt_long() function if it is not on the system
 AC_REPLACE_FUNCS(getopt_long)
 # replace daemon() function if it is not on the system
 AC_SEARCH_LIBS(daemon,bsd)
 AC_REPLACE_FUNCS(daemon)
+# replace ether_ntoa_r() and ether_aton_r() if they are not found
+AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,,[AC_CHECK_FUNCS(ether_aton ether_ntoa)
+                                           AC_LIBOBJ(ether)])
 
 # checks for types
 AC_C_CONST
