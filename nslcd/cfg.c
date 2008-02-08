@@ -144,6 +144,7 @@ static void add_uri(const char *filename,int lnr,
 #define HOST_NAME_MAX 255
 #endif /* not HOST_NAME_MAX */
 
+#ifdef HAVE_LDAP_DOMAIN2HOSTLIST
 /* return the domain name of the current host
    we return part of the structure that is retured by gethostbyname()
    so there should be no need to free() this entry, however we should
@@ -208,6 +209,7 @@ static void add_uris_from_dns(const char *filename,int lnr,
     hostlist=nxt;
   }
 }
+#endif /* HAVE_LDAP_DOMAIN2HOSTLIST */
 
 static int parse_boolean(const char *filename,int lnr,const char *value)
 {
@@ -446,13 +448,20 @@ static void parse_krb5_ccname_statement(const char *filename,int lnr,
 static void set_base(const char *filename,int lnr,
                      const char *value,const char **var)
 {
+#ifdef HAVE_LDAP_DOMAIN2DN
   char *domaindn=NULL;
+#endif /* HAVE_LDAP_DOMAIN2DN */
   /* if the base is "DOMAIN" use the domain name */
   if (strcasecmp(value,"domain")==0)
   {
+#ifdef HAVE_LDAP_DOMAIN2DN
     ldap_domain2dn(cfg_getdomainname(filename,lnr),&domaindn);
     log_log(LOG_DEBUG,"set_base(): setting base to %s from domain",domaindn);
     value=domaindn;
+#else /* not HAVE_LDAP_DOMAIN2DN */
+    log_log(LOG_ERR,"%s:%d: value %s not supported on platform",filename,lnr,value);
+    exit(EXIT_FAILURE);
+#endif /* not HAVE_LDAP_DOMAIN2DN */
   }
   /* check if the value will be changed */
   if ((*var==NULL)||(strcmp(*var,value)!=0))
@@ -586,7 +595,14 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       while (get_token(&line,token,sizeof(token))!=NULL)
       {
         if (strcasecmp(token,"dns")==0)
+        {
+#ifdef HAVE_LDAP_DOMAIN2HOSTLIST
           add_uris_from_dns(filename,lnr,cfg);
+#else /* not HAVE_LDAP_DOMAIN2HOSTLIST */
+          log_log(LOG_ERR,"%s:%d: value %s not supported on platform",filename,lnr,token);
+          exit(EXIT_FAILURE);
+#endif /* not HAVE_LDAP_DOMAIN2HOSTLIST */
+        }
         else
           add_uri(filename,lnr,cfg,token);
       }
