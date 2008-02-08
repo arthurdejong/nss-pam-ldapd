@@ -39,12 +39,6 @@
 #include "attmap.h"
 #include "compat/ether.h"
 
-#ifndef HAVE_STRUCT_ETHER_ADDR
-struct ether_addr {
-  uint8_t ether_addr_octet[6];
-};
-#endif
-
 /* ( nisSchema.2.11 NAME 'ieee802Device' SUP top AUXILIARY
  *   DESC 'A device with a MAC address; device SHOULD be
  *         used as a structural class'
