@@ -132,8 +132,8 @@ struct myldap_entry
   MYLDAP_SEARCH *search;
   /* the DN */
   const char *dn;
-  /* a cached version of the exploded rdn */
-  char **exploded_rdn;
+  /* a cached version of the parsed dn */
+  LDAPDN parseddn;
   /* a cache of attribute to value list */
   DICT *attributevalues;
 };
@@ -153,7 +153,7 @@ static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search)
   /* fill in fields */
   entry->search=search;
   entry->dn=NULL;
-  entry->exploded_rdn=NULL;
+  entry->parseddn=NULL;
   entry->attributevalues=dict_new();
   /* return the fresh entry */
   return entry;
@@ -166,8 +166,8 @@ static void myldap_entry_free(MYLDAP_ENTRY *entry)
   if (entry->dn!=NULL)
     ldap_memfree((char *)entry->dn);
   /* free the exploded RDN */
-  if (entry->exploded_rdn!=NULL)
-    ldap_value_free(entry->exploded_rdn);
+  if (entry->parseddn!=NULL)
+    ldap_dnfree(entry->parseddn);
   /* free all attribute values */
   dict_values_first(entry->attributevalues);
   while ((values=(char **)dict_values_next(entry->attributevalues))!=NULL)
@@ -1106,78 +1106,9 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
   return (const char **)values;
 }
 
-/* Go over the entries in exploded_rdn and see if any start with
-   the requested attribute. Return a reference to the value part of
-   the DN (does not modify exploded_rdn). */
-static const char *find_rdn_value(char **exploded_rdn,const char *attr)
-{
-  int i,j;
-  int l;
-  if (exploded_rdn==NULL)
-    return NULL;
-  /* go over all RDNs */
-  l=strlen(attr);
-  for (i=0;exploded_rdn[i]!=NULL;i++)
-  {
-    /* check that RDN starts with attr */
-    if (strncasecmp(exploded_rdn[i],attr,l)!=0)
-      continue;
-    /* skip spaces */
-    for (j=l;isspace(exploded_rdn[i][j]);j++)
-      /* nothing here */;
-    /* ensure that we found an equals sign now */
-    if (exploded_rdn[i][j]!='=')
-    j++;
-    /* skip more spaces */
-    for (j++;isspace(exploded_rdn[i][j]);j++)
-      /* nothing here */;
-    /* ensure that we're not at the end of the string */
-    if (exploded_rdn[i][j]=='\0')
-      continue;
-    /* we found our value */
-    return exploded_rdn[i]+j;
-  }
-  /* fail */
-  return NULL;
-}
-
-/* explode the first part of DN into parts
-   (e.g. "cn=Test", "uid=test")
-   The returned value should be freed with ldap_value_free(). */
-static char **get_exploded_rdn(const char *dn)
-{
-  char **exploded_dn;
-  char **exploded_rdn;
-  /* check if we have a DN */
-  if ((dn==NULL)||(strcasecmp(dn,"unknown")==0))
-    return NULL;
-  /* explode dn into { "uid=test", "ou=people", ..., NULL } */
-  exploded_dn=ldap_explode_dn(dn,0);
-  if ((exploded_dn==NULL)||(exploded_dn[0]==NULL))
-  {
-    log_log(LOG_WARNING,"ldap_explode_dn(%s) returned NULL: %s",
-                        dn,strerror(errno));
-    return NULL;
-  }
-  /* explode rdn (first part of exploded_dn),
-      e.g. "cn=Test User+uid=testusr" into
-     { "cn=Test User", "uid=testusr", NULL } */
-  exploded_rdn=ldap_explode_rdn(exploded_dn[0],0);
-  if ((exploded_rdn==NULL)||(exploded_rdn[0]==NULL))
-  {
-    log_log(LOG_WARNING,"ldap_explode_rdn(%s) returned NULL: %s",
-                        exploded_dn[0],strerror(errno));
-    if (exploded_rdn!=NULL)
-      ldap_value_free(exploded_rdn);
-    ldap_value_free(exploded_dn);
-    return NULL;
-  }
-  ldap_value_free(exploded_dn);
-  return exploded_rdn;
-}
-
 const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr)
 {
+  int i;
   /* check parameters */
   if (!is_valid_entry(entry))
   {
@@ -1191,37 +1122,64 @@ const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr)
     errno=EINVAL;
     return NULL;
   }
-  /* check if entry contains exploded_rdn */
-  if (entry->exploded_rdn==NULL)
+  /* check if we have a DN */
+  if ((entry->dn==NULL)||(strcasecmp(entry->dn,"unknown")==0))
+    return NULL;
+  /* parse the DN */
+  if ((entry->parseddn==NULL)&&
+      (ldap_str2dn(entry->dn,&(entry->parseddn),LDAP_DN_FORMAT_LDAP)!=LDAP_SUCCESS))
+    return NULL;
+  /* sanity check */
+  if ((entry->parseddn==NULL)||(entry->parseddn[0]==NULL))
+    return NULL;
+  /* go over attribute/value pairs of first rdn */
+  for (i=0;entry->parseddn[0][i]!=NULL;i++)
   {
-    entry->exploded_rdn=get_exploded_rdn(myldap_get_dn(entry));
-    if (entry->exploded_rdn==NULL)
-      return NULL;
+    /* return value if attribute name matches */
+    if (strcasecmp(entry->parseddn[0][i]->la_attr.bv_val,attr)==0)
+      return entry->parseddn[0][i]->la_value.bv_val;
   }
-  /* find rnd value */
-  return find_rdn_value(entry->exploded_rdn,attr);
+  /* nothing found, we're done */
+  return NULL;
 }
 
 const char *myldap_cpy_rdn_value(const char *dn,const char *attr,
                                  char *buf,size_t buflen)
 {
-  char **exploded_rdn;
-  const char *value;
-  /* explode dn into { "cn=Test", "uid=test", NULL } */
-  exploded_rdn=get_exploded_rdn(dn);
-  if (exploded_rdn==NULL)
+  int i;
+  LDAPDN parseddn;
+  /* check if we have a DN */
+  if ((dn==NULL)||(strcasecmp(dn,"unknown")==0))
     return NULL;
-  /* see if we have a match */
-  value=find_rdn_value(exploded_rdn,attr);
-  /* if we have something store it in the buffer */
-  if ((value!=NULL)&&(strlen(value)<buflen))
-    strcpy(buf,value);
-  else
-    value=NULL;
-  /* free allocated stuff */
-  ldap_value_free(exploded_rdn);
-  /* check if we have something to return */
-  return (value!=NULL)?buf:NULL;
+  /* parse the DN */
+  if (ldap_str2dn(dn,&parseddn,LDAP_DN_FORMAT_LDAP)!=LDAP_SUCCESS)
+    return NULL;
+  /* sanity check */
+  if (parseddn==NULL)
+    return NULL;
+  if (parseddn[0]==NULL)
+  {
+    ldap_dnfree(parseddn);
+    return NULL;
+  }
+  /* go over attribute/value pairs of first rdn */
+  for (i=0;parseddn[0][i]!=NULL;i++)
+  {
+    /* return value if attribute name matches */
+    if (strcasecmp(parseddn[0][i]->la_attr.bv_val,attr)==0)
+    {
+      /* store it in the buffer */
+      if ((parseddn[0][i]->la_value.bv_val!=NULL)&&(strlen(parseddn[0][i]->la_value.bv_val)<buflen))
+        strcpy(buf,parseddn[0][i]->la_value.bv_val);
+      else
+        buf=NULL;
+      ldap_dnfree(parseddn);
+      return buf;
+    }
+  }
+  /* nothing found, we're done */
+  ldap_dnfree(parseddn);
+  return NULL;
 }
 
 int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass)
