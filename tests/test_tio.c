@@ -71,7 +71,7 @@ static void *help_tiowriter(void *arg)
   timeout.tv_sec=hargs->timeout;
   timeout.tv_usec=0;
   /* open the file */
-  fp=tio_fdopen(hargs->fd,&timeout,&timeout);
+  fp=tio_fdopen(hargs->fd,&timeout,&timeout,4*1024,8*1024,4*1024,8*1024);
   assertok(fp!=NULL);
   /* write the blocks */
   i=0;
@@ -103,7 +103,7 @@ static void *help_tioreader(void *arg)
   timeout.tv_sec=hargs->timeout;
   timeout.tv_usec=0;
   /* open the file */
-  fp=tio_fdopen(hargs->fd,&timeout,&timeout);
+  fp=tio_fdopen(hargs->fd,&timeout,&timeout,4*1024,8*1024,4*1024,8*1024);
   assertok(fp!=NULL);
   /* read the blocks */
   i=0;
@@ -213,19 +213,19 @@ static void test_reset(void)
   TFILE *fp;
   struct timeval timeout;
   size_t i,j,k,save;
-  uint8_t buf[10];
+  uint8_t buf[20];
   /* set up the socket pair */
   assertok(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
   /* start the writer thread */
   wargs.fd=sp[0];
-  wargs.blocksize=4*1024; /* the current TIO_BUFFERSIZE */
-  wargs.blocks=5;
+  wargs.blocksize=4*1024;
+  wargs.blocks=10;
   wargs.timeout=2;
-  assertok(pthread_create(&wthread,NULL,help_tiowriter,&wargs)==0);
+  assertok(pthread_create(&wthread,NULL,help_normwriter,&wargs)==0);
   /* set up read handle */
   timeout.tv_sec=2;
   timeout.tv_usec=0;
-  fp=tio_fdopen(sp[1],&timeout,&timeout);
+  fp=tio_fdopen(sp[1],&timeout,&timeout,2*1024,4*1024,2*1024,4*1024);
   assertok(fp!=NULL);
   /* perform 20 reads */
   i=0;
@@ -239,17 +239,29 @@ static void test_reset(void)
   /* mark and perform another 2 reads */
   tio_mark(fp);
   save=i;
-  for (k=0;k<2;k++)
+  for (k=20;k<22;k++)
   {
     assertok(tio_read(fp,buf,sizeof(buf))==0);
     /* check the buffer */
     for (j=0;j<sizeof(buf);j++)
       assert(buf[j]==(uint8_t)(i++));
   }
-  /* reset and perform the same 2 reads again and 500 more */
+  /* check that we can reset */
   assertok(tio_reset(fp)==0);
+  /* perform 204 reads (partially the same as before) */
   i=save;
-  for (k=0;k<502;k++)
+  for (k=20;k<224;k++)
+  {
+    assert(tio_read(fp,buf,sizeof(buf))==0);
+    /* check the buffer */
+    for (j=0;j<sizeof(buf);j++)
+      assert(buf[j]==(uint8_t)(i++));
+  }
+  /* check that we can reset */
+  assertok(tio_reset(fp)==0);
+  /* perform 502 reads (partially the same) */
+  i=save;
+  for (k=20;k<522;k++)
   {
     assert(tio_read(fp,buf,sizeof(buf))==0);
     /* check the buffer */
@@ -259,7 +271,7 @@ static void test_reset(void)
   /* check that reset is no longer possible */
   assertok(tio_reset(fp)!=0);
   /* read the remainder of the data 1526 reads */
-  for (k=0;k<1526;k++)
+  for (k=522;k<2048;k++)
   {
     assertok(tio_read(fp,buf,sizeof(buf))==0);
     /* check the buffer */
@@ -277,7 +289,7 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
   /* normal read-writes */
   test_blocks(400,11,11,400);
-  test_blocks(4*1024,11,4*11,1024);
+  test_blocks(10*1024,11,10*11,1024);
   test_blocks(5*1023,20,20*1023,5);
   /* reader closes file sooner */
 /*  test_blocks(2*6*1023,20,20*1023,5); */

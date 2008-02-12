@@ -63,6 +63,12 @@
 #include "compat/attrs.h"
 #include "compat/getpeercred.h"
 
+/* buffer sizes for I/O */
+#define READBUFFER_MINSIZE 32
+#define READBUFFER_MAXSIZE 64
+#define WRITEBUFFER_MINSIZE 64
+#define WRITEBUFFER_MAXSIZE 64*1024
+
 /* the definition of the environment */
 extern char **environ;
 
@@ -345,7 +351,9 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
   writetimeout.tv_sec=5; /* clients could be taking some time to process the results */
   writetimeout.tv_usec=0;
   /* create a stream object */
-  if ((fp=tio_fdopen(sock,&readtimeout,&writetimeout))==NULL)
+  if ((fp=tio_fdopen(sock,&readtimeout,&writetimeout,
+                     READBUFFER_MINSIZE,READBUFFER_MAXSIZE,
+                     WRITEBUFFER_MINSIZE,WRITEBUFFER_MAXSIZE))==NULL)
   {
     log_log(LOG_WARNING,"cannot create stream for writing: %s",strerror(errno));
     (void)close(sock);

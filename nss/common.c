@@ -39,6 +39,12 @@
 #include "common.h"
 #include "common/tio.h"
 
+/* buffer sizes for I/O */
+#define READBUFFER_MINSIZE 1024
+#define READBUFFER_MAXSIZE 32*1024
+#define WRITEBUFFER_MINSIZE 32
+#define WRITEBUFFER_MAXSIZE 32
+
 /* returns a socket to the server or NULL on error (see errno),
    socket should be closed with fclose() */
 TFILE *nslcd_client_open()
@@ -67,7 +73,9 @@ TFILE *nslcd_client_open()
   writetimeout.tv_sec=1; /* nslcd could be loaded with requests */
   writetimeout.tv_usec=500000;
   /* create a stream object */
-  if ((fp=tio_fdopen(sock,&readtimeout,&writetimeout))==NULL)
+  if ((fp=tio_fdopen(sock,&readtimeout,&writetimeout,
+                     READBUFFER_MINSIZE,READBUFFER_MAXSIZE,
+                     WRITEBUFFER_MINSIZE,WRITEBUFFER_MAXSIZE))==NULL)
   {
     (void)close(sock);
     return NULL;

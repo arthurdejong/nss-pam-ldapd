@@ -41,24 +41,19 @@
 #define ETIME ETIMEDOUT
 #endif /* ETIME */
 
-/* buffer size for both read and write buffers */
-/* TODO: pass this along with the open function */
-/* Note that this size should not be larger than SSIZE_MAX because otherwise
-   write() of such blocks is undefined */
-#define TIO_BUFFERSIZE (4*1024)
-
 /* structure that holds a buffer
    the buffer contains the data that is between the application and the
    file descriptor that is used for efficient transfer
    the buffer is built up as follows:
    |.....********......|
-         ^start
-         ^--len--^       */
+         ^start        ^size
+         ^--len--^           */
 struct tio_buffer {
   uint8_t *buffer;
-  /* the size is TIO_BUFFERSIZE */
-  size_t len; /* the number of bytes used in the buffer (from the start) */
-  int start; /* the start of the buffer (space before the start is unused) */
+  size_t size;      /* the size of the buffer */
+  size_t maxsize;   /* the maximum size of the buffer */
+  size_t start;     /* the start of the data (before start is unused) */
+  size_t len;       /* size of the data (from the start) */
 };
 
 /* structure that holds all the state for files */
@@ -132,7 +127,9 @@ static inline int tio_tv_remaining(struct timeval *tv, const struct timeval *dea
 }
 
 /* open a new TFILE based on the file descriptor */
-TFILE *tio_fdopen(int fd,struct timeval *readtimeout,struct timeval *writetimeout)
+TFILE *tio_fdopen(int fd,struct timeval *readtimeout,struct timeval *writetimeout,
+                  size_t initreadsize,size_t maxreadsize,
+                  size_t initwritesize,size_t maxwritesize)
 {
   struct tio_fileinfo *fp;
   fp=(struct tio_fileinfo *)malloc(sizeof(struct tio_fileinfo));
@@ -140,24 +137,29 @@ TFILE *tio_fdopen(int fd,struct timeval *readtimeout,struct timeval *writetimeou
     return NULL;
   fp->fd=fd;
   /* initialize read buffer */
-  fp->readbuffer.buffer=(uint8_t *)malloc(TIO_BUFFERSIZE);
+  fp->readbuffer.buffer=(uint8_t *)malloc(initreadsize);
   if (fp->readbuffer.buffer==NULL)
   {
     free(fp);
     return NULL;
   }
+  fp->readbuffer.size=initreadsize;
+  fp->readbuffer.maxsize=maxreadsize;
   fp->readbuffer.start=0;
   fp->readbuffer.len=0;
   /* initialize write buffer */
-  fp->writebuffer.buffer=(uint8_t *)malloc(TIO_BUFFERSIZE);
+  fp->writebuffer.buffer=(uint8_t *)malloc(initwritesize);
   if (fp->writebuffer.buffer==NULL)
   {
     free(fp->readbuffer.buffer);
     free(fp);
     return NULL;
   }
+  fp->writebuffer.size=initwritesize;
+  fp->writebuffer.maxsize=maxwritesize;
   fp->writebuffer.start=0;
   fp->writebuffer.len=0;
+  /* initialize other attributes */
   fp->readtimeout.tv_sec=readtimeout->tv_sec;
   fp->readtimeout.tv_usec=readtimeout->tv_usec;
   fp->writetimeout.tv_sec=writetimeout->tv_sec;
@@ -214,6 +216,8 @@ int tio_read(TFILE *fp, void *buf, size_t count)
 {
   struct timeval deadline;
   int rv;
+  uint8_t *tmp;
+  size_t newsz;
   /* have a more convenient storage type for the buffer */
   uint8_t *ptr=(uint8_t *)buf;
   /* build a time by which we should be finished */
@@ -235,7 +239,7 @@ int tio_read(TFILE *fp, void *buf, size_t count)
       return 0;
     }
     /* empty what we have and continue from there */
-    if (fp->readbuffer.len > 0)
+    if (fp->readbuffer.len>0)
     {
       if (ptr!=NULL)
       {
@@ -243,23 +247,42 @@ int tio_read(TFILE *fp, void *buf, size_t count)
         ptr+=fp->readbuffer.len;
       }
       count-=fp->readbuffer.len;
-    }
-    /* if we have room in the buffer for more don't clear the buffer */
-    if ((fp->read_resettable)&&((fp->readbuffer.start+fp->readbuffer.len)<TIO_BUFFERSIZE))
-    {
       fp->readbuffer.start+=fp->readbuffer.len;
+      fp->readbuffer.len=0;
     }
-    else
+    /* after this point until the read fp->readbuffer.len is 0 */
+    if (!fp->read_resettable)
     {
+      /* the stream is not resettable, re-use the buffer */
       fp->readbuffer.start=0;
-      fp->read_resettable=0;
     }
-    fp->readbuffer.len=0;
+    else if (fp->readbuffer.start>=(fp->readbuffer.size-4))
+    {
+      /* buffer is running empty, try to grow buffer */
+      if (fp->readbuffer.size<fp->readbuffer.maxsize)
+      {
+        newsz=fp->readbuffer.size*2;
+        if (newsz>fp->readbuffer.maxsize)
+          newsz=fp->readbuffer.maxsize;
+        tmp=realloc(fp->readbuffer.buffer,newsz);
+        if (tmp!=NULL)
+        {
+          fp->readbuffer.buffer=tmp;
+          fp->readbuffer.size=newsz;
+        }
+      }
+      /* if buffer still does not contain enough room, clear resettable */
+      if (fp->readbuffer.start>=(fp->readbuffer.size-4))
+      {
+        fp->readbuffer.start=0;
+        fp->read_resettable=0;
+      }
+    }
     /* wait until we have input */
     if (tio_select(fp->fd,1,&deadline))
       return -1;
     /* read the input in the buffer */
-    rv=read(fp->fd,fp->readbuffer.buffer+fp->readbuffer.start,TIO_BUFFERSIZE-fp->readbuffer.start);
+    rv=read(fp->fd,fp->readbuffer.buffer+fp->readbuffer.start,fp->readbuffer.size-fp->readbuffer.start);
     /* check for errors */
     if ((rv==0)||((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN)))
       return -1; /* something went wrong with the read */
@@ -330,12 +353,14 @@ FIXME: we have a race condition here (setting and restoring the signal mask), th
 int tio_write(TFILE *fp, const void *buf, size_t count)
 {
   size_t fr;
+  uint8_t *tmp;
+  size_t newsz;
   const uint8_t *ptr=(const uint8_t *)buf;
   /* keep filling the buffer until we have bufferred everything */
   while (count>0)
   {
     /* figure out free size in buffer */
-    fr=TIO_BUFFERSIZE-(fp->writebuffer.start+fp->writebuffer.len);
+    fr=fp->writebuffer.size-(fp->writebuffer.start+fp->writebuffer.len);
     if (count <= fr)
     {
       /* the data fits in the buffer */
@@ -343,9 +368,23 @@ int tio_write(TFILE *fp, const void *buf, size_t count)
       fp->writebuffer.len+=count;
       return 0;
     }
-    else if (fr > 0)
+    /* try to grow the buffer */
+    if (fp->writebuffer.size<fp->writebuffer.maxsize)
     {
-      /* fill the buffer */
+      newsz=fp->writebuffer.size*2;
+      if (newsz>fp->writebuffer.maxsize)
+        newsz=fp->writebuffer.maxsize;
+      tmp=realloc(fp->writebuffer.buffer,newsz);
+      if (tmp!=NULL)
+      {
+        fp->writebuffer.buffer=tmp;
+        fp->writebuffer.size=newsz;
+        continue; /* try again */
+      }
+    }
+    /* fill the buffer with data that will fit */
+    if (fr > 0)
+    {
       memcpy(fp->writebuffer.buffer+fp->writebuffer.start+fp->writebuffer.len,ptr,fr);
       fp->writebuffer.len+=fr;
       ptr+=fr;
