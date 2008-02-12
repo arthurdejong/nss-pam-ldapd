@@ -47,7 +47,13 @@
    write() of such blocks is undefined */
 #define TIO_BUFFERSIZE (4*1024)
 
-/* structure that holds a buffer */
+/* structure that holds a buffer
+   the buffer contains the data that is between the application and the
+   file descriptor that is used for efficient transfer
+   the buffer is built up as follows:
+   |.....********......|
+         ^start
+         ^--len--^       */
 struct tio_buffer {
   uint8_t *buffer;
   /* the size is TIO_BUFFERSIZE */
@@ -58,8 +64,8 @@ struct tio_buffer {
 /* structure that holds all the state for files */
 struct tio_fileinfo {
   int fd;
-  struct tio_buffer *readbuffer;
-  struct tio_buffer *writebuffer;
+  struct tio_buffer readbuffer;
+  struct tio_buffer writebuffer;
   struct timeval readtimeout;
   struct timeval writetimeout;
   int read_resettable; /* whether the tio_reset() function can be called */
@@ -95,26 +101,6 @@ static inline void tio_tv_prepare(struct timeval *deadline, const struct timeval
     return;
   }
   tio_tv_add(deadline,timeout);
-}
-
-static inline struct tio_buffer *tio_buffer_new(void)
-{
-  struct tio_buffer *buf;
-  /* allocate memory */
-  buf = (struct tio_buffer *)malloc(sizeof(struct tio_buffer)+TIO_BUFFERSIZE);
-  if (buf==NULL)
-    return NULL;
-  /* initialize struct */
-  buf->buffer=((uint8_t *)buf)+sizeof(struct tio_buffer);
-  buf->len=0;
-  buf->start=0;
-  return buf;
-}
-
-static inline void tio_buffer_free(struct tio_buffer *buf)
-{
-  /* since we allocated only one block we can just free it */
-  free(buf);
 }
 
 /* update the timeval to the value that is remaining before deadline
@@ -153,8 +139,25 @@ TFILE *tio_fdopen(int fd,struct timeval *readtimeout,struct timeval *writetimeou
   if (fp==NULL)
     return NULL;
   fp->fd=fd;
-  fp->readbuffer=NULL;
-  fp->writebuffer=NULL;
+  /* initialize read buffer */
+  fp->readbuffer.buffer=(uint8_t *)malloc(TIO_BUFFERSIZE);
+  if (fp->readbuffer.buffer==NULL)
+  {
+    free(fp);
+    return NULL;
+  }
+  fp->readbuffer.start=0;
+  fp->readbuffer.len=0;
+  /* initialize write buffer */
+  fp->writebuffer.buffer=(uint8_t *)malloc(TIO_BUFFERSIZE);
+  if (fp->writebuffer.buffer==NULL)
+  {
+    free(fp->readbuffer.buffer);
+    free(fp);
+    return NULL;
+  }
+  fp->writebuffer.start=0;
+  fp->writebuffer.len=0;
   fp->readtimeout.tv_sec=readtimeout->tv_sec;
   fp->readtimeout.tv_usec=readtimeout->tv_usec;
   fp->writetimeout.tv_sec=writetimeout->tv_sec;
@@ -213,62 +216,55 @@ int tio_read(TFILE *fp, void *buf, size_t count)
   int rv;
   /* have a more convenient storage type for the buffer */
   uint8_t *ptr=(uint8_t *)buf;
-  /* ensure that we have a read buffer */
-  if (fp->readbuffer==NULL)
-  {
-    fp->readbuffer=tio_buffer_new();
-    if (fp->readbuffer==NULL)
-      return -1; /* error allocating buffer */
-  }
   /* build a time by which we should be finished */
   tio_tv_prepare(&deadline,&(fp->readtimeout));
   /* loop until we have returned all the needed data */
   while (1)
   {
     /* check if we have enough data in the buffer */
-    if (fp->readbuffer->len >= count)
+    if (fp->readbuffer.len >= count)
     {
       if (count>0)
       {
         if (ptr!=NULL)
-          memcpy(ptr,fp->readbuffer->buffer+fp->readbuffer->start,count);
+          memcpy(ptr,fp->readbuffer.buffer+fp->readbuffer.start,count);
         /* adjust buffer position */
-        fp->readbuffer->start+=count;
-        fp->readbuffer->len-=count;
+        fp->readbuffer.start+=count;
+        fp->readbuffer.len-=count;
       }
       return 0;
     }
     /* empty what we have and continue from there */
-    if (fp->readbuffer->len > 0)
+    if (fp->readbuffer.len > 0)
     {
       if (ptr!=NULL)
       {
-        memcpy(ptr,fp->readbuffer->buffer+fp->readbuffer->start,fp->readbuffer->len);
-        ptr+=fp->readbuffer->len;
+        memcpy(ptr,fp->readbuffer.buffer+fp->readbuffer.start,fp->readbuffer.len);
+        ptr+=fp->readbuffer.len;
       }
-      count-=fp->readbuffer->len;
+      count-=fp->readbuffer.len;
     }
     /* if we have room in the buffer for more don't clear the buffer */
-    if ((fp->read_resettable)&&((fp->readbuffer->start+fp->readbuffer->len)<TIO_BUFFERSIZE))
+    if ((fp->read_resettable)&&((fp->readbuffer.start+fp->readbuffer.len)<TIO_BUFFERSIZE))
     {
-      fp->readbuffer->start+=fp->readbuffer->len;
+      fp->readbuffer.start+=fp->readbuffer.len;
     }
     else
     {
-      fp->readbuffer->start=0;
+      fp->readbuffer.start=0;
       fp->read_resettable=0;
     }
-    fp->readbuffer->len=0;
+    fp->readbuffer.len=0;
     /* wait until we have input */
     if (tio_select(fp->fd,1,&deadline))
       return -1;
     /* read the input in the buffer */
-    rv=read(fp->fd,fp->readbuffer->buffer+fp->readbuffer->start,TIO_BUFFERSIZE-fp->readbuffer->start);
+    rv=read(fp->fd,fp->readbuffer.buffer+fp->readbuffer.start,TIO_BUFFERSIZE-fp->readbuffer.start);
     /* check for errors */
     if ((rv==0)||((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN)))
       return -1; /* something went wrong with the read */
     /* skip the read part in the buffer */
-    fp->readbuffer->len=rv;
+    fp->readbuffer.len=rv;
 #ifdef DEBUG_TIO_STATS
     fp->bytesread+=rv;
 #endif /* DEBUG_TIO_STATS */
@@ -287,13 +283,9 @@ int tio_flush(TFILE *fp)
   struct timeval deadline;
   struct sigaction act,oldact;
   int rv;
-  /* check write buffer presence */
-  if (fp->writebuffer==NULL)
-    return 0;
 /*
 FIXME: we have a race condition here (setting and restoring the signal mask), this is a critical region that should be locked
 */
-
   /* set up sigaction */
   memset(&act,0,sizeof(struct sigaction));
   act.sa_sigaction=NULL;
@@ -303,7 +295,7 @@ FIXME: we have a race condition here (setting and restoring the signal mask), th
   /* build a time by which we should be finished */
   tio_tv_prepare(&deadline,&(fp->writetimeout));
   /* loop until we have written our buffer */
-  while (fp->writebuffer->len > 0)
+  while (fp->writebuffer.len > 0)
   {
     /* wait until we can write */
     if (tio_select(fp->fd,0,&deadline))
@@ -312,7 +304,7 @@ FIXME: we have a race condition here (setting and restoring the signal mask), th
     if (sigaction(SIGPIPE,&act,&oldact)!=0)
       return -1; /* error setting signal handler */
     /* write the buffer */
-    rv=write(fp->fd,fp->writebuffer->buffer+fp->writebuffer->start,fp->writebuffer->len);
+    rv=write(fp->fd,fp->writebuffer.buffer+fp->writebuffer.start,fp->writebuffer.len);
     /* restore the old handler for SIGPIPE */
     if (sigaction(SIGPIPE,&oldact,NULL)!=0)
       return -1; /* error restoring signal handler */
@@ -322,16 +314,16 @@ FIXME: we have a race condition here (setting and restoring the signal mask), th
     /* skip the written part in the buffer */
     if (rv>0)
     {
-      fp->writebuffer->start+=rv;
-      fp->writebuffer->len-=rv;
+      fp->writebuffer.start+=rv;
+      fp->writebuffer.len-=rv;
 #ifdef DEBUG_TIO_STATS
       fp->byteswritten+=rv;
 #endif /* DEBUG_TIO_STATS */
     }
   }
   /* clear buffer and we're done */
-  fp->writebuffer->start=0;
-  fp->writebuffer->len=0;
+  fp->writebuffer.start=0;
+  fp->writebuffer.len=0;
   return 0;
 }
 
@@ -339,30 +331,23 @@ int tio_write(TFILE *fp, const void *buf, size_t count)
 {
   size_t fr;
   const uint8_t *ptr=(const uint8_t *)buf;
-  /* ensure that we have a write buffer */
-  if (fp->writebuffer==NULL)
-  {
-    fp->writebuffer=tio_buffer_new();
-    if (fp->writebuffer==NULL)
-      return -1; /* error allocating buffer */
-  }
   /* keep filling the buffer until we have bufferred everything */
   while (count>0)
   {
     /* figure out free size in buffer */
-    fr=TIO_BUFFERSIZE-(fp->writebuffer->start+fp->writebuffer->len);
+    fr=TIO_BUFFERSIZE-(fp->writebuffer.start+fp->writebuffer.len);
     if (count <= fr)
     {
       /* the data fits in the buffer */
-      memcpy(fp->writebuffer->buffer+fp->writebuffer->start+fp->writebuffer->len,ptr,count);
-      fp->writebuffer->len+=count;
+      memcpy(fp->writebuffer.buffer+fp->writebuffer.start+fp->writebuffer.len,ptr,count);
+      fp->writebuffer.len+=count;
       return 0;
     }
     else if (fr > 0)
     {
       /* fill the buffer */
-      memcpy(fp->writebuffer->buffer+fp->writebuffer->start+fp->writebuffer->len,ptr,fr);
-      fp->writebuffer->len+=fr;
+      memcpy(fp->writebuffer.buffer+fp->writebuffer.start+fp->writebuffer.len,ptr,fr);
+      fp->writebuffer.len+=fr;
       ptr+=fr;
       count-=fr;
     }
@@ -386,10 +371,8 @@ int tio_close(TFILE *fp)
   if (close(fp->fd))
     retv=-1;
   /* free any allocated buffers */
-  if (fp->readbuffer!=NULL)
-    tio_buffer_free(fp->readbuffer);
-  if (fp->writebuffer!=NULL)
-    tio_buffer_free(fp->writebuffer);
+  free(fp->readbuffer.buffer);
+  free(fp->writebuffer.buffer);
   /* free the tio struct itself */
   free(fp);
   /* return the result of the earlier operations */
@@ -398,18 +381,11 @@ int tio_close(TFILE *fp)
 
 void tio_mark(TFILE *fp)
 {
-  /* ensure that we have a read buffer */
-  if (fp->readbuffer==NULL)
-  {
-    fp->readbuffer=tio_buffer_new();
-    if (fp->readbuffer==NULL)
-      return; /* error allocating buffer */
-  }
   /* move any data in the buffer to the start of the buffer */
-  if ((fp->readbuffer->start>0)&&(fp->readbuffer->len>0))
+  if ((fp->readbuffer.start>0)&&(fp->readbuffer.len>0))
   {
-    memmove(fp->readbuffer->buffer,fp->readbuffer->buffer+fp->readbuffer->start,fp->readbuffer->len);
-    fp->readbuffer->start=0;
+    memmove(fp->readbuffer.buffer,fp->readbuffer.buffer+fp->readbuffer.start,fp->readbuffer.len);
+    fp->readbuffer.start=0;
   }
   /* mark the stream as resettable */
   fp->read_resettable=1;
@@ -418,10 +394,10 @@ void tio_mark(TFILE *fp)
 int tio_reset(TFILE *fp)
 {
   /* check if the stream is (still) resettable */
-  if ((!fp->read_resettable)||(fp->readbuffer==NULL))
+  if (!fp->read_resettable)
     return -1;
   /* reset the buffer */
-  fp->readbuffer->len+=fp->readbuffer->start;
-  fp->readbuffer->start=0;
+  fp->readbuffer.len+=fp->readbuffer.start;
+  fp->readbuffer.start=0;
   return 0;
 }
