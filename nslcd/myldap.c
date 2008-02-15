@@ -341,6 +341,17 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   int rc;
   char *binddn,*bindarg;
   int usesasl;
+  /* check if StartTLS is requested */
+  if (nslcd_cfg->ldc_ssl_on==SSL_START_TLS)
+  {
+    rc=ldap_start_tls_s(session->ld,NULL,NULL);
+    if (rc!=LDAP_SUCCESS)
+    {
+      log_log(LOG_WARNING,"ldap_start_tls_s() failed: %s: %s",
+                          ldap_err2string(rc),strerror(errno));
+      return rc;
+    }
+  }
   /* If we're running as root, let us bind as a special
      user, so we can fake shadow passwords. */
   /* TODO: store this information in the session */
