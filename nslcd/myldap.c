@@ -336,7 +336,7 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
 
 /* This function performs the authentication phase of opening a connection.
    This returns an LDAP result code. */
-static int do_bind(MYLDAP_SESSION *session)
+static int do_bind(MYLDAP_SESSION *session,const char *uri)
 {
   int rc;
   char *binddn,*bindarg;
@@ -361,21 +361,16 @@ static int do_bind(MYLDAP_SESSION *session)
   {
     /* do a simple bind */
     if (binddn)
-      log_log(LOG_DEBUG,"simple bind to %s as %s",
-                        nslcd_cfg->ldc_uris[session->current_uri],
-                        binddn);
+      log_log(LOG_DEBUG,"simple bind to %s as %s",uri,binddn);
     else
-      log_log(LOG_DEBUG,"simple anonymous bind to %s",
-                        nslcd_cfg->ldc_uris[session->current_uri]);
+      log_log(LOG_DEBUG,"simple anonymous bind to %s",uri);
     rc=ldap_simple_bind_s(session->ld,binddn,bindarg);
     return rc;
   }
   else
   {
     /* do a SASL bind */
-    log_log(LOG_DEBUG,"SASL bind to %s as %s",
-                      nslcd_cfg->ldc_uris[session->current_uri],
-                      binddn);
+    log_log(LOG_DEBUG,"SASL bind to %s as %s",uri,binddn);
     if (nslcd_cfg->ldc_sasl_secprops!=NULL)
     {
       LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
@@ -389,11 +384,12 @@ static int do_bind(MYLDAP_SESSION *session)
 
 /* This function is called by the LDAP library when chasing referrals.
    It is configured with the ldap_set_rebind_proc() below. */
-static int do_rebind(LDAP *UNUSED(ld),LDAP_CONST char UNUSED(*url),
+static int do_rebind(LDAP *UNUSED(ld),LDAP_CONST char *url,
                      ber_tag_t UNUSED(request),
                      ber_int_t UNUSED(msgid),void *arg)
 {
-  return do_bind((MYLDAP_SESSION *)arg);
+  log_log(LOG_DEBUG,"rebinding to %s",url);
+  return do_bind((MYLDAP_SESSION *)arg,url);
 }
 
 /* This function sets a number of properties on the connection, based
@@ -581,7 +577,7 @@ static int do_open(MYLDAP_SESSION *session)
     return rc;
   }
   /* bind to the server */
-  rc=do_bind(session);
+  rc=do_bind(session,nslcd_cfg->ldc_uris[session->current_uri]);
   if (rc!=LDAP_SUCCESS)
   {
     /* log actual LDAP error code */
