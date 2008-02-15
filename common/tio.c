@@ -300,21 +300,55 @@ int tio_skip(TFILE *fp, size_t count)
   return tio_read(fp,NULL,count);
 }
 
-/* write all the data in the buffer to the stream */
-int tio_flush(TFILE *fp)
+/* the caller has assured us that we can write to the file descriptor
+   and we give it a shot */
+static int tio_writebuf(TFILE *fp)
 {
-  struct timeval deadline;
-  struct sigaction act,oldact;
   int rv;
-/*
-FIXME: we have a race condition here (setting and restoring the signal mask), this is a critical region that should be locked
-*/
+  struct sigaction act,oldact;
+  /* FIXME: we have a race condition here (setting and restoring the signal mask), this is a critical region that should be locked */
   /* set up sigaction */
   memset(&act,0,sizeof(struct sigaction));
   act.sa_sigaction=NULL;
   act.sa_handler=SIG_IGN;
   sigemptyset(&act.sa_mask);
   act.sa_flags=SA_RESTART;
+  /* ignore SIGPIPE */
+  if (sigaction(SIGPIPE,&act,&oldact)!=0)
+    return -1; /* error setting signal handler */
+  /* write the buffer */
+  rv=write(fp->fd,fp->writebuffer.buffer+fp->writebuffer.start,fp->writebuffer.len);
+  /* restore the old handler for SIGPIPE */
+  if (sigaction(SIGPIPE,&oldact,NULL)!=0)
+    return -1; /* error restoring signal handler */
+  /* check for errors */
+  if ((rv==0)||((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN)))
+    return -1; /* something went wrong with the write */
+  /* skip the written part in the buffer */
+  if (rv>0)
+  {
+    fp->writebuffer.start+=rv;
+    fp->writebuffer.len-=rv;
+#ifdef DEBUG_TIO_STATS
+    fp->byteswritten+=rv;
+#endif /* DEBUG_TIO_STATS */
+    /* reset start if len is 0 */
+    if (fp->writebuffer.len==0)
+      fp->writebuffer.start=0;
+    /* move contents of the buffer to the front if it will save enough room */
+    if (fp->writebuffer.start>=(fp->writebuffer.size/4))
+    {
+      memmove(fp->writebuffer.buffer,fp->writebuffer.buffer+fp->writebuffer.start,fp->writebuffer.len);
+      fp->writebuffer.start=0;
+    }
+  }
+  return 0;
+}
+
+/* write all the data in the buffer to the stream */
+int tio_flush(TFILE *fp)
+{
+  struct timeval deadline;
   /* build a time by which we should be finished */
   tio_tv_prepare(&deadline,&(fp->writetimeout));
   /* loop until we have written our buffer */
@@ -323,31 +357,37 @@ FIXME: we have a race condition here (setting and restoring the signal mask), th
     /* wait until we can write */
     if (tio_select(fp->fd,0,&deadline))
       return -1;
-    /* ignore SIGPIPE */
-    if (sigaction(SIGPIPE,&act,&oldact)!=0)
-      return -1; /* error setting signal handler */
-    /* write the buffer */
-    rv=write(fp->fd,fp->writebuffer.buffer+fp->writebuffer.start,fp->writebuffer.len);
-    /* restore the old handler for SIGPIPE */
-    if (sigaction(SIGPIPE,&oldact,NULL)!=0)
-      return -1; /* error restoring signal handler */
-    /* check for errors */
-    if ((rv==0)||((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN)))
-      return -1; /* something went wrong with the write */
-    /* skip the written part in the buffer */
-    if (rv>0)
-    {
-      fp->writebuffer.start+=rv;
-      fp->writebuffer.len-=rv;
-#ifdef DEBUG_TIO_STATS
-      fp->byteswritten+=rv;
-#endif /* DEBUG_TIO_STATS */
-    }
+    /* write one block */
+    if (tio_writebuf(fp))
+      return -1;
   }
-  /* clear buffer and we're done */
-  fp->writebuffer.start=0;
-  fp->writebuffer.len=0;
   return 0;
+}
+
+/* try a single write of data in the buffer if the file descriptor
+   will accept data */
+static int tio_flush_nonblock(TFILE *fp)
+{
+  struct timeval tv;
+  fd_set fdset;
+  int rv;
+  /* prepare our filedescriptorset */
+  FD_ZERO(&fdset);
+  FD_SET(fp->fd,&fdset);
+  /* set the timeout to 0 to poll */
+  tv.tv_sec=0;
+  tv.tv_usec=0;
+  /* wait for activity */
+  rv=select(FD_SETSIZE,NULL,&fdset,NULL,&tv);
+  /* check if any file descriptors were ready (timeout) or we were
+     interrupted */
+  if ((rv==0)||((rv<0)&&(errno==EINTR)))
+    return 0;
+  /* any other errors? */
+  if (rv<0)
+    return -1;
+  /* so file descriptor will accept writes */
+  return tio_writebuf(fp);
 }
 
 int tio_write(TFILE *fp, const void *buf, size_t count)
@@ -368,6 +408,20 @@ int tio_write(TFILE *fp, const void *buf, size_t count)
       fp->writebuffer.len+=count;
       return 0;
     }
+    else if (fr > 0)
+    {
+      /* fill the buffer with data that will fit */
+      memcpy(fp->writebuffer.buffer+fp->writebuffer.start+fp->writebuffer.len,ptr,fr);
+      fp->writebuffer.len+=fr;
+      ptr+=fr;
+      count-=fr;
+    }
+    /* try to flush some of the data that is in the buffer */
+    if (tio_flush_nonblock(fp))
+      return -1;
+    /* if we have room now, try again */
+    if (fp->writebuffer.size>(fp->writebuffer.start+fp->writebuffer.len))
+      continue;
     /* try to grow the buffer */
     if (fp->writebuffer.size<fp->writebuffer.maxsize)
     {
@@ -381,14 +435,6 @@ int tio_write(TFILE *fp, const void *buf, size_t count)
         fp->writebuffer.size=newsz;
         continue; /* try again */
       }
-    }
-    /* fill the buffer with data that will fit */
-    if (fr > 0)
-    {
-      memcpy(fp->writebuffer.buffer+fp->writebuffer.start+fp->writebuffer.len,ptr,fr);
-      fp->writebuffer.len+=fr;
-      ptr+=fr;
-      count-=fr;
     }
     /* write the buffer to the stream */
     if (tio_flush(fp))
