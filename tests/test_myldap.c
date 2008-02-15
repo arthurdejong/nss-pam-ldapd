@@ -201,6 +201,41 @@ static void test_get_values(void)
   myldap_session_close(session);
 }
 
+static void test_get_rdnvalues(void)
+{
+  MYLDAP_SESSION *session;
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  const char *attrs[] = { "cn", "uid", NULL };
+  int rc;
+  char buf[80];
+  /* initialize session */
+  printf("test_myldap: test_get_rdnvalues(): getting session...\n");
+  session=myldap_create_session();
+  assert(session!=NULL);
+  /* perform search */
+  printf("test_myldap: test_get_rdnvalues(): doing search...\n");
+  search=myldap_search(session,"cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld",
+                       LDAP_SCOPE_BASE,
+                       "(objectClass=*)",
+                       attrs);
+  assert(search!=NULL);
+  /* get one entry */
+  entry=myldap_get_entry(search,&rc);
+  assert(entry!=NULL);
+  printf("test_myldap: test_get_rdnvalues(): got DN %s\n",myldap_get_dn(entry));
+  /* get some values from DN */
+  printf("test_myldap: test_get_rdnvalues(): DN.uid=%s\n",myldap_get_rdn_value(entry,"uid"));
+  printf("test_myldap: test_get_rdnvalues(): DN.cn=%s\n",myldap_get_rdn_value(entry,"cn"));
+  printf("test_myldap: test_get_rdnvalues(): DN.uidNumber=%s\n",myldap_get_rdn_value(entry,"uidNumber"));
+  /* clean up */
+  myldap_session_close(session);
+  /* some tests */
+  printf("test_myldap: test_get_rdnvalues(): DN.uid=%s\n",myldap_cpy_rdn_value("cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld","uid",buf,sizeof(buf)));
+  printf("test_myldap: test_get_rdnvalues(): DN.cn=%s\n",myldap_cpy_rdn_value("cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld","cn",buf,sizeof(buf)));
+  printf("test_myldap: test_get_rdnvalues(): DN.uidNumber=%s\n",myldap_cpy_rdn_value("cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld","uidNumber",buf,sizeof(buf)));
+}
+
 /* this method tests to see if we can perform two searches within
    one session */
 static void test_two_searches(void)
@@ -362,6 +397,7 @@ int main(int argc,char *argv[])
   test_search();
   test_get();
   test_get_values();
+  test_get_rdnvalues();
   test_two_searches();
   test_threads();
   test_connections();
