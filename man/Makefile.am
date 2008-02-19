@@ -25,7 +25,8 @@ if GENMAN
 
 MAINTAINERCLEANFILES = $(dist_man_MANS)
 
-%: %.xml
+SUFFIXES = .xml
+.xml:
 	$(DOCBOOK2X_MAN) \
 	  --string-param header-3='$(RELEASE_MONTH)' \
 	  --string-param header-4='Version $(VERSION)' \
