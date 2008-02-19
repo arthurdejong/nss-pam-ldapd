@@ -119,12 +119,9 @@ interfaces should be exported and how the LDAP schema part should look like.
 supported LDAP libraries
 ------------------------
 
-The current version of nss-ldapd has been developed with OpenLDAP 2.1 but
+The current version of nss-ldapd has been developed with OpenLDAP 2.4 but
 adding support for other LDAP libraries with similar interfaces should not be
 too hard.
-
-The server part of the code is however still being refactored and cleaned up
-and the LDAP part is still subject to change and simplification.
 
 unsupported features
 --------------------
@@ -136,14 +133,12 @@ and may cause problems.
   some day if requested)
 - SSL/TLS support is untested but will be tested when the core code stabilizes
 - the configuration file formats are not fully compatible
-- group membership lookups with the uniqueMember and memberOf attribute as
-  well as nested groups are currently unsupported (support will be re-added
-  later)
+- nested groups are currently unsupported
 - SASL and Kerberos configuration is untested
-- rootbinddn/rootbindpw support is disabled (support will be added later)
+- rootbinddn/rootbindpw support is disabled
 
-In general, development is ongoing and a lot has to be cleaned up. The focus
-is to have the functionality that is present be well tested and supported.
+In general, the focus is to have the functionality that is present be well
+tested and supported.
 
 
 INSTALLATION
@@ -228,8 +223,7 @@ LDAP SCHEMA
 nss-ldapd supports a wide range of possible LDAP schema configurations.
 Furthermore it can be customized heavily. The LDAP schema used is described in
 RFC 2307. Groups with distinguished name members (instead of login names) (RFC
-2307bis) are currently unsupported. Support for a posixGroup with both
-memberUid and uniqueMember attributes will be added later.
+2307bis) are currently unsupported.
 
 default attributes
 ------------------
@@ -246,7 +240,7 @@ ethers (objectClass=ieee802Device)
   macAddress        - ethernet address
 group (objectClass=posixGroup)
   cn                - group name
-  userPassword      - should be readable by rootbinddn only
+  userPassword      - password
   memberUid         - members
   uniqueMember      - members
   gidNumber         - gid
@@ -263,10 +257,10 @@ networks (objectClass=ipNetwork)
   ipNetmaskNumber   - network netmask
 passwd (objectClass=posixAccount)
   uid               - account name
-  userPassword      - should be readable by rootbinddn only
+  userPassword      - password
   uidNumber         - uid
   gidNumber         - gid
-  cn                - gecos
+  cn                - gecos (if gecos is unset)
   homeDirectory     - home directory
   loginShell        - shell
   gecos             - gecos
@@ -282,12 +276,12 @@ services (objectClass=ipService)
   ipServiceProtocol - service protocol
 shadow (objectClass=shadowAccount)
   uid               - use name
-  userPassword      - should be readable by rootbinddn only
+  userPassword      - password
   shadowLastChange  - last change of password
   shadowMax         - days before password may be changed
   shadowMin         - days after which password must be changed
   shadowWarning     - expiry warning
-  shadowInactive    - account is disabled if no passwd is changed
+  shadowInactive    - account is disabled if no password is changed
   shadowExpire      - account expiration
   shadowFlag        - reserved field
 
