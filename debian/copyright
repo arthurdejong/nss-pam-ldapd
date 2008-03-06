@@ -37,6 +37,7 @@ covered by the GNU Lesser General Public License:
 
 compat/pagectrl.c: Copyright (C) 2002 Max Caines
 debian/po/ca.po:   Copyright (C) 2004 Free Software Foundation, Inc.
+debian/po/es.po    Copyright (C) 2007 Rudy Godoy Guillén
 debian/po/de.po:   Copyright (C) 2004 Erik Schanze
 debian/po/fr.po:   Copyright (C) 2007 Cyril Brulebois
 debian/po/fr.po:   Copyright (C) 2007 Philippe Batailler

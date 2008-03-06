@@ -1,26 +1,50 @@
+# nss-ldapd translation to Spanish
+# Copyright (C) 2007 Rudy Godoy Guillén <rudy@debian.org>
+# This file is distributed under the same license as the nss-ldapd package.
 #
-# This file is from the DDTP, the Debian Description Translation Project
+# Changes:
+# - Initial translation
+#       DDTP, the Debian Description Translation Project
+# - Review and update
+#       Rudy Godoy <rudy@stone-head.org>, 2008
 #
-# See http://ddtp.debian.org/ for more information.
+#
+#  Traductores, si no conoce el formato PO, merece la pena leer la 
+#  documentación de gettext, especialmente las secciones dedicadas a este
+#  formato, por ejemplo ejecutando:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+# Equipo de traducción al español, por favor lean antes de traducir
+# los siguientes documentos:
+#
+# - El proyecto de traducción de Debian al español
+#   http://www.debian.org/intl/spanish/
+#   especialmente las notas de traducción en
+#   http://www.debian.org/intl/spanish/notas
+#
+# - La guía de traducción de po's de debconf:
+#   /usr/share/doc/po-debconf/README-trans
+#   o http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: nss-ldapd 0.3\n"
 "Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
 "POT-Creation-Date: 2007-09-28 10:02+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Debian Description Translation Project <debconf@ddtp.debian."
-"org>\n"
-"Language-Team: es <LL@li.org>\n"
+"PO-Revision-Date: 2008-02-03 20:20-0500\n"
+"Last-Translator: Rudy Godoy Guillén <rudy@stone-head.org>\n"
+"Language-Team: Debian l10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "LDAP server Uniform Resource Identifier:"
-msgstr ""
+msgstr "Identificador de recurso uniforme del servidor LDAP:"
 
 #. Type: string
 #. Description
@@ -29,39 +53,28 @@ msgid ""
 "Please enter the URI of the LDAP server used. This is a string in the form "
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
 "port number is optional."
-msgstr ""
+msgstr "Introduzca el URI del servidor LDAP. Este es una cadena de la forma ldap://<nombre de máquina o IP>:<puerto>/. También se puede utilizar ldaps:// o ldapi://. El valor del puerto es opcional."
 
 #
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Note: It is usually a good idea to use an IP address; this reduces risks "
-#| "of failure in the event name service is unavailable."
 msgid ""
 "When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
-msgstr ""
-"NOTA: Es siempre una buena idea especificar una direcci�n IP en vez de un "
-"nombre, ya que reduce el riesgo de fallos en caso de que el servicio de "
-"nombres no est� disponible."
+msgstr "Cuando utilice los esquemas ldap o ldaps es siempre una buena idea especificar una dirección IP, pues reduce el riesgo de fallos en caso de que el servicio de nombres no esté disponible."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
-msgstr ""
+msgstr "Se puede especificar múltiples URIs separandolos con espacios."
 
-#  Template: shared/ldapns/ldap-server
-#  ddtp-prioritize: 56
-#
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:2001
-#, fuzzy
 msgid "LDAP server search base:"
-msgstr "Servidor LDAP"
+msgstr "Base de búsqueda en servidor LDAP:"
 
 #
 #. Type: string
@@ -72,17 +85,13 @@ msgid ""
 "the components of their domain names for this purpose.  For example, the "
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
-msgstr ""
-"Por favor introduzca el nombre distintivo (DN) de la base de b�squedas LDAP. "
-"En muchos sitios se utilizan las componentes del nombre de dominio con este "
-"prop�sito. Por ejemplo, el dominio \"ejemplo.net\" utilizar�a \"dc=ejemplo,"
-"dc=net\" como nombre distintivo de la base de b�squedas."
+msgstr "Por favor introduzca el nombre distintivo (DN) de la base de búsquedas LDAP. En muchos sitios se utilizan las componentes del nombre de dominio con este propósito. Por ejemplo, el dominio «ejemplo.net» utilizaría «dc=ejemplo,dc=net» como nombre distintivo de la base de búsquedas."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:3001
 msgid "LDAP database user:"
-msgstr ""
+msgstr "Usuario de base de datos LDAP:"
 
 #. Type: string
 #. Description
@@ -90,7 +99,7 @@ msgstr ""
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
-msgstr ""
+msgstr "Introduzca el nombre de la cuenta que utilizará si la base de datos LDAP requiere un usuario para búsquedas. En caso contrario deje en blanco."
 
 #. Type: string
 #. Description
@@ -98,25 +107,25 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:3001 ../libnss-ldapd.templates:5001
 msgid "This value should be specified as a DN (distinguished name)."
-msgstr ""
+msgstr "Debe ingresar el valor en forma de DN (nombre distintivo)."
 
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:4001
 msgid "LDAP user password:"
-msgstr ""
+msgstr "Contraseña de usuario LDAP:"
 
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr ""
+msgstr "Introduzca la contraseña que se utilizará para acceder a la base de datos LDAP."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:5001
 msgid "LDAP account for root:"
-msgstr ""
+msgstr "Cuenta de superusuario LDAP:"
 
 #. Type: string
 #. Description
@@ -125,19 +134,19 @@ msgid ""
 "This account will be used for nss requests with root privileges. This can be "
 "used to give root processes more information (e.g. users' shadow entries or "
 "group passwords)."
-msgstr ""
+msgstr "Esta cuenta será utilizada para solicitudes nss con privilegios de superusuario. Esto se puede utilizar para ofrecer más información a los procesos del superusuario (ej. entradas shadow de usuarios, o contraseñas de grupo)."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:5001
 msgid "Leave this empty to not do anything special for root lookups."
-msgstr ""
+msgstr "Deje en blanco si no desea utilizar esta característica."
 
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:6001
 msgid "LDAP root account password:"
-msgstr ""
+msgstr "Contraseña de la cuenta de superusuario LDAP:"
 
 #. Type: password
 #. Description
@@ -145,13 +154,13 @@ msgstr ""
 msgid ""
 "Enter the password that will be used to log in to the LDAP database when the "
 "root process does lookups."
-msgstr ""
+msgstr "Introduzca la contraseña que se utilizará para acceder a la base de datos LDAP cuando un proceso de superusuario realice búsquedas."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:7001
 msgid "Name services to configure:"
-msgstr ""
+msgstr "Indique los servicios a configurar:"
 
 #. Type: multiselect
 #. Description
@@ -159,7 +168,7 @@ msgstr ""
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
-msgstr ""
+msgstr "Para que este programa funcione, debe modificar el fichero «/etc/nsswitch.conf» para que utilice la fuente de datos de LDAP."
 
 #. Type: multiselect
 #. Description
@@ -168,7 +177,7 @@ msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
-msgstr ""
+msgstr "Puede elegir los servicios que se debe habilitar o deshabilitar para las búsquedas de LDAP. Las nuevas búsquedas LDAP serán añadidas como última opción. Asegúrese de revisar estos cambios."
 
 #  Template: libnss-ldap/dblogin
 #  ddtp-prioritize: 56
@@ -238,7 +247,7 @@ msgstr ""
 #
 #, fuzzy
 #~ msgid "LDAP version to use:"
-#~ msgstr "Versi�n de LDAP a utilizar"
+#~ msgstr "Versión de LDAP a utilizar"
 
 #
 #, fuzzy
@@ -246,9 +255,9 @@ msgstr ""
 #~ "Please enter which version of the LDAP protocol is to use.  It is usually "
 #~ "a good idea to set this to highest available version number."
 #~ msgstr ""
-#~ "Por favor introduzca la versi�n del protocolo LDAP que usar� ldapns. "
-#~ "Generalmente es una buena idea utilizar el n�mero de versi�n m�s alto que "
-#~ "est� disponible."
+#~ "Por favor introduzca la versión del protocolo LDAP que usará ldapns. "
+#~ "Generalmente es una buena idea utilizar el número de versión más alto que "
+#~ "esté disponible."
 
 #  Template: libnss-ldap/confperm
 #  ddtp-prioritize: 56
@@ -295,8 +304,8 @@ msgstr ""
 #  ddtp-prioritize: 56
 #
 #~ msgid "distinguished name of the search base"
-#~ msgstr "El nombre distintivo (DN) de la base de b�squedas."
+#~ msgstr "El nombre distintivo (DN) de la base de búsquedas."
 
 #
 #~ msgid "Please enter the address of the LDAP server used."
-#~ msgstr "Por favor, introduzca la direcci�n del servidor LDAP utilizado."
+#~ msgstr "Por favor, introduzca la dirección del servidor LDAP utilizado."
