@@ -140,12 +140,12 @@ base dc=example,dc=net
 #ldap_version 3
 
 # The DN to bind with for normal lookups.
-binddn cn=annonymous,dc=example,dc=net
-bindpw secret
+#binddn cn=annonymous,dc=example,dc=net
+#bindpw secret
 
 # The DN to bind with for lookups as root.
-rootbinddn cn=administrator,dc=example,dc=net
-rootbindpw verysecret
+#rootbinddn cn=administrator,dc=example,dc=net
+#rootbindpw verysecret
 
 # The search scope.
 #scope sub
@@ -187,24 +187,25 @@ then
   fi
   # remove password from database
   db_set libnss-ldapd/ldap-bindpw ""
-  # set root bind dn/pw
-  db_get libnss-ldapd/ldap-rootbinddn
-  if [ -n "$RET" ]
-  then
-    cfg_set rootbinddn "$RET"
-    db_get libnss-ldapd/ldap-rootbindpw
-    cfg_set rootbindpw "$RET"
-  else
-    # no binddn/pw, disable options
-    cfg_disable rootbinddn
-    if grep -i -q "^rootbindpw " $CONFFILE
-    then
-      cfg_set rootbindpw "*removed*"
-      cfg_disable rootbindpw
-    fi
-  fi
-  # remove password from database
-  db_set libnss-ldapd/ldap-rootbindpw ""
+# DISABLE rootbinddn for now because it's not supported
+#  # set root bind dn/pw
+#  db_get libnss-ldapd/ldap-rootbinddn
+#  if [ -n "$RET" ]
+#  then
+#    cfg_set rootbinddn "$RET"
+#    db_get libnss-ldapd/ldap-rootbindpw
+#    cfg_set rootbindpw "$RET"
+#  else
+#    # no binddn/pw, disable options
+#    cfg_disable rootbinddn
+#    if grep -i -q "^rootbindpw " $CONFFILE
+#    then
+#      cfg_set rootbindpw "*removed*"
+#      cfg_disable rootbindpw
+#    fi
+#  fi
+#  # remove password from database
+#  db_set libnss-ldapd/ldap-rootbindpw ""
   # modify /etc/nsswitch.conf
   db_get libnss-ldapd/nsswitch
   enablenss=`echo "$RET" | sed 's/,//g'`
