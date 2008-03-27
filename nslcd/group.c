@@ -219,6 +219,7 @@ static char *getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
           log_log(LOG_CRIT,"get_members(): realloc() failed to allocate memory");
           return NULL;
         }
+        buf=nw;
       }
       /* check the value */
       if (values[i][0]=='\0')
