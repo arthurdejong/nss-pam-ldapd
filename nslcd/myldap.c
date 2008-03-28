@@ -1201,10 +1201,7 @@ int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass)
   }
   values=myldap_get_values(entry,"objectClass");
   if (values==NULL)
-  {
-    log_log(LOG_ERR,"myldap_has_objectclass(): myldap_get_values() returned NULL");
     return 0;
-  }
   for (i=0;values[i]!=NULL;i++)
   {
     if (strcasecmp(values[i],objectclass)==0)
