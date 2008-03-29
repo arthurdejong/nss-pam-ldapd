@@ -302,3 +302,13 @@ Most values in the NSS databases are considered case-sensitive (e.g. the user
 case-insensitive. This may cause problems in some corner cases, especially
 when nscd is used for caching. For example, when doing a lookup for the user
 "Foo" the user "foo" will be returned if it exists in the database.
+
+
+REPORTING BUGS
+==============
+
+If you find any bugs or missing features please send email to
+  arthur@ch.tudelft.nl
+Please include as much information as needed (platform, output of configure
+if compilation fails, output of the failure, etc). Patches are more than
+welcome (also see the file HACKING).
