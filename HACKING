@@ -33,6 +33,8 @@ For building svn snapshots the following tools are needed:
 * automake (1.10 is used)
 * check (0.9.5 is used)
 
+Also see debian/control (Build-Depends field) for libraries you need.
+
 and of course the usual build tools (gcc/make/etc). To build the svn snapshot
 run the autogen.sh shell script to build the configure script. When developing
 patches please use --enable-warnings with configure and don't introduce too
@@ -111,6 +113,13 @@ If the protocol is changed in an incompatible way the protocol version should
 be incremented in nslcd.h. There is currently no versioning scheme available
 for this.
 
+A special module (common/tio.c) was made so we can define simpler semantics
+for time-out values and buffer sizes. Both tha NSS library and nslcd use this
+module which means that it includes functionality that is needed for both
+(e.g. large write buffers for the server part and large resettable read
+buffers for the NSS part). Maybe building two modules from the same source
+with different features in them is an option.
+
 
 SERVER PART
 ===========
@@ -131,3 +140,6 @@ is now a local interface to a daemon with privileges. Before processes could
 only potentially exploit bugs in the library and gain the privileges of the
 process that was doing the name lookups. In this case the privileges of the
 daemon are potentially exposed.
+
+The deamon should be changed to set a specific less-privileged user and
+group to minimize the riscs.
