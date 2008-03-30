@@ -297,6 +297,7 @@ PURE static inline int is_valid_entry(MYLDAP_ENTRY *entry)
   return (entry!=NULL)&&is_valid_search(entry->search)&&(entry->search->msg!=NULL);
 }
 
+#ifdef HAVE_SASL_INTERACT_T
 /* this is registered with ldap_sasl_interactive_bind_s() in do_bind() */
 static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaults,void *_interact)
 {
@@ -325,6 +326,7 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
   }
   return LDAP_SUCCESS;
 }
+#endif /* HAVE_SASL_INTERACT_T */
 
 #define LDAP_SET_OPTION(ld,option,invalue) \
   rc=ldap_set_option(ld,option,invalue); \
@@ -341,6 +343,9 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   int rc;
   char *binddn,*bindarg;
   int usesasl;
+#ifndef HAVE_SASL_INTERACT_T
+  struct berval cred;
+#endif /* not HAVE_SASL_INTERACT_T */
   /* check if StartTLS is requested */
   if (nslcd_cfg->ldc_ssl_on==SSL_START_TLS)
   {
@@ -375,8 +380,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
       log_log(LOG_DEBUG,"simple bind to %s as %s",uri,binddn);
     else
       log_log(LOG_DEBUG,"simple anonymous bind to %s",uri);
-    rc=ldap_simple_bind_s(session->ld,binddn,bindarg);
-    return rc;
+    return ldap_simple_bind_s(session->ld,binddn,bindarg);
   }
   else
   {
@@ -386,10 +390,15 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
     {
       LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
     }
-    rc=ldap_sasl_interactive_bind_s(session->ld,binddn,"GSSAPI",NULL,NULL,
+#ifdef HAVE_SASL_INTERACT_T
+    return ldap_sasl_interactive_bind_s(session->ld,binddn,"GSSAPI",NULL,NULL,
                                     LDAP_SASL_QUIET,
                                     do_sasl_interact,(void *)bindarg);
-    return rc;
+#else /* HAVE_SASL_INTERACT_T */
+    cred.bv_val=bindarg;
+    cred.bv_len=strlen(bindarg);
+    return ldap_sasl_bind_s(session->ld,binddn,"GSSAPI",&cred,NULL,NULL,NULL);
+#endif /* not HAVE_SASL_INTERACT_T */
   }
 }
 
