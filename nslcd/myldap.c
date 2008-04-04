@@ -341,8 +341,6 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
 static int do_bind(MYLDAP_SESSION *session,const char *uri)
 {
   int rc;
-  char *binddn,*bindarg;
-  int usesasl;
 #ifndef HAVE_SASL_INTERACT_T
   struct berval cred;
 #endif /* not HAVE_SASL_INTERACT_T */
@@ -357,47 +355,32 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
       return rc;
     }
   }
-  /* If we're running as root, let us bind as a special
-     user, so we can fake shadow passwords. */
   /* TODO: store this information in the session */
-  /* FIXME: this is wrong, we should not do this!!!!!!! */
-  if ((geteuid()==0)&&(nslcd_cfg->ldc_rootbinddn!=NULL))
-  {
-    binddn=nslcd_cfg->ldc_rootbinddn;
-    usesasl=nslcd_cfg->ldc_rootusesasl;
-    bindarg=nslcd_cfg->ldc_rootusesasl?nslcd_cfg->ldc_rootsaslid:nslcd_cfg->ldc_rootbindpw;
-  }
-  else
-  {
-    binddn=nslcd_cfg->ldc_binddn;
-    usesasl=nslcd_cfg->ldc_usesasl;
-    bindarg=nslcd_cfg->ldc_usesasl?nslcd_cfg->ldc_saslid:nslcd_cfg->ldc_bindpw;
-  }
-  if (!usesasl)
+  if (!nslcd_cfg->ldc_usesasl)
   {
     /* do a simple bind */
-    if (binddn)
-      log_log(LOG_DEBUG,"simple bind to %s as %s",uri,binddn);
+    if (nslcd_cfg->ldc_binddn)
+      log_log(LOG_DEBUG,"simple bind to %s as %s",uri,nslcd_cfg->ldc_binddn);
     else
       log_log(LOG_DEBUG,"simple anonymous bind to %s",uri);
-    return ldap_simple_bind_s(session->ld,binddn,bindarg);
+    return ldap_simple_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_bindpw);
   }
   else
   {
     /* do a SASL bind */
-    log_log(LOG_DEBUG,"SASL bind to %s as %s",uri,binddn);
+    log_log(LOG_DEBUG,"SASL bind to %s as %s",uri,nslcd_cfg->ldc_binddn);
     if (nslcd_cfg->ldc_sasl_secprops!=NULL)
     {
       LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
     }
 #ifdef HAVE_SASL_INTERACT_T
-    return ldap_sasl_interactive_bind_s(session->ld,binddn,"GSSAPI",NULL,NULL,
+    return ldap_sasl_interactive_bind_s(session->ld,nslcd_cfg->ldc_binddn,"GSSAPI",NULL,NULL,
                                     LDAP_SASL_QUIET,
-                                    do_sasl_interact,(void *)bindarg);
+                                    do_sasl_interact,(void *)nslcd_cfg->ldc_saslid);
 #else /* HAVE_SASL_INTERACT_T */
-    cred.bv_val=bindarg;
-    cred.bv_len=strlen(bindarg);
-    return ldap_sasl_bind_s(session->ld,binddn,"GSSAPI",&cred,NULL,NULL,NULL);
+    cred.bv_val=nslcd_cfg->ldc_saslid;
+    cred.bv_len=strlen(nslcd_cfg->ldc_saslid);
+    return ldap_sasl_bind_s(session->ld,nslcd_cfg->ldc_binddn,"GSSAPI",&cred,NULL,NULL,NULL);
 #endif /* not HAVE_SASL_INTERACT_T */
   }
 }

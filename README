@@ -135,7 +135,7 @@ and may cause problems.
 - the configuration file formats are not fully compatible
 - nested groups are currently unsupported
 - SASL and Kerberos configuration is untested
-- rootbinddn/rootbindpw support is disabled
+- rootbinddn/rootbindpw support is disabled and is not likely to return
 
 In general, the focus is to have the functionality that is present be well
 tested and supported.

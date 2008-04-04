@@ -71,13 +71,9 @@ static void cfg_defaults(struct ldap_config *cfg)
 #endif /* not LDAP_VERSION3 */
   cfg->ldc_binddn=NULL;
   cfg->ldc_bindpw=NULL;
-  cfg->ldc_rootbinddn=NULL;
-  cfg->ldc_rootbindpw=NULL;
   cfg->ldc_saslid=NULL;
-  cfg->ldc_rootsaslid=NULL;
   cfg->ldc_sasl_secprops=NULL;
   cfg->ldc_usesasl=0;
-  cfg->ldc_rootusesasl=0;
   cfg->ldc_base=NULL;
   cfg->ldc_scope=LDAP_SCOPE_SUBTREE;
   cfg->ldc_deref=LDAP_DEREF_NEVER;
@@ -620,30 +616,11 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     {
       get_restdup(filename,lnr,keyword,&line,&cfg->ldc_bindpw);
     }
-    else if (strcasecmp(keyword,"rootbinddn")==0)
-    {
-      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,keyword);
-      exit(EXIT_FAILURE);
-      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_rootbinddn);
-    }
-    else if (strcasecmp(keyword,"rootbindpw")==0)
-    {
-      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,keyword);
-      exit(EXIT_FAILURE);
-      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_rootbinddn);
-    }
     /* SASL authentication options */
     else if (strcasecmp(keyword,"sasl_authid")==0)
     {
       log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
       get_strdup(filename,lnr,keyword,&line,&cfg->ldc_saslid);
-      get_eol(filename,lnr,keyword,&line);
-    }
-    else if (strcasecmp(keyword,"rootsasl_authid")==0)
-    {
-      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,keyword);
-      exit(EXIT_FAILURE);
-      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_rootsaslid);
       get_eol(filename,lnr,keyword,&line);
     }
     else if (strcasecmp(keyword,"sasl_secprops")==0)
@@ -656,13 +633,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     {
       log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
       get_boolean(filename,lnr,keyword,&line,&cfg->ldc_usesasl);
-      get_eol(filename,lnr,keyword,&line);
-    }
-    else if (strcasecmp(keyword,"rootuse_sasl")==0)
-    {
-      log_log(LOG_ERR,"%s:%d: option %s is currently unsupported",filename,lnr,keyword);
-      exit(EXIT_FAILURE);
-      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_rootusesasl);
       get_eol(filename,lnr,keyword,&line);
     }
     /* Kerberos authentication options */

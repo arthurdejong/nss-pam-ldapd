@@ -65,20 +65,12 @@ struct ldap_config
   char *ldc_binddn;
   /* bind cred */
   char *ldc_bindpw;
-  /* bind DN for root processes */
-  char *ldc_rootbinddn;
-  /* bind cred for root processes */
-  char *ldc_rootbindpw;
   /* sasl auth id */
   char *ldc_saslid;
-  /* shadow sasl auth id */
-  char *ldc_rootsaslid;
   /* sasl security */
   char *ldc_sasl_secprops;
   /* do we use sasl when binding? */
   int ldc_usesasl;
-  /* do we use sasl for root? */
-  int ldc_rootusesasl;
   /* base DN, eg. dc=gnu,dc=org */
   char *ldc_base;
   /* scope for searches */

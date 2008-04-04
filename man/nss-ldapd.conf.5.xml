@@ -120,10 +120,8 @@
      <listitem>
       <para>
        Specifies the distinguished name with which to bind to the directory
-       server for <!-- normal (non-root) -->lookups.
        server for lookups.
        The default is to bind anonymously.
-       <!-- Also see the <option>rootbinddn</option> option below. -->
       </para>
      </listitem>
     </varlistentry>
@@ -143,32 +141,6 @@
      </listitem>
     </varlistentry>
 
-<!-- DO NOT DOCUMENT FOR NOW BECAUSE IT'S NOT SUPPORTED
-    <varlistentry>
-     <term><option>rootbinddn</option> <emphasis remap="I">DN</emphasis></term>
-     <listitem>
-      <para>
-       This option has the same syntax and effect as the
-       <option>binddn</option> option above, except it applies when the
-       effective user ID of the process requesting the looking is zero.
-       If not specified, then the identity specified in <option>binddn</option>
-       is used instead.
-      </para>
-     </listitem>
-    </varlistentry>
-
-    <varlistentry>
-     <term><option>rootbindpw</option> <emphasis remap="I">PASSWORD</emphasis></term>
-     <listitem>
-      <para>
-       Specifies the cleartext credentials with which to bind when using the
-       <option>rootbinddn</option> option. This option has the same syntax and
-       effect as the <option>rootbindpw</option> above.
-      </para>
-     </listitem>
-    </varlistentry>
--->
-
    </variablelist>
   </refsect2>
 
@@ -186,14 +158,6 @@
      </varlistentry>
 
      <varlistentry>
-     <term><emphasis remap="B">rootsasl_authid &lt;authid&gt;</emphasis></term>
-     <listitem>
-   <para>Specifies the authorization identity to be used when performing SASL
-   authentication as root (when the effective user ID is zero).</para>
-     </listitem>
-     </varlistentry>
-
-     <varlistentry>
      <term><emphasis remap="B">sasl_secprops &lt;properties&gt;</emphasis></term>
      <listitem>
    <para>Specifies Cyrus SASL security properties. Allowed values are described
@@ -204,10 +168,9 @@
      </varlistentry>
 
      <varlistentry>
-     <term><emphasis remap="B"><opional>root</opional>use_sasl &lt;yes|no&gt;</emphasis></term>
+     <term><emphasis remap="B">use_sasl &lt;yes|no&gt;</emphasis></term>
      <listitem>
-   <para>Specifies whether SASL authentication should be used when the effective
-   user ID is zero.</para>
+   <para>Specifies whether SASL authentication should be used.</para>
      </listitem>
      </varlistentry>
 
