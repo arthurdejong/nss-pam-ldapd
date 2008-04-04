@@ -567,6 +567,14 @@
        the <acronym>LDAP</acronym> server in accordance with RFC2696.
        The default (0) is to not request paged results.
       </para>
+      <para>
+       This is useful for <acronym>LDAP</acronym> servers that contain a
+       lot of entries (e.g. more than 500) that limit the number of entries
+       that are returned with one request.
+       For OpenLDAP servers you may need to set
+       <option>sizelimit size.prtotal=unlimited</option>
+       for allowing more entries to be returned in pages.
+      </para>
      </listitem>
     </varlistentry>
 
