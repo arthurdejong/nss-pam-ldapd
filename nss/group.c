@@ -64,8 +64,11 @@ static enum nss_status read_gids(
     READ_TYPE(fp,gid,gid_t);
     /* skip members */
     SKIP_STRINGLIST(fp);
+    /* check if we reached the limit */
+    if ( (limit>0) && (*size>=limit) )
+      return NSS_STATUS_SUCCESS;
     /* check if entry would fit and we have not returned too many */
-    if ( ((*start)>=(*size)) || (num>=limit) )
+    if ((*start)>=(*size))
       { ERROR_OUT_BUFERROR(fp); }
     /* add gid to list */
     (*groupsp)[(*start)++]=gid;
