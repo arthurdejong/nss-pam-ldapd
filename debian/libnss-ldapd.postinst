@@ -171,7 +171,17 @@ then
   then
     cfg_set binddn "$RET"
     db_get libnss-ldapd/ldap-bindpw
-    cfg_set bindpw "$RET"
+    if [ -n "$RET" ]
+    then
+      cfg_set bindpw "$RET"
+    else
+      # no bindpw set
+      if grep -i -q "^bindpw " $CONFFILE
+      then
+        cfg_set bindpw "*removed*"
+        cfg_disable bindpw
+      fi
+    fi
   else
     # no binddn/pw, disable options
     cfg_disable binddn
