@@ -488,6 +488,48 @@ static int do_set_options(MYLDAP_SESSION *session)
   return LDAP_SUCCESS;
 }
 
+/* close the connection to the server and invalidate any running searches */
+static void do_close(MYLDAP_SESSION *session)
+{
+  int i;
+  int rc;
+  /* if we had reachability problems with the server close the connection */
+  if (session->ld!=NULL)
+  {
+    /* go over the other searches and partially close them */
+    for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
+    {
+      if (session->searches[i]!=NULL)
+      {
+        /* free any messages (because later ld is no longer valid) */
+        if (session->searches[i]->msg!=NULL)
+        {
+          ldap_msgfree(session->searches[i]->msg);
+          session->searches[i]->msg=NULL;
+        }
+        /* abandon the search if there were more results to fetch */
+        if (session->searches[i]->msgid!=-1)
+        {
+          if (ldap_abandon(session->searches[i]->session->ld,session->searches[i]->msgid))
+          {
+            if (ldap_get_option(session->ld,LDAP_OPT_ERROR_NUMBER,&rc)==LDAP_SUCCESS)
+              rc=LDAP_OTHER;
+            log_log(LOG_WARNING,"ldap_abandon() failed to abandon search: %s",ldap_err2string(rc));
+          }
+          session->searches[i]->msgid=-1;
+        }
+        /* flag the search as invalid */
+        session->searches[i]->valid=0;
+      }
+    }
+    /* close the connection to the server */
+    rc=ldap_unbind(session->ld);
+    session->ld=NULL;
+    if (rc!=LDAP_SUCCESS)
+      log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc));
+  }
+}
+
 /* This checks the timeout value of the session and closes the connection
    to the LDAP server if the timeout has expired and there are no pending
    searches. */
@@ -496,7 +538,6 @@ static void myldap_session_check(MYLDAP_SESSION *session)
   int i;
   int runningsearches=0;
   time_t current_time;
-  int rc;
   /* check parameters */
   if (!is_valid_session(session))
   {
@@ -523,10 +564,7 @@ static void myldap_session_check(MYLDAP_SESSION *session)
       if ((session->lastactivity+nslcd_cfg->ldc_idle_timelimit)<current_time)
       {
         log_log(LOG_DEBUG,"do_open(): idle_timelimit reached");
-        rc=ldap_unbind(session->ld);
-        session->ld=NULL;
-        if (rc!=LDAP_SUCCESS)
-          log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc));
+        do_close(session);
       }
     }
   }
@@ -706,7 +744,6 @@ void myldap_session_cleanup(MYLDAP_SESSION *session)
 
 void myldap_session_close(MYLDAP_SESSION *session)
 {
-  int rc;
   /* check parameter */
   if (!is_valid_session(session))
   {
@@ -716,13 +753,7 @@ void myldap_session_close(MYLDAP_SESSION *session)
   /* close pending searches */
   myldap_session_cleanup(session);
   /* close any open connections */
-  if (session->ld!=NULL)
-  {
-    rc=ldap_unbind(session->ld);
-    session->ld=NULL;
-    if (rc!=LDAP_SUCCESS)
-      log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc));
-  }
+  do_close(session);
   /* free allocated memory */
   free(session);
 }
@@ -735,8 +766,6 @@ MYLDAP_SEARCH *myldap_search(
   int sleeptime=0;
   int try;
   int start_uri;
-  int i;
-  int rc;
   /* check parameters */
   if (!is_valid_session(session)||(base==NULL)||(filter==NULL)||(attrs==NULL))
   {
@@ -770,47 +799,14 @@ MYLDAP_SEARCH *myldap_search(
       search=do_try_search(session,base,scope,filter,attrs);
       if (search!=NULL)
         return search;
+      /* close the current connection */
+      do_close(session);
       /* try the next URI (with wrap-around) */
       session->current_uri++;
       if (nslcd_cfg->ldc_uris[session->current_uri]==NULL)
         session->current_uri=0;
     }
     while (session->current_uri!=start_uri);
-    /* if we had reachability problems with the server close the connection */
-    if (session->ld!=NULL)
-    {
-      /* go over the other searches and partially close them */
-      for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
-      {
-        if (session->searches[i]!=NULL)
-        {
-          /* free any messages (because later ld is no longer valid) */
-          if (session->searches[i]->msg!=NULL)
-          {
-            ldap_msgfree(session->searches[i]->msg);
-            session->searches[i]->msg=NULL;
-          }
-          /* abandon the search if there were more results to fetch */
-          if (session->searches[i]->msgid!=-1)
-          {
-            if (ldap_abandon(session->searches[i]->session->ld,session->searches[i]->msgid))
-            {
-              if (ldap_get_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)==LDAP_SUCCESS)
-                rc=LDAP_OTHER;
-              log_log(LOG_WARNING,"ldap_abandon() failed to abandon search: %s",ldap_err2string(rc));
-            }
-            session->searches[i]->msgid=-1;
-          }
-          /* flag the search as invalid */
-          session->searches[i]->valid=0;
-        }
-      }
-      /* close the connection to the server */
-      rc=ldap_unbind(session->ld);
-      session->ld=NULL;
-      if (rc!=LDAP_SUCCESS)
-        log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc));
-    }
   }
   log_log(LOG_ERR,"no available LDAP server found");
   return NULL;
