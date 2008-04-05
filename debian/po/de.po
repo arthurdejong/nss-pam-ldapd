@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.5\n"
-"Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-09-28 10:02+0200\n"
+"Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
+"POT-Creation-Date: 2008-04-05 16:33+0200\n"
 "PO-Revision-Date: 2008-01-27 21:02+0100\n"
 "Last-Translator: Erik Schanze <eriks@debian.org>\n"
 "Language-Team: German <debian-l10n-german@lists.debian.org>\n"
@@ -100,9 +100,7 @@ msgstr ""
 
 #. Type: string
 #. Description
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:3001 ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
 msgstr "Dieser Wert sollte als ein DN (distinguished name) eingegeben werden."
 
@@ -119,58 +117,15 @@ msgstr "Passwort des LDAP-Benutzers:"
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr "Geben Sie das Passwort für die Anmeldung an der LDAP-Datenbank ein."
 
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid "LDAP account for root:"
-msgstr "LDAP-Zugangname für root:"
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid ""
-"This account will be used for nss requests with root privileges. This can be "
-"used to give root processes more information (e.g. users' shadow entries or "
-"group passwords)."
-msgstr ""
-"Dieser Zugangsname wird für NSS-Anfragen mit Root-Rechten verwendet. Das "
-"dient dazu, Root-Prozessen mehr Informationen (z. B. Shadow-Einträge der "
-"Benutzer oder Passwörter der Gruppen) zu bieten."
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid "Leave this empty to not do anything special for root lookups."
-msgstr ""
-"Lassen Sie das Feld leer, wenn bei Root-Anfragen nichts Spezielles geschehen "
-"soll."
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid "LDAP root account password:"
-msgstr "Passwort des LDAP-Root-Zugangsnamen:"
-
-#
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid ""
-"Enter the password that will be used to log in to the LDAP database when the "
-"root process does lookups."
-msgstr ""
-"Geben Sie das Passwort für die Anmeldung an der LDAP-Datenbank ein, wenn "
-"Root-Prozesse Anfragen stellen."
-
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid "Name services to configure:"
 msgstr "Namensauflösungsdienste, die eingerichtet werden sollen:"
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
@@ -180,7 +135,7 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
@@ -189,3 +144,31 @@ msgstr ""
 "Sie können die Dienste auswählen, für die LDAP-Anfragen (nicht) zugelassen "
 "werden. Die neuen LDAP-Anfragen werden als letzte Möglichkeit angefügt. "
 "Kontrollieren Sie unbedingt die Änderungen."
+
+#~ msgid "LDAP account for root:"
+#~ msgstr "LDAP-Zugangname für root:"
+
+#~ msgid ""
+#~ "This account will be used for nss requests with root privileges. This can "
+#~ "be used to give root processes more information (e.g. users' shadow "
+#~ "entries or group passwords)."
+#~ msgstr ""
+#~ "Dieser Zugangsname wird für NSS-Anfragen mit Root-Rechten verwendet. Das "
+#~ "dient dazu, Root-Prozessen mehr Informationen (z. B. Shadow-Einträge der "
+#~ "Benutzer oder Passwörter der Gruppen) zu bieten."
+
+#~ msgid "Leave this empty to not do anything special for root lookups."
+#~ msgstr ""
+#~ "Lassen Sie das Feld leer, wenn bei Root-Anfragen nichts Spezielles "
+#~ "geschehen soll."
+
+#~ msgid "LDAP root account password:"
+#~ msgstr "Passwort des LDAP-Root-Zugangsnamen:"
+
+#
+#~ msgid ""
+#~ "Enter the password that will be used to log in to the LDAP database when "
+#~ "the root process does lookups."
+#~ msgstr ""
+#~ "Geben Sie das Passwort für die Anmeldung an der LDAP-Datenbank ein, wenn "
+#~ "Root-Prozesse Anfragen stellen."

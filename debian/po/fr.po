@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.3\n"
-"Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-09-28 10:02+0200\n"
+"Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
+"POT-Creation-Date: 2008-04-05 16:33+0200\n"
 "PO-Revision-Date: 2007-10-13 12:31+0200\n"
 "Last-Translator: Cyril Brulebois <cyril.brulebois@enst-bretagne.fr>\n"
 "Language-Team: French <debian-l10n-french@lists.debian.org>\n"
@@ -91,9 +91,7 @@ msgstr ""
 
 #. Type: string
 #. Description
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:3001 ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
 msgstr "Cette valeur doit être un nom distingué (« DN »)."
 
@@ -111,59 +109,15 @@ msgstr ""
 "Veuillez indiquer le mot de passe à utiliser pour s'identifier sur la base "
 "LDAP."
 
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid "LDAP account for root:"
-msgstr "Identifiant LDAP du superutilisateur :"
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid ""
-"This account will be used for nss requests with root privileges. This can be "
-"used to give root processes more information (e.g. users' shadow entries or "
-"group passwords)."
-msgstr ""
-"Veuillez indiquer l'identifiant à utiliser pour les requêtes NSS avec les "
-"droits superutilisateur. Cela peut être utilisé pour fournir plus "
-"d'informations à des processus lancés avec les droits superutilisateur "
-"(p. ex. les entrées des utilisateurs dans « shadow » ou les mots de passe de "
-"groupe)."
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid "Leave this empty to not do anything special for root lookups."
-msgstr ""
-"N'indiquez rien si aucune identification particulière n'est nécessaire pour "
-"les requêtes superutilisateur."
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid "LDAP root account password:"
-msgstr "Mot de passe du superutilisateur LDAP :"
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid ""
-"Enter the password that will be used to log in to the LDAP database when the "
-"root process does lookups."
-msgstr ""
-"Veuillez indiquer le mot de passe à utiliser pour s'identifier sur la base "
-"LDAP en tant que superutilisateur."
-
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid "Name services to configure:"
 msgstr "Services de nom à configurer :"
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
@@ -173,7 +127,7 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
@@ -184,13 +138,42 @@ msgstr ""
 "ajoutées comme dernière option. Il est important de bien contrôler ces "
 "modifications."
 
+#~ msgid "LDAP account for root:"
+#~ msgstr "Identifiant LDAP du superutilisateur :"
+
+#~ msgid ""
+#~ "This account will be used for nss requests with root privileges. This can "
+#~ "be used to give root processes more information (e.g. users' shadow "
+#~ "entries or group passwords)."
+#~ msgstr ""
+#~ "Veuillez indiquer l'identifiant à utiliser pour les requêtes NSS avec les "
+#~ "droits superutilisateur. Cela peut être utilisé pour fournir plus "
+#~ "d'informations à des processus lancés avec les droits superutilisateur "
+#~ "(p. ex. les entrées des utilisateurs dans « shadow » ou les mots de passe "
+#~ "de groupe)."
+
+#~ msgid "Leave this empty to not do anything special for root lookups."
+#~ msgstr ""
+#~ "N'indiquez rien si aucune identification particulière n'est nécessaire "
+#~ "pour les requêtes superutilisateur."
+
+#~ msgid "LDAP root account password:"
+#~ msgstr "Mot de passe du superutilisateur LDAP :"
+
+#~ msgid ""
+#~ "Enter the password that will be used to log in to the LDAP database when "
+#~ "the root process does lookups."
+#~ msgstr ""
+#~ "Veuillez indiquer le mot de passe à utiliser pour s'identifier sur la "
+#~ "base LDAP en tant que superutilisateur."
+
 #~ msgid ""
 #~ "When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
 #~ "ldapi://%2fvar%2frun%2fldapi_sock/)"
 #~ msgstr ""
 #~ "Lorsque le protocole « ldapi » est utilisé, %2f doit être utilisé pour "
-#~ "remplacer les barres obliques (« slashes »), par exemple : « ldapi://%"
-#~ "2fvar%2frun%2fldapi_sock/ »."
+#~ "remplacer les barres obliques (« slashes »), par exemple : « ldapi://%2fvar%"
+#~ "2frun%2fldapi_sock/ »."
 
 #~ msgid "LDAP version to use:"
 #~ msgstr "Version du protocole LDAP :"
@@ -208,7 +191,7 @@ msgstr ""
 #~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
 #~ "your nsswitch setup."
 #~ msgstr ""
-#~ "Pour que ce paquet fonctionne, il est nécessaire de modifier le fichier "
-#~ "« /etc/nsswitch.conf » pour pointer vers la source de données LDAP. Le "
+#~ "Pour que ce paquet fonctionne, il est nécessaire de modifier le fichier « /"
+#~ "etc/nsswitch.conf » pour pointer vers la source de données LDAP. Le "
 #~ "fichier /usr/share/doc/libnss-ldap/examples/nsswitch.ldap est un exemple "
 #~ "que vous pouvez adapter à votre configuration."

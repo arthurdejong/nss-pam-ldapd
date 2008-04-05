@@ -2,13 +2,13 @@
 # Copyright (C) 2007 Américo Monteiro
 # Released under the same license as the nss-ldapd package
 # Américo Monteiro <a_monteiro@netcabo.pt>, 2007.
-# 
-# 
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.3\n"
-"Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-09-28 10:02+0200\n"
+"Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
+"POT-Creation-Date: 2008-04-05 16:33+0200\n"
 "PO-Revision-Date: 2007-08-19 14:06+0100\n"
 "Last-Translator: Américo Monteiro <a_monteiro@netcabo.pt>\n"
 "Language-Team: Portuguese <traduz@debianpt.org>\n"
@@ -90,9 +90,7 @@ msgstr ""
 
 #. Type: string
 #. Description
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:3001 ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
 msgstr "Este valor deve ser especificado como um nome distinto (DN)."
 
@@ -109,57 +107,15 @@ msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr ""
 "Indique a password que vai ser usada para autenticação na base de dados LDAP."
 
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid "LDAP account for root:"
-msgstr "Conta de administrador (root) LDAP:"
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid ""
-"This account will be used for nss requests with root privileges. This can be "
-"used to give root processes more information (e.g. users' shadow entries or "
-"group passwords)."
-msgstr ""
-"Esta conta será usada para pedidos nss com privilégios de administrador. "
-"Isto pode ser usado para dar aos processos de administrador mais informação "
-"(ex. entradas escondidas de utilizadores ou passwords de grupos)."
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid "Leave this empty to not do anything special for root lookups."
-msgstr ""
-"Deixe este campo vazio para não fazer nada de especial para buscas de "
-"administrador."
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid "LDAP root account password:"
-msgstr "Password da conta de administrador (root) LDAP:"
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid ""
-"Enter the password that will be used to log in to the LDAP database when the "
-"root process does lookups."
-msgstr ""
-"Indique a password que será usada para autenticação na base de dados LDAP, "
-"quando processos de administrador fazem buscas."
-
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid "Name services to configure:"
 msgstr "Nomes de serviços para configurar:"
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
@@ -169,7 +125,7 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
@@ -178,6 +134,34 @@ msgstr ""
 "Você pode seleccionar os serviços que deverão estar activos ou inactivos "
 "para buscas LDAP. Novas buscas LDAP serão adicionadas como últimas opções."
 "Certifique-se de rever estas alterações."
+
+#~ msgid "LDAP account for root:"
+#~ msgstr "Conta de administrador (root) LDAP:"
+
+#~ msgid ""
+#~ "This account will be used for nss requests with root privileges. This can "
+#~ "be used to give root processes more information (e.g. users' shadow "
+#~ "entries or group passwords)."
+#~ msgstr ""
+#~ "Esta conta será usada para pedidos nss com privilégios de administrador. "
+#~ "Isto pode ser usado para dar aos processos de administrador mais "
+#~ "informação (ex. entradas escondidas de utilizadores ou passwords de "
+#~ "grupos)."
+
+#~ msgid "Leave this empty to not do anything special for root lookups."
+#~ msgstr ""
+#~ "Deixe este campo vazio para não fazer nada de especial para buscas de "
+#~ "administrador."
+
+#~ msgid "LDAP root account password:"
+#~ msgstr "Password da conta de administrador (root) LDAP:"
+
+#~ msgid ""
+#~ "Enter the password that will be used to log in to the LDAP database when "
+#~ "the root process does lookups."
+#~ msgstr ""
+#~ "Indique a password que será usada para autenticação na base de dados "
+#~ "LDAP, quando processos de administrador fazem buscas."
 
 #~ msgid ""
 #~ "When using the ldapi scheme, %2f should be used to escape slashes (e.g. "

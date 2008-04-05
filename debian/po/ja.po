@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.3\n"
-"Report-Msgid-Bugs-To: Arthur de Jong <adejong@debian.org>\n"
-"POT-Creation-Date: 2007-09-28 10:02+0200\n"
+"Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
+"POT-Creation-Date: 2008-04-05 16:33+0200\n"
 "PO-Revision-Date: 2007-10-14 16:31+0900\n"
 "Last-Translator: Kenshi Muto <kmuto@debian.org>\n"
 "Language-Team: Japanese <debian-japanese@lists.debian.org>\n"
@@ -36,7 +36,10 @@ msgid ""
 "Please enter the URI of the LDAP server used. This is a string in the form "
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
 "port number is optional."
-msgstr "利用するLDAP サーバの URI を入力してください。これは ldap://<ホスト名または IP>:<ポート>/ 形式の文字列です。ldaps:// または ldapi:// も利用できます。ポート番号は省略できます。"
+msgstr ""
+"利用するLDAP サーバの URI を入力してください。これは ldap://<ホスト名または "
+"IP>:<ポート>/ 形式の文字列です。ldaps:// または ldapi:// も利用できます。ポー"
+"ト番号は省略できます。"
 
 #. Type: string
 #. Description
@@ -44,7 +47,9 @@ msgstr "利用するLDAP サーバの URI を入力してください。これ�
 msgid ""
 "When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
-msgstr "ldap または ldaps スキーマを使うとき、IP アドレスを使うのは、通常、良い考えです。これはネームサービスが利用できないときの障害の危険を減らします。"
+msgstr ""
+"ldap または ldaps スキーマを使うとき、IP アドレスを使うのは、通常、良い考えで"
+"す。これはネームサービスが利用できないときの障害の危険を減らします。"
 
 #. Type: string
 #. Description
@@ -83,13 +88,13 @@ msgstr "LDAP データベースユーザ:"
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
-msgstr "通常のルックアップに LDAP データベースがログインを必要とするのであれば、利用するアカウント名をここに入力してください。そうでなければ空のままにします。"
+msgstr ""
+"通常のルックアップに LDAP データベースがログインを必要とするのであれば、利用"
+"するアカウント名をここに入力してください。そうでなければ空のままにします。"
 
 #. Type: string
 #. Description
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:3001 ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
 msgstr "この値は DN (識別名) として指定すべきです。"
 
@@ -105,60 +110,57 @@ msgstr "LDAP ユーザパスワード:"
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr "LDAP データベースにログインするのに使うパスワードを入力してください。"
 
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid "LDAP account for root:"
-msgstr "root 用の LDAP アカウント:"
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid ""
-"This account will be used for nss requests with root privileges. This can be "
-"used to give root processes more information (e.g. users' shadow entries or "
-"group passwords)."
-msgstr "このアカウントは root 権限で nss 要求するのに使われます。これは root のプロセスに、より多くの情報 (ユーザのシャドウエントリやグループパスワードなど) を与えるのに使うことができます。"
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:5001
-msgid "Leave this empty to not do anything special for root lookups."
-msgstr "root のルックアップに何も特別なことをさせないのであれば、ここは空のままにします。"
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid "LDAP root account password:"
-msgstr "LDAP の root アカウントパスワード:"
-
-#. Type: password
-#. Description
-#: ../libnss-ldapd.templates:6001
-msgid ""
-"Enter the password that will be used to log in to the LDAP database when the "
-"root process does lookups."
-msgstr "root プロセスがルックアップを行うときに LDAP データベースにログインするのに使うパスワードを入力してください。"
-
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid "Name services to configure:"
 msgstr "設定する名前サービス:"
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
-msgstr "このパッケージが動作するために、ldap データソースを使うようあなたの /etc/nsswitch.conf を変更する必要があります。"
+msgstr ""
+"このパッケージが動作するために、ldap データソースを使うようあなたの /etc/"
+"nsswitch.conf を変更する必要があります。"
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:5001
 msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
-msgstr "LDAP ルックアップを有効または無効にしたいサービスを選択できます。新しい LDAP ルックアップは最後の選択肢として追加されます。これらの変更を見て確認してください。"
+msgstr ""
+"LDAP ルックアップを有効または無効にしたいサービスを選択できます。新しい LDAP "
+"ルックアップは最後の選択肢として追加されます。これらの変更を見て確認してくだ"
+"さい。"
+
+#~ msgid "LDAP account for root:"
+#~ msgstr "root 用の LDAP アカウント:"
+
+#~ msgid ""
+#~ "This account will be used for nss requests with root privileges. This can "
+#~ "be used to give root processes more information (e.g. users' shadow "
+#~ "entries or group passwords)."
+#~ msgstr ""
+#~ "このアカウントは root 権限で nss 要求するのに使われます。これは root のプ"
+#~ "ロセスに、より多くの情報 (ユーザのシャドウエントリやグループパスワードな"
+#~ "ど) を与えるのに使うことができます。"
+
+#~ msgid "Leave this empty to not do anything special for root lookups."
+#~ msgstr ""
+#~ "root のルックアップに何も特別なことをさせないのであれば、ここは空のままに"
+#~ "します。"
+
+#~ msgid "LDAP root account password:"
+#~ msgstr "LDAP の root アカウントパスワード:"
+
+#~ msgid ""
+#~ "Enter the password that will be used to log in to the LDAP database when "
+#~ "the root process does lookups."
+#~ msgstr ""
+#~ "root プロセスがルックアップを行うときに LDAP データベースにログインするの"
+#~ "に使うパスワードを入力してください。"

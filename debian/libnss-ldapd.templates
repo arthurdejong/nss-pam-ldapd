@@ -35,24 +35,6 @@ Type: password
 _Description: LDAP user password:
  Enter the password that will be used to log in to the LDAP database.
 
-Template: libnss-ldapd/ldap-rootbinddn
-Type: string
-Default: cn=manager,dc=example,dc=net
-_Description: LDAP account for root:
- This account will be used for nss requests with root privileges.
- This can be used to give root processes more information
- (e.g. users' shadow entries or group passwords).
- .
- Leave this empty to not do anything special for root lookups.
- .
- This value should be specified as a DN (distinguished name).
-
-Template: libnss-ldapd/ldap-rootbindpw
-Type: password
-_Description: LDAP root account password:
- Enter the password that will be used to log in to the LDAP database
- when the root process does lookups.
-
 Template: libnss-ldapd/nsswitch
 Type: multiselect
 Choices: aliases, ethers, group, hosts, netgroup, networks, passwd, protocols, rpc, services, shadow
