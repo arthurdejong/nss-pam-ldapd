@@ -374,6 +374,6 @@ then
   echo "test_nsscmds.sh: all tests passed"
   exit 0
 else
-  echo "test_nsscmds.sh: $FAIL tests failed"
+  echo "test_nsscmds.sh: $FAIL TESTS FAILED"
   exit 1
 fi
