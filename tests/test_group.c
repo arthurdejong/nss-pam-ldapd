@@ -63,7 +63,7 @@ static void printgroup(struct group *group)
 int main(int argc,char *argv[])
 {
   struct group groupresult;
-  char buffer[1024];
+  char buffer[32*1024];
   enum nss_status res;
   int errnocp=0;
   long int start=0,size=40;
@@ -71,7 +71,7 @@ int main(int argc,char *argv[])
 
   /* test getgrnam() */
   printf("\nTEST getgrnam()\n");
-  res=_nss_ldap_getgrnam_r("testgroup",&groupresult,buffer,1024,&errnocp);
+  res=_nss_ldap_getgrnam_r("largegroup",&groupresult,buffer,sizeof(buffer),&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printgroup(&groupresult);
@@ -80,7 +80,7 @@ int main(int argc,char *argv[])
 
   /* test getgrgid() */
   printf("\nTEST getgrgid()\n");
-  res=_nss_ldap_getgrgid_r(100,&groupresult,buffer,1024,&errnocp);
+  res=_nss_ldap_getgrgid_r(100,&groupresult,buffer,sizeof(buffer),&errnocp);
   printf("status=%s\n",nssstatus(res));
   if (res==NSS_STATUS_SUCCESS)
     printgroup(&groupresult);
@@ -105,7 +105,7 @@ int main(int argc,char *argv[])
   printf("\nTEST {set,get,end}grent()\n");
   res=_nss_ldap_setgrent(1);
   printf("status=%s\n",nssstatus(res));
-  while ((res=_nss_ldap_getgrent_r(&groupresult,buffer,1024,&errnocp))==NSS_STATUS_SUCCESS)
+  while ((res=_nss_ldap_getgrent_r(&groupresult,buffer,sizeof(buffer),&errnocp))==NSS_STATUS_SUCCESS)
   {
     printf("status=%s\n",nssstatus(res));
     printgroup(&groupresult);
