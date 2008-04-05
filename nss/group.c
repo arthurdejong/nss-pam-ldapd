@@ -25,6 +25,7 @@
 #include <string.h>
 #include <nss.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include "prototypes.h"
 #include "common.h"
@@ -46,13 +47,14 @@ static enum nss_status read_group(
 /* read all group entries from the stream and add
    gids of these groups to the list */
 static enum nss_status read_gids(
-        TFILE *fp,long int *start,long int *size,
+        TFILE *fp,gid_t skipgroup,long int *start,long int *size,
         gid_t **groupsp,long int limit,int *errnop)
 {
   int32_t res=(int32_t)NSLCD_RESULT_SUCCESS;
   int32_t tmpint32,tmp2int32,tmp3int32;
   gid_t gid;
-  int num=0;
+  gid_t *newgroups;
+  long int newsize;
   /* loop over results */
   while (res==(int32_t)NSLCD_RESULT_SUCCESS)
   {
@@ -64,22 +66,38 @@ static enum nss_status read_gids(
     READ_TYPE(fp,gid,gid_t);
     /* skip members */
     SKIP_STRINGLIST(fp);
-    /* check if we reached the limit */
-    if ( (limit>0) && (*size>=limit) )
-      return NSS_STATUS_SUCCESS;
-    /* check if entry would fit and we have not returned too many */
-    if ((*start)>=(*size))
-      { ERROR_OUT_BUFERROR(fp); }
-    /* add gid to list */
-    (*groupsp)[(*start)++]=gid;
-    num++;
+    /* only add the group to the list if it is not the specified group */
+    if (gid!=skipgroup)
+    {
+      /* check if we reached the limit */
+      if ( (limit>0) && (*start>=limit) )
+        return NSS_STATUS_TRYAGAIN;
+      /* check if our buffer is large enough */
+      if ((*start)>=(*size))
+      {
+        /* for some reason Glibc expects us to grow the array (completely
+           different from all other NSS functions) */
+        /* calculate new size */
+        newsize=2*(*size);
+        if ( (limit>0) && (*start>=limit) )
+          newsize=limit;
+        /* allocate new memory */
+        newgroups=realloc(*groupsp,newsize*sizeof(gid_t));
+        if (newgroups==NULL)
+          return NSS_STATUS_TRYAGAIN;
+        *groupsp=newgroups;
+        *size=newsize;
+      }
+      /* add gid to list */
+      (*groupsp)[(*start)++]=gid;
+    }
     /* read next response code
       (don't bail out on not success since we just want to build
       up a list) */
     READ_TYPE(fp,res,int32_t);
   }
   /* return the proper status code */
-  return (res==(int32_t)NSLCD_RESULT_END)?NSS_STATUS_SUCCESS:NSS_STATUS_NOTFOUND;
+  return NSS_STATUS_SUCCESS;
 }
 
 enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop)
@@ -100,25 +118,25 @@ enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer
    interface is scarce (any pointers are welcome) but this is
    what is assumed the parameters mean:
 
-   user     IN      - the user name to find groups for
-   group    ingored - an extra gid to add to the list?
-   *start   IN/OUT  - where to write in the array, is incremented
-   *size    IN      - the size of the supplied array
-   *groupsp IN/OUT  - the array of groupids
-   limit    IN      - the maximum number of groups to add
-   *errnop  OUT     - for returning errno
+   user      IN     - the user name to find groups for
+   skipgroup IN     - a group to not include in the list
+   *start    IN/OUT - where to write in the array, is incremented
+   *size     IN/OUT - the size of the supplied array (gid_t entries, not bytes)
+   **groupsp IN/OUT - pointer to the array of returned groupids
+   limit     IN     - the maxium size of the array
+   *errnop   OUT    - for returning errno
 
    This function cannot grow the array if it becomes too large
    (and will return NSS_STATUS_TRYAGAIN on buffer problem)
    because it has no way of free()ing the buffer.
 */
 enum nss_status _nss_ldap_initgroups_dyn(
-        const char *user,gid_t group,long int *start,
+        const char *user,gid_t skipgroup,long int *start,
         long int *size,gid_t **groupsp,long int limit,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,
              user,
-             read_gids(fp,start,size,groupsp,limit,errnop));
+             read_gids(fp,skipgroup,start,size,groupsp,limit,errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
