@@ -130,7 +130,7 @@ void log_log(int pri,const char *format, ...)
   int res;
   struct cvsd_log *lst;
   /* TODO: make this something better */
-  #define maxbufferlen 120
+  #define maxbufferlen 200
   char buffer[maxbufferlen];
   va_list ap;
   /* make the message */
