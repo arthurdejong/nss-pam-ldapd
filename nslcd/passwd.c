@@ -160,6 +160,42 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   return buf;
 }
 
+char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
+{
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  static const char *attrs[1];
+  int rc;
+  const char *dn;
+  char filter[1024];
+  /* set up attributes (we don't care, we just want the DN) */
+  attrs[0]=NULL;
+  /* initialize default base, scrope, etc */
+  passwd_init();
+  /* we have to look up the entry */
+  mkfilter_passwd_byname(uid,filter,sizeof(filter));
+  search=myldap_search(session,passwd_base,passwd_scope,filter,attrs);
+  if (search==NULL)
+    return NULL;
+  entry=myldap_get_entry(search,&rc);
+  if (entry==NULL)
+    return NULL;
+  /* get DN */
+  dn=myldap_get_dn(entry);
+  if (strcasecmp(dn,"unknown")==0)
+  {
+    myldap_search_close(search);
+    return NULL;
+  }
+  /* copy into buffer */
+  if (strlen(dn)<buflen)
+    strcpy(buf,dn);
+  else
+    buf=NULL;
+  myldap_search_close(search);
+  return buf;
+}
+
 /* the maximum number of uidNumber attributes per entry */
 #define MAXUIDS_PER_ENTRY 5
 

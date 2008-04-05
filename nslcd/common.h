@@ -79,6 +79,9 @@ int read_address(TFILE *fp,char *addr,int *addrlen,int *af);
 /* transforms the DN info a uid doing an LDAP lookup if needed */
 char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen);
 
+/* transforms the uid into a DN by doing an LDAP lookup */
+char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen);
+
 /* these are the different functions that handle the database
    specific actions, see nslcd.h for the action descriptions */
 int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session);

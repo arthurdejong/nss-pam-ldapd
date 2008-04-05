@@ -103,13 +103,24 @@ static int mkfilter_group_bygid(gid_t gid,
 
 /* create a search filter for searching a group entry
    by member uid, return -1 on errors */
-static int mkfilter_group_bymember(const char *uid,
+static int mkfilter_group_bymember(MYLDAP_SESSION *session,
+                                   const char *uid,
                                    char *buffer,size_t buflen)
 {
-  return mysnprintf(buffer,buflen,
-                    "(&%s(%s=%s))",
-                    group_filter,
-                    attmap_group_memberUid,uid);
+  char buf[80],*dn;
+  /* try to translate uid to DN */
+  dn=uid2dn(session,uid,buf,sizeof(buf));
+  if (dn==NULL)
+    return mysnprintf(buffer,buflen,
+                      "(&%s(%s=%s))",
+                      group_filter,
+                      attmap_group_memberUid,uid);
+  else /* also lookup using user DN */
+    return mysnprintf(buffer,buflen,
+                      "(&%s(|(%s=%s)(%s=%s)))",
+                      group_filter,
+                      attmap_group_memberUid,uid,
+                      attmap_group_uniqueMember,dn);
 }
 
 static void group_init(void)
@@ -353,7 +364,7 @@ NSLCD_HANDLE(
   READ_STRING_BUF2(fp,name,sizeof(name)),
   log_log(LOG_DEBUG,"nslcd_group_bymember(%s)",name);,
   NSLCD_ACTION_GROUP_BYMEMBER,
-  mkfilter_group_bymember(name,filter,sizeof(filter)),
+  mkfilter_group_bymember(session,name,filter,sizeof(filter)),
   write_group(fp,entry,NULL,NULL,0,session)
 )
 
