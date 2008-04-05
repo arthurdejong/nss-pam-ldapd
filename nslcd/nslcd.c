@@ -396,8 +396,8 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
     case NSLCD_ACTION_SERVICE_BYNAME:   (void)nslcd_service_byname(fp,session); break;
     case NSLCD_ACTION_SERVICE_BYNUMBER: (void)nslcd_service_bynumber(fp,session); break;
     case NSLCD_ACTION_SERVICE_ALL:      (void)nslcd_service_all(fp,session); break;
-    case NSLCD_ACTION_SHADOW_BYNAME:    (void)nslcd_shadow_byname(fp,session); break;
-    case NSLCD_ACTION_SHADOW_ALL:       (void)nslcd_shadow_all(fp,session); break;
+    case NSLCD_ACTION_SHADOW_BYNAME:    if (uid==0) (void)nslcd_shadow_byname(fp,session); break;
+    case NSLCD_ACTION_SHADOW_ALL:       if (uid==0) (void)nslcd_shadow_all(fp,session); break;
     default:
       log_log(LOG_WARNING,"invalid request id: %d",(int)action);
       break;
