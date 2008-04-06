@@ -244,8 +244,8 @@ static char *getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
       else
       {
         /* transform the DN into a uid */
-        dn2uid(session,values[i],buf+bufsz,bufalloc-bufsz);
-        bufsz+=strlen(buf+bufsz)+1;
+        if (dn2uid(session,values[i],buf+bufsz,bufalloc-bufsz)!=NULL)
+          bufsz+=strlen(buf+bufsz)+1;
       }
     }
   /* if the buffer does not contain any data, return NULL */
