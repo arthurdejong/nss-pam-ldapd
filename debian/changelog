@@ -1,3 +1,37 @@
+nss-ldapd (0.6.1) unstable; urgency=low
+
+  * new release (closes: #474232)
+  * numerous small fixes and compatibility improvements
+  * the I/O buffers between nslcd and NSS module are now dynamically sized and
+    tuned for common requests
+  * correctly follow referrals
+  * add StartTLS support by Ralf Haferkamp of SuSE
+  * miscellaneous documentation improvements
+  * remove code for handling rootbinddn/pw because it is unlikely to be
+    supported any time soon
+  * fix a problem with realloc()ed memory that was not referenced
+    (closes: #472814)
+  * fix for a crash in group membership buffer growing code thanks to Petter
+    Reinholdtsen
+  * some improvements to the Active Directory sample configuration
+  * remove warning for failing to retrieve objectClass (closes: #472872)
+  * fix init script exit code with stop while not running (closes: #473920)
+  * fixes to the _nss_ldap_initgroups_dyn() function to properly handle the
+    buffer and limits passed by Glibc
+  * fixes to the member to groups search functions to correctly handle
+    uniqueMember attributes
+  * only return shadow entries to root users
+  * make maintainer scripts more gracefully handle repeated options
+    (closes: #471131)
+  * fix a problem with rootbinddn being incorrectly copied from
+    /etc/libnss-ldap.conf on installation (closes: #471146)
+  * fix handling of spaces in values when using debconf (closes: #474371)
+  * updated Spanish debconf translation by Rudy Godoy Guillén
+    (closes: #463894)
+  * updated Dutch debconf translation by Bart Cornelis (closes: #469176)
+
+ -- Arthur de Jong <adejong@debian.org>  Sun, 06 Apr 2008 13:00:00 +0200
+
 nss-ldapd (0.6) unstable; urgency=low
 
   * fix parsing of map option in nss-ldapd.conf

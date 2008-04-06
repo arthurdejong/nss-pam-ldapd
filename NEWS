@@ -1,3 +1,27 @@
+changes from 0.6 to 0.6.1
+-------------------------
+
+* numerous small fixes and compatibility improvements
+* the I/O buffers between nslcd and NSS module are now dynamically sized and
+  tuned for common requests
+* correctly follow referrals
+* add StartTLS support by Ralf Haferkamp of SuSE
+* miscellaneous documentation improvements
+* remove code for handling rootbinddn/pw because it is unlikely to be
+  supported any time soon
+* fix a problem with realloc()ed memory that was not referenced
+* fix for a crash in group membership buffer growing code thanks to Petter
+  Reinholdtsen
+* some improvements to the Active Directory sample configuration
+* fix init script exit code with stop while not running
+* fixes to the _nss_ldap_initgroups_dyn() function to properly handle the
+  buffer and limits passed by Glibc
+* fixes to the member to groups search functions to correctly handle
+  uniqueMember attributes
+* only return shadow entries to root users
+* miscellaneous Debian packaging improvements
+
+
 changes from 0.5 to 0.6
 -----------------------
 
@@ -88,7 +112,7 @@ changes from 0.2.1 to 0.3
 * a bug in the communication buffer handling code was fixed
 * a bug in the dictionary code was fixed (code not yet in use)
 * a fix for the init script that used a wrong pidfile
-* configuration file handling code was rewritten to better maintainable
+* configuration file handling code was rewritten to be better maintainable
 * some configuration file options have changed which means that compatibility
   with the nss_ldap configuration file is lost
 * configuration syntax is now documented in the nss-ldapd.conf(5) manual page
