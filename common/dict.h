@@ -54,7 +54,9 @@ void *dict_get(DICT *dict,const char *key)
 /*void dict_del(DICT *dict,const char *key);*/
 
 /* Remove the dictionary from memory. All allocated storage
-   for the dictionary and the keys is freed. */
+   for the dictionary and the keys is freed.
+   Note that values are not freed. This is the responsibility
+   of the caller. */
 void dict_free(DICT *dict);
 
 /* Function for looping over all dictionary keys and values.
