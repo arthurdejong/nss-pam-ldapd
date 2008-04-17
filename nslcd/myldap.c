@@ -169,8 +169,8 @@ static void myldap_entry_free(MYLDAP_ENTRY *entry)
   if (entry->exploded_rdn!=NULL)
     ldap_value_free(entry->exploded_rdn);
   /* free all attribute values */
-  dict_values_first(entry->attributevalues);
-  while ((values=(char **)dict_values_next(entry->attributevalues))!=NULL)
+  dict_loop_first(entry->attributevalues);
+  while (dict_loop_next(entry->attributevalues,NULL,(void *)&values)!=NULL)
     ldap_value_free(values);
   dict_free(entry->attributevalues);
   /* we don't need the result anymore, ditch it. */

@@ -2,7 +2,7 @@
    dict.h - dictionary functions
    This file is part of the nss-ldapd library.
 
-   Copyright (C) 2007 Arthur de Jong
+   Copyright (C) 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -57,15 +57,17 @@ void *dict_get(DICT *dict,const char *key)
    for the dictionary and the keys is freed. */
 void dict_free(DICT *dict);
 
-/* Function for looping over all dictionary values.
+/* Function for looping over all dictionary keys and values.
    This resets the search to the beginning of the dictionary.
-   This is required before calling dict_values_next(); */
-void dict_values_first(DICT *dict);
+   This is required before calling dict_loop_next(); */
+void dict_loop_first(DICT *dict);
 
-/* Function for looping over all dictionary values.
-   This returns a stored value. NULL is returned when all
-   stored values have been returned. */
-void *dict_values_next(DICT *dict)
+/* Function for looping over all dictionary keys and values.
+   This returns a stored key. NULL is returned when all
+   keys have been returned. The key and value are
+   stored in the key and value parameters if they aren't
+   NULL. */
+const char *dict_loop_next(DICT *dict,const char **key,void **value)
   MUST_USE;
 
 #endif /* _DICT_H */

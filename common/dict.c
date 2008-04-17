@@ -2,7 +2,7 @@
    dict.c - dictionary functions
    This file is part of the nss-ldapd library.
 
-   Copyright (C) 2007 Arthur de Jong
+   Copyright (C) 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -141,12 +141,12 @@ void dict_free(DICT *dict)
   free(dict);
 }
 
-void dict_values_first(DICT *dict)
+void dict_loop_first(DICT *dict)
 {
   dict->ptr=dict->head;
 }
 
-void *dict_values_next(DICT *dict)
+const char *dict_loop_next(DICT *dict,const char **key,void **value)
 {
   struct dict_entry *ptr;
   ptr=dict->ptr;
@@ -157,8 +157,12 @@ void *dict_values_next(DICT *dict)
   if (ptr==NULL)
   {
     dict->ptr=NULL;
+    if (key!=NULL)   *key=NULL;
+    if (value!=NULL) *value=NULL;
     return NULL;
   }
   dict->ptr=ptr->next;
-  return ptr->value;
+  if (key!=NULL)   *key=ptr->key;
+  if (value!=NULL) *value=ptr->value;
+  return ptr->key;
 }
