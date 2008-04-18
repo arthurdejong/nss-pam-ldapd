@@ -73,7 +73,6 @@
 #include "log.h"
 #include "cfg.h"
 #include "attmap.h"
-#include "common/dict.h"
 
 /* compatibility macros */
 #ifndef LDAP_CONST
@@ -123,6 +122,10 @@ struct myldap_search
   struct berval *cookie;
 };
 
+/* The maximum number of calls to myldap_get_values() that may be
+   done per returned entry. */
+#define MAX_ATTRIBUTES_PER_ENTRY 16
+
 /* A single entry from the LDAP database as returned by
    myldap_get_entry(). */
 struct myldap_entry
@@ -135,12 +138,13 @@ struct myldap_entry
   /* a cached version of the exploded rdn */
   char **exploded_rdn;
   /* a cache of attribute to value list */
-  DICT *attributevalues;
+  char **attributevalues[MAX_ATTRIBUTES_PER_ENTRY];
 };
 
 static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search)
 {
   MYLDAP_ENTRY *entry;
+  int i;
   /* Note: as an alternative we could embed the myldap_entry into the
      myldap_search struct to save on malloc() and free() calls. */
   /* allocate new entry */
@@ -154,14 +158,15 @@ static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search)
   entry->search=search;
   entry->dn=NULL;
   entry->exploded_rdn=NULL;
-  entry->attributevalues=dict_new();
+  for (i=0;i<MAX_ATTRIBUTES_PER_ENTRY;i++)
+    entry->attributevalues[i]=NULL;
   /* return the fresh entry */
   return entry;
 }
 
 static void myldap_entry_free(MYLDAP_ENTRY *entry)
 {
-  char **values;
+  int i;
   /* free the DN */
   if (entry->dn!=NULL)
     ldap_memfree((char *)entry->dn);
@@ -169,10 +174,9 @@ static void myldap_entry_free(MYLDAP_ENTRY *entry)
   if (entry->exploded_rdn!=NULL)
     ldap_value_free(entry->exploded_rdn);
   /* free all attribute values */
-  dict_loop_first(entry->attributevalues);
-  while (dict_loop_next(entry->attributevalues,NULL,(void *)&values)!=NULL)
-    ldap_value_free(values);
-  dict_free(entry->attributevalues);
+  for (i=0;i<MAX_ATTRIBUTES_PER_ENTRY;i++)
+    if (entry->attributevalues[i]!=NULL)
+      ldap_value_free(entry->attributevalues[i]);
   /* we don't need the result anymore, ditch it. */
   ldap_msgfree(entry->search->msg);
   entry->search->msg=NULL;
@@ -1062,6 +1066,7 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
 {
   char **values;
   int rc;
+  int i;
   /* check parameters */
   if (!is_valid_entry(entry))
   {
@@ -1075,30 +1080,34 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
     errno=EINVAL;
     return NULL;
   }
-  /* get the values from the cache */
-  values=(char **)dict_get(entry->attributevalues,attr);
-  if ((values==NULL)&&(entry->search->valid))
+  if (!entry->search->valid)
+    return NULL; /* search has been stopped */
+  /* cache miss, get from LDAP */
+  values=ldap_get_values(entry->search->session->ld,entry->search->msg,attr);
+  if (values==NULL)
   {
-    /* cache miss, get from LDAP */
-    values=ldap_get_values(entry->search->session->ld,entry->search->msg,attr);
-    if (values==NULL)
+    if (ldap_get_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
+      rc=LDAP_UNAVAILABLE;
+    /* ignore decoding errors as they are just nonexisting attribute values */
+    if (rc==LDAP_DECODING_ERROR)
     {
-      if (ldap_get_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
-        rc=LDAP_UNAVAILABLE;
-      /* ignore decoding errors as they are just nonexisting attribute values */
-      if (rc==LDAP_DECODING_ERROR)
-      {
-        rc=LDAP_SUCCESS;
-        ldap_set_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
-      }
-      else
-        log_log(LOG_WARNING,"ldap_get_values() returned NULL: %s",ldap_err2string(rc));
+      rc=LDAP_SUCCESS;
+      ldap_set_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
     }
-    /* store values entry so we can free it later on */
-    if (values!=NULL)
-      dict_put(entry->attributevalues,attr,values);
+    else
+      log_log(LOG_WARNING,"ldap_get_values() returned NULL: %s",ldap_err2string(rc));
   }
-  return (const char **)values;
+  /* store values entry so we can free it later on */
+  for (i=0;i<MAX_ATTRIBUTES_PER_ENTRY;i++)
+    if (entry->attributevalues[i]==NULL)
+    {
+      entry->attributevalues[i]=values;
+      return (const char **)values;
+    }
+  /* we found no room to store the entry */
+  log_log(LOG_ERR,"ldap_get_values() couldn't store results, increase MAX_ATTRIBUTES_PER_ENTRY");
+  ldap_value_free(values);
+  return NULL;
 }
 
 /* Go over the entries in exploded_rdn and see if any start with
