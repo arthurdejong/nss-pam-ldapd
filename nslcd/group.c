@@ -31,6 +31,7 @@
 /* for gid_t */
 #include <grp.h>
 
+#include "common/set.h"
 #include "common.h"
 #include "log.h"
 #include "myldap.h"
@@ -142,7 +143,7 @@ static void group_init(void)
 
 static int do_write_group(
     TFILE *fp,const char **names,gid_t gids[],int numgids,const char *passwd,
-    const char *members)
+    SET *members)
 {
   int32_t tmpint32;
   int i,j;
@@ -151,8 +152,11 @@ static int do_write_group(
   /* count the number of members */
   nummembers=0;
   if (members!=NULL)
-    for (tmp=members;*tmp!='\0';tmp+=strlen(tmp)+1)
+  {
+    set_loop_first(members);
+    while (set_loop_next(members)!=NULL)
       nummembers++;
+  }
   /* write entries for all names and gids */
   for (i=0;names[i]!=NULL;i++)
     for (j=0;j<numgids;j++)
@@ -164,99 +168,57 @@ static int do_write_group(
       /* write a list of values */
       WRITE_INT32(fp,nummembers);
       if (members!=NULL)
-        for (tmp=members;*tmp!='\0';tmp+=strlen(tmp)+1)
+      {
+        set_loop_first(members);
+        while ((tmp=set_loop_next(members))!=NULL)
           { WRITE_STRING(fp,tmp); }
+      }
     }
   return 0;
 }
 
 /* return the list of members as a \0 separated string with an extra \0
    at the end (doing dn->uid lookups as needed) */
-static char *getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
+static SET *getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
 {
-  char *buf;
-  char *nw;
-  size_t bufalloc,bufsz;
+  char buf[20];
   int i;
   const char **values;
-  /* allocate some memory */
-  bufalloc=64;
-  bufsz=0;
-  buf=(char *)malloc(bufalloc);
-  if (buf==NULL)
-  {
-    log_log(LOG_CRIT,"get_members(): malloc() failed to allocate memory");
+  SET *set;
+  set=set_new();
+  if (set==NULL)
     return NULL;
-  }
-  buf[0]='\0';
   /* add the memberUid values */
   values=myldap_get_values(entry,attmap_group_memberUid);
   if (values!=NULL)
     for (i=0;values[i]!=NULL;i++)
     {
-      /* ensure that we have enough space */
-      if ((strlen(values[i])+2)>=(bufalloc-bufsz))
-      {
-        bufalloc=((bufalloc+strlen(values[i])+2)*3)/2;
-        nw=(char *)realloc(buf,bufalloc);
-        if (nw==NULL)
-        {
-          free(buf);
-          log_log(LOG_CRIT,"get_members(): realloc() failed to allocate memory");
-          return NULL;
-        }
-        buf=nw;
-      }
       /* only add non-emtpty values */
       if (values[i][0]!='\0')
-      {
-        strcpy(buf+bufsz,values[i]);
-        bufsz+=strlen(buf+bufsz)+1;
-      }
+        set_add(set,values[i]);
     }
   /* add the uniqueMember values */
   values=myldap_get_values(entry,attmap_group_uniqueMember);
   if (values!=NULL)
     for (i=0;values[i]!=NULL;i++)
     {
-      /* ensure that we have enough space */
-      if ((strlen(values[i])+2)>=(bufalloc-bufsz))
-      {
-        bufalloc=((bufalloc+strlen(values[i])+2)*3)/2;
-        nw=(char *)realloc(buf,bufalloc);
-        if (nw==NULL)
-        {
-          free(buf);
-          log_log(LOG_CRIT,"get_members(): realloc() failed to allocate memory");
-          return NULL;
-        }
-        buf=nw;
-      }
       /* check the value */
       if (values[i][0]=='\0')
       { /* silently ignore empty values */ }
       else if (strchr(values[i],'=')==NULL)
       {
         /* just add the value, it doesn't look like a DN */
-        strcpy(buf+bufsz,values[i]);
-        bufsz+=strlen(buf+bufsz)+1;
+        set_add(set,values[i]);
       }
       else
       {
         /* transform the DN into a uid */
-        if (dn2uid(session,values[i],buf+bufsz,bufalloc-bufsz)!=NULL)
-          bufsz+=strlen(buf+bufsz)+1;
+        if (dn2uid(session,values[i],buf,sizeof(buf))!=NULL)
+          set_add(set,buf);
       }
     }
-  /* if the buffer does not contain any data, return NULL */
-  if (buf[0]=='\0')
-  {
-    free(buf);
-    return NULL;
-  }
   /* terminate the list with an empty string */
-  strcpy(buf+bufsz,"");
-  return buf;
+  return set;
 }
 
 /* the maximum number of gidNumber attributes per entry */
@@ -269,7 +231,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   const char *tmparr[2];
   const char **names,**gidvalues;
   const char *passwd;
-  char *members;
+  SET *members;
   gid_t gids[MAXGIDS_PER_ENTRY];
   int numgids;
   char *tmp;
