@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2007 Arthur de Jong
+# Copyright (C) 2007, 2008 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,4 +24,5 @@ AM_CFLAGS = -fPIC
 
 libtio_a_SOURCES = tio.c tio.h
 
-libdict_a_SOURCES = dict.c dict.h
+libdict_a_SOURCES = dict.c dict.h \
+                    set.c set.h

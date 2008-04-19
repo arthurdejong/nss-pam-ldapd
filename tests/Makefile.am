@@ -1,7 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,9 +18,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-TESTS = test_dict test_tio test_cfg test_myldap.sh test_nsscmds.sh
+TESTS = test_dict test_set test_tio test_cfg test_myldap.sh test_nsscmds.sh
 
-check_PROGRAMS = test_dict test_tio test_cfg test_myldap
+check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap
 
 noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                   test_netgroup test_networks test_passwd test_protocols \
@@ -39,6 +39,9 @@ AM_CFLAGS = $(PTHREAD_CFLAGS) -g
 
 test_dict_SOURCES = test_dict.c ../common/dict.h ../common/dict.c
 #test_dict_LDADD = ../common/dict.o
+
+test_set_SOURCES = test_set.c ../common/set.h
+test_set_LDADD = ../common/libdict.a
 
 test_tio_SOURCES = test_tio.c ../common/tio.h ../common/tio.c
 test_tio_LDFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
