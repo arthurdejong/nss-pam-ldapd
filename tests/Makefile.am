@@ -26,7 +26,7 @@ noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                   test_netgroup test_networks test_passwd test_protocols \
                   test_rpc test_services test_shadow
 
-EXTRA_DIST = nss-ldapd-test.conf test_myldap.sh test_nsscmds.sh
+EXTRA_DIST = nss-ldapd-test.conf test_myldap.sh test_nsscmds.sh usernames.txt
 
 AM_CPPFLAGS = -I$(top_srcdir)
 AM_CFLAGS = $(PTHREAD_CFLAGS) -g
@@ -37,8 +37,8 @@ AM_CFLAGS = $(PTHREAD_CFLAGS) -g
 # the following enabled verbose tio stats logging
 #AM_CPPFLAGS += -DDEBUG_TIO_STATS
 
-test_dict_SOURCES = test_dict.c ../common/dict.h
-test_dict_LDADD = ../common/dict.o
+test_dict_SOURCES = test_dict.c ../common/dict.h ../common/dict.c
+#test_dict_LDADD = ../common/dict.o
 
 test_tio_SOURCES = test_tio.c ../common/tio.h ../common/tio.c
 test_tio_LDFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
