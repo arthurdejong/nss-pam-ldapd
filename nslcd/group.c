@@ -293,7 +293,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   rc=do_write_group(fp,names,gids,numgids,passwd,members);
   /* free and return */
   if (members!=NULL)
-    free(members);
+    set_free(members);
   return rc;
 }
 
