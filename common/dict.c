@@ -31,22 +31,22 @@
 #include "dict.h"
 
 /*
-   This module uses a hashtable to store it's key to value mappings.
-   The structure is basically as follows:
+   This module uses a hashtable to store it's key to value mappings. The
+   structure is basically as follows:
 
    [struct dictionary]
      \- holds an array of pointers to a linked list of [struct dict_entry]
           \- each entry has a key/value mapping
 
-   The hashmap can be resized when the total number of elements
-   in the hashmap exceeds a certain load factor.
+   The hashmap can be resized when the total number of elements in the hashmap
+   exceeds a certain load factor.
 
-   All the keys are copied in a separate linked list of buffers
-   where each new buffer that is allocated is larger than the previous one.
-   The first buffer in the linked list is always the current one.
+   All the keys are copied in a separate linked list of buffers where each new
+   buffer that is allocated is larger than the previous one. The first buffer
+   in the linked list is always the current one.
 
-   Note that the initial sizes of hashtable and the loadfactor
-   still need to be tuned to the use in this application.
+   Note that the initial sizes of hashtable and the loadfactor still need to
+   be tuned to the use in this application.
 */
 
 /* an entry stores one key/value pair */
@@ -68,20 +68,20 @@ struct dict_entry {
 
 /* storage for key strings */
 struct dict_keystorage {
-  size_t size; /* the number of bytes allocated */
-  size_t off; /* where in the buffer we can begin storing */
-  char *buf; /* storage for strings */
+  size_t size;      /* the number of bytes allocated */
+  size_t off;       /* where in the buffer we can begin storing */
+  char *buf;        /* storage for strings */
   /* newly allocated keystorages should be put in front of the list */
   struct dict_keystorage *next;
 };
 
 /* the dictionary is a hashtable */
 struct dictionary {
-  int size; /* size of the hashtable */
-  int num; /* total number of keys stored */
-  struct dict_entry **table; /* the hashtable */
-  struct dict_keystorage *keys; /* for storing key strings */
-  int loop_idx; /* for looping */
+  int size;                      /* size of the hashtable */
+  int num;                       /* total number of keys stored */
+  struct dict_entry **table;     /* the hashtable */
+  struct dict_keystorage *keys;  /* for storing key strings */
+  int loop_idx;                  /* for looping */
   struct dict_entry *loop_entry; /* for looping */
 };
 
@@ -163,8 +163,7 @@ DICT *dict_new(void)
   return dict;
 }
 
-/* Copy the key to the storage. Returns the copy of the key
-   in the storage. */
+/* Copy the key to the storage. Returns the copy of the key in the storage. */
 static const char *storekey(DICT *dict,const char *key)
 {
   size_t l;
