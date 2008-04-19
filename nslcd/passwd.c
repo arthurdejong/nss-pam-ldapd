@@ -125,6 +125,9 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   static const char *attrs[2];
   int rc;
   const char **values;
+  /* check for empty string */
+  if ((dn==NULL)||(*dn=='\0'))
+    return NULL;
   /* set up attributes */
   attrs[0]=attmap_passwd_uid;
   attrs[1]=NULL;
