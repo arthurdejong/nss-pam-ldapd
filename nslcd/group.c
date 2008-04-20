@@ -202,20 +202,9 @@ static SET *getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
   if (values!=NULL)
     for (i=0;values[i]!=NULL;i++)
     {
-      /* check the value */
-      if (values[i][0]=='\0')
-      { /* silently ignore empty values */ }
-      else if (strchr(values[i],'=')==NULL)
-      {
-        /* just add the value, it doesn't look like a DN */
-        set_add(set,values[i]);
-      }
-      else
-      {
-        /* transform the DN into a uid */
-        if (dn2uid(session,values[i],buf,sizeof(buf))!=NULL)
-          set_add(set,buf);
-      }
+      /* transform the DN into a uid */
+      if (dn2uid(session,values[i],buf,sizeof(buf))!=NULL)
+        set_add(set,buf);
     }
   /* terminate the list with an empty string */
   return set;
