@@ -248,7 +248,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
     names=myldap_get_values(entry,attmap_group_cn);
     if ((names==NULL)||(names[0]==NULL))
     {
-      log_log(LOG_WARNING,"alias entry %s does not contain %s value",
+      log_log(LOG_WARNING,"group entry %s does not contain %s value",
                           myldap_get_dn(entry),attmap_group_cn);
       return 0;
     }
@@ -264,7 +264,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
     gidvalues=myldap_get_values(entry,attmap_group_gidNumber);
     if ((gidvalues==NULL)||(gidvalues[0]==NULL))
     {
-      log_log(LOG_WARNING,"alias entry %s does not contain %s value",
+      log_log(LOG_WARNING,"group entry %s does not contain %s value",
                           myldap_get_dn(entry),attmap_group_gidNumber);
       return 0;
     }
