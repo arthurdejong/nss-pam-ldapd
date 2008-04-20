@@ -76,6 +76,9 @@ int read_address(TFILE *fp,char *addr,int *addrlen,int *af);
   if (read_address(fp,addr,&(len),&(af))) \
     return -1;
 
+/* checks to see if the specified string is a valid username */
+MUST_USE int isvalidusername(const char *name);
+
 /* transforms the DN info a uid doing an LDAP lookup if needed */
 MUST_USE char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen);
 

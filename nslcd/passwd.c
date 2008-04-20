@@ -118,6 +118,49 @@ static void passwd_init(void)
   passwd_attrs[9]=NULL;
 }
 
+/*
+   Checks to see if the specified name is a valid user name.
+
+   This test is based on the definition from POSIX (IEEE Std 1003.1, 2004, 3.426 User Name
+   and 3.276 Portable Filename Character Set):
+   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_426
+   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_276
+
+   The standard defines user names valid if they contain characters from
+   the set [A-Za-z0-9._-] where the hyphen should not be used as first
+   character. As an extension this test allows the dolar '$' sign as the last
+   character to support Samba special accounts.
+*/
+int isvalidusername(const char *name)
+{
+  int i;
+  if ((name==NULL)||(name[0]=='\0'))
+    return 0;
+  /* check first character */
+  if ( ! ( (name[0]>='A' && name[0] <= 'Z') ||
+           (name[0]>='a' && name[0] <= 'a') ||
+           (name[0]>='0' && name[0] <= '9') ||
+           name[0]=='.' || name[0]=='_' ) )
+    return 0;
+  /* check other characters */
+  for (i=1;name[i]!='\0';i++)
+  {
+    if ( name[i]=='$' )
+    {
+      /* if the char is $ we require it to be the last char */
+      if (name[i+1]!='\0')
+        return 0;
+    }
+    else if ( ! ( (name[0]>='A' && name[0] <= 'Z') ||
+                  (name[0]>='a' && name[0] <= 'a') ||
+                  (name[0]>='0' && name[0] <= '9') ||
+                  name[0]=='.' || name[0]=='_'  || name[0]=='-') )
+      return 0;
+  }
+  /* no test failed so it must be good */
+  return -1;
+}
+
 char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
 {
   MYLDAP_SEARCH *search;
@@ -133,7 +176,12 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   attrs[1]=NULL;
   /* try to look up uid within DN string */
   if (myldap_cpy_rdn_value(dn,attmap_passwd_uid,buf,buflen)!=NULL)
+  {
+    /* check if it is valid */
+    if (!isvalidusername(buf))
+      return NULL;
     return buf;
+  }
   /* we have to look up the entry */
   search=myldap_search(session,dn,LDAP_SCOPE_BASE,passwd_filter,attrs);
   if (search==NULL)
@@ -160,6 +208,9 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   else
     buf=NULL;
   myldap_search_close(search);
+  /* check username */
+  if ((buf!=NULL)&&!isvalidusername(buf))
+    return NULL;
   return buf;
 }
 
@@ -171,6 +222,9 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
   int rc;
   const char *dn;
   char filter[1024];
+  /* if it isn't a valid username, just bail out now */
+  if (!isvalidusername(uid))
+    return NULL;
   /* set up attributes (we don't care, we just want the DN) */
   attrs[0]=NULL;
   /* initialize default base, scrope, etc */
@@ -347,17 +401,27 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   }
   /* write the entries */
   for (i=0;usernames[i]!=NULL;i++)
-    for (j=0;j<numuids;j++)
+  {
+    if (!isvalidusername(usernames[i]))
     {
-      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-      WRITE_STRING(fp,usernames[i]);
-      WRITE_STRING(fp,passwd);
-      WRITE_TYPE(fp,uids[j],uid_t);
-      WRITE_TYPE(fp,gid,gid_t);
-      WRITE_STRING(fp,gecos);
-      WRITE_STRING(fp,homedir);
-      WRITE_STRING(fp,shell);
+      log_log(LOG_WARNING,"passwd entry %s contains invalid user name: \"%s\"",
+                          myldap_get_dn(entry),usernames[i]);
     }
+    else
+    {
+      for (j=0;j<numuids;j++)
+      {
+        WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+        WRITE_STRING(fp,usernames[i]);
+        WRITE_STRING(fp,passwd);
+        WRITE_TYPE(fp,uids[j],uid_t);
+        WRITE_TYPE(fp,gid,gid_t);
+        WRITE_STRING(fp,gecos);
+        WRITE_STRING(fp,homedir);
+        WRITE_STRING(fp,shell);
+      }
+    }
+  }
   return 0;
 }
 
@@ -365,7 +429,11 @@ NSLCD_HANDLE(
   passwd,byname,
   char name[256];
   char filter[1024];
-  READ_STRING_BUF2(fp,name,sizeof(name));,
+  READ_STRING_BUF2(fp,name,sizeof(name));
+  if (!isvalidusername(name)) {
+    log_log(LOG_WARNING,"nslcd_passwd_byname(%s): invalid user name",name);
+    return -1;
+  },
   log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);,
   NSLCD_ACTION_PASSWD_BYNAME,
   mkfilter_passwd_byname(name,filter,sizeof(filter)),
