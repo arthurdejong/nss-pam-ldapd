@@ -1082,7 +1082,7 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
   }
   if (!entry->search->valid)
     return NULL; /* search has been stopped */
-  /* cache miss, get from LDAP */
+  /* get from LDAP */
   values=ldap_get_values(entry->search->session->ld,entry->search->msg,attr);
   if (values==NULL)
   {
@@ -1095,7 +1095,10 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
       ldap_set_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
     }
     else
-      log_log(LOG_WARNING,"ldap_get_values() returned NULL: %s",ldap_err2string(rc));
+      log_log(LOG_WARNING,"ldap_get_values() of attribute \"%s\" on entry \"%s\" returned NULL: %s",
+                          attr,myldap_get_dn(entry),ldap_err2string(rc));
+    /* TODO: handle paged attribute values here */
+    return NULL;
   }
   /* store values entry so we can free it later on */
   for (i=0;i<MAX_ATTRIBUTES_PER_ENTRY;i++)
