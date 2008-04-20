@@ -160,17 +160,17 @@ static int isvalidgroupname(const char *name)
     return 0;
   /* check first character */
   if ( ! ( (name[0]>='A' && name[0] <= 'Z') ||
-           (name[0]>='a' && name[0] <= 'a') ||
+           (name[0]>='a' && name[0] <= 'z') ||
            (name[0]>='0' && name[0] <= '9') ||
            name[0]=='.' || name[0]=='_' ) )
     return 0;
   /* check other characters */
   for (i=1;name[i]!='\0';i++)
   {
-    if ( ! ( (name[0]>='A' && name[0] <= 'Z') ||
-             (name[0]>='a' && name[0] <= 'a') ||
-             (name[0]>='0' && name[0] <= '9') ||
-             name[0]=='.' || name[0]=='_'  || name[0]=='-') )
+    if ( ! ( (name[i]>='A' && name[i] <= 'Z') ||
+             (name[i]>='a' && name[i] <= 'z') ||
+             (name[i]>='0' && name[i] <= '9') ||
+             name[i]=='.' || name[i]=='_'  || name[i]=='-') )
       return 0;
   }
   /* no test failed so it must be good */
