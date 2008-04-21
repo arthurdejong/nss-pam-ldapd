@@ -57,30 +57,17 @@ struct dict_entry {
   struct dict_entry *next;
 };
 
-/* initial size allocated for the key strings */
-#define KEYSTORAGE_INITSIZE 100
-
 /* the initial size of the hashtable */
 #define DICT_INITSIZE 7
 
 /* load factor at which point to grow hashtable */
 #define DICT_LOADPERCENTAGE 400
 
-/* storage for key strings */
-struct dict_keystorage {
-  size_t size;      /* the number of bytes allocated */
-  size_t off;       /* where in the buffer we can begin storing */
-  char *buf;        /* storage for strings */
-  /* newly allocated keystorages should be put in front of the list */
-  struct dict_keystorage *next;
-};
-
 /* the dictionary is a hashtable */
 struct dictionary {
   int size;                      /* size of the hashtable */
   int num;                       /* total number of keys stored */
   struct dict_entry **table;     /* the hashtable */
-  struct dict_keystorage *keys;  /* for storing key strings */
   int loop_idx;                  /* for looping */
   struct dict_entry *loop_entry; /* for looping */
 };
@@ -133,27 +120,19 @@ static void growhashtable(DICT *dict)
 
 DICT *dict_new(void)
 {
-  char *buf;
   struct dictionary *dict;
   int i;
   /* allocate room for dictionary information */
-  buf=(char *)malloc(sizeof(struct dictionary)+sizeof(struct dict_keystorage)+KEYSTORAGE_INITSIZE);
-  if (buf==NULL)
+  dict=(struct dictionary *)malloc(sizeof(struct dictionary));
+  if (dict==NULL)
     return NULL;
-  /* set up toplevel structs and buffers */
-  dict=(struct dictionary *)buf;
   dict->size=DICT_INITSIZE;
   dict->num=0;
-  dict->keys=(struct dict_keystorage *)(buf+sizeof(struct dictionary));
-  dict->keys->size=KEYSTORAGE_INITSIZE;
-  dict->keys->off=0;
-  dict->keys->buf=buf+sizeof(struct dictionary)+sizeof(struct dict_keystorage);
-  dict->keys->next=NULL;
   /* allocate initial hashtable */
   dict->table=(struct dict_entry **)malloc(DICT_INITSIZE*sizeof(struct dict_entry *));
   if (dict->table==NULL)
   {
-    free(buf);
+    free(dict);
     return NULL;
   }
   /* clear the hashtable */
@@ -163,40 +142,9 @@ DICT *dict_new(void)
   return dict;
 }
 
-/* Copy the key to the storage. Returns the copy of the key in the storage. */
-static const char *storekey(DICT *dict,const char *key)
-{
-  size_t l;
-  size_t newsize;
-  char *buf;
-  struct dict_keystorage *newkeys;
-  l=strlen(key)+1;
-  /* ensure that we have enough space */
-  if (l>=(dict->keys->size-dict->keys->off))
-  {
-    newsize=((dict->keys->size+l)*3)/2;
-    buf=(char *)malloc(sizeof(struct dict_keystorage)+newsize);
-    if (buf==NULL)
-      return NULL;
-    newkeys=(struct dict_keystorage *)buf;
-    newkeys->size=newsize;
-    newkeys->off=0;
-    newkeys->buf=(char *)(buf+sizeof(struct dict_keystorage));
-    newkeys->next=dict->keys;
-    /* put new keystorage in front of linked list */
-    dict->keys=newkeys;
-  }
-  /* add the value to the buffer */
-  buf=dict->keys->buf+dict->keys->off;
-  strcpy(buf,key);
-  dict->keys->off+=l;
-  return buf;
-}
-
 void dict_free(DICT *dict)
 {
   struct dict_entry *entry,*etmp;
-  struct dict_keystorage *keys,*ktmp;
   int i;
   /* free hashtable entries */
   for (i=0;i<dict->size;i++)
@@ -211,15 +159,6 @@ void dict_free(DICT *dict)
   }
   /* free the hashtable */
   free(dict->table);
-  /* free key storage
-     (except last which was allocated with the dict) */
-  keys=dict->keys;
-  while (keys->next!=NULL)
-  {
-    ktmp=keys;
-    keys=keys->next;
-    free(ktmp);
-  }
   /* free dictionary struct itself */
   free(dict);
 }
@@ -244,6 +183,8 @@ void *dict_get(DICT *dict,const char *key)
 int dict_put(DICT *dict,const char *key,void *value)
 {
   uint32_t hash;
+  int l;
+  char *buf;
   int idx;
   struct dict_entry *entry,*prev;
   /* check if we should grow the hashtable */
@@ -282,16 +223,15 @@ int dict_put(DICT *dict,const char *key,void *value)
   if (value==NULL)
     return 0;
   /* entry is not present, make new entry */
-  entry=(struct dict_entry *)malloc(sizeof(struct dict_entry));
-  if (entry==NULL)
+  l=strlen(key)+1;
+  buf=(char *)malloc(sizeof(struct dict_entry)+l);
+  if (buf==NULL)
     return -1;
+  entry=(struct dict_entry *)buf;
+  buf+=sizeof(struct dict_entry);
+  strcpy(buf,key);
   entry->hash=hash;
-  entry->key=storekey(dict,key);
-  if (entry->key==NULL)
-  {
-    free(entry);
-    return -1; /* problem duplicating key */
-  }
+  entry->key=buf;
   entry->value=value;
   /* insert into hashtable/linked list */
   entry->next=dict->table[idx];
