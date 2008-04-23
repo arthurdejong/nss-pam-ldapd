@@ -141,6 +141,36 @@ static void test_readelements(const char *fname)
   dict_free(dict);
 }
 
+static void test_countelements(int num)
+{
+  DICT *dict;
+  char buf[80];
+  int i,j,r;
+  const char *key;
+  void *val;
+  /* initialize */
+  dict=dict_new();
+  /* insert a number of entries */
+  for (i=0;i<num;i++)
+  {
+    r=1+(int)(10000.0*(rand()/(RAND_MAX+1.0)));
+    sprintf(buf,"%04dx%04d",i,r);
+    dict_put(dict,buf,&buf);
+  }
+  /* loop over dictionary contents */
+  dict_loop_first(dict);
+  i=0;
+  while (dict_loop_next(dict,&key,&val)!=NULL)
+  {
+    assert(val==buf);
+    i++;
+  }
+  /* we should have num elements */
+  assert(i==num);
+  /* free dictionary */
+  dict_free(dict);
+}
+
 /* the main program... */
 int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
@@ -157,5 +187,12 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   test_simple();
   test_lotsofelements();
   test_readelements(fname);
+  test_countelements(0);
+  test_countelements(1);
+  test_countelements(2);
+  test_countelements(3);
+  test_countelements(4);
+  test_countelements(10);
+  test_countelements(20);
   return 0;
 }
