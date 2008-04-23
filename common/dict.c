@@ -244,7 +244,7 @@ int dict_put(DICT *dict,const char *key,void *value)
 void dict_loop_first(DICT *dict)
 {
   dict->loop_idx=0;
-  dict->loop_entry=dict->table[dict->loop_idx];
+  dict->loop_entry=NULL;
 }
 
 const char *dict_loop_next(DICT *dict,const char **key,void **value)
