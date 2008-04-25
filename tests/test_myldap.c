@@ -27,6 +27,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <assert.h>
+#include <signal.h>
 
 #include "nslcd/log.h"
 #include "nslcd/cfg.h"
