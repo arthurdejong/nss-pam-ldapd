@@ -37,13 +37,13 @@ struct ether_addr {
 };
 #endif /* not HAVE_STRUCT_ETHER_ADDR */
 
-#ifndef HAVE_ENTHER_NTOA_R
+#ifndef HAVE_ETHER_NTOA_R
 char *ether_ntoa_r(const struct ether_addr *addr,char *buf);
-#endif /* not HAVE_ENTHER_NTOA_R */
+#endif /* not HAVE_ETHER_NTOA_R */
 
-#ifndef HAVE_ENTHER_NTOA_R
+#ifndef HAVE_ETHER_ATON_R
 struct ether_addr *ether_aton_r(const char *asc,struct ether_addr *addr);
-#endif /* not HAVE_ENTHER_NTOA_R */
+#endif /* not HAVE_ETHER_ATON_R */
 
 #endif /* not _COMPAT_ETHER_H */
 
