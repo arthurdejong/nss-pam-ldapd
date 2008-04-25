@@ -393,6 +393,7 @@ int main(int argc,char *argv[])
 {
   char *srcdir;
   char fname[100];
+  struct sigaction act;
   /* build the name of the file */
   srcdir=getenv("srcdir");
   if (srcdir==NULL)
@@ -403,6 +404,13 @@ int main(int argc,char *argv[])
   cfg_init(fname);
   /* partially initialize logging */
   log_setdefaultloglevel(LOG_DEBUG);
+  /* ignore SIGPIPE */
+  memset(&act,0,sizeof(struct sigaction));
+  act.sa_handler=SIG_IGN;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags=SA_RESTART|SA_NOCLDSTOP;
+  assert(sigaction(SIGPIPE,&act,NULL)==0);
+  /* do tests */
   test_search();
   test_get();
   test_get_values();
