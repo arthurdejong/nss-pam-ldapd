@@ -323,7 +323,7 @@ static void *worker(void *arg)
       printf("test_myldap: test_threads(): [worker %d] ...\n",args->id);
   }
   printf("test_myldap: test_threads(): [worker %d] DONE: %s\n",args->id,ldap_err2string(rc));
-  assert(rc=LDAP_SUCCESS);
+  assert(rc==LDAP_SUCCESS);
   /* clean up */
   myldap_session_close(session);
   return 0;
