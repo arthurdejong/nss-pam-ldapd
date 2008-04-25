@@ -39,4 +39,4 @@ ldapsearch -b "$base" -s base -x -H "$uri" > /dev/null 2>&1 || {
 echo "test_myldap.sh: using LDAP server $uri"
 
 # just execute test_myldap
-exec ./test_myldap "$cfgfile"
+exec ./test_myldap

@@ -391,8 +391,16 @@ static void test_connections(void)
 /* the main program... */
 int main(int argc,char *argv[])
 {
-  assert(argc==2);
-  cfg_init(argv[1]);
+  char *srcdir;
+  char fname[100];
+  /* build the name of the file */
+  srcdir=getenv("srcdir");
+  if (srcdir==NULL)
+    srcdir=".";
+  snprintf(fname,sizeof(fname),"%s/nss-ldapd-test.conf",srcdir);
+  fname[sizeof(fname)-1]='\0';
+  /* initialize configuration */
+  cfg_init(fname);
   /* partially initialize logging */
   log_setdefaultloglevel(LOG_DEBUG);
   test_search();
