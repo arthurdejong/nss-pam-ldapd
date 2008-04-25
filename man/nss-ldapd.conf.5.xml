@@ -360,24 +360,11 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>reconnect_tries</option> <emphasis remap="I">NUMBER</emphasis></term>
-     <listitem>
-      <para>
-       Specifies the number of times each <acronym>LDAP</acronym> server is
-       tried when connections to all <acronym>LDAP</acronym> servers fail.
-       By default each <acronym>URI</acronym> is tried 4 times.
-      </para>
-     </listitem>
-    </varlistentry>
-
-    <varlistentry>
      <term><option>reconnect_sleeptime</option> <emphasis remap="I">SECONDS</emphasis></term>
      <listitem>
       <para>
-       Specifies the number of seconds to sleep between reconnection tries
-       if the connection to all <acronym>LDAP</acronym> servers fail.
-       This value is doubled with each try up to the value of the
-       <option>reconnect_maxsleeptime</option> option.
+       Specifies the number of seconds to sleep when connecting to all
+       <acronym>LDAP</acronym> servers fails.
        By default 1 second is waited between the first failure and the first
        retry.
       </para>
@@ -388,10 +375,9 @@
      <term><option>reconnect_maxsleeptime</option> <emphasis remap="I">SECONDS</emphasis></term>
      <listitem>
       <para>
-       Specifies the maximum number of seconds to sleep between reconnection
-       tries if the connection to all <acronym>LDAP</acronym> servers fail.
-       This value limits the doubling mechanism described with the
-       <option>reconnect_maxsleeptime</option> option.
+       Specified the time after which the <acronym>LDAP</acronym> server
+       is considered permanently unavailable.
+       Retries will be done only once in this timeperiod.
        The default value is 30 seconds.
       </para>
      </listitem>

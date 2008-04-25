@@ -70,17 +70,17 @@ static void test_add_uris(void)
   int i;
   /* set up config */
   cfg_defaults(&cfg);
-  assert(cfg.ldc_uris[0]==NULL);
+  assert(cfg.ldc_uris[0].uri==NULL);
   /* add a uri */
   add_uri(__FILE__,__LINE__,&cfg,"ldap://localhost");
-  assert(cfg.ldc_uris[0]!=NULL);
-  assert(cfg.ldc_uris[1]==NULL);
+  assert(cfg.ldc_uris[0].uri!=NULL);
+  assert(cfg.ldc_uris[1].uri==NULL);
   /* add some more uris */
   for (i=1;i<NSS_LDAP_CONFIG_URI_MAX;i++)
   {
     add_uri(__FILE__,__LINE__,&cfg,"ldap://localhost");
-    assert(cfg.ldc_uris[i]!=NULL);
-    assert(cfg.ldc_uris[i+1]==NULL);
+    assert(cfg.ldc_uris[i].uri!=NULL);
+    assert(cfg.ldc_uris[i+1].uri==NULL);
   }
   /* inserting one more entry should call exit():
   add_uri(__FILE__,__LINE__,&cfg,"ldap://localhost");
@@ -214,13 +214,13 @@ static void test_read(void)
   cfg_defaults(&cfg);
   cfg_read("temp.cfg",&cfg);
   /* check results */
-  assert(cfg.ldc_uris[0]!=NULL);
-  assert(cfg.ldc_uris[1]!=NULL);
-  assert(cfg.ldc_uris[2]!=NULL);
-  assertstreq(cfg.ldc_uris[0],"ldap://127.0.0.1/");
-  assertstreq(cfg.ldc_uris[1],"ldap:///");
-  assertstreq(cfg.ldc_uris[2],"ldaps://127.0.0.1/");
-  assert(cfg.ldc_uris[3]==NULL);
+  assert(cfg.ldc_uris[0].uri!=NULL);
+  assert(cfg.ldc_uris[1].uri!=NULL);
+  assert(cfg.ldc_uris[2].uri!=NULL);
+  assertstreq(cfg.ldc_uris[0].uri,"ldap://127.0.0.1/");
+  assertstreq(cfg.ldc_uris[1].uri,"ldap:///");
+  assertstreq(cfg.ldc_uris[2].uri,"ldaps://127.0.0.1/");
+  assert(cfg.ldc_uris[3].uri==NULL);
   assertstreq(cfg.ldc_base,"dc=test, dc=tld");
   assertstreq(passwd_base,"ou=Some People,dc=test,dc=tld");
   assertstreq(attmap_passwd_uid,"sAMAccountName");

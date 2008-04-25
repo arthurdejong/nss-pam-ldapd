@@ -55,10 +55,19 @@ enum ldap_map_selector
   LM_NONE
 };
 
+struct myldap_uri
+{
+  char *uri;
+  /* timestamp of last ok search */
+  time_t lastok;
+  /* timestamp of last ok search */
+  time_t lastfail;
+};
+
 struct ldap_config
 {
   /* NULL terminated list of URIs */
-  char *ldc_uris[NSS_LDAP_CONFIG_URI_MAX+1];
+  struct myldap_uri ldc_uris[NSS_LDAP_CONFIG_URI_MAX+1];
   /* protocol version */
   int ldc_version;
   /* bind DN */
@@ -85,8 +94,6 @@ struct ldap_config
   int ldc_timelimit;
   /* idle timeout */
   int ldc_idle_timelimit;
-  /* number of sleeping reconnect attempts */
-  int ldc_reconnect_tries;
   /* seconds to sleep; doubled until max */
   int ldc_reconnect_sleeptime;
   /* maximum seconds to sleep */

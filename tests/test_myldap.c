@@ -361,16 +361,16 @@ static void test_connections(void)
   /* save the old URIs */
   for (i=0;i<(NSS_LDAP_CONFIG_URI_MAX+1);i++)
   {
-    old_uris[i]=nslcd_cfg->ldc_uris[i];
-    nslcd_cfg->ldc_uris[i]=NULL;
+    old_uris[i]=nslcd_cfg->ldc_uris[i].uri;
+    nslcd_cfg->ldc_uris[i].uri=NULL;
   }
   /* set new URIs */
   i=0;
-  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnull/";
-  nslcd_cfg->ldc_uris[i++]="ldap://10.10.10.10/";
-  nslcd_cfg->ldc_uris[i++]="ldapi://%2fdev%2fnonexistent/";
-  nslcd_cfg->ldc_uris[i++]="ldap://nosuchhost/";
-  nslcd_cfg->ldc_uris[i++]=NULL;
+  nslcd_cfg->ldc_uris[i++].uri="ldapi://%2fdev%2fnull/";
+  nslcd_cfg->ldc_uris[i++].uri="ldap://10.10.10.10/";
+  nslcd_cfg->ldc_uris[i++].uri="ldapi://%2fdev%2fnonexistent/";
+  nslcd_cfg->ldc_uris[i++].uri="ldap://nosuchhost/";
+  nslcd_cfg->ldc_uris[i++].uri=NULL;
   /* initialize session */
   printf("test_myldap: test_connections(): getting session...\n");
   session=myldap_create_session();
@@ -386,7 +386,7 @@ static void test_connections(void)
   myldap_session_close(session);
   /* restore the old URIs */
   for (i=0;i<(NSS_LDAP_CONFIG_URI_MAX+1);i++)
-    nslcd_cfg->ldc_uris[i]=old_uris[i];
+    nslcd_cfg->ldc_uris[i].uri=old_uris[i];
 }
 
 /* the main program... */

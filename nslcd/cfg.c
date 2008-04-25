@@ -63,7 +63,11 @@ static void cfg_defaults(struct ldap_config *cfg)
   int i;
   memset(cfg,0,sizeof(struct ldap_config));
   for (i=0;i<(NSS_LDAP_CONFIG_URI_MAX+1);i++)
-    cfg->ldc_uris[i]=NULL;
+  {
+    cfg->ldc_uris[i].uri=NULL;
+    cfg->ldc_uris[i].lastok=0;
+    cfg->ldc_uris[i].lastfail=0;
+  }
 #ifdef LDAP_VERSION3
   cfg->ldc_version=LDAP_VERSION3;
 #else /* LDAP_VERSION3 */
@@ -81,7 +85,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_bind_timelimit=30;
   cfg->ldc_timelimit=LDAP_NO_LIMIT;
   cfg->ldc_idle_timelimit=0;
-  cfg->ldc_reconnect_tries=4;
   cfg->ldc_reconnect_sleeptime=1;
   cfg->ldc_reconnect_maxsleeptime=30;
   cfg->ldc_ssl_on=SSL_OFF;
@@ -123,7 +126,7 @@ static void add_uri(const char *filename,int lnr,
   int i;
   log_log(LOG_DEBUG,"add_uri(%s)",uri);
   /* find the place where to insert the URI */
-  for (i=0;cfg->ldc_uris[i]!=NULL;i++)
+  for (i=0;cfg->ldc_uris[i].uri!=NULL;i++)
     ;
   /* check for room */
   if (i>=NSS_LDAP_CONFIG_URI_MAX)
@@ -132,8 +135,7 @@ static void add_uri(const char *filename,int lnr,
     exit(EXIT_FAILURE);
   }
   /* append URI to list */
-  cfg->ldc_uris[i]=xstrdup(uri);
-  cfg->ldc_uris[i+1]=NULL;
+  cfg->ldc_uris[i].uri=xstrdup(uri);
 }
 
 #ifndef HOST_NAME_MAX
@@ -698,10 +700,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       get_eol(filename,lnr,keyword,&line);
     }
     else if (strcasecmp(keyword,"reconnect_tries")==0)
-    {
-      get_int(filename,lnr,keyword,&line,&cfg->ldc_reconnect_tries);
-      get_eol(filename,lnr,keyword,&line);
-    }
+      log_log(LOG_WARNING,"%s:%d: option %s has been removed and will be ignored",filename,lnr,keyword);
     else if (!strcasecmp(keyword,"reconnect_sleeptime"))
     {
       get_int(filename,lnr,keyword,&line,&cfg->ldc_reconnect_sleeptime);
@@ -820,7 +819,7 @@ void cfg_init(const char *fname)
   /* read configfile */
   cfg_read(fname,nslcd_cfg);
   /* do some sanity checks */
-  if (nslcd_cfg->ldc_uris[0]==NULL)
+  if (nslcd_cfg->ldc_uris[0].uri==NULL)
   {
     log_log(LOG_ERR,"no URIs defined in config");
     exit(EXIT_FAILURE);
