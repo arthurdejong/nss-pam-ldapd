@@ -944,7 +944,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
           rc=LDAP_UNAVAILABLE;
         log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
         /* close connection on connection problems */
-        if (rc==LDAP_UNAVAILABLE)
+        if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN))
           do_close(search->session);
         /* close search */
         myldap_search_close(search);
@@ -995,7 +995,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
             ldap_controls_free(resultcontrols);
           log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
           /* close connection on connection problems */
-          if (rc==LDAP_UNAVAILABLE)
+          if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN))
             do_close(search->session);
           myldap_search_close(search);
           if (rcp!=NULL)
@@ -1058,7 +1058,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
           log_log(LOG_WARNING,"ldap_search_ext() failed: %s",
                               ldap_err2string(rc));
           /* close connection on connection problems */
-          if (rc==LDAP_UNAVAILABLE)
+          if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN))
             do_close(search->session);
           myldap_search_close(search);
           if (rcp!=NULL)
@@ -1103,7 +1103,7 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
         rc=LDAP_UNAVAILABLE;
       log_log(LOG_WARNING,"ldap_get_dn() returned NULL: %s",ldap_err2string(rc));
       /* close connection on connection problems */
-      if (rc==LDAP_UNAVAILABLE)
+      if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN))
         do_close(entry->search->session);
     }
   }
