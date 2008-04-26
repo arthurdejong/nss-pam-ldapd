@@ -186,14 +186,14 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   search=myldap_search(session,dn,LDAP_SCOPE_BASE,passwd_filter,attrs);
   if (search==NULL)
   {
-    log_log(LOG_WARNING,"lookup of %s failed",dn);
+    log_log(LOG_WARNING,"lookup of user %s failed",dn);
     return NULL;
   }
   entry=myldap_get_entry(search,&rc);
   if (entry==NULL)
   {
     if (rc!=LDAP_SUCCESS)
-      log_log(LOG_WARNING,"lookup of %s failed: %s",dn,ldap_err2string(rc));
+      log_log(LOG_WARNING,"lookup of user %s failed: %s",dn,ldap_err2string(rc));
     return NULL;
   }
   /* get uid (just use first one) */
