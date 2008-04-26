@@ -498,10 +498,11 @@ static void parse_filter_statement(const char *filename,int lnr,
                                    const char *keyword,char *line)
 {
   const char **var;
+  const char *map=line;
   var=filter_get_var(get_map(&line));
   if (var==NULL)
   {
-    log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,line);
+    log_log(LOG_ERR,"%s:%d: unknown map: '%s'",filename,lnr,map);
     exit(EXIT_FAILURE);
   }
   check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
