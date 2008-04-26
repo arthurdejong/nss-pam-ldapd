@@ -346,7 +346,7 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
     log_log(LOG_DEBUG,"connection from pid=%d uid=%d gid=%d",
                       (int)pid,(int)uid,(int)gid);
   /* set the timeouts */
-  readtimeout.tv_sec=0; /* clients should send there request quickly */
+  readtimeout.tv_sec=0; /* clients should send their request quickly */
   readtimeout.tv_usec=500000;
   writetimeout.tv_sec=5; /* clients could be taking some time to process the results */
   writetimeout.tv_usec=0;
