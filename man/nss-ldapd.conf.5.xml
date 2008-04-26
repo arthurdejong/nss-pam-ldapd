@@ -83,7 +83,7 @@
        <acronym>LDAP</acronym> over <acronym>TCP</acronym>,
        <acronym>ICP</acronym> or <acronym>SSL</acronym> respectively (if
        supported by the <acronym>LDAP</acronym> library).
-       Alternitively, the value <emphasis remap="I">DNS</emphasis> may be
+       Alternatively, the value <emphasis remap="I">DNS</emphasis> may be
        used to try to lookup the server using <acronym>DNS</acronym>
        <acronym>SRV</acronym> records.
       </para>
@@ -94,7 +94,7 @@
       </para>
       <para>
        This option may be specified multiple times. Normally, only the first
-       server will be used with the following servers as fallback (see
+       server will be used with the following servers as fall-back (see
        <option>bind_timelimit</option> below).
       </para>
       <para>
@@ -130,7 +130,7 @@
      <term><option>bindpw</option> <emphasis remap="I">PASSWORD</emphasis></term>
      <listitem>
       <para>
-       Specifies the cleartext credentials with which to bind.
+       Specifies the clear text credentials with which to bind.
        This option is only applicable when used with <option>binddn</option> above.
       </para>
       <para>
@@ -225,7 +225,7 @@
       <para>
        Specifies the search scope (subtree, one level or base object).
        The default scope is subtree; base scope is almost never useful for
-       nameservice lookups.
+       name service lookups.
       </para>
      </listitem>
     </varlistentry>
@@ -328,8 +328,8 @@
        This is distinct from the time limit specified in
        <option>timelimit</option> and affects the setup of the connection only.
        Note that not all <acronym>LDAP</acronym> client libraries have support
-       for setting the connection timeout.
-       The default bind timelimit is 30 seconds.
+       for setting the connection time out.
+       The default <option>bind_timelimit</option> is 30 seconds.
       </para>
      </listitem>
     </varlistentry>
@@ -375,9 +375,9 @@
      <term><option>reconnect_maxsleeptime</option> <emphasis remap="I">SECONDS</emphasis></term>
      <listitem>
       <para>
-       Specified the time after which the <acronym>LDAP</acronym> server
-       is considered permanently unavailable.
-       Retries will be done only once in this timeperiod.
+       Specified the time after the last successful operation from which the
+       <acronym>LDAP</acronym> server is considered permanently unavailable.
+       Retries will be done only once in this time period.
        The default value is 30 seconds.
       </para>
      </listitem>
@@ -390,10 +390,10 @@
     is used between <command>nslcd</command> and the <acronym>LDAP</acronym>
     server. The mechanism between the <acronym>NSS</acronym> client library
     and <command>nslcd</command> is simpler with a fixed compiled-in
-    timeout of a 1.5 seconds for writing to <command>nslcd</command> and
-    a timeout of 2 seconds for reading answers.
-    <command>nslcd</command> itself has a read timeout of 0.5 seconds
-    and a write timeout of 5 seconds.
+    time out of a 1.5 seconds for writing to <command>nslcd</command> and
+    a time out of 2 seconds for reading answers.
+    <command>nslcd</command> itself has a read time out of 0.5 seconds
+    and a write time out of 5 seconds.
    </para>
 
   </refsect2>
