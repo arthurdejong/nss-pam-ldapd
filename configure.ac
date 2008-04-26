@@ -250,7 +250,7 @@ AC_CHECK_TYPE(struct ucred,
     #include <sys/types.h>])
 
 AC_CHECK_TYPE(sasl_interact_t,
-    AC_DEFINE(HAVE_SASL_INTERACT_T,1,[Define to 1 if you have a `sasl_interact_t` definition.]))
+    AC_DEFINE(HAVE_SASL_INTERACT_T,1,[Define to 1 if you have a `sasl_interact_t' definition.]))
 
 # checks for LDAP library
 save_LIBS="$LIBS"
