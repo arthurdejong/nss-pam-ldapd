@@ -390,8 +390,8 @@
     is used between <command>nslcd</command> and the <acronym>LDAP</acronym>
     server. The mechanism between the <acronym>NSS</acronym> client library
     and <command>nslcd</command> is simpler with a fixed compiled-in
-    time out of a 1.5 seconds for writing to <command>nslcd</command> and
-    a time out of 2 seconds for reading answers.
+    time out of a 10 seconds for writing to <command>nslcd</command> and
+    a time out of 20 seconds for reading answers.
     <command>nslcd</command> itself has a read time out of 0.5 seconds
     and a write time out of 5 seconds.
    </para>

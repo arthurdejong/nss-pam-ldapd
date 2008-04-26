@@ -68,10 +68,10 @@ TFILE *nslcd_client_open()
     return NULL;
   }
   /* set the timeouts */
-  readtimeout.tv_sec=2; /* looking up stuff may take some time */
+  readtimeout.tv_sec=20; /* looking up stuff may take some time */
   readtimeout.tv_usec=0;
-  writetimeout.tv_sec=1; /* nslcd could be loaded with requests */
-  writetimeout.tv_usec=500000;
+  writetimeout.tv_sec=10; /* nslcd could be loaded with requests */
+  writetimeout.tv_usec=0;
   /* create a stream object */
   if ((fp=tio_fdopen(sock,&readtimeout,&writetimeout,
                      READBUFFER_MINSIZE,READBUFFER_MAXSIZE,
