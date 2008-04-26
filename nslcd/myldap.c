@@ -676,6 +676,7 @@ static MYLDAP_SEARCH *do_try_search(
     else
     {
       log_log(LOG_WARNING,"ldap_create_page_control() failed: %s",ldap_err2string(rc));
+      /* clear error flag */
       rc=LDAP_SUCCESS;
       ldap_set_option(session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
       pServerCtrls=NULL;
@@ -942,6 +943,10 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         if (ldap_get_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
           rc=LDAP_UNAVAILABLE;
         log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
+        /* close connection on connection problems */
+        if (rc==LDAP_UNAVAILABLE)
+          do_close(search->session);
+        /* close search */
         myldap_search_close(search);
         if (rcp!=NULL)
           *rcp=rc;
@@ -989,6 +994,9 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
           if (resultcontrols!=NULL)
             ldap_controls_free(resultcontrols);
           log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
+          /* close connection on connection problems */
+          if (rc==LDAP_UNAVAILABLE)
+            do_close(search->session);
           myldap_search_close(search);
           if (rcp!=NULL)
             *rcp=rc;
@@ -1005,6 +1013,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
           {
             log_log(LOG_WARNING,"ldap_parse_page_control() failed: %s",
                                 ldap_err2string(rc));
+            /* clear error flag */
             rc=LDAP_SUCCESS;
             ldap_set_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
           }
@@ -1048,6 +1057,9 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         {
           log_log(LOG_WARNING,"ldap_search_ext() failed: %s",
                               ldap_err2string(rc));
+          /* close connection on connection problems */
+          if (rc==LDAP_UNAVAILABLE)
+            do_close(search->session);
           myldap_search_close(search);
           if (rcp!=NULL)
             *rcp=rc;
@@ -1090,6 +1102,9 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
       if (ldap_get_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
         rc=LDAP_UNAVAILABLE;
       log_log(LOG_WARNING,"ldap_get_dn() returned NULL: %s",ldap_err2string(rc));
+      /* close connection on connection problems */
+      if (rc==LDAP_UNAVAILABLE)
+        do_close(entry->search->session);
     }
   }
   /* if we still don't have it, return unknown */
