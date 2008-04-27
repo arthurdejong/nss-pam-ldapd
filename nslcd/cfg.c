@@ -542,7 +542,7 @@ static void parse_map_statement(const char *filename,int lnr,
     exit(EXIT_FAILURE);
   }
   /* check if the value will be changed */
-  if (strcmp(*var,newatt)!=0)
+  if ( (*var==NULL) || (strcmp(*var,newatt)!=0) )
   {
     /* Note: we have a memory leak here if a single mapping is changed
              multiple times in one config (deemed not a problem) */
