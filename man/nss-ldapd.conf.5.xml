@@ -518,11 +518,11 @@
       </para>
       <para>
        This is useful for <acronym>LDAP</acronym> servers that contain a
-       lot of entries (e.g. more than 500) that limit the number of entries
+       lot of entries (e.g. more than 500) and limit the number of entries
        that are returned with one request.
        For OpenLDAP servers you may need to set
        <option>sizelimit size.prtotal=unlimited</option>
-       for allowing more entries to be returned in pages.
+       for allowing more entries to be returned over multiple pages.
       </para>
      </listitem>
     </varlistentry>
