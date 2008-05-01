@@ -74,6 +74,7 @@
 #include "log.h"
 #include "cfg.h"
 #include "attmap.h"
+#include "common/set.h"
 
 /* compatibility macros */
 #ifndef LDAP_CONST
@@ -127,6 +128,10 @@ struct myldap_search
    done per returned entry. */
 #define MAX_ATTRIBUTES_PER_ENTRY 16
 
+/* The maximum number of ranged attribute values that may be stoted
+   per entry. */
+#define MAX_RANGED_ATTRIBUTES_PER_ENTRY 2
+
 /* A single entry from the LDAP database as returned by
    myldap_get_entry(). */
 struct myldap_entry
@@ -140,6 +145,8 @@ struct myldap_entry
   char **exploded_rdn;
   /* a cache of attribute to value list */
   char **attributevalues[MAX_ATTRIBUTES_PER_ENTRY];
+  /* a reference to ranged attribute values so we can free() them later on */
+  char **rangedattributevalues[MAX_RANGED_ATTRIBUTES_PER_ENTRY];
 };
 
 static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search)
@@ -161,6 +168,8 @@ static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search)
   entry->exploded_rdn=NULL;
   for (i=0;i<MAX_ATTRIBUTES_PER_ENTRY;i++)
     entry->attributevalues[i]=NULL;
+  for (i=0;i<MAX_RANGED_ATTRIBUTES_PER_ENTRY;i++)
+    entry->rangedattributevalues[i]=NULL;
   /* return the fresh entry */
   return entry;
 }
@@ -178,6 +187,10 @@ static void myldap_entry_free(MYLDAP_ENTRY *entry)
   for (i=0;i<MAX_ATTRIBUTES_PER_ENTRY;i++)
     if (entry->attributevalues[i]!=NULL)
       ldap_value_free(entry->attributevalues[i]);
+  /* free all ranged attribute values */
+  for (i=0;i<MAX_RANGED_ATTRIBUTES_PER_ENTRY;i++)
+    if (entry->rangedattributevalues[i]!=NULL)
+      free(entry->rangedattributevalues[i]);
   /* we don't need the result anymore, ditch it. */
   ldap_msgfree(entry->search->msg);
   entry->search->msg=NULL;
@@ -1024,6 +1037,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         /* check if there are more pages to come */
         if ((search->cookie==NULL)||(search->cookie->bv_len==0))
         {
+          log_log(LOG_DEBUG,"ldap_result(): end of results");
           /* we are at the end of the search, no more results */
           myldap_search_close(search);
           if (rcp!=NULL)
@@ -1114,6 +1128,139 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
   return entry->dn;
 }
 
+/* Return a buffer that is an a list of strings that can be freed
+   with a single call to free(). This function frees the set. */
+static char **set2values(SET *set)
+{
+  char *buf;
+  char **values;
+  const char *val;
+  size_t sz;
+  int num;
+  /* check set */
+  if (set==NULL)
+    return NULL;
+  /* count number of entries and needed space */
+  sz=0;
+  num=1;
+  set_loop_first(set);
+  while ((val=set_loop_next(set))!=NULL)
+  {
+    num++;
+    sz+=strlen(val)+1;
+  }
+  /* allocate the needed memory */
+  buf=(char *)malloc(num*sizeof(char *)+sz);
+  if (buf==NULL)
+  {
+    log_log(LOG_CRIT,"set2values(): malloc() failed to allocate memory");
+    set_free(set);
+    return NULL;
+  }
+  values=(char **)buf;
+  buf+=num*sizeof(char *);
+  /* copy set into buffer */
+  sz=0;
+  num=0;
+  set_loop_first(set);
+  while ((val=set_loop_next(set))!=NULL)
+  {
+    strcpy(buf,val);
+    values[num++]=buf;
+    buf+=strlen(buf)+1;
+  }
+  values[num]=NULL;
+  /* we're done */
+  set_free(set);
+  return values;
+}
+
+/* Perform ranged retreival of attributes.
+   http://msdn.microsoft.com/en-us/library/aa367017(vs.85).aspx
+   http://www.tkk.fi/cc/docs/kerberos/draft-kashi-incremental-00.txt */
+static char **myldap_get_ranged_values(MYLDAP_ENTRY *entry,const char *attr)
+{
+  char **values;
+  char *attn;
+  const char *attrs[2];
+  BerElement *ber;
+  int i;
+  int startat=0,nxt=0;
+  char attbuf[80];
+  const char *dn=myldap_get_dn(entry);
+  MYLDAP_SESSION *session=entry->search->session;
+  MYLDAP_SEARCH *search=NULL;
+  SET *set=NULL;
+  /* build the attribute name to find */
+  if (mysnprintf(attbuf,sizeof(attbuf),"%s;range=0-*",attr))
+    return NULL;
+  /* keep doing lookups untul we can't get any more results */
+  while (1)
+  {
+    /* go over all attributes to find the ranged attribute */
+    ber=NULL;
+    attn=ldap_first_attribute(entry->search->session->ld,entry->search->msg,&ber);
+    values=NULL;
+    while (attn!=NULL)
+    {
+      if (strncasecmp(attn,attbuf,strlen(attbuf)-1)==0)
+      {
+        log_log(LOG_DEBUG,"found ranged results %s",attn);
+        nxt=atoi(attn+strlen(attbuf)-1)+1;
+        values=ldap_get_values(entry->search->session->ld,entry->search->msg,attn);
+        ldap_memfree(attn);
+        break;
+      }
+      /* free old attribute name and get next one */
+      ldap_memfree(attn);
+      attn=ldap_next_attribute(entry->search->session->ld,entry->search->msg,ber);
+    }
+    ber_free(ber,0);
+    /* see if we found any values */
+    if ((values==NULL)||(*values==NULL))
+      break;
+    /* allocate memory */
+    if (set==NULL)
+    {
+      set=set_new();
+      if (set==NULL)
+      {
+        ldap_value_free(values);
+        log_log(LOG_CRIT,"myldap_get_ranged_values(): set_new() failed to allocate memory");
+        return NULL;
+      }
+    }
+    /* add to the set */
+    for (i=0;values[i]!=NULL;i++)
+      set_add(set,values[i]);
+    /* free results */
+    ldap_value_free(values);
+    /* check if we should start a new search */
+    if (nxt<=startat)
+      break;
+    startat=nxt;
+    /* build attributes for a new search */
+    if (mysnprintf(attbuf,sizeof(attbuf),"%s;range=%d-*",attr,startat))
+      break;
+    attrs[0]=attbuf;
+    attrs[1]=NULL;
+    /* close the previous search, if any */
+    if (search!=NULL)
+      myldap_search_close(search);
+    /* start the new search */
+    search=myldap_search(session,dn,LDAP_SCOPE_BASE,"(objectClass=*)",attrs);
+    if (search==NULL)
+      break;
+    entry=myldap_get_entry(search,NULL);
+    if (entry==NULL)
+      break;
+  }
+  /* close any started searches */
+  if (search!=NULL)
+    myldap_search_close(search);
+  return set2values(set);
+}
+
 /* Simple wrapper around ldap_get_values(). */
 const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
 {
@@ -1147,10 +1294,28 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
       rc=LDAP_SUCCESS;
       ldap_set_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
     }
+    else if (rc==LDAP_SUCCESS)
+    {
+      /* we have a success code but no values, let's try to get ranged
+         values */
+      values=myldap_get_ranged_values(entry,attr);
+      if (values==NULL)
+        return NULL;
+      /* store values entry so we can free it later on */
+      for (i=0;i<MAX_RANGED_ATTRIBUTES_PER_ENTRY;i++)
+        if (entry->rangedattributevalues[i]==NULL)
+        {
+          entry->rangedattributevalues[i]=values;
+          return (const char **)values;
+        }
+      /* we found no room to store the values */
+      log_log(LOG_ERR,"ldap_get_values() couldn't store results, increase MAX_RANGED_ATTRIBUTES_PER_ENTRY");
+      free(values);
+      return NULL;
+    }
     else
       log_log(LOG_WARNING,"ldap_get_values() of attribute \"%s\" on entry \"%s\" returned NULL: %s",
                           attr,myldap_get_dn(entry),ldap_err2string(rc));
-    /* TODO: handle paged attribute values here */
     return NULL;
   }
   /* store values entry so we can free it later on */
