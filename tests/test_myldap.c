@@ -37,12 +37,14 @@ struct worker_args {
   int id;
 };
 
+static char *foo="";
+
 /* this is a simple way to get this into an executable,
    we should probably read a valid config instead */
 const char **base_get_var(int UNUSED(map)) {return NULL;}
 int *scope_get_var(int UNUSED(map)) {return NULL;}
-const char **filter_get_var(int UNUSED(map)) {return NULL;}
-const char **attmap_get_var(int UNUSED(map),const char UNUSED(*name)) {return NULL;}
+const char **filter_get_var(int UNUSED(map)) {return &foo;}
+const char **attmap_get_var(int UNUSED(map),const char UNUSED(*name)) {return &foo;}
 
 /* the maxium number of results to print (all results are retrieved) */
 #define MAXRESULTS 10
@@ -66,7 +68,7 @@ static void test_search(void)
   printf("test_myldap: test_search(): doing search...\n");
   search=myldap_search(session,nslcd_cfg->ldc_base,
                        LDAP_SCOPE_SUBTREE,
-                       "(objectclass=posixaccount)",
+                       "(objectclass=posixAccount)",
                        attrs);
   assert(search!=NULL);
   /* go over results */
@@ -114,7 +116,7 @@ static void test_get(void)
   assert(session!=NULL);
   /* perform search */
   printf("test_myldap: test_get(): doing search...\n");
-  search1=myldap_search(session,"dc=test,dc=tld",
+  search1=myldap_search(session,nslcd_cfg->ldc_base,
                         LDAP_SCOPE_SUBTREE,
                         "(&(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))(cn=testgroup2))",
                         attrs1);
@@ -312,7 +314,7 @@ static void *worker(void *arg)
   /* perform search */
   search=myldap_search(session,nslcd_cfg->ldc_base,
                        LDAP_SCOPE_SUBTREE,
-                       "(objectclass=posixaccount)",
+                       "(objectclass=posixAccount)",
                        attrs);
   assert(search!=NULL);
   /* go over results */
@@ -379,7 +381,7 @@ static void test_connections(void)
   printf("test_myldap: test_connections(): doing search...\n");
   search=myldap_search(session,nslcd_cfg->ldc_base,
                        LDAP_SCOPE_SUBTREE,
-                       "(objectclass=posixaccount)",
+                       "(objectclass=posixAccount)",
                        attrs);
   assert(search==NULL);
   /* clean up */
