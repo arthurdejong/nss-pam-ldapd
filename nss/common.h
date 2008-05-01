@@ -85,10 +85,8 @@ TFILE *nslcd_client_open(void)
   return NSS_STATUS_UNAVAIL;
 
 /* Macro is called to handle problems with too small a buffer.
-   Note that this currently requires the caller to do setent()
-   again before doing getent() because this closes the stream.
-   Something more inteligent (e.g. ungetting the read data from
-   the stream) should be implemented. */
+   This triggers the caller to call the function with a larger
+   buffer (see NSS_GETENT below). */
 #define ERROR_OUT_BUFERROR(fp) \
   *errnop=ERANGE; \
   return NSS_STATUS_TRYAGAIN;
