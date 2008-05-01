@@ -37,7 +37,7 @@ struct worker_args {
   int id;
 };
 
-static char *foo="";
+static const char *foo="";
 
 /* this is a simple way to get this into an executable,
    we should probably read a valid config instead */
