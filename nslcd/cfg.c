@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007 Arthur de Jong
+   Copyright (C) 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -87,6 +87,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_idle_timelimit=0;
   cfg->ldc_reconnect_sleeptime=1;
   cfg->ldc_reconnect_maxsleeptime=30;
+#ifdef LDAP_OPT_X_TLS
   cfg->ldc_ssl_on=SSL_OFF;
   cfg->ldc_sslpath=NULL;
   cfg->ldc_tls_checkpeer=-1;
@@ -96,6 +97,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_tls_ciphers=NULL;
   cfg->ldc_tls_cert=NULL;
   cfg->ldc_tls_key=NULL;
+#endif /* LDAP_OPT_X_TLS */
   cfg->ldc_restart=1;
   cfg->ldc_pagesize=0;
   cfg->ldc_debug=0;
@@ -712,6 +714,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       get_int(filename,lnr,keyword,&line,&cfg->ldc_reconnect_maxsleeptime);
       get_eol(filename,lnr,keyword,&line);
     }
+#ifdef LDAP_OPT_X_TLS
     /* SSL/TLS options */
     else if (strcasecmp(keyword,"ssl")==0)
     {
@@ -777,6 +780,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */
     }
+#endif /* LDAP_OPT_X_TLS */
     /* other options */
     else if (strcasecmp(keyword,"restart")==0)
     {

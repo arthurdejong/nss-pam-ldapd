@@ -403,6 +403,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   }
 }
 
+#ifdef HAVE_LDAP_SET_REBIND_PROC
 /* This function is called by the LDAP library when chasing referrals.
    It is configured with the ldap_set_rebind_proc() below. */
 static int do_rebind(LDAP *UNUSED(ld),LDAP_CONST char *url,
@@ -412,6 +413,7 @@ static int do_rebind(LDAP *UNUSED(ld),LDAP_CONST char *url,
   log_log(LOG_DEBUG,"rebinding to %s",url);
   return do_bind((MYLDAP_SESSION *)arg,url);
 }
+#endif /* HAVE_LDAP_SET_REBIND_PROC */
 
 /* This function sets a number of properties on the connection, based
    what is configured in the configfile. This function returns an
@@ -420,7 +422,9 @@ static int do_set_options(MYLDAP_SESSION *session)
 {
   int rc;
   struct timeval tv;
+#ifdef LDAP_OPT_X_TLS
   int tls=LDAP_OPT_X_TLS_HARD;
+#endif /* LDAP_OPT_X_TLS */
   /* turn on debugging */
   if (nslcd_cfg->ldc_debug)
   {
@@ -436,6 +440,7 @@ static int do_set_options(MYLDAP_SESSION *session)
     LDAP_SET_OPTION(NULL,LDAP_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
 #endif /* LDAP_OPT_DEBUG_LEVEL */
   }
+#ifdef HAVE_LDAP_SET_REBIND_PROC
   /* the rebind function that is called when chasing referrals, see
      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/apis/ldap_set_rebind_proc.htm
      http://www.openldap.org/software/man.cgi?query=ldap_set_rebind_proc&manpath=OpenLDAP+2.4-Release */
@@ -446,6 +451,7 @@ static int do_set_options(MYLDAP_SESSION *session)
     log_log(LOG_ERR,"ldap_set_rebind_proc() failed: %s",ldap_err2string(rc));
     return rc;
   }
+#endif /* HAVE_LDAP_SET_REBIND_PROC */
   /* set the protocol version to use */
   LDAP_SET_OPTION(session->ld,LDAP_OPT_PROTOCOL_VERSION,&nslcd_cfg->ldc_version);
   /* set some other options */
@@ -459,8 +465,12 @@ static int do_set_options(MYLDAP_SESSION *session)
 #ifdef LDAP_OPT_NETWORK_TIMEOUT
   LDAP_SET_OPTION(session->ld,LDAP_OPT_NETWORK_TIMEOUT,&tv);
 #endif /* LDAP_OPT_NETWORK_TIMEOUT */
+#ifdef LDAP_X_OPT_CONNECT_TIMEOUT
+  LDAP_SET_OPTION(session->ld,LDAP_X_OPT_CONNECT_TIMEOUT,&tv);
+#endif /* LDAP_X_OPT_CONNECT_TIMEOUT */
   LDAP_SET_OPTION(session->ld,LDAP_OPT_REFERRALS,nslcd_cfg->ldc_referrals?LDAP_OPT_ON:LDAP_OPT_OFF);
   LDAP_SET_OPTION(session->ld,LDAP_OPT_RESTART,nslcd_cfg->ldc_restart?LDAP_OPT_ON:LDAP_OPT_OFF);
+#ifdef LDAP_OPT_X_TLS
   /* if SSL is desired, then enable it */
   if (nslcd_cfg->ldc_ssl_on==SSL_LDAPS)
   {
@@ -502,6 +512,7 @@ static int do_set_options(MYLDAP_SESSION *session)
       LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_KEYFILE,nslcd_cfg->ldc_tls_key);
     }
   }
+#endif /* LDAP_OPT_X_TLS */
   /* if nothing above failed, everything should be fine */
   return LDAP_SUCCESS;
 }
