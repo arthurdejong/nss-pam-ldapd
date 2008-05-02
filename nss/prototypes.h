@@ -63,7 +63,8 @@ struct __netgrent
   } val;
   /* the following stuff is used by some NSS services
      but not by ours (it's not completely clear how these
-     are shared between different services) */
+     are shared between different services) or is used
+     by our caller */
   char *data;
   size_t data_size;
   union
@@ -71,9 +72,7 @@ struct __netgrent
     char *cursor;
     unsigned long int position;
   } insertedname; /* added name to union to avoid warning */
-  /* this one is used to flag the first entry */
   int first;
-  /* this is used by our caller, we also won't touch these */
   struct name_list *known_groups;
   struct name_list *needed_groups;
   void *nip; /* changed from `service_user *nip' */

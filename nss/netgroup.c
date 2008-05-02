@@ -31,13 +31,13 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-/* we redifine this here because we need to return NSS_STATUS_RETURN
-   if we have sucessfully read some entries */
+/* we redefine this here because we need to return NSS_STATUS_RETURN
+   instead of NSS_STATUS_NOTFOUND */
 #undef ERROR_OUT_NOSUCCESS
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
   (void)tio_close(fp); \
   fp=NULL; \
-  return (result->first)?NSS_STATUS_NOTFOUND:NSS_STATUS_RETURN;
+  return NSS_STATUS_RETURN;
 
 /* function for reading a single result entry */
 static enum nss_status read_netgrent(
@@ -83,8 +83,6 @@ static enum nss_status read_netgrent(
   }
   else
     return NSS_STATUS_UNAVAIL;
-  /* flag the fact that we have successfully returned an entry */
-  result->first=0;
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }
@@ -92,10 +90,10 @@ static enum nss_status read_netgrent(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *netgrentfp;
 
-enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *result)
+enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent UNUSED(*result))
 {
   /* we cannot use NSS_SETENT() here because we have a parameter that is only
-     available in this function and we set result->first */
+     available in this function */
   int32_t tmpint32;
   int errnocp;
   int *errnop;
@@ -110,10 +108,6 @@ enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent *resul
   WRITE_FLUSH(netgrentfp);
   /* read response header */
   READ_RESPONSEHEADER(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME);
-  /* set the first flag, this is used to check if we should
-     return NSS_STATUS_NOTFOUND (entry not found) or
-     NSS_STATUS_RETURN (entry found but no more lines) */
-  result->first=1;
   return NSS_STATUS_SUCCESS;
 }
 
