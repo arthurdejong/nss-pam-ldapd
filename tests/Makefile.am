@@ -20,11 +20,10 @@
 
 TESTS = test_dict test_set test_tio test_cfg test_myldap.sh test_nsscmds.sh
 
-check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap
-
-noinst_PROGRAMS = test_aliases test_ethers test_group test_hosts \
-                  test_netgroup test_networks test_passwd test_protocols \
-                  test_rpc test_services test_shadow
+check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap \
+                 test_aliases test_ethers test_group test_hosts \
+                 test_netgroup test_networks test_passwd test_protocols \
+                 test_rpc test_services test_shadow
 
 EXTRA_DIST = nss-ldapd-test.conf test_myldap.sh test_nsscmds.sh usernames.txt
 
@@ -47,7 +46,7 @@ test_tio_SOURCES = test_tio.c ../common/tio.h ../common/tio.c
 test_tio_LDFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 test_cfg_SOURCES = test_cfg.c
-test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o \
+test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o \
                  ../nslcd/common.o ../nslcd/myldap.o \
                  ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
                  ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
@@ -57,9 +56,9 @@ test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o \
                  ../compat/libcompat.a
 
 test_myldap_SOURCES = test_myldap.c
-test_myldap_LDADD = ../nslcd/log.o ../common/dict.o ../common/tio.o \
-                    ../nslcd/common.o ../nslcd/cfg.o \
-                    ../nslcd/myldap.o @nslcd_LIBS@ ../compat/libcompat.a
+test_myldap_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
+                    ../nslcd/myldap.o @nslcd_LIBS@ ../common/libtio.a \
+                    ../common/libdict.a ../compat/libcompat.a
 
 common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h \
                  ../common/tio.c ../common/tio.h
