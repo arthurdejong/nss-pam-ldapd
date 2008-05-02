@@ -24,7 +24,8 @@ check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap
 
 EXTRA_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                  test_netgroup test_networks test_passwd test_protocols \
-                 test_rpc test_services test_shadow
+                 test_rpc test_services test_shadow \
+                 test_nslcd_group
 
 EXTRA_DIST = nss-ldapd-test.conf test_myldap.sh test_nsscmds.sh usernames.txt
 
@@ -77,3 +78,13 @@ test_protocols_SOURCES = test_protocols.c ../nss/protocols.c $(common_SOURCES)
 test_rpc_SOURCES = test_rpc.c ../nss/rpc.c $(common_SOURCES)
 test_services_SOURCES = test_services.c ../nss/services.c $(common_SOURCES)
 test_shadow_SOURCES = test_shadow.c ../nss/shadow.c $(common_SOURCES)
+
+test_nslcd_group_SOURCES = test_nslcd_group.c
+test_nslcd_group_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o \
+                         ../nslcd/common.o ../nslcd/myldap.o \
+                         ../nslcd/alias.o ../nslcd/ether.o \
+                         ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
+                         ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
+                         ../nslcd/service.o ../nslcd/shadow.o \
+                         @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a \
+                         ../compat/libcompat.a ../nslcd/cfg.o
