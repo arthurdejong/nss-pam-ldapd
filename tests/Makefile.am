@@ -20,12 +20,15 @@
 
 TESTS = test_dict test_set test_tio test_cfg test_myldap.sh test_nsscmds.sh
 
-check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap \
-                 test_aliases test_ethers test_group test_hosts \
+check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap
+
+EXTRA_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                  test_netgroup test_networks test_passwd test_protocols \
                  test_rpc test_services test_shadow
 
 EXTRA_DIST = nss-ldapd-test.conf test_myldap.sh test_nsscmds.sh usernames.txt
+
+CLEANFILES = $(EXTRA_PROGRAMS)
 
 AM_CPPFLAGS = -I$(top_srcdir)
 AM_CFLAGS = $(PTHREAD_CFLAGS) -g
