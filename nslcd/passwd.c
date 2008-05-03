@@ -30,12 +30,14 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "common.h"
 #include "log.h"
 #include "myldap.h"
 #include "cfg.h"
 #include "attmap.h"
+#include "common/dict.h"
 
 /* ( nisSchema.2.0 NAME 'posixAccount' SUP top AUXILIARY
  *   DESC 'Abstraction of an account with POSIX attributes'
@@ -161,28 +163,29 @@ int isvalidusername(const char *name)
   return -1;
 }
 
-char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
+/* the cache that is used in dn2uid() */
+static pthread_mutex_t dn2uid_cache_mutex=PTHREAD_MUTEX_INITIALIZER;
+static DICT *dn2uid_cache=NULL;
+struct dn2uid_cache_entry
+{
+  time_t timestamp;
+  char *uid;
+};
+#define DN2UID_CACHE_TIMEOUT (15*60)
+
+/* Perform an LDAP lookup to translate the DN into a uid.
+   This function either returns NULL or a strdup()ed string. */
+static char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn)
 {
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   static const char *attrs[2];
   int rc;
   const char **values;
-  /* check for empty string */
-  if ((dn==NULL)||(*dn=='\0'))
-    return NULL;
-  /* set up attributes */
+  char *uid;
+  /* we have to look up the entry */
   attrs[0]=attmap_passwd_uid;
   attrs[1]=NULL;
-  /* try to look up uid within DN string */
-  if (myldap_cpy_rdn_value(dn,attmap_passwd_uid,buf,buflen)!=NULL)
-  {
-    /* check if it is valid */
-    if (!isvalidusername(buf))
-      return NULL;
-    return buf;
-  }
-  /* we have to look up the entry */
   search=myldap_search(session,dn,LDAP_SCOPE_BASE,passwd_filter,attrs);
   if (search==NULL)
   {
@@ -198,20 +201,74 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   }
   /* get uid (just use first one) */
   values=myldap_get_values(entry,attmap_passwd_uid);
-  if ((values==NULL)||(values[0]==NULL))
-  {
-    myldap_search_close(search);
+  /* check the result for presence and validity */
+  if ((values!=NULL)&&(values[0]!=NULL)&&isvalidusername(values[0]))
+    uid=strdup(values[0]);
+  else
+    uid=NULL;
+  myldap_search_close(search);
+  return uid;
+}
+
+char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
+{
+  struct dn2uid_cache_entry *cacheentry=NULL;
+  char *uid;
+  /* check for empty string */
+  if ((dn==NULL)||(*dn=='\0'))
     return NULL;
+  /* try to look up uid within DN string */
+  if (myldap_cpy_rdn_value(dn,attmap_passwd_uid,buf,buflen)!=NULL)
+  {
+    /* check if it is valid */
+    if (!isvalidusername(buf))
+      return NULL;
+    return buf;
   }
-  /* copy into buffer */
-  if (strlen(values[0])<buflen)
-    strcpy(buf,values[0]);
+  /* see if we have a cached entry */
+  pthread_mutex_lock(&dn2uid_cache_mutex);
+  if (dn2uid_cache==NULL)
+    dn2uid_cache=dict_new();
+  if ((dn2uid_cache!=NULL) && ((cacheentry=dict_get(dn2uid_cache,dn))!=NULL))
+  {
+    /* if the cached entry is still valid, return that */
+    if (time(NULL) < (cacheentry->timestamp+DN2UID_CACHE_TIMEOUT))
+    {
+      if ((cacheentry->uid!=NULL)&&(strlen(cacheentry->uid)<buflen))
+        strcpy(buf,cacheentry->uid);
+      else
+        buf=NULL;
+      pthread_mutex_unlock(&dn2uid_cache_mutex);
+      return buf;
+    }
+    /* leave the entry intact, just replace the uid below */
+  }
+  pthread_mutex_unlock(&dn2uid_cache_mutex);
+  /* look up the uid using an LDAP query */
+  uid=lookup_dn2uid(session,dn);
+  /* store the result in the cache */
+  pthread_mutex_lock(&dn2uid_cache_mutex);
+  if (cacheentry==NULL)
+  {
+    /* allocate a new entry in the cache */
+    cacheentry=(struct dn2uid_cache_entry *)malloc(sizeof(struct dn2uid_cache_entry));
+    if (cacheentry!=NULL)
+      dict_put(dn2uid_cache,dn,cacheentry);
+  }
+  else if (cacheentry->uid!=NULL)
+    free(cacheentry->uid);
+  /* update the cache entry */
+  if (cacheentry!=NULL)
+  {
+    cacheentry->timestamp=time(NULL);
+    cacheentry->uid=uid;
+  }
+  pthread_mutex_unlock(&dn2uid_cache_mutex);
+  /* copy the result into the buffer */
+  if ((uid!=NULL)&&(strlen(uid)<buflen))
+    strcpy(buf,uid);
   else
     buf=NULL;
-  myldap_search_close(search);
-  /* check username */
-  if ((buf!=NULL)&&!isvalidusername(buf))
-    return NULL;
   return buf;
 }
 
