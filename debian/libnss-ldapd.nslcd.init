@@ -21,10 +21,10 @@
 
 ### BEGIN INIT INFO
 # Provides:          nslcd
-# Required-Start:    $local_fs $syslog
-# Required-Stop:     $local_fs $syslog
-# Should-Start:      $remote_fs $network
-# Should-Stop:       $remote_fs
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Should-Start:      slapd
+# X-Start-Before:    mail-transport-agent exim4 sendmail nullmailer masqmail citadel cron atd
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: nss-ldapd connection daemon
