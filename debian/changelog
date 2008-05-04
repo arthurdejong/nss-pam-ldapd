@@ -1,3 +1,38 @@
+nss-ldapd (0.6.2) unstable; urgency=low
+
+  * all user and group names are now checked for validity are specified in the
+    POSIX Portable Filename Character Set
+  * support retrieval of ranged attribute values as sometimes returned by
+    Active Directory (closes: #476454)
+  * added the threads keyword to configure the number of threads that should
+    be started in nslcd
+  * handle empty netgroups properly (closes: #478764)
+  * change the time out and retry mechanism for connecting to the LDAP server
+    to return an error quickly if the LDAP server is known to be unavailable
+    for a long time (this removed the reconnect_tries option and changes the
+    meaning of the reconnect_sleeptime and reconnect_maxsleeptime options)
+    (closes: #474174)
+  * increased the time out values between the NSS module and nslcd because of
+    new retry mechanism
+  * implement new dict and set modules that use a hashtable to map keys
+    efficiently
+  * use the new set to store group membership to simplify memory management
+    and eliminate duplicate members (closes: #474218)
+  * the uniqueMember attribute now only supports DN values
+  * implement a cache for DN to user name lookups (15 minute timeout) used for
+    the uniqueMember attribute to save on doing LDAP searches for groups with
+    a lot of members, based on a patch by Petter Reinholdtsen
+    (closes: #478267)
+  * only guess default search base in package configuration if the value
+    doesn't seem to be preseeded (closes: #475830)
+  * improvements to the tests
+  * if any of the ldap calls return LDAP_UNAVAILABLE or LDAP_SERVER_DOWN the
+    connection is closed
+  * improve dependencies in LSB init script header to improve dependency based
+    booting (closes: #478807)
+
+ -- Arthur de Jong <adejong@debian.org>  Sun, 04 May 2008 14:30:00 +0200
+
 nss-ldapd (0.6.1) unstable; urgency=low
 
   * new release (closes: #474232)

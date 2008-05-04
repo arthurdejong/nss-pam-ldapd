@@ -1,3 +1,305 @@
+2008-05-04 15:47  arthur
+
+	* [r727] HACKING, README: some documentation cleanups and updates
+
+2008-05-04 12:06  arthur
+
+	* [r726] tests/test_nslcd_group.c: add some tests for
+	  isvalidgroupname()
+
+2008-05-04 10:15  arthur
+
+	* [r725] man/nss-ldapd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/nslcd.c: make number of threads configurable with the
+	  threads keyword
+
+2008-05-04 09:39  arthur
+
+	* [r724] nslcd/myldap.h: add reference to note about
+	  thread-safeness of OpenLDAP
+
+2008-05-04 09:38  arthur
+
+	* [r723] nslcd/nslcd.c: fix copyright year
+
+2008-05-03 15:30  arthur
+
+	* [r722] nslcd/passwd.c: implement a cache for dn2uid() lookups
+	  that saves some time doing LDAP searches for groups with a lot of
+	  members, based on a patch by Petter Reinholdtsen
+	  <pere@hungry.com>
+
+2008-05-03 12:04  arthur
+
+	* [r721] debian/libnss-ldapd.nslcd.init: add soft dependency on
+	  slapd, simplify network and file system dependencies and add
+	  reverse dependencies on some common daemons that may want to do
+	  NSS lookups
+
+2008-05-02 20:52  arthur
+
+	* [r720] nss/netgroup.c, nss/prototypes.h: remove checking for
+	  first entry and always return NSS_STATUS_RETURN when no more data
+	  is available in the netgroup (this has the side effect of not
+	  returning NSS_STATUS_NOTFOUND for non-existing netgroups but
+	  seems to be what other NSS modules do) to properly handle empty
+	  netgroups
+
+2008-05-02 15:57  arthur
+
+	* [r719] tests, tests/Makefile.am, tests/test_nslcd_group.c: add
+	  file for testing nslcd/group.c
+
+2008-05-02 15:55  arthur
+
+	* [r718] tests/Makefile.am: don't even compile the test programs on
+	  make check
+
+2008-05-02 15:39  arthur
+
+	* [r717] tests/Makefile.am: don't compile test code on every build
+	  and fix LDADD lists to include correct objects
+
+2008-05-02 14:53  arthur
+
+	* [r716] nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c: only support
+	  tls-related options if LDAP library supports TLS, only add rebind
+	  code if ldap_set_rebind_proc() is found and only set
+	  LDAP_X_OPT_CONNECT_TIMEOUT if that option is supported
+
+2008-05-01 07:26  arthur
+
+	* [r715] nslcd/myldap.c: support ranged attribute values
+
+2008-05-01 06:32  arthur
+
+	* [r714] nss/common.h: fix comment of return value of
+	  NSS_STATUS_TRYAGAIN
+
+2008-05-01 06:25  arthur
+
+	* [r713] tests/test_myldap.c: fix a warning
+
+2008-05-01 06:22  arthur
+
+	* [r712] tests/test_myldap.c: ensure that filter_get_var() and
+	  filter_get_var() return non-NULL to enable parsing of config file
+	  with attribute mapping and filter settings and use base from
+	  config file
+
+2008-04-29 20:03  arthur
+
+	* [r711] man/nss-ldapd.conf.5.xml: make language about pagesize
+	  option a little clearer
+
+2008-04-27 21:15  arthur
+
+	* [r710] nslcd/cfg.c: support the case where an attribute mapping
+	  variable is NULL
+
+2008-04-26 14:19  arthur
+
+	* [r709] nslcd/myldap.c: also close the LDAP connection on
+	  LDAP_SERVER_DOWN (besides LDAP_UNAVAILABLE)
+
+2008-04-26 13:48  arthur
+
+	* [r708] man/nss-ldapd.conf.5.xml, nss/common.c: increase time out
+	  values because now nslcd will error out more quickly if the LDAP
+	  server is known to be unavailable
+
+2008-04-26 13:46  arthur
+
+	* [r707] nslcd/nslcd.c: spelling fix in comment
+
+2008-04-26 13:46  arthur
+
+	* [r706] man/nss-ldapd.conf.5.xml: some spelling fixes and a
+	  clarification of the retry mechanism
+
+2008-04-26 13:20  arthur
+
+	* [r705] nslcd/cfg.c: fix log message of incorrect map statement
+
+2008-04-26 13:16  arthur
+
+	* [r704] nslcd/passwd.c: make log message a little more descriptive
+
+2008-04-26 13:16  arthur
+
+	* [r703] configure.ac: fix quote in comment
+
+2008-04-26 13:13  arthur
+
+	* [r702] nslcd/myldap.c: ensure that the connection to the LDAP
+	  server is closed whenever any of the ldap_*() functions return
+	  LDAP_UNAVAILABLE
+
+2008-04-25 16:40  arthur
+
+	* [r701] man/nss-ldapd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/myldap.c, tests/nss-ldapd-test.conf, tests/test_cfg.c,
+	  tests/test_myldap.c: implement new timing mechanism for retries
+	  to quickly fail lookups to LDAP server that have been failing for
+	  some time, removing the reconnect_tries option and giving
+	  reconnect_sleeptime and reconnect_maxsleeptime options a new
+	  meaning
+
+2008-04-25 16:38  arthur
+
+	* [r700] tests/test_myldap.c: include missing include
+
+2008-04-25 16:37  arthur
+
+	* [r699] tests/test_myldap.c: ignore SIGPIPE in myldap tests
+
+2008-04-25 16:36  arthur
+
+	* [r698] tests/test_myldap.c: fix assert to be test instead of
+	  assignment
+
+2008-04-25 15:38  arthur
+
+	* [r697] tests/test_myldap.c, tests/test_myldap.sh: have the binary
+	  look up the file name and only use the shell script wrapper to
+	  determine if LDAP server is available
+
+2008-04-25 12:19  arthur
+
+	* [r696] compat/ether.h: fix typos in references to
+	  HAVE_ETHER_NTOA_R and HAVE_ETHER_ATON_R macros
+
+2008-04-23 20:53  arthur
+
+	* [r695] tests/test_nsscmds.sh: fix order of members in group in
+	  tests because of new hashing dict (maybe we should fix the script
+	  instead to always sort members properly)
+
+2008-04-23 20:50  arthur
+
+	* [r694] common/dict.c: fix problem where first item in the
+	  hashtable could be returned twice while looping
+
+2008-04-23 20:44  arthur
+
+	* [r693] tests/test_dict.c: add test for problem with duplicate
+	  entries being returned while looping over results
+
+2008-04-23 20:22  arthur
+
+	* [r692] nslcd/passwd.c: don't issue warning when
+	  myldap_get_entry() returns NULL and LDAP_SUCCESS
+
+2008-04-21 18:22  arthur
+
+	* [r691] common/dict.c: allocate room for key string just after
+	  entry to save on calls to malloc() and make it simpler
+
+2008-04-20 20:01  arthur
+
+	* [r690] nslcd/group.c, nslcd/passwd.c: fix tests for valid user
+	  and group names
+
+2008-04-20 19:50  arthur
+
+	* [r689] nslcd/common.h, nslcd/group.c, nslcd/passwd.c: add checks
+	  for valid user and group names in incoming requests and for data
+	  returned from LDAP
+
+2008-04-20 19:43  arthur
+
+	* [r688] nslcd/group.c: only support uniqueMember containing DN
+	  values
+
+2008-04-20 14:09  arthur
+
+	* [r687] nslcd/group.c: fix warning message to not refer to alias
+
+2008-04-20 14:07  arthur
+
+	* [r686] nslcd/myldap.c: make warning message more verbose, fix
+	  comment and don't try to store empty results
+
+2008-04-19 20:29  arthur
+
+	* [r685] debian/libnss-ldapd.config: only guess the searchbase if
+	  the value doesn't seem to be preseeded (based on a patch by
+	  Petter Reinholdtsen <pere@hungry.com>)
+
+2008-04-19 20:27  arthur
+
+	* [r684] common/dict.c: fix wrapping and indenting of comments
+
+2008-04-19 11:04  arthur
+
+	* [r683] nslcd/group.c: correctly call set_free() instead of free()
+
+2008-04-19 10:38  arthur
+
+	* [r682] nslcd/group.c: use the new set data structure to gather
+	  the group members
+
+2008-04-19 10:26  arthur
+
+	* [r681] common/Makefile.am, common/set.c, common/set.h, tests,
+	  tests/Makefile.am, tests/test_set.c: implement a set that uses
+	  the dict module as back-end
+
+2008-04-19 10:22  arthur
+
+	* [r680] common/dict.c: implement new dict module that uses a
+	  hashtable which is around 40 times faster for large (around 2000)
+	  entries but with around 40% more memory used
+
+2008-04-19 09:33  arthur
+
+	* [r679] tests/Makefile.am, tests/test_dict.c, tests/usernames.txt:
+	  some new tests for the dictionary module
+
+2008-04-19 06:07  arthur
+
+	* [r678] nslcd/passwd.c: add test for emtpy DN
+
+2008-04-18 19:57  arthur
+
+	* [r677] nslcd/myldap.c: instead of using the dict module to build
+	  a cache just store the values in an fixed-sized array because no
+	  more than 9 attributes are currently retrieved from an entry and
+	  we never retrieve the same value more than once (so the cache is
+	  useless)
+
+2008-04-17 21:37  arthur
+
+	* [r676] common/dict.h: add note about freed values
+
+2008-04-17 21:12  arthur
+
+	* [r675] common/dict.c, common/dict.h, nslcd/myldap.c,
+	  tests/test_dict.c: change dict_values_first() and
+	  dict_values_next() into dict_loop_first() and dict_loop_next() to
+	  have a looping mechanism over keys and values
+
+2008-04-13 13:20  arthur
+
+	* [r674] tests/nss-ldapd-test.conf: remote hopefully last reference
+	  to rootbind{dn,pw}
+
+2008-04-06 20:35  arthur
+
+	* [r673] nslcd/common.h: return values of dn2uid() and uid2dn()
+	  should always be used
+
+2008-04-06 20:31  arthur
+
+	* [r672] nslcd/group.c: properly handle the case where dn2uid()
+	  couldn't do a DN->uid lookup
+
+2008-04-06 11:18  arthur
+
+	* [r670] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.1 release
+
 2008-04-06 10:50  arthur
 
 	* [r669] config.guess, config.sub: include updated files
