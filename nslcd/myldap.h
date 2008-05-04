@@ -54,8 +54,8 @@ typedef struct ldap_session MYLDAP_SESSION;
    locking is performed to prevent concurrent modifications. Most LDAP
    libraries also are not thread-safe in that a single connection may be
    shared by multiple threads. It seems however that OpenLDAP at least does
-   not have any problems with an LDAP *ld per thread. (TODO: find references
-   for this) */
+   not have any problems with an LDAP *ld per thread.
+   http://www.openldap.org/lists/openldap-software/200606/msg00252.html */
 
 /* A result set as returned by myldap_search(). */
 typedef struct myldap_search MYLDAP_SEARCH;
