@@ -12,7 +12,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006, 2007 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,8 +36,6 @@ INTRODUCTION
 This is the nss-ldapd library which is an NSS module to do name lookups to an
 LDAP directory server. This library was forked from nss_ldap as provided by
 Luke Howard of PADL Software Pty Ltd.
-
-The library is currently work in progress.
 
 The library allows distributing account, group, host and other configuration
 information from a central LDAP server throughout an organisation. Because
@@ -72,7 +70,7 @@ The most practical improvements of nss-ldapd over nss_ldap are:
   process will open it's own connection (this problem is also mitigated by
   using nscd)
 - hostname lookups should now be deadlock-free because the LDAP server name is
-  no lonker looked up using the ldap method
+  no longer looked up using the ldap method
 - the setup is easier to debug because logging on the server component can be
   enabled without affecting "normal" processes
 
@@ -102,7 +100,7 @@ Currently the following name databases are supported:
 Note that for when using IPv6 hosts entries, the addresses in the LDAP
 directory must be in their preferred form. The same is true for mac addresses
 for the ethers database. Otherwise the address->entry lookups will not work.
-For more details see
+For more details on the preferred form see
   http://ldap.akbkhome.com/index.php/attribute/ipHostNumber.html
 and
   http://ldap.akbkhome.com/index.php/attribute/macAddress.html
@@ -111,6 +109,10 @@ automounter map lookups (which are also defined in /etc/nsswitch.conf) are not
 supported because the NSS interface is not used for these. The common autofs
 implementation (on GNU/Linux) currently uses it's own method for getting the
 maps from LDAP.
+
+Although aliases is exposed through NSS, most mailservers parse /etc/aliases
+by themselves and getting aliases from LDAP requires some configuration in the
+mailserver.
 
 The publickey, bootparams and netmasks are currently also unsupported. Some
 investigation should be done if these are needed for anything, which
@@ -134,8 +136,7 @@ and may cause problems.
 - SSL/TLS support is untested but will be tested when the core code stabilizes
 - the configuration file formats are not fully compatible
 - nested groups are currently unsupported
-- SASL and Kerberos configuration is untested
-- rootbinddn/rootbindpw support is disabled and is not likely to return
+- rootbinddn/rootbindpw support is removed and is not likely to return
 
 In general, the focus is to have the functionality that is present be well
 tested and supported.
@@ -207,7 +208,7 @@ service discovery through DNS
 -----------------------------
 
 nss-ldapd supports looking up LDAP server names through DNS SRV records as
-specified in RFC 2782. However Priority and Weight are not considered
+specified in RFC 2782. However, Priority and Weight are not considered
 separately and a single list of servers in added as if they had been specified
 with uri options in the configuration file.
 
@@ -223,7 +224,8 @@ LDAP SCHEMA
 nss-ldapd supports a wide range of possible LDAP schema configurations.
 Furthermore it can be customized heavily. The LDAP schema used is described in
 RFC 2307. Groups with distinguished name members (instead of login names) (RFC
-2307bis) are currently unsupported.
+2307bis) are also supported, although use of memberUid has much better
+performance.
 
 default attributes
 ------------------
@@ -234,16 +236,16 @@ configuration file. See the nss-ldapd.conf(5) manual page for details.
 
 aliases (objectClass=nisMailAlias)
   cn                - alias name
-  rfc822MailMember  - members
+  rfc822MailMember  - members of the alias (recipients)
 ethers (objectClass=ieee802Device)
   cn                - host name
   macAddress        - ethernet address
 group (objectClass=posixGroup)
   cn                - group name
   userPassword      - password
-  memberUid         - members
-  uniqueMember      - members
   gidNumber         - gid
+  memberUid         - members (user names)
+  uniqueMember      - members (DN values)
 hosts (objectClass=ipHost)
   cn                - host name (and aliases)
   ipHostNumber      - addresses
@@ -260,10 +262,10 @@ passwd (objectClass=posixAccount)
   userPassword      - password
   uidNumber         - uid
   gidNumber         - gid
+  gecos             - gecos
   cn                - gecos (if gecos is unset)
   homeDirectory     - home directory
   loginShell        - shell
-  gecos             - gecos
 protocols (objectClass=ipProtocol)
   cn                - protocol name
   ipProtocolNumber  - protocol number
@@ -309,6 +311,7 @@ REPORTING BUGS
 
 If you find any bugs or missing features please send email to
   arthur@ch.tudelft.nl
+If you are using the Debian package you are encouraged to use the BTS.
 Please include as much information as needed (platform, output of configure
 if compilation fails, output of the failure, etc). Patches are more than
 welcome (also see the file HACKING).

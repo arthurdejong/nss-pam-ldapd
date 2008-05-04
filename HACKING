@@ -36,12 +36,13 @@ For building svn snapshots the following tools are needed:
 * automake (1.10 is used)
 * check (0.9.5 is used)
 
-Also see debian/control (Build-Depends field) for libraries you need.
+and of course the usual build tools (gcc/make/etc). Also see debian/control
+(Build-Depends field) for libraries you need.
 
-and of course the usual build tools (gcc/make/etc). To build the svn snapshot
-run the autogen.sh shell script to build the configure script. When developing
-patches please use --enable-warnings with configure and don't introduce too
-many new warnings. For building the manual pages docbook2x is used.
+To build the svn snapshot run the autogen.sh shell script to build the
+configure script. When developing patches please use --enable-warnings with
+configure and don't introduce too many new warnings. For building the manual
+pages docbook2x is used.
 
 
 RELEASE VERSIONING
@@ -95,6 +96,7 @@ _nss_ldap_FUNCTION_r(...)
 Currently a number of macros are used to build most of the function bodies for
 these functions. A more elegant solution is welcome.
 
+Some handy links:
 http://mirrors.usc.edu/pub/gnu/Manuals/glibc-2.2.3/html_chapter/libc_28.html#SEC596
 http://www.gnu.org/software/libc/manual/html_node/index.html
 
@@ -121,7 +123,9 @@ for time-out values and buffer sizes. Both tha NSS library and nslcd use this
 module which means that it includes functionality that is needed for both
 (e.g. large write buffers for the server part and large resettable read
 buffers for the NSS part). Maybe building two modules from the same source
-with different features in them is an option.
+with different features in them is an option (e.g. the NSS part needs the
+read buffers and handling of SIGPIPE and the nslcd part needs the write
+buffers and possibly flushing in the background).
 
 
 SERVER PART
@@ -132,7 +136,8 @@ the database specific functions.
 
 nslcd_FUNCION(...)
   This functions fills in the correct parameters from the request. This
-  function should generate a response object (or more).
+  function should write responses to the stream. Almost all these functions
+  are generated from a macro in common.h.
 
 
 SECURITY NOTES
@@ -145,4 +150,5 @@ process that was doing the name lookups. In this case the privileges of the
 daemon are potentially exposed.
 
 The deamon should be changed to set a specific less-privileged user and
-group to minimize the riscs.
+group to minimize the riscs. Code for this is already in place. Configuration
+options should be added and the Debian packaging should use this.
