@@ -68,6 +68,24 @@
  <refsect1 id="options">
   <title>Options</title>
 
+  <refsect2 id='runtime_options'>
+   <title>Runtime options</title>
+   <variablelist>
+
+    <varlistentry>
+     <term><option>threads</option> <emphasis remap="I">NUM</emphasis></term>
+     <listitem>
+      <para>
+       Specifies the number of threads to start that can handle requests
+       and perform <acronym>LDAP</acronym> queries.
+       The default is to start 5 threads.
+      </para>
+     </listitem>
+    </varlistentry>
+
+   </variablelist>
+  </refsect2>
+
   <refsect2 id='general_connection_options'>
    <title>General connection options</title>
    <variablelist>

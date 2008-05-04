@@ -66,6 +66,8 @@ struct myldap_uri
 
 struct ldap_config
 {
+  /* the number of threads to start */
+  int ldc_threads;
   /* NULL terminated list of URIs */
   struct myldap_uri ldc_uris[NSS_LDAP_CONFIG_URI_MAX+1];
   /* protocol version */

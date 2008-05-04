@@ -62,6 +62,7 @@ static void cfg_defaults(struct ldap_config *cfg)
 {
   int i;
   memset(cfg,0,sizeof(struct ldap_config));
+  cfg->ldc_threads=5;
   for (i=0;i<(NSS_LDAP_CONFIG_URI_MAX+1);i++)
   {
     cfg->ldc_uris[i].uri=NULL;
@@ -589,8 +590,14 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     /* get keyword from line and ignore empty lines */
     if (get_token(&line,keyword,sizeof(keyword))==NULL)
       continue;
+    /* runtime options */
+    if (strcasecmp(keyword,"threads")==0)
+    {
+      get_int(filename,lnr,keyword,&line,&cfg->ldc_threads);
+      get_eol(filename,lnr,keyword,&line);
+    }
     /* general connection options */
-    if (strcasecmp(keyword,"uri")==0)
+    else if (strcasecmp(keyword,"uri")==0)
     {
       check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
       while (get_token(&line,token,sizeof(token))!=NULL)

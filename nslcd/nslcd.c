@@ -82,8 +82,7 @@ static volatile int nslcd_exitsignal=0;
 static int nslcd_serversocket=-1;
 
 /* thread ids of all running threads */
-#define NUM_THREADS 5
-static pthread_t nslcd_threads[NUM_THREADS];
+static pthread_t *nslcd_threads;
 
 /* display version information */
 static void display_version(FILE *fp)
@@ -215,7 +214,7 @@ static RETSIGTYPE sigexit_handler(int signum)
   int i;
   nslcd_exitsignal=signum;
   /* cancel all running threads */
-  for (i=0;i<NUM_THREADS;i++)
+  for (i=0;i<nslcd_cfg->ldc_threads;i++)
     if (pthread_cancel(nslcd_threads[i]))
     {
       /* TODO: figure out if we can actually log from within a signal handler */
@@ -595,7 +594,13 @@ int main(int argc,char *argv[])
   /* TODO: install signal handlers for reloading configuration */
   log_log(LOG_INFO,"accepting connections");
   /* start worker threads */
-  for (i=0;i<NUM_THREADS;i++)
+  nslcd_threads=(pthread_t *)malloc(nslcd_cfg->ldc_threads*sizeof(pthread_t));
+  if (nslcd_threads==NULL)
+  {
+    log_log(LOG_CRIT,"main(): malloc() failed to allocate memory");
+    exit(EXIT_FAILURE);
+  }
+  for (i=0;i<nslcd_cfg->ldc_threads;i++)
   {
     if (pthread_create(&nslcd_threads[i],NULL,worker,NULL))
     {
@@ -610,7 +615,7 @@ int main(int argc,char *argv[])
      to do general house keeping things (e.g. checking signals etc) */
   /* it is also better to always do thread_cancel() here instead of in the signal
      handler */
-  for (i=0;i<NUM_THREADS;i++)
+  for (i=0;i<nslcd_cfg->ldc_threads;i++)
   {
     if (pthread_join(nslcd_threads[i],NULL))
     {
@@ -618,6 +623,7 @@ int main(int argc,char *argv[])
       exit(EXIT_FAILURE);
     }
   }
+  free(nslcd_threads);
   /* print something about received signals */
   if (nslcd_exitsignal!=0)
   {
