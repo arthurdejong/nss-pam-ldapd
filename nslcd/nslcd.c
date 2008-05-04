@@ -90,7 +90,7 @@ static void display_version(FILE *fp)
 {
   fprintf(fp,"%s\n",PACKAGE_STRING);
   fprintf(fp,"Written by Luke Howard and Arthur de Jong.\n\n");
-  fprintf(fp,"Copyright (C) 1997-2006 Luke Howard, Arthur de Jong and West Consulting\n"
+  fprintf(fp,"Copyright (C) 1997-2008 Luke Howard, Arthur de Jong and West Consulting\n"
              "This is free software; see the source for copying conditions.  There is NO\n"
              "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
