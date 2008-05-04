@@ -33,6 +33,14 @@
 /* include group code because we want to test static methods */
 #include "nslcd/group.c"
 
+static void test_isvalidgroupname(void)
+{
+  assert(isvalidgroupname("foo"));
+  assert(!isvalidgroupname("foo^"));
+  assert(!isvalidgroupname("-foo"));
+  assert(isvalidgroupname("foo-bar"));
+}
+
 static void test_group_all(MYLDAP_SESSION *session,TFILE *fp)
 {
   MYLDAP_SEARCH *search;
@@ -116,6 +124,7 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   fp=opendummyfile();
   assert(fp!=NULL);
   /* perform tests */
+  test_isvalidgroupname();
   test_group_byname(session,fp,"testgroup");
   test_group_byname(session,fp,"testgroup2");
   test_group_all(session,fp);
