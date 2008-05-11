@@ -658,24 +658,20 @@ static int do_open(MYLDAP_SESSION *session)
   return LDAP_SUCCESS;
 }
 
-static MYLDAP_SEARCH *do_try_search(
-        MYLDAP_SESSION *session,
-        const char *base,int scope,const char *filter,const char **attrs)
+static int do_try_search(MYLDAP_SEARCH *search)
 {
   int rc;
   LDAPControl *serverCtrls[2];
   LDAPControl **pServerCtrls;
   int msgid;
-  MYLDAP_SEARCH *search;
-  int i;
   /* ensure that we have an open connection */
-  rc=do_open(session);
+  rc=do_open(search->session);
   if (rc!=LDAP_SUCCESS)
-    return NULL;
+    return rc;
   /* if we're using paging, build a page control */
-  if ((nslcd_cfg->ldc_pagesize>0)&&(scope!=LDAP_SCOPE_BASE))
+  if ((nslcd_cfg->ldc_pagesize>0)&&(search->scope!=LDAP_SCOPE_BASE))
   {
-    rc=ldap_create_page_control(session->ld,nslcd_cfg->ldc_pagesize,
+    rc=ldap_create_page_control(search->session->ld,nslcd_cfg->ldc_pagesize,
                                 NULL,0,&serverCtrls[0]);
     if (rc==LDAP_SUCCESS)
     {
@@ -687,15 +683,15 @@ static MYLDAP_SEARCH *do_try_search(
       log_log(LOG_WARNING,"ldap_create_page_control() failed: %s",ldap_err2string(rc));
       /* clear error flag */
       rc=LDAP_SUCCESS;
-      ldap_set_option(session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
+      ldap_set_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
       pServerCtrls=NULL;
     }
   }
   else
     pServerCtrls=NULL;
   /* perform the search */
-  rc=ldap_search_ext(session->ld,
-                     base,scope,filter,(char **)attrs,
+  rc=ldap_search_ext(search->session->ld,search->base,search->scope,
+                     search->filter,(char **)(search->attrs),
                      0,pServerCtrls,NULL,NULL,
                      LDAP_NO_LIMIT,&msgid);
   /* free the controls if we had them */
@@ -708,28 +704,14 @@ static MYLDAP_SEARCH *do_try_search(
   if (rc!=LDAP_SUCCESS)
   {
     log_log(LOG_WARNING,"ldap_search_ext() failed: %s",ldap_err2string(rc));
-    return NULL;
+    return rc;
   }
   /* update the last activity on the connection */
-  time(&(session->lastactivity));
-  /* allocate a new search entry */
-  search=myldap_search_new(session,base,scope,filter,attrs);
+  time(&(search->session->lastactivity));
   /* save msgid */
   search->msgid=msgid;
-  /* find a place in the session where we can register our search */
-  for (i=0;(session->searches[i]!=NULL)&&(i<MAX_SEARCHES_IN_SESSION);i++)
-    ;
-  if (i>=MAX_SEARCHES_IN_SESSION)
-  {
-    log_log(LOG_ERR,"myldap_search(): too many searches registered with session (max %d)",
-                    MAX_SEARCHES_IN_SESSION);
-    myldap_search_close(search);
-    return NULL;
-  }
-  /* regsiter search with the session so we can free it later on */
-  session->searches[i]=search;
   /* return the new search */
-  return search;
+  return LDAP_SUCCESS;
 }
 
 MYLDAP_SESSION *myldap_create_session(void)
@@ -786,6 +768,7 @@ MYLDAP_SEARCH *myldap_search(
   time_t endtime;
   time_t nexttry;
   time_t t;
+  int i;
   /* check parameters */
   if (!is_valid_session(session)||(base==NULL)||(filter==NULL)||(attrs==NULL))
   {
@@ -796,6 +779,20 @@ MYLDAP_SEARCH *myldap_search(
   /* log the call */
   log_log(LOG_DEBUG,"myldap_search(base=\"%s\", filter=\"%s\")",
                     base,filter);
+  /* allocate a new search entry */
+  search=myldap_search_new(session,base,scope,filter,attrs);
+  /* find a place in the session where we can register our search */
+  for (i=0;(session->searches[i]!=NULL)&&(i<MAX_SEARCHES_IN_SESSION);i++)
+    ;
+  if (i>=MAX_SEARCHES_IN_SESSION)
+  {
+    log_log(LOG_ERR,"myldap_search(): too many searches registered with session (max %d)",
+                    MAX_SEARCHES_IN_SESSION);
+    myldap_search_close(search);
+    return NULL;
+  }
+  /* regsiter search with the session so we can free it later on */
+  session->searches[i]=search;
   /* keep trying until we time out */
   endtime=time(NULL)+nslcd_cfg->ldc_reconnect_maxsleeptime;
   nexttry=endtime;
@@ -814,8 +811,7 @@ MYLDAP_SEARCH *myldap_search(
       {
         pthread_mutex_unlock(&uris_mutex);
         /* try to start the search */
-        search=do_try_search(session,base,scope,filter,attrs);
-        if (search!=NULL)
+        if (do_try_search(search)==LDAP_SUCCESS)
         {
           /* update ok time and return search handle */
           pthread_mutex_lock(&uris_mutex);
