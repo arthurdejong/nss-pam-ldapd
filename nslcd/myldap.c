@@ -122,6 +122,8 @@ struct myldap_search
   LDAPMessage *msg;
   /* cookie for paged searches */
   struct berval *cookie;
+  /* to indicate that we can retry the search from myldap_get_entry() */
+  int may_retry_search;
 };
 
 /* The maximum number of calls to myldap_get_values() that may be
@@ -252,6 +254,7 @@ static MYLDAP_SEARCH *myldap_search_new(
   search->cookie=NULL;
   search->msg=NULL;
   search->msgid=-1;
+  search->may_retry_search=1;
   /* clear result entry */
   search->entry=NULL;
   /* return the new search struct */
@@ -791,6 +794,8 @@ static int do_retry_search(MYLDAP_SEARCH *search)
           pthread_mutex_lock(&uris_mutex);
           nslcd_cfg->ldc_uris[search->session->current_uri].lastok=time(NULL);
           pthread_mutex_unlock(&uris_mutex);
+          /* flag the search as valid */
+          search->valid=1;
           return LDAP_SUCCESS;
         }
         /* close the current connection */
@@ -931,6 +936,14 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
   if (!search->valid)
   {
     log_log(LOG_WARNING,"myldap_get_entry(): connection was closed");
+    /* retry the search */
+    if (search->may_retry_search)
+    {
+      log_log(LOG_DEBUG,"myldap_get_entry(): retry search");
+      search->may_retry_search=0;
+      if (do_retry_search(search)==LDAP_SUCCESS)
+        return myldap_get_entry(search,rcp);
+    }
     myldap_search_close(search);
     if (rcp!=NULL)
       *rcp=LDAP_SERVER_DOWN;
@@ -972,7 +985,17 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
         /* close connection on connection problems */
         if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN))
+        {
+          /* close the connection and retry */
           do_close(search->session);
+          if (search->may_retry_search)
+          {
+            log_log(LOG_DEBUG,"myldap_get_entry(): retry search");
+            search->may_retry_search=0;
+            if (do_retry_search(search)==LDAP_SUCCESS)
+              return myldap_get_entry(search,rcp);
+          }
+        }
         /* close search */
         myldap_search_close(search);
         if (rcp!=NULL)
@@ -991,6 +1014,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         search->entry=myldap_entry_new(search);
         if (rcp!=NULL)
           *rcp=LDAP_SUCCESS;
+        search->may_retry_search=0;
         return search->entry;
       case LDAP_RES_SEARCH_RESULT:
         /* we have a search result, parse it */
