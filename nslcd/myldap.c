@@ -758,16 +758,87 @@ void myldap_session_close(MYLDAP_SESSION *session)
 /* mutex for updating the times in the uri */
 pthread_mutex_t uris_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-MYLDAP_SEARCH *myldap_search(
-        MYLDAP_SESSION *session,
-        const char *base,int scope,const char *filter,const char **attrs)
+static int do_retry_search(MYLDAP_SEARCH *search)
 {
-  MYLDAP_SEARCH *search;
   int sleeptime=0;
   int start_uri;
   time_t endtime;
   time_t nexttry;
   time_t t;
+  int rc=LDAP_UNAVAILABLE;
+  /* keep trying until we time out */
+  endtime=time(NULL)+nslcd_cfg->ldc_reconnect_maxsleeptime;
+  nexttry=endtime;
+  while (1)
+  {
+    /* try each configured URL once */
+    pthread_mutex_lock(&uris_mutex);
+    start_uri=search->session->current_uri;
+    do
+    {
+      /* only try if we haven't just had an error and it was a long tme
+         since the last ok */
+      if ( ( ( nslcd_cfg->ldc_uris[search->session->current_uri].lastfail -
+               nslcd_cfg->ldc_uris[search->session->current_uri].lastok ) < nslcd_cfg->ldc_reconnect_maxsleeptime) ||
+           ( time(NULL) >= (nslcd_cfg->ldc_uris[search->session->current_uri].lastfail+nslcd_cfg->ldc_reconnect_maxsleeptime) ) )
+      {
+        pthread_mutex_unlock(&uris_mutex);
+        /* try to start the search */
+        rc=do_try_search(search);
+        if (rc==LDAP_SUCCESS)
+        {
+          /* update ok time and return search handle */
+          pthread_mutex_lock(&uris_mutex);
+          nslcd_cfg->ldc_uris[search->session->current_uri].lastok=time(NULL);
+          pthread_mutex_unlock(&uris_mutex);
+          return LDAP_SUCCESS;
+        }
+        /* close the current connection */
+        do_close(search->session);
+        /* update time of failure and figure out when we should retry */
+        pthread_mutex_lock(&uris_mutex);
+        t=time(NULL);
+        nslcd_cfg->ldc_uris[search->session->current_uri].lastfail=t;
+        t+=nslcd_cfg->ldc_reconnect_sleeptime;
+        if (t<nexttry)
+          nexttry=t;
+      }
+      else if (nslcd_cfg->ldc_uris[search->session->current_uri].lastfail>0)
+      {
+        /* we are in a hard fail state, figure out when we can retry */
+        t=(nslcd_cfg->ldc_uris[search->session->current_uri].lastfail+nslcd_cfg->ldc_reconnect_maxsleeptime);
+        if (t<nexttry)
+          nexttry=t;
+      }
+      /* try the next URI (with wrap-around) */
+      search->session->current_uri++;
+      if (nslcd_cfg->ldc_uris[search->session->current_uri].uri==NULL)
+        search->session->current_uri=0;
+    }
+    while (search->session->current_uri!=start_uri);
+    pthread_mutex_unlock(&uris_mutex);
+    /* see if it is any use sleeping */
+    if (nexttry>=endtime)
+    {
+      log_log(LOG_ERR,"no available LDAP server found");
+      return rc;
+    }
+    /* sleep between tries */
+    sleeptime=nexttry-time(NULL);
+    if (sleeptime>0)
+    {
+      log_log(LOG_WARNING,"no available LDAP server found, sleeping %d seconds",sleeptime);
+      (void)sleep(sleeptime);
+    }
+    nexttry=time(NULL)+nslcd_cfg->ldc_reconnect_maxsleeptime;
+  }
+}
+
+MYLDAP_SEARCH *myldap_search(
+        MYLDAP_SESSION *session,
+        const char *base,int scope,const char *filter,const char **attrs)
+{
+  MYLDAP_SEARCH *search;
   int i;
   /* check parameters */
   if (!is_valid_session(session)||(base==NULL)||(filter==NULL)||(attrs==NULL))
@@ -793,71 +864,13 @@ MYLDAP_SEARCH *myldap_search(
   }
   /* regsiter search with the session so we can free it later on */
   session->searches[i]=search;
-  /* keep trying until we time out */
-  endtime=time(NULL)+nslcd_cfg->ldc_reconnect_maxsleeptime;
-  nexttry=endtime;
-  while (1)
+  /* do the search with retries to all configured servers */
+  if (do_retry_search(search)!=LDAP_SUCCESS)
   {
-    /* try each configured URL once */
-    pthread_mutex_lock(&uris_mutex);
-    start_uri=session->current_uri;
-    do
-    {
-      /* only try if we haven't just had an error and it was a long tme
-         since the last ok */
-      if ( ( ( nslcd_cfg->ldc_uris[session->current_uri].lastfail -
-               nslcd_cfg->ldc_uris[session->current_uri].lastok ) < nslcd_cfg->ldc_reconnect_maxsleeptime) ||
-           ( time(NULL) >= (nslcd_cfg->ldc_uris[session->current_uri].lastfail+nslcd_cfg->ldc_reconnect_maxsleeptime) ) )
-      {
-        pthread_mutex_unlock(&uris_mutex);
-        /* try to start the search */
-        if (do_try_search(search)==LDAP_SUCCESS)
-        {
-          /* update ok time and return search handle */
-          pthread_mutex_lock(&uris_mutex);
-          nslcd_cfg->ldc_uris[session->current_uri].lastok=time(NULL);
-          pthread_mutex_unlock(&uris_mutex);
-          return search;
-        }
-        /* close the current connection */
-        do_close(session);
-        /* update time of failure and figure out when we should retry */
-        pthread_mutex_lock(&uris_mutex);
-        t=time(NULL);
-        nslcd_cfg->ldc_uris[session->current_uri].lastfail=t;
-        t+=nslcd_cfg->ldc_reconnect_sleeptime;
-        if (t<nexttry)
-          nexttry=t;
-      }
-      else if (nslcd_cfg->ldc_uris[session->current_uri].lastfail>0)
-      {
-        /* we are in a hard fail state, figure out when we can retry */
-        t=(nslcd_cfg->ldc_uris[session->current_uri].lastfail+nslcd_cfg->ldc_reconnect_maxsleeptime);
-        if (t<nexttry)
-          nexttry=t;
-      }
-      /* try the next URI (with wrap-around) */
-      session->current_uri++;
-      if (nslcd_cfg->ldc_uris[session->current_uri].uri==NULL)
-        session->current_uri=0;
-    }
-    while (session->current_uri!=start_uri);
-    pthread_mutex_unlock(&uris_mutex);
-    /* see if it is any use sleeping */
-    if (nexttry>=endtime)
-    {
-      log_log(LOG_ERR,"no available LDAP server found");
-      return NULL;
-    }
-    /* sleep between tries */
-    sleeptime=nexttry-time(NULL);
-    if (sleeptime>0)
-    {
-      log_log(LOG_WARNING,"no available LDAP server found, sleeping %d seconds",sleeptime);
-      (void)sleep(sleeptime);
-    }
-    nexttry=time(NULL)+nslcd_cfg->ldc_reconnect_maxsleeptime;
+    myldap_search_close(search);
+    return NULL;
   }
+  return search;
 }
 
 void myldap_search_close(MYLDAP_SEARCH *search)
