@@ -258,21 +258,6 @@ static MYLDAP_SEARCH *myldap_search_new(
   return search;
 }
 
-static void myldap_search_free(MYLDAP_SEARCH *search)
-{
-  /* free any search entries */
-  if (search->entry!=NULL)
-    myldap_entry_free(search->entry);
-  /* clean up cookie */
-  if (search->cookie!=NULL)
-    ber_bvfree(search->cookie);
-  /* free read messages */
-  if (search->msg!=NULL)
-    ldap_msgfree(search->msg);
-  /* free the storage we allocated */
-  free(search);
-}
-
 static MYLDAP_SESSION *myldap_session_new(void)
 {
   MYLDAP_SESSION *session;
@@ -882,7 +867,7 @@ MYLDAP_SEARCH *myldap_search(
 void myldap_search_close(MYLDAP_SEARCH *search)
 {
   int i;
-  if (!is_valid_search(search))
+  if (search==NULL)
     return;
   /* free any messages */
   if (search->msg!=NULL)
@@ -891,7 +876,7 @@ void myldap_search_close(MYLDAP_SEARCH *search)
     search->msg=NULL;
   }
   /* abandon the search if there were more results to fetch */
-  if (search->msgid!=-1)
+  if ((search->session->ld!=NULL)&&(search->msgid!=-1))
   {
     ldap_abandon(search->session->ld,search->msgid);
     search->msgid=-1;
@@ -902,8 +887,17 @@ void myldap_search_close(MYLDAP_SEARCH *search)
     if (search->session->searches[i]==search)
       search->session->searches[i]=NULL;
   }
-  /* free this search */
-  myldap_search_free(search);
+  /* free any search entries */
+  if (search->entry!=NULL)
+    myldap_entry_free(search->entry);
+  /* clean up cookie */
+  if (search->cookie!=NULL)
+    ber_bvfree(search->cookie);
+  /* free read messages */
+  if (search->msg!=NULL)
+    ldap_msgfree(search->msg);
+  /* free the storage we allocated */
+  free(search);
 }
 
 MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
