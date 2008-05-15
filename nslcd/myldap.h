@@ -106,14 +106,14 @@ MUST_USE const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr);
 /* Checks to see if the entry has the specified object class. */
 MUST_USE int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass);
 
-/* Get the RDN's value: eg. if the RDN was cn=lukeh, getrdnvalue(entry,cn)
-   would return lukeh. If the attribute was not found in the DN or on error
-   NULL is returned. This method may be used to get the "most authorative"
-   value for an attribute. */
+/* Get the RDN's value: eg. if the DN was cn=lukeh, ou=People, dc=example,
+   dc=com getrdnvalue(entry,cn) would return lukeh. If the attribute was not
+   found in the DN or if some error occurs NULL is returned. This method may
+   be used to get the "most authorative" value for an attribute. */
 MUST_USE const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry,const char *attr);
 
 /* Just like myldap_get_rdn_value() but use the supplied character sequence
-   and copy the result into the buffer.
+   and copies the result into the buffer.
    Returns a pointer to the start of the string on success and NULL on
    failure. */
 MUST_USE const char *myldap_cpy_rdn_value(const char *dn,const char *attr,
