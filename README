@@ -225,7 +225,7 @@ nss-ldapd supports a wide range of possible LDAP schema configurations.
 Furthermore it can be customized heavily. The LDAP schema used is described in
 RFC 2307. Groups with distinguished name members (instead of login names) (RFC
 2307bis) are also supported, although use of memberUid has much better
-performance.
+performance (see below for details).
 
 default attributes
 ------------------
@@ -295,6 +295,30 @@ When using Microsoft Active Directory server (typically on Microsoft Windows
 The included sample configuration file has some commented out attribute
 mappings for such a set-up.
 
+group membership
+----------------
+
+Currently, two ways of specifying group membership are supported. The first,
+by using the memberUid attribute, is the simplest and by far the fastest
+(takes the least amount of lookups). This attributes maps to user names with
+the same values as the uid attribute would hold for posixAccount entries.
+
+The second method is to use DN values in the uniqueMember attribute (attribute
+names can be changed by using the attribute mapping options as described in
+the manual page). This is potentially a lot slower because in the worst case
+every DN has to be looked up in the LDAP server to find the proper value for
+the uid attribute.
+
+If the DN value already contains a uid value (e.g. uid=arthur, dc=example,
+dc=com) the lookup is skipped and the value from the DN is used. A cache is
+maintained that holds on to DN to uid translations for 15 minutes
+(DN2UID_CACHE_TIMEOUT in nslcd/passwd.c).
+
+In all cases, duplicate users are only returned once.
+
+Currently, having nested groups by uniqueMember values pointing to other
+groups, as well as the memberOf attribute in posixAccount entries are
+unsupported.
 
 MISC NOTES
 ==========
