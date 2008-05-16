@@ -1,7 +1,7 @@
 /*
    log.h - definitions of logging funtions
 
-   Copyright (C) 2002, 2003, 2007 Arthur de Jong
+   Copyright (C) 2002, 2003, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -47,6 +47,11 @@ void log_addlogging_none(void);
 /* start the logging with the configured logging methods
    if no method is configured yet, logging is done to syslog */
 void log_startlogging(void);
+
+
+/* indicate that a session id should be included in the output
+   and set it to a new value */
+void log_newsession(void);
 
 
 /* log the given message using the configured logging method */

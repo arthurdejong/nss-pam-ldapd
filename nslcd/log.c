@@ -1,7 +1,7 @@
 /*
    log.c - logging funtions
 
-   Copyright (C) 2002, 2003 Arthur de Jong
+   Copyright (C) 2002, 2003, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 
 #include "log.h"
 
@@ -49,6 +50,10 @@ static struct cvsd_log {
 
 /* default loglevel when no logging is configured */
 static int prelogging_loglevel=LOG_INFO;
+
+
+/* the session id that is set for this thread */
+static __thread char *sessionid=NULL;
 
 
 /* set loglevel when no logging is configured */
@@ -124,6 +129,24 @@ void log_startlogging(void)
 }
 
 
+/* indicate that a session id should be included in the output
+   and set it to a new value */
+void log_newsession(void)
+{
+  /* ensure that sessionid can hold a string */
+  if (sessionid==NULL)
+  {
+    sessionid=(char *)malloc(7);
+    if (sessionid==NULL)
+    {
+      fprintf(stderr,"malloc() failed: %s",strerror(errno));
+      return; /* silently fail */
+    }
+  }
+  sprintf(sessionid,"%06x",(int)(rand()&0xffffff));
+}
+
+
 /* log the given message using the configured logging method */
 void log_log(int pri,const char *format, ...)
 {
@@ -150,7 +173,12 @@ void log_log(int pri,const char *format, ...)
   {
     /* if logging is not yet defined, log to stderr */
     if (pri<=prelogging_loglevel)
-      fprintf(stderr,"%s: %s%s\n",PACKAGE,pri==LOG_DEBUG?"DEBUG: ":"",buffer);
+    {
+      if (sessionid)
+        fprintf(stderr,"%s: [%s] %s%s\n",PACKAGE,sessionid,pri==LOG_DEBUG?"DEBUG: ":"",buffer);
+      else
+        fprintf(stderr,"%s: %s%s\n",PACKAGE,pri==LOG_DEBUG?"DEBUG: ":"",buffer);
+    }
   }
   else
   {
@@ -159,10 +187,18 @@ void log_log(int pri,const char *format, ...)
       if (pri<=lst->loglevel)
       {
         if (lst->fp==NULL) /* syslog */
-          syslog(pri,"%s",buffer);
+        {
+          if (sessionid)
+            syslog(pri,"[%s] %s",sessionid,buffer);
+          else
+            syslog(pri,"%s",buffer);
+        }
         else /* file */
         {
-          fprintf(lst->fp,"%s: %s\n",PACKAGE,buffer);
+          if (sessionid)
+            fprintf(lst->fp,"%s: [%s] %s\n",sessionid,PACKAGE,buffer);
+          else
+            fprintf(lst->fp,"%s: %s\n",PACKAGE,buffer);
           fflush(lst->fp);
         }
       }
