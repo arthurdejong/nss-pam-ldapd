@@ -830,6 +830,8 @@ static int do_retry_search(MYLDAP_SEARCH *search)
     }
     /* sleep between tries */
     sleeptime=nexttry-time(NULL);
+    if (sleeptime>nslcd_cfg->ldc_reconnect_maxsleeptime)
+      sleeptime=nslcd_cfg->ldc_reconnect_maxsleeptime;
     if (sleeptime>0)
     {
       log_log(LOG_WARNING,"no available LDAP server found, sleeping %d seconds",sleeptime);

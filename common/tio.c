@@ -174,7 +174,7 @@ TFILE *tio_fdopen(int fd,struct timeval *readtimeout,struct timeval *writetimeou
 
 /* wait for any activity on the specified file descriptor using
    the specified deadline */
-static int tio_select(int fd, int readfd, const struct timeval *deadline)
+static int tio_select(TFILE *fp, int readfd, const struct timeval *deadline)
 {
   struct timeval tv;
   fd_set fdset;
@@ -183,7 +183,7 @@ static int tio_select(int fd, int readfd, const struct timeval *deadline)
   {
     /* prepare our filedescriptorset */
     FD_ZERO(&fdset);
-    FD_SET(fd,&fdset);
+    FD_SET(fp->fd,&fdset);
     /* figure out the time we need to wait */
     if (tio_tv_remaining(&tv,deadline))
     {
@@ -192,9 +192,19 @@ static int tio_select(int fd, int readfd, const struct timeval *deadline)
     }
     /* wait for activity */
     if (readfd)
+    {
+      /* santiy check for moving clock */
+      if (tv.tv_sec>fp->readtimeout.tv_sec)
+        tv.tv_sec=fp->readtimeout.tv_sec;
       rv=select(FD_SETSIZE,&fdset,NULL,NULL,&tv);
+    }
     else
+    {
+      /* santiy check for moving clock */
+      if (tv.tv_sec>fp->writetimeout.tv_sec)
+        tv.tv_sec=fp->writetimeout.tv_sec;
       rv=select(FD_SETSIZE,NULL,&fdset,NULL,&tv);
+    }
     if (rv>0)
       return 0; /* we have activity */
     else if (rv==0)
@@ -279,7 +289,7 @@ int tio_read(TFILE *fp, void *buf, size_t count)
       }
     }
     /* wait until we have input */
-    if (tio_select(fp->fd,1,&deadline))
+    if (tio_select(fp,1,&deadline))
       return -1;
     /* read the input in the buffer */
     rv=read(fp->fd,fp->readbuffer.buffer+fp->readbuffer.start,fp->readbuffer.size-fp->readbuffer.start);
@@ -355,7 +365,7 @@ int tio_flush(TFILE *fp)
   while (fp->writebuffer.len > 0)
   {
     /* wait until we can write */
-    if (tio_select(fp->fd,0,&deadline))
+    if (tio_select(fp,0,&deadline))
       return -1;
     /* write one block */
     if (tio_writebuf(fp))
