@@ -125,10 +125,6 @@ enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer
    **groupsp IN/OUT - pointer to the array of returned groupids
    limit     IN     - the maxium size of the array
    *errnop   OUT    - for returning errno
-
-   This function cannot grow the array if it becomes too large
-   (and will return NSS_STATUS_TRYAGAIN on buffer problem)
-   because it has no way of free()ing the buffer.
 */
 enum nss_status _nss_ldap_initgroups_dyn(
         const char *user,gid_t skipgroup,long int *start,
