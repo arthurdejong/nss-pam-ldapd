@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
@@ -231,6 +232,7 @@ int tio_read(TFILE *fp, void *buf, size_t count)
   /* have a more convenient storage type for the buffer */
   uint8_t *ptr=(uint8_t *)buf;
   /* build a time by which we should be finished */
+  /* TODO: probably only set up deadline if we have to do select() */
   tio_tv_prepare(&deadline,&(fp->readtimeout));
   /* loop until we have returned all the needed data */
   while (1)
@@ -315,22 +317,8 @@ int tio_skip(TFILE *fp, size_t count)
 static int tio_writebuf(TFILE *fp)
 {
   int rv;
-  struct sigaction act,oldact;
-  /* FIXME: we have a race condition here (setting and restoring the signal mask), this is a critical region that should be locked */
-  /* set up sigaction */
-  memset(&act,0,sizeof(struct sigaction));
-  act.sa_sigaction=NULL;
-  act.sa_handler=SIG_IGN;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags=SA_RESTART;
-  /* ignore SIGPIPE */
-  if (sigaction(SIGPIPE,&act,&oldact)!=0)
-    return -1; /* error setting signal handler */
   /* write the buffer */
-  rv=write(fp->fd,fp->writebuffer.buffer+fp->writebuffer.start,fp->writebuffer.len);
-  /* restore the old handler for SIGPIPE */
-  if (sigaction(SIGPIPE,&oldact,NULL)!=0)
-    return -1; /* error restoring signal handler */
+  rv=send(fp->fd,fp->writebuffer.buffer+fp->writebuffer.start,fp->writebuffer.len,MSG_NOSIGNAL);
   /* check for errors */
   if ((rv==0)||((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN)))
     return -1; /* something went wrong with the write */
