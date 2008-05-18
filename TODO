@@ -1,6 +1,5 @@
 probably before we can call this stable
 ---------------------------------------
-* fix usage of strerror() as it is not thread safe
 * fix race condition when setting signal mask in common/tio.c
   (using pthread_sigmask() adds a dependency on the pthread library,
   we should probably just do locking)
