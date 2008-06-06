@@ -96,7 +96,7 @@ static int mkfilter_passwd_byuid(uid_t uid,
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%d))",
                     passwd_filter,
-                    attmap_passwd_uidNumber,uid);
+                    attmap_passwd_uidNumber,(int)uid);
 }
 
 static void passwd_init(void)

@@ -22,6 +22,14 @@
 #include "config.h"
 
 #include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netinet/if_ether.h>
+#ifdef HAVE_NETINET_ETHER_H
+#include <netinet/ether.h>
+#endif
 
 #include "ether.h"
 

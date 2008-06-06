@@ -26,7 +26,9 @@
 #include <string.h>
 #include <strings.h>
 #include <ctype.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif /* HAVE_STDINT_H */
 
 #include "dict.h"
 
@@ -227,7 +229,7 @@ int dict_put(DICT *dict,const char *key,void *value)
   buf=(char *)malloc(sizeof(struct dict_entry)+l);
   if (buf==NULL)
     return -1;
-  entry=(struct dict_entry *)buf;
+  entry=(struct dict_entry *)(void *)buf;
   buf+=sizeof(struct dict_entry);
   strcpy(buf,key);
   entry->hash=hash;

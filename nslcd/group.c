@@ -99,7 +99,7 @@ static int mkfilter_group_bygid(gid_t gid,
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%d))",
                     group_filter,
-                    attmap_group_gidNumber,gid);
+                    attmap_group_gidNumber,(int)gid);
 }
 
 /* create a search filter for searching a group entry

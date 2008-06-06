@@ -38,6 +38,9 @@
 /* also include deprecated LDAP functions for now */
 #define LDAP_DEPRECATED 1
 
+/* for compatibility on Solaris */
+#define LDAP_REFERRALS 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -346,10 +349,12 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
    This returns an LDAP result code. */
 static int do_bind(MYLDAP_SESSION *session,const char *uri)
 {
+#ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
   int rc;
 #ifndef HAVE_SASL_INTERACT_T
   struct berval cred;
 #endif /* not HAVE_SASL_INTERACT_T */
+#ifdef LDAP_OPT_X_TLS
   /* check if StartTLS is requested */
   if (nslcd_cfg->ldc_ssl_on==SSL_START_TLS)
   {
@@ -361,15 +366,18 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
       return rc;
     }
   }
+#endif /* LDAP_OPT_X_TLS */
   /* TODO: store this information in the session */
   if (!nslcd_cfg->ldc_usesasl)
   {
+#endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
     /* do a simple bind */
     if (nslcd_cfg->ldc_binddn)
       log_log(LOG_DEBUG,"simple bind to %s as %s",uri,nslcd_cfg->ldc_binddn);
     else
       log_log(LOG_DEBUG,"simple anonymous bind to %s",uri);
     return ldap_simple_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_bindpw);
+#ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
   }
   else
   {
@@ -389,6 +397,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
     return ldap_sasl_bind_s(session->ld,nslcd_cfg->ldc_binddn,"GSSAPI",&cred,NULL,NULL,NULL);
 #endif /* not HAVE_SASL_INTERACT_T */
   }
+#endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
 }
 
 #ifdef HAVE_LDAP_SET_REBIND_PROC
@@ -1197,7 +1206,7 @@ static char **set2values(SET *set)
     set_free(set);
     return NULL;
   }
-  values=(char **)buf;
+  values=(char **)(void *)buf;
   buf+=num*sizeof(char *);
   /* copy set into buffer */
   sz=0;

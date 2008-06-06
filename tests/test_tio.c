@@ -36,9 +36,13 @@
 
 #include "common/tio.h"
 
+#ifndef __ASSERT_FUNCTION
+#define __ASSERT_FUNCTION ""
+#endif /* not __ASSERT_FUNCTION */
+
 #define assertok(expr) \
   ((expr) \
-   ? __ASSERT_VOID_CAST (0) \
+   ? (void) (0) \
    : __assertok_fail(__STRING(expr),__FILE__,__LINE__,__ASSERT_FUNCTION))
 
 static void __assertok_fail(const char *expr,const char *file,
