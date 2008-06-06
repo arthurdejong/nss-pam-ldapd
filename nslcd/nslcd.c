@@ -67,7 +67,7 @@
 #define READBUFFER_MINSIZE 32
 #define READBUFFER_MAXSIZE 64
 #define WRITEBUFFER_MINSIZE 64
-#define WRITEBUFFER_MAXSIZE 64*1024
+#define WRITEBUFFER_MAXSIZE 1*1024*1024
 
 /* the definition of the environment */
 extern char **environ;
@@ -349,7 +349,7 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
   /* set the timeouts */
   readtimeout.tv_sec=0; /* clients should send their request quickly */
   readtimeout.tv_usec=500000;
-  writetimeout.tv_sec=5; /* clients could be taking some time to process the results */
+  writetimeout.tv_sec=60; /* clients could be taking some time to process the results */
   writetimeout.tv_usec=0;
   /* create a stream object */
   if ((fp=tio_fdopen(sock,&readtimeout,&writetimeout,

@@ -2,7 +2,7 @@
    common.c - common functions for NSS lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -45,6 +45,12 @@
 #define WRITEBUFFER_MINSIZE 32
 #define WRITEBUFFER_MAXSIZE 32
 
+/* Note that the READBUFFER_MAXSIZE should be large enough to hold any single
+   result entity as defined in nslcd.h because the get*ent() functions expect
+   to be able to tio_reset() the stream to re-read the current entity.
+   Since group entities can grow arbitrarily large, this setting limits the
+   number of users that can be put in a group. */
+
 /* returns a socket to the server or NULL on error (see errno),
    socket should be closed with fclose() */
 TFILE *nslcd_client_open()
@@ -68,7 +74,7 @@ TFILE *nslcd_client_open()
     return NULL;
   }
   /* set the timeouts */
-  readtimeout.tv_sec=20; /* looking up stuff may take some time */
+  readtimeout.tv_sec=60; /* looking up stuff may take some time */
   readtimeout.tv_usec=0;
   writetimeout.tv_sec=10; /* nslcd could be loaded with requests */
   writetimeout.tv_usec=0;
