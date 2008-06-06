@@ -71,8 +71,8 @@ int getpeercred(int sock,uid_t *uid,gid_t *gid,pid_t *pid)
     return -1;
   }
   /* return the data */
-  if (uid!=NULL) *uid=cred.uid;
-  if (gid!=NULL) *gid=cred.gid;
+  if (uid!=NULL) *uid=cred.cr_uid;
+  if (gid!=NULL) *gid=cred.cr_gid;
   if (pid!=NULL) *pid=(pid_t)-1;
   return 0;
 #elif defined(HAVE_GETPEERUCRED)
