@@ -137,6 +137,10 @@ create_config()
 # nss-ldapd configuration file. See nss-ldapd.conf(5)
 # for details.
 
+# The user and group nslcd should run as.
+uid nslcd
+gid nslcd
+
 # The location at which the LDAP server(s) should be reachable.
 uri ldap://localhost/
 
@@ -164,6 +168,26 @@ if [ "$1" = "configure" ]
 then
   # get configuration data from debconf
   . /usr/share/debconf/confmodule
+  # check if the nslcd user exists
+  if getent passwd nslcd >/dev/null
+  then
+    :
+  else
+    # create nslcd user and group
+    adduser --system --group --home /var/run/nslcd/ \
+            --gecos "nss-ldapd name service LDAP connection daemon" \
+            --no-create-home \
+            nslcd
+    # add uid/gid options to the config file if it exists
+    # (this is when we're upgrading)
+    if [ -f "$CONFFILE" ]
+    then
+      echo "Adding uid and gid options to $CONFFILE..."
+      echo "# automatically added on upgrade of libnss-ldapd package" >> "$CONFFILE"
+      cfg_set uid nslcd
+      cfg_set gid nslcd
+    fi
+  fi
   # create a default configuration
   create_config
   # set server uri
