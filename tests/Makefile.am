@@ -18,9 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-TESTS = test_dict test_set test_tio test_cfg test_myldap.sh test_nsscmds.sh
+TESTS = test_dict test_set test_tio test_cfg test_myldap.sh test_nsscmds.sh \
+        test_getpeercred
 
-check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap
+check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap \
+                 test_getpeercred
 
 EXTRA_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                  test_netgroup test_networks test_passwd test_protocols \
@@ -63,6 +65,9 @@ test_myldap_SOURCES = test_myldap.c
 test_myldap_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
                     ../nslcd/myldap.o @nslcd_LIBS@ ../common/libtio.a \
                     ../common/libdict.a ../compat/libcompat.a
+
+test_getpeercred_SOURCES = test_getpeercred.c
+test_getpeercred_LDADD = ../compat/libcompat.a
 
 common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h \
                  ../common/tio.c ../common/tio.h
