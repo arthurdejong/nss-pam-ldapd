@@ -83,6 +83,32 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry>
+     <term><option>uid</option> <emphasis remap="I">uid</emphasis></term>
+     <listitem>
+      <para>
+       This specifies  which user id with which the daemon should be run.
+       This can be a numerical id or a symbolic value.
+       If no uid is specified no attempt to change the user will be made.
+       Note that you should use values that don't need <acronym>LDAP</acronym>
+       to resolve.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>gid</option> <emphasis remap="I">gid</emphasis></term>
+     <listitem>
+      <para>
+       This specifies  which group id with which the daemon should be run.
+       This can be a numerical id or a symbolic value.
+       If no gid is specified no attempt to change the group will be made.
+       Note that you should use values that don't need <acronym>LDAP</acronym>
+       to resolve.
+      </para>
+     </listitem>
+    </varlistentry>
+
    </variablelist>
   </refsect2>
 
