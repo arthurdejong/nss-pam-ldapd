@@ -790,7 +790,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     /* SSL/TLS options */
     else if (strcasecmp(keyword,"ssl")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
       check_argumentcount(filename,lnr,keyword,
           (get_token(&line,token,sizeof(token))!=NULL));
       if (strcasecmp(token,"start_tls")==0)
