@@ -69,9 +69,6 @@
 #define WRITEBUFFER_MINSIZE 64
 #define WRITEBUFFER_MAXSIZE 1*1024*1024
 
-/* the definition of the environment */
-extern char **environ;
-
 /* flag to indictate if we are in debugging mode */
 static int nslcd_debugging=0;
 
