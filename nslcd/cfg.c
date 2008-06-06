@@ -43,6 +43,9 @@
 #include <gssapi/gssapi.h>
 #include <gssapi/gssapi_krb5.h>
 #endif /* HAVE_GSSAPI_GSSAPI_KRB5_H */
+#include <sys/types.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include "common.h"
 #include "log.h"
@@ -63,6 +66,8 @@ static void cfg_defaults(struct ldap_config *cfg)
   int i;
   memset(cfg,0,sizeof(struct ldap_config));
   cfg->ldc_threads=5;
+  cfg->ldc_uid=NOUID;
+  cfg->ldc_gid=NOGID;
   for (i=0;i<(NSS_LDAP_CONFIG_URI_MAX+1);i++)
   {
     cfg->ldc_uris[i].uri=NULL;
@@ -396,6 +401,56 @@ static void get_eol(const char *filename,int lnr,
   }
 }
 
+static void get_uid(const char *filename,int lnr,
+                    const char *keyword,char **line,
+                    uid_t *var)
+{
+  /* TODO: refactor to have less overhead */
+  char token[32];
+  struct passwd *pwent;
+  char *tmp;
+  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
+  /* check if it is a valid numerical uid */
+  *var=(uid_t)strtol(token,&tmp,0);
+  if ((*token!='\0')&&(*tmp=='\0'))
+    return;
+  /* find by name */
+  pwent=getpwnam(token);
+  if (pwent!=NULL)
+  {
+    *var=pwent->pw_uid;
+    return;
+  }
+  /* log an error */
+  log_log(LOG_ERR,"%s:%d: %s: not a valid uid: '%s'",filename,lnr,keyword,token);
+  exit(EXIT_FAILURE);
+}
+
+static void get_gid(const char *filename,int lnr,
+                    const char *keyword,char **line,
+                    gid_t *var)
+{
+  /* TODO: refactor to have less overhead */
+  char token[32];
+  struct group *grent;
+  char *tmp;
+  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
+  /* check if it is a valid numerical gid */
+  *var=(gid_t)strtol(token,&tmp,0);
+  if ((*token!='\0')&&(*tmp=='\0'))
+    return;
+  /* find by name */
+  grent=getgrnam(token);
+  if (grent!=NULL)
+  {
+    *var=grent->gr_gid;
+    return;
+  }
+  /* log an error */
+  log_log(LOG_ERR,"%s:%d: %s: not a valid gid: '%s'",filename,lnr,keyword,token);
+  exit(EXIT_FAILURE);
+}
+
 static void parse_krb5_ccname_statement(const char *filename,int lnr,
                                         const char *keyword,char *line)
 {
@@ -594,6 +649,16 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     if (strcasecmp(keyword,"threads")==0)
     {
       get_int(filename,lnr,keyword,&line,&cfg->ldc_threads);
+      get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"uid")==0)
+    {
+      get_uid(filename,lnr,keyword,&line,&cfg->ldc_uid);
+      get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"gid")==0)
+    {
+      get_gid(filename,lnr,keyword,&line,&cfg->ldc_gid);
       get_eol(filename,lnr,keyword,&line);
     }
     /* general connection options */

@@ -510,8 +510,6 @@ static void *worker(void UNUSED(*arg))
 /* the main program... */
 int main(int argc,char *argv[])
 {
-  gid_t mygid=(gid_t)-1;
-  uid_t myuid=(uid_t)-1;
   int i;
   /* parse the command line */
   parse_cmdline(argc,argv);
@@ -562,24 +560,24 @@ int main(int argc,char *argv[])
   log_log(LOG_DEBUG,"setgroups() not available");
 #endif /* not HAVE_SETGROUPS */
   /* change to nslcd gid */
-  if (mygid!=((gid_t)-1))
+  if (nslcd_cfg->ldc_gid!=NOGID)
   {
-    if (setgid(mygid)!=0)
+    if (setgid(nslcd_cfg->ldc_gid)!=0)
     {
-      log_log(LOG_ERR,"cannot setgid(%d): %s",(int)mygid,strerror(errno));
+      log_log(LOG_ERR,"cannot setgid(%d): %s",(int)nslcd_cfg->ldc_gid,strerror(errno));
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG,"setgid(%d) done",(int)mygid);
+    log_log(LOG_DEBUG,"setgid(%d) done",(int)nslcd_cfg->ldc_gid);
   }
   /* change to nslcd uid */
-  if (myuid!=((uid_t)-1))
+  if (nslcd_cfg->ldc_uid!=NOUID)
   {
-    if (setuid(myuid)!=0)
+    if (setuid(nslcd_cfg->ldc_uid)!=0)
     {
-      log_log(LOG_ERR,"cannot setuid(%d): %s",(int)myuid,strerror(errno));
+      log_log(LOG_ERR,"cannot setuid(%d): %s",(int)nslcd_cfg->ldc_uid,strerror(errno));
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG,"setuid(%d) done",(int)myuid);
+    log_log(LOG_DEBUG,"setuid(%d) done",(int)nslcd_cfg->ldc_uid);
   }
   /* install signalhandlers for some signals */
   install_sighandler(SIGHUP, sigexit_handler);

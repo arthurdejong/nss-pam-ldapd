@@ -26,7 +26,14 @@
 #ifndef _CFG_H
 #define _CFG_H
 
+#include <unistd.h>
+#include <sys/types.h>
+
 #include "compat/attrs.h"
+
+/* values for uid and gid */
+#define NOUID ((gid_t)-1)
+#define NOGID ((gid_t)-1)
 
 /* maximum number of URIs */
 #define NSS_LDAP_CONFIG_URI_MAX         31
@@ -68,6 +75,10 @@ struct ldap_config
 {
   /* the number of threads to start */
   int ldc_threads;
+  /* the user id nslcd should be run as */
+  uid_t ldc_uid;
+  /* the group id nslcd should be run as */
+  gid_t ldc_gid;
   /* NULL terminated list of URIs */
   struct myldap_uri ldc_uris[NSS_LDAP_CONFIG_URI_MAX+1];
   /* protocol version */
