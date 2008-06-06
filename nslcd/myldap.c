@@ -420,7 +420,7 @@ static int do_set_options(MYLDAP_SESSION *session)
   int rc;
   struct timeval tv;
 #ifdef LDAP_OPT_X_TLS
-  int tls=LDAP_OPT_X_TLS_HARD;
+  int tls;
 #endif /* LDAP_OPT_X_TLS */
   /* turn on debugging */
   if (nslcd_cfg->ldc_debug)
@@ -469,9 +469,11 @@ static int do_set_options(MYLDAP_SESSION *session)
   LDAP_SET_OPTION(session->ld,LDAP_OPT_RESTART,nslcd_cfg->ldc_restart?LDAP_OPT_ON:LDAP_OPT_OFF);
 #ifdef LDAP_OPT_X_TLS
   /* if SSL is desired, then enable it */
-  if (nslcd_cfg->ldc_ssl_on==SSL_LDAPS)
+  if ( (nslcd_cfg->ldc_ssl_on==SSL_LDAPS) ||
+       (strncasecmp(nslcd_cfg->ldc_uris[session->current_uri].uri,"https://",8)==0) )
   {
     /* use tls */
+    tls=LDAP_OPT_X_TLS_HARD;
     LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS,&tls);
     /* rand file */
     if (nslcd_cfg->ldc_tls_randfile!=NULL)
