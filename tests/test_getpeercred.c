@@ -136,5 +136,7 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   assert(uid==geteuid());
   assert(gid==getegid());
   assert(pid==getpid());
+  /* remove the socket */
+  unlink(SOCKETNAME);
   return 0;
 }
