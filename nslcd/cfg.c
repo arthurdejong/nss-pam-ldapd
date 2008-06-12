@@ -877,7 +877,9 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
 
 void cfg_init(const char *fname)
 {
+#ifdef LDAP_OPT_X_TLS
   int i;
+#endif /* LDAP_OPT_X_TLS */
   /* check if we were called before */
   if (nslcd_cfg!=NULL)
   {
@@ -902,6 +904,7 @@ void cfg_init(const char *fname)
     exit(EXIT_FAILURE);
   }
   /* if ssl is on each URI should start with https */
+#ifdef LDAP_OPT_X_TLS
   if (nslcd_cfg->ldc_ssl_on==SSL_LDAPS)
   {
     for (i=0;nslcd_cfg->ldc_uris[i].uri!=NULL;i++)
@@ -912,4 +915,5 @@ void cfg_init(const char *fname)
     }
   }
   /* TODO: check that if some tls options are set the ssl option should be set to on (just warn) */
+#endif /* LDAP_OPT_X_TLS */
 }
