@@ -318,7 +318,28 @@ static int tio_writebuf(TFILE *fp)
 {
   int rv;
   /* write the buffer */
+#ifdef MSG_NOSIGNAL
   rv=send(fp->fd,fp->writebuffer.buffer+fp->writebuffer.start,fp->writebuffer.len,MSG_NOSIGNAL);
+#else /* not MSG_NOSIGNAL */
+  /* on platforms that cannot use send() with masked signals, we change the
+     signal mask and change it back after the write (note that there is a
+     race condition here) */
+  struct sigaction act,oldact;
+  /* set up sigaction */
+  memset(&act,0,sizeof(struct sigaction));
+  act.sa_sigaction=NULL;
+  act.sa_handler=SIG_IGN;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags=SA_RESTART;
+  /* ignore SIGPIPE */
+  if (sigaction(SIGPIPE,&act,&oldact)!=0)
+    return -1; /* error setting signal handler */
+  /* write the buffer */
+  rv=write(fp->fd,fp->writebuffer.buffer+fp->writebuffer.start,fp->writebuffer.len);
+  /* restore the old handler for SIGPIPE */
+  if (sigaction(SIGPIPE,&oldact,NULL)!=0)
+    return -1; /* error restoring signal handler */
+#endif
   /* check for errors */
   if ((rv==0)||((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN)))
     return -1; /* something went wrong with the write */
