@@ -19,10 +19,10 @@
 # 02110-1301 USA
 
 TESTS = test_dict test_set test_tio test_cfg test_myldap.sh test_nsscmds.sh \
-        test_getpeercred
+        test_getpeercred test_common
 
 check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap \
-                 test_getpeercred
+                 test_getpeercred test_common
 
 EXTRA_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                  test_netgroup test_networks test_passwd test_protocols \
@@ -68,6 +68,11 @@ test_myldap_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
 
 test_getpeercred_SOURCES = test_getpeercred.c
 test_getpeercred_LDADD = ../compat/libcompat.a
+
+test_common_SOURCES = test_common.c
+test_common_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
+                    ../nslcd/myldap.o @nslcd_LIBS@ ../common/libtio.a \
+                    ../common/libdict.a ../compat/libcompat.a
 
 common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h \
                  ../common/tio.c ../common/tio.h
