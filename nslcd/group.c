@@ -141,42 +141,6 @@ static void group_init(void)
   group_attrs[5]=NULL;
 }
 
-/*
-   Checks to see if the specified name is a valid group name.
-
-   This test is based on the definition from POSIX (IEEE Std 1003.1, 2004,
-   3.189 Group Name and 3.276 Portable Filename Character Set):
-   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_189
-   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_276
-
-   The standard defines group names valid if they only contain characters from
-   the set [A-Za-z0-9._-] where the hyphen should not be used as first
-   character.
-*/
-static int isvalidgroupname(const char *name)
-{
-  int i;
-  if ((name==NULL)||(name[0]=='\0'))
-    return 0;
-  /* check first character */
-  if ( ! ( (name[0]>='A' && name[0] <= 'Z') ||
-           (name[0]>='a' && name[0] <= 'z') ||
-           (name[0]>='0' && name[0] <= '9') ||
-           name[0]=='.' || name[0]=='_' ) )
-    return 0;
-  /* check other characters */
-  for (i=1;name[i]!='\0';i++)
-  {
-    if ( ! ( (name[i]>='A' && name[i] <= 'Z') ||
-             (name[i]>='a' && name[i] <= 'z') ||
-             (name[i]>='0' && name[i] <= '9') ||
-             name[i]=='.' || name[i]=='_'  || name[i]=='-') )
-      return 0;
-  }
-  /* no test failed so it must be good */
-  return -1;
-}
-
 static int do_write_group(
     TFILE *fp,MYLDAP_ENTRY *entry,const char **names,gid_t gids[],int numgids,
     const char *passwd,SET *members)
@@ -196,7 +160,7 @@ static int do_write_group(
   /* write entries for all names and gids */
   for (i=0;names[i]!=NULL;i++)
   {
-    if (!isvalidgroupname(names[i]))
+    if (!isvalidname(names[i]))
     {
       log_log(LOG_WARNING,"group entry %s contains invalid group name: \"%s\"",
                           myldap_get_dn(entry),names[i]);
@@ -240,7 +204,7 @@ static SET *getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
     for (i=0;values[i]!=NULL;i++)
     {
       /* only add valid usernames */
-      if (isvalidusername(values[i]))
+      if (isvalidname(values[i]))
         set_add(set,values[i]);
     }
   /* add the uniqueMember values */
@@ -337,7 +301,7 @@ NSLCD_HANDLE(
   char name[256];
   char filter[1024];
   READ_STRING_BUF2(fp,name,sizeof(name));
-  if (!isvalidgroupname(name)) {
+  if (!isvalidname(name)) {
     log_log(LOG_WARNING,"nslcd_group_byname(%s): invalid group name",name);
     return -1;
   },
@@ -363,7 +327,7 @@ NSLCD_HANDLE(
   char name[256];
   char filter[1024];
   READ_STRING_BUF2(fp,name,sizeof(name));
-  if (!isvalidusername(name)) {
+  if (!isvalidname(name)) {
     log_log(LOG_WARNING,"nslcd_group_bymember(%s): invalid user name",name);
     return -1;
   },

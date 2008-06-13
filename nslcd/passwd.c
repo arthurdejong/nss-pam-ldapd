@@ -120,49 +120,6 @@ static void passwd_init(void)
   passwd_attrs[9]=NULL;
 }
 
-/*
-   Checks to see if the specified name is a valid user name.
-
-   This test is based on the definition from POSIX (IEEE Std 1003.1, 2004, 3.426 User Name
-   and 3.276 Portable Filename Character Set):
-   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_426
-   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_276
-
-   The standard defines user names valid if they contain characters from
-   the set [A-Za-z0-9._-] where the hyphen should not be used as first
-   character. As an extension this test allows the dolar '$' sign as the last
-   character to support Samba special accounts.
-*/
-int isvalidusername(const char *name)
-{
-  int i;
-  if ((name==NULL)||(name[0]=='\0'))
-    return 0;
-  /* check first character */
-  if ( ! ( (name[0]>='A' && name[0] <= 'Z') ||
-           (name[0]>='a' && name[0] <= 'z') ||
-           (name[0]>='0' && name[0] <= '9') ||
-           name[0]=='.' || name[0]=='_' ) )
-    return 0;
-  /* check other characters */
-  for (i=1;name[i]!='\0';i++)
-  {
-    if ( name[i]=='$' )
-    {
-      /* if the char is $ we require it to be the last char */
-      if (name[i+1]!='\0')
-        return 0;
-    }
-    else if ( ! ( (name[i]>='A' && name[i] <= 'Z') ||
-                  (name[i]>='a' && name[i] <= 'z') ||
-                  (name[i]>='0' && name[i] <= '9') ||
-                  name[i]=='.' || name[i]=='_'  || name[i]=='-') )
-      return 0;
-  }
-  /* no test failed so it must be good */
-  return -1;
-}
-
 /* the cache that is used in dn2uid() */
 static pthread_mutex_t dn2uid_cache_mutex=PTHREAD_MUTEX_INITIALIZER;
 static DICT *dn2uid_cache=NULL;
@@ -202,7 +159,7 @@ static char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn)
   /* get uid (just use first one) */
   values=myldap_get_values(entry,attmap_passwd_uid);
   /* check the result for presence and validity */
-  if ((values!=NULL)&&(values[0]!=NULL)&&isvalidusername(values[0]))
+  if ((values!=NULL)&&(values[0]!=NULL)&&isvalidname(values[0]))
     uid=strdup(values[0]);
   else
     uid=NULL;
@@ -221,7 +178,7 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   if (myldap_cpy_rdn_value(dn,attmap_passwd_uid,buf,buflen)!=NULL)
   {
     /* check if it is valid */
-    if (!isvalidusername(buf))
+    if (!isvalidname(buf))
       return NULL;
     return buf;
   }
@@ -281,7 +238,7 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
   const char *dn;
   char filter[1024];
   /* if it isn't a valid username, just bail out now */
-  if (!isvalidusername(uid))
+  if (!isvalidname(uid))
     return NULL;
   /* set up attributes (we don't care, we just want the DN) */
   attrs[0]=NULL;
@@ -460,7 +417,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   /* write the entries */
   for (i=0;usernames[i]!=NULL;i++)
   {
-    if (!isvalidusername(usernames[i]))
+    if (!isvalidname(usernames[i]))
     {
       log_log(LOG_WARNING,"passwd entry %s contains invalid user name: \"%s\"",
                           myldap_get_dn(entry),usernames[i]);
@@ -488,7 +445,7 @@ NSLCD_HANDLE(
   char name[256];
   char filter[1024];
   READ_STRING_BUF2(fp,name,sizeof(name));
-  if (!isvalidusername(name)) {
+  if (!isvalidname(name)) {
     log_log(LOG_WARNING,"nslcd_passwd_byname(%s): invalid user name",name);
     return -1;
   },

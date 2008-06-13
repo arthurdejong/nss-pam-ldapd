@@ -73,6 +73,38 @@ const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr)
     (any code for this is more than welcome) */
 }
 
+/*
+   Checks to see if the specified name seems to be a valid user or group name.
+
+   This test is based on the definition from POSIX (IEEE Std 1003.1, 2004,
+   3.426 User Name, 3.189 Group Name and 3.276 Portable Filename Character Set):
+   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_426
+   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_189
+   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_276
+
+   The standard defines user names valid if they contain characters from
+   the set [A-Za-z0-9._-] where the hyphen should not be used as first
+   character. As an extension this test allows the at '@' and dolar '$' signs.
+*/
+int isvalidname(const char *name)
+{
+  int i;
+  if ((name==NULL)||(name[0]=='\0'))
+    return 0;
+  /* check characters */
+  for (i=0;name[i]!='\0';i++)
+  {
+    if ( ! ( ( (i!=0) && (name[i]=='-') ) ||
+             (name[i]>='@' && name[i] <= 'Z') ||
+             (name[i]>='a' && name[i] <= 'z') ||
+             (name[i]>='0' && name[i] <= '9') ||
+             name[i]=='.' || name[i]=='_'  || name[i]=='$') )
+      return 0;
+  }
+  /* no test failed so it must be good */
+  return -1;
+}
+
 /* this writes a single address to the stream */
 int write_address(TFILE *fp,const char *addr)
 {
