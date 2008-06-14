@@ -87,10 +87,16 @@ struct ldap_config
   char *ldc_binddn;
   /* bind cred */
   char *ldc_bindpw;
-  /* sasl auth id */
-  char *ldc_saslid;
+  /* sasl authentication id */
+  char *ldc_sasl_authcid;
+  /* sasl authorization id */
+  char *ldc_sasl_authzid;
   /* sasl security */
   char *ldc_sasl_secprops;
+  /* sasl mech */
+  char *ldc_sasl_mech;
+  /* sasl realm */
+  char *ldc_sasl_realm;
   /* do we use sasl when binding? */
   int ldc_usesasl;
   /* base DN, eg. dc=gnu,dc=org */

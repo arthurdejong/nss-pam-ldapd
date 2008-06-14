@@ -81,8 +81,11 @@ static void cfg_defaults(struct ldap_config *cfg)
 #endif /* not LDAP_VERSION3 */
   cfg->ldc_binddn=NULL;
   cfg->ldc_bindpw=NULL;
-  cfg->ldc_saslid=NULL;
+  cfg->ldc_sasl_authcid=NULL;
+  cfg->ldc_sasl_authzid=NULL;
   cfg->ldc_sasl_secprops=NULL;
+  cfg->ldc_sasl_mech=NULL;
+  cfg->ldc_sasl_realm=NULL;
   cfg->ldc_usesasl=0;
   cfg->ldc_base=NULL;
   cfg->ldc_scope=LDAP_SCOPE_SUBTREE;
@@ -694,21 +697,39 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       get_restdup(filename,lnr,keyword,&line,&cfg->ldc_bindpw);
     }
     /* SASL authentication options */
-    else if (strcasecmp(keyword,"sasl_authid")==0)
+    else if (strcasecmp(keyword,"sasl_authcid")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_saslid);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_authcid);
+      get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"sasl_authzid")==0)
+    {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_authzid);
+      get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"sasl_mech")==0)
+    {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_mech);
+      get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"sasl_realm")==0)
+    {
+      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_realm);
       get_eol(filename,lnr,keyword,&line);
     }
     else if (strcasecmp(keyword,"sasl_secprops")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
       get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_secprops);
       get_eol(filename,lnr,keyword,&line);
     }
     else if (strcasecmp(keyword,"use_sasl")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
       get_boolean(filename,lnr,keyword,&line,&cfg->ldc_usesasl);
       get_eol(filename,lnr,keyword,&line);
     }

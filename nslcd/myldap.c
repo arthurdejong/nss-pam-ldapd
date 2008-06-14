@@ -310,26 +310,43 @@ PURE static inline int is_valid_entry(MYLDAP_ENTRY *entry)
 /* this is registered with ldap_sasl_interactive_bind_s() in do_bind() */
 static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaults,void *_interact)
 {
-  char *authzid=(char *)defaults;
-  sasl_interact_t *interact=(sasl_interact_t *)_interact;
+  struct ldap_config *cfg=defaults;
+  sasl_interact_t *interact=_interact;
   while (interact->id!=SASL_CB_LIST_END)
   {
-    if (interact->id!=SASL_CB_USER)
-      return LDAP_PARAM_ERROR;
-    if (authzid!=NULL)
+    switch(interact->id)
     {
-      interact->result=authzid;
-      interact->len=strlen(authzid);
-    }
-    else if (interact->defresult!=NULL)
-    {
-      interact->result=interact->defresult;
-      interact->len=strlen(interact->defresult);
-    }
-    else
-    {
-      interact->result="";
-      interact->len=0;
+      case SASL_CB_GETREALM:
+        if (cfg->ldc_sasl_realm)
+        {
+          interact->result=cfg->ldc_sasl_realm;
+          interact->len=strlen(cfg->ldc_sasl_realm);
+        }
+        break;
+      case SASL_CB_AUTHNAME:
+        if (cfg->ldc_sasl_authcid)
+        {
+          interact->result=cfg->ldc_sasl_authcid;
+          interact->len=strlen(cfg->ldc_sasl_authcid);
+        }
+        break;
+      case SASL_CB_USER:
+        if (cfg->ldc_sasl_authzid)
+        {
+          interact->result=cfg->ldc_sasl_authzid;
+          interact->len=strlen(cfg->ldc_sasl_authzid);
+        }
+        break;
+      case SASL_CB_PASS:
+        if (cfg->ldc_bindpw)
+        {
+          interact->result=cfg->ldc_bindpw;
+          interact->len=strlen(cfg->ldc_bindpw);
+        }
+        break;
+      default:
+        /* just ignore */
+        break;
     }
     interact++;
   }
@@ -388,13 +405,21 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
       LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
     }
 #ifdef HAVE_SASL_INTERACT_T
-    return ldap_sasl_interactive_bind_s(session->ld,nslcd_cfg->ldc_binddn,"GSSAPI",NULL,NULL,
+    return ldap_sasl_interactive_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,NULL,NULL,
                                     LDAP_SASL_QUIET,
-                                    do_sasl_interact,(void *)nslcd_cfg->ldc_saslid);
+                                    do_sasl_interact,(void *)nslcd_cfg);
 #else /* HAVE_SASL_INTERACT_T */
-    cred.bv_val=nslcd_cfg->ldc_saslid;
-    cred.bv_len=strlen(nslcd_cfg->ldc_saslid);
-    return ldap_sasl_bind_s(session->ld,nslcd_cfg->ldc_binddn,"GSSAPI",&cred,NULL,NULL,NULL);
+    if (nslcd_cfg->ldc_bindpw!=NULL)
+    {
+      cred.bv_val=nslcd_cfg->ldc_bindpw;
+      cred.bv_len=strlen(nslcd_cfg->ldc_bindpw);
+    }
+    else
+    {
+      cred.bv_val="";
+      cred.bv_len=0;
+    }
+    return ldap_sasl_bind_s(session->ld,NULL,nslcd_cfg->ldc_sasl_mech,&cred,NULL,NULL,NULL);
 #endif /* not HAVE_SASL_INTERACT_T */
   }
 #endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */

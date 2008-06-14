@@ -176,11 +176,10 @@
       <para>
        Specifies the clear text credentials with which to bind.
        This option is only applicable when used with <option>binddn</option> above.
-      </para>
-      <para>
-       When binding to the directory using <acronym>SASL</acronym> or other
-       authentication mechanisms apart from simple binds, this option is not
-       used.
+<!-- WHEN SASL IS DOCUMENTED:
+       This option is only applicable when either the <option>binddn</option> or
+       <option>sasl_authcid</option> options are used.
+-->
       </para>
      </listitem>
     </varlistentry>
@@ -194,11 +193,52 @@
    <variablelist>
 
     <varlistentry>
-     <term><option>sasl_authid</option> <emphasis remap="I">AUTHID</emphasis></term>
+     <term><option>use_sasl</option> yes|no</term>
      <listitem>
       <para>
-       Specifies the authorization identity to be used when performing <acronym>SASL</acronym>
-       authentication.
+       Specifies whether <acronym>SASL</acronym> authentication should be used.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>sasl_mech</option> <emphasis remap="I">MECHANISM</emphasis></term>
+     <listitem>
+      <para>
+       Specifies the <acronym>SASL</acronym> mechanism to be used when
+       performing <acronym>SASL</acronym> authentication.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>sasl_realm</option> <emphasis remap="I">REALM</emphasis></term>
+     <listitem>
+      <para>
+       Specifies the <acronym>SASL</acronym> realm to be used when performing
+       <acronym>SASL</acronym> authentication.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>sasl_authcid</option> <emphasis remap="I">AUTHCID</emphasis></term>
+     <listitem>
+      <para>
+       Specifies the authentication identity to be used when performing
+       <acronym>SASL</acronym> authentication.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>sasl_authzid</option> <emphasis remap="I">AUTHZID</emphasis></term>
+     <listitem>
+      <para>
+       Specifies the authorization identity to be used when performing
+       <acronym>SASL</acronym> authentication.
+       Must be specified in one of the formats: dn:&lt;distinguished name&gt;
+       or u:&lt;username&gt;.
       </para>
      </listitem>
     </varlistentry>
@@ -207,19 +247,10 @@
      <term><option>sasl_secprops</option> <emphasis remap="I">PROPERTIES</emphasis></term>
      <listitem>
       <para>
-       Specifies Cyrus <acronym>SASL</acronym> security properties. Allowed values are described
-       in the
+       Specifies Cyrus <acronym>SASL</acronym> security properties.
+       Allowed values are described in the
        <citerefentry><refentrytitle>ldap.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
        manual page.
-      </para>
-     </listitem>
-    </varlistentry>
-
-    <varlistentry>
-     <term><option>use_sasl</option> yes|no</term>
-     <listitem>
-      <para>
-       Specifies whether <acronym>SASL</acronym> authentication should be used.
       </para>
      </listitem>
     </varlistentry>
