@@ -84,7 +84,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>uid</option> <emphasis remap="I">uid</emphasis></term>
+     <term><option>uid</option> <emphasis remap="I">UID</emphasis></term>
      <listitem>
       <para>
        This specifies  which user id with which the daemon should be run.
@@ -97,7 +97,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>gid</option> <emphasis remap="I">gid</emphasis></term>
+     <term><option>gid</option> <emphasis remap="I">GID</emphasis></term>
      <listitem>
       <para>
        This specifies  which group id with which the daemon should be run.
@@ -190,33 +190,39 @@
 
 <!-- DO NOT DOCUMENT FOR NOW BECAUSE IT'S NOT SUPPORTED
   <refsect2 id='sasl_authentication_options'>
-   <title>SASL authentication options</title>
+   <title><acronym>SASL</acronym> authentication options</title>
    <variablelist>
 
-     <varlistentry>
-     <term><emphasis remap="B">sasl_authid &lt;authid&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>sasl_authid</option> <emphasis remap="I">AUTHID</emphasis></term>
      <listitem>
-   <para>Specifies the authorization identity to be used when performing SASL
-   authentication.</para>
+      <para>
+       Specifies the authorization identity to be used when performing <acronym>SASL</acronym>
+       authentication.
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
-     <term><emphasis remap="B">sasl_secprops &lt;properties&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>sasl_secprops</option> <emphasis remap="I">PROPERTIES</emphasis></term>
      <listitem>
-   <para>Specifies Cyrus SASL security properties. Allowed values are described
-   in the
-   <emphasis remap="B">ldap.conf(5)</emphasis>
-   manual page.</para>
+      <para>
+       Specifies Cyrus <acronym>SASL</acronym> security properties. Allowed values are described
+       in the
+       <citerefentry><refentrytitle>ldap.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+       manual page.
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
-     <varlistentry>
-     <term><emphasis remap="B">use_sasl &lt;yes|no&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>use_sasl</option> yes|no</term>
      <listitem>
-   <para>Specifies whether SASL authentication should be used.</para>
+      <para>
+       Specifies whether <acronym>SASL</acronym> authentication should be used.
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 
    </variablelist>
   </refsect2>
@@ -255,7 +261,7 @@
       </para>
       <para>
        If, instead of a <acronym>DN</acronym>, the value
-       <emphasis remap="I">DOMAIN</emphasis> is specified, the hosts
+       <emphasis remap="I">DOMAIN</emphasis> is specified, the host's
        <acronym>DNS</acronym> domain is used to construct a basedn.
       </para>
      </listitem>
@@ -447,86 +453,103 @@
    <variablelist>
 
     <varlistentry>
-     <term><emphasis remap="B">ssl &lt;on|off|start_tls&gt;</emphasis></term>
+     <term><option>ssl</option> on|off|start_tls</term>
      <listitem>
-      <para>Specifies whether to use <acronym>SSL</acronym>/<acronym>TLS</acronym> or not (the default is not to). If
-      <emphasis remap="B">start_tls</emphasis>
-      is specified then StartTLS is used rather than raw <acronym>LDAP</acronym> over <acronym>SSL</acronym>.
-      Not all <acronym>LDAP</acronym> client libraries support both <acronym>SSL</acronym>
-      and StartTLS, and all related configuration options.</para>
+      <para>
+       Specifies whether to use <acronym>SSL</acronym>/<acronym>TLS</acronym> or not (the default is not to). If
+       <emphasis remap="I">start_tls</emphasis>
+       is specified then StartTLS is used rather than raw <acronym>LDAP</acronym> over <acronym>SSL</acronym>.
+       Not all <acronym>LDAP</acronym> client libraries support both <acronym>SSL</acronym>
+       and StartTLS, and all related configuration options.
+      </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><emphasis remap="B">sslpath &lt;cert7_path&gt;</emphasis></term>
+     <term><option>sslpath</option> <emphasis remap="I">PATH</emphasis></term>
      <listitem>
-      <para>For the Netscape and Mozilla
-      <acronym>LDAP</acronym>
-      client libraries only, this specifies the path to the X.509
-      certificate database.</para>
+      <para>
+       For the Netscape and Mozilla <acronym>LDAP</acronym>
+       client libraries only, this specifies the path to the X.509
+       certificate database.
+      </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><emphasis remap="B">tls_checkpeer &lt;yes|no&gt;</emphasis></term>
+     <term><option>tls_checkpeer</option> yes|no</term>
      <listitem>
-      <para>Specifies whether to require and verify the server certificate
-      or not, when using <acronym>SSL</acronym>/<acronym>TLS</acronym>
-      with the OpenLDAP client library.
-      The default is to use the default behaviour of the client
-      library; for OpenLDAP 2.0 and earlier it is "no", for OpenLDAP
-      2.1 and later it is "yes". At least one of
-      <emphasis remap="B">tls_cacertdir</emphasis>
-      and
-      <emphasis remap="B">tls_cacertfile</emphasis>
-      is required if peer verification is enabled.</para>
+      <para>
+       Specifies whether to require and verify the server certificate
+       or not, when using <acronym>SSL</acronym>/<acronym>TLS</acronym>
+       with the OpenLDAP client library.
+       The default is to use the default behaviour of the client
+       library; for OpenLDAP 2.0 and earlier it is "no", for OpenLDAP
+       2.1 and later it is "yes". At least one of
+       <option>tls_cacertdir</option>
+       and
+       <option>tls_cacertfile</option>
+       is required if peer verification is enabled.
+      </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><emphasis remap="B">tls_cacertdir &lt;certificate_dir&gt;</emphasis></term>
+     <term><option>tls_cacertdir</option> <emphasis remap="I">PATH</emphasis></term>
      <listitem>
-      <para>Specifies the directory containing X.509 certificates for peer
-      authentication.</para>
+      <para>
+       Specifies the directory containing X.509 certificates for peer
+       authentication.
+      </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><emphasis remap="B">tls_cacertfile &lt;certificate_file&gt;</emphasis></term>
+     <term><option>tls_cacertfile</option> <emphasis remap="I">PATH</emphasis></term>
      <listitem>
-      <para>Specifies the path to the X.509 certificate for peer authentication.</para>
+      <para>
+       Specifies the path to the X.509 certificate for peer authentication.
+      </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><emphasis remap="B">tls_randfile &lt;entropy_file&gt;</emphasis></term>
+     <term><option>tls_randfile</option> <emphasis remap="I">PATH</emphasis></term>
      <listitem>
-      <para>Specifies the path to an entropy source.</para>
+      <para>
+       Specifies the path to an entropy source.
+      </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><emphasis remap="B">tls_ciphers &lt;ciphers&gt;</emphasis></term>
+     <term><option>tls_ciphers</option> <emphasis remap="I">CIPHERS</emphasis></term>
      <listitem>
-      <para>Specifies the ciphers to use for <acronym>TLS</acronym>.
-      See your <acronym>TLS</acronym> implementation's
-      documentation for further information.</para>
+      <para>
+       Specifies the ciphers to use for <acronym>TLS</acronym>.
+       See your <acronym>TLS</acronym> implementation's
+       documentation for further information.
+      </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><emphasis remap="B">tls_cert &lt;certificate_file&gt;</emphasis></term>
+     <term><option>tls_cert</option> <emphasis remap="I">PATH</emphasis></term>
      <listitem>
-      <para>Specifies the path to the file containing the local certificate for
-      client <acronym>TLS</acronym> authentication.</para>
+      <para>
+       Specifies the path to the file containing the local certificate for
+       client <acronym>TLS</acronym> authentication.
+      </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><emphasis remap="B">tls_key &lt;key_file&gt;</emphasis></term>
+     <term><option>tls_key</option> <emphasis remap="I">PATH</emphasis></term>
      <listitem>
-      <para>Specifies the path to the file containing the private key for client
-      <acronym>TLS</acronym> authentication.</para>
+      <para>
+       Specifies the path to the file containing the private key for client
+       <acronym>TLS</acronym> authentication.
+      </para>
      </listitem>
     </varlistentry>
 
@@ -538,18 +561,18 @@
    <variablelist>
 
 <!-- do not document this option for now as support it is not finalized
-
-     <varlistentry>
-     <term><emphasis remap="B">restart &lt;yes|no&gt;</emphasis></term>
+    <varlistentry>
+     <term><option>restart</option> yes|no</term>
      <listitem>
-   <para>Specifies whether the
-   <acronym>LDAP</acronym>
-   client library should restart the
-   <emphasis remap="B">select(2)</emphasis>
-   system call when interrupted. This feature is not supported by all
-   client libraries.</para>
+      <para>
+       Specifies whether the <acronym>LDAP</acronym>
+       client library should restart the
+       <emphasis remap="B">select()</emphasis>
+       system call when interrupted. This feature is not supported by all
+       client libraries.
+      </para>
      </listitem>
-     </varlistentry>
+    </varlistentry>
 -->
 
     <varlistentry>
