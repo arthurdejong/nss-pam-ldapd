@@ -1,3 +1,25 @@
+changes form 0.6.2 to 0.6.3
+---------------------------
+
+* retry connection and search if getting results failed with connection
+  problems (some errors only occur when getting the results, not when starting
+  the search)
+* add support for groups with up to around 150000 members (assuming user names
+  on average are a little under 10 characters)
+* problem with possible SIGPIPE race condition was fixed by using send()
+  instead of write()
+* add uid and gid configuration keywords that set the user and group of the
+  nslcd daemon
+* add some documentation on supported group to member mappings
+* add sanity checking to code for when clock moves backward
+* log messages now include a session id that makes it easier to track errors
+  to requests (especially useful in debugging mode)
+* miscellaneous portability improvements
+* increase buffers and timeouts to handle large lookups more gracefully
+* implement SASL authentication based on a patch by Dan White
+* allow more characters in user and group names
+
+
 changes form 0.6.1 to 0.6.2
 ---------------------------
 

@@ -1,3 +1,194 @@
+2008-06-15 13:01  arthur
+
+	* [r764] debian/libnss-ldapd.nslcd.init: create /var/run/nslcd
+	  directory with owner nslcd:nslcd by default so nslcd can remove
+	  socket and pidfile at exit
+
+2008-06-15 12:39  arthur
+
+	* [r763] nslcd/nslcd.c: give pidfile and socket creation functions
+	  more logical names
+
+2008-06-14 11:31  arthur
+
+	* [r762] AUTHORS, configure.ac, man/nss-ldapd.conf.5.xml,
+	  nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c: implement SASL
+	  authentication based on a patch by Dan White <dwhite@olp.net>
+
+2008-06-14 11:28  arthur
+
+	* [r761] man/nss-ldapd.conf.5.xml: make formatting of manual page
+	  options consistent
+
+2008-06-13 21:04  arthur
+
+	* [r760] tests, tests/Makefile.am, tests/test_common.c: add some
+	  very basic tests for the isvalidname() function
+
+2008-06-13 20:55  arthur
+
+	* [r759] nslcd/common.c, nslcd/common.h, nslcd/group.c,
+	  nslcd/passwd.c: combine isvalidusername() and isvalidgroupname()
+	  into isvalidname() because they are similar enough and we just
+	  want to check to see if it is a reasonable name (e.g. not a DN)
+
+2008-06-12 21:38  arthur
+
+	* [r758] common/tio.c: restore the old writing code which masks
+	  SIGPIPE on platforms that can't use send()
+
+2008-06-12 21:29  arthur
+
+	* [r757] nslcd/cfg.c: don't perform SSL/TLS sanity checks if it
+	  isn't available on the platform
+
+2008-06-12 21:22  arthur
+
+	* [r756] tests: ignore test_getpeercred
+
+2008-06-11 19:32  arthur
+
+	* [r755] tests: ignore core files
+
+2008-06-11 19:31  arthur
+
+	* [r754] tests/test_getpeercred.c: remove test socket at end of
+	  test
+
+2008-06-06 21:55  arthur
+
+	* [r753] compat/getpeercred.c: use the cr_ prefix when getting a
+	  xucred struct (needed for kfreebsd)
+
+2008-06-06 21:51  arthur
+
+	* [r752] tests/Makefile.am, tests/test_getpeercred.c: implement a
+	  very basic test for getpeercred()
+
+2008-06-06 18:27  arthur
+
+	* [r751] nslcd/cfg.c: remove warning on using ssl option
+
+2008-06-06 18:22  arthur
+
+	* [r750] nslcd/cfg.c: check that all URLs start with https:// if
+	  "ssl on" is specified
+
+2008-06-06 18:14  arthur
+
+	* [r749] nslcd/myldap.c: also set TLS options if an ldaps:// URL is
+	  specified
+
+2008-06-06 17:27  arthur
+
+	* [r748] debian/control: add dependency on adduser as required by
+	  the previous commit
+
+2008-06-06 17:16  arthur
+
+	* [r747] debian/libnss-ldapd.postinst: create a nslcd user in
+	  postinst and ensure that it is used by default
+
+2008-06-06 15:53  arthur
+
+	* [r746] man/nss-ldapd.conf.5.xml: add uid and gid options to
+	  manual page
+
+2008-06-06 15:47  arthur
+
+	* [r745] nslcd/cfg.c, nslcd/cfg.h, nslcd/nslcd.c: add uid and gid
+	  configuration keywords that set the user id and group id of the
+	  running nslcd process
+
+2008-06-06 14:19  arthur
+
+	* [r744] nslcd/nslcd.c: environ is defined in unistd.h
+
+2008-06-06 14:18  arthur
+
+	* [r743] nslcd/nslcd.c, nss/common.c: increase write buffer size in
+	  nslcd to free up threads earlier and increase timeout for nslcd
+	  to nss communication to one minute (at both places)
+
+2008-06-06 14:06  arthur
+
+	* [r742] common/dict.c, compat/ether.c, nslcd/group.c,
+	  nslcd/myldap.c, nslcd/passwd.c, tests/test_tio.c: miscellaneous
+	  portability improvements
+
+2008-05-18 15:03  arthur
+
+	* [r741] TODO: from a review of glibc 2.3.6 code it shows that
+	  strerror() is only non-threadsafe in some verly unlikely
+	  circumstances
+
+2008-05-17 08:34  arthur
+
+	* [r740] common/tio.c: use send() with a flag to ignore SIGPIPE
+	  instead of write() so we don't have to muck with signal handlers
+
+2008-05-16 21:41  arthur
+
+	* [r739] nslcd/log.c, nslcd/log.h, nslcd/nslcd.c: include a random
+	  string in every log message to be able to group log messages for
+	  a single request
+
+2008-05-16 16:24  arthur
+
+	* [r738] common/tio.c, nslcd/myldap.c: add sanity checks to sleep
+	  calls to never sleep too long (problems could occur when the
+	  clock moves backwards)
+
+2008-05-16 15:38  arthur
+
+	* [r737] nss/group.c: remove comment about limitation that has now
+	  been removed
+
+2008-05-16 15:34  arthur
+
+	* [r736] nss/common.c: grow the read buffer maximum size to 2Mbyte
+	  to allow for groups with about 150000 members maximum
+
+2008-05-15 19:26  arthur
+
+	* [r735] README: add some documentation on supported group to
+	  member mappings
+
+2008-05-15 19:08  arthur
+
+	* [r734] nslcd/myldap.h: improve documentation for
+	  myldap_get_rdn_value() function
+
+2008-05-11 14:41  arthur
+
+	* [r733] nslcd/myldap.c: close the connection and retry the search
+	  (once) if the search fails with the first call to
+	  myldap_get_entry() (starting a search doesn't always give an
+	  error when the connection has been broken)
+
+2008-05-11 14:36  arthur
+
+	* [r732] nslcd/myldap.c: split retry mechanism of myldap_search()
+	  into a new do_retry_search() function
+
+2008-05-11 14:29  arthur
+
+	* [r731] nslcd/myldap.c: allocate the search memory region in
+	  myldap_search() instead of in do_try_search() and have the latter
+	  return an LDAP status code
+
+2008-05-11 13:28  arthur
+
+	* [r730] nslcd/myldap.c: also allow closing of searches that no
+	  longer have a valid connection and integrate myldap_search_free()
+	  into myldap_search_close()
+
+2008-05-04 20:07  arthur
+
+	* [r728] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.2 release
+
 2008-05-04 15:47  arthur
 
 	* [r727] HACKING, README: some documentation cleanups and updates

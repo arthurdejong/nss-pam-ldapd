@@ -1,3 +1,32 @@
+nss-ldapd (0.6.3) unstable; urgency=low
+
+  * retry connection and search if getting results failed with connection
+    problems (some errors only occur when getting the results, not when
+    starting the search) (closes: #474178, #484798)
+  * add support for groups with up to around 150000 members (assuming user
+    names on average are a little under 10 characters)
+    (closes: #481077, #479552)
+  * problem with possible SIGPIPE race condition was fixed by using send()
+    instead of write()
+  * add uid and gid configuration keywords that set the user and group of the
+    nslcd daemon
+  * run nslcd as user nslcd and group nslcd by default (note that this can
+    affect access to SSL/TLS and/or SASL files)
+  * add some documentation on supported group to member mappings
+  * add sanity checking to code for when clock moves backward
+    (closes: #480197)
+  * log messages now include a session id that makes it easier to track errors
+    to requests (especially useful in debugging mode)
+  * miscellaneous portability improvements
+  * increase buffers and timeouts to handle large lookups more gracefully
+    (further addresses #474174)
+  * implement SASL authentication based on a patch by Dan White
+  * allow more characters in user and group names
+  * upgrade to standards-version 3.8.0 (no changes needed)
+  * removed lintian override (seems to be no longer necessary)
+
+ -- Arthur de Jong <adejong@debian.org>  Sun, 15 Jun 2008 15:00:00 +0200
+
 nss-ldapd (0.6.2) unstable; urgency=low
 
   * all user and group names are now checked for validity are specified in the
