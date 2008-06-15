@@ -246,7 +246,7 @@ static void exithandler(void)
 
 /* returns a socket ready to answer requests from the client,
    exit()s on error */
-static int open_socket(void)
+static int create_socket(void)
 {
   int sock;
   struct sockaddr_un addr;
@@ -446,7 +446,7 @@ static void acceptconnection(MYLDAP_SESSION *session)
 }
 
 /* write the current process id to the specified file */
-static void write_pidfile(const char *filename)
+static void create_pidfile(const char *filename)
 {
   FILE *fp;
   if (filename!=NULL)
@@ -547,9 +547,9 @@ int main(int argc,char *argv[])
     exit(EXIT_FAILURE);
   }
   /* write pidfile */
-  write_pidfile(NSLCD_PIDFILE);
+  create_pidfile(NSLCD_PIDFILE);
   /* create socket */
-  nslcd_serversocket=open_socket();
+  nslcd_serversocket=create_socket();
 #ifdef HAVE_SETGROUPS
   /* drop all supplemental groups */
   if (setgroups(0,NULL)<0)
