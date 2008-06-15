@@ -47,7 +47,8 @@ NSLCD_PIDFILE=$NSLCD_STATEDIR/nslcd.pid
 
 case "$1" in
 start)
-  [ -d "$NSLCD_STATEDIR" ] || mkdir "$NSLCD_STATEDIR"
+  [ -d "$NSLCD_STATEDIR" ] || ( mkdir -m 755 "$NSLCD_STATEDIR" ; \
+                                chown nslcd:nslcd "$NSLCD_STATEDIR" )
   log_daemon_msg "Starting $NSLCD_DESC" "nslcd"
   start-stop-daemon --start --oknodo \
                     --pidfile $NSLCD_PIDFILE \
@@ -63,7 +64,8 @@ stop)
   [ -n "$NSLCD_PIDFILE" ] && rm -f $NSLCD_PIDFILE
   ;;
 restart|force-reload)
-  [ -d "$NSLCD_STATEDIR" ] || mkdir "$NSLCD_STATEDIR"
+  [ -d "$NSLCD_STATEDIR" ] || ( mkdir -m 755 "$NSLCD_STATEDIR" ; \
+                                chown nslcd:nslcd "$NSLCD_STATEDIR" )
   log_daemon_msg "Restarting $NSLCD_DESC" "nslcd"
   start-stop-daemon --stop --quiet --retry 10 \
                     --pidfile $NSLCD_PIDFILE \
