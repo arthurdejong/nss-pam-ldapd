@@ -54,9 +54,6 @@ install: build
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/libnss-ldapd
 	# make configfile fully generated
 	rm -f $(CURDIR)/debian/libnss-ldapd/etc/nss-ldapd.conf
-	# install a lintian override file
-	install -D -m 644 $(CURDIR)/debian/libnss-ldapd.lintian-overrides \
-	        $(CURDIR)/debian/libnss-ldapd/usr/share/lintian/overrides/libnss-ldapd
 
 # build architecture-independent files
 binary-indep: build install

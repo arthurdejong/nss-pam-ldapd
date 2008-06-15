@@ -1,5 +1,0 @@
-# we ship a shared library that is used for the NSS system
-# adding the soname to the package name is not done by other
-# NSS packages (why the binary package name should begin with
-# lib is beyond me)
-libnss-ldapd binary: package-name-doesnt-match-sonames libnss-ldap2

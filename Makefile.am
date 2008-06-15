@@ -25,7 +25,6 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/copyright debian/rules \
                debian/libnss-ldapd.docs \
                debian/libnss-ldapd.examples \
-               debian/libnss-ldapd.lintian-overrides \
                debian/libnss-ldapd.nslcd.init \
                debian/libnss-ldapd.config \
                debian/libnss-ldapd.templates \
