@@ -924,14 +924,14 @@ void cfg_init(const char *fname)
     log_log(LOG_ERR,"no URIs defined in config");
     exit(EXIT_FAILURE);
   }
-  /* if ssl is on each URI should start with https */
+  /* if ssl is on each URI should start with ldaps */
 #ifdef LDAP_OPT_X_TLS
   if (nslcd_cfg->ldc_ssl_on==SSL_LDAPS)
   {
     for (i=0;nslcd_cfg->ldc_uris[i].uri!=NULL;i++)
     {
-      if (strncasecmp(nslcd_cfg->ldc_uris[i].uri,"https://",8)!=0)
-        log_log(LOG_WARNING,"%s doesn't start with https:// and \"ssl on\" is specified",
+      if (strncasecmp(nslcd_cfg->ldc_uris[i].uri,"ldaps://",8)!=0)
+        log_log(LOG_WARNING,"%s doesn't start with ldaps:// and \"ssl on\" is specified",
                             nslcd_cfg->ldc_uris[i].uri);
     }
   }

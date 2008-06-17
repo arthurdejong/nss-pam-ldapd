@@ -495,7 +495,7 @@ static int do_set_options(MYLDAP_SESSION *session)
 #ifdef LDAP_OPT_X_TLS
   /* if SSL is desired, then enable it */
   if ( (nslcd_cfg->ldc_ssl_on==SSL_LDAPS) ||
-       (strncasecmp(nslcd_cfg->ldc_uris[session->current_uri].uri,"https://",8)==0) )
+       (strncasecmp(nslcd_cfg->ldc_uris[session->current_uri].uri,"ldaps://",8)==0) )
   {
     /* use tls */
     tls=LDAP_OPT_X_TLS_HARD;
