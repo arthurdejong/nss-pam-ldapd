@@ -445,7 +445,7 @@ static int do_set_options(MYLDAP_SESSION *session)
   int rc;
   struct timeval tv;
 #ifdef LDAP_OPT_X_TLS
-  int tls;
+  int i;
 #endif /* LDAP_OPT_X_TLS */
   /* turn on debugging */
   if (nslcd_cfg->ldc_debug)
@@ -498,8 +498,8 @@ static int do_set_options(MYLDAP_SESSION *session)
        (strncasecmp(nslcd_cfg->ldc_uris[session->current_uri].uri,"ldaps://",8)==0) )
   {
     /* use tls */
-    tls=LDAP_OPT_X_TLS_HARD;
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS,&tls);
+    i=LDAP_OPT_X_TLS_HARD;
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS,&i);
     /* rand file */
     if (nslcd_cfg->ldc_tls_randfile!=NULL)
     {
@@ -518,7 +518,8 @@ static int do_set_options(MYLDAP_SESSION *session)
     /* require cert? */
     if (nslcd_cfg->ldc_tls_checkpeer>-1)
     {
-      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_REQUIRE_CERT,&nslcd_cfg->ldc_tls_checkpeer);
+      i=nslcd_cfg->ldc_tls_checkpeer?LDAP_OPT_X_TLS_DEMAND:LDAP_OPT_X_TLS_NEVER;
+      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_REQUIRE_CERT,&i);
     }
     /* set cipher suite, certificate and private key */
     if (nslcd_cfg->ldc_tls_ciphers!=NULL)
