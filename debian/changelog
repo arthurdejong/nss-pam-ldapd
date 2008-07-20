@@ -1,5 +1,7 @@
-nss-ldapd (0.6.4) unstable; urgency=low
+nss-ldapd (0.6.4) unstable; urgency=medium
 
+  * set urgency medium in an attempt to get in before the freeze
+    (not much code changes)
   * fix for the tls_checkpeer option
   * fix incorrect test for ssl option in combination with ldaps:// URIs
   * improvements to Active Directory sample configuration
