@@ -896,7 +896,11 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
   fclose(fp);
 }
 
-static void get_base_from_dse(struct ldap_config *cfg)
+/* This function tries to get the LDAP search base from the LDAP server.
+   Note that this returns a string that has been allocated with strdup().
+   For this to work the myldap module needs enough configuration information
+   to make an LDAP connection. */
+static MUST_USE char *get_base_from_dse(void)
 {
   MYLDAP_SESSION *session;
   MYLDAP_SEARCH *search;
@@ -905,6 +909,7 @@ static void get_base_from_dse(struct ldap_config *cfg)
   int i;
   int rc;
   const char **values;
+  char *base=NULL;
   /* initialize session */
   session=myldap_create_session();
   assert(session!=NULL);
@@ -913,7 +918,7 @@ static void get_base_from_dse(struct ldap_config *cfg)
   if (search==NULL)
   {
     myldap_session_close(session);
-    return;
+    return NULL;
   }
   /* go over results */
   for (i=0;(entry=myldap_get_entry(search,&rc))!=NULL;i++)
@@ -922,7 +927,7 @@ static void get_base_from_dse(struct ldap_config *cfg)
     values=myldap_get_values(entry,"defaultNamingContext");
     if ((values!=NULL)&&(values[0]!=NULL))
     {
-      cfg->ldc_base=xstrdup(values[0]);
+      base=xstrdup(values[0]);
       log_log(LOG_DEBUG,"get_basedn_from_dse(): found attribute defaultNamingContext with value %s",values[0]);
       break;
     }
@@ -930,13 +935,14 @@ static void get_base_from_dse(struct ldap_config *cfg)
     values=myldap_get_values(entry,"namingContexts");
     if ((values!=NULL)&&(values[0]!=NULL))
     {
-      cfg->ldc_base=xstrdup(values[0]);
+      base=xstrdup(values[0]);
       log_log(LOG_DEBUG,"get_basedn_from_dse(): found attribute namingContexts with value %s",values[0]);
       break;
     }
   }
   /* clean up */
   myldap_session_close(session);
+  return base;
 }
 
 void cfg_init(const char *fname)
@@ -982,7 +988,7 @@ void cfg_init(const char *fname)
 #endif /* LDAP_OPT_X_TLS */
   /* if basedn is not yet set,  get if from the DSE */
   if (nslcd_cfg->ldc_base==NULL)
-    get_base_from_dse(nslcd_cfg);
+    nslcd_cfg->ldc_base=get_base_from_dse();
   /* TODO: handle the case gracefully when no LDAP server is available yet */
   /* see if we have a valid basedn */
   if ((nslcd_cfg->ldc_base==NULL)||(nslcd_cfg->ldc_base[0]=='\0'))
