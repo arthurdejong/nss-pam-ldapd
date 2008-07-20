@@ -293,7 +293,13 @@
       <para>
        If, instead of a <acronym>DN</acronym>, the value
        <emphasis remap="I">DOMAIN</emphasis> is specified, the host's
-       <acronym>DNS</acronym> domain is used to construct a basedn.
+       <acronym>DNS</acronym> domain is used to construct a search base.
+      </para>
+      <para>
+       If this value is not defined an attempt is made to look it up
+       in the configured <acronym>LDAP</acronym> server. Note that if the
+       <acronym>LDAP</acronym> server is unavailable during start-up
+       <command>nslcd</command> will not start.
       </para>
      </listitem>
     </varlistentry>

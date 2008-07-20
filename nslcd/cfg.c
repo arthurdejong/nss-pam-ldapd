@@ -896,6 +896,49 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
   fclose(fp);
 }
 
+static void get_base_from_dse(struct ldap_config *cfg)
+{
+  MYLDAP_SESSION *session;
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  const char *attrs[] = { "+", NULL };
+  int i;
+  int rc;
+  const char **values;
+  /* initialize session */
+  session=myldap_create_session();
+  assert(session!=NULL);
+  /* perform search */
+  search=myldap_search(session,"",LDAP_SCOPE_BASE,"(objectClass=*)",attrs);
+  if (search==NULL)
+  {
+    myldap_session_close(session);
+    return;
+  }
+  /* go over results */
+  for (i=0;(entry=myldap_get_entry(search,&rc))!=NULL;i++)
+  {
+    /* get defaultNamingContext */
+    values=myldap_get_values(entry,"defaultNamingContext");
+    if ((values!=NULL)&&(values[0]!=NULL))
+    {
+      cfg->ldc_base=xstrdup(values[0]);
+      log_log(LOG_DEBUG,"get_basedn_from_dse(): found attribute defaultNamingContext with value %s",values[0]);
+      break;
+    }
+    /* get namingContexts */
+    values=myldap_get_values(entry,"namingContexts");
+    if ((values!=NULL)&&(values[0]!=NULL))
+    {
+      cfg->ldc_base=xstrdup(values[0]);
+      log_log(LOG_DEBUG,"get_basedn_from_dse(): found attribute namingContexts with value %s",values[0]);
+      break;
+    }
+  }
+  /* clean up */
+  myldap_session_close(session);
+}
+
 void cfg_init(const char *fname)
 {
 #ifdef LDAP_OPT_X_TLS
@@ -937,4 +980,14 @@ void cfg_init(const char *fname)
   }
   /* TODO: check that if some tls options are set the ssl option should be set to on (just warn) */
 #endif /* LDAP_OPT_X_TLS */
+  /* if basedn is not yet set,  get if from the DSE */
+  if (nslcd_cfg->ldc_base==NULL)
+    get_base_from_dse(nslcd_cfg);
+  /* TODO: handle the case gracefully when no LDAP server is available yet */
+  /* see if we have a valid basedn */
+  if ((nslcd_cfg->ldc_base==NULL)||(nslcd_cfg->ldc_base[0]=='\0'))
+  {
+    log_log(LOG_ERR,"no base defined in config and couldn't get one from server");
+    exit(EXIT_FAILURE);
+  }
 }
