@@ -900,7 +900,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
    Note that this returns a string that has been allocated with strdup().
    For this to work the myldap module needs enough configuration information
    to make an LDAP connection. */
-static MUST_USE char *get_base_from_dse(void)
+static MUST_USE char *get_base_from_rootdse(void)
 {
   MYLDAP_SESSION *session;
   MYLDAP_SEARCH *search;
@@ -928,7 +928,7 @@ static MUST_USE char *get_base_from_dse(void)
     if ((values!=NULL)&&(values[0]!=NULL))
     {
       base=xstrdup(values[0]);
-      log_log(LOG_DEBUG,"get_basedn_from_dse(): found attribute defaultNamingContext with value %s",values[0]);
+      log_log(LOG_DEBUG,"get_basedn_from_rootdse(): found attribute defaultNamingContext with value %s",values[0]);
       break;
     }
     /* get namingContexts */
@@ -936,7 +936,7 @@ static MUST_USE char *get_base_from_dse(void)
     if ((values!=NULL)&&(values[0]!=NULL))
     {
       base=xstrdup(values[0]);
-      log_log(LOG_DEBUG,"get_basedn_from_dse(): found attribute namingContexts with value %s",values[0]);
+      log_log(LOG_DEBUG,"get_basedn_from_rootdse(): found attribute namingContexts with value %s",values[0]);
       break;
     }
   }
@@ -986,9 +986,9 @@ void cfg_init(const char *fname)
   }
   /* TODO: check that if some tls options are set the ssl option should be set to on (just warn) */
 #endif /* LDAP_OPT_X_TLS */
-  /* if basedn is not yet set,  get if from the DSE */
+  /* if basedn is not yet set,  get if from the rootDSE */
   if (nslcd_cfg->ldc_base==NULL)
-    nslcd_cfg->ldc_base=get_base_from_dse();
+    nslcd_cfg->ldc_base=get_base_from_rootdse();
   /* TODO: handle the case gracefully when no LDAP server is available yet */
   /* see if we have a valid basedn */
   if ((nslcd_cfg->ldc_base==NULL)||(nslcd_cfg->ldc_base[0]=='\0'))
