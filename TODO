@@ -1,7 +1,7 @@
 probably before we can call this stable
 ---------------------------------------
 * find problem with reachability of LDAP server
-* do not require ssl on if ldaps:// URLs are used
+* Debian package: protect /etc/nss-ldapd.conf if bindpw is used
 
 other items
 -----------
@@ -17,14 +17,10 @@ other items
 * log some statistics: "passwd=100 shadow=10 host=20 rpc=10" (10 req/minute)
 * in the server: once the request is done pass the flushing of the buffers to
   a separate thread so our workers are available to handle new requests
-* reconfigure or upgrade of Debian package should restart nslcd instead of
-  stop and later on start
 * tune the filter and parameter buffer sizes
-* maybe document how to set up automounting in LDAP (Linux and Solaris)
-* make sure to translate timelimit 0 into timelimit -1 where needed
 * split out idle checking into separate function so we may be able to call it
   periodically from elsewhere (e.g. the main loop)
-* add an option to create an extra socket somewhere (so it may be used with
+* add an option to create an extra socket somewhere (so it may be used in
   chroot jails)
 * make I/O timeout between NSS lib and daemon configurable with configure
 * ethers: also look in ipHostNumber attribute to look up an IPv4 (IPv6)
@@ -50,4 +46,4 @@ other items
 * maybe use datagram sockets for NSS/nslcd communication
 * support multiple search bases
 * support memberOf attribute in passwd entries that map to groups
-* get tls_checkpeer working in combination with ssl on
+* rename tls_checkpeer option to tls_reqcert

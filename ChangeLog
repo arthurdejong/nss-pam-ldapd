@@ -1,3 +1,63 @@
+2008-07-20 08:27  arthur
+
+	* [r777] nslcd/cfg.c: rename get_base_from_dse() to
+	  get_base_from_rootdse()
+
+2008-07-20 08:13  arthur
+
+	* [r776] nslcd/cfg.c: make the get_base_from_dse() function cleaner
+	  and add a comment describing the function
+
+2008-07-20 08:05  arthur
+
+	* [r775] man/nss-ldapd.conf.5.xml, nslcd/cfg.c: implement looking
+	  up search base in DSE of LDAP server
+
+2008-07-20 08:03  arthur
+
+	* [r774] tests/test_nsscmds.sh: reflect change in test LDAP setup
+
+2008-07-10 19:43  arthur
+
+	* [r773] nslcd/myldap.c: LDAP_OPT_X_TLS_REQUIRE_CERT is not a
+	  boolean
+
+2008-06-21 07:49  arthur
+
+	* [r772] README: small change to documentation
+
+2008-06-21 07:44  arthur
+
+	* [r771] nss-ldapd.conf: further improvements to Active Directory
+	  filters and attribute mappings by Petter Reinholdtsen
+	  <pere@hungry.com>
+
+2008-06-17 21:35  arthur
+
+	* [r770] nslcd/cfg.c, nslcd/myldap.c: replace https:// by ldaps://
+	  (stupid typo)
+
+2008-06-17 21:32  arthur
+
+	* [r769] nss-ldapd.conf: Active Directory sample configuration
+	  improvement by Jelmer Jaarsma <jelmer.jaarsma@sara.nl>
+
+2008-06-15 13:43  arthur
+
+	* [r767] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.3 release
+
+2008-06-15 13:41  arthur
+
+	* [r766] Makefile.am, debian/libnss-ldapd.lintian-overrides,
+	  debian/rules: lintian override seems to be no longer necessary
+
+2008-06-15 13:37  arthur
+
+	* [r765] debian/control: upgrade to standards-version 3.8.0 (no
+	  changes needed)
+
 2008-06-15 13:01  arthur
 
 	* [r764] debian/libnss-ldapd.nslcd.init: create /var/run/nslcd

@@ -1,3 +1,12 @@
+changes form 0.6.3 to 0.6.4
+---------------------------
+
+* fix for the tls_checkpeer option
+* fix incorrect test for ssl option in combination with ldaps:// URIs
+* improvements to Active Directory sample configuration
+* implement looking up search base in rootDSE of LDAP server
+
+
 changes form 0.6.2 to 0.6.3
 ---------------------------
 
