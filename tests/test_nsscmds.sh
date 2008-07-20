@@ -215,7 +215,7 @@ echo "test_nsscmds.sh: testing netgroup..."
 
 # check netgroup lookup of test netgroup
 check "getent netgroup tstnetgroup" << EOM
-tstnetgroup          (aap, , ) (noot, , )
+tstnetgroup          ( , arthur, ) (noot, , )
 EOM
 
 ###########################################################################
