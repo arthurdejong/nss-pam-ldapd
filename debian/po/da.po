@@ -1,29 +1,26 @@
-# translation of libnss-ldap_211-4_da.po to Danish
-#
-# This file is from the DDTP, the Debian Description Translation Project
-#
-# See http://ddtp.debian.org/ for more information.
-# Claus Hindsgaul <claus_h@image.dk>, 2004.
+# Danish translations for nss-ldapd package.
+# Copyright (C) 2008 Jonas Smedegaard <dr@jones.dk>
+# This file is distributed under the same license as the nss-ldapd package.
+# Jonas Smedegaard <dr@jones.dk>, 2008.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: libnss-ldap_211-4_da\n"
+"Project-Id-Version: nss-ldapd 0.6\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2008-04-05 16:33+0200\n"
-"PO-Revision-Date: 2004-02-28 18:38+0100\n"
-"Last-Translator: Claus Hindsgaul <claus_h@image.dk>\n"
-"Language-Team: Danish <dansk@klid.dk>\n"
+"PO-Revision-Date: 2008-08-06 11:34+0200\n"
+"Last-Translator: Jonas Smedegaard <dr@jones.dk>\n"
+"Language-Team: None\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"org>\n"
-"X-Generator: KBabel 1.0.2\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "LDAP server Uniform Resource Identifier:"
-msgstr ""
+msgstr "LDAP-server ensartet ressourceidentifikator (Uniform Resource Identifier):"
 
 #. Type: string
 #. Description
@@ -33,37 +30,32 @@ msgid ""
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
 "port number is optional."
 msgstr ""
+"Angiv URIen for den anvendte LDAP-server. Dette er en streng af typen "
+"ldap://<vÃ¦rtsnavn eller IP>:<port>/ . ldaps:// eller ldapi:// kan ogsÃ¥ "
+"bruges. Portnummeret er valgfrit."
 
-#
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Note: It is usually a good idea to use an IP address; this reduces risks "
-#| "of failure in the event name service is unavailable."
 msgid ""
 "When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
-"Bemærk: Det er normalt en god idé at bruge en IP-adresse: det reducerer "
-"risikoen for fejl hvis navneservicen ikke er tilgængelig."
+"NÃ¥r ldap- eller ldaps-formerne bruges er det typisk en god idÃ© at bruge en "
+"IP-adresse; dette reducerer risikoen for fejl nÃ¥r navneservice ikke er "
+"tilgÃ¦ngelig."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
-msgstr ""
+msgstr "Flere URIer kan angives ved at adskille dem med mellemrum."
 
-#  Template: shared/ldapns/ldap-server
-#  ddtp-prioritize: 56
-#
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:2001
-#, fuzzy
 msgid "LDAP server search base:"
-msgstr "LDAP-serverens værtsnavn"
+msgstr "LDAP-server sÃ¸gebase:"
 
 #. Type: string
 #. Description
@@ -74,16 +66,16 @@ msgid ""
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
 msgstr ""
-"Angiv det skelnede navn på LDAP-søgebasen. Mange sites bruge dele af deres "
-"domænenavn til dette formål. For eksempel ville domænet \"eksempel.dk\" "
-"bruge \"dc=eksempel,dc=dk\" som det skelnede navn på søgebasen."
+"Angiv det sÃ¦rlige navn pÃ¥ LDAP-sÃ¸gebasen. Mange sites bruger komponenterne "
+"fra deres domÃ¦nenavne til dette formÃ¥l. Eksempelvis ville domÃ¦net "
+"\"eksempel.dk\" bruge \"dc=eksempel,dc=dk\" som det sÃ¦rlige navn pÃ¥ "
+"sÃ¸gebasen."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:3001
-#, fuzzy
 msgid "LDAP database user:"
-msgstr "upriviligeret databasebruger"
+msgstr "LDAP databasebruger:"
 
 #. Type: string
 #. Description
@@ -92,30 +84,33 @@ msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
 msgstr ""
+"Hvis LDAP-databasen krÃ¦ver et brugernavn til almindelige opslag, sÃ¥ angiv "
+"her navnet pÃ¥ kontoen som vil blive brugt. Ellers lad det stÃ¥ tomt."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
-msgstr ""
+msgstr "Denne vÃ¦rdi bÃ¸r angives som et DN (sÃ¦rligt navn - distinguished name)."
 
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:4001
 msgid "LDAP user password:"
-msgstr ""
+msgstr "LDAP-bruger adgangskode:"
 
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr "Angiv den adgangskode, der skal bruges til at logge på LDAP-databasen."
+msgstr "Angiv adgangskoden som vil blive brugt til at logge pÃ¥ til "
+"LDAP-databasen."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:5001
 msgid "Name services to configure:"
-msgstr ""
+msgstr "Navneservices at indstille:"
 
 #. Type: multiselect
 #. Description
@@ -124,6 +119,8 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
+"For at denne pakke fungerer mÃ¥ du Ã¦ndre din /etc/nsswitch.conf til at bruge "
+"ldap datakilderne."
 
 #. Type: multiselect
 #. Description
@@ -133,257 +130,6 @@ msgid ""
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
 msgstr ""
-
-#, fuzzy
-#~ msgid ""
-#~ "Enter the password that will be used to log in to the LDAP database when "
-#~ "the root process does lookups."
-#~ msgstr ""
-#~ "Angiv den adgangskode, der skal bruges til at logge på LDAP-databasen."
-
-#  Template: libnss-ldap/confperm
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "make configuration readable/writeable by owner only"
-# msgstr ""
-#
-# msgid ""
-# "Should the libnss-ldap configuration file be readable and writable only by "
-# "the file owner?"
-# msgstr ""
-#
-# msgid ""
-# "If you use passwords in your libnss-ldap configuration, it is usually a "
-# "good idea to have the configuration set with mode 0600 (readable and "
-# "writable only by the file's owner)."
-# msgstr ""
-#
-# msgid ""
-# "Note: As a sanity check, libnss-ldap will check if you have nscd installed "
-# "and will only set the mode to 0600 if nscd is present."
-# msgstr ""
-#  Template: libnss-ldap/nsswitch
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "nsswitch.conf is not managed automatically"
-# msgstr ""
-#
-# msgid ""
-# "For this package to work, you need to modify your /etc/nsswitch.conf to "
-# "use the ldap datasource.  There is an example file at "
-# "/usr/share/doc/libnss-ldap/examples/nsswitch.ldap which can be used as an "
-# "example for your nsswitch setup, or it can be copied over your current "
-# "setup."
-# msgstr ""
-#
-# msgid ""
-# "Also, before removing this package, it is wise to remove the ldap entries "
-# "from nsswitch.conf to keep basic services functioning."
-# msgstr ""
-#  Template: shared/ldapns/base-dn
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "distinguished name of the search base"
-# msgstr ""
-#
-# msgid ""
-# "Please enter the distinguished name of the LDAP search base.  Many sites "
-# "use the components of their domain names for this purpose.  For example, "
-# "the domain \"example.net\" would use \"dc=example,dc=net\" as the "
-# "distinguished name of the search base."
-# msgstr ""
-#  Template: libnss-ldap/dblogin
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "database requires login"
-# msgstr ""
-#
-# msgid ""
-# "Does the LDAP database require login?"
-# msgstr ""
-#
-# msgid ""
-# "Answer this question affirmatively only if you can't retreive entries from "
-# "the database without logging in."
-# msgstr ""
-#
-# msgid ""
-# "Note: Under a normal setup, this is not needed."
-# msgstr ""
-#  Template: libnss-ldap/override
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "enable automatic configuration updates by debconf"
-# msgstr ""
-#
-# msgid ""
-# "Should debconf automatically update libnss-ldap's configuration file?"
-# msgstr ""
-#
-# msgid ""
-# "libnss-ldap has been moved to use debconf for its configuration."
-# msgstr ""
-#
-# msgid ""
-# "The file will be prepended with \"###DEBCONF###\"; you can disable the "
-# "debconf updates by removing that line."
-# msgstr ""
-#
-# msgid ""
-# "All new installations will have this by default."
-# msgstr ""
-#  Template: libnss-ldap/binddn
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "unprivileged database user"
-# msgstr ""
-#
-# msgid ""
-# "Enter the name of the account that will be used to log in to the LDAP "
-# "database."
-# msgstr ""
-#  Template: libnss-ldap/bindpw
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "password for database login account"
-# msgstr ""
-#
-# msgid ""
-# "Enter the password that will be used to log in to the LDAP database."
-# msgstr ""
-#  Template: shared/ldapns/ldap_version
-#  ddtp-prioritize: 56
-#
-#, fuzzy
-#~ msgid "LDAP version to use:"
-#~ msgstr "LDAP-version der skal bruges"
-
-#
-#, fuzzy
-#~ msgid ""
-#~ "Please enter which version of the LDAP protocol is to use.  It is usually "
-#~ "a good idea to set this to highest available version number."
-#~ msgstr ""
-#~ "Angiv hvilken version af LDAP-protokollen, som ldapns skal bruge. Det er "
-#~ "normalt en god idé at sætte den til det højest mulige versionsnummer."
-
-#, fuzzy
-#~ msgid ""
-#~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
-#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
-#~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
-#~ "your nsswitch setup."
-#~ msgstr ""
-#~ "For at denne pakke kan fungere, skal du ændre /etc/nsswitch.conf, så den "
-#~ "bruger ldap-datakilderne. Der er en eksempelfil i /usr/share/doc/libnss-"
-#~ "ldap/examples/nsswitch.ldap, som kan bruges som skabelon for din nsswitch-"
-#~ "opsætning, eller den kan kopieres over som erstatning for din nuværende "
-#~ "opsætning."
-
-#~ msgid "distinguished name of the search base"
-#~ msgstr "skelnet navn på søgebasen"
-
-#~ msgid "password for database login account"
-#~ msgstr "adgangskode til databasekontoen"
-
-#~ msgid "nsswitch.conf is not managed automatically"
-#~ msgstr "nsswitch.conf håndteres ikke automatisk"
-
-#~ msgid "make configuration readable/writeable by owner only"
-#~ msgstr "gør kun opætningsfilen læsbar og skrivbar for ejeren"
-
-#~ msgid ""
-#~ "Should the libnss-ldap configuration file be readable and writable only "
-#~ "by the file owner?"
-#~ msgstr ""
-#~ "Skal libnss-ldap's opsætningsfil kun være læsbar og skrivbar for filens "
-#~ "ejer?"
-
-#~ msgid ""
-#~ "If you use passwords in your libnss-ldap configuration, it is usually a "
-#~ "good idea to have the configuration set with mode 0600 (readable and "
-#~ "writable only by the file's owner)."
-#~ msgstr ""
-#~ "Hvis du bruger adgangskoder i din libnss-ldap-opsætning, er det normalt "
-#~ "en god idé at give opsætningsfilen filrettigheden 0600 (læsbar og "
-#~ "skrivbar for ejeren alene)."
-
-#~ msgid ""
-#~ "Note: As a sanity check, libnss-ldap will check if you have nscd "
-#~ "installed and will only set the mode to 0600 if nscd is present."
-#~ msgstr ""
-#~ "Bemærk: libnss-ldap vil tjekke om du har installeret nscd, og vil kun "
-#~ "sætte filrettigheden til 0600 hvis nscd er til stede."
-
-#~ msgid "database requires login"
-#~ msgstr "databasen kræver logind"
-
-#~ msgid "Does the LDAP database require login?"
-#~ msgstr "Kræver LDAP-databasen at du logger på?"
-
-#~ msgid ""
-#~ "Answer this question affirmatively only if you can't retreive entries "
-#~ "from the database without logging in."
-#~ msgstr ""
-#~ "Accepér kun her, hvis du ikke kan hente poster fra databasen uden at "
-#~ "logge på."
-
-#~ msgid "Note: Under a normal setup, this is not needed."
-#~ msgstr "Bemærk: Ved normale opsætninger bruges dette ikke."
-
-#~ msgid "enable automatic configuration updates by debconf"
-#~ msgstr "aktivér automatisk opdatering af opsætningen med debconf"
-
-#~ msgid ""
-#~ "Should debconf automatically update libnss-ldap's configuration file?"
-#~ msgstr "Skal debconf automatisk opdatere libnss-ldap's opsætningsfil?"
-
-#~ msgid "libnss-ldap has been moved to use debconf for its configuration."
-#~ msgstr "libnss-ldap er gået over til at benytte debconf til sin opsætning."
-
-#~ msgid ""
-#~ "The file will be prepended with \"###DEBCONF###\"; you can disable the "
-#~ "debconf updates by removing that line."
-#~ msgstr ""
-#~ "Der vil blive indføjet \"###DEBCONF###\" i starten af filen. Du kan "
-#~ "deaktivere debconf-opdateringerne ved at fjerne denne linje."
-
-#~ msgid "All new installations will have this by default."
-#~ msgstr "Alle nyinstallationer vil have dette som udgangspunkt."
-
-#~ msgid ""
-#~ "Enter the name of the account that will be used to log in to the LDAP "
-#~ "database."
-#~ msgstr ""
-#~ "Angiv navnet på den konto, der skal bruges til at logge på LDAP-databasen."
-
-#~ msgid ""
-#~ "Also, before removing this package, it is wise to remove the ldap entries "
-#~ "from nsswitch.conf to keep basic services functioning."
-#~ msgstr ""
-#~ "Før fjernelse af denne pakke, er det klogt at fjerne ldap-linjerne fra "
-#~ "nsswitch.conf, så de grundlæggende services stadig kan fungere."
-
-#~ msgid "dc=example,dc=net"
-#~ msgstr "dc=eksempel,dc=dk"
-
-#~ msgid "cn=proxyuser,dc=example,dc=net"
-#~ msgstr "cn=proxybruger,dc=eksempel,dc=dk"
-
-#~ msgid "3, 2"
-#~ msgstr "3, 2"
-
-#, fuzzy
-#~ msgid "ldap://127.0.0.1/"
-#~ msgstr "127.0.0.1"
-
-#
-#~ msgid "Please enter the address of the LDAP server used."
-#~ msgstr "Indtast adressen på den LDAP-server, der skal bruges."
+"Du kan vÃ¦lge de services som skal aktiveres eller slÃ¥s fra for "
+"LDAP-opslag. De nye LDAP-opslag vil blive tilfÃ¸jet som sidste "
+"mulighed. SÃ¸rg for at gennemgÃ¥ Ã¦ndringerne."
