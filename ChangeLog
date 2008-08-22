@@ -1,3 +1,20 @@
+2008-08-07 08:10  arthur
+
+	* [r782] debian/copyright, debian/po/da.po: updated Danish (da)
+	  translation of debconf templates by Jonas Smedegaard
+	  <dr@jones.dk>
+
+2008-08-07 08:01  arthur
+
+	* [r781] debian/po/sv.po: updated Swedish (sv) translation of
+	  debconf templates by Martin Ågren <martin.agren@gmail.com>
+
+2008-07-20 09:28  arthur
+
+	* [r778] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.4 release
+
 2008-07-20 08:27  arthur
 
 	* [r777] nslcd/cfg.c: rename get_base_from_dse() to
