@@ -20,6 +20,6 @@ Description: NSS module for using LDAP as a naming service
  basically any other information that you would normally get from /etc flat
  files or NIS.
  .
- This is a fork from the original libnss-ldap package and fixes,
- amongst other things, problems related to host name lookups and name
- lookups during booting.
+ This is a fork from libnss-ldap implementing structural design changes
+ to fix, amongst other things, problems related to host name lookups and
+ name lookups during booting.
