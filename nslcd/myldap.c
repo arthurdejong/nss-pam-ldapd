@@ -1023,7 +1023,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
           rc=LDAP_UNAVAILABLE;
         log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
         /* close connection on connection problems */
-        if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN))
+        if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN)||(rc==LDAP_SUCCESS))
         {
           /* close the connection and retry */
           do_close(search->session);
