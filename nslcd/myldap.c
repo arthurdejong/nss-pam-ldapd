@@ -358,7 +358,7 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
   rc=ldap_set_option(ld,option,invalue); \
   if (rc!=LDAP_SUCCESS) \
   { \
-    log_log(LOG_ERR,"ldap_set_option("__STRING(option)") failed: %s",ldap_err2string(rc)); \
+    log_log(LOG_ERR,"ldap_set_option(" #option ") failed: %s",ldap_err2string(rc)); \
     return rc; \
   }
 
