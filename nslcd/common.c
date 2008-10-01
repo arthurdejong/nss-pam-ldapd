@@ -98,7 +98,7 @@ int isvalidname(const char *name)
              (name[i]>='@' && name[i] <= 'Z') ||
              (name[i]>='a' && name[i] <= 'z') ||
              (name[i]>='0' && name[i] <= '9') ||
-             name[i]=='.' || name[i]=='_'  || name[i]=='$') )
+             name[i]=='.' || name[i]=='_'  || name[i]=='$' || name[i] == ' ') )
       return 0;
   }
   /* no test failed so it must be good */
