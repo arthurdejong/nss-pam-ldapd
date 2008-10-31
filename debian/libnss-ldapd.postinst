@@ -244,7 +244,7 @@ then
   #       as backup)
   # restart nscd to pick up changes in nsswitch.conf
   # (other processes will have to be restarted manually)
-  if [ -s /usr/sbin/nscd ] && [ `pidof -s nscd` ]
+  if [ -x /etc/init.d/nscd ] && [ `pidof -s nscd` ]
   then
     if which invoke-rc.d >/dev/null 2>&1
     then
