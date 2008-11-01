@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 CONFFILE="/etc/nss-ldapd.conf"
 
 # remove our configuration file (not a conffile) on purge manually
