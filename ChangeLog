@@ -1,3 +1,47 @@
+2008-11-04 21:20  arthur
+
+	* [r792] NEWS: some spelling fixes
+
+2008-11-04 21:15  arthur
+
+	* [r791] man/nss-ldapd.conf.5.xml: update manual page with current
+	  timeout numbers
+
+2008-11-01 18:05  arthur
+
+	* [r790] debian/libnss-ldapd.postrm: fail on errors
+
+2008-10-31 23:48  arthur
+
+	* [r789] debian/libnss-ldapd.postinst: check for existance of init
+	  script instead of daemon
+
+2008-10-01 19:39  arthur
+
+	* [r788] nslcd/common.c: also allow spaces in user and group names
+	  because it was causing problems in some environments
+
+2008-09-24 08:01  arthur
+
+	* [r787] nslcd/myldap.c: also retry if ldap_result() failed and
+	  getting error number returned LDAP_SUCCESS
+
+2008-09-24 07:58  arthur
+
+	* [r786] nslcd/myldap.c: log option name instead of option value
+	  for ldap_set_option() value
+
+2008-09-24 07:07  arthur
+
+	* [r785] debian/control: clarify relationship to nss_ldap in
+	  package description
+
+2008-08-22 10:36  arthur
+
+	* [r783] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.5 release
+
 2008-08-07 08:10  arthur
 
 	* [r782] debian/copyright, debian/po/da.po: updated Danish (da)
@@ -196,7 +240,7 @@
 2008-05-18 15:03  arthur
 
 	* [r741] TODO: from a review of glibc 2.3.6 code it shows that
-	  strerror() is only non-threadsafe in some verly unlikely
+	  strerror() is only non-threadsafe in some very unlikely
 	  circumstances
 
 2008-05-17 08:34  arthur

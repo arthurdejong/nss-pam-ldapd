@@ -47,3 +47,5 @@ other items
 * support multiple search bases
 * support memberOf attribute in passwd entries that map to groups
 * rename tls_checkpeer option to tls_reqcert
+* setnetgrent() may need to return an error if the netgroup is undefined
+* handle repeated calls to getent() better (see http://bugzilla.padl.com/show_bug.cgi?id=376)

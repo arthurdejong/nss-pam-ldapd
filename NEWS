@@ -1,3 +1,13 @@
+changes form 0.6.5 to 0.6.6
+---------------------------
+
+* Debian packaging improvements
+* allow spaces in user and group names because it was causing problems in
+  some environments
+* if ldap_set_option() fails log the option name instead of number
+* retry connecting to LDAP server in more cases
+
+
 changes form 0.6.4 to 0.6.5
 ---------------------------
 

@@ -1,3 +1,13 @@
+nss-ldapd (0.6.6) unstable; urgency=low
+
+  * clarify relationship to nss_ldap in package description (closes: #499892)
+  * fix test for nscd init script in postinst (closes: #504142)
+  * allow spaces in user and group names (closes: #488635)
+  * if ldap_set_option() fails log the option name instead of number
+  * retry connecting to LDAP server in more cases
+
+ -- Arthur de Jong <adejong@debian.org>  Tue, 04 Nov 2008 22:30:00 +0100
+
 nss-ldapd (0.6.5) unstable; urgency=low
 
   * updated Swedish debconf translation by Martin Ågren (closes: #492910)
