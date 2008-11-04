@@ -30,7 +30,7 @@ changes form 0.6.2 to 0.6.3
 * log messages now include a session id that makes it easier to track errors
   to requests (especially useful in debugging mode)
 * miscellaneous portability improvements
-* increase buffers and timeouts to handle large lookups more gracefully
+* increase buffers and time-outs to handle large lookups more gracefully
 * implement SASL authentication based on a patch by Dan White
 * allow more characters in user and group names
 
@@ -45,11 +45,11 @@ changes form 0.6.1 to 0.6.2
 * added the threads keyword to configure the number of threads that should be
   started in nslcd
 * handle empty netgroups properly
-* change the time out and retry mechanism for connecting to the LDAP server to
+* change the time-out and retry mechanism for connecting to the LDAP server to
   return an error quickly if the LDAP server is known to be unavailable for a
   long time (this removed the reconnect_tries option and changes the meaning
   of the reconnect_sleeptime and reconnect_maxsleeptime options)
-* increased the time out values between the NSS module and nslcd because of
+* increased the time-out values between the NSS module and nslcd because of
   new retry mechanism
 * implement new dict and set modules that use a hashtable to map keys
   efficiently
