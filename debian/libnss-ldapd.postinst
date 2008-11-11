@@ -182,7 +182,7 @@ then
     # (this is when we're upgrading)
     if [ -f "$CONFFILE" ]
     then
-      echo "Adding uid and gid options to $CONFFILE..."
+      echo "Adding uid and gid options to $CONFFILE..." >&2
       echo "# automatically added on upgrade of libnss-ldapd package" >> "$CONFFILE"
       cfg_set uid nslcd
       cfg_set gid nslcd
