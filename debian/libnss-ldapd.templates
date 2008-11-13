@@ -1,6 +1,5 @@
 Template: libnss-ldapd/ldap-uris
 Type: string
-Default: ldap://127.0.0.1/
 _Description: LDAP server Uniform Resource Identifier:
  Please enter the URI of the LDAP server used. This is a string in the form
  ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The
@@ -13,7 +12,6 @@ _Description: LDAP server Uniform Resource Identifier:
 
 Template: libnss-ldapd/ldap-base
 Type: string
-Default: dc=example,dc=net
 _Description: LDAP server search base:
  Please enter the distinguished name of the LDAP search base.  Many sites
  use the components of their domain names for this purpose.  For example,
