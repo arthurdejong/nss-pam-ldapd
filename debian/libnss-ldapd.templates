@@ -20,7 +20,6 @@ _Description: LDAP server search base:
 
 Template: libnss-ldapd/ldap-binddn
 Type: string
-Default:
 _Description: LDAP database user:
  If the LDAP database requires a login for normal lookups, enter
  the name of the account that will be used here. Leave empty
