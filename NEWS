@@ -1,6 +1,13 @@
 changes form 0.6.5 to 0.6.6
 ---------------------------
 
+* a fix for a problem in the Debian packaging that would cause user-configured
+  options be ignored
+
+
+changes form 0.6.5 to 0.6.6
+---------------------------
+
 * Debian packaging improvements
 * allow spaces in user and group names because it was causing problems in
   some environments

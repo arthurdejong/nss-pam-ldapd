@@ -1,3 +1,25 @@
+2008-11-13 21:27  arthur
+
+	* [r797] debian/libnss-ldapd.templates: also leave out empty
+	  Default line for libnss-ldapd/ldap-binddn
+
+2008-11-13 21:15  arthur
+
+	* [r796] debian/libnss-ldapd.config, debian/libnss-ldapd.templates:
+	  set debconf values from the environment only when they are empty
+	  or if configfile is present to fix installation problem
+
+2008-11-11 21:30  arthur
+
+	* [r795] debian/libnss-ldapd.postinst: any output should go to
+	  stderr to not confuse debconf
+
+2008-11-04 21:42  arthur
+
+	* [r793] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.6 release
+
 2008-11-04 21:20  arthur
 
 	* [r792] NEWS: some spelling fixes

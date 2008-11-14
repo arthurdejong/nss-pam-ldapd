@@ -1,3 +1,10 @@
+nss-ldapd (0.6.7) unstable; urgency=low
+
+  * a fix for a problem in debconf configuration that would ignore user input
+    and use automatically detected values instead (closes: 505384)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 14 Nov 2008 16:30:00 +0100
+
 nss-ldapd (0.6.6) unstable; urgency=low
 
   * clarify relationship to nss_ldap in package description (closes: #499892)

@@ -36,7 +36,7 @@
  <refmeta>
   <refentrytitle>nss-ldapd.conf</refentrytitle>
   <manvolnum>5</manvolnum>
-  <refmiscinfo class="version">Version 0.6.6</refmiscinfo>
+  <refmiscinfo class="version">Version 0.6.7</refmiscinfo>
   <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
   <refmiscinfo class="date">Nov 2008</refmiscinfo>
  </refmeta>
