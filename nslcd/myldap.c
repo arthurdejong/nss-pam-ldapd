@@ -500,42 +500,42 @@ static int do_set_options(MYLDAP_SESSION *session)
     /* use tls */
     i=LDAP_OPT_X_TLS_HARD;
     LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS,&i);
-    /* rand file */
-    if (nslcd_cfg->ldc_tls_randfile!=NULL)
-    {
-      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_RANDOM_FILE,nslcd_cfg->ldc_tls_randfile);
-    }
-    /* ca cert file */
-    if (nslcd_cfg->ldc_tls_cacertfile!=NULL)
-    {
-      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTFILE,nslcd_cfg->ldc_tls_cacertfile);
-    }
-    /* ca cert directory */
-    if (nslcd_cfg->ldc_tls_cacertdir!=NULL)
-    {
-      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTDIR,nslcd_cfg->ldc_tls_cacertdir);
-    }
-    /* require cert? */
-    if (nslcd_cfg->ldc_tls_checkpeer>-1)
-    {
-      i=nslcd_cfg->ldc_tls_checkpeer?LDAP_OPT_X_TLS_DEMAND:LDAP_OPT_X_TLS_NEVER;
-      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_REQUIRE_CERT,&i);
-    }
-    /* set cipher suite, certificate and private key */
-    if (nslcd_cfg->ldc_tls_ciphers!=NULL)
-    {
-      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CIPHER_SUITE,nslcd_cfg->ldc_tls_ciphers);
-    }
-    /* set certificate */
-    if (nslcd_cfg->ldc_tls_cert!=NULL)
-    {
-      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CERTFILE,nslcd_cfg->ldc_tls_cert);
-    }
-    /* set up key */
-    if (nslcd_cfg->ldc_tls_key!=NULL)
-    {
-      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_KEYFILE,nslcd_cfg->ldc_tls_key);
-    }
+  }
+  /* rand file */
+  if (nslcd_cfg->ldc_tls_randfile!=NULL)
+  {
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_RANDOM_FILE,nslcd_cfg->ldc_tls_randfile);
+  }
+  /* ca cert file */
+  if (nslcd_cfg->ldc_tls_cacertfile!=NULL)
+  {
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTFILE,nslcd_cfg->ldc_tls_cacertfile);
+  }
+  /* ca cert directory */
+  if (nslcd_cfg->ldc_tls_cacertdir!=NULL)
+  {
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTDIR,nslcd_cfg->ldc_tls_cacertdir);
+  }
+  /* require cert? */
+  if (nslcd_cfg->ldc_tls_checkpeer>-1)
+  {
+    i=nslcd_cfg->ldc_tls_checkpeer?LDAP_OPT_X_TLS_DEMAND:LDAP_OPT_X_TLS_NEVER;
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_REQUIRE_CERT,&i);
+  }
+  /* set cipher suite, certificate and private key */
+  if (nslcd_cfg->ldc_tls_ciphers!=NULL)
+  {
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CIPHER_SUITE,nslcd_cfg->ldc_tls_ciphers);
+  }
+  /* set certificate */
+  if (nslcd_cfg->ldc_tls_cert!=NULL)
+  {
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CERTFILE,nslcd_cfg->ldc_tls_cert);
+  }
+  /* set up key */
+  if (nslcd_cfg->ldc_tls_key!=NULL)
+  {
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_KEYFILE,nslcd_cfg->ldc_tls_key);
   }
 #endif /* LDAP_OPT_X_TLS */
   /* if nothing above failed, everything should be fine */
