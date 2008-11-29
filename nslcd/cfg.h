@@ -120,8 +120,6 @@ struct ldap_config
 #ifdef LDAP_OPT_X_TLS
   /* SSL enabled */
   enum ldap_ssl_options ldc_ssl_on;
-  /* SSL certificate path */
-  char *ldc_sslpath;
   /* tls check peer */
   int ldc_tls_checkpeer;
   /* tls ca certificate dir */

@@ -503,17 +503,6 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>sslpath</option> <emphasis remap="I">PATH</emphasis></term>
-     <listitem>
-      <para>
-       For the Netscape and Mozilla <acronym>LDAP</acronym>
-       client libraries only, this specifies the path to the X.509
-       certificate database.
-      </para>
-     </listitem>
-    </varlistentry>
-
-    <varlistentry>
      <term><option>tls_checkpeer</option> yes|no</term>
      <listitem>
       <para>

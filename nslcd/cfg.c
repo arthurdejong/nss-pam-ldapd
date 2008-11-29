@@ -98,7 +98,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_reconnect_maxsleeptime=30;
 #ifdef LDAP_OPT_X_TLS
   cfg->ldc_ssl_on=SSL_OFF;
-  cfg->ldc_sslpath=NULL;
   cfg->ldc_tls_checkpeer=-1;
   cfg->ldc_tls_cacertdir=NULL;
   cfg->ldc_tls_cacertfile=NULL;
@@ -818,13 +817,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       else if (parse_boolean(filename,lnr,token))
         cfg->ldc_ssl_on=SSL_LDAPS;
       get_eol(filename,lnr,keyword,&line);
-    }
-    else if (strcasecmp(keyword,"sslpath")==0)
-    {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sslpath);
-      get_eol(filename,lnr,keyword,&line);
-      /* TODO: check that the path is valid */
     }
     else if (strcasecmp(keyword,"tls_checkpeer")==0)
     {
