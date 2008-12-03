@@ -193,7 +193,7 @@ AC_CHECK_FUNCS(setgroups)
 AC_CHECK_FUNCS(getpeereid)
 AC_CHECK_FUNCS(getpeerucred)
 AC_CHECK_FUNCS(__nss_configure_lookup)
-
+AC_CHECK_FUNCS(getenv putenv clearenv)
 
 # replace getopt_long() function if it is not on the system
 AC_REPLACE_FUNCS(getopt_long)

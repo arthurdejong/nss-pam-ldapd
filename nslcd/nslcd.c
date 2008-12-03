@@ -81,6 +81,22 @@ static int nslcd_serversocket=-1;
 /* thread ids of all running threads */
 static pthread_t *nslcd_threads;
 
+/* if we don't have clearenv() we have to do this the hard way */
+#ifndef HAVE_CLEARENV
+
+/* the definition of the environment */
+extern char **environ;
+
+/* the environment we want to use */
+static char *sane_environment[] = {
+  "HOME=/",
+  "TMPDIR=/tmp",
+  "LDAPNOINIT=1",
+  NULL
+};
+
+#endif /* not HAVE_CLEARENV */
+
 /* display version information */
 static void display_version(FILE *fp)
 {
@@ -513,8 +529,20 @@ int main(int argc,char *argv[])
   int i;
   /* parse the command line */
   parse_cmdline(argc,argv);
-  /* clear the environment */
-  /* TODO:implement */
+  /* clean the environment */
+#ifdef HAVE_CLEARENV
+  if ( clearenv() ||
+       putenv("HOME=/") ||
+       putenv("TMPDIR=/tmp") ||
+       putenv("LDAPNOINIT=1") )
+  {
+    log_log(LOG_ERR,"clearing environment failed");
+    exit(EXIT_FAILURE);
+  }
+#else /* not HAVE_CLEARENV */
+  /* this is a bit ugly */
+  environ=sane_environment;
+#endif /* not HAVE_CLEARENV */
   /* check if we are already running */
   /* FIXME: implement (maybe pass along options or commands) */
   /* disable ldap lookups of host names to avoid lookup loop
