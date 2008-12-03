@@ -84,7 +84,7 @@ const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr)
 
    The standard defines user names valid if they contain characters from
    the set [A-Za-z0-9._-] where the hyphen should not be used as first
-   character. As an extension this test allows the at '@' and dolar '$' signs.
+   character. As an extension this test allows some more characters.
 */
 int isvalidname(const char *name)
 {
@@ -95,10 +95,11 @@ int isvalidname(const char *name)
   for (i=0;name[i]!='\0';i++)
   {
     if ( ! ( ( (i!=0) && (name[i]=='-') ) ||
+             ( (i!=0) && (name[i]=='\\') && name[i+1]!='\0' ) ||
              (name[i]>='@' && name[i] <= 'Z') ||
              (name[i]>='a' && name[i] <= 'z') ||
              (name[i]>='0' && name[i] <= '9') ||
-             name[i]=='.' || name[i]=='_'  || name[i]=='$' || name[i] == ' ') )
+             name[i]=='.' || name[i]=='_'  || name[i]=='$' || name[i]==' ') )
       return 0;
   }
   /* no test failed so it must be good */

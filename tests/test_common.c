@@ -39,6 +39,9 @@ static void test_isvalidname(void)
   assert(!isvalidname("-arthur"));
   assert(isvalidname("arthur-is-nice"));
   assert(isvalidname("sambamachine$"));
+  assert(isvalidname("foo\\bar"));
+  assert(!isvalidname("\\foo\\bar"));
+  assert(!isvalidname("foo\\bar\\"));
 }
 
 /* the main program... */
