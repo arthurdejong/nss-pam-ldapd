@@ -503,19 +503,16 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>tls_checkpeer</option> yes|no</term>
+     <term><option>tls_reqcert</option> never|allow|try|demand|hard</term>
      <listitem>
       <para>
-       Specifies whether to require and verify the server certificate
-       or not, when using <acronym>SSL</acronym>/<acronym>TLS</acronym>
-       with the OpenLDAP client library.
-       The default is to use the default behaviour of the client
-       library; for OpenLDAP 2.0 and earlier it is "no", for OpenLDAP
-       2.1 and later it is "yes". At least one of
-       <option>tls_cacertdir</option>
-       and
-       <option>tls_cacertfile</option>
-       is required if peer verification is enabled.
+       Specifies what checks to perform on a server-supplied certificate.
+       The meaning of the values is described in the
+       <citerefentry><refentrytitle>ldap.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+       manual page.
+       At least one of <option>tls_cacertdir</option> and
+       <option>tls_cacertfile</option> is required if peer verification is
+       enabled.
       </para>
      </listitem>
     </varlistentry>

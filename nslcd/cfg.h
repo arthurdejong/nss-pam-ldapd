@@ -121,7 +121,7 @@ struct ldap_config
   /* SSL enabled */
   enum ldap_ssl_options ldc_ssl_on;
   /* tls check peer */
-  int ldc_tls_checkpeer;
+  int ldc_tls_reqcert;
   /* tls ca certificate dir */
   char *ldc_tls_cacertdir;
   /* tls ca certificate file */

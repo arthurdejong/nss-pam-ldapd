@@ -98,7 +98,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_reconnect_maxsleeptime=30;
 #ifdef LDAP_OPT_X_TLS
   cfg->ldc_ssl_on=SSL_OFF;
-  cfg->ldc_tls_checkpeer=-1;
+  cfg->ldc_tls_reqcert=-1;
   cfg->ldc_tls_cacertdir=NULL;
   cfg->ldc_tls_cacertfile=NULL;
   cfg->ldc_tls_randfile=NULL;
@@ -451,6 +451,33 @@ static void get_gid(const char *filename,int lnr,
   /* log an error */
   log_log(LOG_ERR,"%s:%d: %s: not a valid gid: '%s'",filename,lnr,keyword,token);
   exit(EXIT_FAILURE);
+}
+
+static void get_reqcert(const char *filename,int lnr,
+                        const char *keyword,char **line,
+                        int *var)
+{
+  char token[16];
+  /* get token */
+  check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
+  /* check if it is a valid value for tls_reqcert option */
+  if ( (strcasecmp(token,"never")==0) ||
+       (strcasecmp(token,"no")==0) )
+    *var=LDAP_OPT_X_TLS_NEVER;
+  else if (strcasecmp(token,"allow")==0)
+    *var=LDAP_OPT_X_TLS_ALLOW;
+  else if (strcasecmp(token,"try")==0)
+    *var=LDAP_OPT_X_TLS_TRY;
+  else if ( (strcasecmp(token,"demand")==0) ||
+       (strcasecmp(token,"yes")==0) )
+    *var=LDAP_OPT_X_TLS_DEMAND;
+  else if (strcasecmp(token,"hard")==0)
+    *var=LDAP_OPT_X_TLS_HARD;
+  else
+  {
+    log_log(LOG_ERR,"%s:%d: %s: invalid argument: '%s'",filename,lnr,keyword,token);
+    exit(EXIT_FAILURE);
+  }
 }
 
 static void parse_krb5_ccname_statement(const char *filename,int lnr,
@@ -820,8 +847,14 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"tls_checkpeer")==0)
     {
+      log_log(LOG_WARNING,"%s:%d: option %s is deprecated (and will be removed in an upcoming release), use tls_reqcert instead",filename,lnr,keyword);
+      get_reqcert(filename,lnr,keyword,&line,&cfg->ldc_tls_reqcert);
+      get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"tls_reqcert")==0)
+    {
       log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_tls_checkpeer);
+      get_reqcert(filename,lnr,keyword,&line,&cfg->ldc_tls_reqcert);
       get_eol(filename,lnr,keyword,&line);
     }
     else if (strcasecmp(keyword,"tls_cacertdir")==0)

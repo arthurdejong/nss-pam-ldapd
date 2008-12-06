@@ -516,11 +516,10 @@ static int do_set_options(MYLDAP_SESSION *session)
   {
     LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTDIR,nslcd_cfg->ldc_tls_cacertdir);
   }
-  /* require cert? */
-  if (nslcd_cfg->ldc_tls_checkpeer>-1)
+  /* require cert? (certificate validation) */
+  if (nslcd_cfg->ldc_tls_reqcert>=0)
   {
-    i=nslcd_cfg->ldc_tls_checkpeer?LDAP_OPT_X_TLS_DEMAND:LDAP_OPT_X_TLS_NEVER;
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_REQUIRE_CERT,&i);
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_REQUIRE_CERT,&nslcd_cfg->ldc_tls_reqcert);
   }
   /* set cipher suite, certificate and private key */
   if (nslcd_cfg->ldc_tls_ciphers!=NULL)
