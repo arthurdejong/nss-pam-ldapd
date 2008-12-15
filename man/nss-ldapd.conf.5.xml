@@ -176,6 +176,9 @@
       <para>
        Specifies the clear text credentials with which to bind.
        This option is only applicable when used with <option>binddn</option> above.
+       If you set this option you should consider changing the permissions
+       of the <filename>nss-ldapd.conf</filename> file to only grant access to
+       the root user.
 <!-- WHEN SASL IS DOCUMENTED:
        This option is only applicable when either the <option>binddn</option> or
        <option>sasl_authcid</option> options are used.
