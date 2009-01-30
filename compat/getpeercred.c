@@ -77,14 +77,14 @@ int getpeercred(int sock,uid_t *uid,gid_t *gid,pid_t *pid)
   return 0;
 #elif defined(HAVE_GETPEERUCRED)
   ucred_t *cred=NULL;
-  if (getpeerucred(client,&cred))
+  if (getpeerucred(sock,&cred))
     return -1;
   /* save the data */
-  if (uid!=NULL) *uid=ucred_geteuid(&cred);
-  if (gid!=NULL) *gid=ucred_getegid(&cred);
-  if (pid!=NULL) *pid=ucred_getpid(&cred);
+  if (uid!=NULL) *uid=ucred_geteuid(cred);
+  if (gid!=NULL) *gid=ucred_getegid(cred);
+  if (pid!=NULL) *pid=ucred_getpid(cred);
   /* free cred and return */
-  ucred_free(&ucred);
+  ucred_free(cred);
   return 0;
 #elif defined(HAVE_GETPEEREID)
   uid_t tuid;
