@@ -10,7 +10,7 @@ Vcs-Browser: http://arthurenhella.demon.nl/viewcvs/nss-ldapd/nss-ldapd/
 
 Package: libnss-ldapd
 Architecture: any
-Depends: ${shlibs:Depends}, debconf | debconf-2.0, adduser
+Depends: ${misc:Depends}, ${shlibs:Depends}, adduser
 Recommends: nscd, libpam-ldap
 Conflicts: libnss-ldap
 Provides: libnss-ldap
