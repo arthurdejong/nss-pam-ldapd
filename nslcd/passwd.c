@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -68,6 +68,13 @@ const char *attmap_passwd_loginShell    = "loginShell";
 static const char *default_passwd_userPassword     = "*"; /* unmatchable */
 static const char *default_passwd_homeDirectory    = "";
 static const char *default_passwd_loginShell       = "";
+
+/* Note that the password value should be one of:
+   <empty> - no password set, allow login without password
+   *       - often used to prevent logins
+   x       - "valid" encrypted password that does not match any valid password
+             often used to indicate that the password is defined elsewhere
+   other   - encrypted password, usually in crypt(3) format */
 
 /* the attribute list to request with searches */
 static const char *passwd_attrs[10];
@@ -167,6 +174,10 @@ static char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn)
   return uid;
 }
 
+/* Translate the DN into a user name. This function tries several aproaches
+   at getting the user name, including looking in the DN for a uid attribute,
+   looking in the cache and falling back to looking up a uid attribute in a
+   LDAP query. */
 char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
 {
   struct dn2uid_cache_entry *cacheentry=NULL;
