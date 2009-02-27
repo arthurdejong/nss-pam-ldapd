@@ -3,7 +3,7 @@
    This file is part of the nss-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <strings.h>
+#include <limits.h>
 
 #include "nslcd.h"
 #include "common.h"
@@ -94,6 +95,10 @@ int isvalidname(const char *name)
   /* check characters */
   for (i=0;name[i]!='\0';i++)
   {
+#ifdef LOGIN_NAME_MAX
+    if (i>=LOGIN_NAME_MAX)
+      return 0;
+#endif /* LOGIN_NAME_MAX */
     if ( ! ( ( (i!=0) && (name[i]=='-') ) ||
              ( (i!=0) && (name[i]=='\\') && name[i+1]!='\0' ) ||
              (name[i]>='@' && name[i] <= 'Z') ||
