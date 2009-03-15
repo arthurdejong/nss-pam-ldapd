@@ -1,5 +1,5 @@
 Source: nss-ldapd
-Section: net
+Section: admin
 Priority: extra
 Maintainer: Arthur de Jong <adejong@debian.org>
 Standards-Version: 3.8.0
