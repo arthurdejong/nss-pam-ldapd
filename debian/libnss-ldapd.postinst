@@ -151,6 +151,7 @@ base dc=example,dc=net
 #ldap_version 3
 
 # The DN to bind with for normal lookups.
+# Note that if you set a bindpw you should check the permissions of this file.
 #binddn cn=annonymous,dc=example,dc=net
 #bindpw secret
 
