@@ -238,7 +238,15 @@ then
   done
   # we're done
   db_stop
-  # TODO: fix permissions of configfile if passwords are stored
+  # fix permissions of configfile if passwords are stored
+  if grep -q '^bindpw' "$CONFFILE"
+  then
+    if [ `find "$CONFFILE" -perm +007` ]
+    then
+      echo "Fixing permissions of $CONFFILE because of bindpw option"
+      chmod o-rwx "$CONFFILE"
+    fi
+  fi
   # TODO: create backups of /etc/nsswitch.conf and configfile
   #       (probably store orig in tmpfile and if diff install it
   #       as backup)
