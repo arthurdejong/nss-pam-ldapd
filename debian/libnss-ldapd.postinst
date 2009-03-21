@@ -158,6 +158,9 @@ base dc=example,dc=net
 #scope sub
 
 EOM
+    # fix permissions
+    chmod 640 "$CONFFILE"
+    chown root:nslcd "$CONFFILE"
   fi
   # we're done
   return 0
@@ -238,7 +241,13 @@ then
   done
   # we're done
   db_stop
-  # TODO: fix permissions of configfile if passwords are stored
+  # fix permissions of configfile if upgrading from an old version
+  if dpkg --compare-versions "$2" lt-nl "0.6.7.1"
+  then
+    echo "Fixing permissions of $CONFFILE"
+    chmod 640 "$CONFFILE"
+    chown root:nslcd "$CONFFILE"
+  fi
   # TODO: create backups of /etc/nsswitch.conf and configfile
   #       (probably store orig in tmpfile and if diff install it
   #       as backup)
