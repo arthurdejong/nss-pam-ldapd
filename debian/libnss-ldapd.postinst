@@ -131,7 +131,6 @@ create_config()
   if [ ! -e "$CONFFILE" ]
   then
     # create a simple configuration file from this template
-    # TODO: improve this template
     cat > "$CONFFILE" << EOM
 # $CONFFILE
 # nss-ldapd configuration file. See nss-ldapd.conf(5)
@@ -151,7 +150,6 @@ base dc=example,dc=net
 #ldap_version 3
 
 # The DN to bind with for normal lookups.
-# Note that if you set a bindpw you should check the permissions of this file.
 #binddn cn=annonymous,dc=example,dc=net
 #bindpw secret
 
@@ -159,6 +157,9 @@ base dc=example,dc=net
 #scope sub
 
 EOM
+    # fix permissions
+    chmod 640 "$CONFFILE"
+    chown root:nslcd "$CONFFILE"
   fi
   # we're done
   return 0
@@ -239,14 +240,12 @@ then
   done
   # we're done
   db_stop
-  # fix permissions of configfile if passwords are stored
-  if grep -q '^bindpw' "$CONFFILE"
+  # fix permissions of configfile if upgrading from an old version
+  if dpkg --compare-versions "$2" lt-nl "0.6.7.1"
   then
-    if [ `find "$CONFFILE" -perm +007` ]
-    then
-      echo "Fixing permissions of $CONFFILE because of bindpw option"
-      chmod o-rwx "$CONFFILE"
-    fi
+    echo "Fixing permissions of $CONFFILE"
+    chmod 640 "$CONFFILE"
+    chown root:nslcd "$CONFFILE"
   fi
   # TODO: create backups of /etc/nsswitch.conf and configfile
   #       (probably store orig in tmpfile and if diff install it
