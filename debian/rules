@@ -42,7 +42,6 @@ clean:
 	  cp -f /usr/share/misc/config.guess config.guess
 	dh_testdir
 	dh_testroot
-	rm -f build-stamp configure-stamp
 	[ ! -f Makefile ] || $(MAKE) distclean
 	dh_clean
 	debconf-updatepo --verbose
@@ -50,7 +49,7 @@ clean:
 install: build
 	dh_testdir
 	dh_testroot
-	dh_clean -k
+	dh_prep
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/libnss-ldapd
 	# make configfile fully generated
 	rm -f $(CURDIR)/debian/libnss-ldapd/etc/nss-ldapd.conf
