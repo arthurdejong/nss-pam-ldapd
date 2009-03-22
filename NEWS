@@ -1,3 +1,25 @@
+changes from 0.6.7 to 0.6.8
+---------------------------
+
+* SECURITY FIX: the nss-ldapd.conf file that is installed by the Debian
+                package was created world-readable which could cause problems
+                if the bindpw option is used
+                this has been fixed in the Debian package but other users
+                should check the permissions of the nss-ldapd.conf file when
+                the bindpw option is used (warnings have been added to the
+                manual page and sample nss-ldapd.conf)
+* clean the environment and set LDAPNOINIT to disable parsing of LDAP
+  configuration files (.ldaprc, /etc/ldap/ldap.conf, etc)
+* remove sslpath option because it wasn't used
+* correctly set SSL/TLS options when using StartTLS
+* rename the tls_checkpeer option to tls_reqcert, deprecating the old name and
+  supporting all values that OpenLDAP supports
+* allow backslashes in user and group names execpt as first or last character
+* check user and group names against LOGIN_NAME_MAX if it is defined
+* fix for getpeercred() on Solaris by David Bartley
+* Debian packaging improvements
+
+
 changes form 0.6.6 to 0.6.7
 ---------------------------
 

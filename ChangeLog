@@ -1,3 +1,124 @@
+2009-03-22 21:20  arthur
+
+	* [r824] README, debian/copyright: update copyright year
+
+2009-03-22 21:12  arthur
+
+	* [r823] nslcd/nslcd.c: update copyright year
+
+2009-03-22 17:05  arthur
+
+	* [r822] debian/compat, debian/control, debian/rules: upgrade to
+	  debhelper compatibility level 7
+
+2009-03-22 16:53  arthur
+
+	* [r821] debian/control: upgrade to standards-version 3.8.1 (no
+	  changes needed)
+
+2009-03-22 16:46  arthur
+
+	* [r820] Makefile.am, debian/libnss-ldapd.lintian-overrides,
+	  debian/rules: add lintian override for missing shlibs and symbols
+	  control files (we are a shared library that should not be
+	  directly linked to)
+
+2009-03-21 11:33  arthur
+
+	* [r818] NEWS: fix version numbers in NEWS file
+
+2009-03-21 11:30  arthur
+
+	* [r817] nss-ldapd.conf: add a note about permissions of
+	  nss-ldapd.conf when using the bindpw option
+
+2009-03-21 09:51  arthur
+
+	* [r816] debian/libnss-ldapd.postinst: instead of bindpw check
+	  always create config file with proper permissions and fix
+	  permissions once on upgrade
+
+2009-03-20 12:23  arthur
+
+	* [r814] debian/libnss-ldapd.postinst: add bindpw-related warning
+	  message to default installed config file
+
+2009-03-20 10:55  arthur
+
+	* [r813] debian/libnss-ldapd.postinst: fix permissions of
+	  configfile if passwords are stored
+
+2009-03-15 17:30  arthur
+
+	* [r812] debian/control: follow change in override file
+
+2009-02-27 18:09  arthur
+
+	* [r811] debian/control: use misc:Depends to generate debconf
+	  dependency
+
+2009-02-27 17:27  arthur
+
+	* [r810] nslcd/common.c: check user and group names against
+	  LOGIN_NAME_MAX if it is defined
+
+2009-02-27 16:39  arthur
+
+	* [r809] man/Makefile.am: generate utf-8 encoded manual page (no
+	  non-ascii characters used at the moment)
+
+2009-02-27 16:28  arthur
+
+	* [r808] nslcd/passwd.c: add some more documentation
+
+2009-01-30 18:05  arthur
+
+	* [r807] compat/getpeercred.c: fix for getpeercred() on Solaris by
+	  David Bartley <dtbartle@csclub.uwaterloo.ca>
+
+2008-12-15 11:20  arthur
+
+	* [r806] man/nss-ldapd.conf.5.xml: add a note about permissions of
+	  configfile when bindpw is used
+
+2008-12-06 16:58  arthur
+
+	* [r805] man/nss-ldapd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/myldap.c, nss-ldapd.conf: rename the tls_checkpeer option
+	  to tls_reqcert, deprecating the old name and supporting all
+	  options that OpenLDAP supports for that value
+
+2008-12-03 22:45  arthur
+
+	* [r804] nslcd/common.c, tests/test_common.c: allow backslashes in
+	  names execpt as first or last character
+
+2008-12-03 22:11  arthur
+
+	* [r803] configure.ac, nslcd/nslcd.c: clean the environment and set
+	  LDAPNOINIT to disable parsing of LDAP configfiles (.ldaprc,
+	  /etc/ldap/ldap.conf, etc)
+
+2008-11-29 15:18  arthur
+
+	* [r802] nslcd/myldap.c: use tls_* options also for StartTLS
+	  connections
+
+2008-11-29 14:43  arthur
+
+	* [r801] man/nss-ldapd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h: remove
+	  sslpath option because it wasn't used for anything
+
+2008-11-29 14:41  arthur
+
+	* [r800] debian/changelog: add missing pound sign
+
+2008-11-14 15:44  arthur
+
+	* [r798] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.7 release
+
 2008-11-13 21:27  arthur
 
 	* [r797] debian/libnss-ldapd.templates: also leave out empty

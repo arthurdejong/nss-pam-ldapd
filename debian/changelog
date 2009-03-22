@@ -1,3 +1,28 @@
+nss-ldapd (0.6.8) unstable; urgency=high
+
+  * SECURITY FIX: the nss-ldapd.conf file that is installed was created
+                  world-readable which could cause problems if the bindpw
+                  option is used
+                  this has been fixed and warnings have been added to the
+                  manual page and sample nss-ldapd.conf (closes: #520476)
+  * clean the environment and set LDAPNOINIT to disable parsing of LDAP
+    configuration files (.ldaprc, /etc/ldap/ldap.conf, etc)
+  * remove sslpath option because it wasn't used
+  * correctly set SSL/TLS options when using StartTLS
+  * rename the tls_checkpeer option to tls_reqcert, deprecating the old name
+    and supporting all values that OpenLDAP supports
+  * allow backslashes in user and group names execpt as first or last
+    character
+  * check user and group names against LOGIN_NAME_MAX if it is defined
+  * fix for getpeercred() on Solaris by David Bartley
+  * debian/control: change section to admin to follow change in override file
+  * add lintian override for missing shlibs and symbols control files (we are
+    a shared library that should not be directly linked to)
+  * upgrade to standards-version 3.8.1 (no changes needed)
+  * upgrade to debhelper compatibility level 7
+
+ -- Arthur de Jong <adejong@debian.org>  Sat, 22 Mar 2009 22:00:00 +0100
+
 nss-ldapd (0.6.7) unstable; urgency=low
 
   * a fix for a problem in debconf configuration that would ignore user input

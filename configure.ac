@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ AC_PREREQ(2.59)
 AC_COPYRIGHT(
 [Copyright (C) 2006 Luke Howard
 Copyright (C) 2006 West Consulting
-Copyright (C) 2006, 2007, 2008 Arthur de Jong
+Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 
 This configure script is derived from configure.ac which is free software;
 you can redistribute it and/or modify it under the terms of the GNU Lesser
@@ -32,8 +32,8 @@ version 2.1 of the License, or (at your option) any later version. See the
 configure.ac file for more details.])
 
 # initialize and set version and bugreport address
-AC_INIT([nss-ldapd],[0.6.7],[arthur@ch.tudelft.nl])
-RELEASE_MONTH="Nov 2008"
+AC_INIT([nss-ldapd],[0.6.8],[arthur@ch.tudelft.nl])
+RELEASE_MONTH="Mar 2009"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])
 
