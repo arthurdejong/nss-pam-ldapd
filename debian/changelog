@@ -2,7 +2,7 @@ nss-ldapd (0.6.8) unstable; urgency=high
 
   * SECURITY FIX: the nss-ldapd.conf file that is installed was created
                   world-readable which could cause problems if the bindpw
-                  option is used
+                  option is used (CVE-2009-1073)
                   this has been fixed and warnings have been added to the
                   manual page and sample nss-ldapd.conf (closes: #520476)
   * clean the environment and set LDAPNOINIT to disable parsing of LDAP
