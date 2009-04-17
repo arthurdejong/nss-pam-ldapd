@@ -13,7 +13,7 @@ then
   rm -f "$CONFFILE"
 fi
 
-# call ldconfig to signal the removal of out NSS library
+# call ldconfig to signal the removal of our NSS library
 if [ "$1" = "remove" ]
 then
   ldconfig
