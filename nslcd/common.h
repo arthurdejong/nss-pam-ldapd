@@ -3,7 +3,7 @@
    This file is part of the nss-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -117,6 +117,11 @@ int nslcd_service_bynumber(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session);
 
 /* macro for generating service handling code */
 #define NSLCD_HANDLE(db,fn,readfn,logcall,action,mkfilter,writefn) \

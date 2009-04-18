@@ -1,7 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2006, 2007 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
+# Copyright (C) 2009 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,19 +17,23 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-sbin_PROGRAMS = nslcd
+noinst_PROGRAMS = pam_ldap.so
 
 AM_CPPFLAGS=-I$(top_srcdir)
-AM_CFLAGS = $(PTHREAD_CFLAGS)
+AM_CFLAGS = -fPIC
 
-nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
-                ../compat/attrs.h \
-                log.c log.h \
-                common.c common.h \
-                myldap.c myldap.h \
-                cfg.c cfg.h \
-                attmap.c attmap.h \
-                alias.c ether.c group.c host.c netgroup.c network.c \
-                passwd.c protocol.c rpc.c service.c shadow.c pam.c
-nslcd_LDADD = @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a \
-              ../compat/libcompat.a
+pam_ldap_so_SOURCES = ../nslcd.h ../nslcd-common.h \
+                      ../compat/attrs.h pam.c
+pam_ldap_so_LDFLAGS = -shared -Wl,--version-script,\$(srcdir)/exports.linux
+pam_ldap_so_LDADD = ../common/libtio.a ../nss/common.o -lpam
+
+EXTRA_DIST = exports.linux
+
+install-exec-local: install-pam_ldap_so
+uninstall-local: uninstall-pam_ldap_so
+
+# install pam_ldap.so
+install-pam_ldap_so: pam_ldap.so
+	$(INSTALL_PROGRAM) -D pam_ldap.so $(DESTDIR)$(libdir)/security/pam_ldap.so
+uninstall-pam_ldap_so:
+	-rm -f $(DESTDIR)$(libdir)/security/pam_ldap.so

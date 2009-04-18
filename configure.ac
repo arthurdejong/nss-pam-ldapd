@@ -350,6 +350,6 @@ AC_SUBST(nss_ldap_so_LIBS)
 AC_SUBST(nslcd_LIBS)
 
 # generate files
-AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile
-                 nss/Makefile nslcd/Makefile man/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile
+                 pam/Makefile nslcd/Makefile man/Makefile tests/Makefile])
 AC_OUTPUT
