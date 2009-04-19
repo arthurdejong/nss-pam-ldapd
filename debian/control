@@ -3,15 +3,25 @@ Section: admin
 Priority: extra
 Maintainer: Arthur de Jong <adejong@debian.org>
 Standards-Version: 3.8.1
-Build-Depends: debhelper (>= 7), libkrb5-dev, libldap2-dev, libsasl2-dev, po-debconf (>= 0.5.0), docbook2x, docbook-xml
+Build-Depends: debhelper (>= 7), libkrb5-dev, libldap2-dev, libsasl2-dev, po-debconf (>= 0.5.0), docbook2x, docbook-xml, libpam0g-dev
 Homepage: http://ch.tudelft.nl/~arthur/nss-ldapd
 Vcs-Svn: http://arthurenhella.demon.nl/svn/nss-ldapd/nss-ldapd/
 Vcs-Browser: http://arthurenhella.demon.nl/viewcvs/nss-ldapd/nss-ldapd/
 
-Package: libnss-ldapd
+Package: nslcd
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, adduser
-Recommends: nscd, libpam-ldap
+Recommends: nscd, libnss-ldapd, libpam-ldapd
+Description: Daemon for NSS and PAM lookups using LDAP
+ This package provides a daemon for retrieving account information from
+ LDAP.
+ .
+ TODO: come up with a better name for the package-set as a whole
+
+Package: libnss-ldapd
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, nslcd
+Recommends: libpam-ldapd | libpam-ldap
 Conflicts: libnss-ldap
 Provides: libnss-ldap
 Description: NSS module for using LDAP as a naming service
@@ -23,3 +33,13 @@ Description: NSS module for using LDAP as a naming service
  This is a fork from libnss-ldap implementing structural design changes
  to fix, amongst other things, problems related to host name lookups and
  name lookups during booting.
+
+Package: libpam-ldapd
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, nslcd
+Recommends: libnss-ldapd | libnss-ldap
+Conflicts: libpam-ldap
+Provides: libpam-ldap
+Description: PAM module for using LDAP as an authentication service
+ This package provides a Pluggable Authentication Module that allows
+ your LDAP server to validate user passwords.

@@ -32,7 +32,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.3\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2008-04-05 16:33+0200\n"
+"POT-Creation-Date: 2009-04-19 21:47+0200\n"
 "PO-Revision-Date: 2008-02-03 20:20-0500\n"
 "Last-Translator: Rudy Godoy Guillén <rudy@stone-head.org>\n"
 "Language-Team: Debian l10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
@@ -42,13 +42,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:1001
+#: ../nslcd.templates:1001
 msgid "LDAP server Uniform Resource Identifier:"
 msgstr "Identificador de recurso uniforme del servidor LDAP:"
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:1001
+#: ../nslcd.templates:1001
 msgid ""
 "Please enter the URI of the LDAP server used. This is a string in the form "
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
@@ -61,7 +61,7 @@ msgstr ""
 #
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:1001
+#: ../nslcd.templates:1001
 msgid ""
 "When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
@@ -72,20 +72,20 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:1001
+#: ../nslcd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
 msgstr "Se puede especificar múltiples URIs separandolos con espacios."
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:2001
+#: ../nslcd.templates:2001
 msgid "LDAP server search base:"
 msgstr "Base de búsqueda en servidor LDAP:"
 
 #
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:2001
+#: ../nslcd.templates:2001
 msgid ""
 "Please enter the distinguished name of the LDAP search base.  Many sites use "
 "the components of their domain names for this purpose.  For example, the "
@@ -99,13 +99,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:3001
+#: ../nslcd.templates:3001
 msgid "LDAP database user:"
 msgstr "Usuario de base de datos LDAP:"
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:3001
+#: ../nslcd.templates:3001
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
@@ -115,19 +115,19 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:3001
+#: ../nslcd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
 msgstr "Debe ingresar el valor en forma de DN (nombre distintivo)."
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:4001
+#: ../nslcd.templates:4001
 msgid "LDAP user password:"
 msgstr "Contraseña de usuario LDAP:"
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:4001
+#: ../nslcd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr ""
 "Introduzca la contraseña que se utilizará para acceder a la base de datos "
@@ -135,13 +135,13 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:1001
 msgid "Name services to configure:"
 msgstr "Indique los servicios a configurar:"
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:1001
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
@@ -151,7 +151,7 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:5001
+#: ../libnss-ldapd.templates:1001
 msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "

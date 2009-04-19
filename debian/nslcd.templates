@@ -1,0 +1,33 @@
+Template: libnss-ldapd/ldap-uris
+Type: string
+_Description: LDAP server Uniform Resource Identifier:
+ Please enter the URI of the LDAP server used. This is a string in the form
+ ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The
+ port number is optional.
+ .
+ When useing the ldap or ldaps schemes it is usually a good idea to use an IP
+ address; this reduces the risk of failure when name services are unavailable.
+ .
+ Multiple URIs can be be specified by separating them with spaces.
+
+Template: libnss-ldapd/ldap-base
+Type: string
+_Description: LDAP server search base:
+ Please enter the distinguished name of the LDAP search base.  Many sites
+ use the components of their domain names for this purpose.  For example,
+ the domain "example.net" would use "dc=example,dc=net" as the
+ distinguished name of the search base.
+
+Template: libnss-ldapd/ldap-binddn
+Type: string
+_Description: LDAP database user:
+ If the LDAP database requires a login for normal lookups, enter
+ the name of the account that will be used here. Leave empty
+ otherwise.
+ .
+ This value should be specified as a DN (distinguished name).
+
+Template: libnss-ldapd/ldap-bindpw
+Type: password
+_Description: LDAP user password:
+ Enter the password that will be used to log in to the LDAP database.

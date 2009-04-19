@@ -23,14 +23,20 @@ SUBDIRS = compat common nss pam nslcd man tests
 
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/copyright debian/rules \
-               debian/libnss-ldapd.docs \
-               debian/libnss-ldapd.examples \
-               debian/libnss-ldapd.lintian-overrides \
-               debian/libnss-ldapd.nslcd.init \
+               debian/nslcd.config \
+               debian/nslcd.docs \
+               debian/nslcd.examples \
+               debian/nslcd.init \
+               debian/nslcd.install \
+               debian/nslcd.postinst \
+               debian/nslcd.postrm \
+               debian/nslcd.templates \
                debian/libnss-ldapd.config \
-               debian/libnss-ldapd.templates \
+               debian/libnss-ldapd.install \
+               debian/libnss-ldapd.lintian-overrides \
                debian/libnss-ldapd.postinst \
                debian/libnss-ldapd.postrm \
+               debian/libnss-ldapd.templates \
                $(wildcard debian/po/*.po) debian/po/templates.pot \
                debian/po/POTFILES.in
 
