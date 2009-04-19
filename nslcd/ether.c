@@ -160,7 +160,7 @@ static int write_ether(TFILE *fp,MYLDAP_ENTRY *entry,
   for (i=0;names[i]!=NULL;i++)
     for (j=0;ethers[j]!=NULL;j++)
     {
-      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
       WRITE_STRING(fp,names[i]);
       WRITE_ETHER(fp,ethers[j]);
     }

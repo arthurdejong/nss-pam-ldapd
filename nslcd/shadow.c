@@ -248,7 +248,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   /* write the entries */
   for (i=0;usernames[i]!=NULL;i++)
   {
-    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
     WRITE_STRING(fp,usernames[i]);
     WRITE_STRING(fp,passwd);
     WRITE_INT32(fp,lastchangedate);

@@ -50,13 +50,13 @@ static enum nss_status read_gids(
         TFILE *fp,gid_t skipgroup,long int *start,long int *size,
         gid_t **groupsp,long int limit,int *errnop)
 {
-  int32_t res=(int32_t)NSLCD_RESULT_SUCCESS;
+  int32_t res=(int32_t)NSLCD_RESULT_BEGIN;
   int32_t tmpint32,tmp2int32,tmp3int32;
   gid_t gid;
   gid_t *newgroups;
   long int newsize;
   /* loop over results */
-  while (res==(int32_t)NSLCD_RESULT_SUCCESS)
+  while (res==(int32_t)NSLCD_RESULT_BEGIN)
   {
     /* skip group name */
     SKIP_STRING(fp);

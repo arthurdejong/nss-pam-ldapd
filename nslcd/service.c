@@ -189,7 +189,7 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqprotocol)
   /* write the entries */
   for (i=0;protocols[i]!=NULL;i++)
   {
-    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
     WRITE_STRING(fp,name);
     WRITE_STRINGLIST_EXCEPT(fp,aliases,name);
     WRITE_INT32(fp,port);
