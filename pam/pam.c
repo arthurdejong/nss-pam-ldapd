@@ -2,6 +2,7 @@
    pam.c - pam module functions
 
    Copyright (C) 2009 Howard Chu
+   Copyright (C) 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -28,6 +29,12 @@
 
 #include "nss/common.h"
 #include "compat/attrs.h"
+
+/* these are defined (before including pam_modules.h) for staticly linking */
+#define PAM_SM_AUTH
+#define PAM_SM_ACCOUNT
+#define PAM_SM_SESSION
+#define PAM_SM_PASSWORD
 
 #ifndef HAVE_PAM_PAM_MODULES_H
 #include <security/pam_modules.h>
@@ -658,8 +665,8 @@ int pam_sm_chauthtok(
 }
 
 #ifdef PAM_STATIC
-struct pam_module _modstruct = {
-	"pam_ldapd",
+struct pam_module _pam_ldap_modstruct = {
+	"pam_ldap",
 	pam_sm_authenticate,
 	pam_sm_setcred,
 	pam_sm_acct_mgmt,
