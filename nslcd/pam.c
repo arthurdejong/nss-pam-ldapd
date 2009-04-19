@@ -57,7 +57,7 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
     /* TODO: probably just write NSLCD_RESULT_END to indicate failure */
     WRITE_INT32(fp,NSLCD_VERSION);
     WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHC);
-    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
     WRITE_INT32(fp,PAM_USER_UNKNOWN); /* authok */
     WRITE_INT32(fp,PAM_SUCCESS);  /* authz */
     WRITE_STRING(fp,"");    /* dn */
@@ -87,7 +87,7 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
     log_log(LOG_WARNING,"nslcd_pam_authc(%s): user not found",uid);
     /* return error to client */
     /* FIXME: probably return NSLCD_RESULT_END instead */
-    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
     WRITE_INT32(fp,PAM_USER_UNKNOWN); /* authok */
     WRITE_INT32(fp,PAM_SUCCESS);  /* authz */
     WRITE_STRING(fp,"");          /* dn */
@@ -104,7 +104,7 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
   default: rc = PAM_AUTH_ERR; break;
   }*/
 
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_INT32(fp,rc); /* authok */
   WRITE_INT32(fp,PAM_SUCCESS);  /* authz */
   WRITE_STRING(fp,userdn); /* dn */
@@ -135,7 +135,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
 
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHZ);
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_INT32(fp,PAM_SUCCESS);
   WRITE_BERVAL(fp,&authzmsg);
 */
@@ -161,7 +161,7 @@ int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session)
 
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_SESS_O);
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
 */
   return 0;
 }
@@ -185,7 +185,7 @@ int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session)
 
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_SESS_C);
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
 */
   return 0;
 }
@@ -218,7 +218,7 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session)
   BER_BVZERO(&npw);
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_PWMOD);
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_INT32(fp,PAM_SUCCESS);
   WRITE_BERVAL(fp,&npw);
 */
