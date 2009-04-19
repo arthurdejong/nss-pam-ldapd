@@ -64,7 +64,7 @@ TFILE *nslcd_client_open(void)
    the stream. */
 #define READ_RESPONSE_CODE(fp) \
   READ_TYPE(fp,tmpint32,int32_t); \
-  if (tmpint32!=(int32_t)NSLCD_RESULT_SUCCESS) \
+  if (tmpint32!=(int32_t)NSLCD_RESULT_BEGIN) \
     { ERROR_OUT_NOSUCCESS(fp,tmpint32) }
 
 /* These are macros for handling read and write problems, they are
@@ -97,7 +97,7 @@ TFILE *nslcd_client_open(void)
   ERROR_OUT_READERROR(fp)
 
 /* This macro is called if the read status code is not
-   NSLCD_RESULT_SUCCESS. */
+   NSLCD_RESULT_BEGIN. */
 #define ERROR_OUT_NOSUCCESS(fp,retv) \
   (void)tio_close(fp); \
   fp=NULL; \

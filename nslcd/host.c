@@ -136,7 +136,7 @@ static int write_host(TFILE *fp,MYLDAP_ENTRY *entry)
     return 0;
   }
   /* write the entry */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,hostname);
   WRITE_STRINGLIST_EXCEPT(fp,hostnames,hostname);
   for (numaddr=0;addresses[numaddr]!=NULL;numaddr++)

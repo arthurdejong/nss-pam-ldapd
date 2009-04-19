@@ -169,7 +169,7 @@ static int do_write_group(
     {
       for (j=0;j<numgids;j++)
       {
-        WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+        WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
         WRITE_STRING(fp,names[i]);
         WRITE_STRING(fp,passwd);
         WRITE_TYPE(fp,gids[j],gid_t);

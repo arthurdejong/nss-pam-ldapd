@@ -185,7 +185,7 @@ static int write_netgroup_triple(TFILE *fp,const char *triple)
     return 0;
   }
   /* write strings */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_INT32(fp,NETGROUP_TYPE_TRIPLE);
   WRITE_STRING_STRIPSPACE_LEN(fp,triple+hostb,hoste-hostb)
   WRITE_STRING_STRIPSPACE_LEN(fp,triple+userb,usere-userb)
@@ -218,7 +218,7 @@ static int write_netgroup(TFILE *fp,MYLDAP_ENTRY *entry)
     for (i=0;members[i]!=NULL;i++)
     {
       /* write the result code */
-      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
       /* write triple indicator */
       WRITE_INT32(fp,NETGROUP_TYPE_NETGROUP);
       /* write netgroup name */

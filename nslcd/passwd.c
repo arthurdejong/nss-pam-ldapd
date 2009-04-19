@@ -437,7 +437,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
     {
       for (j=0;j<numuids;j++)
       {
-        WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+        WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
         WRITE_STRING(fp,usernames[i]);
         WRITE_STRING(fp,passwd);
         WRITE_TYPE(fp,uids[j],uid_t);

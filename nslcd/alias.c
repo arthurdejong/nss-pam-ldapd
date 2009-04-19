@@ -117,7 +117,7 @@ static int write_alias(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqalias)
   /* for each name, write an entry */
   for (i=0;names[i]!=NULL;i++)
   {
-    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
     WRITE_STRING(fp,names[i]);
     WRITE_STRINGLIST(fp,members);
   }

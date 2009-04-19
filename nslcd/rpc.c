@@ -141,7 +141,7 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry)
     return 0;
   }
   /* write the entry */
-  WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+  WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,name);
   WRITE_STRINGLIST_EXCEPT(fp,aliases,name);
   WRITE_INT32(fp,number);
