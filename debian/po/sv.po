@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.6\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2008-04-05 16:33+0200\n"
+"POT-Creation-Date: 2009-04-21 21:21+0200\n"
 "PO-Revision-Date: 2008-07-29 21:31+0200\n"
 "Last-Translator: Martin Ågren <martin.agren@gmail.com>\n"
 "Language-Team: Swedish <debian-l10n-swedish@lists.debian.org>\n"
@@ -43,9 +43,9 @@ msgid ""
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
 "port number is optional."
 msgstr ""
-"Ange URI:n till den LDAP-server som används. Detta är en sträng "
-"på formen ldap://<värdnamn eller IP>:<port>/ . "
-"ldaps:// eller ldapi:// kan också användas. Portnumret är valfritt."
+"Ange URI:n till den LDAP-server som används. Detta är en sträng på formen "
+"ldap://<värdnamn eller IP>:<port>/ . ldaps:// eller ldapi:// kan också "
+"användas. Portnumret är valfritt."
 
 #. Type: string
 #. Description
@@ -54,8 +54,8 @@ msgid ""
 "When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
-"När ldap och ldaps används är det vanligtvis en bra idé att använda en IP-adress; "
-"detta reducerar risken för fel om namntjänsten är otillgänglig."
+"När ldap och ldaps används är det vanligtvis en bra idé att använda en IP-"
+"adress; detta reducerar risken för fel om namntjänsten är otillgänglig."
 
 #. Type: string
 #. Description
@@ -79,8 +79,8 @@ msgid ""
 "name of the search base."
 msgstr ""
 "Ange namnet (DN) för LDAPs sökbas. Många system använder komponenter av "
-"deras domännamn för denna funktion.  Till exempel att domänen \"example.net\" "
-"skulle använda \"dc=example,dc=net\" som sitt DN-namn för sökbasen."
+"deras domännamn för denna funktion.  Till exempel att domänen \"example.net"
+"\" skulle använda \"dc=example,dc=net\" som sitt DN-namn för sökbasen."
 
 #. Type: string
 #. Description
@@ -95,8 +95,8 @@ msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
 msgstr ""
-"Om LDAP-databasen kräver inloggning för vanliga uppslag, "
-"ange namnet på det konto som ska användas. Lämna annars tomt."
+"Om LDAP-databasen kräver inloggning för vanliga uppslag, ange namnet på det "
+"konto som ska användas. Lämna annars tomt."
 
 #. Type: string
 #. Description
@@ -140,7 +140,40 @@ msgid ""
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
 msgstr ""
-"Du kan välja de tjänster som ska vara aktiverade eller avaktiverade "
-"vid LDAP-uppslag. De nya LDAP-uppslagen kommer att läggas till som "
-"ett sista val. Se till att se över dessa ändringar."
+"Du kan välja de tjänster som ska vara aktiverade eller avaktiverade vid LDAP-"
+"uppslag. De nya LDAP-uppslagen kommer att läggas till som ett sista val. Se "
+"till att se över dessa ändringar."
 
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid "Remove LDAP from nsswitch.conf now?"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"LDAP is still configured for name lookups for the following services:\n"
+"  ${services}\n"
+"but the libnss-ldapd package is about to be removed."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"You are advised to remove the entries if you don't plan on using LDAP for "
+"name resolution any more.  Not removing ldap from nsswitch.conf should, for "
+"most services, not cause problems, but host name resolution could be "
+"affected in subtle ways."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you chose to remove the entries now."
+msgstr ""

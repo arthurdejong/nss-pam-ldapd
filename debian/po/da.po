@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.6\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2008-04-05 16:33+0200\n"
+"POT-Creation-Date: 2009-04-21 21:21+0200\n"
 "PO-Revision-Date: 2008-08-06 11:34+0200\n"
 "Last-Translator: Jonas Smedegaard <dr@jones.dk>\n"
 "Language-Team: None\n"
@@ -20,7 +20,8 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "LDAP server Uniform Resource Identifier:"
-msgstr "LDAP-server ensartet ressourceidentifikator (Uniform Resource Identifier):"
+msgstr ""
+"LDAP-server ensartet ressourceidentifikator (Uniform Resource Identifier):"
 
 #. Type: string
 #. Description
@@ -30,9 +31,9 @@ msgid ""
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
 "port number is optional."
 msgstr ""
-"Angiv URIen for den anvendte LDAP-server. Dette er en streng af typen "
-"ldap://<værtsnavn eller IP>:<port>/ . ldaps:// eller ldapi:// kan også "
-"bruges. Portnummeret er valgfrit."
+"Angiv URIen for den anvendte LDAP-server. Dette er en streng af typen ldap://"
+"<værtsnavn eller IP>:<port>/ . ldaps:// eller ldapi:// kan også bruges. "
+"Portnummeret er valgfrit."
 
 #. Type: string
 #. Description
@@ -67,9 +68,8 @@ msgid ""
 "name of the search base."
 msgstr ""
 "Angiv det særlige navn på LDAP-søgebasen. Mange sites bruger komponenterne "
-"fra deres domænenavne til dette formål. Eksempelvis ville domænet "
-"\"eksempel.dk\" bruge \"dc=eksempel,dc=dk\" som det særlige navn på "
-"søgebasen."
+"fra deres domænenavne til dette formål. Eksempelvis ville domænet \"eksempel."
+"dk\" bruge \"dc=eksempel,dc=dk\" som det særlige navn på søgebasen."
 
 #. Type: string
 #. Description
@@ -103,8 +103,8 @@ msgstr "LDAP-bruger adgangskode:"
 #. Description
 #: ../libnss-ldapd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr "Angiv adgangskoden som vil blive brugt til at logge på til "
-"LDAP-databasen."
+msgstr ""
+"Angiv adgangskoden som vil blive brugt til at logge på til LDAP-databasen."
 
 #. Type: multiselect
 #. Description
@@ -130,6 +130,40 @@ msgid ""
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
 msgstr ""
-"Du kan vælge de services som skal aktiveres eller slås fra for "
-"LDAP-opslag. De nye LDAP-opslag vil blive tilføjet som sidste "
-"mulighed. Sørg for at gennemgå ændringerne."
+"Du kan vælge de services som skal aktiveres eller slås fra for LDAP-opslag. "
+"De nye LDAP-opslag vil blive tilføjet som sidste mulighed. Sørg for at "
+"gennemgå ændringerne."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid "Remove LDAP from nsswitch.conf now?"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"LDAP is still configured for name lookups for the following services:\n"
+"  ${services}\n"
+"but the libnss-ldapd package is about to be removed."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"You are advised to remove the entries if you don't plan on using LDAP for "
+"name resolution any more.  Not removing ldap from nsswitch.conf should, for "
+"most services, not cause problems, but host name resolution could be "
+"affected in subtle ways."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you chose to remove the entries now."
+msgstr ""

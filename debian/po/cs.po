@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2008-04-05 16:33+0200\n"
+"POT-Creation-Date: 2009-04-21 21:21+0200\n"
 "PO-Revision-Date: 2005-07-10 16:33+0200\n"
 "Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
 "Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
@@ -133,6 +133,40 @@ msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid "Remove LDAP from nsswitch.conf now?"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"LDAP is still configured for name lookups for the following services:\n"
+"  ${services}\n"
+"but the libnss-ldapd package is about to be removed."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"You are advised to remove the entries if you don't plan on using LDAP for "
+"name resolution any more.  Not removing ldap from nsswitch.conf should, for "
+"most services, not cause problems, but host name resolution could be "
+"affected in subtle ways."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you chose to remove the entries now."
 msgstr ""
 
 #, fuzzy
