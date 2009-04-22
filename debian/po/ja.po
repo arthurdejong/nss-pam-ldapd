@@ -13,10 +13,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.3\n"
+"Project-Id-Version: nss-ldapd 0.6.8\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-04-21 21:21+0200\n"
-"PO-Revision-Date: 2007-10-14 16:31+0900\n"
+"PO-Revision-Date: 2009-04-22 08:53+0900\n"
 "Last-Translator: Kenshi Muto <kmuto@debian.org>\n"
 "Language-Team: Japanese <debian-japanese@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
@@ -142,7 +142,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:6001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr ""
+msgstr "nsswitch.conf から LDAP を今削除しますか?"
 
 #. Type: boolean
 #. Description
@@ -152,6 +152,9 @@ msgid ""
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
+"LDAP は以下のサービスの名前検索のためにまだ設定されています:\n"
+"  ${services}\n"
+"しかし、libnss-ldapd パッケージは削除されようとしています。"
 
 #. Type: boolean
 #. Description
@@ -161,7 +164,7 @@ msgid ""
 "name resolution any more.  Not removing ldap from nsswitch.conf should, for "
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
-msgstr ""
+msgstr "名前解決にもう LDAP を使う予定がないのであれば、エントリを削除することを勧めます。nsswitch.conf から ldap を除かない場合でもほとんどのサービスでは問題は起きませんが、ホスト名解決は奇妙なふうに影響を受ける可能性があります。"
 
 #. Type: boolean
 #. Description
@@ -170,31 +173,4 @@ msgid ""
 "You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you chose to remove the entries now."
-msgstr ""
-
-#~ msgid "LDAP account for root:"
-#~ msgstr "root 用の LDAP アカウント:"
-
-#~ msgid ""
-#~ "This account will be used for nss requests with root privileges. This can "
-#~ "be used to give root processes more information (e.g. users' shadow "
-#~ "entries or group passwords)."
-#~ msgstr ""
-#~ "このアカウントは root 権限で nss 要求するのに使われます。これは root のプ"
-#~ "ロセスに、より多くの情報 (ユーザのシャドウエントリやグループパスワードな"
-#~ "ど) を与えるのに使うことができます。"
-
-#~ msgid "Leave this empty to not do anything special for root lookups."
-#~ msgstr ""
-#~ "root のルックアップに何も特別なことをさせないのであれば、ここは空のままに"
-#~ "します。"
-
-#~ msgid "LDAP root account password:"
-#~ msgstr "LDAP の root アカウントパスワード:"
-
-#~ msgid ""
-#~ "Enter the password that will be used to log in to the LDAP database when "
-#~ "the root process does lookups."
-#~ msgstr ""
-#~ "root プロセスがルックアップを行うときに LDAP データベースにログインするの"
-#~ "に使うパスワードを入力してください。"
+msgstr "/etc/nsswitch.conf を手動で編集するか、エントリを自動で今削除することを選べます。エントリを今削除することを選ぶ場合、/etc/nsswitch.conf の変更内容を確認してください。"
