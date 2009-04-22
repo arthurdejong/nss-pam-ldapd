@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: nss-ldapd 0.6\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-04-21 21:21+0200\n"
-"PO-Revision-Date: 2008-08-06 11:34+0200\n"
+"PO-Revision-Date: 2009-04-21 23:51+0200\n"
 "Last-Translator: Jonas Smedegaard <dr@jones.dk>\n"
 "Language-Team: None\n"
 "MIME-Version: 1.0\n"
@@ -138,7 +138,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:6001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr ""
+msgstr "Fjern LDAP fra nsswitch.conf nu?"
 
 #. Type: boolean
 #. Description
@@ -148,6 +148,9 @@ msgid ""
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
+"LDAP er fortsat opsat ved navneopslag for følgende services:\n"
+"  ${services}\n"
+"men pakken libnss-ldapd er ved at blive afinstalleret."
 
 #. Type: boolean
 #. Description
@@ -158,6 +161,10 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
+"Du anbefales at fjerne indlæggene hvis du ikke længere har planer om at "
+"bruge LDAP til navneopslag.  For de fleste services skulle det ikke give "
+"problemer ikke at fjerne ldap fra nsswitch.conf, men opslag af værtsnavne "
+"kan blive påvirket i mindre grad."
 
 #. Type: boolean
 #. Description
@@ -167,3 +174,6 @@ msgid ""
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you chose to remove the entries now."
 msgstr ""
+"Du kan redigere /etc/nsswitch.conf i hånden eller vælge at fjerne indlæg "
+"automatisk nu. Sørg for at gennemse ændringer til /etc/nsswitch.conf hvis "
+"du vælger at fjerne indlæggene nu."
