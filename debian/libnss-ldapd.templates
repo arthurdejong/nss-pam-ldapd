@@ -5,7 +5,7 @@ _Description: LDAP server Uniform Resource Identifier:
  ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The
  port number is optional.
  .
- When useing the ldap or ldaps schemes it is usually a good idea to use an IP
+ When using the ldap or ldaps schemes it is usually a good idea to use an IP
  address; this reduces the risk of failure when name services are unavailable.
  .
  Multiple URIs can be be specified by separating them with spaces.

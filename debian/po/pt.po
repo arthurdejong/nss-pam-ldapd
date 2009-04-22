@@ -38,7 +38,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid ""
-"When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
+"When using the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
 "Geralmente é boa ideia usar um endereço IP quando se usa o ldap ou "
