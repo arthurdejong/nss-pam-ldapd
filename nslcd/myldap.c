@@ -375,6 +375,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   /* check if StartTLS is requested */
   if (nslcd_cfg->ldc_ssl_on==SSL_START_TLS)
   {
+    errno=0;
     rc=ldap_start_tls_s(session->ld,NULL,NULL);
     if (rc!=LDAP_SUCCESS)
     {
@@ -640,6 +641,7 @@ static int do_open(MYLDAP_SESSION *session)
   session->ld=NULL;
   session->lastactivity=0;
   /* open the connection */
+  errno=0;
   rc=ldap_initialize(&(session->ld),nslcd_cfg->ldc_uris[session->current_uri].uri);
   if (rc!=LDAP_SUCCESS)
   {
@@ -671,6 +673,7 @@ static int do_open(MYLDAP_SESSION *session)
     return rc;
   }
   /* bind to the server */
+  errno=0;
   rc=do_bind(session,nslcd_cfg->ldc_uris[session->current_uri].uri);
   if (rc!=LDAP_SUCCESS)
   {
@@ -1463,6 +1466,7 @@ static char **get_exploded_rdn(const char *dn)
   /* explode rdn (first part of exploded_dn),
       e.g. "cn=Test User+uid=testusr" into
      { "cn=Test User", "uid=testusr", NULL } */
+  errno=0;
   exploded_rdn=ldap_explode_rdn(exploded_dn[0],0);
   if ((exploded_rdn==NULL)||(exploded_rdn[0]==NULL))
   {
