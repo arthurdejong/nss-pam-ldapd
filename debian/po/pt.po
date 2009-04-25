@@ -1,20 +1,21 @@
-# translation of nss-ldapd to Portuguese
-# Copyright (C) 2007 Américo Monteiro
+# translation of nss-ldapd debconf to Portuguese
+# Copyright (C) 2007 the nss-ldapd's copyright holder
 # Released under the same license as the nss-ldapd package
-# Américo Monteiro <a_monteiro@netcabo.pt>, 2007.
 #
 #
+# Américo Monteiro <a_monteiro@netcabo.pt>, 2007, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.3\n"
+"Project-Id-Version: nss-ldapd 0.6.8\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-04-21 21:21+0200\n"
-"PO-Revision-Date: 2007-08-19 14:06+0100\n"
+"PO-Revision-Date: 2009-04-24 00:05+0100\n"
 "Last-Translator: Américo Monteiro <a_monteiro@netcabo.pt>\n"
 "Language-Team: Portuguese <traduz@debianpt.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
 
 #. Type: string
 #. Description
@@ -31,7 +32,7 @@ msgid ""
 "port number is optional."
 msgstr ""
 "Por favor insira o URI do servidor LDAP a usar. Esta é uma sequência no "
-"formato ldap://<nome da máquina ou IP>:<porto>/, ldaps:// ou ldapi:// podem "
+"formato ldap://<nome da máquina ou IP>:<porto>/. ldaps:// ou ldapi:// podem "
 "também ser usados. O número do porto é opcional."
 
 #. Type: string
@@ -41,9 +42,9 @@ msgid ""
 "When using the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
-"Geralmente é boa ideia usar um endereço IP quando se usa o ldap ou "
-"esquemasdo ldap; isto reduz riscos de falhas quando o serviço de nomes não "
-"está disponível."
+"Geralmente é boa ideia usar um endereço IP quando se usam esquemas ldap ou "
+"ldaps; isto reduz riscos de falhas quando o serviço de nomes não está "
+"disponível."
 
 #. Type: string
 #. Description
@@ -105,7 +106,8 @@ msgstr "Password de utilizador LDAP:"
 #: ../libnss-ldapd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr ""
-"Indique a password que vai ser usada para autenticação na base de dados LDAP."
+"Indique a palavra-passe que vai ser usada para autenticação na base de dados "
+"LDAP."
 
 #. Type: multiselect
 #. Description
@@ -139,7 +141,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:6001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr ""
+msgstr "Remover agora o LDAP do nsswitch.conf?"
 
 #. Type: boolean
 #. Description
@@ -149,6 +151,10 @@ msgid ""
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
+"O LDAP ainda está configurado para buscas de nomes para os seguintes "
+"serviços:\n"
+"  ${services}\n"
+"mas o pacote libnss-ldapd está prestes a ser removido."
 
 #. Type: boolean
 #. Description
@@ -159,6 +165,10 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
+"Você é aconselhado a remover as entradas se não planeia continuar a usar o "
+"LDAP para resolução de nomes. A não remoção do ldap do nsswitch.conf não "
+"deverá causar problemas (para a maioria dos serviços), mas a resolução de "
+"nomes de máquinas pode ficar afectada."
 
 #. Type: boolean
 #. Description
@@ -168,38 +178,6 @@ msgid ""
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you chose to remove the entries now."
 msgstr ""
-
-#~ msgid "LDAP account for root:"
-#~ msgstr "Conta de administrador (root) LDAP:"
-
-#~ msgid ""
-#~ "This account will be used for nss requests with root privileges. This can "
-#~ "be used to give root processes more information (e.g. users' shadow "
-#~ "entries or group passwords)."
-#~ msgstr ""
-#~ "Esta conta será usada para pedidos nss com privilégios de administrador. "
-#~ "Isto pode ser usado para dar aos processos de administrador mais "
-#~ "informação (ex. entradas escondidas de utilizadores ou passwords de "
-#~ "grupos)."
-
-#~ msgid "Leave this empty to not do anything special for root lookups."
-#~ msgstr ""
-#~ "Deixe este campo vazio para não fazer nada de especial para buscas de "
-#~ "administrador."
-
-#~ msgid "LDAP root account password:"
-#~ msgstr "Password da conta de administrador (root) LDAP:"
-
-#~ msgid ""
-#~ "Enter the password that will be used to log in to the LDAP database when "
-#~ "the root process does lookups."
-#~ msgstr ""
-#~ "Indique a password que será usada para autenticação na base de dados "
-#~ "LDAP, quando processos de administrador fazem buscas."
-
-#~ msgid ""
-#~ "When using the ldapi scheme, %2f should be used to escape slashes (e.g. "
-#~ "ldapi://%2fvar%2frun%2fldapi_sock/)"
-#~ msgstr ""
-#~ "Quando se usa o esquema ldapi, %2f deverá ser usado para substituir "
-#~ "barras (ex. ldapi://%2fvar%2frun%2fldapi_sock/)"
+"Você pode editar manualmente o /etc/nsswitch.conf ou escolher remover as "
+"entradas automaticamente agora. Certifique-se que revê as alterações em /etc/"
+"nsswitch.conf se escolher remover as entradas agora."
