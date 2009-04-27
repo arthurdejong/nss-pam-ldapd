@@ -1,0 +1,181 @@
+# Italian translation of nss-ldapd's PO-Debconf file.
+# COPYRIGHT (C) 2009 THE NSS-LDAP'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the nss-ldap package.
+# Vincenzo Campanella <vinz65@gmail.com>, 2009.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: nss-ldapd 0.6.8\n"
+"Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
+"POT-Creation-Date: 2009-04-21 21:21+0200\n"
+"PO-Revision-Date: 2009-04-22 07:36+0200\n"
+"Last-Translator: Vincenzo Campanella <vinz65@gmail.com>\n"
+"Language-Team: Italian <tp@lists.linux.it>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid "LDAP server Uniform Resource Identifier:"
+msgstr "Uniform Resource Identifier (URI) del server LDAP:"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid ""
+"Please enter the URI of the LDAP server used. This is a string in the form "
+"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
+"port number is optional."
+msgstr ""
+"Inserire l'URI del server LDAP utilizzato. Si tratta di una stringa del tipo "
+"«ldap://<nomehost o IP>:<porta>»; è anche possibile usare «ldaps://» oppure "
+"«ldapi://». Il numero della porta è facoltativo."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid ""
+"When using the ldap or ldaps schemes it is usually a good idea to use an IP "
+"address; this reduces the risk of failure when name services are unavailable."
+msgstr ""
+"Quando si usa lo schema ldap o ldaps è una buona idea usare un indirizzo IP, "
+"al fine di ridurre i rischi di errore quando i servizi dei nomi non sono "
+"disponibili."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid "Multiple URIs can be be specified by separating them with spaces."
+msgstr "È possibile specificare URI multipli, dividendoli con spazi."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid "LDAP server search base:"
+msgstr "Base di ricerca del server LDAP:"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"Please enter the distinguished name of the LDAP search base.  Many sites use "
+"the components of their domain names for this purpose.  For example, the "
+"domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
+"name of the search base."
+msgstr ""
+"Inserire il DN (distinguished name) della base di ricerca LDAP. A tal fine "
+"molti siti usano le componenti del loro nome di dominio: ad esempio, il "
+"dominio «esempio.net» userebbe «dc=esempio,dc=net» come DN della base di "
+"ricerca."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:3001
+msgid "LDAP database user:"
+msgstr "Utente del database LDAP:"
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:3001
+msgid ""
+"If the LDAP database requires a login for normal lookups, enter the name of "
+"the account that will be used here. Leave empty otherwise."
+msgstr ""
+"Se il database LDAP richiede l'accesso per le normali ricerche, inserire il "
+"nome dell'account che verrà utilizzato per l'accesso. In caso contrario, "
+"lasciare vuoto."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:3001
+msgid "This value should be specified as a DN (distinguished name)."
+msgstr ""
+"Questo valore dovrebbe essere specificato come DN (distinguished name)."
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:4001
+msgid "LDAP user password:"
+msgstr "Password dell'utente LDAP:"
+
+#. Type: password
+#. Description
+#: ../libnss-ldapd.templates:4001
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr ""
+"Inserire la password che verrà utilizzata per accedere al database LDAP."
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid "Name services to configure:"
+msgstr "Servizi dei nomi da configurare:"
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid ""
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource."
+msgstr ""
+"Affinché questo pacchetto funzioni è necessario modificare il proprio file «/"
+"etc/nsswitch.conf» in modo che utilizzi l'origine dati LDAP."
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:5001
+msgid ""
+"You can select the services that should be enabled or disabled for LDAP "
+"lookups. The new LDAP lookups will be added as last option. Be sure to "
+"review these changes."
+msgstr ""
+"È possibile selezionare i servizi che dovrebbero essere abilitati o "
+"disabilitati per le ricerche LDAP. Le nuove ricerche LDAP verranno aggiunte "
+"come ultima opzione. Ci si assicuri di controllare queste modifiche."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid "Remove LDAP from nsswitch.conf now?"
+msgstr "Rimuovere LDAP da nsswitch.con ora?"
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"LDAP is still configured for name lookups for the following services:\n"
+"  ${services}\n"
+"but the libnss-ldapd package is about to be removed."
+msgstr ""
+"LDAP è tuttora configurato per le ricerche dei nomi per i seguenti servizi:\n"
+"  ${services}\n"
+"ma il pacchetto libnss-ldap sta per essere rimosso."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"You are advised to remove the entries if you don't plan on using LDAP for "
+"name resolution any more.  Not removing ldap from nsswitch.conf should, for "
+"most services, not cause problems, but host name resolution could be "
+"affected in subtle ways."
+msgstr ""
+"Rimuovere le voci solo se si prevede di non utilizzare più LDAP per le "
+"risoluzioni dei nomi. Per la maggior parte dei servizi la mancata rimozione "
+"di LDAP da nsswitch.conf non dovrebbe causare problemi, ma la risoluzione "
+"dei nomi host potrebbe essere in qualche modo influenzata."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:6001
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you chose to remove the entries now."
+msgstr ""
+"È possibile modificare manualmente «/etc/nsswitch.conf» o scegliere di "
+"rimuovere le voci automaticamente adesso. Ci si accerti di controllare le "
+"modifiche a «/etc/nsswitch.conf» se si sceglie la rimozione automatica."
