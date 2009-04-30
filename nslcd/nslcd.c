@@ -553,9 +553,11 @@ int main(int argc,char *argv[])
     log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
 #endif /* HAVE___NSS_CONFIGURE_LOOKUP */
   /* FIXME: have some other mechanism for systems that don't have this */
+  /* set LDAP log level */
+  if (myldap_set_debuglevel(nslcd_debugging)!=LDAP_SUCCESS)
+    exit(EXIT_FAILURE);
   /* read configuration file */
   cfg_init(NSS_LDAP_PATH_CONF);
-  nslcd_cfg->ldc_debug=nslcd_debugging?nslcd_debugging-1:0;
   /* daemonize */
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
   {

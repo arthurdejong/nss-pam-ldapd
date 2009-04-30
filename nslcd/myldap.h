@@ -2,7 +2,7 @@
    myldap.h - simple interface to do LDAP requests
    This file is part of the nss-ldapd library.
 
-   Copyright (C) 2007, 2008 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -121,5 +121,8 @@ MUST_USE const char *myldap_cpy_rdn_value(const char *dn,const char *attr,
 
 /* Escapes characters in a string for use in a search filter. */
 MUST_USE int myldap_escape(const char *src,char *buffer,size_t buflen);
+
+/* Set the debug level globally. */
+int myldap_set_debuglevel(int i);
 
 #endif /* not _MYLDAP_H */

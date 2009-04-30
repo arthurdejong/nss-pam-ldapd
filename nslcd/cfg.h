@@ -140,8 +140,6 @@ struct ldap_config
   int ldc_restart;
   /* set to a greater than 0 to enable handling of paged results with the specified size */
   int ldc_pagesize;
-  /* LDAP debug level */
-  int ldc_debug;
 };
 
 /* this is a pointer to the global configuration, it should be available

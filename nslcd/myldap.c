@@ -454,37 +454,6 @@ static int do_set_options(MYLDAP_SESSION *session)
   int rc;
   struct timeval tv;
   int i;
-  /* turn on debugging */
-  if (nslcd_cfg->ldc_debug)
-  {
-#ifdef LBER_OPT_LOG_PRINT_FILE
-    log_log(LOG_DEBUG,"ber_set_option(LBER_OPT_LOG_PRINT_FILE)"); \
-    rc=ber_set_option(NULL,LBER_OPT_LOG_PRINT_FILE,stderr);
-    if (rc!=LDAP_SUCCESS)
-    {
-      log_log(LOG_ERR,"ber_set_option(LBER_OPT_LOG_PRINT_FILE) failed: %s",ldap_err2string(rc));
-      return rc;
-    }
-#endif /* LBER_OPT_LOG_PRINT_FILE */
-#ifdef LBER_OPT_DEBUG_LEVEL
-    if (nslcd_cfg->ldc_debug>1)
-    {
-      i=-1;
-      log_log(LOG_DEBUG,"ber_set_option(LBER_OPT_DEBUG_LEVEL,-1)");
-      rc=ber_set_option(NULL,LBER_OPT_DEBUG_LEVEL,&i);
-      if (rc!=LDAP_SUCCESS)
-      {
-        log_log(LOG_ERR,"ber_set_option(LBER_OPT_DEBUG_LEVEL) failed: %s",ldap_err2string(rc));
-        return rc;
-      }
-    }
-#endif /* LBER_OPT_DEBUG_LEVEL */
-#ifdef LDAP_OPT_DEBUG_LEVEL
-    i=-1;
-    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_DEBUG_LEVEL,-1)");
-    LDAP_SET_OPTION(NULL,LDAP_OPT_DEBUG_LEVEL,&i);
-#endif /* LDAP_OPT_DEBUG_LEVEL */
-  }
 #ifdef HAVE_LDAP_SET_REBIND_PROC
   /* the rebind function that is called when chasing referrals, see
      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/apis/ldap_set_rebind_proc.htm
@@ -1632,4 +1601,47 @@ int myldap_escape(const char *src,char *buffer,size_t buflen)
   /* terminate destination string */
   buffer[pos]='\0';
   return 0;
+}
+
+int myldap_set_debuglevel(int level)
+{
+  int i;
+  int rc;
+  /* turn on debugging */
+  if (level>1)
+  {
+#ifdef LBER_OPT_LOG_PRINT_FILE
+    log_log(LOG_DEBUG,"ber_set_option(LBER_OPT_LOG_PRINT_FILE)"); \
+    rc=ber_set_option(NULL,LBER_OPT_LOG_PRINT_FILE,stderr);
+    if (rc!=LDAP_SUCCESS)
+    {
+      log_log(LOG_ERR,"ber_set_option(LBER_OPT_LOG_PRINT_FILE) failed: %s",ldap_err2string(rc));
+      return rc;
+    }
+#endif /* LBER_OPT_LOG_PRINT_FILE */
+#ifdef LBER_OPT_DEBUG_LEVEL
+    if (level>2)
+    {
+      i=-1;
+      log_log(LOG_DEBUG,"ber_set_option(LBER_OPT_DEBUG_LEVEL,-1)");
+      rc=ber_set_option(NULL,LBER_OPT_DEBUG_LEVEL,&i);
+      if (rc!=LDAP_SUCCESS)
+      {
+        log_log(LOG_ERR,"ber_set_option(LBER_OPT_DEBUG_LEVEL) failed: %s",ldap_err2string(rc));
+        return rc;
+      }
+    }
+#endif /* LBER_OPT_DEBUG_LEVEL */
+#ifdef LDAP_OPT_DEBUG_LEVEL
+    i=-1;
+    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_DEBUG_LEVEL,-1)");
+    rc=ldap_set_option(NULL,LDAP_OPT_DEBUG_LEVEL,&i);
+    if (rc!=LDAP_SUCCESS)
+    {
+      log_log(LOG_ERR,"ldap_set_option(LDAP_OPT_DEBUG_LEVEL) failed: %s",ldap_err2string(rc));
+      return rc;
+    }
+#endif /* LDAP_OPT_DEBUG_LEVEL */
+  }
+  return LDAP_SUCCESS;
 }
