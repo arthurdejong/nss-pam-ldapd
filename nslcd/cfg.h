@@ -121,20 +121,6 @@ struct ldap_config
 #ifdef LDAP_OPT_X_TLS
   /* SSL enabled */
   enum ldap_ssl_options ldc_ssl_on;
-  /* tls check peer */
-  int ldc_tls_reqcert;
-  /* tls ca certificate dir */
-  char *ldc_tls_cacertdir;
-  /* tls ca certificate file */
-  char *ldc_tls_cacertfile;
-  /* tls randfile */
-  char *ldc_tls_randfile;
-  /* tls ciphersuite */
-  char *ldc_tls_ciphers;
-  /* tls certificate */
-  char *ldc_tls_cert;
-  /* tls key */
-  char *ldc_tls_key;
 #endif /* LDAP_OPT_X_TLS */
   /* whether the LDAP library should restart the select(2) system call when interrupted */
   int ldc_restart;

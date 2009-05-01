@@ -503,50 +503,6 @@ static int do_set_options(MYLDAP_SESSION *session)
     log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS,LDAP_OPT_X_TLS_HARD)");
     LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS,&i);
   }
-  /* rand file */
-  if (nslcd_cfg->ldc_tls_randfile!=NULL)
-  {
-    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_RANDOM_FILE,\"%s\")",nslcd_cfg->ldc_tls_randfile);
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_RANDOM_FILE,nslcd_cfg->ldc_tls_randfile);
-  }
-  /* ca cert file */
-  if (nslcd_cfg->ldc_tls_cacertfile!=NULL)
-  {
-    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_CACERTFILE,\"%s\")",nslcd_cfg->ldc_tls_cacertfile);
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTFILE,nslcd_cfg->ldc_tls_cacertfile);
-  }
-  /* ca cert directory */
-  if (nslcd_cfg->ldc_tls_cacertdir!=NULL)
-  {
-    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_CACERTDIR,\"%s\")",nslcd_cfg->ldc_tls_cacertdir);
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTDIR,nslcd_cfg->ldc_tls_cacertdir);
-  }
-  /* require cert? (certificate validation) */
-  if (nslcd_cfg->ldc_tls_reqcert>=0)
-  {
-    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%d)",nslcd_cfg->ldc_tls_reqcert);
-    /* FIXME: only set opion once */
-    LDAP_SET_OPTION(NULL,LDAP_OPT_X_TLS_REQUIRE_CERT,&nslcd_cfg->ldc_tls_reqcert);
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_REQUIRE_CERT,&nslcd_cfg->ldc_tls_reqcert);
-  }
-  /* set cipher suite, certificate and private key */
-  if (nslcd_cfg->ldc_tls_ciphers!=NULL)
-  {
-    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_CIPHER_SUITE,\"%s\")",nslcd_cfg->ldc_tls_ciphers);
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CIPHER_SUITE,nslcd_cfg->ldc_tls_ciphers);
-  }
-  /* set certificate */
-  if (nslcd_cfg->ldc_tls_cert!=NULL)
-  {
-    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_CERTFILE,\"%s\")",nslcd_cfg->ldc_tls_cert);
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CERTFILE,nslcd_cfg->ldc_tls_cert);
-  }
-  /* set up key */
-  if (nslcd_cfg->ldc_tls_key!=NULL)
-  {
-    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_KEYFILE,\"%s\")",nslcd_cfg->ldc_tls_key);
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_KEYFILE,nslcd_cfg->ldc_tls_key);
-  }
 #endif /* LDAP_OPT_X_TLS */
   /* if nothing above failed, everything should be fine */
   return LDAP_SUCCESS;
