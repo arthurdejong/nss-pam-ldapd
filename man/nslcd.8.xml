@@ -87,6 +87,8 @@
       verbose debugging info to stderr.
       <command>nslcd</command> will handle connections as usual.
       This option is for debugging purposes only.
+      Specify this option multiple times to also include more detailed logging
+      from the LDAP library.
      </para>
     </listitem>
    </varlistentry>
