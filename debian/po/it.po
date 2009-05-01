@@ -1,6 +1,6 @@
 # Italian translation of nss-ldapd's PO-Debconf file.
-# COPYRIGHT (C) 2009 THE NSS-LDAP'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the nss-ldap package.
+# COPYRIGHT (C) 2009 THE NSS-LDAPD'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the nss-ldapd package.
 # Vincenzo Campanella <vinz65@gmail.com>, 2009.
 #
 #
@@ -152,7 +152,7 @@ msgid ""
 msgstr ""
 "LDAP è tuttora configurato per le ricerche dei nomi per i seguenti servizi:\n"
 "  ${services}\n"
-"ma il pacchetto libnss-ldap sta per essere rimosso."
+"ma il pacchetto libnss-ldapd sta per essere rimosso."
 
 #. Type: boolean
 #. Description
