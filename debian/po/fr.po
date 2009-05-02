@@ -1,15 +1,19 @@
 # Translation of nss-ldapd debconf templates to French
-# Copyright (C) 2007 Cyril Brulebois <cyril.brulebois@enst-bretagne.fr>
-# Copyright (C) 2007 Philippe Batailler <philippe.batailler@free.fr>
+# Copyright (C) 2007-2009 Debian French l10n team <debian-l10n-french@lists.debian.org>
 # This file is distributed under the same license as the nss-ldapd package.
+#
+# Translators:
+# Cyril Brulebois <cyril.brulebois@enst-bretagne.fr>, 2007.
+# Philippe Batailler <philippe.batailler@free.fr>, 2007.
+# Guillaume Delacour <gui@iroqwa.org>, 2009.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.3\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-04-21 21:21+0200\n"
-"PO-Revision-Date: 2007-10-13 12:31+0200\n"
-"Last-Translator: Cyril Brulebois <cyril.brulebois@enst-bretagne.fr>\n"
+"PO-Revision-Date: 2009-04-23 01:38+0100\n"
+"Last-Translator: Guillaume Delacour <gui@iroqwa.org>\n"
 "Language-Team: French <debian-l10n-french@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -142,7 +146,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:6001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr ""
+msgstr "Faut-il supprimer LDAP de nsswitch.conf maintenant ?"
 
 #. Type: boolean
 #. Description
@@ -152,6 +156,10 @@ msgid ""
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
+"LDAP est toujours configuré pour la recherche de nom pour les services "
+"suivants :\n"
+"  ${services}\n"
+"mais le paquet libnss-ldapd est sur le point d'être supprimé."
 
 #. Type: boolean
 #. Description
@@ -162,6 +170,10 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
+"Il vous est conseillé de supprimer les entrées si vous ne pensez pas "
+"utiliser LDAP pour la résolution de noms. Il est probable qu'omettre de "
+"supprimer LDAP dans nsswitch.conf soit sans conséquences pour la plupart des "
+"services, mais la résolution de noms peut être affectée de manière subtile."
 
 #. Type: boolean
 #. Description
@@ -171,6 +183,10 @@ msgid ""
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you chose to remove the entries now."
 msgstr ""
+"Vous pouvez modifier /etc/nsswitch.conf vous-même ou choisir de supprimer "
+"les entrées automatiquement maintenant. Il est important de vérifier les "
+"changements effectués automatiquement dans /etc/nsswitch.conf si vous "
+"choisissez de supprimer les entrées maintenant."
 
 #~ msgid "LDAP account for root:"
 #~ msgstr "Identifiant LDAP du superutilisateur :"
