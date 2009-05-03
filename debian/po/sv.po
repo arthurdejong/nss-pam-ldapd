@@ -1,4 +1,4 @@
-# translation of nss-ldapd_0.6.4_sv.po to Swedish
+# translation of nss-ldapd_sv.po to Swedish
 #
 #    Translators, if you are not familiar with the PO format, gettext
 #    documentation is worth reading, especially sections dedicated to
@@ -12,13 +12,13 @@
 #
 #    Developers do not need to manually edit POT or PO files.
 #
-# Martin Ågren <martin.agren@gmail.com>, 2008.
+# Martin Ågren <martin.agren@gmail.com>, 2008, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.6\n"
+"Project-Id-Version: nss-ldapd_sv\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-04-21 21:21+0200\n"
-"PO-Revision-Date: 2008-07-29 21:31+0200\n"
+"PO-Revision-Date: 2009-05-03 12:55+0200\n"
 "Last-Translator: Martin Ågren <martin.agren@gmail.com>\n"
 "Language-Team: Swedish <debian-l10n-swedish@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
@@ -148,7 +148,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:6001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr ""
+msgstr "Ta bort LDAP från nsswitch.conf nu?"
 
 #. Type: boolean
 #. Description
@@ -158,6 +158,9 @@ msgid ""
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
+"LDAP är fortfarande konfigurerat för namnuppslag från följande tjänster:\n"
+"  ${services}\n"
+"men libnss-ldapd-paketet kommer tas bort."
 
 #. Type: boolean
 #. Description
@@ -168,6 +171,10 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
+"Du bör ta bort uppgifterna om du inte tänker använda LDAP för "
+"namnuppslag. Att inte ta bort ldap från nsswitch.conf bör, för de flesta "
+"tjänster, inte orsaka några problem, men värdnamnsuppslag kan "
+"påverkas på små, subtila sätt."
 
 #. Type: boolean
 #. Description
@@ -177,3 +184,7 @@ msgid ""
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you chose to remove the entries now."
 msgstr ""
+"Du kan ändra /etc/nsswitch.conf för hand eller välja att ta bort posterna "
+"automatiskt nu. Se över ändringarna i /etc/nsswitch.conf om du väljer "
+"att ta bort posterna nu."
+
