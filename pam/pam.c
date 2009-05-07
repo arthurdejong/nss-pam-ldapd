@@ -71,8 +71,31 @@ typedef struct pld_ctx {
 	char *oldpw;
 	int authok;
 	int authz;
+	int sessid;
 	char buf[1024];
 } pld_ctx;
+
+static int nslcd2pam_rc(int rc)
+{
+#define	map(i)	case NSLCD_##i : rc = i; break
+	switch(rc) {
+		map(PAM_SUCCESS);
+		map(PAM_PERM_DENIED);
+		map(PAM_AUTH_ERR);
+		map(PAM_CRED_INSUFFICIENT);
+		map(PAM_AUTHINFO_UNAVAIL);
+		map(PAM_USER_UNKNOWN);
+		map(PAM_MAXTRIES);
+		map(PAM_NEW_AUTHTOK_REQD);
+		map(PAM_ACCT_EXPIRED);
+		map(PAM_SESSION_ERR);
+		map(PAM_AUTHTOK_DISABLE_AGING);
+		map(PAM_IGNORE);
+		map(PAM_ABORT);
+		default: rc = PAM_ABORT; break;
+	}
+	return rc;
+}
 
 static void pam_clr_ctx(
 	pld_ctx *ctx)
@@ -206,14 +229,16 @@ static enum nss_status pam_read_authc(
 	READ_INT32(fp,ctx->authok);
 	READ_INT32(fp,ctx->authz);
 	READ_STRING_BUF(fp,ctx->authzmsg);
+	ctx->authok = nslcd2pam_rc(ctx->authok);
+	ctx->authz = nslcd2pam_rc(ctx->authz);
 	return NSS_STATUS_SUCCESS;
 }
 
 static enum nss_status pam_do_authc(
-	pld_ctx *ctx, const char *username, const char *svc,const char *pwd,int *errnop)
+	pld_ctx *ctx, const char *user, const char *svc,const char *pwd,int *errnop)
 {
 	NSS_BYGEN(NSLCD_ACTION_PAM_AUTHC,
-		WRITE_STRING(fp,username);
+		WRITE_STRING(fp,user);
 		WRITE_STRING(fp,ctx->dn);
 		WRITE_STRING(fp,svc);
 		WRITE_STRING(fp,pwd),
@@ -341,6 +366,7 @@ static enum nss_status pam_read_authz(
 	READ_STRING_BUF(fp,ctx->dn);
 	READ_INT32(fp,ctx->authz);
 	READ_STRING_BUF(fp,ctx->authzmsg);
+	ctx->authz = nslcd2pam_rc(ctx->authz);
 	return NSS_STATUS_SUCCESS;
 }
 
@@ -426,139 +452,114 @@ int pam_sm_acct_mgmt(
 	     (strcmp(ctx->tmpluser,username)!=0) ) {
 		rc = pam_set_item(pamh, PAM_USER, ctx->tmpluser);
 	}
-
 	return rc;
 }
 
-static enum nss_status pam_do_sess_o(
-	pld_ctx *ctx,const char *username,const char *svc,int *errnop)
+static enum nss_status pam_read_sess(
+	TFILE *fp,pld_ctx *ctx,int *errnop)
 {
-	NSS_BYGEN(NSLCD_ACTION_PAM_SESS_O,
-		WRITE_STRING(fp,username);
+	int tmpint32;
+	READ_INT32(fp,ctx->sessid);
+	return NSS_STATUS_SUCCESS;
+}
+
+static enum nss_status pam_do_sess(
+	pam_handle_t *pamh,pld_ctx *ctx,int action,int *errnop)
+{
+	const char *svc = NULL, *tty = NULL, *rhost = NULL, *ruser = NULL;
+	
+	pam_get_item (pamh, PAM_SERVICE, (CONST_ARG void **) &svc);
+	pam_get_item (pamh, PAM_TTY, (CONST_ARG void **) &tty);
+	pam_get_item (pamh, PAM_RHOST, (CONST_ARG void **) &rhost);
+	pam_get_item (pamh, PAM_RUSER, (CONST_ARG void **) &ruser);
+
+	{
+	NSS_BYGEN(action,
+		WRITE_STRING(fp,ctx->user);
 		WRITE_STRING(fp,ctx->dn);
-		WRITE_STRING(fp,svc),
-		NSS_STATUS_SUCCESS);
+		WRITE_STRING(fp,svc);
+		WRITE_STRING(fp,tty);
+		WRITE_STRING(fp,rhost);
+		WRITE_STRING(fp,ruser);
+		WRITE_INT32(fp,ctx->sessid),
+		pam_read_sess(fp,ctx,errnop));
+	}
+}
+
+static int pam_sm_session(
+	pam_handle_t *pamh, int flags, int argc, const char **argv,
+	int action, int *no_warn)
+{
+	int rc, err;
+	const char *username;
+	int ignore_flags = 0;
+	int i, success = PAM_SUCCESS;
+	pld_ctx *ctx = NULL;
+
+	for (i = 0; i < argc; i++)
+	{
+		if (!strcmp (argv[i], "use_first_pass"))
+			;
+		else if (!strcmp (argv[i], "try_first_pass"))
+			;
+		else if (!strcmp (argv[i], "no_warn"))
+			*no_warn = 1;
+		else if (!strcmp (argv[i], "ignore_unknown_user"))
+			ignore_flags |= IGNORE_UNKNOWN;
+		else if (!strcmp (argv[i], "ignore_authinfo_unavail"))
+			ignore_flags |= IGNORE_UNAVAIL;
+		else if (!strcmp (argv[i], "debug"))
+			;
+		else
+			syslog (LOG_ERR, "illegal option %s", argv[i]);
+	}
+
+	if (flags & PAM_SILENT)
+		*no_warn = 1;
+
+	rc = pam_get_user (pamh, (CONST_ARG char **) &username, NULL);
+	if (rc != PAM_SUCCESS)
+		return rc;
+
+	if (username == NULL)
+		return PAM_USER_UNKNOWN;
+
+	rc = pam_get_ctx(pamh, username, &ctx);
+	if (rc != PAM_SUCCESS)
+		return rc;
+
+	rc = pam_do_sess(pamh, ctx, action, &err);
+	NSS2PAM_RC(rc, ignore_flags, PAM_SUCCESS);
+	return rc;
 }
 
 int pam_sm_open_session(
 	pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-	int rc, err;
-	const char *username, *svc;
-	int no_warn = 0, ignore_flags = 0;
-	int i, success = PAM_SUCCESS;
+	int rc, no_warn = 0;
 	struct pam_conv *appconv;
-	pld_ctx *ctx = NULL;
-
-	for (i = 0; i < argc; i++)
-	{
-		if (!strcmp (argv[i], "use_first_pass"))
-			;
-		else if (!strcmp (argv[i], "try_first_pass"))
-			;
-		else if (!strcmp (argv[i], "no_warn"))
-			no_warn = 1;
-		else if (!strcmp (argv[i], "ignore_unknown_user"))
-			ignore_flags |= IGNORE_UNKNOWN;
-		else if (!strcmp (argv[i], "ignore_authinfo_unavail"))
-			ignore_flags |= IGNORE_UNAVAIL;
-		else if (!strcmp (argv[i], "debug"))
-			;
-		else
-			syslog (LOG_ERR, "illegal option %s", argv[i]);
-	}
-
-	if (flags & PAM_SILENT)
-		no_warn = 1;
 
 	rc = pam_get_item (pamh, PAM_CONV, (CONST_ARG void **) &appconv);
 	if (rc != PAM_SUCCESS)
 		return rc;
 
-	rc = pam_get_user (pamh, (CONST_ARG char **) &username, NULL);
-	if (rc != PAM_SUCCESS)
-		return rc;
-
-	if (username == NULL)
-		return PAM_USER_UNKNOWN;
-
-	rc = pam_get_ctx(pamh, username, &ctx);
-	if (rc != PAM_SUCCESS)
-		return rc;
-
-	rc = pam_get_item (pamh, PAM_SERVICE, (CONST_ARG void **) &svc);
-	if (rc != PAM_SUCCESS)
-		return rc;
-
-	rc = pam_do_sess_o(ctx,username,svc,&err);
-	NSS2PAM_RC(rc, ignore_flags, PAM_SUCCESS);
+	rc = pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_O,&no_warn);
 	if (rc != PAM_SUCCESS && rc != PAM_IGNORE)
 		pam_warn(appconv, "LDAP open_session failed", PAM_ERROR_MSG, no_warn);
 	return rc;
 }
 
-static enum nss_status pam_do_sess_c(
-	pld_ctx *ctx,const char *username,const char *svc,int *errnop)
-{
-	NSS_BYGEN(NSLCD_ACTION_PAM_SESS_C,
-		WRITE_STRING(fp,username);
-		WRITE_STRING(fp,ctx->dn);
-		WRITE_STRING(fp,svc),
-		NSS_STATUS_SUCCESS);
-}
-
 int pam_sm_close_session(
 	pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-	int rc, err;
-	const char *username, *svc;
-	int no_warn = 0, ignore_flags = 0;
-	int i, success = PAM_SUCCESS;
+	int rc, no_warn = 0;;
 	struct pam_conv *appconv;
-	pld_ctx *ctx = NULL;
-
-	for (i = 0; i < argc; i++)
-	{
-		if (!strcmp (argv[i], "use_first_pass"))
-			;
-		else if (!strcmp (argv[i], "try_first_pass"))
-			;
-		else if (!strcmp (argv[i], "no_warn"))
-			no_warn = 1;
-		else if (!strcmp (argv[i], "ignore_unknown_user"))
-			ignore_flags |= IGNORE_UNKNOWN;
-		else if (!strcmp (argv[i], "ignore_authinfo_unavail"))
-			ignore_flags |= IGNORE_UNAVAIL;
-		else if (!strcmp (argv[i], "debug"))
-			;
-		else
-			syslog (LOG_ERR, "illegal option %s", argv[i]);
-	}
-
-	if (flags & PAM_SILENT)
-		no_warn = 1;
 
 	rc = pam_get_item (pamh, PAM_CONV, (CONST_ARG void **) &appconv);
 	if (rc != PAM_SUCCESS)
 		return rc;
 
-	rc = pam_get_user (pamh, (CONST_ARG char **) &username, NULL);
-	if (rc != PAM_SUCCESS)
-		return rc;
-
-	if (username == NULL)
-		return PAM_USER_UNKNOWN;
-
-	rc = pam_get_ctx(pamh, username, &ctx);
-	if (rc != PAM_SUCCESS)
-		return rc;
-
-	rc = pam_get_item (pamh, PAM_SERVICE, (CONST_ARG void **) &svc);
-	if (rc != PAM_SUCCESS)
-		return rc;
-
-	rc = pam_do_sess_c(ctx,username,svc,&err);
-	NSS2PAM_RC(rc, ignore_flags, PAM_SUCCESS);
+	rc = pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_C,&no_warn);
 	if (rc != PAM_SUCCESS && rc != PAM_IGNORE)
 		pam_warn(appconv, "LDAP close_session failed", PAM_ERROR_MSG, no_warn);
 	return rc;
@@ -576,15 +577,16 @@ static enum nss_status pam_read_pwmod(
 	READ_STRING_BUF(fp,ctx->dn);
 	READ_INT32(fp,ctx->authz);
 	READ_STRING_BUF(fp,ctx->authzmsg);
+	ctx->authz = nslcd2pam_rc(ctx->authz);
 	return NSS_STATUS_SUCCESS;
 }
 
 static enum nss_status pam_do_pwmod(
-	pld_ctx *ctx,const char *username,const char *svc,
-	const char *oldpw,const char *newpw,int *errnop)
+	pld_ctx *ctx, const char *user, const char *svc,
+	const char *oldpw, const char *newpw, int *errnop)
 {
 	NSS_BYGEN(NSLCD_ACTION_PAM_PWMOD,
-		WRITE_STRING(fp,username);
+		WRITE_STRING(fp,user);
 		WRITE_STRING(fp,ctx->dn);
 		WRITE_STRING(fp,svc);
 		WRITE_STRING(fp,oldpw);
@@ -693,7 +695,7 @@ int pam_sm_chauthtok(
 		if (rc != PAM_SUCCESS)
 			return rc;
 	}
-	rc = pam_do_pwmod(ctx,username,svc,p,q,&err);
+	rc = pam_do_pwmod(ctx, username, svc, p, q, &err);
 	p = NULL; q = NULL;
 	NSS2PAM_RC(rc, ignore_flags, PAM_SUCCESS);
 	if (rc == PAM_SUCCESS) {
