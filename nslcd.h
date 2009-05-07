@@ -109,16 +109,16 @@
 
 /* Netgroup NSS request return a number of results. Result values
    can be either a reference to another netgroup:
-     INT32   NETGROUP_TYPE_NETGROUP
+     INT32   NSLCD_NETGROUP_TYPE_NETGROUP
      STRING  other netgroup name
    or a netgroup triple:
-     INT32   NETGROUP_TYPE_TRIPLE
+     INT32   NSLCD_NETGROUP_TYPE_TRIPLE
      STRING  host
      STRING  user
      STRING  domain */
 #define NSLCD_ACTION_NETGROUP_BYNAME   12001
-#define NETGROUP_TYPE_NETGROUP 123
-#define NETGROUP_TYPE_TRIPLE   456
+#define NSLCD_NETGROUP_TYPE_NETGROUP 123
+#define NSLCD_NETGROUP_TYPE_TRIPLE   456
 
 /* Network name (/etc/networks) NSS requests. Result values for a single
    entry are:

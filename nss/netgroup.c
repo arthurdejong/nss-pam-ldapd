@@ -49,13 +49,13 @@ static enum nss_status read_netgrent(
   size_t bufptr=0;
   /* read netgroup type */
   READ_INT32(fp,type);
-  if (type==NETGROUP_TYPE_NETGROUP)
+  if (type==NSLCD_NETGROUP_TYPE_NETGROUP)
   {
     /* the response is a reference to another netgroup */
     result->type=group_val;
     READ_STRING_BUF(fp,result->val.group);
   }
-  else if (type==NETGROUP_TYPE_TRIPLE)
+  else if (type==NSLCD_NETGROUP_TYPE_TRIPLE)
   {
     /* the response is a host/user/domain triple */
     result->type=triple_val;
