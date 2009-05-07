@@ -1,40 +1,41 @@
-# nss-ldapd translation to Spanish
+# nss-ldapd po-debconf translation to Spanish
 # Copyright (C) 2007 Rudy Godoy Guillén <rudy@debian.org>
+# Copyright (C) 2009 Software in the Public Interest
 # This file is distributed under the same license as the nss-ldapd package.
 #
 # Changes:
-# - Initial translation
-#       DDTP, the Debian Description Translation Project
-# - Review and update
+#   - Initial translation
 #       Rudy Godoy <rudy@stone-head.org>, 2008
 #
+#   - Updates
+#       Francisco Javier Cuadrado <fcocuadrado@gmail.com>, 2009
 #
-#  Traductores, si no conoce el formato PO, merece la pena leer la 
-#  documentación de gettext, especialmente las secciones dedicadas a este
-#  formato, por ejemplo ejecutando:
-#         info -n '(gettext)PO Files'
-#         info -n '(gettext)Header Entry'
+# Traductores, si no conocen el formato PO, merece la pena leer la
+# documentación de gettext, especialmente las secciones dedicadas a este
+# formato, por ejemplo ejecutando:
+#       info -n '(gettext)PO Files'
+#       info -n '(gettext)Header Entry'
 #
 # Equipo de traducción al español, por favor lean antes de traducir
 # los siguientes documentos:
 #
-# - El proyecto de traducción de Debian al español
-#   http://www.debian.org/intl/spanish/
-#   especialmente las notas de traducción en
-#   http://www.debian.org/intl/spanish/notas
+#   - El proyecto de traducción de Debian al español
+#     http://www.debian.org/intl/spanish/
+#     especialmente las notas de traducción en
+#     http://www.debian.org/intl/spanish/notas
 #
-# - La guía de traducción de po's de debconf:
-#   /usr/share/doc/po-debconf/README-trans
-#   o http://www.debian.org/intl/l10n/po-debconf/README-trans
+#   - La guía de traducción de po's de debconf:
+#     /usr/share/doc/po-debconf/README-trans
+#     o http://www.debian.org/intl/l10n/po-debconf/README-trans
 #
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.3\n"
+"Project-Id-Version: nss-ldapd 0.6.8\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-04-19 21:47+0200\n"
-"PO-Revision-Date: 2008-02-03 20:20-0500\n"
-"Last-Translator: Rudy Godoy Guillén <rudy@stone-head.org>\n"
+"POT-Creation-Date: 2009-05-08 00:30+0200\n"
+"PO-Revision-Date: 2009-04-27 08:31+0100\n"
+"Last-Translator: Francisco Javier Cuadrado <fcocuadrado@gmail.com>\n"
 "Language-Team: Debian l10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -44,7 +45,7 @@ msgstr ""
 #. Description
 #: ../nslcd.templates:1001
 msgid "LDAP server Uniform Resource Identifier:"
-msgstr "Identificador de recurso uniforme del servidor LDAP:"
+msgstr "Identificador de Recurso Uniforme (URI) del servidor LDAP:"
 
 #. Type: string
 #. Description
@@ -54,33 +55,33 @@ msgid ""
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
 "port number is optional."
 msgstr ""
-"Introduzca el URI del servidor LDAP. Este es una cadena de la forma ldap://"
-"<nombre de máquina o IP>:<puerto>/. También se puede utilizar ldaps:// o "
-"ldapi://. El valor del puerto es opcional."
+"Introduzca el URI del servidor LDAP. Este es una cadena con la forma «ldap://"
+"<nombre de máquina o IP>:<puerto>/». También se puede utilizar «ldaps://» o "
+"«ldapi://». El valor del puerto es opcional."
 
 #
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 msgid ""
-"When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
+"When using the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
 "Cuando utilice los esquemas ldap o ldaps es siempre una buena idea "
-"especificar una dirección IP, pues reduce el riesgo de fallos en caso de que "
-"el servicio de nombres no esté disponible."
+"especificar una dirección IP, ya que reduce el riesgo de fallos en caso de "
+"que el servicio de nombres no esté disponible."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
-msgstr "Se puede especificar múltiples URIs separandolos con espacios."
+msgstr "Se pueden especificar múltiples URI separándolos con espacios."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:2001
 msgid "LDAP server search base:"
-msgstr "Base de búsqueda en servidor LDAP:"
+msgstr "Base de búsqueda en el servidor LDAP:"
 
 #
 #. Type: string
@@ -92,8 +93,8 @@ msgid ""
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
 msgstr ""
-"Por favor introduzca el nombre distintivo (DN) de la base de búsquedas LDAP. "
-"En muchos sitios se utilizan las componentes del nombre de dominio con este "
+"Introduzca el nombre distintivo (DN) de la base de búsquedas de LDAP. En "
+"muchos sitios se utilizan las componentes del nombre de dominio con este "
 "propósito. Por ejemplo, el dominio «ejemplo.net» utilizaría «dc=ejemplo,"
 "dc=net» como nombre distintivo de la base de búsquedas."
 
@@ -101,7 +102,7 @@ msgstr ""
 #. Description
 #: ../nslcd.templates:3001
 msgid "LDAP database user:"
-msgstr "Usuario de base de datos LDAP:"
+msgstr "Usuario de la base de datos LDAP:"
 
 #. Type: string
 #. Description
@@ -111,19 +112,19 @@ msgid ""
 "the account that will be used here. Leave empty otherwise."
 msgstr ""
 "Introduzca el nombre de la cuenta que utilizará si la base de datos LDAP "
-"requiere un usuario para búsquedas. En caso contrario deje en blanco."
+"requiere un usuario para búsquedas. En caso contrario déjelo en blanco."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
-msgstr "Debe ingresar el valor en forma de DN (nombre distintivo)."
+msgstr "Debe introducir el valor en forma de DN (nombre distintivo)."
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:4001
 msgid "LDAP user password:"
-msgstr "Contraseña de usuario LDAP:"
+msgstr "Contraseña del usuario LDAP:"
 
 #. Type: password
 #. Description
@@ -146,7 +147,7 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
-"Para que este programa funcione, debe modificar el fichero «/etc/nsswitch."
+"Para que este programa funcione, debe modificar el archivo «/etc/nsswitch."
 "conf» para que utilice la fuente de datos de LDAP."
 
 #. Type: multiselect
@@ -157,9 +158,54 @@ msgid ""
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
 msgstr ""
-"Puede elegir los servicios que se debe habilitar o deshabilitar para las "
-"búsquedas de LDAP. Las nuevas búsquedas LDAP serán añadidas como última "
-"opción. Asegúrese de revisar estos cambios."
+"Puede elegir los servicios que se deben habilitar o deshabilitar para las "
+"búsquedas de LDAP. Las nuevas búsquedas LDAP se añadirán como última opción. "
+"Asegúrese de revisar estos cambios."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid "Remove LDAP from nsswitch.conf now?"
+msgstr "¿Desea borrar LDAP del archivo «nsswitch.conf» ahora?"
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"LDAP is still configured for name lookups for the following services:\n"
+"  ${services}\n"
+"but the libnss-ldapd package is about to be removed."
+msgstr ""
+"LDAP todavía está configurado para las búsquedas de nombres de los "
+"siguientes servicios:\n"
+"  ${services}\n"
+"pero se va a borrar el paquete libnss-ldapd."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"You are advised to remove the entries if you don't plan on using LDAP for "
+"name resolution any more.  Not removing ldap from nsswitch.conf should, for "
+"most services, not cause problems, but host name resolution could be "
+"affected in subtle ways."
+msgstr ""
+"Se le aconseja que borre las entradas si no planea utilizar LDAP para la "
+"resolución de nombres nunca más. Si no borra ldap del archivo «nsswitch.conf» "
+"no debería tener problemas con la mayoría de los servicios, pero podría "
+"afectar ligeramente a la resolución de nombres de máquinas."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you chose to remove the entries now."
+msgstr ""
+"Puede editar manualmente el archivo «/etc/nsswitch.conf» o escoger borrar las "
+"entradas automáticamente ahora. Asegúrese de que revisa los cambios en el "
+"archivo «/etc/nsswitch.conf» si escoge borrar las entradas ahora."
 
 #~ msgid "LDAP account for root:"
 #~ msgstr "Cuenta de superusuario LDAP:"
@@ -266,54 +312,3 @@ msgstr ""
 #~ "Por favor introduzca la versión del protocolo LDAP que usará ldapns. "
 #~ "Generalmente es una buena idea utilizar el número de versión más alto que "
 #~ "esté disponible."
-
-#  Template: libnss-ldap/confperm
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "make configuration readable/writeable by owner only"
-# msgstr ""
-#
-# msgid ""
-# "Should the libnss-ldap configuration file be readable and writable only by "
-# "the file owner?"
-# msgstr ""
-#
-# msgid ""
-# "If you use passwords in your libnss-ldap configuration, it is usually a "
-# "good idea to have the configuration set with mode 0600 (readable and "
-# "writable only by the file's owner)."
-# msgstr ""
-#
-# msgid ""
-# "Note: As a sanity check, libnss-ldap will check if you have nscd installed "
-# "and will only set the mode to 0600 if nscd is present."
-# msgstr ""
-#  Template: libnss-ldap/nsswitch
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "nsswitch.conf is not managed automatically"
-# msgstr ""
-#
-# msgid ""
-# "For this package to work, you need to modify your /etc/nsswitch.conf to "
-# "use the ldap datasource.  There is an example file at "
-# "/usr/share/doc/libnss-ldap/examples/nsswitch.ldap which can be used as an "
-# "example for your nsswitch setup, or it can be copied over your current "
-# "setup."
-# msgstr ""
-#
-# msgid ""
-# "Also, before removing this package, it is wise to remove the ldap entries "
-# "from nsswitch.conf to keep basic services functioning."
-# msgstr ""
-#  Template: shared/ldapns/base-dn
-#  ddtp-prioritize: 56
-#
-#~ msgid "distinguished name of the search base"
-#~ msgstr "El nombre distintivo (DN) de la base de búsquedas."
-
-#
-#~ msgid "Please enter the address of the LDAP server used."
-#~ msgstr "Por favor, introduzca la dirección del servidor LDAP utilizado."

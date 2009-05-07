@@ -1,4 +1,4 @@
-# translation of nss-ldapd_0.6.4_sv.po to Swedish
+# translation of nss-ldapd_sv.po to Swedish
 #
 #    Translators, if you are not familiar with the PO format, gettext
 #    documentation is worth reading, especially sections dedicated to
@@ -12,13 +12,13 @@
 #
 #    Developers do not need to manually edit POT or PO files.
 #
-# Martin Ågren <martin.agren@gmail.com>, 2008.
+# Martin Ågren <martin.agren@gmail.com>, 2008, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.6\n"
+"Project-Id-Version: nss-ldapd_sv\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-04-19 21:47+0200\n"
-"PO-Revision-Date: 2008-07-29 21:31+0200\n"
+"POT-Creation-Date: 2009-05-08 00:30+0200\n"
+"PO-Revision-Date: 2009-05-03 12:55+0200\n"
 "Last-Translator: Martin Ågren <martin.agren@gmail.com>\n"
 "Language-Team: Swedish <debian-l10n-swedish@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
@@ -51,7 +51,7 @@ msgstr ""
 #. Description
 #: ../nslcd.templates:1001
 msgid ""
-"When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
+"When using the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
 "När ldap och ldaps används är det vanligtvis en bra idé att använda en IP-"
@@ -143,3 +143,46 @@ msgstr ""
 "Du kan välja de tjänster som ska vara aktiverade eller avaktiverade vid LDAP-"
 "uppslag. De nya LDAP-uppslagen kommer att läggas till som ett sista val. Se "
 "till att se över dessa ändringar."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid "Remove LDAP from nsswitch.conf now?"
+msgstr "Ta bort LDAP från nsswitch.conf nu?"
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"LDAP is still configured for name lookups for the following services:\n"
+"  ${services}\n"
+"but the libnss-ldapd package is about to be removed."
+msgstr ""
+"LDAP är fortfarande konfigurerat för namnuppslag från följande tjänster:\n"
+"  ${services}\n"
+"men libnss-ldapd-paketet kommer tas bort."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"You are advised to remove the entries if you don't plan on using LDAP for "
+"name resolution any more.  Not removing ldap from nsswitch.conf should, for "
+"most services, not cause problems, but host name resolution could be "
+"affected in subtle ways."
+msgstr ""
+"Du bör ta bort uppgifterna om du inte tänker använda LDAP för namnuppslag. "
+"Att inte ta bort ldap från nsswitch.conf bör, för de flesta tjänster, inte "
+"orsaka några problem, men värdnamnsuppslag kan påverkas på små, subtila sätt."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you chose to remove the entries now."
+msgstr ""
+"Du kan ändra /etc/nsswitch.conf för hand eller välja att ta bort posterna "
+"automatiskt nu. Se över ändringarna i /etc/nsswitch.conf om du väljer att ta "
+"bort posterna nu."

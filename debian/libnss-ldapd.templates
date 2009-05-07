@@ -8,3 +8,20 @@ _Description: Name services to configure:
  You can select the services that should be enabled or disabled
  for LDAP lookups. The new LDAP lookups will be added as last option.
  Be sure to review these changes.
+
+Template: libnss-ldapd/clean_nsswitch
+Type: boolean
+Default: false
+_Description: Remove LDAP from nsswitch.conf now?
+ LDAP is still configured for name lookups for the following services:
+   ${services}
+ but the libnss-ldapd package is about to be removed.
+ .
+ You are advised to remove the entries if you don't plan on using LDAP
+ for name resolution any more.  Not removing ldap from nsswitch.conf should,
+ for most services, not cause problems, but host name resolution could be
+ affected in subtle ways.
+ .
+ You can edit /etc/nsswitch.conf by hand or chose to remove the entries
+ automatically now. Be sure to review the changes to /etc/nsswitch.conf if
+ you chose to remove the entries now.

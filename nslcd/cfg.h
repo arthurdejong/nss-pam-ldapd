@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <ldap.h>
 
 #include "compat/attrs.h"
 
@@ -120,27 +121,11 @@ struct ldap_config
 #ifdef LDAP_OPT_X_TLS
   /* SSL enabled */
   enum ldap_ssl_options ldc_ssl_on;
-  /* tls check peer */
-  int ldc_tls_reqcert;
-  /* tls ca certificate dir */
-  char *ldc_tls_cacertdir;
-  /* tls ca certificate file */
-  char *ldc_tls_cacertfile;
-  /* tls randfile */
-  char *ldc_tls_randfile;
-  /* tls ciphersuite */
-  char *ldc_tls_ciphers;
-  /* tls certificate */
-  char *ldc_tls_cert;
-  /* tls key */
-  char *ldc_tls_key;
 #endif /* LDAP_OPT_X_TLS */
   /* whether the LDAP library should restart the select(2) system call when interrupted */
   int ldc_restart;
   /* set to a greater than 0 to enable handling of paged results with the specified size */
   int ldc_pagesize;
-  /* LDAP debug level */
-  int ldc_debug;
 };
 
 /* this is a pointer to the global configuration, it should be available

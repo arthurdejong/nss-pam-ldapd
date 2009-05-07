@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -60,6 +60,15 @@ struct ldap_config *nslcd_cfg=NULL;
 /* the delimiters of tokens */
 #define TOKEN_DELIM " \t\n\r"
 
+/* convenient wrapper macro for ldap_set_option() */
+#define LDAP_SET_OPTION(ld,option,invalue) \
+  rc=ldap_set_option(ld,option,invalue); \
+  if (rc!=LDAP_SUCCESS) \
+  { \
+    log_log(LOG_ERR,"ldap_set_option(" #option ") failed: %s",ldap_err2string(rc)); \
+    exit(EXIT_FAILURE); \
+  }
+
 /* set the configuration information to the defaults */
 static void cfg_defaults(struct ldap_config *cfg)
 {
@@ -98,17 +107,9 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_reconnect_maxsleeptime=30;
 #ifdef LDAP_OPT_X_TLS
   cfg->ldc_ssl_on=SSL_OFF;
-  cfg->ldc_tls_reqcert=-1;
-  cfg->ldc_tls_cacertdir=NULL;
-  cfg->ldc_tls_cacertfile=NULL;
-  cfg->ldc_tls_randfile=NULL;
-  cfg->ldc_tls_ciphers=NULL;
-  cfg->ldc_tls_cert=NULL;
-  cfg->ldc_tls_key=NULL;
 #endif /* LDAP_OPT_X_TLS */
   cfg->ldc_restart=1;
   cfg->ldc_pagesize=0;
-  cfg->ldc_debug=0;
 }
 
 /* simple strdup wrapper */
@@ -646,6 +647,8 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
   char keyword[32];
   char token[64];
   int i;
+  int rc;
+  char *value;
   /* open config file */
   if ((fp=fopen(filename,"r"))==NULL)
   {
@@ -845,57 +848,75 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
         cfg->ldc_ssl_on=SSL_LDAPS;
       get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(keyword,"tls_checkpeer")==0)
+    else if ( (strcasecmp(keyword,"tls_reqcert")==0) ||
+              (strcasecmp(keyword,"tls_checkpeer")==0) )
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is deprecated (and will be removed in an upcoming release), use tls_reqcert instead",filename,lnr,keyword);
-      get_reqcert(filename,lnr,keyword,&line,&cfg->ldc_tls_reqcert);
+      if (strcasecmp(keyword,"tls_reqcert")==0)
+        log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
+      else
+        log_log(LOG_WARNING,"%s:%d: option %s is deprecated (and will be removed in an upcoming release), use tls_reqcert instead",filename,lnr,keyword);
+      get_reqcert(filename,lnr,keyword,&line,&i);
       get_eol(filename,lnr,keyword,&line);
-    }
-    else if (strcasecmp(keyword,"tls_reqcert")==0)
-    {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      get_reqcert(filename,lnr,keyword,&line,&cfg->ldc_tls_reqcert);
-      get_eol(filename,lnr,keyword,&line);
+      log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%d)",i);
+      LDAP_SET_OPTION(NULL,LDAP_OPT_X_TLS_REQUIRE_CERT,&i);
     }
     else if (strcasecmp(keyword,"tls_cacertdir")==0)
     {
       log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_tls_cacertdir);
+      get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */
+      log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_CACERTDIR,\"%s\")",value);
+      LDAP_SET_OPTION(NULL,LDAP_OPT_X_TLS_CACERTDIR,value);
+      free(value);
     }
     else if (strcasecmp(keyword,"tls_cacertfile")==0)
     {
       log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_tls_cacertfile);
+      get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */
+      log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_CACERTFILE,\"%s\")",value);
+      LDAP_SET_OPTION(NULL,LDAP_OPT_X_TLS_CACERTFILE,value);
+      free(value);
     }
     else if (strcasecmp(keyword,"tls_randfile")==0)
     {
       log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_tls_randfile);
+      get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */
+      log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_RANDOM_FILE,\"%s\")",value);
+      LDAP_SET_OPTION(NULL,LDAP_OPT_X_TLS_RANDOM_FILE,value);
+      free(value);
     }
     else if (strcasecmp(keyword,"tls_ciphers")==0)
     {
       log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_tls_ciphers);
+      get_restdup(filename,lnr,keyword,&line,&value);
+      log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_CIPHER_SUITE,\"%s\")",value);
+      LDAP_SET_OPTION(NULL,LDAP_OPT_X_TLS_CIPHER_SUITE,value);
+      free(value);
     }
     else if (strcasecmp(keyword,"tls_cert")==0)
     {
       log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_tls_cert);
+      get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */
+      log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_CERTFILE,\"%s\")",value);
+      LDAP_SET_OPTION(NULL,LDAP_OPT_X_TLS_CERTFILE,value);
+      free(value);
     }
     else if (strcasecmp(keyword,"tls_key")==0)
     {
       log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_tls_key);
+      get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */
+      log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_KEYFILE,\"%s\")",value);
+      LDAP_SET_OPTION(NULL,LDAP_OPT_X_TLS_KEYFILE,value);
+      free(value);
     }
 #endif /* LDAP_OPT_X_TLS */
     /* other options */

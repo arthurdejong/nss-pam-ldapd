@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006, 2007 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -375,6 +375,8 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   /* check if StartTLS is requested */
   if (nslcd_cfg->ldc_ssl_on==SSL_START_TLS)
   {
+    log_log(LOG_DEBUG,"ldap_start_tls_s()");
+    errno=0;
     rc=ldap_start_tls_s(session->ld,NULL,NULL);
     if (rc!=LDAP_SUCCESS)
     {
@@ -390,9 +392,11 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
 #endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
     /* do a simple bind */
     if (nslcd_cfg->ldc_binddn)
-      log_log(LOG_DEBUG,"simple bind to %s as %s",uri,nslcd_cfg->ldc_binddn);
+      log_log(LOG_DEBUG,"ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",nslcd_cfg->ldc_binddn,
+                        nslcd_cfg->ldc_bindpw?"\"*****\"":"NULL",uri);
     else
-      log_log(LOG_DEBUG,"simple anonymous bind to %s",uri);
+      log_log(LOG_DEBUG,"ldap_simple_bind_s(NULL,%s) (uri=\"%s\")",
+                        nslcd_cfg->ldc_bindpw?"\"*****\"":"NULL",uri);
     return ldap_simple_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_bindpw);
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
   }
@@ -402,9 +406,11 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
     log_log(LOG_DEBUG,"SASL bind to %s as %s",uri,nslcd_cfg->ldc_binddn);
     if (nslcd_cfg->ldc_sasl_secprops!=NULL)
     {
+      log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_SASL_SECPROPS,\"%s\")",nslcd_cfg->ldc_sasl_secprops);
       LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
     }
 #ifdef HAVE_SASL_INTERACT_T
+    log_log(LOG_DEBUG,"ldap_sasl_interactive_bind_s(\"%s\",\"%s\")",nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech);
     return ldap_sasl_interactive_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,NULL,NULL,
                                     LDAP_SASL_QUIET,
                                     do_sasl_interact,(void *)nslcd_cfg);
@@ -419,7 +425,9 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
       cred.bv_val="";
       cred.bv_len=0;
     }
-    return ldap_sasl_bind_s(session->ld,NULL,nslcd_cfg->ldc_sasl_mech,&cred,NULL,NULL,NULL);
+    log_log(LOG_DEBUG,"ldap_sasl_bind_s(\"%s\",\"%s\",%s)",nslcd_cfg->ldc_binddn,
+                      nslcd_cfg->ldc_sasl_mech,nslcd_cfg->ldc_bindpw?"\"*****\"":"NULL");
+    return ldap_sasl_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,&cred,NULL,NULL,NULL);
 #endif /* not HAVE_SASL_INTERACT_T */
   }
 #endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
@@ -442,31 +450,16 @@ static int do_rebind(LDAP *UNUSED(ld),LDAP_CONST char *url,
    LDAP status code. */
 static int do_set_options(MYLDAP_SESSION *session)
 {
+  /* FIXME: move this to a global initialisation routine */
   int rc;
   struct timeval tv;
-#ifdef LDAP_OPT_X_TLS
   int i;
-#endif /* LDAP_OPT_X_TLS */
-  /* turn on debugging */
-  if (nslcd_cfg->ldc_debug)
-  {
-#ifdef LBER_OPT_DEBUG_LEVEL
-    rc=ber_set_option(NULL,LBER_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
-    if (rc!=LDAP_SUCCESS)
-    {
-      log_log(LOG_ERR,"ber_set_option(LBER_OPT_DEBUG_LEVEL) failed: %s",ldap_err2string(rc));
-      return rc;
-    }
-#endif /* LBER_OPT_DEBUG_LEVEL */
-#ifdef LDAP_OPT_DEBUG_LEVEL
-    LDAP_SET_OPTION(NULL,LDAP_OPT_DEBUG_LEVEL,&nslcd_cfg->ldc_debug);
-#endif /* LDAP_OPT_DEBUG_LEVEL */
-  }
 #ifdef HAVE_LDAP_SET_REBIND_PROC
   /* the rebind function that is called when chasing referrals, see
      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/apis/ldap_set_rebind_proc.htm
      http://www.openldap.org/software/man.cgi?query=ldap_set_rebind_proc&manpath=OpenLDAP+2.4-Release */
   /* TODO: probably only set this if we should chase referrals */
+  log_log(LOG_DEBUG,"ldap_set_rebind_proc()");
   rc=ldap_set_rebind_proc(session->ld,do_rebind,session);
   if (rc!=LDAP_SUCCESS)
   {
@@ -475,22 +468,30 @@ static int do_set_options(MYLDAP_SESSION *session)
   }
 #endif /* HAVE_LDAP_SET_REBIND_PROC */
   /* set the protocol version to use */
+  log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_PROTOCOL_VERSION,%d)",nslcd_cfg->ldc_version);
   LDAP_SET_OPTION(session->ld,LDAP_OPT_PROTOCOL_VERSION,&nslcd_cfg->ldc_version);
   /* set some other options */
+  log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_DEREF,%d)",nslcd_cfg->ldc_deref);
   LDAP_SET_OPTION(session->ld,LDAP_OPT_DEREF,&nslcd_cfg->ldc_deref);
+  log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_TIMELIMIT,%d)",nslcd_cfg->ldc_timelimit);
   LDAP_SET_OPTION(session->ld,LDAP_OPT_TIMELIMIT,&nslcd_cfg->ldc_timelimit);
   tv.tv_sec=nslcd_cfg->ldc_bind_timelimit;
   tv.tv_usec=0;
 #ifdef LDAP_OPT_TIMEOUT
+  log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_TIMEOUT,%d)",nslcd_cfg->ldc_timelimit);
   LDAP_SET_OPTION(session->ld,LDAP_OPT_TIMEOUT,&tv);
 #endif /* LDAP_OPT_TIMEOUT */
 #ifdef LDAP_OPT_NETWORK_TIMEOUT
+  log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_NETWORK_TIMEOUT,%d)",nslcd_cfg->ldc_timelimit);
   LDAP_SET_OPTION(session->ld,LDAP_OPT_NETWORK_TIMEOUT,&tv);
 #endif /* LDAP_OPT_NETWORK_TIMEOUT */
 #ifdef LDAP_X_OPT_CONNECT_TIMEOUT
+  log_log(LOG_DEBUG,"ldap_set_option(LDAP_X_OPT_CONNECT_TIMEOUT,%d)",nslcd_cfg->ldc_timelimit);
   LDAP_SET_OPTION(session->ld,LDAP_X_OPT_CONNECT_TIMEOUT,&tv);
 #endif /* LDAP_X_OPT_CONNECT_TIMEOUT */
+  log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_REFERRALS,%s)",nslcd_cfg->ldc_referrals?"LDAP_OPT_ON":"LDAP_OPT_OFF");
   LDAP_SET_OPTION(session->ld,LDAP_OPT_REFERRALS,nslcd_cfg->ldc_referrals?LDAP_OPT_ON:LDAP_OPT_OFF);
+  log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_RESTART,%s)",nslcd_cfg->ldc_restart?"LDAP_OPT_ON":"LDAP_OPT_OFF");
   LDAP_SET_OPTION(session->ld,LDAP_OPT_RESTART,nslcd_cfg->ldc_restart?LDAP_OPT_ON:LDAP_OPT_OFF);
 #ifdef LDAP_OPT_X_TLS
   /* if SSL is desired, then enable it */
@@ -499,42 +500,8 @@ static int do_set_options(MYLDAP_SESSION *session)
   {
     /* use tls */
     i=LDAP_OPT_X_TLS_HARD;
+    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS,LDAP_OPT_X_TLS_HARD)");
     LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS,&i);
-  }
-  /* rand file */
-  if (nslcd_cfg->ldc_tls_randfile!=NULL)
-  {
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_RANDOM_FILE,nslcd_cfg->ldc_tls_randfile);
-  }
-  /* ca cert file */
-  if (nslcd_cfg->ldc_tls_cacertfile!=NULL)
-  {
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTFILE,nslcd_cfg->ldc_tls_cacertfile);
-  }
-  /* ca cert directory */
-  if (nslcd_cfg->ldc_tls_cacertdir!=NULL)
-  {
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CACERTDIR,nslcd_cfg->ldc_tls_cacertdir);
-  }
-  /* require cert? (certificate validation) */
-  if (nslcd_cfg->ldc_tls_reqcert>=0)
-  {
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_REQUIRE_CERT,&nslcd_cfg->ldc_tls_reqcert);
-  }
-  /* set cipher suite, certificate and private key */
-  if (nslcd_cfg->ldc_tls_ciphers!=NULL)
-  {
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CIPHER_SUITE,nslcd_cfg->ldc_tls_ciphers);
-  }
-  /* set certificate */
-  if (nslcd_cfg->ldc_tls_cert!=NULL)
-  {
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_CERTFILE,nslcd_cfg->ldc_tls_cert);
-  }
-  /* set up key */
-  if (nslcd_cfg->ldc_tls_key!=NULL)
-  {
-    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_TLS_KEYFILE,nslcd_cfg->ldc_tls_key);
   }
 #endif /* LDAP_OPT_X_TLS */
   /* if nothing above failed, everything should be fine */
@@ -563,6 +530,7 @@ static void do_close(MYLDAP_SESSION *session)
         /* abandon the search if there were more results to fetch */
         if (session->searches[i]->msgid!=-1)
         {
+          log_log(LOG_DEBUG,"ldap_abandon()");
           if (ldap_abandon(session->searches[i]->session->ld,session->searches[i]->msgid))
           {
             if (ldap_get_option(session->ld,LDAP_OPT_ERROR_NUMBER,&rc)==LDAP_SUCCESS)
@@ -576,6 +544,7 @@ static void do_close(MYLDAP_SESSION *session)
       }
     }
     /* close the connection to the server */
+    log_log(LOG_DEBUG,"ldap_unbind()");
     rc=ldap_unbind(session->ld);
     session->ld=NULL;
     if (rc!=LDAP_SUCCESS)
@@ -640,6 +609,8 @@ static int do_open(MYLDAP_SESSION *session)
   session->ld=NULL;
   session->lastactivity=0;
   /* open the connection */
+  log_log(LOG_DEBUG,"ldap_initialize(%s)",nslcd_cfg->ldc_uris[session->current_uri].uri);
+  errno=0;
   rc=ldap_initialize(&(session->ld),nslcd_cfg->ldc_uris[session->current_uri].uri);
   if (rc!=LDAP_SUCCESS)
   {
@@ -648,6 +619,7 @@ static int do_open(MYLDAP_SESSION *session)
                         ldap_err2string(rc),strerror(errno));
     if (session->ld!=NULL)
     {
+      log_log(LOG_DEBUG,"ldap_unbind()");
       rc2=ldap_unbind(session->ld);
       session->ld=NULL;
       if (rc2!=LDAP_SUCCESS)
@@ -671,6 +643,7 @@ static int do_open(MYLDAP_SESSION *session)
     return rc;
   }
   /* bind to the server */
+  errno=0;
   rc=do_bind(session,nslcd_cfg->ldc_uris[session->current_uri].uri);
   if (rc!=LDAP_SUCCESS)
   {
@@ -1463,6 +1436,7 @@ static char **get_exploded_rdn(const char *dn)
   /* explode rdn (first part of exploded_dn),
       e.g. "cn=Test User+uid=testusr" into
      { "cn=Test User", "uid=testusr", NULL } */
+  errno=0;
   exploded_rdn=ldap_explode_rdn(exploded_dn[0],0);
   if ((exploded_rdn==NULL)||(exploded_rdn[0]==NULL))
   {
@@ -1583,4 +1557,47 @@ int myldap_escape(const char *src,char *buffer,size_t buflen)
   /* terminate destination string */
   buffer[pos]='\0';
   return 0;
+}
+
+int myldap_set_debuglevel(int level)
+{
+  int i;
+  int rc;
+  /* turn on debugging */
+  if (level>1)
+  {
+#ifdef LBER_OPT_LOG_PRINT_FILE
+    log_log(LOG_DEBUG,"ber_set_option(LBER_OPT_LOG_PRINT_FILE)"); \
+    rc=ber_set_option(NULL,LBER_OPT_LOG_PRINT_FILE,stderr);
+    if (rc!=LDAP_SUCCESS)
+    {
+      log_log(LOG_ERR,"ber_set_option(LBER_OPT_LOG_PRINT_FILE) failed: %s",ldap_err2string(rc));
+      return rc;
+    }
+#endif /* LBER_OPT_LOG_PRINT_FILE */
+#ifdef LBER_OPT_DEBUG_LEVEL
+    if (level>2)
+    {
+      i=-1;
+      log_log(LOG_DEBUG,"ber_set_option(LBER_OPT_DEBUG_LEVEL,-1)");
+      rc=ber_set_option(NULL,LBER_OPT_DEBUG_LEVEL,&i);
+      if (rc!=LDAP_SUCCESS)
+      {
+        log_log(LOG_ERR,"ber_set_option(LBER_OPT_DEBUG_LEVEL) failed: %s",ldap_err2string(rc));
+        return rc;
+      }
+    }
+#endif /* LBER_OPT_DEBUG_LEVEL */
+#ifdef LDAP_OPT_DEBUG_LEVEL
+    i=-1;
+    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_DEBUG_LEVEL,-1)");
+    rc=ldap_set_option(NULL,LDAP_OPT_DEBUG_LEVEL,&i);
+    if (rc!=LDAP_SUCCESS)
+    {
+      log_log(LOG_ERR,"ldap_set_option(LDAP_OPT_DEBUG_LEVEL) failed: %s",ldap_err2string(rc));
+      return rc;
+    }
+#endif /* LDAP_OPT_DEBUG_LEVEL */
+  }
+  return LDAP_SUCCESS;
 }

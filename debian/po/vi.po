@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap 238-1\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-04-19 21:47+0200\n"
+"POT-Creation-Date: 2009-05-08 00:30+0200\n"
 "PO-Revision-Date: 2005-06-08 15:25+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -38,7 +38,7 @@ msgstr ""
 #| "Note: It is usually a good idea to use an IP address; this reduces risks "
 #| "of failure in the event name service is unavailable."
 msgid ""
-"When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
+"When using the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
 "Ghi chú: thường là ý kiến tốt để sử dụng một địa chỉ dạng IP vì sẽ gặp ít "
@@ -124,6 +124,40 @@ msgid ""
 "You can select the services that should be enabled or disabled for LDAP "
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid "Remove LDAP from nsswitch.conf now?"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"LDAP is still configured for name lookups for the following services:\n"
+"  ${services}\n"
+"but the libnss-ldapd package is about to be removed."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"You are advised to remove the entries if you don't plan on using LDAP for "
+"name resolution any more.  Not removing ldap from nsswitch.conf should, for "
+"most services, not cause problems, but host name resolution could be "
+"affected in subtle ways."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you chose to remove the entries now."
 msgstr ""
 
 #, fuzzy

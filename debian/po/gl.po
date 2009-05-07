@@ -1,27 +1,26 @@
-# Danish translations for nss-ldapd package.
-# Copyright (C) 2008 Jonas Smedegaard <dr@jones.dk>
-# This file is distributed under the same license as the nss-ldapd package.
-# Jonas Smedegaard <dr@jones.dk>, 2008.
+# Copyright (C) 2009 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the nss-ldap package.
 #
+# marce villarino <mvillarino@users.sourceforge.net>, 2009.
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.6\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-05-08 00:30+0200\n"
-"PO-Revision-Date: 2009-04-21 23:51+0200\n"
-"Last-Translator: Jonas Smedegaard <dr@jones.dk>\n"
-"Language-Team: None\n"
+"PO-Revision-Date: 2009-05-06 22:55+0200\n"
+"Last-Translator: marce villarino <mvillarino@users.sourceforge.net>\n"
+"Language-Team: Galician <proxecto@trasno.ent>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lokalize 0.2\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 msgid "LDAP server Uniform Resource Identifier:"
-msgstr ""
-"LDAP-server ensartet ressourceidentifikator (Uniform Resource Identifier):"
+msgstr "URI do servidor LDAP:"
 
 #. Type: string
 #. Description
@@ -31,9 +30,9 @@ msgid ""
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
 "port number is optional."
 msgstr ""
-"Angiv URIen for den anvendte LDAP-server. Dette er en streng af typen ldap://"
-"<værtsnavn eller IP>:<port>/ . ldaps:// eller ldapi:// kan også bruges. "
-"Portnummeret er valgfrit."
+"Indique o URI do servidor LDAP. Isto é unha cadea coa forma ldap://<máquina "
+"ou IP>:<porto>/. Tamén pode empregar ldaps:// ou ldapi://. O número de porto "
+"é opcional."
 
 #. Type: string
 #. Description
@@ -42,21 +41,21 @@ msgid ""
 "When using the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
-"Når ldap- eller ldaps-formerne bruges er det typisk en god idé at bruge en "
-"IP-adresse; dette reducerer risikoen for fejl når navneservice ikke er "
-"tilgængelig."
+"Cando se empregan os esquemas ldap ou ldaps xeralmente é boa idea empregar "
+"un enderezo IP, xa que se reduce o risco de fallo se non hai servizos de "
+"nome dispoñíbeis."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
-msgstr "Flere URIer kan angives ved at adskille dem med mellemrum."
+msgstr "Poden especificarse varios URI separándoos con espazos."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:2001
 msgid "LDAP server search base:"
-msgstr "LDAP-server søgebase:"
+msgstr "Base da procura de servidor LDAP:"
 
 #. Type: string
 #. Description
@@ -67,15 +66,16 @@ msgid ""
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
 msgstr ""
-"Angiv det særlige navn på LDAP-søgebasen. Mange sites bruger komponenterne "
-"fra deres domænenavne til dette formål. Eksempelvis ville domænet \"eksempel."
-"dk\" bruge \"dc=eksempel,dc=dk\" som det særlige navn på søgebasen."
+"Indique o nome distintivo da base de procura LDAP. Moitos sitios empregan as "
+"compoñentes dos seus nomes de dominio para este propósito. Por exemplo, o "
+"dominio «exemplo.net» debería empregar «dc=exemplo,dc=net» como nome "
+"distintivo da base de procura."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
 msgid "LDAP database user:"
-msgstr "LDAP databasebruger:"
+msgstr "Usuario da base de datos LDAP:"
 
 #. Type: string
 #. Description
@@ -84,33 +84,35 @@ msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
 msgstr ""
-"Hvis LDAP-databasen kræver et brugernavn til almindelige opslag, så angiv "
-"her navnet på kontoen som vil blive brugt. Ellers lad det stå tomt."
+"Se a base de datos do LDAP require de identificación para procuras normais, "
+"indique aquí o nome da conta que se empregará. Caso contrario déixeo en "
+"branco."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
-msgstr "Denne værdi bør angives som et DN (særligt navn - distinguished name)."
+msgstr "Este valor debe especificarse como un DN (nome distintivo)."
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:4001
 msgid "LDAP user password:"
-msgstr "LDAP-bruger adgangskode:"
+msgstr "Contrasinal do usuario de LDAP:"
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr ""
-"Angiv adgangskoden som vil blive brugt til at logge på til LDAP-databasen."
+"Indique o contrasinal que se ha empregar para acceder á base de datos do "
+"LDAP."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Name services to configure:"
-msgstr "Navneservices at indstille:"
+msgstr "Servizos de nome a configurar:"
 
 #. Type: multiselect
 #. Description
@@ -119,8 +121,8 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
-"For at denne pakke fungerer må du ændre din /etc/nsswitch.conf til at bruge "
-"ldap datakilderne."
+"Para que este paquete funcione, debe modificar o ficheiro /etc/nsswitch.conf "
+"para que empregue a fonte de datos ldap."
 
 #. Type: multiselect
 #. Description
@@ -130,15 +132,15 @@ msgid ""
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
 msgstr ""
-"Du kan vælge de services som skal aktiveres eller slås fra for LDAP-opslag. "
-"De nye LDAP-opslag vil blive tilføjet som sidste mulighed. Sørg for at "
-"gennemgå ændringerne."
+"Pode escoller or servizos que se deben activar ou desactivar nas procuras "
+"LDAP. As novas procuras LDAP engadiranse como última opción. Revise estas "
+"modificacións."
 
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:2001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr "Fjern LDAP fra nsswitch.conf nu?"
+msgstr "Desexa eliminar LDAP de nsswitch.conf?"
 
 #. Type: boolean
 #. Description
@@ -148,9 +150,10 @@ msgid ""
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
-"LDAP er fortsat opsat ved navneopslag for følgende services:\n"
-"  ${services}\n"
-"men pakken libnss-ldapd er ved at blive afinstalleret."
+"LDAP aínda está configurado para facer procuras de nomes para os seguintes "
+"servizos:\n"
+" ${services}\n"
+"pero o paquete libnss-ldapd está a piques de ser eliminado."
 
 #. Type: boolean
 #. Description
@@ -161,10 +164,10 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
-"Du anbefales at fjerne indlæggene hvis du ikke længere har planer om at "
-"bruge LDAP til navneopslag.  For de fleste services skulle det ikke give "
-"problemer ikke at fjerne ldap fra nsswitch.conf, men opslag af værtsnavne "
-"kan blive påvirket i mindre grad."
+"Recoméndase que elimine as entradas se non prevé seguir a empregar LDAP para "
+"a resolución de nomes. Se non elimina ldap de nsswitch.conf non debería ter "
+"problemas coa maioría dos servizos, pero a resolución de nomes podería verse "
+"afectada de maneiras sutís."
 
 #. Type: boolean
 #. Description
@@ -174,6 +177,6 @@ msgid ""
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you chose to remove the entries now."
 msgstr ""
-"Du kan redigere /etc/nsswitch.conf i hånden eller vælge at fjerne indlæg "
-"automatisk nu. Sørg for at gennemse ændringer til /etc/nsswitch.conf hvis du "
-"vælger at fjerne indlæggene nu."
+"Pode editar manualmente /etc/nsswitch.conf ou escoller agora eliminar "
+"automaticamente as entradas. Asegúrese de revisar as modificacións a /etc/"
+"nsswitch.conf se escolle agora eliminar as entradas."

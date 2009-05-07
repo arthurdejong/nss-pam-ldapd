@@ -1,27 +1,33 @@
-# Debian Description Translation Project <debconf@ddtp.debian.org>, 2003
+# translation of ru.po to Russian
 # Ilgiz Kalmetev <translator@ilgiz.pp.ru>
 #
 # This file is from the DDTP, the Debian Description Translation Project
 #
 # See http://ddtp.debian.org/ for more information.
 #
+# Debian Description Translation Project <debconf@ddtp.debian.org>, 2003.
+# Ilgiz Kalmetev <translator@ilgiz.pp.ru>, 2003.
+# Yuri Kozlov <yuray@komyakino.ru>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: libnss-ldap_211-4\n"
+"Project-Id-Version: nss-ldapd 0.6.8\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-04-19 21:47+0200\n"
-"PO-Revision-Date: 2003-11-19 15:00+0500\n"
-"Last-Translator: Ilgiz Kalmetev <translator@ilgiz.pp.ru>\n"
-"Language-Team: russian <debian-russian@lists.debian.org>\n"
+"POT-Creation-Date: 2009-05-08 00:30+0200\n"
+"PO-Revision-Date: 2009-04-22 21:14+0400\n"
+"Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
+"Language-Team: Russian <debian-l10n-russian@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=KOI8-R\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
+"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 msgid "LDAP server Uniform Resource Identifier:"
-msgstr ""
+msgstr "п∙п╢п╦п╫п╬п╬п╠я─п╟п╥п╫я▀п╧ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я─п╣я│я┐я─я│п╟ я│п╣я─п╡п╣я─п╟ LDAP:"
 
 #. Type: string
 #. Description
@@ -31,33 +37,31 @@ msgid ""
 "ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
 "port number is optional."
 msgstr ""
+"пёп╨п╟п╤п╦я┌п╣ URI п╦я│п©п╬п╩я▄п╥я┐п╣п╪п╬пЁп╬ я│п╣я─п╡п╣я─п╟ LDAP. п╜я┌п╬ п╢п╬п╩п╤п╫п╟ п╠я▀я┌я▄ я│я┌я─п╬п╨п╟ п╡ п╡п╦п╢п╣ ldap://"
+"<п╦п╪я▐_я┘п╬я│я┌п╟ п╦п╩п╦ IP>:<п©п╬я─я┌>/ . п°п╬п╤п╫п╬ п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ ldaps:// п╦п╩п╦ ldapi:// . "
+"п²п╬п╪п╣я─ п©п╬я─я┌п╟ п╫п╣п╬п╠я▐п╥п╟я┌п╣п╩п╣п╫."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Note: It is usually a good idea to use an IP address; this reduces risks "
-#| "of failure in the event name service is unavailable."
 msgid ""
-"When useing the ldap or ldaps schemes it is usually a good idea to use an IP "
+"When using the ldap or ldaps schemes it is usually a good idea to use an IP "
 "address; this reduces the risk of failure when name services are unavailable."
 msgstr ""
-"Примечание: Обычно, лучше использовать IP-адрес; это снижает риск появления "
-"проблем, если сервис имен окажется недоступным."
+"п÷я─п╦ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦п╦ я│я┘п╣п╪ ldap п╦п╩п╦ ldaps, п╬п╠я▀я┤п╫п╬, п╩я┐я┤я┬п╣ я┐п╨п╟п╥я▀п╡п╟я┌я▄ IP-п╟п╢я─п╣я│; я█я┌п╬ "
+"я│п╫п╦п╤п╟п╣я┌ я─п╦я│п╨ п©п╬я▐п╡п╩п╣п╫п╦я▐ п©я─п╬п╠п╩п╣п╪ п╡ я│п╩я┐я┤п╟п╣ п╬я┌п╨п╟п╥п╟ я│п╩я┐п╤п╠я▀ п╦п╪я▒п╫."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
-msgstr ""
+msgstr "п°п╬п╤п╫п╬ я┐п╨п╟п╥я▀п╡п╟я┌я▄ п╫п╣я│п╨п╬п╩я▄п╨п╬ URI я┤п╣я─п╣п╥ п©я─п╬п╠п╣п╩."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:2001
-#, fuzzy
 msgid "LDAP server search base:"
-msgstr "Хостовый адрес сервера LDAP"
+msgstr "п▒п╟п╥п╟ п©п╬п╦я│п╨п╟ я│п╣я─п╡п╣я─п╟ LDAP:"
 
 #
 #. Type: string
@@ -69,17 +73,16 @@ msgid ""
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
 msgstr ""
-"Пожалуйста, введите индивидуальное имя для базы поиска LDAP. Многие сайты "
-"используют части своих доменных имён для этой цели. Например, домен   "
-"\"example.net\"   использовал   бы   \"dc=example,dc=net\"  как "
-"индивидуальное имя для базы поиска."
+"п▓п╡п╣п╢п╦я┌п╣ я┐п╫п╦п╨п╟п╩я▄п╫п╬п╣ п╦п╪я▐ п╠п╟п╥я▀ п©п╬п╦я│п╨п╟ LDAP. п■п╩я▐ я█я┌п╬п╧ я├п╣п╩п╦ п╫п╟ п╪п╫п╬пЁп╦я┘ я│п╣я─п╡п╣я─п╟я┘ "
+"п╦я│п©п╬п╩я▄п╥я┐я▌я┌ я┤п╟я│я┌п╦ я│п╡п╬п╦я┘ п╢п╬п╪п╣п╫п╫я▀я┘ п╦п╪я▒п╫. п²п╟п©я─п╦п╪п╣я─, п╢п╩я▐ п╢п╬п╪п╣п╫п╟ \"example.net\" п╡ "
+"п╨п╟я┤п╣я│я┌п╡п╣ я┐п╫п╦п╨п╟п╩я▄п╫п╬пЁп╬ п╦п╪п╣п╫п╦ п╠п╟п╥я▀ п©п╬п╦я│п╨п╟ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╩п╬я│я▄ п╠я▀ \"dc=example,dc=net"
+"\"."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
-#, fuzzy
 msgid "LDAP database user:"
-msgstr "непривилегированный пользователь базы данных"
+msgstr "п÷п╬п╩я▄п╥п╬п╡п╟я┌п╣п╩я▄ п╠п╟п╥я▀ п╢п╟п╫п╫я▀я┘ LDAP:"
 
 #. Type: string
 #. Description
@@ -88,31 +91,33 @@ msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
 msgstr ""
+"п∙я│п╩п╦ п╢п╩я▐ п╬п╠я▀я┤п╫п╬пЁп╬ п©п╬п╦я│п╨п╟ п©п╬ п╠п╟п╥п╣ п╢п╟п╫п╫я▀я┘ LDAP я┌я─п╣п╠я┐п╣я┌я│я▐ я─п╣пЁп╦я│я┌я─п╟я├п╦я▐, я┌п╬ "
+"п╡п╡п╣п╢п╦я┌п╣ п╥п╢п╣я│я▄ п╦п╪я▐ я█я┌п╬п╧ я┐я┤я▒я┌п╫п╬п╧ п╥п╟п©п╦я│п╦. п≤п╫п╟я┤п╣ п╬я│я┌п╟п╡я▄я┌п╣ п©п╬п╩п╣ п©я┐я│я┌я▀п╪."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
-msgstr ""
+msgstr "п≈п╫п╟я┤п╣п╫п╦п╣ п╢п╬п╩п╤п╫п╬ п╠я▀я┌я▄ я┐п╨п╟п╥п╟п╫п╬ п╡ я└п╬я─п╪п╣ DN (я┐п╫п╦п╨п╟п╩я▄п╫п╬пЁп╬ п╦п╪п╣п╫п╦)."
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:4001
 msgid "LDAP user password:"
-msgstr ""
+msgstr "п÷п╟я─п╬п╩я▄ п©п╬п╩я▄п╥п╬п╡п╟я┌п╣п╩я▐ LDAP:"
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr ""
-"Введите пароль, который будет использован для подключения к базе данных LDAP."
+"п▓п╡п╣п╢п╦я┌п╣ п©п╟я─п╬п╩я▄, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫ п╢п╩я▐ п©п╬п╢п╨п╩я▌я┤п╣п╫п╦я▐ п╨ п╠п╟п╥п╣ п╢п╟п╫п╫я▀я┘ LDAP."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Name services to configure:"
-msgstr ""
+msgstr "п≤п╪п╣п╫п╟ п╫п╟я│я┌я─п╟п╦п╡п╟п╣п╪я▀я┘ я│п╩я┐п╤п╠:"
 
 #. Type: multiselect
 #. Description
@@ -121,6 +126,8 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
+"п╖я┌п╬п╠я▀ я█я┌п╬я┌ п©п╟п╨п╣я┌ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╩я│я▐ п╡ я─п╟п╠п╬я┌п╣ п╫я┐п╤п╫п╬ п╦п╥п╪п╣п╫п╦я┌я▄ /etc/nsswitch.conf, "
+"я┐п╨п╟п╥п╟п╡ п╡ п╫я▒п╪ п╦я│я┌п╬я┤п╫п╦п╨ п╢п╟п╫п╫я▀я┘ ldap."
 
 #. Type: multiselect
 #. Description
@@ -130,179 +137,50 @@ msgid ""
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
 msgstr ""
+"п▓я▀ п╪п╬п╤п╣я┌п╣ п╡я▀п╠я─п╟я┌я▄ я│п╩я┐п╤п╠я▀, п╢п╩я▐ п╨п╬я┌п╬я─я▀я┘ п╫я┐п╤п╫п╬ п╡п╨п╩я▌я┤п╦я┌я▄ п╦п╩п╦ п╡я▀п╨п╩я▌я┤п╦я┌я▄ п©п╬п╦я│п╨ п╡ "
+"LDAP. п÷п╬п╦я│п╨ п©п╬ LDAP п╠я┐п╢п╣я┌ п╢п╬п╠п╟п╡п╩п╣п╫ п╡ п╨п╬п╫п╣я├ я│п©п╦я│п╨п╟ п╬п©я─п╟я┬п╦п╡п╟п╣п╪я▀я┘ я│п╩я┐п╤п╠. п÷п╬п╥п╤п╣ "
+"п©я─п╬я│п╪п╬я┌я─п╦я┌п╣ п©п╬п╩я┐я┤п╦п╡я┬п╦п╣я│я▐ п╦п╥п╪п╣п╫п╣п╫п╦я▐."
 
-#, fuzzy
-#~ msgid ""
-#~ "Enter the password that will be used to log in to the LDAP database when "
-#~ "the root process does lookups."
-#~ msgstr ""
-#~ "Введите пароль, который будет использован для подключения к базе данных "
-#~ "LDAP."
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid "Remove LDAP from nsswitch.conf now?"
+msgstr "пёп╢п╟п╩п╦я┌я▄ LDAP п╦п╥ nsswitch.conf п©я─я▐п╪п╬ я│п╣п╧я┤п╟я│?"
 
-#, fuzzy
-#~ msgid "LDAP version to use:"
-#~ msgstr "Использовать версию LDAP"
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"LDAP is still configured for name lookups for the following services:\n"
+"  ${services}\n"
+"but the libnss-ldapd package is about to be removed."
+msgstr ""
+"LDAP п╡я│я▒ п╣я┴я▒ п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐ п©я─п╦ п©п╬п╦я│п╨п╣ п╦п╪я▒п╫ я┐ я│п╩п╣п╢я┐я▌я┴п╦я┘ я│п╩я┐п╤п╠:\n"
+"  ${services}\n"
+"п╫п╬ п©п╟п╨п╣я┌ libnss-ldapd я┐п╢п╟п╩я▐п╣я┌я│я▐ п╦п╥ я│п╦я│я┌п╣п╪я▀."
 
-#, fuzzy
-#~ msgid ""
-#~ "Please enter which version of the LDAP protocol is to use.  It is usually "
-#~ "a good idea to set this to highest available version number."
-#~ msgstr ""
-#~ "Введите версию протокола LDAP, которую будет использовать ldapns. Обычно "
-#~ "лучше использовать версию с наибольшим номером."
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"You are advised to remove the entries if you don't plan on using LDAP for "
+"name resolution any more.  Not removing ldap from nsswitch.conf should, for "
+"most services, not cause problems, but host name resolution could be "
+"affected in subtle ways."
+msgstr ""
+"п║п╬п╡п╣я┌я┐п╣п╪ я┐п╢п╟п╩п╦я┌я▄ п╥п╟п©п╦я│п╦, п╣я│п╩п╦ п╡я▀ п╠п╬п╩я▄я┬п╣ п╫п╣ п©п╩п╟п╫п╦я─я┐п╣я┌п╣ п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ LDAP п╢п╩я▐ "
+"п©п╬п╦я│п╨п╟ п╦п╪я▒п╫. п∙я│п╩п╦ ldap п╬я│я┌п╟п╫п╣я┌я│я▐ п╡ nsswitch.conf, я┌п╬ п╢п╩я▐ п╠п╬п╩я▄я┬п╦п╫я│я┌п╡п╟ я│п╩я┐п╤п╠ "
+"я█я┌п╬ п╫п╣ п╡я▀п╥п╬п╡п╣я┌ п©я─п╬п╠п╩п╣п╪, п╫п╬ п╪п╬п╤п╣я┌ п╫п╣пЁп╟я┌п╦п╡п╫п╬ п╬я┌я─п╟п╥п╦я┌я▄я│я▐ п©я─п╦ п╬п©я─п╣п╢п╣п╩п╣п╫п╦п╦ п╦п╪я▒п╫ "
+"я┘п╬я│я┌п╬п╡."
 
-#, fuzzy
-#~ msgid ""
-#~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
-#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
-#~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
-#~ "your nsswitch setup."
-#~ msgstr ""
-#~ "Чтобы этот пакет заработал: Вам надо отредактировать файл /etc/nsswitch."
-#~ "conf, чтобы он использовал ldap-источники. Пример настройки nsswitch есть "
-#~ "в /usr/share/doc/libnss-ldap/examples/nsswitch.ldap, его можно взять за "
-#~ "основу Вашей настройки."
-
-#  Template: libnss-ldap/confperm
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "make configuration readable/writeable by owner only"
-# msgstr ""
-#
-# msgid ""
-# "Should the libnss-ldap configuration file be readable and writable only by "
-# "the file owner?"
-# msgstr ""
-#
-# msgid ""
-# "If you use passwords in your libnss-ldap configuration, it is usually a "
-# "good idea to have the configuration set with mode 0600 (readable and "
-# "writable only by the file's owner)."
-# msgstr ""
-#
-# msgid ""
-# "Note: As a sanity check, libnss-ldap will check if you have nscd installed "
-# "and will only set the mode to 0600 if nscd is present."
-# msgstr ""
-#  Template: libnss-ldap/nsswitch
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "nsswitch.conf is not managed automatically"
-# msgstr ""
-#
-# msgid ""
-# "For this package to work, you need to modify your /etc/nsswitch.conf to "
-# "use the ldap datasource.  There is an example file at "
-# "/usr/share/doc/libnss-ldap/examples/nsswitch.ldap which can be used as an "
-# "example for your nsswitch setup, or it can be copied over your current "
-# "setup."
-# msgstr ""
-#
-# msgid ""
-# "Also, before removing this package, it is wise to remove the ldap entries "
-# "from nsswitch.conf to keep basic services functioning."
-# msgstr ""
-#  Template: shared/ldapns/base-dn
-#  ddtp-prioritize: 56
-#
-#~ msgid "distinguished name of the search base"
-#~ msgstr "индивидуальное имя базы поиска."
-
-#~ msgid "password for database login account"
-#~ msgstr "пароль для учетной записи базы данных"
-
-#~ msgid "nsswitch.conf is not managed automatically"
-#~ msgstr "nsswitch.conf не управляется автоматически"
-
-#~ msgid "make configuration readable/writeable by owner only"
-#~ msgstr "разрешить читать/писать настройки только владельцу"
-
-#~ msgid ""
-#~ "Should the libnss-ldap configuration file be readable and writable only "
-#~ "by the file owner?"
-#~ msgstr ""
-#~ "Нужно ли сделать так, чтобы читать/писать в файл настроек libnss-ldap мог "
-#~ "только владелец файла?"
-
-#~ msgid ""
-#~ "If you use passwords in your libnss-ldap configuration, it is usually a "
-#~ "good idea to have the configuration set with mode 0600 (readable and "
-#~ "writable only by the file's owner)."
-#~ msgstr ""
-#~ "Если Вы используете пароли в Вашей настройках libnss-ldap, тогда было бы "
-#~ "неплохо установить права доступа к файлу настроек в 0600 (чтение и запись "
-#~ "разрешены только владельцу файла)."
-
-#~ msgid ""
-#~ "Note: As a sanity check, libnss-ldap will check if you have nscd "
-#~ "installed and will only set the mode to 0600 if nscd is present."
-#~ msgstr ""
-#~ "Примечание: для профилактики, libnss-ldap проверит, установили ли Вы "
-#~ "nscd, и установит режим доступа 0600, если nscd установлен."
-
-#~ msgid "database requires login"
-#~ msgstr "база данных требует учетное имя"
-
-#~ msgid "Does the LDAP database require login?"
-#~ msgstr "База данных LDAP требует учетное имя?"
-
-#~ msgid ""
-#~ "Answer this question affirmatively only if you can't retreive entries "
-#~ "from the database without logging in."
-#~ msgstr ""
-#~ "Ответ на этот вопрос потребуется только в том случае, если Вы не сможете "
-#~ "получить данные из базы не имея учетной записи."
-
-#~ msgid "Note: Under a normal setup, this is not needed."
-#~ msgstr "Примечание: При обычной настройке это не требуется."
-
-#~ msgid "enable automatic configuration updates by debconf"
-#~ msgstr "разрешить автоматические обновления с помощью debconf"
-
-#~ msgid ""
-#~ "Should debconf automatically update libnss-ldap's configuration file?"
-#~ msgstr ""
-#~ "должен ли debconf автоматически обновлять файл настроек libnss-ldap?"
-
-#~ msgid "libnss-ldap has been moved to use debconf for its configuration."
-#~ msgstr "libnss-ldap для своей настройки использует debconf"
-
-#~ msgid ""
-#~ "The file will be prepended with \"###DEBCONF###\"; you can disable the "
-#~ "debconf updates by removing that line."
-#~ msgstr ""
-#~ "Файл будет сначала расмотрен с пмощью \"###DEBCONF###\"; Вы можете "
-#~ "запретить обновления debconf, удалив эту строку."
-
-#~ msgid "All new installations will have this by default."
-#~ msgstr "Все вновь установленные системы должны иметь это по умолчанию."
-
-#~ msgid ""
-#~ "Enter the name of the account that will be used to log in to the LDAP "
-#~ "database."
-#~ msgstr "Введите имя учетной записи для подключения к базе данных LDAP."
-
-#~ msgid ""
-#~ "Also, before removing this package, it is wise to remove the ldap entries "
-#~ "from nsswitch.conf to keep basic services functioning."
-#~ msgstr ""
-#~ "Также: перед удалением этого пакета, он сотрет записи ldap из файла "
-#~ "nsswitch.conf, чтобы работа основных сервисов не нарушалась."
-
-#~ msgid "dc=example,dc=net"
-#~ msgstr "dc=example,dc=net"
-
-#~ msgid "cn=proxyuser,dc=example,dc=net"
-#~ msgstr "cn=proxyuser,dc=example,dc=net"
-
-#~ msgid "3, 2"
-#~ msgstr "3, 2"
-
-#, fuzzy
-#~ msgid "ldap://127.0.0.1/"
-#~ msgstr "127.0.0.1"
-
-#~ msgid "Please enter the address of the LDAP server used."
-#~ msgstr "Введите адрес, который использует сервер LDAP."
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you chose to remove the entries now."
+msgstr ""
+"п▓я▀ п╪п╬п╤п╣я┌п╣ п╬я┌я─п╣п╢п╟п╨я┌п╦я─п╬п╡п╟я┌я▄ я└п╟п╧п╩ /etc/nsswitch.conf п╡я─я┐я┤п╫я┐я▌ п╦п╩п╦ п╡я▀п╠я─п╟я┌я▄ "
+"п╟п╡я┌п╬п╪п╟я┌п╦я┤п╣я│п╨п╬п╣ я┐п╢п╟п╩п╣п╫п╦п╣ п╥п╟п©п╦я│п╣п╧ п©я─я▐п╪п╬ я│п╣п╧я┤п╟я│. п÷п╬я│п╩п╣ я█я┌п╬пЁп╬ п©я─п╬п╡п╣я─я▄я┌п╣ "
+"п╦п╥п╪п╣п╫я▒п╫п╫я▀п╧ /etc/nsswitch.conf."
