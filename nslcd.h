@@ -180,11 +180,49 @@
 #define NSLCD_ACTION_SHADOW_BYNAME      2001
 #define NSLCD_ACTION_SHADOW_ALL         2005
 
-/* PAM-related requests. The requests and responses need to be defined. */
+/* PAM-related requests. The request parameters for all these requests
+   begin with:
+     STRING  user name
+     STRING  DN (if value is known already, otherwise empty)
+     STRING  service name
+   all requests, except the SESSION requests start the result value with:
+     STRING  user name (cannonical name)
+     STRING  DN (can be used to speed up requests) */
+
+/* PAM authentication check request. The extra request values are:
+     STRING  password
+   and the result value ends with:
+     INT32   authc NSLCD_PAM_* result code
+     INT32   authz NSLCD_PAM_* result code
+     STRING  authorisation error message */
 #define NSLCD_ACTION_PAM_AUTHC         20001
+
+/* PAM authorisation check request. This request does not have any extra
+   request values. The result value ends with:
+     INT32   authz NSLCD_PAM_* result code
+     STRING  authorisation error message */
 #define NSLCD_ACTION_PAM_AUTHZ         20002
+
+/* PAM session open and close requests. These requests have the following
+   extra request values:
+     STRING tty
+     STRING rhost
+     STRING ruser
+     INT32 session id (ignored for SESS_O)
+   and these calls only return the session ID:
+     INT32 session id
+   The SESS_C must contain the ID that is retured by SESS_O to close the
+   correct session. */
 #define NSLCD_ACTION_PAM_SESS_O        20003
 #define NSLCD_ACTION_PAM_SESS_C        20004
+
+/* PAM password modification request. This requests has the following extra
+   request values:
+     STRING old password
+     STRING new password
+   and returns there extra result values:
+     INT32   authz NSLCD_PAM_* result code
+     STRING  authorisation error message */
 #define NSLCD_ACTION_PAM_PWMOD         20005
 
 /* Request result codes. */
