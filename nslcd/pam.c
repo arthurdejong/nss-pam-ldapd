@@ -34,7 +34,6 @@
 #include "myldap.h"
 #include "cfg.h"
 
-
 /* set up a connection and try to bind with the specified DN and password
    returns a NSLCD_PAM_* error code */
 static int try_bind(const char *userdn,const char *password)
@@ -136,7 +135,6 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
 int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
-  int rc;
   char username[256];
   char userdn[256];
   char servicename[64];
@@ -196,7 +194,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
   WRITE_STRING(fp,userdn);
-  WRITE_INT32(fp,rc);  /* authz */
+  WRITE_INT32(fp,NSLCD_PAM_SUCCESS);  /* authz */
   WRITE_STRING(fp,""); /* authzmsg */
   WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
@@ -205,7 +203,6 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
 int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
-  int rc;
   char username[256];
   char userdn[256];
   char servicename[64];
@@ -235,7 +232,6 @@ int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session)
 int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
-  int rc;
   char username[256];
   char userdn[256];
   char servicename[64];
