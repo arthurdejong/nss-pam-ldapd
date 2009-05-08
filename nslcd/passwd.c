@@ -139,7 +139,7 @@ struct dn2uid_cache_entry
 
 /* Perform an LDAP lookup to translate the DN into a uid.
    This function either returns NULL or a strdup()ed string. */
-static char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn)
+char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp)
 {
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
@@ -147,6 +147,8 @@ static char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn)
   int rc;
   const char **values;
   char *uid;
+  if (rcp!=NULL)
+    *rcp=LDAP_SUCCESS;
   /* we have to look up the entry */
   attrs[0]=attmap_passwd_uid;
   attrs[1]=NULL;
@@ -160,7 +162,11 @@ static char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn)
   if (entry==NULL)
   {
     if (rc!=LDAP_SUCCESS)
+    {
       log_log(LOG_WARNING,"lookup of user %s failed: %s",dn,ldap_err2string(rc));
+      if (rcp!=NULL)
+        *rcp=rc;
+    }
     return NULL;
   }
   /* get uid (just use first one) */
@@ -213,7 +219,7 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   }
   pthread_mutex_unlock(&dn2uid_cache_mutex);
   /* look up the uid using an LDAP query */
-  uid=lookup_dn2uid(session,dn);
+  uid=lookup_dn2uid(session,dn,NULL);
   /* store the result in the cache */
   pthread_mutex_lock(&dn2uid_cache_mutex);
   if (cacheentry==NULL)

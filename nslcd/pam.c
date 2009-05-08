@@ -34,159 +34,231 @@
 #include "myldap.h"
 #include "cfg.h"
 
-/* for PAM status codes */
-#include <security/pam_modules.h>
+
+/* set up a connection and try to bind with the specified DN and password
+   returns a NSLCD_PAM_* error code */
+static int try_bind(const char *userdn,const char *password)
+{
+  MYLDAP_SESSION *session;
+  char *username;
+  int rc;
+  /* set up a new connection */
+  session=myldap_create_session();
+  if (session==NULL)
+    return NSLCD_PAM_AUTH_ERR;
+  /* set up credentials for the session */
+  rc=myldap_set_credentials(session,userdn,password);
+  /* TODO: test rc */
+  if (rc==LDAP_SUCCESS)
+  {
+    /* perform search for own object */
+    username=lookup_dn2uid(session,userdn,&rc);
+    /* TODO: return this as cannonical name */
+    if (username!=NULL)
+      free(username);
+  }
+  /* close the session */
+  myldap_session_close(session);
+  /* handle the results */
+  switch(rc)
+  {
+    case LDAP_SUCCESS: return NSLCD_PAM_SUCCESS;
+    case LDAP_INVALID_CREDENTIALS: return NSLCD_PAM_AUTH_ERR;
+    default: return NSLCD_PAM_AUTH_ERR;
+  }
+}
 
 /* check authentication credentials of the user */
 int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
 {
-  /* define common variables */
   int32_t tmpint32;
-  MYLDAP_SEARCH *search;
-  MYLDAP_ENTRY *entry;
-  int rc=PAM_AUTH_ERR;
-  char uid[256];
-  char svc[256];
-  char pwd[256];
+  int rc;
+  char username[256];
   char userdn[256];
+  char servicename[64];
+  char password[64];
   /* read request parameters */
-  READ_STRING_BUF2(fp,uid,sizeof(uid));
-  if (!isvalidname(uid)) {
-    log_log(LOG_WARNING,"nslcd_pam_authc(%s): invalid user name",uid);
-    /* write a response message anyway */
-    /* TODO: probably just write NSLCD_RESULT_END to indicate failure */
-    WRITE_INT32(fp,NSLCD_VERSION);
-    WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHC);
-    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-    WRITE_INT32(fp,PAM_USER_UNKNOWN); /* authok */
-    WRITE_INT32(fp,PAM_SUCCESS);  /* authz */
-    WRITE_STRING(fp,"");    /* dn */
-    WRITE_STRING(fp,"");    /* authzmsg */
-    WRITE_STRING(fp,"");    /* tmpluser */
-    return -1;
-  }
-  READ_STRING_BUF2(fp,svc,sizeof(svc));
-  READ_STRING_BUF2(fp,pwd,sizeof(pwd));
+  READ_STRING_BUF2(fp,username,sizeof(username));
+  READ_STRING_BUF2(fp,userdn,sizeof(userdn));
+  READ_STRING_BUF2(fp,servicename,sizeof(servicename));
+  READ_STRING_BUF2(fp,password,sizeof(password));
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_pam_authc(%s,%s,passwd)",uid,svc);
+  log_log(LOG_DEBUG,"nslcd_pam_authc(\"%s\",\"%s\",\"%s\")",username,userdn,servicename);
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHC);
-  /* set up a new connection */
-
-  /* FIXME: implement setting up connection, perform uid->DN expansion
-            and bind with DN and pwd */
-
-  /* maye use existing session for uid2dn lookup and make new connection
-     just for binding, also be sure to clean up session (probably set up a
-     session here, call another function to get the results, etc) */
-
-  /* perform uid to DN translation */
-  if (uid2dn(session,uid,userdn,sizeof(userdn))==NULL)
+  /* validate request */
+  if (!isvalidname(username))
   {
-    log_log(LOG_WARNING,"nslcd_pam_authc(%s): user not found",uid);
-    /* return error to client */
-    /* FIXME: probably return NSLCD_RESULT_END instead */
+    log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): invalid user name",username);
+    /* write a response message anyway */
+    /* TODO: maybe just write NSLCD_RESULT_END to indicate failure */
     WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-    WRITE_INT32(fp,PAM_USER_UNKNOWN); /* authok */
-    WRITE_INT32(fp,PAM_SUCCESS);  /* authz */
-    WRITE_STRING(fp,"");          /* dn */
-    WRITE_STRING(fp,"");    /* authzmsg */
-    WRITE_STRING(fp,"");    /* tmpluser */
+    WRITE_STRING(fp,username);
+    WRITE_STRING(fp,userdn);
+    WRITE_INT32(fp,NSLCD_PAM_USER_UNKNOWN); /* authc */
+    WRITE_INT32(fp,NSLCD_PAM_USER_UNKNOWN); /* authz */
+    WRITE_STRING(fp,"invalid username");    /* authzmsg */
+    WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
   }
-
-  /* TODO: perform bind
-
-  switch(rs.sr_err) {
-  case LDAP_SUCCESS: rc = PAM_SUCCESS; break;
-  case LDAP_INVALID_CREDENTIALS: rc = PAM_AUTH_ERR; break;
-  default: rc = PAM_AUTH_ERR; break;
-  }*/
-
+  if (userdn[0]=='\0')
+  {
+    /* perform username to DN translation */
+    if (uid2dn(session,username,userdn,sizeof(userdn))==NULL)
+    {
+      log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): user not found",username);
+      /* return error to client */
+      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+      WRITE_STRING(fp,username);
+      WRITE_STRING(fp,userdn);
+      WRITE_INT32(fp,NSLCD_PAM_USER_UNKNOWN); /* authc */
+      WRITE_INT32(fp,NSLCD_PAM_USER_UNKNOWN); /* authz */
+      WRITE_STRING(fp,"unknown username");    /* authzmsg */
+      WRITE_INT32(fp,NSLCD_RESULT_END);
+      return -1;
+    }
+  }
+  /* try authentication */
+  rc=try_bind(userdn,password);
+  /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-  WRITE_INT32(fp,rc); /* authok */
-  WRITE_INT32(fp,PAM_SUCCESS);  /* authz */
-  WRITE_STRING(fp,userdn); /* dn */
-  WRITE_STRING(fp,"");    /* authzmsg */
-  WRITE_STRING(fp,"");    /* tmpluser */
-
+  WRITE_STRING(fp,username); /* TODO: get canonical name */
+  WRITE_STRING(fp,userdn);
+  WRITE_INT32(fp,rc);  /* authc */
+  WRITE_INT32(fp,rc);  /* authz */
+  WRITE_STRING(fp,""); /* authzmsg */
+  WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }
 
 /* check authorisation of the user */
 int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
 {
-/*
-  struct berval dn, svc;
-  struct berval authzmsg = BER_BVNULL;
   int32_t tmpint32;
-  char dnc[1024];
-  char svcc[256];
-
-  READ_STRING_BUF2(fp,dnc,sizeof(dnc));
-  dn.bv_val = dnc;
-  dn.bv_len = tmpint32;
-  READ_STRING_BUF2(fp,svcc,sizeof(svcc));
-  svc.bv_val = svcc;
-  svc.bv_len = tmpint32;
-
-  Debug(LDAP_DEBUG_TRACE,"nssov_pam_authz(%s)\n",dn.bv_val,0,0);
-
+  int rc;
+  char username[256];
+  char userdn[256];
+  char servicename[64];
+  /* read request parameters */
+  READ_STRING_BUF2(fp,username,sizeof(username));
+  READ_STRING_BUF2(fp,userdn,sizeof(userdn));
+  READ_STRING_BUF2(fp,servicename,sizeof(servicename));
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_pam_authz(\"%s\",\"%s\",\"%s\")",username,userdn,servicename);
+  /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHZ);
+  /* validate request */
+  if (!isvalidname(username))
+  {
+    log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): invalid user name",username);
+    /* write a response message anyway */
+    /* TODO: maybe just write NSLCD_RESULT_END to indicate failure */
+    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+    WRITE_STRING(fp,username);
+    WRITE_STRING(fp,userdn);
+    WRITE_INT32(fp,NSLCD_PAM_USER_UNKNOWN); /* authz */
+    WRITE_STRING(fp,"invalid username");    /* authzmsg */
+    WRITE_INT32(fp,NSLCD_RESULT_END);
+    return -1;
+  }
+  if (userdn[0]=='\0')
+  {
+    /* perform username to DN translation */
+    if (uid2dn(session,username,userdn,sizeof(userdn))==NULL)
+    {
+      log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): user not found",username);
+      /* return error to client */
+      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+      WRITE_STRING(fp,username);
+      WRITE_STRING(fp,userdn);
+      WRITE_INT32(fp,NSLCD_PAM_USER_UNKNOWN); /* authz */
+      WRITE_STRING(fp,"unknown username");    /* authzmsg */
+      WRITE_INT32(fp,NSLCD_RESULT_END);
+      return -1;
+    }
+  }
+  /* try dn to username lookup */
+  if (dn2uid(session,userdn,username,sizeof(username))==NULL)
+  {
+    log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): username not found",userdn);
+    /* return error to client */
+    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+    WRITE_STRING(fp,username);
+    WRITE_STRING(fp,userdn);
+    WRITE_INT32(fp,NSLCD_PAM_USER_UNKNOWN); /* authz */
+    WRITE_STRING(fp,"unknown username");    /* authzmsg */
+    WRITE_INT32(fp,NSLCD_RESULT_END);
+    return -1;
+  }
+  /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-  WRITE_INT32(fp,PAM_SUCCESS);
-  WRITE_BERVAL(fp,&authzmsg);
-*/
+  WRITE_STRING(fp,username);
+  WRITE_STRING(fp,userdn);
+  WRITE_INT32(fp,rc);  /* authz */
+  WRITE_STRING(fp,""); /* authzmsg */
+  WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }
 
 int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session)
 {
-/*
-  struct berval dn, svc;
   int32_t tmpint32;
-  char dnc[1024];
-  char svcc[256];
-
-  READ_STRING_BUF2(fp,dnc,sizeof(dnc));
-  dn.bv_val = dnc;
-  dn.bv_len = tmpint32;
-  READ_STRING_BUF2(fp,svcc,sizeof(svcc));
-  svc.bv_val = svcc;
-  svc.bv_len = tmpint32;
-
-  Debug(LDAP_DEBUG_TRACE,"nssov_pam_sess_o(%s)\n",dn.bv_val,0,0);
-
+  int rc;
+  char username[256];
+  char userdn[256];
+  char servicename[64];
+  char tty[64],rhost[64],ruser[256];
+  int32_t sessionid;
+  /* read request parameters */
+  READ_STRING_BUF2(fp,username,sizeof(username));
+  READ_STRING_BUF2(fp,userdn,sizeof(userdn));
+  READ_STRING_BUF2(fp,servicename,sizeof(servicename));
+  READ_STRING_BUF2(fp,tty,sizeof(tty));
+  READ_STRING_BUF2(fp,rhost,sizeof(rhost));
+  READ_STRING_BUF2(fp,ruser,sizeof(ruser));
+  READ_INT32(fp,sessionid);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_pam_sess_o(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")",
+                    username,userdn,servicename,tty,rhost,ruser);
+  /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_SESS_O);
+  /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-*/
+  WRITE_INT32(fp,12345);  /* session id */
+  WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }
 
 int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session)
 {
-/*
-  struct berval dn, svc;
   int32_t tmpint32;
-  char dnc[1024];
-  char svcc[256];
-
-  READ_STRING_BUF2(fp,dnc,sizeof(dnc));
-  dn.bv_val = dnc;
-  dn.bv_len = tmpint32;
-  READ_STRING_BUF2(fp,svcc,sizeof(svcc));
-  svc.bv_val = svcc;
-  svc.bv_len = tmpint32;
-
-  Debug(LDAP_DEBUG_TRACE,"nssov_pam_sess_c(%s)\n",dn.bv_val,0,0);
-
+  int rc;
+  char username[256];
+  char userdn[256];
+  char servicename[64];
+  char tty[64],rhost[64],ruser[256];
+  int32_t sessionid;
+  /* read request parameters */
+  READ_STRING_BUF2(fp,username,sizeof(username));
+  READ_STRING_BUF2(fp,userdn,sizeof(userdn));
+  READ_STRING_BUF2(fp,servicename,sizeof(servicename));
+  READ_STRING_BUF2(fp,tty,sizeof(tty));
+  READ_STRING_BUF2(fp,rhost,sizeof(rhost));
+  READ_STRING_BUF2(fp,ruser,sizeof(ruser));
+  READ_INT32(fp,sessionid);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_pam_sess_c(\"%s\",\"%s\",\"%s\",%d)",
+                    username,userdn,servicename,(int)sessionid);
+  /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_SESS_C);
+  /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-*/
+  WRITE_INT32(fp,0);  /* session id */
+  WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }
 

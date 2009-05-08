@@ -68,6 +68,11 @@ typedef struct myldap_entry MYLDAP_ENTRY;
    uses the configuration to find the URLs to attempt connections to. */
 MUST_USE MYLDAP_SESSION *myldap_create_session(void);
 
+/* Set alternative credentials for the session and try to open a connection
+   with those credentials. Returns an LDAP status code. */
+int myldap_set_credentials(MYLDAP_SESSION *session,const char *dn,
+                           const char *password);
+
 /* Closes all pending searches and deallocates any memory that is allocated
    with these searches. This does not close the session. */
 void myldap_session_cleanup(MYLDAP_SESSION *session);
@@ -122,7 +127,7 @@ MUST_USE const char *myldap_cpy_rdn_value(const char *dn,const char *attr,
 /* Escapes characters in a string for use in a search filter. */
 MUST_USE int myldap_escape(const char *src,char *buffer,size_t buflen);
 
-/* Set the debug level globally. */
+/* Set the debug level globally. Returns an LDAP status code. */
 int myldap_set_debuglevel(int i);
 
 #endif /* not _MYLDAP_H */

@@ -96,6 +96,10 @@ struct ldap_session
 {
   /* the connection */
   LDAP *ld;
+  /* the username to bind with */
+  char binddn[256];
+  /* the password to bind with if any */
+  char bindpw[64];
   /* timestamp of last activity */
   time_t lastactivity;
   /* index into ldc_uris: currently connected LDAP uri */
@@ -277,6 +281,8 @@ static MYLDAP_SESSION *myldap_session_new(void)
   }
   /* initialize the session */
   session->ld=NULL;
+  session->binddn[0]='\0';
+  session->bindpw[0]='\0';
   session->lastactivity=0;
   session->current_uri=0;
   for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
@@ -371,6 +377,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
 #ifndef HAVE_SASL_INTERACT_T
   struct berval cred;
 #endif /* not HAVE_SASL_INTERACT_T */
+#endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
 #ifdef LDAP_OPT_X_TLS
   /* check if StartTLS is requested */
   if (nslcd_cfg->ldc_ssl_on==SSL_START_TLS)
@@ -386,6 +393,15 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
     }
   }
 #endif /* LDAP_OPT_X_TLS */
+  /* check if the binddn and bindpw are overwritten in the session */
+  if (session->binddn[0]!='\0')
+  {
+    /* do a simple bind */
+    log_log(LOG_DEBUG,"ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",session->binddn,
+                      (session->bindpw[0]!='\0')?"\"*****\"":"empty",uri);
+    return ldap_simple_bind_s(session->ld,session->binddn,session->bindpw);
+  }
+#ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
   /* TODO: store this information in the session */
   if (!nslcd_cfg->ldc_usesasl)
   {
@@ -668,6 +684,19 @@ static int do_open(MYLDAP_SESSION *session)
   log_log(LOG_INFO,"connected to LDAP server %s",
                    nslcd_cfg->ldc_uris[session->current_uri].uri);
   return LDAP_SUCCESS;
+}
+
+/* Set alternative credentials for the session. */
+int myldap_set_credentials(MYLDAP_SESSION *session,const char *dn,
+                           const char *password)
+{
+  /* copy dn and password into session */
+  strncpy(session->binddn,dn,sizeof(session->binddn));
+  session->binddn[sizeof(session->binddn)-1]='\0';
+  strncpy(session->bindpw,password,sizeof(session->bindpw));
+  session->bindpw[sizeof(session->bindpw)-1]='\0';
+  /* try to open a connection */
+  return do_open(session);
 }
 
 static int do_try_search(MYLDAP_SEARCH *search)
