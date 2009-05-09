@@ -2,7 +2,7 @@
    common.h - common functions for NSS lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -120,6 +120,12 @@ TFILE *nslcd_client_open(void)
   TFILE *fp; \
   int32_t tmpint32; \
   enum nss_status retv; \
+  /* check that we have a valid buffer */ \
+  if ((buffer==NULL)||(buflen<=0)) \
+  { \
+      *errnop=EINVAL; \
+      return NSS_STATUS_UNAVAIL; \
+  } \
   /* open socket and write request */ \
   OPEN_SOCK(fp); \
   WRITE_REQUEST(fp,action); \
@@ -150,9 +156,8 @@ TFILE *nslcd_client_open(void)
 #define NSS_BYINT32(action,val,readfn) \
   NSS_BYGEN(action,WRITE_INT32(fp,val),readfn)
 
-/* This macro generates a simple setent() function body. A stream
-   is opened, a request is written and a check is done for
-   a response header. */
+/* This macro generates a simple setent() function body. This closes any
+   open streams so that NSS_GETENT() can open a new file. */
 #define NSS_SETENT(fp) \
   if (fp!=NULL) \
   { \
@@ -161,11 +166,18 @@ TFILE *nslcd_client_open(void)
   } \
   return NSS_STATUS_SUCCESS;
 
-/* This macro generates a getent() function body. A single entry
-   is read with the readfn() function. */
+/* This macro generates a getent() function body. If the stream is not yet
+   open, a new one is opened, a request is written and a check is done for
+   a response header. A single entry is read with the readfn() function. */
 #define NSS_GETENT(fp,action,readfn) \
   int32_t tmpint32; \
   enum nss_status retv; \
+  /* check that we have a valid buffer */ \
+  if ((buffer==NULL)||(buflen<=0)) \
+  { \
+      *errnop=EINVAL; \
+      return NSS_STATUS_UNAVAIL; \
+  } \
   /* check that we have a valid file descriptor */ \
   if (fp==NULL) \
   { \

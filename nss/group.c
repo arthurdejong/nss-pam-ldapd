@@ -2,7 +2,7 @@
    group.c - NSS lookup functions for group database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -130,9 +130,16 @@ enum nss_status _nss_ldap_initgroups_dyn(
         const char *user,gid_t skipgroup,long int *start,
         long int *size,gid_t **groupsp,long int limit,int *errnop)
 {
+/* temporarily map the buffer and buflen names so the check in NSS_BYNAME
+   for validity of the buffer works (renaming the parameters may cause
+   confusion) */
+#define buffer groupsp
+#define buflen limit
   NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,
              user,
              read_gids(fp,skipgroup,start,size,groupsp,limit,errnop));
+#undef buffer
+#undef buflen
 }
 
 /* thread-local file pointer to an ongoing request */
