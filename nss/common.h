@@ -175,6 +175,13 @@ TFILE *nslcd_client_open(void)
   /* check that we have a valid buffer */ \
   if ((buffer==NULL)||(buflen<=0)) \
   { \
+      /* close stream */ \
+      if (fp!=NULL) \
+      { \
+        (void)tio_close(fp); \
+        fp=NULL; \
+      } \
+      /* indicate error */ \
       *errnop=EINVAL; \
       return NSS_STATUS_UNAVAIL; \
   } \
