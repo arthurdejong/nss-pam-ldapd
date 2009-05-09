@@ -197,7 +197,12 @@ then
   cfg_uris "$RET"
   # set search base
   db_get libnss-ldapd/ldap-base
-  cfg_set base "$RET"
+  if [ -n "$RET" ]
+  then
+    cfg_set base "$RET"
+  else
+    cfg_disable base
+  fi
   # set bind dn/pw
   db_get libnss-ldapd/ldap-binddn
   if [ -n "$RET" ]
