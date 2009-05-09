@@ -189,8 +189,11 @@ AC_CHECK_HEADERS(grp.h)
 AC_CHECK_HEADERS(sys/socket.h)
 AC_CHECK_HEADERS(sys/ucred.h)
 AC_CHECK_HEADERS(ucred.h)
-AC_CHECK_HEADERS(security/pam_modules.h)
-AC_CHECK_HEADERS(pam/pam_modules.h)
+if test "x$enable_pam" = "xyes"
+then
+  AC_CHECK_HEADERS(security/pam_modules.h)
+  AC_CHECK_HEADERS(pam/pam_modules.h)
+fi
 
 # set up directory with compatibility replacement files
 AC_CONFIG_LIBOBJ_DIR([compat])
