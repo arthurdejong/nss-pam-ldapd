@@ -1,3 +1,35 @@
+nss-ldapd (0.6.9) unstable; urgency=low
+
+  * produce more detailed logging in debug mode and allow multiple -d options
+    to be specified to also include logging from the LDAP library
+  * some LDAP configuration options are now initialized globally instead of
+    per connection which should fix problems with the tls_reqcert option
+    (closes: #521617)
+  * documentation improvements for the NSLCD protocol used between the NSS
+    module and the nslcd server
+  * imported the new PAM module from the OpenLDAP nssov tree by Howard Chu
+    (note that the PAM-related NSLCD protocol is not yet finalised and this
+    module is not built by default)
+  * in configure script allow disabling of building certain components
+  * fix a problem with writing alternate service names and add checks for
+    validity of passed buffer in NSS module (closes: #527246)
+  * ask the user whether LDAP should be removed from /etc/nsswitch.conf at
+    package removal time (closes: #523483)
+  * remove /var/run/nslcd on package removal
+  * updated Danish debconf translation by Jonas Smedegaard (closes: #525075)
+  * updated Japanese debconf translation by Kenshi Muto (closes: #525085)
+  * updated Portugese debconf translation by Américo Monteiro
+    (closes: #525530)
+  * added Italian debconf translation by Vincenzo Campanella (closes: #525784)
+  * updated French debconf translation by Guillaume Delacour (closes: #526638)
+  * updated Swedish debconf translation by Martin Ågren (closes: #526757)
+  * updated Russian debconf translation by Yuri Kozlov (closes: #527102)
+  * updated Spanish debconf translation by Francisco Javier Cuadrado
+    (closes: #527242)
+  * added Galician debconf translation by Marce Villarino (closes: #527327)
+
+ -- Arthur de Jong <adejong@debian.org>  Sat, 09 May 2009 22:00:00 +0200
+
 nss-ldapd (0.6.8) unstable; urgency=high
 
   * SECURITY FIX: the nss-ldapd.conf file that is installed was created
