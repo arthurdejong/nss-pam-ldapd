@@ -238,7 +238,6 @@ AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,,[AC_CHECK_FUNCS(ether_aton ether_ntoa)
 
 # checks for types
 AC_C_CONST
-AC_TYPE_SIGNAL
 AC_TYPE_MODE_T
 AC_TYPE_SIZE_T
 AC_TYPE_UID_T

@@ -222,7 +222,7 @@ static const char *signame(int signum)
 }
 
 /* signal handler for closing down */
-static RETSIGTYPE sigexit_handler(int signum)
+static void sigexit_handler(int signum)
 {
   int i;
   nslcd_exitsignal=signum;
@@ -491,7 +491,7 @@ static void create_pidfile(const char *filename)
 }
 
 /* try to install signal handler and check result */
-static void install_sighandler(int signum,RETSIGTYPE (*handler) (int))
+static void install_sighandler(int signum,void (*handler) (int))
 {
   struct sigaction act;
   memset(&act,0,sizeof(struct sigaction));
