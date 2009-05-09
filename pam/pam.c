@@ -20,6 +20,11 @@
    02110-1301 USA
 */
 
+/*
+   WARNING: this code is under development and the details of the protocol
+            may change between releases.
+*/
+
 #include "config.h"
 
 #include <stdlib.h>
@@ -467,7 +472,7 @@ static enum nss_status pam_do_sess(
 	pam_handle_t *pamh,pld_ctx *ctx,int action,int *errnop)
 {
 	const char *svc = NULL, *tty = NULL, *rhost = NULL, *ruser = NULL;
-	
+
 	pam_get_item (pamh, PAM_SERVICE, (CONST_ARG void **) &svc);
 	pam_get_item (pamh, PAM_TTY, (CONST_ARG void **) &tty);
 	pam_get_item (pamh, PAM_RHOST, (CONST_ARG void **) &rhost);
