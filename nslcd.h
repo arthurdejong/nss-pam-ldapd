@@ -180,15 +180,73 @@
 #define NSLCD_ACTION_SHADOW_BYNAME      2001
 #define NSLCD_ACTION_SHADOW_ALL         2005
 
-/* PAM-related requests. The requests and responses need to be defined. */
+/* PAM-related requests. The request parameters for all these requests
+   begin with:
+     STRING  user name
+     STRING  DN (if value is known already, otherwise empty)
+     STRING  service name
+   all requests, except the SESSION requests start the result value with:
+     STRING  user name (cannonical name)
+     STRING  DN (can be used to speed up requests) */
+
+/*
+   WARNING: the PAM code is under development and the details of the protocol
+            may change between releases.
+*/
+
+/* PAM authentication check request. The extra request values are:
+     STRING  password
+   and the result value ends with:
+     INT32   authc NSLCD_PAM_* result code
+     INT32   authz NSLCD_PAM_* result code
+     STRING  authorisation error message */
 #define NSLCD_ACTION_PAM_AUTHC         20001
+
+/* PAM authorisation check request. This request does not have any extra
+   request values. The result value ends with:
+     INT32   authz NSLCD_PAM_* result code
+     STRING  authorisation error message */
 #define NSLCD_ACTION_PAM_AUTHZ         20002
+
+/* PAM session open and close requests. These requests have the following
+   extra request values:
+     STRING tty
+     STRING rhost
+     STRING ruser
+     INT32 session id (ignored for SESS_O)
+   and these calls only return the session ID:
+     INT32 session id
+   The SESS_C must contain the ID that is retured by SESS_O to close the
+   correct session. */
 #define NSLCD_ACTION_PAM_SESS_O        20003
 #define NSLCD_ACTION_PAM_SESS_C        20004
+
+/* PAM password modification request. This requests has the following extra
+   request values:
+     STRING old password
+     STRING new password
+   and returns there extra result values:
+     INT32   authz NSLCD_PAM_* result code
+     STRING  authorisation error message */
 #define NSLCD_ACTION_PAM_PWMOD         20005
 
 /* Request result codes. */
 #define NSLCD_RESULT_BEGIN                 0
 #define NSLCD_RESULT_END                   3
+
+/* Partial list of PAM result codes. */
+#define NSLCD_PAM_SUCCESS             0 /* everything ok */
+#define NSLCD_PAM_PERM_DENIED         6 /* Permission denied */
+#define NSLCD_PAM_AUTH_ERR            7 /* Authc failure */
+#define NSLCD_PAM_CRED_INSUFFICIENT   8 /* Cannot access authc data */
+#define NSLCD_PAM_AUTHINFO_UNAVAIL    9 /* Cannot retrieve authc info */
+#define NSLCD_PAM_USER_UNKNOWN       10 /* User not known */
+#define NSLCD_PAM_MAXTRIES           11 /* Retry limit reached */
+#define NSLCD_PAM_NEW_AUTHTOK_REQD   12 /* Password expired */
+#define NSLCD_PAM_ACCT_EXPIRED       13 /* Account expired */
+#define NSLCD_PAM_SESSION_ERR        14 /* Cannot make/remove session record */
+#define NSLCD_PAM_AUTHTOK_DISABLE_AGING 23 /* Password aging disabled */
+#define NSLCD_PAM_IGNORE             25 /* Ignore module */
+#define NSLCD_PAM_ABORT              26 /* Fatal error */
 
 #endif /* not _NSLCD_H */

@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,17 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-SUBDIRS = compat common nss nslcd man tests
+if ENABLE_NSS
+  MAYBE_NSS = nss
+endif
+if ENABLE_PAM
+  MAYBE_PAM = pam
+endif
+if ENABLE_NSLCD
+  ENABLE_NSLCD = nslcd
+endif
+
+SUBDIRS = compat common $(MAYBE_NSS) $(MAYBE_PAM) $(ENABLE_NSLCD) man tests
 
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/copyright debian/rules \

@@ -105,6 +105,37 @@ do
   fi
 done
 
+# check whether the NSS module should be built
+AC_MSG_CHECKING([whether to build the NSS module])
+AC_ARG_ENABLE(nss,
+              AS_HELP_STRING([--disable-nss],
+                             [build the NSS module [[default=yes]]]),,
+              [enable_nss="yes"])
+AC_MSG_RESULT($enable_nss)
+AM_CONDITIONAL([ENABLE_NSS], [test "x$enable_nss" = "xyes"])
+
+# check whether the PAM module should be built
+AC_MSG_CHECKING([whether to build the PAM module])
+AC_ARG_ENABLE(pam,
+              AS_HELP_STRING([--disable-pam],
+                             [build the PAM module [[default=yes]]]),,
+              [enable_pam="no"])
+AC_MSG_RESULT($enable_pam)
+AM_CONDITIONAL([ENABLE_PAM], [test "x$enable_pam" = "xyes"])
+if test "x$enable_pam" = "xyes"
+then
+  AC_MSG_WARN([the PAM module is experimental and support in nslcd is not yet finished])
+fi
+
+# check whether the nslcd daemon should be built
+AC_MSG_CHECKING([whether to build the nslcd server])
+AC_ARG_ENABLE(nslcd,
+              AS_HELP_STRING([--disable-nslcd],
+                             [build the nslcd server [[default=yes]]]),,
+              [enable_nslcd="yes"])
+AC_MSG_RESULT($enable_nslcd)
+AM_CONDITIONAL([ENABLE_NSLCD], [test "x$enable_nslcd" = "xyes"])
+
 AC_ARG_WITH(ldap-lib,
             AS_HELP_STRING([--with-ldap-lib=TYPE],
                            [select ldap library (auto|netscape5|netscape4|netscape3|umich|openldap) @<:@auto@:>@]))
@@ -162,6 +193,11 @@ AC_CHECK_HEADERS(grp.h)
 AC_CHECK_HEADERS(sys/socket.h)
 AC_CHECK_HEADERS(sys/ucred.h)
 AC_CHECK_HEADERS(ucred.h)
+if test "x$enable_pam" = "xyes"
+then
+  AC_CHECK_HEADERS(security/pam_modules.h)
+  AC_CHECK_HEADERS(pam/pam_modules.h)
+fi
 
 # set up directory with compatibility replacement files
 AC_CONFIG_LIBOBJ_DIR([compat])
@@ -349,6 +385,6 @@ AC_SUBST(nss_ldap_so_LIBS)
 AC_SUBST(nslcd_LIBS)
 
 # generate files
-AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile
-                 nss/Makefile nslcd/Makefile man/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile
+                 pam/Makefile nslcd/Makefile man/Makefile tests/Makefile])
 AC_OUTPUT
