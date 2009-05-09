@@ -1,3 +1,188 @@
+2009-05-09 20:53  arthur
+
+	* [r880] debian/libnss-ldapd.postinst: if base is blank disable the
+	  base option to let nslcd attempt search base autodiscovery
+
+2009-05-09 20:01  arthur
+
+	* [r879] nss/common.h: also close any open stream on buffer error
+
+2009-05-09 19:53  arthur
+
+	* [r878] nss/common.h, nss/group.c: check the buffer passed by
+	  Glibc for validity
+
+2009-05-09 19:52  arthur
+
+	* [r877] nslcd-common.h: make sure that when writing a list of
+	  strings the number of strings is always checked when excluding an
+	  entry
+
+2009-05-09 09:27  arthur
+
+	* [r876] ., AUTHORS, Makefile.am, configure.ac, debian,
+	  debian/copyright, nslcd.h, pam: import the PAM module from the
+	  nss-ldapd branch (r875) based on the OpenLDAP nssov tree and
+	  allow configuring which modules should be built (PAM module
+	  disabled by default)
+
+2009-05-09 07:50  arthur
+
+	* [r872] configure.ac, nslcd/nslcd.c: according to autoupdate
+	  RETSIGTYPE can be considered void always
+
+2009-05-08 10:29  arthur
+
+	* [r868] debian/copyright: aggregate years
+
+2009-05-07 22:40  arthur
+
+	* [r867] INSTALL, config.guess, config.sub: include updated files
+
+2009-05-07 22:14  arthur
+
+	* [r864] nslcd.h, nslcd/netgroup.c, nss/netgroup.c: prefix
+	  NETGROUP_TYPE macros with NSLCD_
+
+2009-05-07 20:36  arthur
+
+	* [r861] debian/po/gl.po: added Galician (gl) translation of
+	  debconf templates by Marce Villarino <mvillarino@gmail.com>
+
+2009-05-06 18:48  arthur
+
+	* [r860] debian/po/es.po: updated Spanish (es) translation of
+	  debconf templates by Francisco Javier Cuadrado
+	  <fcocuadrado@gmail.com>
+
+2009-05-05 20:55  arthur
+
+	* [r859] debian/po/ru.po: updated Russian (ru) translation of
+	  debconf templates by Yuri Kozlov <yuray@komyakino.ru>
+
+2009-05-05 20:48  arthur
+
+	* [r858] debian/po/ru.po: convert translation to UTF-8
+
+2009-05-03 19:47  arthur
+
+	* [r857] debian/po/sv.po: updated Swedish (sv) translation of
+	  debconf templates by Martin Ågren <martin.agren@gmail.com>
+
+2009-05-02 14:19  arthur
+
+	* [r856] debian/po/fr.po: updated French (fr) translation of
+	  debconf templates by Guillaume Delacour <gui@iroqwa.org>
+
+2009-05-01 15:45  arthur
+
+	* [r855] debian/po/it.po: fix incorrect references to nss-ldap
+	  (without the d at the end)
+
+2009-05-01 15:39  arthur
+
+	* [r854] man/nslcd.8.xml: document that you can specify -d multiple
+	  times
+
+2009-05-01 13:03  arthur
+
+	* [r853] nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c: set most SSL/TLS
+	  related options globally instead of per connection
+
+2009-04-30 08:45  arthur
+
+	* [r852] nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c, nslcd/myldap.h,
+	  nslcd/nslcd.c: move debugging initialisation to
+	  myldap_set_debuglevel() function
+
+2009-04-27 18:24  arthur
+
+	* [r851] debian/po/it.po: added Italian (it) translation of debconf
+	  templates by Vincenzo Campanella <vinz65@gmail.com>
+
+2009-04-25 21:29  arthur
+
+	* [r850] nslcd/myldap.c: produce more logging and get OpenLDAP
+	  logging working by logging to stderr (and implement temporary
+	  workaround for reqcert problems)
+
+2009-04-25 19:15  arthur
+
+	* [r849] nslcd/cfg.h: include ldap.h to ensure that struct
+	  ldap_config will be the same in every file
+
+2009-04-25 14:06  arthur
+
+	* [r848] nslcd/myldap.c: clear errno before ldap calls to get
+	  usable returned errno
+
+2009-04-25 12:32  arthur
+
+	* [r847] debian/po/pt.po: updated Portuguese (pt) translation of
+	  debconf templates by Américo Monteiro <a_monteiro@netcabo.pt>
+
+2009-04-22 19:18  arthur
+
+	* [r846] debian/libnss-ldapd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fr.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po: fix spelling in English debconf template (thanks
+	  Vincenzo Campanella)
+
+2009-04-22 19:12  arthur
+
+	* [r845] debian/po/ja.po: updated Japanese (ja) translation of
+	  debconf templates by Kenshi Muto <kmuto@debian.org>
+
+2009-04-22 19:06  arthur
+
+	* [r844] debian/po/da.po: updated Danish (da) translation of
+	  debconf templates by Jonas Smedegaard <dr@jones.dk>
+
+2009-04-21 19:25  arthur
+
+	* [r843] debian/libnss-ldapd.postrm, debian/libnss-ldapd.templates,
+	  debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fr.po,
+	  debian/po/ja.po, debian/po/nl.po, debian/po/pt.po,
+	  debian/po/pt_BR.po, debian/po/ru.po, debian/po/sv.po,
+	  debian/po/templates.pot, debian/po/vi.po: ask on removal and on
+	  purge whether to edit /etc/nsswitch.conf and remove ldap entries
+
+2009-04-19 13:51  arthur
+
+	* [r834] nslcd.h, nslcd/alias.c, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/netgroup.c, nslcd/network.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c,
+	  nss/common.h, nss/group.c: clear up protocol description in
+	  nslcd.h, renaming NSLCD_RESULT_SUCCESS to NSLCD_RESULT_BEGIN
+
+2009-04-17 18:57  arthur
+
+	* [r830] nslcd.h: include definitions of PAM-related actions from
+	  current OpenLDAP work in nssov
+
+2009-04-17 18:56  arthur
+
+	* [r829] debian/libnss-ldapd.postrm: fix spelling in comment
+
+2009-04-04 10:02  arthur
+
+	* [r828] debian/libnss-ldapd.postrm: remove /var/run/nslcd on
+	  package removal
+
+2009-03-31 07:05  arthur
+
+	* [r827] debian/changelog: add CVE identifier
+
+2009-03-22 21:52  arthur
+
+	* [r825] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.8 release
+
 2009-03-22 21:20  arthur
 
 	* [r824] README, debian/copyright: update copyright year

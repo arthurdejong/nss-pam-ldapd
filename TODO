@@ -1,12 +1,9 @@
 probably before we can call this stable
 ---------------------------------------
 * find problem with reachability of LDAP server
-* Debian package: protect /etc/nss-ldapd.conf if bindpw is used
 
 other items
 -----------
-* probably document that you should use libpam-ldap for authentication without
-  exposing the passwords through NSS
 * document test suite (instructions for setting up environment (server), LDIF
   file, nsswitch.conf and nss-ldapd.conf)
 * write more unit tests
@@ -39,20 +36,13 @@ other items
 * see if we can use LD_LIBRARY_PATH to run our tests in so we don't need to
   install NSS library in system path
 * only parse configuration options if they are available on the platform
-* have some more general mechanism to disable NSS module in nslcd
+* have some more general mechanism to disable NSS lookups from nslcd
 * support searchbase autodetection
-* start the LDAP search and connection in myldap_get_entry() instead of
-  in myldap_search()
-* maybe use datagram sockets for NSS/nslcd communication
 * support multiple search bases
 * support memberOf attribute in passwd entries that map to groups
 * setnetgrent() may need to return an error if the netgroup is undefined
 * handle repeated calls to getent() better (see http://bugzilla.padl.com/show_bug.cgi?id=376)
-* make it possible to define nisNetgroup as a ou-like thing with
-  handling all sub-nisNetgroup objects as memberNisNetgroup, host objects as
-  nisNetgroupTriple (HOST,,), users as (,USER?,)
 * make it possible to start nslcd really early in the boot process and have
   it become available when it determines it can (other timeout/retry mechanism
   on startup)
-* if Debconf base is empty do something more useful
 * make lookups case-sensitive
