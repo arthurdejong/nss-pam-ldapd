@@ -108,6 +108,17 @@ TFILE *nslcd_client_open(void)
    bodies. These functions have very common code so this can
    easily be reused. */
 
+#ifndef SKIP_BUFCHECK
+#define NSS_BUFCHECK \
+  if ((buffer==NULL)||(buflen<=0)) \
+  { \
+      *errnop=EINVAL; \
+      return NSS_STATUS_UNAVAIL; \
+  }
+#else /* SKIP_BUFCHECK */
+#define NSS_BUFCHECK /* empty */
+#endif /* SKIP_BUFCHECK */
+
 /* This is a generic get..by..() generation macro. The action
    parameter is the NSLCD_ACTION_.. action, the param is the
    operation for writing the parameter and readfn is the function
@@ -121,11 +132,7 @@ TFILE *nslcd_client_open(void)
   int32_t tmpint32; \
   enum nss_status retv; \
   /* check that we have a valid buffer */ \
-  if ((buffer==NULL)||(buflen<=0)) \
-  { \
-      *errnop=EINVAL; \
-      return NSS_STATUS_UNAVAIL; \
-  } \
+  NSS_BUFCHECK \
   /* open socket and write request */ \
   OPEN_SOCK(fp); \
   WRITE_REQUEST(fp,action); \

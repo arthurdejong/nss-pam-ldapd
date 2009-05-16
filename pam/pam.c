@@ -32,6 +32,9 @@
 #include <errno.h>
 #include <syslog.h>
 
+/* really ugly workaround */
+#define SKIP_BUFCHECK 1
+
 #include "nss/common.h"
 #include "compat/attrs.h"
 
