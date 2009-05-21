@@ -40,11 +40,11 @@
 /* Macro is called to handle errors on read operations. */
 #define ERROR_OUT_READERROR(fp) \
   (void)tio_close(fp); \
-  fp=NULL; \
   return PAM_AUTHINFO_UNAVAIL;
 
 /* Macro is called to handle problems with too small a buffer. */
 #define ERROR_OUT_BUFERROR(fp) \
+  (void)tio_close(fp); \
   return PAM_SYSTEM_ERR;
 
 /* This macro is called if there was a problem with a write
@@ -56,7 +56,6 @@
    NSLCD_RESULT_BEGIN. */
 #define ERROR_OUT_NOSUCCESS(fp) \
   (void)tio_close(fp); \
-  fp=NULL; \
   return PAM_USER_UNKNOWN;
 
 /* This is a generic PAM request generation macro. The action
@@ -70,15 +69,17 @@
 #define PAM_REQUEST(action,writefn,readfn) \
   TFILE *fp; \
   int32_t tmpint32; \
-  int retv; \
+  char *buffer=ctx->buf; \
+  size_t buflen=sizeof(ctx->buf); \
+  size_t bufptr=0; \
   /* open socket and write request */ \
   NSLCD_REQUEST(fp,action,writefn); \
-  /* read response */ \
+  /* read response code */ \
   READ_RESPONSE_CODE(fp); \
-  retv=readfn; \
+  /* read the response */ \
+  readfn; \
   /* close socket and we're done */ \
-  if (retv==PAM_SUCCESS) \
-    (void)tio_close(fp); \
-  return retv;
+  (void)tio_close(fp); \
+  return PAM_SUCCESS;
 
 #endif /* not _PAM_COMMON_H */
