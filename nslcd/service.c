@@ -203,8 +203,8 @@ NSLCD_HANDLE(
   char name[256];
   char protocol[256];
   char filter[1024];
-  READ_STRING_BUF2(fp,name,sizeof(name));
-  READ_STRING_BUF2(fp,protocol,sizeof(protocol));,
+  READ_STRING(fp,name);
+  READ_STRING(fp,protocol);,
   log_log(LOG_DEBUG,"nslcd_service_byname(%s,%s)",name,protocol);,
   NSLCD_ACTION_SERVICE_BYNAME,
   mkfilter_service_byname(name,protocol,filter,sizeof(filter)),
@@ -217,7 +217,7 @@ NSLCD_HANDLE(
   char protocol[256];
   char filter[1024];
   READ_INT32(fp,number);
-  READ_STRING_BUF2(fp,protocol,sizeof(protocol));,
+  READ_STRING(fp,protocol);,
   log_log(LOG_DEBUG,"nslcd_service_bynumber(%d,%s)",number,protocol);,
   NSLCD_ACTION_SERVICE_BYNUMBER,
   mkfilter_service_bynumber(number,protocol,filter,sizeof(filter)),

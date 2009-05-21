@@ -27,45 +27,8 @@
 #include <nss.h>
 
 #include "nslcd.h"
-#include "nslcd-common.h"
+#include "common/nslcd-prot.h"
 #include "compat/attrs.h"
-#include "common/tio.h"
-
-/* returns a socket to the server or NULL on error (see errno),
-   socket should be closed with tio_close() */
-TFILE *nslcd_client_open(void)
-  MUST_USE;
-
-/* These are macors for performing common operations in the nslcd
-   request/response protocol, they are an extension for client
-   applications to the macros defined in nslcd-common.h. */
-
-/* Open a client socket. */
-#define OPEN_SOCK(fp) \
-  if ((fp=nslcd_client_open())==NULL) \
-    { ERROR_OUT_OPENERROR }
-
-/* Write a request header with a request code. */
-#define WRITE_REQUEST(fp,req) \
-  WRITE_INT32(fp,(int32_t)NSLCD_VERSION) \
-  WRITE_INT32(fp,(int32_t)req)
-
-/* Read a response header and check that the returned request
-   code equals the expected code. */
-#define READ_RESPONSEHEADER(fp,req) \
-  READ_TYPE(fp,tmpint32,int32_t); \
-  if (tmpint32!=(int32_t)NSLCD_VERSION) \
-    { ERROR_OUT_READERROR(fp) } \
-  READ_TYPE(fp,tmpint32,int32_t); \
-  if (tmpint32!=(int32_t)(req)) \
-    { ERROR_OUT_READERROR(fp) }
-
-/* Read the response code (the result code of the query) from
-   the stream. */
-#define READ_RESPONSE_CODE(fp) \
-  READ_TYPE(fp,tmpint32,int32_t); \
-  if (tmpint32!=(int32_t)NSLCD_RESULT_BEGIN) \
-    { ERROR_OUT_NOSUCCESS(fp,tmpint32) }
 
 /* These are macros for handling read and write problems, they are
    NSS specific due to the return code so are defined here. They
@@ -98,7 +61,7 @@ TFILE *nslcd_client_open(void)
 
 /* This macro is called if the read status code is not
    NSLCD_RESULT_BEGIN. */
-#define ERROR_OUT_NOSUCCESS(fp,retv) \
+#define ERROR_OUT_NOSUCCESS(fp) \
   (void)tio_close(fp); \
   fp=NULL; \
   return NSS_STATUS_NOTFOUND;
@@ -108,20 +71,9 @@ TFILE *nslcd_client_open(void)
    bodies. These functions have very common code so this can
    easily be reused. */
 
-#ifndef SKIP_BUFCHECK
-#define NSS_BUFCHECK \
-  if ((buffer==NULL)||(buflen<=0)) \
-  { \
-      *errnop=EINVAL; \
-      return NSS_STATUS_UNAVAIL; \
-  }
-#else /* SKIP_BUFCHECK */
-#define NSS_BUFCHECK /* empty */
-#endif /* SKIP_BUFCHECK */
-
 /* This is a generic get..by..() generation macro. The action
-   parameter is the NSLCD_ACTION_.. action, the param is the
-   operation for writing the parameter and readfn is the function
+   parameter is the NSLCD_ACTION_.. action, the writefn is the
+   operation for writing the parameters and readfn is the function
    name for reading a single result entry. The function is assumed
    to have result, buffer, buflen and errnop parameters that define
    the result structure, the user buffer with length and the
@@ -132,14 +84,13 @@ TFILE *nslcd_client_open(void)
   int32_t tmpint32; \
   enum nss_status retv; \
   /* check that we have a valid buffer */ \
-  NSS_BUFCHECK \
+  if ((buffer==NULL)||(buflen<=0)) \
+  { \
+      *errnop=EINVAL; \
+      return NSS_STATUS_UNAVAIL; \
+  } \
   /* open socket and write request */ \
-  OPEN_SOCK(fp); \
-  WRITE_REQUEST(fp,action); \
-  writefn; \
-  WRITE_FLUSH(fp); \
-  /* read response header */ \
-  READ_RESPONSEHEADER(fp,action); \
+  NSLCD_REQUEST(fp,action,writefn); \
   /* read response */ \
   READ_RESPONSE_CODE(fp); \
   retv=readfn; \
@@ -196,11 +147,7 @@ TFILE *nslcd_client_open(void)
   if (fp==NULL) \
   { \
     /* open a new stream and write the request */ \
-    OPEN_SOCK(fp); \
-    WRITE_REQUEST(fp,action); \
-    WRITE_FLUSH(fp); \
-    /* read response header */ \
-    READ_RESPONSEHEADER(fp,action); \
+    NSLCD_REQUEST(fp,action,/* no writefn */); \
   } \
   /* prepare for buffer errors */ \
   tio_mark(fp); \

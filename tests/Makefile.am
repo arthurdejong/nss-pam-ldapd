@@ -74,7 +74,7 @@ test_common_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
                     ../nslcd/myldap.o @nslcd_LIBS@ ../common/libtio.a \
                     ../common/libdict.a ../compat/libcompat.a
 
-common_SOURCES = ../nss/common.c ../nslcd.h ../nss/prototypes.h \
+common_SOURCES = ../common/nslcd-prot.c ../nslcd.h ../nss/prototypes.h \
                  ../common/tio.c ../common/tio.h
 
 test_aliases_SOURCES = test_aliases.c ../nss/aliases.c $(common_SOURCES)

@@ -36,8 +36,8 @@ static enum nss_status read_protoent(
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
-  READ_STRING_BUF(fp,result->p_name);
-  READ_STRINGLIST_NULLTERM(fp,result->p_aliases);
+  READ_BUF_STRING(fp,result->p_name);
+  READ_BUF_STRINGLIST(fp,result->p_aliases);
   READ_INT32(fp,result->p_proto);
   return NSS_STATUS_SUCCESS;
 }

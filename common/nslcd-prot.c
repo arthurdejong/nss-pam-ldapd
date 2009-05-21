@@ -1,5 +1,5 @@
 /*
-   common.c - common functions for NSS lookups
+   nslcd-prot.c - common functions for NSLCD lookups
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008 Arthur de Jong
@@ -32,12 +32,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <nss.h>
 #include <string.h>
 
 #include "nslcd.h"
-#include "common.h"
-#include "common/tio.h"
+#include "nslcd-prot.h"
 
 /* buffer sizes for I/O */
 #define READBUFFER_MINSIZE 1024

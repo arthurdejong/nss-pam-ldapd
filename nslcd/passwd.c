@@ -461,7 +461,7 @@ NSLCD_HANDLE(
   passwd,byname,
   char name[256];
   char filter[1024];
-  READ_STRING_BUF2(fp,name,sizeof(name));
+  READ_STRING(fp,name);
   if (!isvalidname(name)) {
     log_log(LOG_WARNING,"nslcd_passwd_byname(%s): invalid user name",name);
     return -1;

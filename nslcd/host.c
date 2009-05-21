@@ -153,7 +153,7 @@ NSLCD_HANDLE(
   host,byname,
   char name[256];
   char filter[1024];
-  READ_STRING_BUF2(fp,name,sizeof(name));,
+  READ_STRING(fp,name);,
   log_log(LOG_DEBUG,"nslcd_host_byname(%s)",name);,
   NSLCD_ACTION_HOST_BYNAME,
   mkfilter_host_byname(name,filter,sizeof(filter)),

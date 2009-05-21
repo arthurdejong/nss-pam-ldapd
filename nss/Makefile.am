@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007 Arthur de Jong
+# Copyright (C) 2006, 2007, 2009 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -28,15 +28,15 @@ AM_CFLAGS = -fPIC
 NSS_VERS = 2
 NSS_LDAP_NSS_VERSIONED = libnss_ldap.so.$(NSS_VERS)
 
-nss_ldap_so_SOURCES = common.c common.h prototypes.h \
-                      ../nslcd.h ../nslcd-common.h \
+nss_ldap_so_SOURCES = common.h prototypes.h \
+                      ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h \
                       aliases.c ethers.c group.c hosts.c netgroup.c \
                       networks.c passwd.c protocols.c rpc.c services.c \
                       shadow.c
 nss_ldap_so_LDFLAGS = -shared -Wl,-soname,$(NSS_LDAP_NSS_VERSIONED) \
                       -Wl,--version-script,\$(srcdir)/exports.linux
-nss_ldap_so_LDADD = @nss_ldap_so_LIBS@ ../common/libtio.a
+nss_ldap_so_LDADD = @nss_ldap_so_LIBS@ ../common/libtio.a ../common/libprot.a
 
 EXTRA_DIST = exports.linux
 

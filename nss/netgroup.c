@@ -34,7 +34,7 @@
 /* we redefine this here because we need to return NSS_STATUS_RETURN
    instead of NSS_STATUS_NOTFOUND */
 #undef ERROR_OUT_NOSUCCESS
-#define ERROR_OUT_NOSUCCESS(fp,retv) \
+#define ERROR_OUT_NOSUCCESS(fp) \
   (void)tio_close(fp); \
   fp=NULL; \
   return NSS_STATUS_RETURN;
@@ -53,28 +53,28 @@ static enum nss_status read_netgrent(
   {
     /* the response is a reference to another netgroup */
     result->type=group_val;
-    READ_STRING_BUF(fp,result->val.group);
+    READ_BUF_STRING(fp,result->val.group);
   }
   else if (type==NSLCD_NETGROUP_TYPE_TRIPLE)
   {
     /* the response is a host/user/domain triple */
     result->type=triple_val;
     /* read host and revert to NULL on empty string */
-    READ_STRING_BUF(fp,result->val.triple.host);
+    READ_BUF_STRING(fp,result->val.triple.host);
     if (result->val.triple.host[0]=='\0')
     {
       result->val.triple.host=NULL;
       bufptr--; /* free unused space */
     }
     /* read user and revert to NULL on empty string */
-    READ_STRING_BUF(fp,result->val.triple.user);
+    READ_BUF_STRING(fp,result->val.triple.user);
     if (result->val.triple.user[0]=='\0')
     {
       result->val.triple.user=NULL;
       bufptr--; /* free unused space */
     }
     /* read domain and revert to NULL on empty string */
-    READ_STRING_BUF(fp,result->val.triple.domain);
+    READ_BUF_STRING(fp,result->val.triple.domain);
     if (result->val.triple.domain[0]=='\0')
     {
       result->val.triple.domain=NULL;
@@ -102,12 +102,7 @@ enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent UNUSED
   if ((group==NULL)||(group[0]=='\0'))
     return NSS_STATUS_UNAVAIL;
   /* open a new stream and write the request */
-  OPEN_SOCK(netgrentfp);
-  WRITE_REQUEST(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME);
-  WRITE_STRING(netgrentfp,group);
-  WRITE_FLUSH(netgrentfp);
-  /* read response header */
-  READ_RESPONSEHEADER(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME);
+  NSLCD_REQUEST(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,WRITE_STRING(netgrentfp,group));
   return NSS_STATUS_SUCCESS;
 }
 

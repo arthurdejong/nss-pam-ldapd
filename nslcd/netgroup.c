@@ -232,7 +232,7 @@ NSLCD_HANDLE(
   netgroup,byname,
   char name[256];
   char filter[1024];
-  READ_STRING_BUF2(fp,name,sizeof(name));,
+  READ_STRING(fp,name);,
   log_log(LOG_DEBUG,"nslcd_netgroup_byname(%s)",name);,
   NSLCD_ACTION_NETGROUP_BYNAME,
   mkfilter_netgroup_byname(name,filter,sizeof(filter)),

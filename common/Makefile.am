@@ -17,12 +17,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-noinst_LIBRARIES = libtio.a libdict.a
+noinst_LIBRARIES = libtio.a libprot.a libdict.a
 
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = -fPIC
 
+EXTRA_DIST = nslcd-prot.h
+
 libtio_a_SOURCES = tio.c tio.h
+
+libprot_a_SOURCES = nslcd-prot.c nslcd-prot.h
 
 libdict_a_SOURCES = dict.c dict.h \
                     set.c set.h

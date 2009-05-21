@@ -1,6 +1,5 @@
 /*
-   nslcd-common.h - helper macros for reading and writing in
-                    protocol streams
+   nslcd-prot.h - helper macros for reading and writing in protocol streams
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2009 Arthur de Jong
@@ -21,10 +20,23 @@
    02110-1301 USA
 */
 
-#ifndef _NSLCD_COMMON_H
-#define _NSLCD_COMMON_H 1
+#ifndef _NSLCD_PROT_H
+#define _NSLCD_PROT_H 1
 
-#include <stdio.h>
+#include "tio.h"
+
+/* If you use these macros you should define the following macros to
+   handle error conditions (these marcos should clean up and return from the
+   function):
+     ERROR_OUT_WRITEERROR(fp)
+     ERROR_OUT_READERROR(fp)
+     ERROR_OUT_BUFERROR(fp)
+     ERROR_OUT_NOSUCCESS(fp) */
+
+
+/* Debugging marcos that can be used to enable detailed protocol logging,
+   pass -DDEBUG_PROT to do overall protocol debugging, and -DDEBUG_PROT_DUMP
+   to dump the actual bytestream. */
 
 #ifdef DEBUG_PROT
 /* define a debugging macro to output logging */
@@ -56,6 +68,7 @@ static void debug_dump(const void *ptr,size_t size)
 /* define an empty debug macro to disable logging */
 #define DEBUG_DUMP(ptr,size)
 #endif /* not DEBUG_PROT_DUMP */
+
 
 /* WRITE marcos, used for writing data, on write error they will
    call the ERROR_OUT_WRITEERROR macro
@@ -94,13 +107,6 @@ static void debug_dump(const void *ptr,size_t size)
       { WRITE(fp,str,tmpint32); } \
   }
 
-#define WRITE_FLUSH(fp) \
-  if (tio_flush(fp)<0) \
-  { \
-    DEBUG_PRINT("WRITE_FLUSH : error: %s",strerror(errno)); \
-    ERROR_OUT_WRITEERROR(fp); \
-  }
-
 #define WRITE_STRINGLIST(fp,arr) \
   /* first determin length of array */ \
   for (tmp3int32=0;(arr)[tmp3int32]!=NULL;tmp3int32++) \
@@ -132,14 +138,12 @@ static void debug_dump(const void *ptr,size_t size)
     } \
   }
 
+
 /* READ macros, used for reading data, on read error they will
    call the ERROR_OUT_READERROR or ERROR_OUT_BUFERROR macro
    these macros may require the availability of the following
    variables:
    int32_t tmpint32; - temporary variable
-   char *buffer;     - pointer to a buffer for reading strings
-   size_t buflen;    - the size of the buffer
-   size_t bufptr;    - the current position in the buffer
    */
 
 #define READ(fp,ptr,size) \
@@ -158,6 +162,35 @@ static void debug_dump(const void *ptr,size_t size)
   READ_TYPE(fp,tmpint32,int32_t); \
   i=tmpint32; \
   DEBUG_PRINT("READ_INT32 : var="__STRING(i)" int32=%d",(int)i);
+
+/* read a string in a fixed-size "normal" buffer */
+#define READ_STRING(fp,buffer) \
+  /* read the size of the string */ \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  DEBUG_PRINT("READ_STRING: var="__STRING(buffer)" strlen=%d",tmpint32); \
+  /* check if read would fit */ \
+  if (((size_t)tmpint32)>=sizeof(buffer)) \
+  { \
+    /* will not fit */ \
+    DEBUG_PRINT("READ       : buffer error: %d bytes too large",(tmpint32-sizeof(buffer))+1); \
+    ERROR_OUT_BUFERROR(fp); \
+  } \
+  /* read string from the stream */ \
+  if (tmpint32>0) \
+    { READ(fp,buffer,(size_t)tmpint32); } \
+  /* null-terminate string in buffer */ \
+  buffer[tmpint32]='\0'; \
+  DEBUG_PRINT("READ_STRING: var="__STRING(buffer)" string=\"%s\"",buffer);
+
+
+/* READ BUF macros that read data into a pre-allocated buffer.
+   these macros may require the availability of the following
+   variables:
+   int32_t tmpint32; - temporary variable
+   char *buffer;     - pointer to a buffer for reading strings
+   size_t buflen;    - the size of the buffer
+   size_t bufptr;    - the current position in the buffer
+   */
 
 /* current position in the buffer */
 #define BUF_CUR \
@@ -196,43 +229,6 @@ static void debug_dump(const void *ptr,size_t size)
   /* reserve the space */ \
   BUF_SKIP((size_t)(num)*sizeof(type));
 
-/* read string in the buffer (using buffer, buflen and bufptr)
-   and store the actual location of the string in field */
-#define READ_STRING_BUF(fp,field) \
-  /* read the size of the string */ \
-  READ_TYPE(fp,tmpint32,int32_t); \
-  DEBUG_PRINT("READ_STRING: var="__STRING(field)" strlen=%d",tmpint32); \
-  /* check if read would fit */ \
-  BUF_CHECK(fp,tmpint32+1); \
-  /* read string from the stream */ \
-  if (tmpint32>0) \
-    { READ(fp,BUF_CUR,(size_t)tmpint32); } \
-  /* null-terminate string in buffer */ \
-  BUF_CUR[tmpint32]='\0'; \
-  DEBUG_PRINT("READ_STRING: var="__STRING(field)" string=\"%s\"",BUF_CUR); \
-  /* prepare result */ \
-  (field)=BUF_CUR; \
-  BUF_SKIP(tmpint32+1);
-
-/* read a string in a fixed-size "normal" buffer */
-#define READ_STRING_BUF2(fp,buffer,buflen) \
-  /* read the size of the string */ \
-  READ_TYPE(fp,tmpint32,int32_t); \
-  DEBUG_PRINT("READ_STRING: var="__STRING(buffer)" strlen=%d",tmpint32); \
-  /* check if read would fit */ \
-  if (((size_t)tmpint32)>=(buflen)) \
-  { \
-    /* will not fit */ \
-    DEBUG_PRINT("READ       : buffer error: %d bytes too large",(tmpint32-(buflen))+1); \
-    ERROR_OUT_BUFERROR(fp); \
-  } \
-  /* read string from the stream */ \
-  if (tmpint32>0) \
-    { READ(fp,buffer,(size_t)tmpint32); } \
-  /* null-terminate string in buffer */ \
-  buffer[tmpint32]='\0'; \
-  DEBUG_PRINT("READ_STRING: var="__STRING(buffer)" string=\"%s\"",buffer);
-
 /* read a binary blob into the buffer */
 #define READ_BUF(fp,ptr,sz) \
   /* check that there is enough room and read */ \
@@ -242,23 +238,27 @@ static void debug_dump(const void *ptr,size_t size)
   (ptr)=BUF_CUR; \
   BUF_SKIP(sz);
 
-/* read an array from a stram and store the length of the
-   array in num (size for the array is allocated) */
-#define READ_STRINGLIST_NUM(fp,arr,num) \
-  /* read the number of entries */ \
-  READ_INT32(fp,(num)); \
-  DEBUG_PRINT("READ_STRLST: var="__STRING(arr)" num=%d",(int)(num)); \
-  /* allocate room for *char[num] */ \
-  BUF_ALLOC(fp,arr,char *,tmpint32); \
-  /* read all the strings */ \
-  for (tmp2int32=0;tmp2int32<(int32_t)(num);tmp2int32++) \
-  { \
-    READ_STRING_BUF(fp,(arr)[tmp2int32]); \
-  }
+/* read string in the buffer (using buffer, buflen and bufptr)
+   and store the actual location of the string in field */
+#define READ_BUF_STRING(fp,field) \
+  /* read the size of the string */ \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  DEBUG_PRINT("READ_BUF_STRING: var="__STRING(field)" strlen=%d",tmpint32); \
+  /* check if read would fit */ \
+  BUF_CHECK(fp,tmpint32+1); \
+  /* read string from the stream */ \
+  if (tmpint32>0) \
+    { READ(fp,BUF_CUR,(size_t)tmpint32); } \
+  /* null-terminate string in buffer */ \
+  BUF_CUR[tmpint32]='\0'; \
+  DEBUG_PRINT("READ_BUF_STRING: var="__STRING(field)" string=\"%s\"",BUF_CUR); \
+  /* prepare result */ \
+  (field)=BUF_CUR; \
+  BUF_SKIP(tmpint32+1);
 
 /* read an array from a stram and store it as a null-terminated
    array list (size for the array is allocated) */
-#define READ_STRINGLIST_NULLTERM(fp,arr) \
+#define READ_BUF_STRINGLIST(fp,arr) \
   /* read the number of entries */ \
   READ_TYPE(fp,tmp3int32,int32_t); \
   DEBUG_PRINT("READ_STRLST: var="__STRING(arr)" num=%d",(int)tmp3int32); \
@@ -267,13 +267,15 @@ static void debug_dump(const void *ptr,size_t size)
   /* read all entries */ \
   for (tmp2int32=0;tmp2int32<tmp3int32;tmp2int32++) \
   { \
-    READ_STRING_BUF(fp,(arr)[tmp2int32]); \
+    READ_BUF_STRING(fp,(arr)[tmp2int32]); \
   } \
   /* set last entry to NULL */ \
   (arr)[tmp2int32]=NULL;
 
-/* skip a number of bytes foreward
-   Note that this macro modifies the sz variable */
+
+/* SKIP macros for skipping over certain parts of the protocol stream. */
+
+/* skip a number of bytes foreward */
 #define SKIP(fp,sz) \
   DEBUG_PRINT("READ       : skip %d bytes",(int)(sz)); \
   /* read (skip) the specified number of bytes */ \
@@ -291,7 +293,7 @@ static void debug_dump(const void *ptr,size_t size)
   /* read (skip) the specified number of bytes */ \
   SKIP(fp,tmpint32);
 
-/* skip a loop of strings */
+/* skip a list of strings */
 #define SKIP_STRINGLIST(fp) \
   /* read the number of entries */ \
   READ_TYPE(fp,tmp3int32,int32_t); \
@@ -302,4 +304,45 @@ static void debug_dump(const void *ptr,size_t size)
     SKIP_STRING(fp); \
   }
 
-#endif /* not _NSLCD_COMMON_H */
+
+/* These are functions and macors for performing common operations in
+   the nslcd request/response protocol. */
+
+/* returns a socket to the server or NULL on error (see errno),
+   socket should be closed with tio_close() */
+TFILE *nslcd_client_open(void)
+  MUST_USE;
+
+/* generic request code */
+#define NSLCD_REQUEST(fp,action,writefn) \
+  /* open a client socket */ \
+  if ((fp=nslcd_client_open())==NULL) \
+    { ERROR_OUT_OPENERROR } \
+  /* write a request header with a request code */ \
+  WRITE_INT32(fp,(int32_t)NSLCD_VERSION) \
+  WRITE_INT32(fp,(int32_t)action) \
+  /* write the request parameters (if any) */ \
+  writefn; \
+  /* flush the stream */ \
+  if (tio_flush(fp)<0) \
+  { \
+    DEBUG_PRINT("WRITE_FLUSH : error: %s",strerror(errno)); \
+    ERROR_OUT_WRITEERROR(fp); \
+  } \
+  /* read and check response version number */ \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  if (tmpint32!=(int32_t)NSLCD_VERSION) \
+    { ERROR_OUT_READERROR(fp) } \
+  /* read and check response request number */ \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  if (tmpint32!=(int32_t)(action)) \
+    { ERROR_OUT_READERROR(fp) }
+
+/* Read the response code (the result code of the query) from
+   the stream. */
+#define READ_RESPONSE_CODE(fp) \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  if (tmpint32!=(int32_t)NSLCD_RESULT_BEGIN) \
+    { ERROR_OUT_NOSUCCESS(fp) }
+
+#endif /* not _NSLCD_PROT_H */

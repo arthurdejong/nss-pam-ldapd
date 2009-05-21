@@ -32,10 +32,7 @@
 #include <errno.h>
 #include <syslog.h>
 
-/* really ugly workaround */
-#define SKIP_BUFCHECK 1
-
-#include "nss/common.h"
+#include "common.h"
 #include "compat/attrs.h"
 
 /* these are defined (before including pam_modules.h) for staticly linking */
@@ -56,20 +53,6 @@
 #define IGNORE_UNAVAIL	2
 
 #define	PLD_CTX	"PAM_LDAPD_CTX"
-
-#define	NSS2PAM_RC(rc,ignore,ok)	\
-	switch(rc) { \
-	case NSS_STATUS_SUCCESS: \
-		rc = ok; break; \
-	case NSS_STATUS_UNAVAIL: \
-		rc = (ignore & IGNORE_UNAVAIL) ? PAM_IGNORE : PAM_AUTHINFO_UNAVAIL; \
-		break; \
-	case NSS_STATUS_NOTFOUND: \
-		rc = (ignore & IGNORE_UNKNOWN) ? PAM_IGNORE: PAM_USER_UNKNOWN; \
-		break; \
-	default: \
-		rc = PAM_SYSTEM_ERR; break; \
-	}
 
 typedef struct pld_ctx {
 	char *user;
@@ -224,33 +207,33 @@ static int pam_get_authtok(
 	return rc;
 }
 
-static enum nss_status pam_read_authc(
-	TFILE *fp,pld_ctx *ctx,int *errnop)
+static int pam_read_authc(
+	TFILE *fp,pld_ctx *ctx)
 {
 	char *buffer = ctx->buf;
 	size_t buflen = sizeof(ctx->buf);
 	size_t bufptr = 0;
 	int32_t tmpint32;
 
-	READ_STRING_BUF(fp,ctx->tmpluser);
-	READ_STRING_BUF(fp,ctx->dn);
+	READ_BUF_STRING(fp,ctx->tmpluser);
+	READ_BUF_STRING(fp,ctx->dn);
 	READ_INT32(fp,ctx->authok);
 	READ_INT32(fp,ctx->authz);
-	READ_STRING_BUF(fp,ctx->authzmsg);
+	READ_BUF_STRING(fp,ctx->authzmsg);
 	ctx->authok = nslcd2pam_rc(ctx->authok);
 	ctx->authz = nslcd2pam_rc(ctx->authz);
-	return NSS_STATUS_SUCCESS;
+	return PAM_SUCCESS;
 }
 
-static enum nss_status pam_do_authc(
-	pld_ctx *ctx, const char *user, const char *svc,const char *pwd,int *errnop)
+static int pam_do_authc(
+	pld_ctx *ctx, const char *user, const char *svc,const char *pwd)
 {
-	NSS_BYGEN(NSLCD_ACTION_PAM_AUTHC,
+	PAM_REQUEST(NSLCD_ACTION_PAM_AUTHC,
 		WRITE_STRING(fp,user);
 		WRITE_STRING(fp,ctx->dn);
 		WRITE_STRING(fp,svc);
 		WRITE_STRING(fp,pwd),
-		pam_read_authc(fp,ctx,errnop));
+		pam_read_authc(fp,ctx));
 }
 
 #define	USE_FIRST	1
@@ -260,7 +243,7 @@ static enum nss_status pam_do_authc(
 int pam_sm_authenticate(
 	pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-	int err, rc;
+	int rc;
 	const char *username, *svc;
 	char *p = NULL;
 	int first_pass = 0, ignore_flags = 0;
@@ -311,8 +294,13 @@ int pam_sm_authenticate(
 		}
 		rc = pam_get_item (pamh, PAM_AUTHTOK, (CONST_ARG void **) &p);
 		if (rc == PAM_SUCCESS) {
-			rc = pam_do_authc(ctx, username, svc, p, &err);
-			NSS2PAM_RC(rc, ignore_flags, ctx->authok);
+			rc = pam_do_authc(ctx, username, svc, p);
+			if (rc==PAM_SUCCESS)
+				rc=ctx->authok;
+			if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
+				rc=PAM_IGNORE;
+			else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
+				rc=PAM_IGNORE;
 		}
 		if (rc == PAM_SUCCESS || (first_pass & USE_FIRST)) {
 			break;
@@ -362,36 +350,36 @@ pam_warn(
 		      &resp, aconv->appdata_ptr);
 }
 
-static enum nss_status pam_read_authz(
-	TFILE *fp,pld_ctx *ctx,int *errnop)
+static int pam_read_authz(
+	TFILE *fp,pld_ctx *ctx)
 {
 	char *buffer = ctx->buf;
 	size_t buflen = sizeof(ctx->buf);
 	size_t bufptr = 0;
 	int32_t tmpint32;
 
-	READ_STRING_BUF(fp,ctx->tmpluser);
-	READ_STRING_BUF(fp,ctx->dn);
+	READ_BUF_STRING(fp,ctx->tmpluser);
+	READ_BUF_STRING(fp,ctx->dn);
 	READ_INT32(fp,ctx->authz);
-	READ_STRING_BUF(fp,ctx->authzmsg);
+	READ_BUF_STRING(fp,ctx->authzmsg);
 	ctx->authz = nslcd2pam_rc(ctx->authz);
-	return NSS_STATUS_SUCCESS;
+	return PAM_SUCCESS;
 }
 
-static enum nss_status pam_do_authz(
-	pld_ctx *ctx,const char *username,const char *svc,int *errnop)
+static int pam_do_authz(
+	pld_ctx *ctx,const char *username,const char *svc)
 {
-	NSS_BYGEN(NSLCD_ACTION_PAM_AUTHZ,
+	PAM_REQUEST(NSLCD_ACTION_PAM_AUTHZ,
 		WRITE_STRING(fp,username);
 		WRITE_STRING(fp,ctx->dn);
 		WRITE_STRING(fp,svc),
-		pam_read_authz(fp,ctx,errnop));
+		pam_read_authz(fp,ctx));
 }
 
 int pam_sm_acct_mgmt(
 	pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-	int rc, err;
+	int rc;
 	const char *username, *svc;
 	int no_warn = 0, ignore_flags = 0;
 	int i;
@@ -440,8 +428,11 @@ int pam_sm_acct_mgmt(
 
 	ctx2.dn = ctx->dn;
 	ctx2.user = ctx->user;
-	rc = pam_do_authz(&ctx2, username, svc, &err);
-	NSS2PAM_RC(rc, ignore_flags, PAM_SUCCESS);
+	rc = pam_do_authz(&ctx2, username, svc);
+	if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
+		rc=PAM_IGNORE;
+	else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
+		rc=PAM_IGNORE;
 	if (rc != PAM_SUCCESS) {
 		if (rc != PAM_IGNORE)
 			pam_warn(appconv, "LDAP authorization failed", PAM_ERROR_MSG, no_warn);
@@ -463,16 +454,16 @@ int pam_sm_acct_mgmt(
 	return rc;
 }
 
-static enum nss_status pam_read_sess(
-	TFILE *fp,pld_ctx *ctx,int *errnop)
+static int pam_read_sess(
+	TFILE *fp,pld_ctx *ctx)
 {
 	int tmpint32;
 	READ_INT32(fp,ctx->sessid);
-	return NSS_STATUS_SUCCESS;
+	return PAM_SUCCESS;
 }
 
-static enum nss_status pam_do_sess(
-	pam_handle_t *pamh,pld_ctx *ctx,int action,int *errnop)
+static int pam_do_sess(
+	pam_handle_t *pamh,pld_ctx *ctx,int action)
 {
 	const char *svc = NULL, *tty = NULL, *rhost = NULL, *ruser = NULL;
 
@@ -482,7 +473,7 @@ static enum nss_status pam_do_sess(
 	pam_get_item (pamh, PAM_RUSER, (CONST_ARG void **) &ruser);
 
 	{
-	NSS_BYGEN(action,
+	PAM_REQUEST(action,
 		WRITE_STRING(fp,ctx->user);
 		WRITE_STRING(fp,ctx->dn);
 		WRITE_STRING(fp,svc);
@@ -490,7 +481,7 @@ static enum nss_status pam_do_sess(
 		WRITE_STRING(fp,rhost);
 		WRITE_STRING(fp,ruser);
 		WRITE_INT32(fp,ctx->sessid),
-		pam_read_sess(fp,ctx,errnop));
+		pam_read_sess(fp,ctx));
 	}
 }
 
@@ -536,8 +527,11 @@ static int pam_sm_session(
 	if (rc != PAM_SUCCESS)
 		return rc;
 
-	rc = pam_do_sess(pamh, ctx, action, &err);
-	NSS2PAM_RC(rc, ignore_flags, PAM_SUCCESS);
+	rc = pam_do_sess(pamh, ctx, action);
+	if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
+		rc=PAM_IGNORE;
+	else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
+		rc=PAM_IGNORE;
 	return rc;
 }
 
@@ -573,39 +567,39 @@ int pam_sm_close_session(
 	return rc;
 }
 
-static enum nss_status pam_read_pwmod(
-	TFILE *fp,pld_ctx *ctx,int *errnop)
+static int pam_read_pwmod(
+	TFILE *fp,pld_ctx *ctx)
 {
 	char *buffer = ctx->buf, *user;
 	size_t buflen = sizeof(ctx->buf);
 	size_t bufptr = 0;
 	int32_t tmpint32;
 
-	READ_STRING_BUF(fp,ctx->tmpluser);
-	READ_STRING_BUF(fp,ctx->dn);
+	READ_BUF_STRING(fp,ctx->tmpluser);
+	READ_BUF_STRING(fp,ctx->dn);
 	READ_INT32(fp,ctx->authz);
-	READ_STRING_BUF(fp,ctx->authzmsg);
+	READ_BUF_STRING(fp,ctx->authzmsg);
 	ctx->authz = nslcd2pam_rc(ctx->authz);
-	return NSS_STATUS_SUCCESS;
+	return PAM_SUCCESS;
 }
 
-static enum nss_status pam_do_pwmod(
+static int pam_do_pwmod(
 	pld_ctx *ctx, const char *user, const char *svc,
-	const char *oldpw, const char *newpw, int *errnop)
+	const char *oldpw, const char *newpw)
 {
-	NSS_BYGEN(NSLCD_ACTION_PAM_PWMOD,
+	PAM_REQUEST(NSLCD_ACTION_PAM_PWMOD,
 		WRITE_STRING(fp,user);
 		WRITE_STRING(fp,ctx->dn);
 		WRITE_STRING(fp,svc);
 		WRITE_STRING(fp,oldpw);
 		WRITE_STRING(fp,newpw),
-		pam_read_pwmod(fp,ctx,errnop));
+		pam_read_pwmod(fp,ctx));
 }
 
 int pam_sm_chauthtok(
 	pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-	int rc, err;
+	int rc;
 	const char *username, *p = NULL, *q = NULL, *svc;
 	int first_pass = 0, no_warn = 0, ignore_flags = 0;
 	int i, success = PAM_SUCCESS;
@@ -671,8 +665,11 @@ int pam_sm_chauthtok(
 			rc = PAM_SUCCESS;
 		}
 		if (!ctx->dn) {
-			rc = pam_do_pwmod(ctx, username, svc, p, NULL, &err);
-			NSS2PAM_RC(rc, ignore_flags, PAM_SUCCESS);
+			rc = pam_do_pwmod(ctx, username, svc, p, NULL);
+			if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
+				rc=PAM_IGNORE;
+			else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
+				rc=PAM_IGNORE;
 		}
 		return rc;
 	}
@@ -703,9 +700,12 @@ int pam_sm_chauthtok(
 		if (rc != PAM_SUCCESS)
 			return rc;
 	}
-	rc = pam_do_pwmod(ctx, username, svc, p, q, &err);
+	rc = pam_do_pwmod(ctx, username, svc, p, q);
+	if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
+		rc=PAM_IGNORE;
+	else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
+		rc=PAM_IGNORE;
 	p = NULL; q = NULL;
-	NSS2PAM_RC(rc, ignore_flags, PAM_SUCCESS);
 	if (rc == PAM_SUCCESS) {
 		rc = ctx->authz;
 		if (rc != PAM_SUCCESS)

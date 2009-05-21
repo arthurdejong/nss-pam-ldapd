@@ -23,7 +23,7 @@ sbin_PROGRAMS = nslcd
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = $(PTHREAD_CFLAGS)
 
-nslcd_SOURCES = nslcd.c ../nslcd.h ../nslcd-common.h \
+nslcd_SOURCES = nslcd.c ../nslcd.h ../common/nslcd-prot.h \
                 ../compat/attrs.h \
                 log.c log.h \
                 common.c common.h \

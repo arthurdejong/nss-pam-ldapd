@@ -77,10 +77,10 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
   char servicename[64];
   char password[64];
   /* read request parameters */
-  READ_STRING_BUF2(fp,username,sizeof(username));
-  READ_STRING_BUF2(fp,userdn,sizeof(userdn));
-  READ_STRING_BUF2(fp,servicename,sizeof(servicename));
-  READ_STRING_BUF2(fp,password,sizeof(password));
+  READ_STRING(fp,username);
+  READ_STRING(fp,userdn);
+  READ_STRING(fp,servicename);
+  READ_STRING(fp,password);
   /* log call */
   log_log(LOG_DEBUG,"nslcd_pam_authc(\"%s\",\"%s\",\"%s\")",username,userdn,servicename);
   /* write the response header */
@@ -139,9 +139,9 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   char userdn[256];
   char servicename[64];
   /* read request parameters */
-  READ_STRING_BUF2(fp,username,sizeof(username));
-  READ_STRING_BUF2(fp,userdn,sizeof(userdn));
-  READ_STRING_BUF2(fp,servicename,sizeof(servicename));
+  READ_STRING(fp,username);
+  READ_STRING(fp,userdn);
+  READ_STRING(fp,servicename);
   /* log call */
   log_log(LOG_DEBUG,"nslcd_pam_authz(\"%s\",\"%s\",\"%s\")",username,userdn,servicename);
   /* write the response header */
@@ -209,12 +209,12 @@ int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session)
   char tty[64],rhost[64],ruser[256];
   int32_t sessionid;
   /* read request parameters */
-  READ_STRING_BUF2(fp,username,sizeof(username));
-  READ_STRING_BUF2(fp,userdn,sizeof(userdn));
-  READ_STRING_BUF2(fp,servicename,sizeof(servicename));
-  READ_STRING_BUF2(fp,tty,sizeof(tty));
-  READ_STRING_BUF2(fp,rhost,sizeof(rhost));
-  READ_STRING_BUF2(fp,ruser,sizeof(ruser));
+  READ_STRING(fp,username);
+  READ_STRING(fp,userdn);
+  READ_STRING(fp,servicename);
+  READ_STRING(fp,tty);
+  READ_STRING(fp,rhost);
+  READ_STRING(fp,ruser);
   READ_INT32(fp,sessionid);
   /* log call */
   log_log(LOG_DEBUG,"nslcd_pam_sess_o(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")",
@@ -238,12 +238,12 @@ int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session)
   char tty[64],rhost[64],ruser[256];
   int32_t sessionid;
   /* read request parameters */
-  READ_STRING_BUF2(fp,username,sizeof(username));
-  READ_STRING_BUF2(fp,userdn,sizeof(userdn));
-  READ_STRING_BUF2(fp,servicename,sizeof(servicename));
-  READ_STRING_BUF2(fp,tty,sizeof(tty));
-  READ_STRING_BUF2(fp,rhost,sizeof(rhost));
-  READ_STRING_BUF2(fp,ruser,sizeof(ruser));
+  READ_STRING(fp,username);
+  READ_STRING(fp,userdn);
+  READ_STRING(fp,servicename);
+  READ_STRING(fp,tty);
+  READ_STRING(fp,rhost);
+  READ_STRING(fp,ruser);
   READ_INT32(fp,sessionid);
   /* log call */
   log_log(LOG_DEBUG,"nslcd_pam_sess_c(\"%s\",\"%s\",\"%s\",%d)",
@@ -268,16 +268,16 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session)
   char opwc[256];
   char npwc[256];
 
-  READ_STRING_BUF2(fp,dnc,sizeof(dnc));
+  READ_STRING(fp,dnc);
   dn.bv_val = dnc;
   dn.bv_len = tmpint32;
-  READ_STRING_BUF2(fp,uidc,sizeof(uidc));
+  READ_STRING(fp,uidc);
   uid.bv_val = uidc;
   uid.bv_len = tmpint32;
-  READ_STRING_BUF2(fp,opwc,sizeof(opwc));
+  READ_STRING(fp,opwc);
   opw.bv_val = opwc;
   opw.bv_len = tmpint32;
-  READ_STRING_BUF2(fp,npwc,sizeof(npwc));
+  READ_STRING(fp,npwc);
   npw.bv_val = npwc;
   npw.bv_len = tmpint32;
 

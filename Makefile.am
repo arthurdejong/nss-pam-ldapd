@@ -50,7 +50,7 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                $(wildcard debian/po/*.po) debian/po/templates.pot \
                debian/po/POTFILES.in
 
-EXTRA_DIST = nss-ldapd.conf nslcd.h nslcd-common.h \
+EXTRA_DIST = nss-ldapd.conf nslcd.h \
              $(wildcard m4/*.m4) HACKING $(DEBIAN_FILES)
 
 DISTCHECK_CONFIGURE_FLAGS='--enable-warnings'

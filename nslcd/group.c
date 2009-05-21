@@ -300,7 +300,7 @@ NSLCD_HANDLE(
   group,byname,
   char name[256];
   char filter[1024];
-  READ_STRING_BUF2(fp,name,sizeof(name));
+  READ_STRING(fp,name);
   if (!isvalidname(name)) {
     log_log(LOG_WARNING,"nslcd_group_byname(%s): invalid group name",name);
     return -1;
@@ -326,7 +326,7 @@ NSLCD_HANDLE(
   group,bymember,
   char name[256];
   char filter[1024];
-  READ_STRING_BUF2(fp,name,sizeof(name));
+  READ_STRING(fp,name);
   if (!isvalidname(name)) {
     log_log(LOG_WARNING,"nslcd_group_bymember(%s): invalid user name",name);
     return -1;

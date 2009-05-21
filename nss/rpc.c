@@ -36,8 +36,8 @@ static enum nss_status read_rpcent(
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
-  READ_STRING_BUF(fp,result->r_name);
-  READ_STRINGLIST_NULLTERM(fp,result->r_aliases);
+  READ_BUF_STRING(fp,result->r_name);
+  READ_BUF_STRINGLIST(fp,result->r_aliases);
   READ_INT32(fp,result->r_number);
   return NSS_STATUS_SUCCESS;
 }

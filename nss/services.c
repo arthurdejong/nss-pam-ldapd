@@ -36,12 +36,12 @@ static enum nss_status read_servent(
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
-  READ_STRING_BUF(fp,result->s_name);
-  READ_STRINGLIST_NULLTERM(fp,result->s_aliases);
+  READ_BUF_STRING(fp,result->s_name);
+  READ_BUF_STRINGLIST(fp,result->s_aliases);
   /* store port number in network byte order */
   READ_TYPE(fp,tmpint32,int32_t);
   result->s_port=ntohs((uint16_t)tmpint32);
-  READ_STRING_BUF(fp,result->s_proto);
+  READ_BUF_STRING(fp,result->s_proto);
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }

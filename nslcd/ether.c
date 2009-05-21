@@ -171,7 +171,7 @@ NSLCD_HANDLE(
   ether,byname,
   char name[256];
   char filter[1024];
-  READ_STRING_BUF2(fp,name,sizeof(name));,
+  READ_STRING(fp,name);,
   log_log(LOG_DEBUG,"nslcd_ether_byname(%s)",name);,
   NSLCD_ACTION_ETHER_BYNAME,
   mkfilter_ether_byname(name,filter,sizeof(filter)),

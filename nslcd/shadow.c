@@ -266,7 +266,7 @@ NSLCD_HANDLE(
   shadow,byname,
   char name[256];
   char filter[1024];
-  READ_STRING_BUF2(fp,name,sizeof(name));,
+  READ_STRING(fp,name);,
   log_log(LOG_DEBUG,"nslcd_shadow_byname(%s)",name);,
   NSLCD_ACTION_SHADOW_BYNAME,
   mkfilter_shadow_byname(name,filter,sizeof(filter)),
