@@ -75,7 +75,7 @@ static int mkfilter_alias_byname(const char *name,
                     attmap_alias_cn,buf2);
 }
 
-static void alias_init(void)
+void alias_init(void)
 {
   int i;
   /* set up search bases */

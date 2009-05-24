@@ -85,6 +85,20 @@ MUST_USE char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t bu
 /* transforms the uid into a DN by doing an LDAP lookup */
 MUST_USE char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen);
 
+/* these are the functions for initialising the database specific
+   modules */
+void alias_init(void);
+void ether_init(void);
+void group_init(void);
+void host_init(void);
+void netgroup_init(void);
+void network_init(void);
+void passwd_init(void);
+void protocol_init(void);
+void rpc_init(void);
+void service_init(void);
+void shadow_init(void);
+
 /* these are the different functions that handle the database
    specific actions, see nslcd.h for the action descriptions */
 int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session);
@@ -141,8 +155,6 @@ int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
       log_log(LOG_WARNING,"nslcd_" __STRING(db) "_" __STRING(fn) "(): filter buffer too small"); \
       return -1; \
     } \
-    /* build the list of attributes */ \
-    db##_init(); \
     /* perform a search for each search base */ \
     for (i=0; (base=db##_bases[i])!=NULL; i++) \
     { \

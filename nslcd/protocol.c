@@ -84,7 +84,7 @@ static int mkfilter_protocol_bynumber(int protocol,
                     attmap_protocol_ipProtocolNumber,protocol);
 }
 
-static void protocol_init(void)
+void protocol_init(void)
 {
   int i;
   /* set up search bases */

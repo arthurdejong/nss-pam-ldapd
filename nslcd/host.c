@@ -92,7 +92,7 @@ static int mkfilter_host_byaddr(const char *name,
                     attmap_host_ipHostNumber,buf2);
 }
 
-static void host_init(void)
+void host_init(void)
 {
   int i;
   /* set up search bases */

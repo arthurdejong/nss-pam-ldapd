@@ -76,7 +76,7 @@ static int mkfilter_netgroup_byname(const char *name,
                     attmap_netgroup_cn,buf2);
 }
 
-static void netgroup_init(void)
+void netgroup_init(void)
 {
   int i;
   /* set up search bases */

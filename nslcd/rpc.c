@@ -84,7 +84,7 @@ static int mkfilter_rpc_bynumber(int number,
                     attmap_rpc_oncRpcNumber,number);
 }
 
-static void rpc_init(void)
+void rpc_init(void)
 {
   int i;
   /* set up search bases */

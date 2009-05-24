@@ -94,7 +94,7 @@ static int mkfilter_ether_byether(const struct ether_addr *addr,
                    attmap_ether_macAddress,buf2);
 }
 
-static void ether_init(void)
+void ether_init(void)
 {
   int i;
   /* set up search bases */

@@ -124,7 +124,7 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
                       attmap_group_uniqueMember,dn);
 }
 
-static void group_init(void)
+void group_init(void)
 {
   int i;
   /* set up search bases */

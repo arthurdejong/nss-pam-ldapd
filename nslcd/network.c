@@ -91,7 +91,7 @@ static int mkfilter_network_byaddr(const char *name,
                     attmap_network_ipNetworkNumber,buf2);
 }
 
-static void network_init(void)
+void network_init(void)
 {
   int i;
   /* set up search bases */

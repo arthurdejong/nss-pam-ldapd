@@ -106,7 +106,7 @@ static int mkfilter_passwd_byuid(uid_t uid,
                     attmap_passwd_uidNumber,(int)uid);
 }
 
-static void passwd_init(void)
+void passwd_init(void)
 {
   int i;
   /* set up search bases */
@@ -257,8 +257,6 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
     return NULL;
   /* set up attributes (we don't care, we just want the DN) */
   attrs[0]=NULL;
-  /* initialize default base, scrope, etc */
-  passwd_init();
   /* we have to look up the entry */
   mkfilter_passwd_byname(uid,filter,sizeof(filter));
   for (i=0;(i<NSS_LDAP_CONFIG_MAX_BASES)&&((base=passwd_bases[i])!=NULL);i++)

@@ -110,7 +110,7 @@ static int mkfilter_service_bynumber(int number,
                       attmap_service_ipServicePort,number);
 }
 
-static void service_init(void)
+void service_init(void)
 {
   int i;
   /* set up search bases */

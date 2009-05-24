@@ -90,7 +90,7 @@ static int mkfilter_shadow_byname(const char *name,
                     attmap_shadow_uid,buf2);
 }
 
-static void shadow_init(void)
+void shadow_init(void)
 {
   int i;
   /* set up search bases */

@@ -1052,4 +1052,16 @@ void cfg_init(const char *fname)
     log_log(LOG_ERR,"no base defined in config and couldn't get one from server");
     exit(EXIT_FAILURE);
   }
+  /* initialise all database modules */
+  alias_init();
+  ether_init();
+  group_init();
+  host_init();
+  netgroup_init();
+  network_init();
+  passwd_init();
+  protocol_init();
+  rpc_init();
+  service_init();
+  shadow_init();
 }
