@@ -3,7 +3,7 @@
    This file is part of the nss-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -126,7 +126,8 @@ int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
     int32_t tmpint32; \
     MYLDAP_SEARCH *search; \
     MYLDAP_ENTRY *entry; \
-    int rc; \
+    const char *base; \
+    int rc,i; \
     /* read request parameters */ \
     readfn; \
     /* log call */ \
@@ -142,14 +143,18 @@ int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
     } \
     /* build the list of attributes */ \
     db##_init(); \
-    /* do the LDAP search */ \
-    if ((search=myldap_search(session,db##_base,db##_scope,filter,db##_attrs))==NULL) \
-      return -1; \
-    /* go over results */ \
-    while ((entry=myldap_get_entry(search,&rc))!=NULL) \
+    /* perform a search for each search base */ \
+    for (i=0; (base=db##_bases[i])!=NULL; i++) \
     { \
-      if (writefn) \
+      /* do the LDAP search */ \
+      if ((search=myldap_search(session,base,db##_scope,filter,db##_attrs))==NULL) \
         return -1; \
+      /* go over results */ \
+      while ((entry=myldap_get_entry(search,&rc))!=NULL) \
+      { \
+        if (writefn) \
+          return -1; \
+      } \
     } \
     /* write the final result code */ \
     if (rc==LDAP_SUCCESS) \

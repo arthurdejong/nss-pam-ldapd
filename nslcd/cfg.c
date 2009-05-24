@@ -96,7 +96,8 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_sasl_mech=NULL;
   cfg->ldc_sasl_realm=NULL;
   cfg->ldc_usesasl=0;
-  cfg->ldc_base=NULL;
+  for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
+    cfg->ldc_bases[i]=NULL;
   cfg->ldc_scope=LDAP_SCOPE_SUBTREE;
   cfg->ldc_deref=LDAP_DEREF_NEVER;
   cfg->ldc_referrals=1;
@@ -549,25 +550,34 @@ static void set_base(const char *filename,int lnr,
     exit(EXIT_FAILURE);
 #endif /* not HAVE_LDAP_DOMAIN2DN */
   }
-  /* check if the value will be changed */
-  if ((*var==NULL)||(strcmp(*var,value)!=0))
-  {
-    /* Note: we have a memory leak here if a single mapping is changed
-             multiple times in one config (deemed not a problem) */
-    *var=xstrdup(value);
-  }
+  /* set the new value */
+  *var=xstrdup(value);
 }
 
 static void parse_base_statement(const char *filename,int lnr,
                                  const char *keyword,char *line,
                                  struct ldap_config *cfg)
 {
-  const char **var;
-  var=base_get_var(get_map(&line));
-  if (var==NULL)
-    var=(const char **)&(cfg->ldc_base);
-  check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
-  set_base(filename,lnr,line,var);
+  const char **bases;
+  int i;
+  /* get the list of bases to update */
+  bases=base_get_var(get_map(&line));
+  if (bases==NULL)
+    bases=cfg->ldc_bases;
+  /* find the spot in the list of bases */
+  for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
+  {
+    if (bases[i]==NULL)
+    {
+      check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
+      set_base(filename,lnr,line,&bases[i]);
+      return;
+    }
+  }
+  /* no free spot found */
+  log_log(LOG_ERR,"%s:%d: maximum number of base options per map (%d) exceeded",
+          filename,lnr,NSS_LDAP_CONFIG_MAX_BASES);
+  exit(EXIT_FAILURE);
 }
 
 static void parse_scope_statement(const char *filename,int lnr,
@@ -1033,11 +1043,11 @@ void cfg_init(const char *fname)
   /* TODO: check that if some tls options are set the ssl option should be set to on (just warn) */
 #endif /* LDAP_OPT_X_TLS */
   /* if basedn is not yet set,  get if from the rootDSE */
-  if (nslcd_cfg->ldc_base==NULL)
-    nslcd_cfg->ldc_base=get_base_from_rootdse();
+  if (nslcd_cfg->ldc_bases[0]==NULL)
+    nslcd_cfg->ldc_bases[0]=get_base_from_rootdse();
   /* TODO: handle the case gracefully when no LDAP server is available yet */
   /* see if we have a valid basedn */
-  if ((nslcd_cfg->ldc_base==NULL)||(nslcd_cfg->ldc_base[0]=='\0'))
+  if ((nslcd_cfg->ldc_bases[0]==NULL)||(nslcd_cfg->ldc_bases[0][0]=='\0'))
   {
     log_log(LOG_ERR,"no base defined in config and couldn't get one from server");
     exit(EXIT_FAILURE);

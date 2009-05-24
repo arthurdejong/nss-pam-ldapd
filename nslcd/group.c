@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -52,7 +52,7 @@
  */
 
 /* the search base for searches */
-const char *group_base = NULL;
+const char *group_bases[NSS_LDAP_CONFIG_MAX_BASES] = { NULL };
 
 /* the search scope for searches */
 int group_scope = LDAP_SCOPE_DEFAULT;
@@ -126,9 +126,11 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
 
 static void group_init(void)
 {
-  /* set up base */
-  if (group_base==NULL)
-    group_base=nslcd_cfg->ldc_base;
+  int i;
+  /* set up search bases */
+  if (group_bases[0]==NULL)
+    for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
+      group_bases[i]=nslcd_cfg->ldc_bases[i];
   /* set up scope */
   if (group_scope==LDAP_SCOPE_DEFAULT)
     group_scope=nslcd_cfg->ldc_scope;

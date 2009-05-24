@@ -2,7 +2,7 @@
    attmap.c - attribute mapping values and functions
    This file is part of the nss-ldapd library.
 
-   Copyright (C) 2007, 2008 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -30,33 +30,33 @@
 const char *attmap_objectClass           = "objectClass";
 
 /* these are the bases that are defined per database */
-extern const char *alias_base;
-extern const char *ether_base;
-extern const char *group_base;
-extern const char *host_base;
-extern const char *netgroup_base;
-extern const char *network_base;
-extern const char *passwd_base;
-extern const char *protocol_base;
-extern const char *rpc_base;
-extern const char *service_base;
-extern const char *shadow_base;
+extern const char *alias_bases[];
+extern const char *ether_bases[];
+extern const char *group_bases[];
+extern const char *host_bases[];
+extern const char *netgroup_bases[];
+extern const char *network_bases[];
+extern const char *passwd_bases[];
+extern const char *protocol_bases[];
+extern const char *rpc_bases[];
+extern const char *service_bases[];
+extern const char *shadow_bases[];
 
 const char **base_get_var(enum ldap_map_selector map)
 {
   switch (map)
   {
-    case LM_ALIASES:   return &alias_base;
-    case LM_ETHERS:    return &ether_base;
-    case LM_GROUP:     return &group_base;
-    case LM_HOSTS:     return &host_base;
-    case LM_NETGROUP:  return &netgroup_base;
-    case LM_NETWORKS:  return &network_base;
-    case LM_PASSWD:    return &passwd_base;
-    case LM_PROTOCOLS: return &protocol_base;
-    case LM_RPC:       return &rpc_base;
-    case LM_SERVICES:  return &service_base;
-    case LM_SHADOW:    return &shadow_base;
+    case LM_ALIASES:   return alias_bases;
+    case LM_ETHERS:    return ether_bases;
+    case LM_GROUP:     return group_bases;
+    case LM_HOSTS:     return host_bases;
+    case LM_NETGROUP:  return netgroup_bases;
+    case LM_NETWORKS:  return network_bases;
+    case LM_PASSWD:    return passwd_bases;
+    case LM_PROTOCOLS: return protocol_bases;
+    case LM_RPC:       return rpc_bases;
+    case LM_SERVICES:  return service_bases;
+    case LM_SHADOW:    return shadow_bases;
     case LM_NONE:
     default:           return NULL;
   }

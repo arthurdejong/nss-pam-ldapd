@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -47,7 +47,7 @@
  */
 
 /* the search base for searches */
-const char *host_base = NULL;
+const char *host_bases[NSS_LDAP_CONFIG_MAX_BASES] = { NULL };
 
 /* the search scope for searches */
 int host_scope = LDAP_SCOPE_DEFAULT;
@@ -94,9 +94,11 @@ static int mkfilter_host_byaddr(const char *name,
 
 static void host_init(void)
 {
-  /* set up base */
-  if (host_base==NULL)
-    host_base=nslcd_cfg->ldc_base;
+  int i;
+  /* set up search bases */
+  if (host_bases[0]==NULL)
+    for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
+      host_bases[i]=nslcd_cfg->ldc_bases[i];
   /* set up scope */
   if (host_scope==LDAP_SCOPE_DEFAULT)
     host_scope=nslcd_cfg->ldc_scope;
