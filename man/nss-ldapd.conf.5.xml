@@ -290,8 +290,12 @@
       <para>
        Specifies the base distinguished name (<acronym>DN</acronym>)
        to use as search base.
+       This option may be supplied multiple times and all specified bases
+       will be searched.
+      </para>
+      <para>
        A global search base may be specified or a MAP-specific one.
-       If no MAP-specific search base is defined the global one is used.
+       If no MAP-specific search bases are defined the global ones are used.
       </para>
       <para>
        If, instead of a <acronym>DN</acronym>, the value
