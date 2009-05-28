@@ -47,8 +47,9 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/libnss-ldapd.postinst \
                debian/libnss-ldapd.postrm \
                debian/libnss-ldapd.templates \
-               $(wildcard debian/po/*.po) debian/po/templates.pot \
-               debian/po/POTFILES.in
+               debian/libpam-ldapd.install \
+               debian/po/POTFILES.in debian/po/templates.pot \
+               $(wildcard debian/po/*.po)
 
 EXTRA_DIST = nss-ldapd.conf nslcd.h \
              $(wildcard m4/*.m4) HACKING $(DEBIAN_FILES)
