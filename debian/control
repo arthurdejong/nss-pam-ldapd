@@ -34,7 +34,7 @@ Description: NSS module for using LDAP as a naming service
 
 Package: libpam-ldapd
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, nslcd
+Depends: ${misc:Depends}, ${shlibs:Depends}, nslcd, libpam-runtime (>= 1.0.1-6)
 Recommends: libnss-ldapd | libnss-ldap
 Conflicts: libpam-ldap
 Provides: libpam-ldap

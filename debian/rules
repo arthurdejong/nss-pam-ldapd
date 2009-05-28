@@ -56,6 +56,8 @@ install: build
 	# install a lintian override file
 	install -D -m 644 $(CURDIR)/debian/libnss-ldapd.lintian-overrides \
 	        $(CURDIR)/debian/libnss-ldapd/usr/share/lintian/overrides/libnss-ldapd
+	# install a pam-auth-update configuration file
+	install -D -m 644 debian/libpam-ldapd.pam-auth-update debian/tmp/usr/share/pam-configs/ldap
 
 # build architecture-independent files
 binary-indep: build install

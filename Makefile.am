@@ -48,6 +48,9 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/libnss-ldapd.postrm \
                debian/libnss-ldapd.templates \
                debian/libpam-ldapd.install \
+               debian/libpam-ldapd.pam-auth-update \
+               debian/libpam-ldapd.postint \
+               debian/libpam-ldapd.prerm \
                debian/po/POTFILES.in debian/po/templates.pot \
                $(wildcard debian/po/*.po)
 
