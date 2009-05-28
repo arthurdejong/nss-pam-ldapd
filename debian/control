@@ -13,10 +13,8 @@ Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, adduser
 Recommends: nscd, libnss-ldapd, libpam-ldapd
 Description: Daemon for NSS and PAM lookups using LDAP
- This package provides a daemon for retrieving account information from
- LDAP.
- .
- TODO: come up with a better name for the package-set as a whole
+ This package provides a daemon for retrieving user account, and other
+ system information from LDAP.
 
 Package: libnss-ldapd
 Architecture: any
@@ -42,4 +40,4 @@ Conflicts: libpam-ldap
 Provides: libpam-ldap
 Description: PAM module for using LDAP as an authentication service
  This package provides a Pluggable Authentication Module that allows
- your LDAP server to validate user passwords.
+ user authentication based on credentials stored in an LDAP server.
