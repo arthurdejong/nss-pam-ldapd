@@ -207,33 +207,23 @@ static int pam_get_authtok(
 	return rc;
 }
 
-static int pam_read_authc(
-	TFILE *fp,pld_ctx *ctx)
-{
-	char *buffer = ctx->buf;
-	size_t buflen = sizeof(ctx->buf);
-	size_t bufptr = 0;
-	int32_t tmpint32;
-
-	READ_BUF_STRING(fp,ctx->tmpluser);
-	READ_BUF_STRING(fp,ctx->dn);
-	READ_INT32(fp,ctx->authok);
-	READ_INT32(fp,ctx->authz);
-	READ_BUF_STRING(fp,ctx->authzmsg);
-	ctx->authok = nslcd2pam_rc(ctx->authok);
-	ctx->authz = nslcd2pam_rc(ctx->authz);
-	return PAM_SUCCESS;
-}
-
 static int pam_do_authc(
 	pld_ctx *ctx, const char *user, const char *svc,const char *pwd)
 {
 	PAM_REQUEST(NSLCD_ACTION_PAM_AUTHC,
+		/* write the request parameters */
 		WRITE_STRING(fp,user);
 		WRITE_STRING(fp,ctx->dn);
 		WRITE_STRING(fp,svc);
 		WRITE_STRING(fp,pwd),
-		pam_read_authc(fp,ctx));
+		/* read the result entry */
+		READ_BUF_STRING(fp,ctx->tmpluser);
+		READ_BUF_STRING(fp,ctx->dn);
+		READ_INT32(fp,ctx->authok);
+		READ_INT32(fp,ctx->authz);
+		READ_BUF_STRING(fp,ctx->authzmsg);
+		ctx->authok = nslcd2pam_rc(ctx->authok);
+		ctx->authz = nslcd2pam_rc(ctx->authz))
 }
 
 #define	USE_FIRST	1
@@ -350,30 +340,20 @@ pam_warn(
 		      &resp, aconv->appdata_ptr);
 }
 
-static int pam_read_authz(
-	TFILE *fp,pld_ctx *ctx)
-{
-	char *buffer = ctx->buf;
-	size_t buflen = sizeof(ctx->buf);
-	size_t bufptr = 0;
-	int32_t tmpint32;
-
-	READ_BUF_STRING(fp,ctx->tmpluser);
-	READ_BUF_STRING(fp,ctx->dn);
-	READ_INT32(fp,ctx->authz);
-	READ_BUF_STRING(fp,ctx->authzmsg);
-	ctx->authz = nslcd2pam_rc(ctx->authz);
-	return PAM_SUCCESS;
-}
-
 static int pam_do_authz(
 	pld_ctx *ctx,const char *username,const char *svc)
 {
 	PAM_REQUEST(NSLCD_ACTION_PAM_AUTHZ,
+		/* write the request parameters */
 		WRITE_STRING(fp,username);
 		WRITE_STRING(fp,ctx->dn);
 		WRITE_STRING(fp,svc),
-		pam_read_authz(fp,ctx));
+		/* read the result entry */
+		READ_BUF_STRING(fp,ctx->tmpluser);
+		READ_BUF_STRING(fp,ctx->dn);
+		READ_INT32(fp,ctx->authz);
+		READ_BUF_STRING(fp,ctx->authzmsg);
+		ctx->authz = nslcd2pam_rc(ctx->authz))
 }
 
 int pam_sm_acct_mgmt(
@@ -454,26 +434,17 @@ int pam_sm_acct_mgmt(
 	return rc;
 }
 
-static int pam_read_sess(
-	TFILE *fp,pld_ctx *ctx)
-{
-	int tmpint32;
-	READ_INT32(fp,ctx->sessid);
-	return PAM_SUCCESS;
-}
-
 static int pam_do_sess(
 	pam_handle_t *pamh,pld_ctx *ctx,int action)
 {
-	const char *svc = NULL, *tty = NULL, *rhost = NULL, *ruser = NULL;
-
-	pam_get_item (pamh, PAM_SERVICE, (CONST_ARG void **) &svc);
-	pam_get_item (pamh, PAM_TTY, (CONST_ARG void **) &tty);
-	pam_get_item (pamh, PAM_RHOST, (CONST_ARG void **) &rhost);
-	pam_get_item (pamh, PAM_RUSER, (CONST_ARG void **) &ruser);
-
-	{
+	const char *svc=NULL,*tty=NULL,*rhost=NULL,*ruser=NULL;
 	PAM_REQUEST(action,
+		/* get information for request */
+		pam_get_item (pamh, PAM_SERVICE, (CONST_ARG void **) &svc);
+		pam_get_item (pamh, PAM_TTY, (CONST_ARG void **) &tty);
+		pam_get_item (pamh, PAM_RHOST, (CONST_ARG void **) &rhost);
+		pam_get_item (pamh, PAM_RUSER, (CONST_ARG void **) &ruser);
+		/* write the request parameters */
 		WRITE_STRING(fp,ctx->user);
 		WRITE_STRING(fp,ctx->dn);
 		WRITE_STRING(fp,svc);
@@ -481,8 +452,8 @@ static int pam_do_sess(
 		WRITE_STRING(fp,rhost);
 		WRITE_STRING(fp,ruser);
 		WRITE_INT32(fp,ctx->sessid),
-		pam_read_sess(fp,ctx));
-	}
+		/* read the result entry */
+		READ_INT32(fp,ctx->sessid))
 }
 
 static int pam_sm_session(
@@ -567,33 +538,23 @@ int pam_sm_close_session(
 	return rc;
 }
 
-static int pam_read_pwmod(
-	TFILE *fp,pld_ctx *ctx)
-{
-	char *buffer = ctx->buf, *user;
-	size_t buflen = sizeof(ctx->buf);
-	size_t bufptr = 0;
-	int32_t tmpint32;
-
-	READ_BUF_STRING(fp,ctx->tmpluser);
-	READ_BUF_STRING(fp,ctx->dn);
-	READ_INT32(fp,ctx->authz);
-	READ_BUF_STRING(fp,ctx->authzmsg);
-	ctx->authz = nslcd2pam_rc(ctx->authz);
-	return PAM_SUCCESS;
-}
-
 static int pam_do_pwmod(
 	pld_ctx *ctx, const char *user, const char *svc,
 	const char *oldpw, const char *newpw)
 {
-	PAM_REQUEST(NSLCD_ACTION_PAM_PWMOD,
+	PAM_REQUEST(NSLCD_ACTION_PAM_AUTHZ,
+		/* write the request parameters */
 		WRITE_STRING(fp,user);
 		WRITE_STRING(fp,ctx->dn);
 		WRITE_STRING(fp,svc);
 		WRITE_STRING(fp,oldpw);
 		WRITE_STRING(fp,newpw),
-		pam_read_pwmod(fp,ctx));
+		/* read the result entry */
+		READ_BUF_STRING(fp,ctx->tmpluser);
+		READ_BUF_STRING(fp,ctx->dn);
+		READ_INT32(fp,ctx->authz);
+		READ_BUF_STRING(fp,ctx->authzmsg);
+		ctx->authz = nslcd2pam_rc(ctx->authz))
 }
 
 int pam_sm_chauthtok(
