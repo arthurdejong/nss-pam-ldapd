@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -46,7 +46,7 @@
  */
 
 /* the search base for searches */
-const char *service_base = NULL;
+const char *service_bases[NSS_LDAP_CONFIG_MAX_BASES] = { NULL };
 
 /* the search scope for searches */
 int service_scope = LDAP_SCOPE_DEFAULT;
@@ -110,11 +110,13 @@ static int mkfilter_service_bynumber(int number,
                       attmap_service_ipServicePort,number);
 }
 
-static void service_init(void)
+void service_init(void)
 {
-  /* set up base */
-  if (service_base==NULL)
-    service_base=nslcd_cfg->ldc_base;
+  int i;
+  /* set up search bases */
+  if (service_bases[0]==NULL)
+    for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
+      service_bases[i]=nslcd_cfg->ldc_bases[i];
   /* set up scope */
   if (service_scope==LDAP_SCOPE_DEFAULT)
     service_scope=nslcd_cfg->ldc_scope;

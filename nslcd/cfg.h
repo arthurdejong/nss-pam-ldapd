@@ -39,6 +39,9 @@
 /* maximum number of URIs */
 #define NSS_LDAP_CONFIG_URI_MAX         31
 
+/* maximum number of 'passwd base's */
+#define NSS_LDAP_CONFIG_MAX_BASES 7
+
 enum ldap_ssl_options
 {
   SSL_OFF,
@@ -101,7 +104,7 @@ struct ldap_config
   /* do we use sasl when binding? */
   int ldc_usesasl;
   /* base DN, eg. dc=gnu,dc=org */
-  char *ldc_base;
+  const char *ldc_bases[NSS_LDAP_CONFIG_MAX_BASES];
   /* scope for searches */
   int ldc_scope;
   /* dereference aliases/links */

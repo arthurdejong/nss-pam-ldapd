@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -46,7 +46,7 @@
  */
 
 /* the search base for searches */
-const char *ether_base = NULL;
+const char *ether_bases[NSS_LDAP_CONFIG_MAX_BASES] = { NULL };
 
 /* the search scope for searches */
 int ether_scope = LDAP_SCOPE_DEFAULT;
@@ -94,11 +94,13 @@ static int mkfilter_ether_byether(const struct ether_addr *addr,
                    attmap_ether_macAddress,buf2);
 }
 
-static void ether_init(void)
+void ether_init(void)
 {
-  /* set up base */
-  if (ether_base==NULL)
-    ether_base=nslcd_cfg->ldc_base;
+  int i;
+  /* set up search bases */
+  if (ether_bases[0]==NULL)
+    for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
+      ether_bases[i]=nslcd_cfg->ldc_bases[i];
   /* set up scope */
   if (ether_scope==LDAP_SCOPE_DEFAULT)
     ether_scope=nslcd_cfg->ldc_scope;

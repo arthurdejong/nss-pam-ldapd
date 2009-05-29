@@ -2,7 +2,7 @@
    test_cfg.c - simple test for the cfg module
    This file is part of the nss-ldapd library.
 
-   Copyright (C) 2007 Arthur de Jong
+   Copyright (C) 2007, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -189,7 +189,7 @@ static void test_tokenize(void)
   assertstreq(str,"simple line");
 }
 
-extern const char *passwd_base;
+extern const char *passwd_bases[];
 extern const char *group_filter;
 extern int passwd_scope;
 
@@ -221,8 +221,8 @@ static void test_read(void)
   assertstreq(cfg.ldc_uris[1].uri,"ldap:///");
   assertstreq(cfg.ldc_uris[2].uri,"ldaps://127.0.0.1/");
   assert(cfg.ldc_uris[3].uri==NULL);
-  assertstreq(cfg.ldc_base,"dc=test, dc=tld");
-  assertstreq(passwd_base,"ou=Some People,dc=test,dc=tld");
+  assertstreq(cfg.ldc_bases[0],"dc=test, dc=tld");
+  assertstreq(passwd_bases[0],"ou=Some People,dc=test,dc=tld");
   assertstreq(attmap_passwd_uid,"sAMAccountName");
   assertstreq(group_filter,"(&(objeclClass=posixGroup)(gid=1*))");
   assert(passwd_scope==LDAP_SCOPE_ONELEVEL);

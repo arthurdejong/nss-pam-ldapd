@@ -57,7 +57,7 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
 EXTRA_DIST = nss-ldapd.conf nslcd.h \
              $(wildcard m4/*.m4) HACKING $(DEBIAN_FILES)
 
-DISTCHECK_CONFIGURE_FLAGS='--enable-warnings'
+DISTCHECK_CONFIGURE_FLAGS = --enable-warnings --enable-pam
 
 ACLOCAL_AMFLAGS = -I m4
 

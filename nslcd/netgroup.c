@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -46,7 +46,7 @@
  */
 
 /* the search base for searches */
-const char *netgroup_base = NULL;
+const char *netgroup_bases[NSS_LDAP_CONFIG_MAX_BASES] = { NULL };
 
 /* the search scope for searches */
 int netgroup_scope = LDAP_SCOPE_DEFAULT;
@@ -76,11 +76,13 @@ static int mkfilter_netgroup_byname(const char *name,
                     attmap_netgroup_cn,buf2);
 }
 
-static void netgroup_init(void)
+void netgroup_init(void)
 {
-  /* set up base */
-  if (netgroup_base==NULL)
-    netgroup_base=nslcd_cfg->ldc_base;
+  int i;
+  /* set up search bases */
+  if (netgroup_bases[0]==NULL)
+    for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
+      netgroup_bases[i]=nslcd_cfg->ldc_bases[i];
   /* set up scope */
   if (netgroup_scope==LDAP_SCOPE_DEFAULT)
     netgroup_scope=nslcd_cfg->ldc_scope;

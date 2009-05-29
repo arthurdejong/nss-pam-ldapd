@@ -46,7 +46,7 @@
  */
 
 /* the search base for searches */
-const char *passwd_base = NULL;
+const char *passwd_bases[NSS_LDAP_CONFIG_MAX_BASES] = { NULL };
 
 /* the search scope for searches */
 int passwd_scope = LDAP_SCOPE_DEFAULT;
@@ -106,11 +106,13 @@ static int mkfilter_passwd_byuid(uid_t uid,
                     attmap_passwd_uidNumber,(int)uid);
 }
 
-static void passwd_init(void)
+void passwd_init(void)
 {
-  /* set up base */
-  if (passwd_base==NULL)
-    passwd_base=nslcd_cfg->ldc_base;
+  int i;
+  /* set up search bases */
+  if (passwd_bases[0]==NULL)
+    for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
+      passwd_bases[i]=nslcd_cfg->ldc_bases[i];
   /* set up scope */
   if (passwd_scope==LDAP_SCOPE_DEFAULT)
     passwd_scope=nslcd_cfg->ldc_scope;
@@ -248,7 +250,10 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
 
 MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid)
 {
-  MYLDAP_SEARCH *search;
+  MYLDAP_SEARCH *search=NULL;
+  MYLDAP_ENTRY *entry=NULL;
+  const char *base;
+  int i;
   static const char *attrs[1];
   int rc;
   char filter[1024];
@@ -257,14 +262,18 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid)
     return NULL;
   /* set up attributes (we don't care, we just want the DN) */
   attrs[0]=NULL;
-  /* initialize default base, scrope, etc */
-  passwd_init();
   /* we have to look up the entry */
   mkfilter_passwd_byname(uid,filter,sizeof(filter));
-  search=myldap_search(session,passwd_base,passwd_scope,filter,attrs);
-  if (search==NULL)
-    return NULL;
-  return myldap_get_entry(search,&rc);
+  for (i=0;(i<NSS_LDAP_CONFIG_MAX_BASES)&&((base=passwd_bases[i])!=NULL);i++)
+  {
+    search=myldap_search(session,base,passwd_scope,filter,attrs);
+    if (search==NULL)
+      return NULL;
+    entry=myldap_get_entry(search,&rc);
+    if (entry!=NULL)
+      return entry;
+  }
+  return NULL;
 }
 
 char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)

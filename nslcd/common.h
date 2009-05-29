@@ -92,6 +92,20 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid);
 /* transforms the uid into a DN by doing an LDAP lookup */
 MUST_USE char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen);
 
+/* these are the functions for initialising the database specific
+   modules */
+void alias_init(void);
+void ether_init(void);
+void group_init(void);
+void host_init(void);
+void netgroup_init(void);
+void network_init(void);
+void passwd_init(void);
+void protocol_init(void);
+void rpc_init(void);
+void service_init(void);
+void shadow_init(void);
+
 /* these are the different functions that handle the database
    specific actions, see nslcd.h for the action descriptions */
 int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session);
@@ -138,7 +152,8 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session);
     int32_t tmpint32; \
     MYLDAP_SEARCH *search; \
     MYLDAP_ENTRY *entry; \
-    int rc; \
+    const char *base; \
+    int rc,i; \
     /* read request parameters */ \
     readfn; \
     /* log call */ \
@@ -152,16 +167,18 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session);
       log_log(LOG_WARNING,"nslcd_" __STRING(db) "_" __STRING(fn) "(): filter buffer too small"); \
       return -1; \
     } \
-    /* build the list of attributes */ \
-    db##_init(); \
-    /* do the LDAP search */ \
-    if ((search=myldap_search(session,db##_base,db##_scope,filter,db##_attrs))==NULL) \
-      return -1; \
-    /* go over results */ \
-    while ((entry=myldap_get_entry(search,&rc))!=NULL) \
+    /* perform a search for each search base */ \
+    for (i=0; (base=db##_bases[i])!=NULL; i++) \
     { \
-      if (writefn) \
+      /* do the LDAP search */ \
+      if ((search=myldap_search(session,base,db##_scope,filter,db##_attrs))==NULL) \
         return -1; \
+      /* go over results */ \
+      while ((entry=myldap_get_entry(search,&rc))!=NULL) \
+      { \
+        if (writefn) \
+          return -1; \
+      } \
     } \
     /* write the final result code */ \
     if (rc==LDAP_SUCCESS) \
