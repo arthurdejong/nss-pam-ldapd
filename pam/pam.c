@@ -47,13 +47,17 @@
 #include <pam/pam_modules.h>
 #endif
 
-#define CONST_ARG const
-
 #define IGNORE_UNKNOWN  1
 #define IGNORE_UNAVAIL  2
 
+#define USE_FIRST 1
+#define TRY_FIRST 2
+#define USE_TOKEN 4
+
 #define PLD_CTX "PAM_LDAPD_CTX"
 
+/* this struct represents that context that the PAM module keeps
+   between calls */
 typedef struct pld_ctx {
   char *user;
   char *dn;
@@ -66,9 +70,10 @@ typedef struct pld_ctx {
   char buf[1024];
 } pld_ctx;
 
+/* map a NSLCD PAM status code to a PAM status code */
 static int nslcd2pam_rc(int rc)
 {
-#define map(i)  case NSLCD_##i : rc = i; break
+#define map(i) case NSLCD_##i: return i;
   switch(rc) {
     map(PAM_SUCCESS);
     map(PAM_PERM_DENIED);
@@ -83,65 +88,71 @@ static int nslcd2pam_rc(int rc)
     map(PAM_AUTHTOK_DISABLE_AGING);
     map(PAM_IGNORE);
     map(PAM_ABORT);
-    default: rc = PAM_ABORT; break;
+    default: return PAM_ABORT;
   }
-  return rc;
 }
 
-static void pam_clr_ctx(
-  pld_ctx *ctx)
+/* clear the context to all empty values */
+static void ctx_clear(pld_ctx *ctx)
 {
-  if (ctx->user) {
+  if (ctx->user)
+  {
     free(ctx->user);
-    ctx->user = NULL;
+    ctx->user=NULL;
   }
-  if (ctx->oldpw) {
+  if (ctx->oldpw)
+  {
     memset(ctx->oldpw,0,strlen(ctx->oldpw));
     free(ctx->oldpw);
-    ctx->oldpw = NULL;
+    ctx->oldpw=NULL;
   }
-  ctx->dn = NULL;
-  ctx->tmpluser = NULL;
-  ctx->authzmsg = NULL;
-  ctx->authok = 0;
-  ctx->authz = 0;
+  ctx->dn=NULL;
+  ctx->tmpluser=NULL;
+  ctx->authzmsg=NULL;
+  ctx->authok=0;
+  ctx->authz=0;
 }
 
-static void pam_del_ctx(
-  pam_handle_t *UNUSED(pamh), void *data, int UNUSED(err))
+/* free the context (this is installed as handler into PAM) */
+static void ctx_free(pam_handle_t *UNUSED(pamh),void *data,int UNUSED(err))
 {
-  pld_ctx *ctx = data;
-  pam_clr_ctx(ctx);
+  pld_ctx *ctx=data;
+  ctx_clear(ctx);
   free(ctx);
 }
 
-static int pam_get_ctx(
-  pam_handle_t *pamh, const char *user, pld_ctx **pctx)
+/* try to get the module's context, returns a PAM status code */
+static int ctx_get(pam_handle_t *pamh,const char *username,pld_ctx **pctx)
 {
-  pld_ctx *ctx = NULL;
+  pld_ctx *ctx=NULL;
   int rc;
-
-  if (pam_get_data(pamh, PLD_CTX, (CONST_ARG void **)&ctx) == PAM_SUCCESS) {
-    if (ctx->user && strcmp(ctx->user, user)) {
-      pam_clr_ctx(ctx);
-    }
-    rc = PAM_SUCCESS;
+  /* try to get the context from PAM */
+  rc=pam_get_data(pamh, PLD_CTX,(const void **)&ctx);
+  if ((rc==PAM_SUCCESS)&&(ctx!=NULL))
+  {
+    /* if the user is different clear the context */
+    if ((ctx->user!=NULL)&&(strcmp(ctx->user,username)!=0))
+      ctx_clear(ctx);
   }
-  if (!ctx) {
-    ctx = calloc(1, sizeof(*ctx));
+  else
+  {
+    /* allocate a new context */
+    ctx=calloc(1,sizeof(*ctx));
+    ctx_clear(ctx);
     if (!ctx)
       return PAM_BUF_ERR;
-    rc = pam_set_data(pamh, PLD_CTX, ctx, pam_del_ctx);
-    if (rc != PAM_SUCCESS)
-      pam_del_ctx(pamh, ctx, 0);
+    /* store the new context with the handler to free it */
+    rc=pam_set_data(pamh,PLD_CTX,ctx,ctx_free);
+    if (rc!=PAM_SUCCESS)
+      ctx_free(pamh,ctx,0);
   }
-  if (rc == PAM_SUCCESS)
-    *pctx = ctx;
+  if (rc==PAM_SUCCESS)
+    *pctx=ctx;
   return rc;
 }
 
-static int pam_get_authtok(
-  pam_handle_t *pamh, int flags, char *prompt1, char *prompt2, char **pwd)
+/* ask the user for an authentication token (password) */
+static int pam_get_authtok(pam_handle_t *pamh,int flags,char *prompt1,char *prompt2,char **pwd)
 {
   int rc;
   char *p;
@@ -149,45 +160,45 @@ static int pam_get_authtok(
   struct pam_response *resp;
   struct pam_conv *conv;
 
-  *pwd = NULL;
+  *pwd=NULL;
 
-  rc = pam_get_item (pamh, PAM_CONV, (CONST_ARG void **) &conv);
-  if (rc == PAM_SUCCESS) {
-    pmsg[0] = &msg[0];
-    msg[0].msg_style = PAM_PROMPT_ECHO_OFF;
-    msg[0].msg = prompt1;
-    resp = NULL;
-    rc = conv->conv (1,
-       (CONST_ARG struct pam_message **) pmsg,
-       &resp, conv->appdata_ptr);
+  rc=pam_get_item(pamh,PAM_CONV,(const void **)&conv);
+  if (rc==PAM_SUCCESS) {
+    pmsg[0]=&msg[0];
+    msg[0].msg_style=PAM_PROMPT_ECHO_OFF;
+    msg[0].msg=prompt1;
+    resp=NULL;
+    rc=conv->conv(1,
+       (const struct pam_message **)pmsg,
+       &resp,conv->appdata_ptr);
   } else {
     return rc;
   }
 
-  if (resp != NULL) {
-    if ((flags & PAM_DISALLOW_NULL_AUTHTOK) && resp[0].resp == NULL)
+  if (resp!=NULL) {
+    if ((flags & PAM_DISALLOW_NULL_AUTHTOK) && resp[0].resp==NULL)
     {
-      free (resp);
+      free(resp);
       return PAM_AUTH_ERR;
     }
 
-    p = resp[0].resp;
-    resp[0].resp = NULL;
-    free (resp);
+    p=resp[0].resp;
+    resp[0].resp=NULL;
+    free(resp);
   } else {
     return PAM_CONV_ERR;
   }
 
   if (prompt2) {
-    msg[0].msg = prompt2;
-    resp = NULL;
-    rc = conv->conv (1,
-       (CONST_ARG struct pam_message **) pmsg,
+    msg[0].msg=prompt2;
+    resp=NULL;
+    rc=conv->conv(1,
+       (const struct pam_message **) pmsg,
        &resp, conv->appdata_ptr);
     if (resp && resp[0].resp && !strcmp(resp[0].resp, p))
-      rc = PAM_SUCCESS;
+      rc=PAM_SUCCESS;
     else
-      rc = PAM_AUTHTOK_RECOVERY_ERR;
+      rc=PAM_AUTHTOK_RECOVERY_ERR;
     if (resp) {
       if (resp[0].resp) {
         (void) memset(resp[0].resp, 0, strlen(resp[0].resp));
@@ -197,8 +208,8 @@ static int pam_get_authtok(
     }
   }
 
-  if (rc == PAM_SUCCESS)
-    *pwd = p;
+  if (rc==PAM_SUCCESS)
+    *pwd=p;
   else if (p) {
     memset(p, 0, strlen(p));
     free(p);
@@ -207,84 +218,81 @@ static int pam_get_authtok(
   return rc;
 }
 
-static int pam_do_authc(
-  pld_ctx *ctx, const char *user, const char *svc,const char *pwd)
+/* perform an authentication call over nslcd */
+static int nslcd_request_authc(pld_ctx *ctx,const char *username,const char *svc,const char *passwd)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_AUTHC,
     /* write the request parameters */
-    WRITE_STRING(fp,user);
+    WRITE_STRING(fp,username);
     WRITE_STRING(fp,ctx->dn);
     WRITE_STRING(fp,svc);
-    WRITE_STRING(fp,pwd),
+    WRITE_STRING(fp,passwd),
     /* read the result entry */
     READ_BUF_STRING(fp,ctx->tmpluser);
     READ_BUF_STRING(fp,ctx->dn);
-    READ_INT32(fp,ctx->authok);
-    READ_INT32(fp,ctx->authz);
-    READ_BUF_STRING(fp,ctx->authzmsg);
-    ctx->authok = nslcd2pam_rc(ctx->authok);
-    ctx->authz = nslcd2pam_rc(ctx->authz))
+    READ_PAM_CODE(fp,ctx->authok)
+    READ_PAM_CODE(fp,ctx->authz)
+    READ_BUF_STRING(fp,ctx->authzmsg);)
 }
 
-#define USE_FIRST 1
-#define TRY_FIRST 2
-#define USE_TOKEN 4
-
-int pam_sm_authenticate(
-  pam_handle_t *pamh, int flags, int argc, const char **argv)
+int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
   int rc;
-  const char *username, *svc;
-  char *p = NULL;
-  int first_pass = 0, ignore_flags = 0;
+  const char *username,*svc;
+  char *passwd=NULL;
+  int first_pass=0,ignore_flags=0;
   int i;
   pld_ctx *ctx;
-
-  for (i = 0; i < argc; i++) {
-    if (!strcmp (argv[i], "use_first_pass"))
-      first_pass |= USE_FIRST;
-    else if (!strcmp (argv[i], "try_first_pass"))
-      first_pass |= TRY_FIRST;
-    else if (!strcmp (argv[i], "ignore_unknown_user"))
-      ignore_flags |= IGNORE_UNKNOWN;
-    else if (!strcmp (argv[i], "ignore_authinfo_unavail"))
-      ignore_flags |= IGNORE_UNAVAIL;
-    else if (!strcmp (argv[i], "no_warn"))
-      ;
-    else if (!strcmp (argv[i], "debug"))
-      ;
+  /* go over arguments */
+  for (i=0;i<argc;i++)
+  {
+    if (strcmp(argv[i],"use_first_pass")==0)
+      first_pass|=USE_FIRST;
+    else if (strcmp(argv[i],"try_first_pass")==0)
+      first_pass|=TRY_FIRST;
+    else if (strcmp(argv[i],"ignore_unknown_user")==0)
+      ignore_flags|=IGNORE_UNKNOWN;
+    else if (strcmp(argv[i],"ignore_authinfo_unavail")==0)
+      ignore_flags|=IGNORE_UNAVAIL;
+    else if (strcmp(argv[i], "no_warn")==0)
+      /* ignore */;
+    else if (strcmp(argv[i],"debug")==0)
+      /* ignore */;
     else
-      syslog (LOG_ERR, "illegal option %s", argv[i]);
+      syslog(LOG_AUTHPRIV|LOG_ERR,"unknown option: %s",argv[i]);
   }
-
-  rc = pam_get_user (pamh, (CONST_ARG char **) &username, NULL);
-  if (rc != PAM_SUCCESS)
+  /* get user name */
+  rc=pam_get_user(pamh,(const char **)&username,NULL);
+  if (rc!=PAM_SUCCESS)
     return rc;
-
-  rc = pam_get_ctx(pamh, username, &ctx);
-  if (rc != PAM_SUCCESS)
+  /* get our context */
+  rc=ctx_get(pamh,username,&ctx);
+  if (rc!=PAM_SUCCESS)
     return rc;
-
-  rc = pam_get_item (pamh, PAM_SERVICE, (CONST_ARG void **) &svc);
-  if (rc != PAM_SUCCESS)
+  /* get service name */
+  rc=pam_get_item(pamh,PAM_SERVICE,(const void **)&svc);
+  if (rc!=PAM_SUCCESS)
     return rc;
-
-  for (i=0;i<2;i++) {
-    if (!first_pass) {
-      rc = pam_get_authtok(pamh, flags, i ? "LDAP Password: " :
-        "Password: ", NULL, &p);
-      i = 2;
-      if (rc == PAM_SUCCESS) {
-        pam_set_item(pamh, PAM_AUTHTOK, p);
-        memset(p, 0, strlen(p));
-        free(p);
-      } else {
-        break;
-      }
+  /* try twice */
+  for (i=0;i<2;i++)
+  {
+    if (!first_pass)
+    {
+      rc=pam_get_authtok(pamh,flags,i==0?"Password: ":"LDAP Password: ",NULL,&passwd);
+      if (rc!=PAM_SUCCESS)
+        return rc;
+      /* exit loop after trying this password */
+      i=2;
+      /* store password */
+      pam_set_item(pamh,PAM_AUTHTOK,passwd);
+      /* clear and free password */
+      memset(passwd,0,strlen(passwd));
+      free(passwd);
     }
-    rc = pam_get_item (pamh, PAM_AUTHTOK, (CONST_ARG void **) &p);
-    if (rc == PAM_SUCCESS) {
-      rc = pam_do_authc(ctx, username, svc, p);
+    rc=pam_get_item(pamh,PAM_AUTHTOK,(const void **)&passwd);
+    if (rc==PAM_SUCCESS)
+    {
+      rc=nslcd_request_authc(ctx,username,svc,passwd);
       if (rc==PAM_SUCCESS)
         rc=ctx->authok;
       if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
@@ -292,35 +300,33 @@ int pam_sm_authenticate(
       else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
         rc=PAM_IGNORE;
     }
-    if (rc == PAM_SUCCESS || (first_pass & USE_FIRST)) {
+    if ((rc==PAM_SUCCESS)||(first_pass&USE_FIRST))
       break;
-    }
-    first_pass = 0;
+    first_pass=0;
   }
-
-  if (rc == PAM_SUCCESS) {
-    ctx->user = strdup(username);
-    if (ctx->authz == PAM_NEW_AUTHTOK_REQD)
-      ctx->oldpw = strdup(p);
+  /* save username */
+  if (rc==PAM_SUCCESS) {
+    ctx->user=strdup(username);
+    /* if password change is required, save old password in context */
+    if (ctx->authz==PAM_NEW_AUTHTOK_REQD)
+      ctx->oldpw=strdup(passwd);
   }
-
   /* update caller's idea of the user name */
   if ( (rc==PAM_SUCCESS) && ctx->tmpluser && ctx->tmpluser[0] &&
        (strcmp(ctx->tmpluser,username)!=0) ) {
-    rc = pam_set_item(pamh, PAM_USER, ctx->tmpluser);
+    rc=pam_set_item(pamh,PAM_USER,ctx->tmpluser);
   }
-
   return rc;
 }
 
-int pam_sm_setcred(
-  pam_handle_t *pamh, int flags, int argc, const char **argv)
+/* called to update the authentication credentials */
+int pam_sm_setcred(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
+  /* we don't need to do anything here */
   return PAM_SUCCESS;
 }
 
-static int
-pam_warn(
+static int pam_warn(
   struct pam_conv *aconv, const char *message, int style, int no_warn)
 {
   struct pam_message msg, *pmsg;
@@ -329,19 +335,19 @@ pam_warn(
   if (no_warn)
     return PAM_SUCCESS;
 
-  pmsg = &msg;
+  pmsg=&msg;
 
-  msg.msg_style = style;
-  msg.msg = (char *) message;
-  resp = NULL;
+  msg.msg_style=style;
+  msg.msg=(char *) message;
+  resp=NULL;
 
-  return aconv->conv (1,
-          (CONST_ARG struct pam_message **) &pmsg,
+  return aconv->conv(1,
+          (const struct pam_message **) &pmsg,
           &resp, aconv->appdata_ptr);
 }
 
-static int pam_do_authz(
-  pld_ctx *ctx,const char *username,const char *svc)
+/* perform an authorisation call over nslcd */
+static int nslcd_request_authz(pld_ctx *ctx,const char *username,const char *svc)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_AUTHZ,
     /* write the request parameters */
@@ -351,99 +357,101 @@ static int pam_do_authz(
     /* read the result entry */
     READ_BUF_STRING(fp,ctx->tmpluser);
     READ_BUF_STRING(fp,ctx->dn);
-    READ_INT32(fp,ctx->authz);
-    READ_BUF_STRING(fp,ctx->authzmsg);
-    ctx->authz = nslcd2pam_rc(ctx->authz))
+    READ_PAM_CODE(fp,ctx->authz);
+    READ_BUF_STRING(fp,ctx->authzmsg);)
 }
 
-int pam_sm_acct_mgmt(
-  pam_handle_t *pamh, int flags, int argc, const char **argv)
+int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
   int rc;
-  const char *username, *svc;
-  int no_warn = 0, ignore_flags = 0;
+  const char *username,*svc;
+  int no_warn=0, ignore_flags=0;
   int i;
   struct pam_conv *appconv;
-  pld_ctx *ctx = NULL, ctx2;
+  pld_ctx *ctx=NULL, ctx2;
 
-  for (i = 0; i < argc; i++)
+  for (i=0;i<argc;i++)
   {
-    if (!strcmp (argv[i], "use_first_pass"))
+    if (strcmp(argv[i],"use_first_pass")==0)
       ;
-    else if (!strcmp (argv[i], "try_first_pass"))
+    else if (strcmp(argv[i],"try_first_pass")==0)
       ;
-    else if (!strcmp (argv[i], "no_warn"))
-      no_warn = 1;
-    else if (!strcmp (argv[i], "ignore_unknown_user"))
-      ignore_flags |= IGNORE_UNKNOWN;
-    else if (!strcmp (argv[i], "ignore_authinfo_unavail"))
-      ignore_flags |= IGNORE_UNAVAIL;
-    else if (!strcmp (argv[i], "debug"))
+    else if (strcmp(argv[i],"no_warn")==0)
+      no_warn=1;
+    else if (strcmp(argv[i],"ignore_unknown_user")==0)
+      ignore_flags|=IGNORE_UNKNOWN;
+    else if (strcmp(argv[i],"ignore_authinfo_unavail")==0)
+      ignore_flags|=IGNORE_UNAVAIL;
+    else if (strcmp(argv[i],"debug")==0)
       ;
     else
-      syslog (LOG_ERR, "illegal option %s", argv[i]);
+      syslog(LOG_AUTHPRIV|LOG_ERR,"unknown option: %s",argv[i]);
   }
 
-  if (flags & PAM_SILENT)
-    no_warn = 1;
+  if (flags&PAM_SILENT)
+    no_warn=1;
 
-  rc = pam_get_item (pamh, PAM_CONV, (CONST_ARG void **) &appconv);
-  if (rc != PAM_SUCCESS)
+  rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  rc = pam_get_user (pamh, (CONST_ARG char **) &username, NULL);
-  if (rc != PAM_SUCCESS)
+  rc=pam_get_user(pamh,(const char **)&username,NULL);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  if (username == NULL)
+  if ((username==NULL)||(username[0]=='\0'))
     return PAM_USER_UNKNOWN;
 
-  rc = pam_get_ctx(pamh, username, &ctx);
-  if (rc != PAM_SUCCESS)
+  rc=ctx_get(pamh,username,&ctx);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  rc = pam_get_item (pamh, PAM_SERVICE, (CONST_ARG void **) &svc);
-  if (rc != PAM_SUCCESS)
+  rc=pam_get_item(pamh,PAM_SERVICE,(const void **)&svc);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  ctx2.dn = ctx->dn;
-  ctx2.user = ctx->user;
-  rc = pam_do_authz(&ctx2, username, svc);
+  ctx2.dn=ctx->dn;
+  ctx2.user=ctx->user;
+  rc=nslcd_request_authz(&ctx2,username,svc);
   if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
     rc=PAM_IGNORE;
-  if (rc != PAM_SUCCESS) {
-    if (rc != PAM_IGNORE)
-      pam_warn(appconv, "LDAP authorization failed", PAM_ERROR_MSG, no_warn);
-  } else {
+  if (rc!=PAM_SUCCESS) 
+  {
+    if (rc!=PAM_IGNORE)
+      pam_warn(appconv,"LDAP authorization failed",PAM_ERROR_MSG,no_warn);
+  } 
+  else 
+  {
     if (ctx2.authzmsg && ctx2.authzmsg[0])
-      pam_warn(appconv, ctx2.authzmsg, PAM_TEXT_INFO, no_warn);
-    if (ctx2.authz == PAM_SUCCESS) {
-      rc = ctx->authz;
+      pam_warn(appconv,ctx2.authzmsg,PAM_TEXT_INFO,no_warn);
+    if (ctx2.authz==PAM_SUCCESS) 
+    {
+      rc=ctx->authz;
       if (ctx->authzmsg && ctx->authzmsg[0])
-        pam_warn(appconv, ctx->authzmsg, PAM_TEXT_INFO, no_warn);
+        pam_warn(appconv,ctx->authzmsg,PAM_TEXT_INFO,no_warn);
     }
   }
 
   /* update caller's idea of the user name */
   if ( (rc==PAM_SUCCESS) && ctx->tmpluser && ctx->tmpluser[0] &&
        (strcmp(ctx->tmpluser,username)!=0) ) {
-    rc = pam_set_item(pamh, PAM_USER, ctx->tmpluser);
+    rc=pam_set_item(pamh,PAM_USER,ctx->tmpluser);
   }
   return rc;
 }
 
-static int pam_do_sess(
-  pam_handle_t *pamh,pld_ctx *ctx,int action)
+/* do a session nslcd request (open or close) */
+static int nslcd_request_sess(pam_handle_t *pamh,pld_ctx *ctx,int action)
 {
   const char *svc=NULL,*tty=NULL,*rhost=NULL,*ruser=NULL;
   PAM_REQUEST(action,
-    /* get information for request */
-    pam_get_item (pamh, PAM_SERVICE, (CONST_ARG void **) &svc);
-    pam_get_item (pamh, PAM_TTY, (CONST_ARG void **) &tty);
-    pam_get_item (pamh, PAM_RHOST, (CONST_ARG void **) &rhost);
-    pam_get_item (pamh, PAM_RUSER, (CONST_ARG void **) &ruser);
+    /* get information for request (ignore errors) */
+    pam_get_item(pamh,PAM_SERVICE,(const void **)&svc);
+    pam_get_item(pamh,PAM_TTY,(const void **)&tty);
+    pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
+    pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
     /* write the request parameters */
     WRITE_STRING(fp,ctx->user);
     WRITE_STRING(fp,ctx->dn);
@@ -462,43 +470,43 @@ static int pam_sm_session(
 {
   int rc, err;
   const char *username;
-  int ignore_flags = 0;
-  int i, success = PAM_SUCCESS;
-  pld_ctx *ctx = NULL;
+  int ignore_flags=0;
+  int i, success=PAM_SUCCESS;
+  pld_ctx *ctx=NULL;
 
-  for (i = 0; i < argc; i++)
+  for (i=0;i<argc;i++)
   {
-    if (!strcmp (argv[i], "use_first_pass"))
+    if (strcmp(argv[i],"use_first_pass")==0)
       ;
-    else if (!strcmp (argv[i], "try_first_pass"))
+    else if (strcmp(argv[i],"try_first_pass")==0)
       ;
-    else if (!strcmp (argv[i], "no_warn"))
-      *no_warn = 1;
-    else if (!strcmp (argv[i], "ignore_unknown_user"))
-      ignore_flags |= IGNORE_UNKNOWN;
-    else if (!strcmp (argv[i], "ignore_authinfo_unavail"))
-      ignore_flags |= IGNORE_UNAVAIL;
-    else if (!strcmp (argv[i], "debug"))
+    else if (strcmp(argv[i],"no_warn")==0)
+      *no_warn=1;
+    else if (strcmp(argv[i],"ignore_unknown_user")==0)
+      ignore_flags|=IGNORE_UNKNOWN;
+    else if (strcmp(argv[i],"ignore_authinfo_unavail")==0)
+      ignore_flags|=IGNORE_UNAVAIL;
+    else if (strcmp(argv[i],"debug")==0)
       ;
     else
-      syslog (LOG_ERR, "illegal option %s", argv[i]);
+      syslog(LOG_AUTHPRIV|LOG_ERR,"unknown option: %s",argv[i]);
   }
 
   if (flags & PAM_SILENT)
-    *no_warn = 1;
+    *no_warn=1;
 
-  rc = pam_get_user (pamh, (CONST_ARG char **) &username, NULL);
-  if (rc != PAM_SUCCESS)
+  rc=pam_get_user(pamh,(const char **)&username,NULL);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  if (username == NULL)
+  if ((username==NULL)||(username[0]=='\0'))
     return PAM_USER_UNKNOWN;
 
-  rc = pam_get_ctx(pamh, username, &ctx);
-  if (rc != PAM_SUCCESS)
+  rc=ctx_get(pamh,username,&ctx);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  rc = pam_do_sess(pamh, ctx, action);
+  rc=nslcd_request_sess(pamh,ctx,action);
   if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
@@ -509,42 +517,42 @@ static int pam_sm_session(
 int pam_sm_open_session(
   pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-  int rc, no_warn = 0;
+  int rc, no_warn=0;
   struct pam_conv *appconv;
 
-  rc = pam_get_item (pamh, PAM_CONV, (CONST_ARG void **) &appconv);
-  if (rc != PAM_SUCCESS)
+  rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  rc = pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_O,&no_warn);
-  if (rc != PAM_SUCCESS && rc != PAM_IGNORE)
-    pam_warn(appconv, "LDAP open_session failed", PAM_ERROR_MSG, no_warn);
+  rc=pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_O,&no_warn);
+  if ((rc!=PAM_SUCCESS)&&(rc!=PAM_IGNORE))
+    pam_warn(appconv,"LDAP open_session failed",PAM_ERROR_MSG,no_warn);
   return rc;
 }
 
 int pam_sm_close_session(
   pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-  int rc, no_warn = 0;;
+  int rc, no_warn=0;;
   struct pam_conv *appconv;
 
-  rc = pam_get_item (pamh, PAM_CONV, (CONST_ARG void **) &appconv);
-  if (rc != PAM_SUCCESS)
+  rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  rc = pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_C,&no_warn);
-  if (rc != PAM_SUCCESS && rc != PAM_IGNORE)
-    pam_warn(appconv, "LDAP close_session failed", PAM_ERROR_MSG, no_warn);
+  rc=pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_C,&no_warn);
+  if ((rc!=PAM_SUCCESS)&&(rc!=PAM_IGNORE))
+    pam_warn(appconv,"LDAP close_session failed",PAM_ERROR_MSG,no_warn);
   return rc;
 }
 
-static int pam_do_pwmod(
-  pld_ctx *ctx, const char *user, const char *svc,
-  const char *oldpw, const char *newpw)
+/* do a password modification nslcd call */
+static int nslcd_request_pwmod(pld_ctx *ctx,const char *username,const char *svc,
+                    const char *oldpw,const char *newpw)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_AUTHZ,
     /* write the request parameters */
-    WRITE_STRING(fp,user);
+    WRITE_STRING(fp,username);
     WRITE_STRING(fp,ctx->dn);
     WRITE_STRING(fp,svc);
     WRITE_STRING(fp,oldpw);
@@ -552,81 +560,81 @@ static int pam_do_pwmod(
     /* read the result entry */
     READ_BUF_STRING(fp,ctx->tmpluser);
     READ_BUF_STRING(fp,ctx->dn);
-    READ_INT32(fp,ctx->authz);
-    READ_BUF_STRING(fp,ctx->authzmsg);
-    ctx->authz = nslcd2pam_rc(ctx->authz))
+    READ_PAM_CODE(fp,ctx->authz);
+    READ_BUF_STRING(fp,ctx->authzmsg);)
 }
 
 int pam_sm_chauthtok(
   pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
   int rc;
-  const char *username, *p = NULL, *q = NULL, *svc;
-  int first_pass = 0, no_warn = 0, ignore_flags = 0;
-  int i, success = PAM_SUCCESS;
+  const char *username, *p=NULL, *q=NULL, *svc;
+  int first_pass=0, no_warn=0, ignore_flags=0;
+  int i, success=PAM_SUCCESS;
   struct pam_conv *appconv;
-  pld_ctx *ctx = NULL;
+  pld_ctx *ctx=NULL;
 
-  for (i = 0; i < argc; i++)
+  for (i=0;i<argc;i++)
   {
-    if (!strcmp (argv[i], "use_first_pass"))
-      first_pass |= USE_FIRST;
-    else if (!strcmp (argv[i], "try_first_pass"))
-      first_pass |= TRY_FIRST;
-    else if (!strcmp (argv[i], "use_authtok"))
-      first_pass |= USE_TOKEN;
-    else if (!strcmp (argv[i], "no_warn"))
-      no_warn = 1;
-    else if (!strcmp (argv[i], "ignore_unknown_user"))
-      ignore_flags |= IGNORE_UNKNOWN;
-    else if (!strcmp (argv[i], "ignore_authinfo_unavail"))
-      ignore_flags |= IGNORE_UNAVAIL;
-    else if (!strcmp (argv[i], "debug"))
+    if (strcmp(argv[i],"use_first_pass")==0)
+      first_pass|=USE_FIRST;
+    else if (strcmp(argv[i],"try_first_pass")==0)
+      first_pass|=TRY_FIRST;
+    else if (strcmp(argv[i],"use_authtok")==0)
+      first_pass|=USE_TOKEN;
+    else if (strcmp(argv[i],"no_warn")==0)
+      no_warn=1;
+    else if (strcmp(argv[i],"ignore_unknown_user")==0)
+      ignore_flags|=IGNORE_UNKNOWN;
+    else if (strcmp(argv[i],"ignore_authinfo_unavail")==0)
+      ignore_flags|=IGNORE_UNAVAIL;
+    else if (strcmp(argv[i],"debug")==0)
       ;
     else
-      syslog (LOG_ERR, "illegal option %s", argv[i]);
+      syslog(LOG_AUTHPRIV|LOG_ERR,"unknown option: %s",argv[i]);
   }
 
-  if (flags & PAM_SILENT)
-    no_warn = 1;
+  if (flags&PAM_SILENT)
+    no_warn=1;
 
-  rc = pam_get_item (pamh, PAM_CONV, (CONST_ARG void **) &appconv);
-  if (rc != PAM_SUCCESS)
+  rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  rc = pam_get_user (pamh, (CONST_ARG char **) &username, NULL);
-  if (rc != PAM_SUCCESS)
+  rc=pam_get_user(pamh,(const char **)&username,NULL);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  if (username == NULL)
+  if (username==NULL)
     return PAM_USER_UNKNOWN;
 
-  rc = pam_get_ctx(pamh, username, &ctx);
-  if (rc != PAM_SUCCESS)
+  rc=ctx_get(pamh,username,&ctx);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
-  rc = pam_get_item (pamh, PAM_SERVICE, (CONST_ARG void **) &svc);
-  if (rc != PAM_SUCCESS)
+  rc=pam_get_item(pamh,PAM_SERVICE,(const void **)&svc);
+  if (rc!=PAM_SUCCESS)
     return rc;
 
   if (flags & PAM_PRELIM_CHECK) {
     if (getuid()) {
       if (!first_pass) {
-        rc = pam_get_authtok(pamh, flags, "(current) LDAP Password: ",
-          NULL, &p);
-        if (rc == PAM_SUCCESS) {
-          pam_set_item(pamh, PAM_OLDAUTHTOK, p);
-          memset(p, 0, strlen(p));
+        rc=pam_get_authtok(pamh,flags,"(current) LDAP Password: ",NULL,&p);
+        if (rc==PAM_SUCCESS) {
+          pam_set_item(pamh,PAM_OLDAUTHTOK,p);
+          memset(p,0,strlen(p));
           free(p);
         }
       }
-      rc = pam_get_item(pamh, PAM_OLDAUTHTOK, &p);
-      if (rc) return rc;
-    } else {
-      rc = PAM_SUCCESS;
-    }
-    if (!ctx->dn) {
-      rc = pam_do_pwmod(ctx, username, svc, p, NULL);
+      rc=pam_get_item(pamh,PAM_OLDAUTHTOK,&p);
+      if (rc) 
+        return rc;
+    } 
+    else 
+      rc=PAM_SUCCESS;
+    if (!ctx->dn) 
+    {
+      rc=nslcd_request_pwmod(ctx,username,svc,p,NULL);
       if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
         rc=PAM_IGNORE;
       else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
@@ -635,49 +643,55 @@ int pam_sm_chauthtok(
     return rc;
   }
 
-  rc = pam_get_item(pamh, PAM_OLDAUTHTOK, &p);
-  if (rc) return rc;
+  rc=pam_get_item(pamh,PAM_OLDAUTHTOK,&p);
+  if (rc) 
+    return rc;
 
   if (!p)
-    p = ctx->oldpw;
+    p=ctx->oldpw;
 
-  if (first_pass) {
-    rc = pam_get_item(pamh, PAM_AUTHTOK, &q);
-    if ((rc != PAM_SUCCESS || !q) && (first_pass & (USE_FIRST|USE_TOKEN))) {
-      if (rc == PAM_SUCCESS)
-        rc = PAM_AUTHTOK_RECOVERY_ERR;
+  if (first_pass) 
+  {
+    rc=pam_get_item(pamh,PAM_AUTHTOK,&q);
+    if ((rc!=PAM_SUCCESS || !q) && (first_pass & (USE_FIRST|USE_TOKEN))) {
+      if (rc==PAM_SUCCESS)
+        rc=PAM_AUTHTOK_RECOVERY_ERR;
       return rc;
     }
   }
-  if (!q) {
-    rc = pam_get_authtok(pamh, flags, "Enter new LDAP Password: ",
+  if (!q) 
+  {
+    rc=pam_get_authtok(pamh, flags, "Enter new LDAP Password: ",
       "Retype new LDAP Password: ", &q);
-    if (rc == PAM_SUCCESS) {
-      pam_set_item(pamh, PAM_AUTHTOK, q);
-      memset(q, 0, strlen(q));
+    if (rc==PAM_SUCCESS) 
+    {
+      pam_set_item(pamh,PAM_AUTHTOK,q);
+      memset(q,0,strlen(q));
       free(q);
-      rc = pam_get_item(pamh, PAM_AUTHTOK, &q);
+      rc=pam_get_item(pamh,PAM_AUTHTOK,&q);
     }
-    if (rc != PAM_SUCCESS)
+    if (rc!=PAM_SUCCESS)
       return rc;
   }
-  rc = pam_do_pwmod(ctx, username, svc, p, q);
+  rc=nslcd_request_pwmod(ctx,username,svc,p,q);
   if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
     rc=PAM_IGNORE;
-  p = NULL; q = NULL;
-  if (rc == PAM_SUCCESS) {
-    rc = ctx->authz;
-    if (rc != PAM_SUCCESS)
+  p=NULL; q=NULL;
+  if (rc==PAM_SUCCESS) 
+  {
+    rc=ctx->authz;
+    if (rc!=PAM_SUCCESS)
       pam_warn(appconv, ctx->authzmsg, PAM_ERROR_MSG, no_warn);
-  } else if (rc != PAM_IGNORE)
+  } 
+  else if (rc!=PAM_IGNORE)
     pam_warn(appconv, "LDAP pwmod failed", PAM_ERROR_MSG, no_warn);
   return rc;
 }
 
 #ifdef PAM_STATIC
-struct pam_module _pam_ldap_modstruct = {
+struct pam_module _pam_ldap_modstruct={
   "pam_ldap",
   pam_sm_authenticate,
   pam_sm_setcred,

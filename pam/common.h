@@ -82,4 +82,10 @@
   (void)tio_close(fp); \
   return PAM_SUCCESS;
 
+/* helper macro to read PAM status code (auto-translated from NSLCD PAM
+   status code */
+#define READ_PAM_CODE(fp,i) \
+  READ_TYPE(fp,tmpint32,int32_t); \
+  i=nslcd2pam_rc(tmpint32);
+
 #endif /* not _PAM_COMMON_H */
