@@ -63,6 +63,10 @@ test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o \
 
 test_myldap_SOURCES = test_myldap.c
 test_myldap_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
+                    ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
+                    ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
+                    ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
+                    ../nslcd/service.o ../nslcd/shadow.o \
                     ../nslcd/myldap.o @nslcd_LIBS@ ../common/libtio.a \
                     ../common/libdict.a ../compat/libcompat.a
 
@@ -71,6 +75,10 @@ test_getpeercred_LDADD = ../compat/libcompat.a
 
 test_common_SOURCES = test_common.c
 test_common_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
+                    ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
+                    ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
+                    ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
+                    ../nslcd/service.o ../nslcd/shadow.o \
                     ../nslcd/myldap.o @nslcd_LIBS@ ../common/libtio.a \
                     ../common/libdict.a ../compat/libcompat.a
 
