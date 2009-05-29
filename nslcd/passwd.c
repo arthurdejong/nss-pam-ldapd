@@ -246,13 +246,11 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   return buf;
 }
 
-char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
+MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid)
 {
   MYLDAP_SEARCH *search;
-  MYLDAP_ENTRY *entry;
   static const char *attrs[1];
   int rc;
-  const char *dn;
   char filter[1024];
   /* if it isn't a valid username, just bail out now */
   if (!isvalidname(uid))
@@ -266,23 +264,18 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
   search=myldap_search(session,passwd_base,passwd_scope,filter,attrs);
   if (search==NULL)
     return NULL;
-  entry=myldap_get_entry(search,&rc);
+  return myldap_get_entry(search,&rc);
+}
+
+char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
+{
+  MYLDAP_ENTRY *entry;
+  /* look up the entry */
+  entry=uid2entry(session,uid);
   if (entry==NULL)
     return NULL;
   /* get DN */
-  dn=myldap_get_dn(entry);
-  if (strcasecmp(dn,"unknown")==0)
-  {
-    myldap_search_close(search);
-    return NULL;
-  }
-  /* copy into buffer */
-  if (strlen(dn)<buflen)
-    strcpy(buf,dn);
-  else
-    buf=NULL;
-  myldap_search_close(search);
-  return buf;
+  return myldap_cpy_dn(entry,buf,buflen);
 }
 
 /* the maximum number of uidNumber attributes per entry */

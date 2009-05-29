@@ -104,6 +104,9 @@ MUST_USE MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp);
    "unknown" is returned). */
 MUST_USE const char *myldap_get_dn(MYLDAP_ENTRY *entry);
 
+/* Just like myldap_get_dn() but copies the result into the buffer. */
+char *myldap_cpy_dn(MYLDAP_ENTRY *entry,char *buf,size_t buflen);
+
 /* Get the attribute values from a certain entry as a NULL terminated list.
    May return NULL or an empty array. */
 MUST_USE const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr);

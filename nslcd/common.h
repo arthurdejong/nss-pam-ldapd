@@ -86,6 +86,9 @@ MUST_USE char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp);
 /* transforms the DN info a uid doing an LDAP lookup if needed */
 MUST_USE char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen);
 
+/* use the user id to lookup an LDAP entry */
+MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid);
+
 /* transforms the uid into a DN by doing an LDAP lookup */
 MUST_USE char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen);
 

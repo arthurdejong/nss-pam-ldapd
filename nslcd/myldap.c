@@ -1206,6 +1206,19 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
   return entry->dn;
 }
 
+char *myldap_cpy_dn(MYLDAP_ENTRY *entry,char *buf,size_t buflen)
+{
+  const char *dn;
+  /* get the dn */
+  dn=myldap_get_dn(entry);
+  /* copy into buffer */
+  if (strlen(dn)<buflen)
+    strcpy(buf,dn);
+  else
+    buf=NULL;
+  return buf;
+}
+
 /* Return a buffer that is an a list of strings that can be freed
    with a single call to free(). This function frees the set. */
 static char **set2values(SET *set)
