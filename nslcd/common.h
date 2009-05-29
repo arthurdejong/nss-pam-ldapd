@@ -25,7 +25,7 @@
 #define _SERVER_COMMON_H 1
 
 #include "nslcd.h"
-#include "nslcd-common.h"
+#include "common/nslcd-prot.h"
 #include "common/tio.h"
 #include "compat/attrs.h"
 #include "myldap.h"

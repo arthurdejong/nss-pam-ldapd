@@ -37,10 +37,10 @@ static enum nss_status read_group(
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
-  READ_STRING_BUF(fp,result->gr_name);
-  READ_STRING_BUF(fp,result->gr_passwd);
+  READ_BUF_STRING(fp,result->gr_name);
+  READ_BUF_STRING(fp,result->gr_passwd);
   READ_TYPE(fp,result->gr_gid,gid_t);
-  READ_STRINGLIST_NULLTERM(fp,result->gr_mem);
+  READ_BUF_STRINGLIST(fp,result->gr_mem);
   return NSS_STATUS_SUCCESS;
 }
 

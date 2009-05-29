@@ -33,11 +33,14 @@ static enum nss_status read_aliasent(
         TFILE *fp,struct aliasent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  int32_t tmpint32,tmp2int32;
+  int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
-  /* auto-genereted read code */
-  READ_STRING_BUF(fp,result->alias_name);
-  READ_STRINGLIST_NUM(fp,result->alias_members,result->alias_members_len);
+  /* read the name of the alias */
+  READ_BUF_STRING(fp,result->alias_name);
+  /* read the members */
+  READ_BUF_STRINGLIST(fp,result->alias_members);
+  /* tmp3int32 holds the number of entries read */
+  result->alias_members_len=tmp3int32;
   /* fill in remaining gaps in struct */
   result->alias_local=0;
   /* we're done */

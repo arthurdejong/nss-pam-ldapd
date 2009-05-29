@@ -72,8 +72,8 @@ static enum nss_status read_hostent(
   int readaf;
   size_t bufptr=0;
   /* read the host entry */
-  READ_STRING_BUF(fp,result->h_name);
-  READ_STRINGLIST_NULLTERM(fp,result->h_aliases);
+  READ_BUF_STRING(fp,result->h_name);
+  READ_BUF_STRINGLIST(fp,result->h_aliases);
   result->h_addrtype=af;
   result->h_length=0;
   /* read number of addresses to follow */

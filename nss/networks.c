@@ -70,8 +70,8 @@ static enum nss_status read_netent(
   size_t bufptr=0;
   enum nss_status retv=NSS_STATUS_NOTFOUND;
   /* read the network entry */
-  READ_STRING_BUF(fp,result->n_name);
-  READ_STRINGLIST_NULLTERM(fp,result->n_aliases);
+  READ_BUF_STRING(fp,result->n_name);
+  READ_BUF_STRINGLIST(fp,result->n_aliases);
   result->n_addrtype=AF_INET;
   /* read number of addresses to follow */
   READ_TYPE(fp,numaddr,int32_t);

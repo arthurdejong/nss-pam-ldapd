@@ -36,8 +36,8 @@ static enum nss_status read_spwd(
 {
   int32_t tmpint32;
   size_t bufptr=0;
-  READ_STRING_BUF(fp,result->sp_namp);
-  READ_STRING_BUF(fp,result->sp_pwdp);
+  READ_BUF_STRING(fp,result->sp_namp);
+  READ_BUF_STRING(fp,result->sp_pwdp);
   READ_INT32(fp,result->sp_lstchg);
   READ_INT32(fp,result->sp_min);
   READ_INT32(fp,result->sp_max);

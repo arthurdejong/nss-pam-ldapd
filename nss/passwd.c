@@ -36,13 +36,13 @@ static enum nss_status read_passwd(
 {
   int32_t tmpint32;
   size_t bufptr=0;
-  READ_STRING_BUF(fp,result->pw_name);
-  READ_STRING_BUF(fp,result->pw_passwd);
+  READ_BUF_STRING(fp,result->pw_name);
+  READ_BUF_STRING(fp,result->pw_passwd);
   READ_TYPE(fp,result->pw_uid,uid_t);
   READ_TYPE(fp,result->pw_gid,gid_t);
-  READ_STRING_BUF(fp,result->pw_gecos);
-  READ_STRING_BUF(fp,result->pw_dir);
-  READ_STRING_BUF(fp,result->pw_shell);
+  READ_BUF_STRING(fp,result->pw_gecos);
+  READ_BUF_STRING(fp,result->pw_dir);
+  READ_BUF_STRING(fp,result->pw_shell);
   return NSS_STATUS_SUCCESS;
 }
 

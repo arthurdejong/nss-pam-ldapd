@@ -36,7 +36,7 @@ static enum nss_status read_etherent(
 {
   int32_t tmpint32;
   size_t bufptr=0;
-  READ_STRING_BUF(fp,result->e_name);
+  READ_BUF_STRING(fp,result->e_name);
   READ_TYPE(fp,result->e_addr,uint8_t[6]);
   return NSS_STATUS_SUCCESS;
 }
