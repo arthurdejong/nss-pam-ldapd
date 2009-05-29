@@ -22,8 +22,6 @@ noinst_LIBRARIES = libtio.a libprot.a libdict.a
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = -fPIC
 
-EXTRA_DIST = nslcd-prot.h
-
 libtio_a_SOURCES = tio.c tio.h
 
 libprot_a_SOURCES = nslcd-prot.c nslcd-prot.h
