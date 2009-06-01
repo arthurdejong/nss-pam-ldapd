@@ -51,9 +51,8 @@ static int try_bind(const char *userdn,const char *password)
   /* TODO: test rc */
   if (rc==LDAP_SUCCESS)
   {
-    /* perform search for own object */
+    /* perform search for own object (just to do any kind of search) */
     username=lookup_dn2uid(session,userdn,&rc);
-    /* TODO: return this as cannonical name */
     if (username!=NULL)
       free(username);
   }
@@ -62,38 +61,56 @@ static int try_bind(const char *userdn,const char *password)
   /* handle the results */
   switch(rc)
   {
-    case LDAP_SUCCESS: return NSLCD_PAM_SUCCESS;
+    case LDAP_SUCCESS:             return NSLCD_PAM_SUCCESS;
     case LDAP_INVALID_CREDENTIALS: return NSLCD_PAM_AUTH_ERR;
-    default: return NSLCD_PAM_AUTH_ERR;
+    default:                       return NSLCD_PAM_AUTH_ERR;
   }
 }
 
-/* Ensure that both userdn and username are set and are valid. This returns
-  */
-static int validate_entry(MYLDAP_ENTRY *entry,char *userdn,size_t userdnsz,
-                          char *username,size_t usernamesz)
+/* ensure that both userdn and username are filled in from the entry */
+static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
+                         char *username,size_t usernamesz)
 {
+  MYLDAP_ENTRY *entry=NULL;
   const char *value;
-  /* get the DN */
-  myldap_cpy_dn(entry,userdn,userdnsz);
-  if (strcasecmp(userdn,"unknown")==0)
+  /* check username for validity */
+  if (!isvalidname(username))
   {
-    log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): user has no DN",username);
+    log_log(LOG_WARNING,"\"%s\": invalid user name",username);
     return -1;
   }
-  /* get the "real" username */
-  value=myldap_get_rdn_value(entry,attmap_passwd_uid);
-  if ((value==NULL)||!isvalidname(value)||strlen(value)>=usernamesz)
+  /* look up user DN if not known */
+  if (userdn[0]=='\0')
   {
-    log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): DN %s has invalid username",username,userdn);
-    return -1;
+    /* get the user entry based on the username */
+    entry=uid2entry(session,username);
+    if (entry==NULL)
+    {
+      log_log(LOG_WARNING,"\"%s\": user not found",username);
+      return -1;
+    }
+    /* get the DN */
+    myldap_cpy_dn(entry,userdn,userdnsz);
+    if (strcasecmp(userdn,"unknown")==0)
+    {
+      log_log(LOG_WARNING,"\"%s\": user has no DN",username);
+      return -1;
+    }
+    /* get the "real" username */
+    value=myldap_get_rdn_value(entry,attmap_passwd_uid);
+    if ((value==NULL)||!isvalidname(value)||strlen(value)>=usernamesz)
+    {
+      log_log(LOG_WARNING,"\"%s\": DN %s has invalid username",username,userdn);
+      return -1;
+    }
+    /* check if the username is different and update it if needed */
+    if (strcmp(username,value)!=0)
+    {
+      log_log(LOG_INFO,"username changed from \"%s\" to \"%s\"",username,value);
+      strcpy(username,value);
+    }
   }
-  /* compare */
-  if (strcmp(username,value)!=0)
-  {
-    log_log(LOG_INFO,"username changed from \"%s\" to \"%s\"",username,value);
-    strcpy(username,value);
-  }
+  /* all check passed */
   return 0;
 }
 
@@ -106,7 +123,6 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
   char userdn[256];
   char servicename[64];
   char password[64];
-  MYLDAP_ENTRY *entry=NULL;
   /* read request parameters */
   READ_STRING(fp,username);
   READ_STRING(fp,userdn);
@@ -117,28 +133,11 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHC);
-  /* validate request */
-  if (!isvalidname(username))
+  /* validate request and fill in the blanks */
+  if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
   {
-    log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): invalid user name",username);
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
-  }
-  if (userdn[0]=='\0')
-  {
-    /* get the user entry */
-    entry=uid2entry(session,username);
-    if (entry==NULL)
-    {
-      log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): user not found",username);
-      WRITE_INT32(fp,NSLCD_RESULT_END);
-      return -1;
-    }
-    if (validate_entry(entry,userdn,sizeof(userdn),username,sizeof(username)))
-    {
-      WRITE_INT32(fp,NSLCD_RESULT_END);
-      return -1;
-    }
   }
   /* try authentication */
   rc=try_bind(userdn,password);
@@ -169,49 +168,13 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHZ);
-  /* validate request */
-  if (!isvalidname(username))
+  /* validate request and fill in the blanks */
+  if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
   {
-    log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): invalid user name",username);
-    /* write a response message anyway */
-    /* TODO: maybe just write NSLCD_RESULT_END to indicate failure */
-    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-    WRITE_STRING(fp,username);
-    WRITE_STRING(fp,userdn);
-    WRITE_INT32(fp,NSLCD_PAM_USER_UNKNOWN); /* authz */
-    WRITE_STRING(fp,"invalid username");    /* authzmsg */
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
   }
-  if (userdn[0]=='\0')
-  {
-    /* perform username to DN translation */
-    if (uid2dn(session,username,userdn,sizeof(userdn))==NULL)
-    {
-      log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): user not found",username);
-      /* return error to client */
-      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-      WRITE_STRING(fp,username);
-      WRITE_STRING(fp,userdn);
-      WRITE_INT32(fp,NSLCD_PAM_USER_UNKNOWN); /* authz */
-      WRITE_STRING(fp,"unknown username");    /* authzmsg */
-      WRITE_INT32(fp,NSLCD_RESULT_END);
-      return -1;
-    }
-  }
-  /* try dn to username lookup */
-  if (dn2uid(session,userdn,username,sizeof(username))==NULL)
-  {
-    log_log(LOG_WARNING,"nslcd_pam_authc(\"%s\"): username not found",userdn);
-    /* return error to client */
-    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-    WRITE_STRING(fp,username);
-    WRITE_STRING(fp,userdn);
-    WRITE_INT32(fp,NSLCD_PAM_USER_UNKNOWN); /* authz */
-    WRITE_STRING(fp,"unknown username");    /* authzmsg */
-    WRITE_INT32(fp,NSLCD_RESULT_END);
-    return -1;
-  }
+  /* TODO: perform any authorisation checks */
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
