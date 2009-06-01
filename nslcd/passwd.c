@@ -254,14 +254,15 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid)
   MYLDAP_ENTRY *entry=NULL;
   const char *base;
   int i;
-  static const char *attrs[1];
+  static const char *attrs[2];
   int rc;
   char filter[1024];
   /* if it isn't a valid username, just bail out now */
   if (!isvalidname(uid))
     return NULL;
-  /* set up attributes (we don't care, we just want the DN) */
-  attrs[0]=NULL;
+  /* set up attributes (we don't need much) */
+  attrs[0]=attmap_passwd_uid;
+  attrs[1]=NULL;
   /* we have to look up the entry */
   mkfilter_passwd_byname(uid,filter,sizeof(filter));
   for (i=0;(i<NSS_LDAP_CONFIG_MAX_BASES)&&((base=passwd_bases[i])!=NULL);i++)
