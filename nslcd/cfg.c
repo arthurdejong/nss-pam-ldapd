@@ -373,12 +373,9 @@ static void get_strdup(const char *filename,int lnr,
   /* TODO: refactor to have less overhead */
   char token[64];
   check_argumentcount(filename,lnr,keyword,get_token(line,token,sizeof(token))!=NULL);
-  if ((*var==NULL)||(strcmp(*var,token)!=0))
-  {
-    /* Note: we have a memory leak here if a single mapping is changed
-             multiple times in one config (deemed not a problem) */
-    *var=xstrdup(token);
-  }
+  /* Note: we have a memory leak here if a single variable is changed
+           multiple times in one config (deemed not a problem) */
+  *var=xstrdup(token);
 }
 
 static void get_restdup(const char *filename,int lnr,
