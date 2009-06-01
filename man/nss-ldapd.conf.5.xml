@@ -440,8 +440,6 @@
      </listitem>
     </varlistentry>
 
-<!-- FIXME: change the defaults to 10 and 20 seconds respectively -->
-
     <varlistentry>
      <term><option>idle_timelimit</option> <emphasis remap="I">SECONDS</emphasis></term>
      <listitem>
@@ -503,8 +501,8 @@
        Specifies whether to use <acronym>SSL</acronym>/<acronym>TLS</acronym> or not (the default is not to). If
        <emphasis remap="I">start_tls</emphasis>
        is specified then StartTLS is used rather than raw <acronym>LDAP</acronym> over <acronym>SSL</acronym>.
-       Not all <acronym>LDAP</acronym> client libraries support both <acronym>SSL</acronym>
-       and StartTLS, and all related configuration options.
+       Not all <acronym>LDAP</acronym> client libraries support both <acronym>SSL</acronym>,
+       StartTLS and all related configuration options.
       </para>
      </listitem>
     </varlistentry>
@@ -716,16 +714,6 @@
         and is based on the
         <citerefentry><refentrytitle>nss_ldap</refentrytitle><manvolnum>5</manvolnum></citerefentry>
         manual developed by PADL Software Pty Ltd.</para>
- </refsect1>
-
- <refsect1 id="known_bugs">
-  <title>Known Bugs</title>
-  <para>
-   This manual page may be outdated and inaccurate and will be improved
-   in upcoming releases.
-   The features of <emphasis>nss-ldapd</emphasis> are still under
-   development so these options may change in a future release.
-  </para>
  </refsect1>
 
 </refentry>

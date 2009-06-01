@@ -99,7 +99,7 @@ Currently the following name databases are supported:
 
 Note that for when using IPv6 hosts entries, the addresses in the LDAP
 directory must be in their preferred form. The same is true for mac addresses
-for the ethers database. Otherwise the address->entry lookups will not work.
+for the ethers database. Otherwise the address to entry lookups will not work.
 For more details on the preferred form see
   http://ldap.akbkhome.com/index.php/attribute/ipHostNumber.html
 and
@@ -131,9 +131,8 @@ unsupported features
 Since nss-ldapd was forked from nss_ldap most of the features that came with
 nss_ldap are available. However, not all features have extensively tested yet
 and may cause problems.
-- attribute value default and overrides have been removed (but may reappear
+- attribute value defaults and overrides have been removed (but may reappear
   some day if requested)
-- SSL/TLS support is untested but will be tested when the core code stabilizes
 - the configuration file formats are not fully compatible
 - nested groups are currently unsupported
 - rootbinddn/rootbindpw support is removed and is not likely to return
@@ -314,11 +313,13 @@ dc=com) the lookup is skipped and the value from the DN is used. A cache is
 maintained that holds on to DN to uid translations for 15 minutes
 (see DN2UID_CACHE_TIMEOUT in nslcd/passwd.c).
 
-In all cases, duplicate users are returned only once.
+In all cases, users that are specified as member multiple times are returned
+only once.
 
 Currently, having nested groups by uniqueMember values pointing to other
 groups, as well as the memberOf attribute in posixAccount entries are
 unsupported.
+
 
 MISC NOTES
 ==========
