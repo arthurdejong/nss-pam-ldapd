@@ -68,6 +68,11 @@ typedef struct myldap_entry MYLDAP_ENTRY;
    uses the configuration to find the URLs to attempt connections to. */
 MUST_USE MYLDAP_SESSION *myldap_create_session(void);
 
+/* Set alternative credentials for the session and try to open a connection
+   with those credentials. Returns an LDAP status code. */
+int myldap_set_credentials(MYLDAP_SESSION *session,const char *dn,
+                           const char *password);
+
 /* Closes all pending searches and deallocates any memory that is allocated
    with these searches. This does not close the session. */
 void myldap_session_cleanup(MYLDAP_SESSION *session);
@@ -99,6 +104,9 @@ MUST_USE MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp);
    "unknown" is returned). */
 MUST_USE const char *myldap_get_dn(MYLDAP_ENTRY *entry);
 
+/* Just like myldap_get_dn() but copies the result into the buffer. */
+char *myldap_cpy_dn(MYLDAP_ENTRY *entry,char *buf,size_t buflen);
+
 /* Get the attribute values from a certain entry as a NULL terminated list.
    May return NULL or an empty array. */
 MUST_USE const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr);
@@ -122,7 +130,7 @@ MUST_USE const char *myldap_cpy_rdn_value(const char *dn,const char *attr,
 /* Escapes characters in a string for use in a search filter. */
 MUST_USE int myldap_escape(const char *src,char *buffer,size_t buflen);
 
-/* Set the debug level globally. */
+/* Set the debug level globally. Returns an LDAP status code. */
 int myldap_set_debuglevel(int i);
 
 #endif /* not _MYLDAP_H */
