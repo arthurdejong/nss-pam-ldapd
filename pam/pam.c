@@ -347,13 +347,17 @@ static int pam_warn(
 }
 
 /* perform an authorisation call over nslcd */
-static int nslcd_request_authz(pld_ctx *ctx,const char *username,const char *svc)
+static int nslcd_request_authz(pld_ctx *ctx,const char *username,
+        const char *svc,const char *ruser,const char *rhost,const char *tty)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_AUTHZ,
     /* write the request parameters */
     WRITE_STRING(fp,username);
     WRITE_STRING(fp,ctx->dn);
-    WRITE_STRING(fp,svc),
+    WRITE_STRING(fp,svc);
+    WRITE_STRING(fp,ruser);
+    WRITE_STRING(fp,rhost);
+    WRITE_STRING(fp,tty),
     /* read the result entry */
     READ_BUF_STRING(fp,ctx->tmpluser);
     READ_BUF_STRING(fp,ctx->dn);
@@ -364,7 +368,7 @@ static int nslcd_request_authz(pld_ctx *ctx,const char *username,const char *svc
 int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
   int rc;
-  const char *username,*svc;
+  const char *username,*svc,*ruser,*rhost,*tty;
   int no_warn=0, ignore_flags=0;
   int i;
   struct pam_conv *appconv;
@@ -410,9 +414,21 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   if (rc!=PAM_SUCCESS)
     return rc;
 
+  rc=pam_get_item (pamh,PAM_RUSER,(const void **)&ruser);
+  if (rc!=PAM_SUCCESS)
+    return rc;
+
+  rc=pam_get_item (pamh,PAM_RHOST,(const void **)&rhost);
+  if (rc!=PAM_SUCCESS)
+    return rc;
+
+  rc=pam_get_item (pamh,PAM_TTY,(const void **)&tty);
+  if (rc!=PAM_SUCCESS)
+    return rc;
+
   ctx2.dn=ctx->dn;
   ctx2.user=ctx->user;
-  rc=nslcd_request_authz(&ctx2,username,svc);
+  rc=nslcd_request_authz(&ctx2,username,svc,ruser,rhost,tty);
   if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))

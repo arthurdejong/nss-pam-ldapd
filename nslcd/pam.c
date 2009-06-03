@@ -159,12 +159,19 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   char username[256];
   char userdn[256];
   char servicename[64];
+  char ruser[32];
+  char rhost[256];
+  char tty[256];
   /* read request parameters */
   READ_STRING(fp,username);
   READ_STRING(fp,userdn);
   READ_STRING(fp,servicename);
+  READ_STRING(fp,ruser);
+  READ_STRING(fp,rhost);
+  READ_STRING(fp,tty);
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_pam_authz(\"%s\",\"%s\",\"%s\")",username,userdn,servicename);
+  log_log(LOG_DEBUG,"nslcd_pam_authz(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")",
+            username,userdn,servicename,ruser,rhost,tty);
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHZ);

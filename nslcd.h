@@ -202,8 +202,11 @@
      STRING  authorisation error message */
 #define NSLCD_ACTION_PAM_AUTHC         20001
 
-/* PAM authorisation check request. This request does not have any extra
-   request values. The result value ends with:
+/* PAM authorisation check request. The extra request values are:
+     STRING ruser
+     STRING rhost
+     STRING tty
+   and the result value ends with:
      INT32   authz NSLCD_PAM_* result code
      STRING  authorisation error message */
 #define NSLCD_ACTION_PAM_AUTHZ         20002
