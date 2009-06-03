@@ -160,6 +160,9 @@ The last step (make install) should install the libnss_ldap.so.* file and the
 daemon (nslcd). The boot process needs to be manually modified to start the
 daemon at the right time.
 
+Also it is recommended to create a dedicated user to run the nslcd daemon as.
+Configure this user in /etc/nss-ldapd.conf using the uid and gid options.
+
 
 CONFIGURATION
 =============
