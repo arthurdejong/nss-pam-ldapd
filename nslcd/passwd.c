@@ -141,7 +141,7 @@ struct dn2uid_cache_entry
 
 /* Perform an LDAP lookup to translate the DN into a uid.
    This function either returns NULL or a strdup()ed string. */
-static char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn)
+char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp)
 {
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
@@ -149,6 +149,8 @@ static char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn)
   int rc;
   const char **values;
   char *uid;
+  if (rcp!=NULL)
+    *rcp=LDAP_SUCCESS;
   /* we have to look up the entry */
   attrs[0]=attmap_passwd_uid;
   attrs[1]=NULL;
@@ -162,7 +164,11 @@ static char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn)
   if (entry==NULL)
   {
     if (rc!=LDAP_SUCCESS)
+    {
       log_log(LOG_WARNING,"lookup of user %s failed: %s",dn,ldap_err2string(rc));
+      if (rcp!=NULL)
+        *rcp=rc;
+    }
     return NULL;
   }
   /* get uid (just use first one) */
@@ -215,7 +221,7 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   }
   pthread_mutex_unlock(&dn2uid_cache_mutex);
   /* look up the uid using an LDAP query */
-  uid=lookup_dn2uid(session,dn);
+  uid=lookup_dn2uid(session,dn,NULL);
   /* store the result in the cache */
   pthread_mutex_lock(&dn2uid_cache_mutex);
   if (cacheentry==NULL)
@@ -242,21 +248,21 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   return buf;
 }
 
-char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
+MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid)
 {
   MYLDAP_SEARCH *search=NULL;
   MYLDAP_ENTRY *entry=NULL;
   const char *base;
   int i;
-  static const char *attrs[1];
+  static const char *attrs[2];
   int rc;
-  const char *dn;
   char filter[1024];
   /* if it isn't a valid username, just bail out now */
   if (!isvalidname(uid))
     return NULL;
-  /* set up attributes (we don't care, we just want the DN) */
-  attrs[0]=NULL;
+  /* set up attributes (we don't need much) */
+  attrs[0]=attmap_passwd_uid;
+  attrs[1]=NULL;
   /* we have to look up the entry */
   mkfilter_passwd_byname(uid,filter,sizeof(filter));
   for (i=0;(i<NSS_LDAP_CONFIG_MAX_BASES)&&((base=passwd_bases[i])!=NULL);i++)
@@ -266,24 +272,20 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
       return NULL;
     entry=myldap_get_entry(search,&rc);
     if (entry!=NULL)
-      break;
+      return entry;
   }
+  return NULL;
+}
+
+char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
+{
+  MYLDAP_ENTRY *entry;
+  /* look up the entry */
+  entry=uid2entry(session,uid);
   if (entry==NULL)
     return NULL;
   /* get DN */
-  dn=myldap_get_dn(entry);
-  if (strcasecmp(dn,"unknown")==0)
-  {
-    myldap_search_close(search);
-    return NULL;
-  }
-  /* copy into buffer */
-  if (strlen(dn)<buflen)
-    strcpy(buf,dn);
-  else
-    buf=NULL;
-  myldap_search_close(search);
-  return buf;
+  return myldap_cpy_dn(entry,buf,buflen);
 }
 
 /* the maximum number of uidNumber attributes per entry */
