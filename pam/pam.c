@@ -433,16 +433,16 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
     rc=PAM_IGNORE;
-  if (rc!=PAM_SUCCESS) 
+  if (rc!=PAM_SUCCESS)
   {
     if (rc!=PAM_IGNORE)
       pam_warn(appconv,"LDAP authorization failed",PAM_ERROR_MSG,no_warn);
-  } 
-  else 
+  }
+  else
   {
     if (ctx2.authzmsg && ctx2.authzmsg[0])
       pam_warn(appconv,ctx2.authzmsg,PAM_TEXT_INFO,no_warn);
-    if (ctx2.authz==PAM_SUCCESS) 
+    if (ctx2.authz==PAM_SUCCESS)
     {
       rc=ctx->authz;
       if (ctx->authzmsg && ctx->authzmsg[0])
@@ -643,12 +643,12 @@ int pam_sm_chauthtok(
         }
       }
       rc=pam_get_item(pamh,PAM_OLDAUTHTOK,&p);
-      if (rc) 
+      if (rc)
         return rc;
-    } 
-    else 
+    }
+    else
       rc=PAM_SUCCESS;
-    if (!ctx->dn) 
+    if (!ctx->dn)
     {
       rc=nslcd_request_pwmod(ctx,username,svc,p,NULL);
       if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
@@ -660,13 +660,13 @@ int pam_sm_chauthtok(
   }
 
   rc=pam_get_item(pamh,PAM_OLDAUTHTOK,&p);
-  if (rc) 
+  if (rc)
     return rc;
 
   if (!p)
     p=ctx->oldpw;
 
-  if (first_pass) 
+  if (first_pass)
   {
     rc=pam_get_item(pamh,PAM_AUTHTOK,&q);
     if ((rc!=PAM_SUCCESS || !q) && (first_pass & (USE_FIRST|USE_TOKEN))) {
@@ -675,11 +675,11 @@ int pam_sm_chauthtok(
       return rc;
     }
   }
-  if (!q) 
+  if (!q)
   {
     rc=pam_get_authtok(pamh, flags, "Enter new LDAP Password: ",
       "Retype new LDAP Password: ", &q);
-    if (rc==PAM_SUCCESS) 
+    if (rc==PAM_SUCCESS)
     {
       pam_set_item(pamh,PAM_AUTHTOK,q);
       memset(q,0,strlen(q));
@@ -695,12 +695,12 @@ int pam_sm_chauthtok(
   else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
     rc=PAM_IGNORE;
   p=NULL; q=NULL;
-  if (rc==PAM_SUCCESS) 
+  if (rc==PAM_SUCCESS)
   {
     rc=ctx->authz;
     if (rc!=PAM_SUCCESS)
       pam_warn(appconv, ctx->authzmsg, PAM_ERROR_MSG, no_warn);
-  } 
+  }
   else if (rc!=PAM_IGNORE)
     pam_warn(appconv, "LDAP pwmod failed", PAM_ERROR_MSG, no_warn);
   return rc;
