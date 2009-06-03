@@ -1,9 +1,4 @@
-probably before we can call this stable
----------------------------------------
-* find problem with reachability of LDAP server
-
-other items
------------
+* test reachability problems with LDAP server more
 * document test suite (instructions for setting up environment (server), LDIF
   file, nsswitch.conf and nss-ldapd.conf)
 * write more unit tests

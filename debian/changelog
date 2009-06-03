@@ -1,3 +1,20 @@
+nss-ldapd (0.6.10) unstable; urgency=low
+
+  * implement searching through multiple search bases, based on a patch by
+    Leigh Wedding
+  * fix a segmentation fault that could occur when using any of the tls_*
+    options with a string parameter (closes: #531113)
+  * miscellaneous improvements to the experimental PAM module
+  * implement PAM authentication function in the nslcd daemon
+  * the code for reading and writing protocol entries between the NSS module
+    and the daemon was improved
+  * documentation updates
+  * removed SSL/TLS related warnings during startup
+  * added Finnish debconf translation by Esko Arajärvi (closes: #530284)
+  * added Richard A Nelson (Rick) <cowboy@debian.org> to uploaders
+
+ -- Arthur de Jong <adejong@debian.org>  Wed, 03 Jun 2009 15:00:00 +0200
+
 nss-ldapd (0.6.9) unstable; urgency=low
 
   * produce more detailed logging in debug mode and allow multiple -d options
