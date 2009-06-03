@@ -138,6 +138,11 @@ int nslcd_service_bynumber(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_service_all(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_shadow_byname(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_shadow_all(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session);
+int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session);
 
 /* macro for generating service handling code */
 #define NSLCD_HANDLE(db,fn,readfn,logcall,action,mkfilter,writefn) \

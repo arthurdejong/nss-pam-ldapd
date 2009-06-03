@@ -1,7 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
 # Copyright (C) 2006, 2007 West Consulting
-# Copyright (C) 2006, 2007, 2008 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,6 @@ nslcd_SOURCES = nslcd.c ../nslcd.h ../common/nslcd-prot.h \
                 cfg.c cfg.h \
                 attmap.c attmap.h \
                 alias.c ether.c group.c host.c netgroup.c network.c \
-                passwd.c protocol.c rpc.c service.c shadow.c
+                passwd.c protocol.c rpc.c service.c shadow.c pam.c
 nslcd_LDADD = @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a \
               ../compat/libcompat.a
