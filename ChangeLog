@@ -1,3 +1,140 @@
+2009-06-03 14:19  arthur
+
+	* [r925] nslcd/cfg.c: remove SSL/TLS warning messages during
+	  startup
+
+2009-06-03 14:08  arthur
+
+	* [r924] README: add note about creating a user to run nslcd
+
+2009-06-03 10:31  arthur
+
+	* [r923] nslcd/Makefile.am, nslcd/common.h, nslcd/nslcd.c,
+	  nslcd/pam.c: import preliminary version of PAM functionality into
+	  nslcd
+
+2009-06-03 10:27  arthur
+
+	* [r922] nslcd/common.h, nslcd/passwd.c: make lookup_dn2uid()
+	  available to other modules and split uid2dn() into uid2entry()
+	  and uid2dn() (from nss-pam-ldapd branch)
+
+2009-06-03 10:23  arthur
+
+	* [r921] nslcd/myldap.c, nslcd/myldap.h: implement
+	  myldap_set_credentials() and myldap_cpy_dn() which will be used
+	  in the PAM lookups (from nss-pam-ldapd branch)
+
+2009-06-03 10:16  arthur
+
+	* [r920] pam/pam.c: remove trailing spaces
+
+2009-06-03 10:14  arthur
+
+	* [r919] nslcd.h, pam/pam.c: change PAM authorisation request to
+	  also include ruser, rhost and tty (based on OpenLDAP cvs, r916 in
+	  nss-pam-ldapd branch)
+
+2009-06-03 09:08  arthur
+
+	* [r917] debian/control: add Richard A Nelson (Rick)
+	  <cowboy@debian.org> to uploaders
+
+2009-06-01 17:14  arthur
+
+	* [r914] HACKING, README, man/nss-ldapd.conf.5.xml, nss-ldapd.conf:
+	  clean up documentation
+
+2009-05-30 07:22  arthur
+
+	* [r910] nslcd/cfg.c: don't look inside the passed variable
+	  get_strdup() because it could point to uninitialized memory
+
+2009-05-29 21:30  arthur
+
+	* [r908] pam/common.h, pam/pam.c: partially refactor to follow
+	  local coding convention and introduce READ_PAM_CODE macro (r896
+	  from nss-pam-ldapd)
+
+2009-05-29 21:29  arthur
+
+	* [r907] pam/pam.c: tabs to spaces (r889 from nss-pam-ldapd)
+
+2009-05-29 21:29  arthur
+
+	* [r906] pam/common.h, pam/pam.c: make request-response functions
+	  simpler (r888 from nss-pam-ldapd)
+
+2009-05-29 21:24  arthur
+
+	* [r905] common/Makefile.am: remove unneeded EXTRA_DIST
+
+2009-05-29 21:22  arthur
+
+	* [r904] Makefile.am, common/Makefile.am, common/nslcd-prot.c,
+	  common/nslcd-prot.h, nslcd-common.h, nslcd/Makefile.am,
+	  nslcd/alias.c, nslcd/common.h, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/netgroup.c, nslcd/network.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c,
+	  nss/Makefile.am, nss/aliases.c, nss/common.c, nss/common.h,
+	  nss/ethers.c, nss/group.c, nss/hosts.c, nss/netgroup.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/rpc.c,
+	  nss/services.c, nss/shadow.c, pam/Makefile.am, pam/common.h,
+	  pam/pam.c, tests/Makefile.am: refactor protocol reading and
+	  writing macros to the common directory, use more logical names
+	  and in the PAM module no longer use NSS status codes (import of
+	  r887 from nss-pam-ldapd)
+
+2009-05-29 21:18  arthur
+
+	* [r903] tests/Makefile.am: add missing objects to test programs
+
+2009-05-24 09:23  arthur
+
+	* [r895] man/nss-ldapd.conf.5.xml: document that you can specify
+	  base option multiple times
+
+2009-05-24 09:12  arthur
+
+	* [r894] Makefile.am: also build PAM module for make distcheck
+
+2009-05-24 09:11  arthur
+
+	* [r893] nslcd/alias.c, nslcd/cfg.c, nslcd/common.h, nslcd/ether.c,
+	  nslcd/group.c, nslcd/host.c, nslcd/netgroup.c, nslcd/network.c,
+	  nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c,
+	  nslcd/shadow.c: initialise database modules only once after
+	  parsing config
+
+2009-05-24 08:56  arthur
+
+	* [r892] AUTHORS, nslcd/alias.c, nslcd/attmap.c, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/common.h, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/netgroup.c, nslcd/network.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c,
+	  tests/test_cfg.c, tests/test_myldap.c: support multiple search
+	  bases, partially based on a patch by Leigh Wedding
+	  <lwedding@bigpond.com>
+
+2009-05-24 08:03  arthur
+
+	* [r891] AUTHORS: don't mention Howard Chu twice
+
+2009-05-23 20:54  arthur
+
+	* [r890] debian/po/fi.po: added Finnish (fi) translation of debconf
+	  templates by Esko Arajärvi <edu@iki.fi>
+
+2009-05-16 07:01  arthur
+
+	* [r885] nss/common.h, pam/pam.c: quick fix for building PAM module
+
+2009-05-09 20:54  arthur
+
+	* [r881] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.9 release
+
 2009-05-09 20:53  arthur
 
 	* [r880] debian/libnss-ldapd.postinst: if base is blank disable the

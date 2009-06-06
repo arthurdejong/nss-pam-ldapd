@@ -1,3 +1,19 @@
+changes from 0.6.9 to 0.6.10
+----------------------------
+
+* implement searching through multiple search bases, based on a patch by Leigh
+  Wedding
+* fix a segmentation fault that could occur when using any of the tls_*
+  options with a string parameter
+* miscellaneous improvements to the experimental PAM module
+* implement PAM authentication function in the nslcd daemon
+* the code for reading and writing protocol entries between the NSS module and
+  the daemon was improved
+* documentation updates
+* removed SSL/TLS related warnings during startup
+* Debian packaging improvements
+
+
 changes from 0.6.8 to 0.6.9
 ---------------------------
 
@@ -32,7 +48,7 @@ changes from 0.6.7 to 0.6.8
 * correctly set SSL/TLS options when using StartTLS
 * rename the tls_checkpeer option to tls_reqcert, deprecating the old name and
   supporting all values that OpenLDAP supports
-* allow backslashes in user and group names execpt as first or last character
+* allow backslashes in user and group names except as first or last character
 * check user and group names against LOGIN_NAME_MAX if it is defined
 * fix for getpeercred() on Solaris by David Bartley
 * Debian packaging improvements

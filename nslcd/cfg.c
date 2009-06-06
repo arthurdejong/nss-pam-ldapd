@@ -858,9 +858,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     else if ( (strcasecmp(keyword,"tls_reqcert")==0) ||
               (strcasecmp(keyword,"tls_checkpeer")==0) )
     {
-      if (strcasecmp(keyword,"tls_reqcert")==0)
-        log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
-      else
+      if (strcasecmp(keyword,"tls_checkpeer")==0)
         log_log(LOG_WARNING,"%s:%d: option %s is deprecated (and will be removed in an upcoming release), use tls_reqcert instead",filename,lnr,keyword);
       get_reqcert(filename,lnr,keyword,&line,&i);
       get_eol(filename,lnr,keyword,&line);
@@ -869,7 +867,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"tls_cacertdir")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
       get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */
@@ -879,7 +876,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"tls_cacertfile")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
       get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */
@@ -889,7 +885,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"tls_randfile")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
       get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */
@@ -899,7 +894,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"tls_ciphers")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
       get_restdup(filename,lnr,keyword,&line,&value);
       log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_TLS_CIPHER_SUITE,\"%s\")",value);
       LDAP_SET_OPTION(NULL,LDAP_OPT_X_TLS_CIPHER_SUITE,value);
@@ -907,7 +901,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"tls_cert")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
       get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */
@@ -917,7 +910,6 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"tls_key")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently untested (please report any successes)",filename,lnr,keyword);
       get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
       /* TODO: check that the path is valid */

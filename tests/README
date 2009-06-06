@@ -1,0 +1,81 @@
+
+This document tries to descrive the test in this directory. Most of these
+tests should be self-explanitory as they should be simple unit tests of the
+shipped modules (more unit tests are welcome).
+
+Since nss-ldapd is meant for providing data from an LDAP server for some tests
+you should have an LDAP server and for even other tests you need to have
+nss-ldapd installed (patches for using LD_PRELOAD or similar tricks instead
+are welcome).
+
+For this a test setup should be made (the tests are ignored if no such setup
+was detected). In my development environment I use a chroot jail with Debian.
+The instructions in this document assume a similar environment.
+
+
+TEST ENVIRONMENT
+================
+
+LDAP server configuration
+-------------------------
+
+An LDAP server listening on ldap://localhost and ldapi:// is assumed. This is
+acomplished on Debian by the following line in /etc/default/slapd:
+  SLAPD_SERVICES="ldap:/// ldaps:/// ldapi:///"
+
+Because there will be a lot of data in the database and to test paged results
+you need the following in /etc/ldap/slapd.conf:
+  sizelimit size.prtotal=unlimited
+
+The LDAP server should be set up to service up the dc=test,dc=tld DN as base.
+
+A sample test.ldif file is also available. Note that this file is currently
+not shipped in the released tarballs because it is quite large. Load the file
+into your LDAP server so that it can be served.
+
+Most of the names in the database have been randomly generated based on a
+combination of name-lists that were found on the Internet.
+
+
+nsswitch.conf
+-------------
+
+The /etc/nsswitch.conf file is expected to contain something like the
+following. All maps should be looked up through LDAP and some tests may expect
+the LDAP lookup to come after the files lookup.
+
+passwd:         files ldap
+group:          files ldap
+shadow:         files ldap
+hosts:          files ldap dns mdns
+networks:       files ldap
+protocols:      db files ldap
+services:       db files ldap
+ethers:         db files ldap
+rpc:            db files ldap
+netgroup:       files ldap
+aliases:        files ldap
+
+nss-ldapd.conf
+--------------
+
+The /etc/nss-ldapd.conf file is expected to be configured like the following.
+
+uid nslcd
+gid nslcd
+uri ldapi:///
+base dc=test,dc=tld
+pagesize 100
+timelimit 2
+bind_timelimit 4
+reconnect_sleeptime 4
+reconnect_maxsleeptime 10
+filter group (|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))
+
+
+OLD TESTS
+=========
+
+There are also a lot of old test files in this directory. Those files are of
+the form test_<map>.c. These files call the NSS module functions directly.
+These can probably all be removed and integrated into test_nsscmds.sh instead.

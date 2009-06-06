@@ -134,7 +134,7 @@ enum nss_status _nss_ldap_initgroups_dyn(
    for validity of the buffer works (renaming the parameters may cause
    confusion) */
 #define buffer groupsp
-#define buflen limit
+#define buflen *size
   NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,
              user,
              read_gids(fp,skipgroup,start,size,groupsp,limit,errnop));

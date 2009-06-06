@@ -200,12 +200,19 @@ static int write_netgroup_triple(TFILE *fp,const char *triple)
   if (write_netgroup_triple(fp,triple)) \
     return -1;
 
-static int write_netgroup(TFILE *fp,MYLDAP_ENTRY *entry)
+static int write_netgroup(TFILE *fp,MYLDAP_ENTRY *entry, const char *reqname)
 {
   int32_t tmpint32;
   int i;
+  const char **names;
   const char **triples;
   const char **members;
+  /* get the netgroup name */
+  names=myldap_get_values(entry,attmap_netgroup_cn);
+  for (i=0;(names[i]!=NULL)&&(strcmp(reqname,names[i])!=0);i++)
+    /* nothing here */ ;
+  if (names[i]==NULL)
+    return 0; /* the name was not found */
   /* get the netgroup triples and member */
   triples=myldap_get_values(entry,attmap_netgroup_nisNetgroupTriple);
   members=myldap_get_values(entry,attmap_netgroup_memberNisNetgroup);
@@ -238,5 +245,5 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_netgroup_byname(%s)",name);,
   NSLCD_ACTION_NETGROUP_BYNAME,
   mkfilter_netgroup_byname(name,filter,sizeof(filter)),
-  write_netgroup(fp,entry)
+  write_netgroup(fp,entry,name)
 )

@@ -372,8 +372,8 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
    This returns an LDAP result code. */
 static int do_bind(MYLDAP_SESSION *session,const char *uri)
 {
-#ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
   int rc;
+#ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
 #ifndef HAVE_SASL_INTERACT_T
   struct berval cred;
 #endif /* not HAVE_SASL_INTERACT_T */
