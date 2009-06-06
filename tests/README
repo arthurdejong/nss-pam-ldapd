@@ -1,12 +1,12 @@
 
 This document tries to descrive the test in this directory. Most of these
-tests should be self-explanitory as they should be simple unit tests of
-the shipped modules (more unit tests are welcome).
+tests should be self-explanitory as they should be simple unit tests of the
+shipped modules (more unit tests are welcome).
 
 Since nss-ldapd is meant for providing data from an LDAP server for some tests
 you should have an LDAP server and for even other tests you need to have
-nss-ldapd installed (patches for using LD_PRELOAD or similar tricks instead are
-welcome).
+nss-ldapd installed (patches for using LD_PRELOAD or similar tricks instead
+are welcome).
 
 For this a test setup should be made (the tests are ignored if no such setup
 was detected). In my development environment I use a chroot jail with Debian.
@@ -19,8 +19,8 @@ TEST ENVIRONMENT
 LDAP server configuration
 -------------------------
 
-An LDAP server listening on ldap://localhost and ldapi:// is assumed. This
-is acomplished on Debian by the following line in /etc/default/slapd:
+An LDAP server listening on ldap://localhost and ldapi:// is assumed. This is
+acomplished on Debian by the following line in /etc/default/slapd:
   SLAPD_SERVICES="ldap:/// ldaps:/// ldapi:///"
 
 Because there will be a lot of data in the database and to test paged results
@@ -40,9 +40,9 @@ combination of name-lists that were found on the Internet.
 nsswitch.conf
 -------------
 
-The /etc/nsswitch.conf file is expected to contain something like the following.
-All maps should be looked up through LDAP and some tests may expect the LDAP
-lookup to come after the files lookup.
+The /etc/nsswitch.conf file is expected to contain something like the
+following. All maps should be looked up through LDAP and some tests may expect
+the LDAP lookup to come after the files lookup.
 
 passwd:         files ldap
 group:          files ldap
@@ -76,6 +76,6 @@ filter group (|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))
 OLD TESTS
 =========
 
-There are also a lot of old test files in this directory. Those files are
-of the form test_<map>.c. These files call the NSS module functions directly.
+There are also a lot of old test files in this directory. Those files are of
+the form test_<map>.c. These files call the NSS module functions directly.
 These can probably all be removed and integrated into test_nsscmds.sh instead.
