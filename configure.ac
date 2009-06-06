@@ -136,6 +136,24 @@ AC_ARG_ENABLE(nslcd,
 AC_MSG_RESULT($enable_nslcd)
 AM_CONDITIONAL([ENABLE_NSLCD], [test "x$enable_nslcd" = "xyes"])
 
+# check whether SASL support should be enabled
+AC_MSG_CHECKING([whether to enable SASL support])
+AC_ARG_ENABLE(sasl,
+              AS_HELP_STRING([--disable-sasl],
+                             [disable SASL support [[default=yes]]]),
+              [enable_sasl=$enableval],
+              [enable_sasl="yes"])
+AC_MSG_RESULT($enable_sasl)
+
+# check whether Kerberos support should be enabled
+AC_MSG_CHECKING([whether to enable Kerberos support])
+AC_ARG_ENABLE(kerberos,
+              AS_HELP_STRING([--disable-kerberos],
+                             [disable Kerberos support [[default=yes]]]),
+              [enable_kerberos=$enableval],
+              [enable_kerberos="yes"])
+AC_MSG_RESULT($enable_kerberos)
+
 AC_ARG_WITH(ldap-lib,
             AS_HELP_STRING([--with-ldap-lib=TYPE],
                            [select ldap library (auto|netscape5|netscape4|netscape3|umich|openldap) @<:@auto@:>@]))
@@ -184,11 +202,8 @@ AC_CHECK_HEADERS(netinet/ether.h)
 AC_CHECK_HEADERS(ctype.h)
 AC_CHECK_HEADERS(getopt.h)
 AC_CHECK_HEADERS(sys/un.h)
-AC_CHECK_HEADERS(sasl.h sasl/sasl.h)
 AC_CHECK_HEADERS(strings.h)
 AC_CHECK_HEADERS(gssldap.h)
-AC_CHECK_HEADERS(gsssasl.h)
-AC_CHECK_HEADERS(gssapi/gssapi_krb5.h gssapi.h)
 AC_CHECK_HEADERS(grp.h)
 AC_CHECK_HEADERS(sys/socket.h)
 AC_CHECK_HEADERS(sys/ucred.h)
@@ -197,6 +212,15 @@ if test "x$enable_pam" = "xyes"
 then
   AC_CHECK_HEADERS(security/pam_modules.h)
   AC_CHECK_HEADERS(pam/pam_modules.h)
+fi
+if test "x$enable_sasl" = "xyes"
+then
+  AC_CHECK_HEADERS(sasl.h sasl/sasl.h)
+  AC_CHECK_HEADERS(gsssasl.h)
+fi
+if test "x$enable_kerberos" = "xyes"
+then
+  AC_CHECK_HEADERS(gssapi/gssapi_krb5.h gssapi.h)
 fi
 
 # set up directory with compatibility replacement files
@@ -284,13 +308,16 @@ AC_CHECK_TYPE(struct ucred,
     #include <sys/un.h>
     #include <sys/types.h>])
 
-AC_CHECK_TYPE(sasl_interact_t,
-    AC_DEFINE(HAVE_SASL_INTERACT_T,1,[Define to 1 if you have a `sasl_interact_t' definition.]),,[
-    #ifdef HAVE_SASL_SASL_H
-    #include <sasl/sasl.h>
-    #elif defined(HAVE_SASL_H)
-    #include <sasl.h>
-    #endif])
+if test "$enable_sasl" = "yes"
+then
+  AC_CHECK_TYPE(sasl_interact_t,
+      AC_DEFINE(HAVE_SASL_INTERACT_T,1,[Define to 1 if you have a `sasl_interact_t' definition.]),,[
+      #ifdef HAVE_SASL_SASL_H
+      #include <sasl/sasl.h>
+      #elif defined(HAVE_SASL_H)
+      #include <sasl.h>
+      #endif])
+fi
 
 # checks for LDAP library
 save_LIBS="$LIBS"
@@ -304,10 +331,13 @@ AC_CHECK_FUNCS(pthread_atfork)
 LIBS="$PTHREAD_LIBS $LIBS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 
-AC_CHECK_LIB(gssapi, gss_krb5_ccache_name,[LIBS="-lgssapi $LIBS" found_gssapi_lib=yes],,$LIBS)
-if test -z "$found_gssapi_lib"
+if test "$enable_kerberos" = "yes"
 then
-  AC_CHECK_LIB(gssapi_krb5, gss_krb5_ccache_name,[LIBS="-lgssapi_krb5 $LIBS"],,$LIBS)
+  AC_CHECK_LIB(gssapi, gss_krb5_ccache_name,[LIBS="-lgssapi $LIBS" found_gssapi_lib=yes],,$LIBS)
+  if test -z "$found_gssapi_lib"
+  then
+    AC_CHECK_LIB(gssapi_krb5, gss_krb5_ccache_name,[LIBS="-lgssapi_krb5 $LIBS"],,$LIBS)
+  fi
 fi
 
 if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = umich -o $with_ldap_lib = openldap \)
@@ -347,14 +377,22 @@ then
   AC_CHECK_LIB(pthread, main)
 fi
 AC_CHECK_LIB(gssldap, ldap_gss_bind,[LIBS="-lgssldap $LIBS"],,$LIBS)
-AC_CHECK_LIB(sasl2, sasl_client_init)
 
-AC_CHECK_FUNCS(sasl_auxprop_request)
-AC_CHECK_FUNCS(gss_krb5_ccache_name)
+if test "$enable_sasl" = "yes"
+then
+  AC_CHECK_LIB(sasl2, sasl_client_init)
+  AC_CHECK_FUNCS(sasl_auxprop_request)
+  AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s)
+fi
+if test "$enable_kerberos" = "yes"
+then
+  AC_CHECK_FUNCS(gss_krb5_ccache_name)
+fi
+
 AC_CHECK_FUNCS(ldap_parse_result ldap_memfree ldap_controls_free ldap_control_free)
 AC_CHECK_FUNCS(ldap_explode_dn ldap_explode_rdn ldap_set_option ldap_get_option)
 AC_CHECK_FUNCS(ldap_abandon ldap_simple_bind_s ldap_unbind ldap_set_rebind_proc)
-AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s ldap_initialize ldap_search_ext)
+AC_CHECK_FUNCS(ldap_initialize ldap_search_ext)
 AC_CHECK_FUNCS(ldap_create_control)
 AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)
 AC_CHECK_FUNCS(ldap_get_values ldap_value_free ldap_get_dn)
