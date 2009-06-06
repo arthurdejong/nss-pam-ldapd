@@ -339,8 +339,16 @@ barsrv                15350/udp
 foosrv                15349/tcp
 EOM
 
+check "getent services sssin" << EOM
+sssin                 5000/tcp SSSIN
+EOM
+
+check "getent services SSSIN" << EOM
+sssin                 5000/tcp SSSIN
+EOM
+
 check "getent services | wc -l" << EOM
-`grep -c '^[^#].' /etc/services | awk '{print $1 + 3}'`
+`grep -c '^[^#].' /etc/services | awk '{print $1 + 4}'`
 EOM
 
 ###########################################################################

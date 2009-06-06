@@ -155,3 +155,9 @@ only potentially exploit bugs in the library and gain the privileges of the
 process that was doing the name lookups. In this case the privileges of the
 daemon are potentially exposed.
 
+
+TEST SETUP
+==========
+
+In the test directory there are a number of tests available. See the file
+README in the test directory for more details.
