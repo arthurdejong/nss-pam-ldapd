@@ -124,21 +124,12 @@ static int write_ether(TFILE *fp,MYLDAP_ENTRY *entry,
   const char **names,**ethers;
   int i,j;
   /* get the name of the ether entry */
-  if (reqname!=NULL)
+  names=myldap_get_values(entry,attmap_ether_cn);
+  if ((names==NULL)||(names[0]==NULL))
   {
-    names=tmparr;
-    names[0]=reqname;
-    names[1]=NULL;
-  }
-  else
-  {
-    names=myldap_get_values(entry,attmap_ether_cn);
-    if ((names==NULL)||(names[0]==NULL))
-    {
-      log_log(LOG_WARNING,"ether entry %s does not contain %s value",
-                          myldap_get_dn(entry),attmap_ether_cn);
-      return 0;
-    }
+    log_log(LOG_WARNING,"ether entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_ether_cn);
+    return 0;
   }
   /* get the addresses */
   if (reqether!=NULL)
@@ -160,12 +151,13 @@ static int write_ether(TFILE *fp,MYLDAP_ENTRY *entry,
   }
   /* write entries for all names and addresses */
   for (i=0;names[i]!=NULL;i++)
-    for (j=0;ethers[j]!=NULL;j++)
-    {
-      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-      WRITE_STRING(fp,names[i]);
-      WRITE_ETHER(fp,ethers[j]);
-    }
+    if ((reqname==NULL)||(strcasecmp(reqname,names[i])==0))
+      for (j=0;ethers[j]!=NULL;j++)
+      {
+        WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+        WRITE_STRING(fp,names[i]);
+        WRITE_ETHER(fp,ethers[j]);
+      }
   return 0;
 }
 

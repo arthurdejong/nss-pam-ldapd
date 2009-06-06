@@ -101,7 +101,7 @@ void rpc_init(void)
 }
 
 /* write a single rpc entry to the stream */
-static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry)
+static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   const char *name;
@@ -109,6 +109,7 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry)
   const char **numbers;
   char *tmp;
   int number;
+  int i;
   /* get the most canonical name */
   name=myldap_get_rdn_value(entry,attmap_rpc_cn);
   /* get the other names for the rpc entries */
@@ -122,6 +123,14 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry)
   /* if the rpc name is not yet found, get the first entry */
   if (name==NULL)
     name=aliases[0];
+  /* check case of returned rpc entry */
+  if ((reqname!=NULL)&&(strcmp(reqname,name)!=0))
+  {
+    for (i=0;(aliases[i]!=NULL)&&(strcmp(reqname,aliases[i])!=0);i++)
+      /* nothing here */ ;
+    if (aliases[i]==NULL)
+      return 0; /* neither the name nor any of the aliases matched */
+  }
   /* get the rpc number */
   numbers=myldap_get_values(entry,attmap_rpc_oncRpcNumber);
   if ((numbers==NULL)||(numbers[0]==NULL))
@@ -158,7 +167,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_rpc_byname(%s)",name);,
   NSLCD_ACTION_RPC_BYNAME,
   mkfilter_rpc_byname(name,filter,sizeof(filter)),
-  write_rpc(fp,entry)
+  write_rpc(fp,entry,name)
 )
 
 NSLCD_HANDLE(
@@ -169,7 +178,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_rpc_bynumber(%d)",number);,
   NSLCD_ACTION_RPC_BYNUMBER,
   mkfilter_rpc_bynumber(number,filter,sizeof(filter)),
-  write_rpc(fp,entry)
+  write_rpc(fp,entry,NULL)
 )
 
 NSLCD_HANDLE(
@@ -179,5 +188,5 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_rpc_all()");,
   NSLCD_ACTION_RPC_ALL,
   (filter=rpc_filter,0),
-  write_rpc(fp,entry)
+  write_rpc(fp,entry,NULL)
 )

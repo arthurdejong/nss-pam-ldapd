@@ -145,7 +145,7 @@ void group_init(void)
 
 static int do_write_group(
     TFILE *fp,MYLDAP_ENTRY *entry,const char **names,gid_t gids[],int numgids,
-    const char *passwd,SET *members)
+    const char *passwd,SET *members,const char *reqname)
 {
   int32_t tmpint32;
   int i,j;
@@ -167,7 +167,7 @@ static int do_write_group(
       log_log(LOG_WARNING,"group entry %s contains invalid group name: \"%s\"",
                           myldap_get_dn(entry),names[i]);
     }
-    else
+    else if ((reqname==NULL)||(strcmp(reqname,names[i])==0))
     {
       for (j=0;j<numgids;j++)
       {
@@ -229,7 +229,6 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
                        const gid_t *reqgid,int wantmembers,
                        MYLDAP_SESSION *session)
 {
-  const char *tmparr[2];
   const char **names,**gidvalues;
   const char *passwd;
   SET *members;
@@ -238,21 +237,12 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   char *tmp;
   int rc;
   /* get group name (cn) */
-  if (reqname!=NULL)
+  names=myldap_get_values(entry,attmap_group_cn);
+  if ((names==NULL)||(names[0]==NULL))
   {
-    names=tmparr;
-    names[0]=reqname;
-    names[1]=NULL;
-  }
-  else
-  {
-    names=myldap_get_values(entry,attmap_group_cn);
-    if ((names==NULL)||(names[0]==NULL))
-    {
-      log_log(LOG_WARNING,"group entry %s does not contain %s value",
-                          myldap_get_dn(entry),attmap_group_cn);
-      return 0;
-    }
+    log_log(LOG_WARNING,"group entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_group_cn);
+    return 0;
   }
   /* get the group id(s) */
   if (reqgid!=NULL)
@@ -291,7 +281,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
     members=NULL;
   /* write entries (split to a separate function so we can ensure the call
      to free() below in case a write fails) */
-  rc=do_write_group(fp,entry,names,gids,numgids,passwd,members);
+  rc=do_write_group(fp,entry,names,gids,numgids,passwd,members,reqname);
   /* free and return */
   if (members!=NULL)
     set_free(members);

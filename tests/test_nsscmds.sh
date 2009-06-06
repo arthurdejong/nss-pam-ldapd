@@ -2,7 +2,7 @@
 
 # test.sh - simple test script to check output of name lookup commands
 #
-# Copyright (C) 2007, 2008 Arthur de Jong
+# Copyright (C) 2007, 2008, 2009 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -104,6 +104,11 @@ check "getent aliases bar2" << EOM
 bar2:           foobar@example.com
 EOM
 
+# get alias by different case
+check "getent aliases FOO" << EOM
+foo:            bar@example.com
+EOM
+
 ###########################################################################
 
 echo "test_nsscmds.sh: testing ether..."
@@ -116,6 +121,11 @@ EOM
 # get an entry by alias name
 check "getent ethers testhostalias" << EOM
 0:18:8a:54:1a:8e testhostalias
+EOM
+
+# get an entry by hostname with different case
+check "getent ethers TESTHOST" << EOM
+0:18:8a:54:1a:8e testhost
 EOM
 
 # get an entry by ethernet address
@@ -147,6 +157,10 @@ EOM
 #check "getent group users" << EOM
 #users:*:100:arthur,test
 #EOM
+
+# group with different case should not be found
+check "getent group TESTGROUP" << EOM
+EOM
 
 check "getent group 6100" << EOM
 testgroup:*:6100:arthur,test
@@ -194,6 +208,11 @@ check "getent hosts testhostalias" << EOM
 10.0.0.1        testhost testhostalias
 EOM
 
+# check hostname with different case
+check "getent hosts TESTHOST" << EOM
+10.0.0.1        testhost testhostalias
+EOM
+
 check "getent hosts 10.0.0.1" << EOM
 10.0.0.1        testhost testhostalias
 EOM
@@ -218,11 +237,22 @@ check "getent netgroup tstnetgroup" << EOM
 tstnetgroup          ( , arthur, ) (noot, , )
 EOM
 
+# check netgroup lookup with different case
+# Note: this should return nothing at all (this is a bug)
+check "getent netgroup TSTNETGROUP" << EOM
+TSTNETGROUP
+EOM
+
 ###########################################################################
 
 echo "test_nsscmds.sh: testing networks..."
 
 check "getent networks testnet" << EOM
+testnet               10.0.0.0
+EOM
+
+# check network name with different case
+check "getent networks TESTNET" << EOM
 testnet               10.0.0.0
 EOM
 
@@ -246,6 +276,10 @@ check "getent passwd arthur" << EOM
 arthur:x:1000:100:Arthur de Jong:/home/arthur:/bin/bash
 EOM
 
+# check username with different case
+check "getent passwd ARTHUR" << EOM
+EOM
+
 check "getent passwd 4089" << EOM
 jguzzetta:x:4089:1000:Josephine Guzzetta:/home/jguzzetta:/bin/bash
 EOM
@@ -265,6 +299,14 @@ EOM
 
 check "getent protocols protfooalias" << EOM
 protfoo               140 protfooalias
+EOM
+
+# check protocol with different case
+check "getent protocols PROTFOO" << EOM
+EOM
+
+# test protocol alias with different case
+check "getent protocols PROTFOOALIAS" << EOM
 EOM
 
 check "getent protocols 140" << EOM
@@ -291,6 +333,10 @@ check "getent rpc rpcfooalias" << EOM
 rpcfoo          160002  rpcfooalias
 EOM
 
+# test rpc name with different case
+check "getent rpc RPCFOO" << EOM
+EOM
+
 check "getent rpc 160002" << EOM
 rpcfoo          160002  rpcfooalias
 EOM
@@ -312,6 +358,14 @@ foosrv                15349/tcp
 EOM
 
 check "getent services foosrv/udp" << EOM
+EOM
+
+# check with different case
+check "getent services FOOSRV" << EOM
+EOM
+
+# check protocol name case sensitivity (TCP is commonly an alias)
+check "getent services foosrv/tCp" << EOM
 EOM
 
 check "getent services 15349/tcp" << EOM
@@ -363,6 +417,10 @@ EOM
 
 check "getent shadow arthur" << EOM
 arthur:*::100:200:7:2::0
+EOM
+
+# check case-sensitivity
+check "getent shadow ARTHUR" << EOM
 EOM
 
 # check if the number of passwd entries matches the number of shadow entries
