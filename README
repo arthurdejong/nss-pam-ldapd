@@ -8,7 +8,7 @@
    In 2006 Arthur de Jong of West Consuling forked the library to
    split it into a thin NSS part and a server part. Most of the code
    was rewritten.
-   http://ch.tudelft.nl/~arthur/nss-ldapd/
+   http://arthurdejong.org/nss-ldapd/
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006, 2007 West Consulting
@@ -348,7 +348,7 @@ REPORTING BUGS
 ==============
 
 If you find any bugs or missing features please send email to
-  arthur@ch.tudelft.nl
+  arthur@arthurdejong.org
 If you are using the Debian package you are encouraged to use the BTS.
 Please include as much information as needed (platform, output of configure
 if compilation fails, output of the failure, etc). Patches are more than
