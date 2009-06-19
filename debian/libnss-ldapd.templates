@@ -13,17 +13,16 @@ _Description: LDAP server Uniform Resource Identifier:
 Template: libnss-ldapd/ldap-base
 Type: string
 _Description: LDAP server search base:
- Please enter the distinguished name of the LDAP search base.  Many sites
- use the components of their domain names for this purpose.  For example,
- the domain "example.net" would use "dc=example,dc=net" as the
- distinguished name of the search base.
+ Please enter the distinguished name of the LDAP search base. Many sites use
+ the components of their domain names for this purpose. For example, the
+ domain "example.net" would use "dc=example,dc=net" as the distinguished name
+ of the search base.
 
 Template: libnss-ldapd/ldap-binddn
 Type: string
 _Description: LDAP database user:
- If the LDAP database requires a login for normal lookups, enter
- the name of the account that will be used here. Leave empty
- otherwise.
+ If the LDAP database requires a login for normal lookups, enter the name of
+ the account that will be used here. Leave empty otherwise.
  .
  This value should be specified as a DN (distinguished name).
 
@@ -36,12 +35,12 @@ Template: libnss-ldapd/nsswitch
 Type: multiselect
 Choices: aliases, ethers, group, hosts, netgroup, networks, passwd, protocols, rpc, services, shadow
 _Description: Name services to configure:
- For this package to work, you need to modify your /etc/nsswitch.conf to
- use the ldap datasource.
+ For this package to work, you need to modify your /etc/nsswitch.conf to use
+ the ldap datasource.
  .
- You can select the services that should be enabled or disabled
- for LDAP lookups. The new LDAP lookups will be added as last option.
- Be sure to review these changes.
+ You can select the services that should be enabled or disabled for LDAP
+ lookups. The new LDAP lookups will be added as last option. Be sure to review
+ these changes.
 
 Template: libnss-ldapd/clean_nsswitch
 Type: boolean
@@ -51,11 +50,11 @@ _Description: Remove LDAP from nsswitch.conf now?
    ${services}
  but the libnss-ldapd package is about to be removed.
  .
- You are advised to remove the entries if you don't plan on using LDAP
- for name resolution any more.  Not removing ldap from nsswitch.conf should,
- for most services, not cause problems, but host name resolution could be
- affected in subtle ways.
+ You are advised to remove the entries if you don't plan on using LDAP for
+ name resolution any more. Not removing ldap from nsswitch.conf should, for
+ most services, not cause problems, but host name resolution could be affected
+ in subtle ways.
  .
  You can edit /etc/nsswitch.conf by hand or chose to remove the entries
- automatically now. Be sure to review the changes to /etc/nsswitch.conf if
- you chose to remove the entries now.
+ automatically now. Be sure to review the changes to /etc/nsswitch.conf if you
+ chose to remove the entries now.
