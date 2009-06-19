@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-04-21 21:21+0200\n"
+"POT-Creation-Date: 2009-06-19 11:22+0200\n"
 "PO-Revision-Date: 2009-05-23 21:15+0300\n"
 "Last-Translator: Esko Araj?rvi <edu@iki.fi>\n"
 "Language-Team: Finnish <debian-l10n-finnish@lists.debian.org>\n"
@@ -19,31 +19,43 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-msgid "LDAP server Uniform Resource Identifier:"
-msgstr "LDAP-palvelimen URI (Uniform Resource Identifier):"
+#, fuzzy
+#| msgid "LDAP server search base:"
+msgid "LDAP server URI:"
+msgstr "LDAP-palvelimen hakukanta:"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "Please enter the URI of the LDAP server used. This is a string in the "
+#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
+#| "used. The port number is optional."
 msgid ""
-"Please enter the URI of the LDAP server used. This is a string in the form "
-"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
-"port number is optional."
+"Please enter the Uniform Resource Identifier of the LDAP server. The format "
+"is 'ldap://<hostname_or_IP>:<port>/'. Alternatively, 'ldaps://' or "
+"'ldapi://' can be used. The port number is optional."
 msgstr ""
-"Anna k?ytetyn LDAP-palvelimen URI. T?m? merkkijono on muotoa: ?ldap://<"
-"verkkonimi tai IP>:<portti>/?. ldaps:// tai ldapi:// ovat my?s k?ytett?viss?."
-" Porttinumero ei ole pakollinen."
+"Anna k?ytetyn LDAP-palvelimen URI. T?m? merkkijono on muotoa: ?ldap://"
+"<verkkonimi tai IP>:<portti>/?. ldaps:// tai ldapi:// ovat my?s k?ytett?"
+"viss?. Porttinumero ei ole pakollinen."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "When using the ldap or ldaps schemes it is usually a good idea to use an "
+#| "IP address; this reduces the risk of failure when name services are "
+#| "unavailable."
 msgid ""
-"When using the ldap or ldaps schemes it is usually a good idea to use an IP "
-"address; this reduces the risk of failure when name services are unavailable."
+"When using an ldap or ldaps scheme it is recommended to use an IP address to "
+"avoid failures when domain name services are unavailable."
 msgstr ""
-"K?ytett?ess? ldap- ja ldaps-skeemoja on yleens? suositeltavaa k?ytt?? "
-"IP-osoitetta. T?m? v?hent?? ongelmien riski?, kun nimipalvelimia ei ole "
-"k?ytett?viss?."
+"K?ytett?ess? ldap- ja ldaps-skeemoja on yleens? suositeltavaa k?ytt?? IP-"
+"osoitetta. T?m? v?hent?? ongelmien riski?, kun nimipalvelimia ei ole k?ytett?"
+"viss?."
 
 #. Type: string
 #. Description
@@ -84,8 +96,8 @@ msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave empty otherwise."
 msgstr ""
-"Jos LDAP-tietokannan t?ytyy kirjautua tehd?kseen normaaleja hakuja, anna "
-"k?ytett?v?n tunnuksen nimi t?ss?. J?t? muuten kentt? tyhj?ksi."
+"Jos LDAP-tietokannan t?ytyy kirjautua tehd?kseen normaaleja hakuja, anna k?"
+"ytett?v?n tunnuksen nimi t?ss?. J?t? muuten kentt? tyhj?ksi."
 
 #. Type: string
 #. Description
@@ -118,8 +130,8 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
-"Jotta t?m? paketti toimisi, t?ytyy tiedosto /etc/nsswitch.conf muokata "
-"k?ytt?m??n ldap-tietol?hdett?."
+"Jotta t?m? paketti toimisi, t?ytyy tiedosto /etc/nsswitch.conf muokata k?ytt?"
+"m??n ldap-tietol?hdett?."
 
 #. Type: multiselect
 #. Description
@@ -129,9 +141,9 @@ msgid ""
 "lookups. The new LDAP lookups will be added as last option. Be sure to "
 "review these changes."
 msgstr ""
-"Voit valita palvelut, jotka tulisi ottaa k?ytt??n tai poistaa k?yt?st? "
-"k?ytett?ess? LDAP-hakuja. Uudet LDAP-haut lis?t??n viimeiseksi vaihtoehdoksi."
-" Muista tarkastaa n?m? muutokset."
+"Voit valita palvelut, jotka tulisi ottaa k?ytt??n tai poistaa k?yt?st? k?"
+"ytett?ess? LDAP-hakuja. Uudet LDAP-haut lis?t??n viimeiseksi vaihtoehdoksi. "
+"Muista tarkastaa n?m? muutokset."
 
 #. Type: boolean
 #. Description
@@ -162,8 +174,8 @@ msgid ""
 msgstr ""
 "On suositeltavaa poistaa tietueet, jos LDAP:ia ei aiota en?? k?ytt?? nimien "
 "selvitt?miseen. Jos ldap j?tet??n tiedostoon nsswitch.conf, sen ei pit?isi "
-"useimpien palveluiden kohdalla aiheuttaa ongelmia, mutta konenimien "
-"selvitys saattaa muuttua joillain tavoilla."
+"useimpien palveluiden kohdalla aiheuttaa ongelmia, mutta konenimien selvitys "
+"saattaa muuttua joillain tavoilla."
 
 #. Type: boolean
 #. Description
@@ -176,3 +188,6 @@ msgstr ""
 "Voit muokata tiedostoa /etc/nsswitch.conf k?sin tai poistaa tietueet nyt "
 "automaattisesti. Muista tarkastaa tiedoston /etc/nsswitch.conf muutokset, "
 "jos poistat tietueet nyt."
+
+#~ msgid "LDAP server Uniform Resource Identifier:"
+#~ msgstr "LDAP-palvelimen URI (Uniform Resource Identifier):"

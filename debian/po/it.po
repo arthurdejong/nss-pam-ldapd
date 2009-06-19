@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.6.8\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-04-21 21:21+0200\n"
+"POT-Creation-Date: 2009-06-19 11:22+0200\n"
 "PO-Revision-Date: 2009-04-22 07:36+0200\n"
 "Last-Translator: Vincenzo Campanella <vinz65@gmail.com>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -19,16 +19,23 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-msgid "LDAP server Uniform Resource Identifier:"
-msgstr "Uniform Resource Identifier (URI) del server LDAP:"
+#, fuzzy
+#| msgid "LDAP server search base:"
+msgid "LDAP server URI:"
+msgstr "Base di ricerca del server LDAP:"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "Please enter the URI of the LDAP server used. This is a string in the "
+#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
+#| "used. The port number is optional."
 msgid ""
-"Please enter the URI of the LDAP server used. This is a string in the form "
-"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
-"port number is optional."
+"Please enter the Uniform Resource Identifier of the LDAP server. The format "
+"is 'ldap://<hostname_or_IP>:<port>/'. Alternatively, 'ldaps://' or "
+"'ldapi://' can be used. The port number is optional."
 msgstr ""
 "Inserire l'URI del server LDAP utilizzato. Si tratta di una stringa del tipo "
 "«ldap://<nomehost o IP>:<porta>»; è anche possibile usare «ldaps://» oppure "
@@ -37,9 +44,14 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "When using the ldap or ldaps schemes it is usually a good idea to use an "
+#| "IP address; this reduces the risk of failure when name services are "
+#| "unavailable."
 msgid ""
-"When using the ldap or ldaps schemes it is usually a good idea to use an IP "
-"address; this reduces the risk of failure when name services are unavailable."
+"When using an ldap or ldaps scheme it is recommended to use an IP address to "
+"avoid failures when domain name services are unavailable."
 msgstr ""
 "Quando si usa lo schema ldap o ldaps è una buona idea usare un indirizzo IP, "
 "al fine di ridurre i rischi di errore quando i servizi dei nomi non sono "
@@ -179,3 +191,6 @@ msgstr ""
 "È possibile modificare manualmente «/etc/nsswitch.conf» o scegliere di "
 "rimuovere le voci automaticamente adesso. Ci si accerti di controllare le "
 "modifiche a «/etc/nsswitch.conf» se si sceglie la rimozione automatica."
+
+#~ msgid "LDAP server Uniform Resource Identifier:"
+#~ msgstr "Uniform Resource Identifier (URI) del server LDAP:"

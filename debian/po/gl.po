@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.6\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-04-21 21:21+0200\n"
+"POT-Creation-Date: 2009-06-19 11:22+0200\n"
 "PO-Revision-Date: 2009-05-06 22:55+0200\n"
 "Last-Translator: marce villarino <mvillarino@users.sourceforge.net>\n"
 "Language-Team: Galician <proxecto@trasno.ent>\n"
@@ -19,32 +19,43 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-msgid "LDAP server Uniform Resource Identifier:"
-msgstr "URI do servidor LDAP:"
+#, fuzzy
+#| msgid "LDAP server search base:"
+msgid "LDAP server URI:"
+msgstr "Base da procura de servidor LDAP:"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "Please enter the URI of the LDAP server used. This is a string in the "
+#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
+#| "used. The port number is optional."
 msgid ""
-"Please enter the URI of the LDAP server used. This is a string in the form "
-"ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be used. The "
-"port number is optional."
+"Please enter the Uniform Resource Identifier of the LDAP server. The format "
+"is 'ldap://<hostname_or_IP>:<port>/'. Alternatively, 'ldaps://' or "
+"'ldapi://' can be used. The port number is optional."
 msgstr ""
-"Indique o URI do servidor LDAP. Isto é unha cadea coa forma "
-"ldap://<máquina ou IP>:<porto>/. Tamén pode empregar ldaps:// "
-"ou ldapi://. O número de porto é opcional."
+"Indique o URI do servidor LDAP. Isto é unha cadea coa forma ldap://<máquina "
+"ou IP>:<porto>/. Tamén pode empregar ldaps:// ou ldapi://. O número de porto "
+"é opcional."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "When using the ldap or ldaps schemes it is usually a good idea to use an "
+#| "IP address; this reduces the risk of failure when name services are "
+#| "unavailable."
 msgid ""
-"When using the ldap or ldaps schemes it is usually a good idea to use an IP "
-"address; this reduces the risk of failure when name services are unavailable."
+"When using an ldap or ldaps scheme it is recommended to use an IP address to "
+"avoid failures when domain name services are unavailable."
 msgstr ""
 "Cando se empregan os esquemas ldap ou ldaps xeralmente é boa idea empregar "
 "un enderezo IP, xa que se reduce o risco de fallo se non hai servizos de "
-"nome "
-"dispoñíbeis."
+"nome dispoñíbeis."
 
 #. Type: string
 #. Description
@@ -68,8 +79,8 @@ msgid ""
 "name of the search base."
 msgstr ""
 "Indique o nome distintivo da base de procura LDAP. Moitos sitios empregan as "
-"compoñentes dos seus nomes de dominio para este propósito. Por exemplo, "
-"o dominio «exemplo.net» debería empregar «dc=exemplo,dc=net» como nome "
+"compoñentes dos seus nomes de dominio para este propósito. Por exemplo, o "
+"dominio «exemplo.net» debería empregar «dc=exemplo,dc=net» como nome "
 "distintivo da base de procura."
 
 #. Type: string
@@ -86,8 +97,8 @@ msgid ""
 "the account that will be used here. Leave empty otherwise."
 msgstr ""
 "Se a base de datos do LDAP require de identificación para procuras normais, "
-"indique aquí o nome da conta que se empregará. Caso contrario déixeo "
-"en branco."
+"indique aquí o nome da conta que se empregará. Caso contrario déixeo en "
+"branco."
 
 #. Type: string
 #. Description
@@ -151,8 +162,8 @@ msgid ""
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
-"LDAP aínda está configurado para facer procuras de nomes para os "
-"seguintes servizos:\n"
+"LDAP aínda está configurado para facer procuras de nomes para os seguintes "
+"servizos:\n"
 " ${services}\n"
 "pero o paquete libnss-ldapd está a piques de ser eliminado."
 
@@ -165,10 +176,9 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
-"Recoméndase que elimine as entradas se non prevé seguir a empregar LDAP "
-"para a resolución de nomes. Se non elimina ldap de nsswitch.conf non debería "
-"ter problemas coa maioría dos servizos, pero a resolución de nomes podería "
-"verse "
+"Recoméndase que elimine as entradas se non prevé seguir a empregar LDAP para "
+"a resolución de nomes. Se non elimina ldap de nsswitch.conf non debería ter "
+"problemas coa maioría dos servizos, pero a resolución de nomes podería verse "
 "afectada de maneiras sutís."
 
 #. Type: boolean
@@ -180,6 +190,8 @@ msgid ""
 "you chose to remove the entries now."
 msgstr ""
 "Pode editar manualmente /etc/nsswitch.conf ou escoller agora eliminar "
-"automaticamente as entradas. Asegúrese de revisar as modificacións a "
-"/etc/nsswitch.conf se escolle agora eliminar as entradas."
+"automaticamente as entradas. Asegúrese de revisar as modificacións a /etc/"
+"nsswitch.conf se escolle agora eliminar as entradas."
 
+#~ msgid "LDAP server Uniform Resource Identifier:"
+#~ msgstr "URI do servidor LDAP:"
