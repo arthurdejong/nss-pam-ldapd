@@ -849,7 +849,8 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     {
       check_argumentcount(filename,lnr,keyword,
           (get_token(&line,token,sizeof(token))!=NULL));
-      if (strcasecmp(token,"start_tls")==0)
+      if ( (strcasecmp(token,"start_tls")==0) ||
+           (strcasecmp(token,"starttls")==0) )
         cfg->ldc_ssl_on=SSL_START_TLS;
       else if (parse_boolean(filename,lnr,token))
         cfg->ldc_ssl_on=SSL_LDAPS;
