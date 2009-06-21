@@ -2,8 +2,8 @@ Template: libnss-ldapd/ldap-uris
 Type: string
 _Description: LDAP server URI:
  Please enter the Uniform Resource Identifier of the LDAP server. The format
- is 'ldap://<hostname_or_IP>:<port>/'. Alternatively, 'ldaps://' or 'ldapi://'
- can be used. The port number is optional.
+ is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or
+ 'ldapi://' can be used. The port number is optional.
  .
  When using an ldap or ldaps scheme it is recommended to use an IP address to
  avoid failures when domain name services are unavailable.
@@ -22,7 +22,7 @@ Template: libnss-ldapd/ldap-binddn
 Type: string
 _Description: LDAP database user:
  If the LDAP database requires a login for normal lookups, enter the name of
- the account that will be used here. Leave empty otherwise.
+ the account that will be used here. Leave it empty otherwise.
  .
  This value should be specified as a DN (distinguished name).
 
@@ -41,17 +41,17 @@ Template: libnss-ldapd/ldap-reqcert
 Type: select
 Choices: never, allow, try, demand
 _Description: Check server SSL certificate?
- When an encrypted connection is used a server certificate can be requested
- and checked. This option determines whether the server should provide a
- certificate and whether the certificate should be checked for validity.
-  * never: no certificate will be requested or checked
-  * allow: a certificate will be requested but it is not
-           required or checked
-  * try: a certificate will be requested and checked but if no
-         certificate is provided it is ignored
-  * demand: a certificate will be requested, required and checked
- Note that at least one of the tls_cacertdir or tls_cacertfile options should
- be put in /etc/nss-ldapd.conf if certificate checking is enabled.
+ When an encrypted connection is used, a server certificate can be requested
+ and checked. Please choose whether lookups should be configured to require
+ a certificate, and whether certificates should be checked for validity:
+  * never: no certificate will be requested or checked;
+  * allow: a certificate will be requested, but it is not
+           required or checked;
+  * try: a certificate will be requested and checked, but if no
+         certificate is provided it is ignored;
+  * demand: a certificate will be requested, required, and checked.
+ If certificate checking is enabled, at least one of the tls_cacertdir or
+ tls_cacertfile options must be put in /etc/nss-ldapd.conf.
 
 Template: libnss-ldapd/nsswitch
 Type: multiselect
@@ -60,15 +60,15 @@ _Description: Name services to configure:
  For this package to work, you need to modify your /etc/nsswitch.conf to use
  the ldap datasource.
  .
- You can select the services that should be enabled or disabled for LDAP
- lookups. The new LDAP lookups will be added as last option. Be sure to review
+ You can select the services that should have LDAP lookups enabled. The
+ new LDAP lookups will be added as the last datasource. Be sure to review
  these changes.
 
 Template: libnss-ldapd/clean_nsswitch
 Type: boolean
 Default: false
 _Description: Remove LDAP from nsswitch.conf now?
- LDAP is still configured for name lookups for the following services:
+ The following services are still configured to use LDAP for lookups:
    ${services}
  but the libnss-ldapd package is about to be removed.
  .
@@ -77,6 +77,6 @@ _Description: Remove LDAP from nsswitch.conf now?
  most services, not cause problems, but host name resolution could be affected
  in subtle ways.
  .
- You can edit /etc/nsswitch.conf by hand or chose to remove the entries
+ You can edit /etc/nsswitch.conf by hand or choose to remove the entries
  automatically now. Be sure to review the changes to /etc/nsswitch.conf if you
- chose to remove the entries now.
+ choose to remove the entries now.

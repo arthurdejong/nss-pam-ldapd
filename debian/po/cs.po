@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-06-20 11:52+0200\n"
+"POT-Creation-Date: 2009-06-21 23:09+0200\n"
 "PO-Revision-Date: 2005-07-10 16:33+0200\n"
 "Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
 "Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
@@ -35,7 +35,7 @@ msgstr "Adresa počítače s LDAP serverem"
 #: ../libnss-ldapd.templates:1001
 msgid ""
 "Please enter the Uniform Resource Identifier of the LDAP server. The format "
-"is 'ldap://<hostname_or_IP>:<port>/'. Alternatively, 'ldaps://' or "
+"is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
 
@@ -92,7 +92,7 @@ msgstr "Neprivilegovaný databázový uživatel"
 #: ../libnss-ldapd.templates:3001
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
-"the account that will be used here. Leave empty otherwise."
+"the account that will be used here. Leave it empty otherwise."
 msgstr ""
 
 #. Type: string
@@ -137,17 +137,17 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:6001
 msgid ""
-"When an encrypted connection is used a server certificate can be requested "
-"and checked. This option determines whether the server should provide a "
-"certificate and whether the certificate should be checked for validity.\n"
-" * never: no certificate will be requested or checked\n"
-" * allow: a certificate will be requested but it is not\n"
-"          required or checked\n"
-" * try: a certificate will be requested and checked but if no\n"
-"        certificate is provided it is ignored\n"
-" * demand: a certificate will be requested, required and checked\n"
-"Note that at least one of the tls_cacertdir or tls_cacertfile options should "
-"be put in /etc/nss-ldapd.conf if certificate checking is enabled."
+"When an encrypted connection is used, a server certificate can be requested "
+"and checked. Please choose whether lookups should be configured to require a "
+"certificate, and whether certificates should be checked for validity:\n"
+" * never: no certificate will be requested or checked;\n"
+" * allow: a certificate will be requested, but it is not\n"
+"          required or checked;\n"
+" * try: a certificate will be requested and checked, but if no\n"
+"        certificate is provided it is ignored;\n"
+" * demand: a certificate will be requested, required, and checked.\n"
+"If certificate checking is enabled, at least one of the tls_cacertdir or "
+"tls_cacertfile options must be put in /etc/nss-ldapd.conf."
 msgstr ""
 
 #. Type: multiselect
@@ -168,9 +168,9 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:7001
 msgid ""
-"You can select the services that should be enabled or disabled for LDAP "
-"lookups. The new LDAP lookups will be added as last option. Be sure to "
-"review these changes."
+"You can select the services that should have LDAP lookups enabled. The new "
+"LDAP lookups will be added as the last datasource. Be sure to review these "
+"changes."
 msgstr ""
 
 #. Type: boolean
@@ -183,7 +183,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:8001
 msgid ""
-"LDAP is still configured for name lookups for the following services:\n"
+"The following services are still configured to use LDAP for lookups:\n"
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
@@ -202,9 +202,9 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:8001
 msgid ""
-"You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
+"You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
-"you chose to remove the entries now."
+"you choose to remove the entries now."
 msgstr ""
 
 #, fuzzy
