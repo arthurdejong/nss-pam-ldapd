@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-06-21 23:09+0200\n"
+"POT-Creation-Date: 2009-06-23 09:34+0200\n"
 "PO-Revision-Date: 2009-05-23 21:15+0300\n"
 "Last-Translator: Esko Arajärvi <edu@iki.fi>\n"
 "Language-Team: Finnish <debian-l10n-finnish@lists.debian.org>\n"
@@ -37,9 +37,9 @@ msgid ""
 "is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
-"Anna käytetyn LDAP-palvelimen URI. Tämä merkkijono on muotoa: ”ldap://<"
-"verkkonimi tai IP>:<portti>/”. ldaps:// tai ldapi:// ovat myös käytettävissä."
-" Porttinumero ei ole pakollinen."
+"Anna käytetyn LDAP-palvelimen URI. Tämä merkkijono on muotoa: ”ldap://"
+"<verkkonimi tai IP>:<portti>/”. ldaps:// tai ldapi:// ovat myös "
+"käytettävissä. Porttinumero ei ole pakollinen."
 
 #. Type: string
 #. Description
@@ -53,8 +53,8 @@ msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
-"Käytettäessä ldap- ja ldaps-skeemoja on yleensä suositeltavaa käyttää "
-"IP-osoitetta. Tämä vähentää ongelmien riskiä, kun nimipalvelimia ei ole "
+"Käytettäessä ldap- ja ldaps-skeemoja on yleensä suositeltavaa käyttää IP-"
+"osoitetta. Tämä vähentää ongelmien riskiä, kun nimipalvelimia ei ole "
 "käytettävissä."
 
 #. Type: string
@@ -136,14 +136,38 @@ msgid ""
 msgstr ""
 
 #. Type: select
-#. Description
+#. Choices
 #: ../libnss-ldapd.templates:6001
-msgid "Check server SSL certificate?"
+msgid "never"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../libnss-ldapd.templates:6001
+msgid "allow"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../libnss-ldapd.templates:6001
+msgid "try"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../libnss-ldapd.templates:6001
+msgid "demand"
 msgstr ""
 
 #. Type: select
 #. Description
-#: ../libnss-ldapd.templates:6001
+#: ../libnss-ldapd.templates:6002
+msgid "Check server's SSL certificate:"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../libnss-ldapd.templates:6002
 msgid ""
 "When an encrypted connection is used, a server certificate can be requested "
 "and checked. Please choose whether lookups should be configured to require a "
@@ -188,8 +212,8 @@ msgid ""
 "changes."
 msgstr ""
 "Voit valita palvelut, jotka tulisi ottaa käyttöön tai poistaa käytöstä "
-"käytettäessä LDAP-hakuja. Uudet LDAP-haut lisätään viimeiseksi vaihtoehdoksi."
-" Muista tarkastaa nämä muutokset."
+"käytettäessä LDAP-hakuja. Uudet LDAP-haut lisätään viimeiseksi "
+"vaihtoehdoksi. Muista tarkastaa nämä muutokset."
 
 #. Type: boolean
 #. Description

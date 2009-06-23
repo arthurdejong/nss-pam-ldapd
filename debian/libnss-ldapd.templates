@@ -39,8 +39,8 @@ _Description: Use StartTLS?
 
 Template: libnss-ldapd/ldap-reqcert
 Type: select
-Choices: never, allow, try, demand
-_Description: Check server SSL certificate?
+__Choices: never, allow, try, demand
+_Description: Check server's SSL certificate:
  When an encrypted connection is used, a server certificate can be requested
  and checked. Please choose whether lookups should be configured to require
  a certificate, and whether certificates should be checked for validity:

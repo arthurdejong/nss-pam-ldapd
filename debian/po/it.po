@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.6.8\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-06-21 23:09+0200\n"
+"POT-Creation-Date: 2009-06-23 09:34+0200\n"
 "PO-Revision-Date: 2009-04-22 07:36+0200\n"
 "Last-Translator: Vincenzo Campanella <vinz65@gmail.com>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -139,14 +139,38 @@ msgid ""
 msgstr ""
 
 #. Type: select
-#. Description
+#. Choices
 #: ../libnss-ldapd.templates:6001
-msgid "Check server SSL certificate?"
+msgid "never"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../libnss-ldapd.templates:6001
+msgid "allow"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../libnss-ldapd.templates:6001
+msgid "try"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../libnss-ldapd.templates:6001
+msgid "demand"
 msgstr ""
 
 #. Type: select
 #. Description
-#: ../libnss-ldapd.templates:6001
+#: ../libnss-ldapd.templates:6002
+msgid "Check server's SSL certificate:"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../libnss-ldapd.templates:6002
 msgid ""
 "When an encrypted connection is used, a server certificate can be requested "
 "and checked. Please choose whether lookups should be configured to require a "
