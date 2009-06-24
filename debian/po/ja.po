@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: nss-ldapd 0.6.8\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-23 09:34+0200\n"
-"PO-Revision-Date: 2009-04-22 08:53+0900\n"
+"PO-Revision-Date: 2009-06-24 08:18+0900\n"
 "Last-Translator: Kenshi Muto <kmuto@debian.org>\n"
 "Language-Team: Japanese <debian-japanese@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
@@ -26,42 +26,25 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid "LDAP server search base:"
 msgid "LDAP server URI:"
-msgstr "LDAP サーバの検索ベース:"
+msgstr "LDAP サーバの URI:"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Please enter the URI of the LDAP server used. This is a string in the "
-#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
-#| "used. The port number is optional."
 msgid ""
 "Please enter the Uniform Resource Identifier of the LDAP server. The format "
 "is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
 "'ldapi://' can be used. The port number is optional."
-msgstr ""
-"利用するLDAP サーバの URI を入力してください。これは ldap://<ホスト名または "
-"IP>:<ポート>/ 形式の文字列です。ldaps:// または ldapi:// も利用できます。ポー"
-"ト番号は省略できます。"
+msgstr "LDAP サーバの Uniform Resource Identifier を入力してください。形式は 'ldap://<ホスト名または IP>:<ポート>/' です。このほかに 'ldaps://' または 'ldapi://' も利用できます。ポート番号は省略できます。"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "When using the ldap or ldaps schemes it is usually a good idea to use an "
-#| "IP address; this reduces the risk of failure when name services are "
-#| "unavailable."
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
-msgstr ""
-"ldap または ldaps スキーマを使うとき、IP アドレスを使うのは、通常、良い考えで"
-"す。これはネームサービスが利用できないときの障害の危険を減らします。"
+msgstr "ldap または ldaps スキーマを使う際には、ネームサービスが利用できないときの障害回避のために IP アドレスを使うことを推奨します。"
 
 #. Type: string
 #. Description
@@ -97,16 +80,10 @@ msgstr "LDAP データベースユーザ:"
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:3001
-#, fuzzy
-#| msgid ""
-#| "If the LDAP database requires a login for normal lookups, enter the name "
-#| "of the account that will be used here. Leave empty otherwise."
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave it empty otherwise."
-msgstr ""
-"通常のルックアップに LDAP データベースがログインを必要とするのであれば、利用"
-"するアカウント名をここに入力してください。そうでなければ空のままにします。"
+msgstr "通常のルックアップに LDAP データベースがログインを必要とするのであれば、利用するアカウント名をここに入力してください。そうでなければ空のままにします。"
 
 #. Type: string
 #. Description
@@ -130,7 +107,7 @@ msgstr "LDAP データベースにログインするのに使うパスワード�
 #. Description
 #: ../libnss-ldapd.templates:5001
 msgid "Use StartTLS?"
-msgstr ""
+msgstr "StartTLS を利用しますか?"
 
 #. Type: boolean
 #. Description
@@ -138,37 +115,37 @@ msgstr ""
 msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
-msgstr ""
+msgstr "接続の暗号化のために LDAP サーバに StartTLS を使って接続するかどうかを選んでください。"
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "never"
-msgstr ""
+msgstr "使わない"
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "allow"
-msgstr ""
+msgstr "許可"
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "try"
-msgstr ""
+msgstr "試行"
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "demand"
-msgstr ""
+msgstr "要求"
 
 #. Type: select
 #. Description
 #: ../libnss-ldapd.templates:6002
 msgid "Check server's SSL certificate:"
-msgstr ""
+msgstr "サーバの SSL 証明書のチェック:"
 
 #. Type: select
 #. Description
@@ -186,6 +163,14 @@ msgid ""
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
 "tls_cacertfile options must be put in /etc/nss-ldapd.conf."
 msgstr ""
+"暗号化接続を利用する場合、サーバ証明書を要求して確認できます。ルックアップで証明書を必須とするよう設定するかどうか、および証明書の妥当性を確認するかどうかを選んでください。\n"
+" * 使わない: 証明書は要求もチェックもされない\n"
+" * 許可: 証明書を要求するが、必須ではなくチェックも\n"
+"         されない\n"
+" * 試行: 証明書は要求およびチェックされるが、\n"
+"         証明書が提供されなかった場合は単に無視される\n"
+" * 要求: 証明書は要求され、必須であり、チェックされる。\n"
+"証明書のチェックが有効の場合、tls_cacertdir、tls_cacertfile オプションのうちの少なくとも 1 つは /etc/nss-ldap.conf に掲載されている必要があります。"
 
 #. Type: multiselect
 #. Description
@@ -206,19 +191,11 @@ msgstr ""
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:7001
-#, fuzzy
-#| msgid ""
-#| "You can select the services that should be enabled or disabled for LDAP "
-#| "lookups. The new LDAP lookups will be added as last option. Be sure to "
-#| "review these changes."
 msgid ""
 "You can select the services that should have LDAP lookups enabled. The new "
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
-msgstr ""
-"LDAP ルックアップを有効または無効にしたいサービスを選択できます。新しい LDAP "
-"ルックアップは最後の選択肢として追加されます。これらの変更を見て確認してくだ"
-"さい。"
+msgstr "LDAP ルックアップを有効にしたいサービスを選択できます。新しい LDAP ルックアップは最後のデータソースとして追加されます。これらの変更を見て確認してください。"
 
 #. Type: boolean
 #. Description
@@ -229,17 +206,12 @@ msgstr "nsswitch.conf から LDAP を今削除しますか?"
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:8001
-#, fuzzy
-#| msgid ""
-#| "LDAP is still configured for name lookups for the following services:\n"
-#| "  ${services}\n"
-#| "but the libnss-ldapd package is about to be removed."
 msgid ""
 "The following services are still configured to use LDAP for lookups:\n"
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
-"LDAP は以下のサービスの名前検索のためにまだ設定されています:\n"
+"以下のサービスはまだルックアップに LDAP を使うよう設定されています:\n"
 "  ${services}\n"
 "しかし、libnss-ldapd パッケージは削除されようとしています。"
 
@@ -267,6 +239,3 @@ msgstr ""
 "/etc/nsswitch.conf を手動で編集するか、エントリを自動で今削除することを選べま"
 "す。エントリを今削除することを選ぶ場合、/etc/nsswitch.conf の変更内容を確認し"
 "てください。"
-
-#~ msgid "LDAP server Uniform Resource Identifier:"
-#~ msgstr "LDAP サーバの Uniform Resource Identifier:"
