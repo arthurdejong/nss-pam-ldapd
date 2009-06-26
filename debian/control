@@ -5,9 +5,9 @@ Maintainer: Arthur de Jong <adejong@debian.org>
 Uploaders: Richard A Nelson (Rick) <cowboy@debian.org>
 Standards-Version: 3.8.1
 Build-Depends: debhelper (>= 7), libkrb5-dev, libldap2-dev, libsasl2-dev, po-debconf (>= 0.5.0), docbook2x, docbook-xml, libpam0g-dev
-Homepage: http://ch.tudelft.nl/~arthur/nss-ldapd
-Vcs-Svn: http://arthurenhella.demon.nl/svn/nss-ldapd/nss-ldapd/
-Vcs-Browser: http://arthurenhella.demon.nl/viewcvs/nss-ldapd/nss-ldapd/
+Homepage: http://arthurdejong.org/nss-ldapd/
+Vcs-Svn: http://arthurdejong.org/svn/nss-ldapd/nss-ldapd/
+Vcs-Browser: http://arthurdejong.org/viewvc/nss-ldapd/nss-ldapd/
 
 Package: nslcd
 Architecture: any

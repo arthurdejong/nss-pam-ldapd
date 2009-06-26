@@ -1,73 +1,54 @@
-# Italian translation of nss-ldapd's PO-Debconf file.
-# COPYRIGHT (C) 2009 THE NSS-LDAPD'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the nss-ldapd package.
-# Vincenzo Campanella <vinz65@gmail.com>, 2009.
-#
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.6.8\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-26 17:06+0200\n"
-"PO-Revision-Date: 2009-04-22 07:36+0200\n"
-"Last-Translator: Vincenzo Campanella <vinz65@gmail.com>\n"
-"Language-Team: Italian <tp@lists.linux.it>\n"
+"PO-Revision-Date: \n"
+"Last-Translator: zym <zym@3721.com>\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Chinese\n"
+"X-Poedit-Country: CHINA\n"
+"X-Poedit-SourceCharset: utf-8\n"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid "LDAP server search base:"
 msgid "LDAP server URI:"
-msgstr "Base di ricerca del server LDAP:"
+msgstr "LDAP 服务器URI地址："
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Please enter the URI of the LDAP server used. This is a string in the "
-#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
-#| "used. The port number is optional."
 msgid ""
 "Please enter the Uniform Resource Identifier of the LDAP server. The format "
 "is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
-"Inserire l'URI del server LDAP utilizzato. Si tratta di una stringa del tipo "
-"«ldap://<nomehost o IP>:<porta>»; è anche possibile usare «ldaps://» oppure "
-"«ldapi://». Il numero della porta è facoltativo."
+"请输入LDAP服务器的统一资源标识符（URI），格式为 'ldap://<服务器名或IP地址>:<"
+"端口>/ '，也可以用'ldaps://'或'ldapi://'，端口号可选。"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "When using the ldap or ldaps schemes it is usually a good idea to use an "
-#| "IP address; this reduces the risk of failure when name services are "
-#| "unavailable."
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
-msgstr ""
-"Quando si usa lo schema ldap o ldaps è una buona idea usare un indirizzo IP, "
-"al fine di ridurre i rischi di errore quando i servizi dei nomi non sono "
-"disponibili."
+msgstr "使用ldap或ldaps模式时，推荐使用IP地址以防止域名无法解析造成失效。"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
-msgstr "È possibile specificare URI multipli, dividendoli con spazi."
+msgstr "可以加入多个URI地址，用空格分开。"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:2001
 msgid "LDAP server search base:"
-msgstr "Base di ricerca del server LDAP:"
+msgstr "LDAP服务器搜索起点："
 
 #. Type: string
 #. Description
@@ -78,57 +59,46 @@ msgid ""
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
 msgstr ""
-"Inserire il DN (distinguished name) della base di ricerca LDAP. A tal fine "
-"molti siti usano le componenti del loro nome di dominio: ad esempio, il "
-"dominio «esempio.net» userebbe «dc=esempio,dc=net» come DN della base di "
-"ricerca."
+"请输入LDAP搜索起点DN。多数网站使用域名作，如域名\"example.net\"会使用"
+"\"dc=example,dc=net\"作为搜索的起点DN。"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
 msgid "LDAP database user:"
-msgstr "Utente del database LDAP:"
+msgstr "LDAP数据库用户名："
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
-#, fuzzy
-#| msgid ""
-#| "If the LDAP database requires a login for normal lookups, enter the name "
-#| "of the account that will be used here. Leave empty otherwise."
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave it empty otherwise."
-msgstr ""
-"Se il database LDAP richiede l'accesso per le normali ricerche, inserire il "
-"nome dell'account che verrà utilizzato per l'accesso. In caso contrario, "
-"lasciare vuoto."
+msgstr "如LDAP数据库在查询时需要登录，请输入登录帐号，否则请空着。"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
-msgstr ""
-"Questo valore dovrebbe essere specificato come DN (distinguished name)."
+msgstr "这个值应该设置为一个DN (distinguished name)。"
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:4001
 msgid "LDAP user password:"
-msgstr "Password dell'utente LDAP:"
+msgstr "LDAP用户密码："
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr ""
-"Inserire la password che verrà utilizzata per accedere al database LDAP."
+msgstr "输入登录LDAP数据库的的密码："
 
 #. Type: boolean
 #. Description
 #: ../nslcd.templates:5001
 msgid "Use StartTLS?"
-msgstr ""
+msgstr "使用 StartTLS?"
 
 #. Type: boolean
 #. Description
@@ -136,7 +106,7 @@ msgstr ""
 msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
-msgstr ""
+msgstr "请选择是否使用StartTLS来加密到LDAP服务器的连接。"
 
 #. Type: select
 #. Choices
@@ -165,8 +135,10 @@ msgstr ""
 #. Type: select
 #. Description
 #: ../nslcd.templates:6002
+#, fuzzy
+#| msgid "Check server SSL certificate?"
 msgid "Check server's SSL certificate:"
-msgstr ""
+msgstr "需要检查服务器的SSL证书吗？"
 
 #. Type: select
 #. Description
@@ -184,12 +156,20 @@ msgid ""
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
 "tls_cacertfile options must be put in /etc/nss-ldapd.conf."
 msgstr ""
+"使用加密连接的时候，可以要求检查服务器端的证书。请选择设置是否需要服务器证"
+"书，是否需要验证证书的有效性:\n"
+"* never:不检查证书\n"
+"* allow: 会请求服务器证书，但是不检查证书是否存在和有效。* try: 会请求服务器"
+"证书，如服务器提供证书则验证，如无则忽略。 * demand:会请求服务器证书，必须有"
+"证书并验证证书。\n"
+"如果启用证书检查，/etc/nss-ldapd.conf必须有tls_cacertdir或者tls_cacertfile选"
+"项。"
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Name services to configure:"
-msgstr "Servizi dei nomi da configurare:"
+msgstr "配置名称服务："
 
 #. Type: multiselect
 #. Description
@@ -197,49 +177,36 @@ msgstr "Servizi dei nomi da configurare:"
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
-msgstr ""
-"Affinché questo pacchetto funzioni è necessario modificare il proprio file «/"
-"etc/nsswitch.conf» in modo che utilizzi l'origine dati LDAP."
+msgstr "启用需要修改 /etc/nsswitch.conf 来使用ldap数据源。"
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "You can select the services that should be enabled or disabled for LDAP "
-#| "lookups. The new LDAP lookups will be added as last option. Be sure to "
-#| "review these changes."
 msgid ""
 "You can select the services that should have LDAP lookups enabled. The new "
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
 msgstr ""
-"È possibile selezionare i servizi che dovrebbero essere abilitati o "
-"disabilitati per le ricerche LDAP. Le nuove ricerche LDAP verranno aggiunte "
-"come ultima opzione. Ci si assicuri di controllare queste modifiche."
+"请选择您需要启用或者停用LDAP名称服务。新的LDAP源将会追加在其他源后面。请务必"
+"检查验证。"
 
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:2001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr "Rimuovere LDAP da nsswitch.con ora?"
+msgstr "从nsswitch.conf中停用LDAP模式？"
 
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:2001
-#, fuzzy
-#| msgid ""
-#| "LDAP is still configured for name lookups for the following services:\n"
-#| "  ${services}\n"
-#| "but the libnss-ldapd package is about to be removed."
 msgid ""
 "The following services are still configured to use LDAP for lookups:\n"
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
-"LDAP è tuttora configurato per le ricerche dei nomi per i seguenti servizi:\n"
+"下列服务仍然设置为使用LDAP模式：\n"
 "  ${services}\n"
-"ma il pacchetto libnss-ldapd sta per essere rimosso."
+"但libnss-ldapd会被删除。"
 
 #. Type: boolean
 #. Description
@@ -250,10 +217,8 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
-"Rimuovere le voci solo se si prevede di non utilizzare più LDAP per le "
-"risoluzioni dei nomi. Per la maggior parte dei servizi la mancata rimozione "
-"di LDAP da nsswitch.conf non dovrebbe causare problemi, ma la risoluzione "
-"dei nomi host potrebbe essere in qualche modo influenzata."
+"如您不想再使用LDAP进行名称解析，推荐您删除LDAP相关条目。如不从nsswitch.conf删"
+"除ldap多数服务不会有问题，但是会对名称解析产生一些细微的影响。"
 
 #. Type: boolean
 #. Description
@@ -263,9 +228,5 @@ msgid ""
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you choose to remove the entries now."
 msgstr ""
-"È possibile modificare manualmente «/etc/nsswitch.conf» o scegliere di "
-"rimuovere le voci automaticamente adesso. Ci si accerti di controllare le "
-"modifiche a «/etc/nsswitch.conf» se si sceglie la rimozione automatica."
-
-#~ msgid "LDAP server Uniform Resource Identifier:"
-#~ msgstr "Uniform Resource Identifier (URI) del server LDAP:"
+"您现在可以手工修改/etc/nsswitch.conf或者勾选来删除LDAP功能。如果您删除了条"
+"目，请确保检查/etc/nsswitch.conf文件。"

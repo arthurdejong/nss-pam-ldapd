@@ -5,7 +5,7 @@ of PADL Software Pty Ltd. http://www.padl.com/OSS/nss_ldap.html
 
 In 2006 Arthur de Jong of West Consuling forked the library to split it into a
 thin NSS part and a server part. Most of the code was rewritten.
-http://ch.tudelft.nl/~arthur/nss-ldapd/
+http://arthurdejong.org/nss-ldapd/
 
 Arthur de Jong is both the upstream and Debian package maintainer, so there
 are no differences between the Debian package and the upstream version.

@@ -474,7 +474,7 @@ static void create_pidfile(const char *filename)
   {
     if ((fp=fopen(filename,"w"))==NULL)
     {
-      log_log(LOG_ERR,"cannot open pid file (%s): %s",filename,strerror(errno));
+      log_log(LOG_ERR,"cannot create pid file (%s): %s",filename,strerror(errno));
       exit(EXIT_FAILURE);
     }
     if (fprintf(fp,"%d\n",(int)getpid())<=0)

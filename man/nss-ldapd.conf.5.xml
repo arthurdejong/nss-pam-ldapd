@@ -710,7 +710,7 @@
 
  <refsect1 id="author">
   <title>Author</title>
-  <para>This manual was written by Arthur de Jong &lt;arthur@ch.tudelft.nl&gt;
+  <para>This manual was written by Arthur de Jong &lt;arthur@arthurdejong.org&gt;
         and is based on the
         <citerefentry><refentrytitle>nss_ldap</refentrytitle><manvolnum>5</manvolnum></citerefentry>
         manual developed by PADL Software Pty Ltd.</para>
