@@ -3,7 +3,7 @@ Section: admin
 Priority: extra
 Maintainer: Arthur de Jong <adejong@debian.org>
 Uploaders: Richard A Nelson (Rick) <cowboy@debian.org>
-Standards-Version: 3.8.1
+Standards-Version: 3.8.2
 Build-Depends: debhelper (>= 7), libkrb5-dev, libldap2-dev, libsasl2-dev, po-debconf (>= 0.5.0), docbook2x, docbook-xml
 Homepage: http://arthurdejong.org/nss-ldapd/
 Vcs-Svn: http://arthurdejong.org/svn/nss-ldapd/nss-ldapd/
