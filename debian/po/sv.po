@@ -18,7 +18,7 @@ msgstr ""
 "Project-Id-Version: nss-ldapd_sv\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-23 09:34+0200\n"
-"PO-Revision-Date: 2009-05-03 12:55+0200\n"
+"PO-Revision-Date: 2009-06-27 21:15+0200\n"
 "Last-Translator: Martin Ågren <martin.agren@gmail.com>\n"
 "Language-Team: Swedish <debian-l10n-swedish@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
@@ -32,42 +32,30 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid "LDAP server search base:"
 msgid "LDAP server URI:"
-msgstr "Sökbas för LDAP-server:"
+msgstr "URI för LDAP-server:"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Please enter the URI of the LDAP server used. This is a string in the "
-#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
-#| "used. The port number is optional."
 msgid ""
 "Please enter the Uniform Resource Identifier of the LDAP server. The format "
 "is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
-"Ange URI:n till den LDAP-server som används. Detta är en sträng på formen "
-"ldap://<värdnamn eller IP>:<port>/ . ldaps:// eller ldapi:// kan också "
-"användas. Portnumret är valfritt."
+"Ange URI:n (eng. \"Uniform Resource Identifier\") till LDAP-servern. "
+"Formatet är 'ldap://<värdnamn_eller_IP>:<port>/'. Alternativt kan 'ldaps://' "
+"eller 'ldapi://' användas. Portnumret är valfritt."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "When using the ldap or ldaps schemes it is usually a good idea to use an "
-#| "IP address; this reduces the risk of failure when name services are "
-#| "unavailable."
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
 "När ldap och ldaps används är det vanligtvis en bra idé att använda en IP-"
-"adress; detta reducerar risken för fel om namntjänsten är otillgänglig."
+"adress för att undvika fel när namntjänsten (DNS) är otillgänglig."
 
 #. Type: string
 #. Description
@@ -91,8 +79,8 @@ msgid ""
 "name of the search base."
 msgstr ""
 "Ange namnet (DN) för LDAPs sökbas. Många system använder komponenter av "
-"deras domännamn för denna funktion.  Till exempel att domänen \"example.net"
-"\" skulle använda \"dc=example,dc=net\" som sitt DN-namn för sökbasen."
+"deras domännamn för denna funktion. Till exempel att domänen \"example.net\" "
+"skulle använda \"dc=example,dc=net\" som sitt DN-namn för sökbasen."
 
 #. Type: string
 #. Description
@@ -103,16 +91,12 @@ msgstr "LDAP-databasanvändare:"
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:3001
-#, fuzzy
-#| msgid ""
-#| "If the LDAP database requires a login for normal lookups, enter the name "
-#| "of the account that will be used here. Leave empty otherwise."
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave it empty otherwise."
 msgstr ""
 "Om LDAP-databasen kräver inloggning för vanliga uppslag, ange namnet på det "
-"konto som ska användas. Lämna annars tomt."
+"konto som ska användas här. Lämna annars tomt."
 
 #. Type: string
 #. Description
@@ -136,7 +120,7 @@ msgstr "Ange lösenordet som ska användas för att logga in på LDAP-databasen."
 #. Description
 #: ../libnss-ldapd.templates:5001
 msgid "Use StartTLS?"
-msgstr ""
+msgstr "Använda StartTLS?"
 
 #. Type: boolean
 #. Description
@@ -145,36 +129,38 @@ msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
 msgstr ""
+"Välj huruvida uppkopplingen till LDAP-servern ska använda StartTLS för att "
+"kryptera uppkopplingen."
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "never"
-msgstr ""
+msgstr "aldrig"
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "allow"
-msgstr ""
+msgstr "tillåt"
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "try"
-msgstr ""
+msgstr "försök"
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "demand"
-msgstr ""
+msgstr "kräv"
 
 #. Type: select
 #. Description
 #: ../libnss-ldapd.templates:6002
 msgid "Check server's SSL certificate:"
-msgstr ""
+msgstr "Kontrollera serverns SSL-certifikat:"
 
 #. Type: select
 #. Description
@@ -192,12 +178,23 @@ msgid ""
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
 "tls_cacertfile options must be put in /etc/nss-ldapd.conf."
 msgstr ""
+"När en krypterad uppkoppling används, kan ett servercertifikat efterfrågas "
+"och kontrolleras. Välj huruvida uppslag ska konfigureras för att kräva ett "
+"certifikat och huruvida certifikatens giltighet ska kontrolleras:\n"
+" * aldrig: inget certifikat kommer efterfrågas eller kontrolleras;\n"
+" * tillåt: ett certifikat kommer efterfrågas, men det krävs inget\n"
+"           och det kontrolleras inte;\n"
+" * försök: ett certifikat kommer efterfrågas och kontrolleras, men om\n"
+"           inget certifikat tillhandahålls kommer detta ignoreras;\n"
+" * kräv: ett certifikat kommer efterfrågas och kontrolleras.\n"
+"Om certifikatkontroll är aktiverad måste åtminstone ett avtls_cacertdir- och "
+"tls_cacertfile-direktiven läggas i /etc/nss-ldapd.conf."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:7001
 msgid "Name services to configure:"
-msgstr "Namntjänst som ska konfigureras:"
+msgstr "Namntjänster som ska konfigureras:"
 
 #. Type: multiselect
 #. Description
@@ -212,19 +209,14 @@ msgstr ""
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:7001
-#, fuzzy
-#| msgid ""
-#| "You can select the services that should be enabled or disabled for LDAP "
-#| "lookups. The new LDAP lookups will be added as last option. Be sure to "
-#| "review these changes."
 msgid ""
 "You can select the services that should have LDAP lookups enabled. The new "
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
 msgstr ""
-"Du kan välja de tjänster som ska vara aktiverade eller avaktiverade vid LDAP-"
-"uppslag. De nya LDAP-uppslagen kommer att läggas till som ett sista val. Se "
-"till att se över dessa ändringar."
+"Du kan välja de tjänster som ska ha LDAP-uppslag aktiverade. De nya LDAP-"
+"uppslagen kommer att läggas till som en sista datakälla. Se till att se över "
+"dessa ändringar."
 
 #. Type: boolean
 #. Description
@@ -235,17 +227,13 @@ msgstr "Ta bort LDAP från nsswitch.conf nu?"
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:8001
-#, fuzzy
-#| msgid ""
-#| "LDAP is still configured for name lookups for the following services:\n"
-#| "  ${services}\n"
-#| "but the libnss-ldapd package is about to be removed."
 msgid ""
 "The following services are still configured to use LDAP for lookups:\n"
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
-"LDAP är fortfarande konfigurerat för namnuppslag från följande tjänster:\n"
+"Följande tjänster är fortfarande konfigurerade att använda LDAP för "
+"uppslag:\n"
 "  ${services}\n"
 "men libnss-ldapd-paketet kommer tas bort."
 
@@ -273,6 +261,3 @@ msgstr ""
 "Du kan ändra /etc/nsswitch.conf för hand eller välja att ta bort posterna "
 "automatiskt nu. Se över ändringarna i /etc/nsswitch.conf om du väljer att ta "
 "bort posterna nu."
-
-#~ msgid "LDAP server Uniform Resource Identifier:"
-#~ msgstr "Generell resursidentifierare, URI, för LDAP-servern:"
