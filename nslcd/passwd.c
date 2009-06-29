@@ -341,7 +341,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
                           myldap_get_dn(entry),attmap_passwd_uidNumber);
       return 0;
     }
-    for (numuids=0;(numuids<=MAXUIDS_PER_ENTRY)&&(tmpvalues[numuids]!=NULL);numuids++)
+    for (numuids=0;(numuids<MAXUIDS_PER_ENTRY)&&(tmpvalues[numuids]!=NULL);numuids++)
     {
       uids[numuids]=(uid_t)strtol(tmpvalues[numuids],&tmp,0);
       if ((*(tmpvalues[numuids])=='\0')||(*tmp!='\0'))
