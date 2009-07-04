@@ -13,10 +13,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: libnss-ldap\n"
+"Project-Id-Version: nss-ldapd\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-23 09:34+0200\n"
-"PO-Revision-Date: 2005-07-10 16:33+0200\n"
+"PO-Revision-Date: 2009-07-04 12:02+0200\n"
 "Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
 "Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
@@ -27,85 +27,104 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:1001
 #, fuzzy
+#| msgid "LDAP server search base:"
 msgid "LDAP server URI:"
-msgstr "Adresa počítače s LDAP serverem"
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:1001
-msgid ""
-"Please enter the Uniform Resource Identifier of the LDAP server. The format "
-"is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
-"'ldapi://' can be used. The port number is optional."
-msgstr ""
+msgstr "Kořen prohledávaného LDAP stromu:"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
 #, fuzzy
 #| msgid ""
-#| "Note: It is usually a good idea to use an IP address; this reduces risks "
-#| "of failure in the event name service is unavailable."
+#| "Please enter the URI of the LDAP server used. This is a string in the "
+#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
+#| "used. The port number is optional."
+msgid ""
+"Please enter the Uniform Resource Identifier of the LDAP server. The format "
+"is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
+"'ldapi://' can be used. The port number is optional."
+msgstr ""
+"Zadejte URI (Uniform Resource Identifier) použitého LDAP serveru. Jedná se o "
+"řetězec ve tvaru „ldap://<jmeno_nebo_IP_adresa_serveru>:<port>/“. Možné jsou "
+"i varianty „ldaps://“ a „ldapi://“. Číslo portu není povinné."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "When useing the ldap or ldaps schemes it is usually a good idea to use an "
+#| "IP address; this reduces the risk of failure when name services are "
+#| "unavailable."
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
-"Poznámka: vždy je lepší použít IP adresu, protože se tím snižuje riziko "
-"chyby v případě, že je služba překladu jmen nedostupná."
+"Při použití schémat ldap nebo ldaps se doporučuje použít IP adresu, protože "
+"se tím snižuje riziko chyby v případě, že je služba překladu jmen nedostupná."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
-msgstr ""
+msgstr "Více URI je možno zadat tak, že je oddělíte mezerami."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid "LDAP server search base:"
+msgstr "Kořen prohledávaného LDAP stromu:"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:2001
 #, fuzzy
-msgid "LDAP server search base:"
-msgstr "Adresa počítače s LDAP serverem"
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:2001
+#| msgid ""
+#| "Please enter the distinguished name of the LDAP search base.  Many sites "
+#| "use the components of their domain names for this purpose.  For example, "
+#| "the domain \"example.net\" would use \"dc=example,dc=net\" as the "
+#| "distinguished name of the search base."
 msgid ""
 "Please enter the distinguished name of the LDAP search base. Many sites use "
 "the components of their domain names for this purpose. For example, the "
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
 msgstr ""
-"Zadejte prosím rozlišitelný název prohledávaného LDAP stromu. Mnoho serverů "
-"pro tento účel využívá části svých doménových jmen. Například doména "
-"\"priklad.cz\" by jako rozlišitelné jméno svého stromu použila \"dc=priklad,"
-"dc=cz\"."
+"Zadejte rozlišitelný název prohledávaného LDAP stromu. Mnoho serverů pro "
+"tento účel využívá části svých doménových jmen. Například doména „priklad."
+"cz“ by jako rozlišitelné jméno svého stromu použila „dc=priklad,dc=cz“."
+
+#. Type: string
+#. Description
+#: ../libnss-ldapd.templates:3001
+msgid "LDAP database user:"
+msgstr "LDAP uživatel:"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:3001
 #, fuzzy
-msgid "LDAP database user:"
-msgstr "Neprivilegovaný databázový uživatel"
-
-#. Type: string
-#. Description
-#: ../libnss-ldapd.templates:3001
+#| msgid ""
+#| "If the LDAP database requires a login for normal lookups, enter the name "
+#| "of the account that will be used here. Leave empty otherwise."
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave it empty otherwise."
 msgstr ""
+"Pokud LDAP databáze vyžaduje pro běžné vyhledávání přihlášení, zadejte jméno "
+"účtu, který se má použít. V opačném případě ponechte prázdné."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
-msgstr ""
+msgstr "Tato hodnota by měla být zadána jako rozlišitelné jméno (DN)."
 
 #. Type: password
 #. Description
 #: ../libnss-ldapd.templates:4001
 msgid "LDAP user password:"
-msgstr ""
+msgstr "Heslo LDAP uživatele:"
 
 #. Type: password
 #. Description
@@ -178,7 +197,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:7001
 msgid "Name services to configure:"
-msgstr ""
+msgstr "Jmenné služby, které se mají nastavit:"
 
 #. Type: multiselect
 #. Description
@@ -187,79 +206,116 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
+"Aby tento balík mohl fungovat, musíte upravit svůj /etc/nsswitch.conf tak, "
+"aby používal datový zdroj ldap."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:7001
+#, fuzzy
+#| msgid ""
+#| "You can select the services that should be enabled or disabled for LDAP "
+#| "lookups. The new LDAP lookups will be added as last option. Be sure to "
+#| "review these changes."
 msgid ""
 "You can select the services that should have LDAP lookups enabled. The new "
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
 msgstr ""
+"Můžete si vybrat služby, které mají mít povoleno/zakázáno vyhledávání přes "
+"LDAP. Vyhledávání přes LDAP bude přidáno jako poslední možnost. Rozhodně "
+"doporučujeme tyto změny zkontrolovat."
 
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:8001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr ""
+msgstr "Odstranit LDAP z nsswitch.conf?"
 
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:8001
+#, fuzzy
+#| msgid ""
+#| "LDAP is still configured for name lookups for the following services:\n"
+#| "  ${services}\n"
+#| "but the libnss-ldapd package is about to be removed."
 msgid ""
 "The following services are still configured to use LDAP for lookups:\n"
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
+"Následující služby jsou stále nastaveny pro vyhledávání jmen přes LDAP:\n"
+"  ${services}\n"
+"avšak balík libnss-ldap je právě odebírán ze systému."
 
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:8001
+#, fuzzy
+#| msgid ""
+#| "You are advised to remove the entries if you don't plan on using LDAP for "
+#| "name resolution any more.  Not removing ldap from nsswitch.conf should, "
+#| "for most services, not cause problems, but host name resolution could be "
+#| "affected in subtle ways."
 msgid ""
 "You are advised to remove the entries if you don't plan on using LDAP for "
 "name resolution any more. Not removing ldap from nsswitch.conf should, for "
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
+"Pokud již neplánujete používat pro překlad jmen LDAP, doporučujeme záznamy "
+"odstranit. Neodstranění ldap záznamů z nsswitch.conf by většině služeb "
+"nemělo dělat žádné problémy, ale překlad jmen by se mohl začít chovat "
+"přinejmenším zajímavě."
 
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:8001
+#, fuzzy
+#| msgid ""
+#| "You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
+#| "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+#| "you chose to remove the entries now."
 msgid ""
 "You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you choose to remove the entries now."
 msgstr ""
+"/etc/nsswitch.conf můžete upravit ručně, nebo nechat záznamy odstranit "
+"automaticky. Zvolíte-li automatické odstranění, rozhodně si provedené změny "
+"v /etc/nsswitch.conf prohlédněte."
 
-#, fuzzy
+#~ msgid "LDAP server Uniform Resource Identifier:"
+#~ msgstr "URI LDAP serveru:"
+
 #~ msgid ""
 #~ "Enter the password that will be used to log in to the LDAP database when "
 #~ "the root process does lookups."
-#~ msgstr "Zadejte heslo, které se použije pro přístup k LDAP databázi."
+#~ msgstr ""
+#~ "Zadejte heslo, které se použije pro přístup k LDAP databázi v případech, ."
+#~ "kdy rootovský proces něco vyhledává."
 
-#, fuzzy
 #~ msgid "LDAP version to use:"
-#~ msgstr "Verze LDAPu, která se má použít"
+#~ msgstr "Verze LDAPu, která se má použít:"
 
-#, fuzzy
 #~ msgid ""
-#~ "Please enter which version of the LDAP protocol is to use. It is usually "
+#~ "Please enter which version of the LDAP protocol is to use.  It is usually "
 #~ "a good idea to set this to highest available version number."
 #~ msgstr ""
-#~ "Zadejte verzi LDAP protokolu, kterou má ldapns používat. Obvykle se "
+#~ "Zadejte verzi LDAP protokolu, kterou má se má používat. Obvykle se "
 #~ "doporučuje použít nejvyšší dostupnou verzi."
 
-#, fuzzy
 #~ msgid ""
 #~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
-#~ "use the ldap datasource. There is an example file at /usr/share/doc/"
+#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
 #~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
 #~ "your nsswitch setup."
 #~ msgstr ""
 #~ "Aby tento balík fungoval, musíte upravit svůj /etc/nsswitch.conf, aby "
 #~ "jako zdroj dat používal ldap. V /usr/share/doc/libnss-ldap/examples/"
 #~ "nsswitch.ldap se nachází vzorový soubor, který můžete použít jako základ "
-#~ "pro vaše nastavení (stačí jej i prostě zkopírovat)."
+#~ "pro vaše nastavení."
 
 #~ msgid "distinguished name of the search base"
 #~ msgstr "Rozlišitelný název prohledávaného stromu"
@@ -351,13 +407,6 @@ msgstr ""
 
 #~ msgid "cn=proxyuser,dc=example,dc=net"
 #~ msgstr "cn=proxyuzivatel,dc=priklad,dc=cz"
-
-#~ msgid "3, 2"
-#~ msgstr "3, 2"
-
-#, fuzzy
-#~ msgid "ldap://127.0.0.1/"
-#~ msgstr "127.0.0.1"
 
 #~ msgid "Please enter the address of the LDAP server used."
 #~ msgstr "Zadejte prosím adresu použitého LDAP serveru."
