@@ -78,12 +78,6 @@ msgstr "Kořen prohledávaného LDAP stromu:"
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:2001
-#, fuzzy
-#| msgid ""
-#| "Please enter the distinguished name of the LDAP search base.  Many sites "
-#| "use the components of their domain names for this purpose.  For example, "
-#| "the domain \"example.net\" would use \"dc=example,dc=net\" as the "
-#| "distinguished name of the search base."
 msgid ""
 "Please enter the distinguished name of the LDAP search base. Many sites use "
 "the components of their domain names for this purpose. For example, the "
@@ -252,12 +246,6 @@ msgstr ""
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:8001
-#, fuzzy
-#| msgid ""
-#| "You are advised to remove the entries if you don't plan on using LDAP for "
-#| "name resolution any more.  Not removing ldap from nsswitch.conf should, "
-#| "for most services, not cause problems, but host name resolution could be "
-#| "affected in subtle ways."
 msgid ""
 "You are advised to remove the entries if you don't plan on using LDAP for "
 "name resolution any more. Not removing ldap from nsswitch.conf should, for "
@@ -272,11 +260,6 @@ msgstr ""
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:8001
-#, fuzzy
-#| msgid ""
-#| "You can edit /etc/nsswitch.conf by hand or chose to remove the entries "
-#| "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
-#| "you chose to remove the entries now."
 msgid ""
 "You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
@@ -300,7 +283,7 @@ msgstr ""
 #~ msgstr "Verze LDAPu, která se má použít:"
 
 #~ msgid ""
-#~ "Please enter which version of the LDAP protocol is to use.  It is usually "
+#~ "Please enter which version of the LDAP protocol is to use. It is usually "
 #~ "a good idea to set this to highest available version number."
 #~ msgstr ""
 #~ "Zadejte verzi LDAP protokolu, kterou má se má používat. Obvykle se "
@@ -308,7 +291,7 @@ msgstr ""
 
 #~ msgid ""
 #~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
-#~ "use the ldap datasource.  There is an example file at /usr/share/doc/"
+#~ "use the ldap datasource. There is an example file at /usr/share/doc/"
 #~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
 #~ "your nsswitch setup."
 #~ msgstr ""
