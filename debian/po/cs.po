@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: nss-ldapd\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-23 09:34+0200\n"
-"PO-Revision-Date: 2009-07-04 12:02+0200\n"
+"PO-Revision-Date: 2009-07-09 10:04+0200\n"
 "Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
 "Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
@@ -26,42 +26,30 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid "LDAP server search base:"
 msgid "LDAP server URI:"
-msgstr "Kořen prohledávaného LDAP stromu:"
+msgstr "URI LDAP serveru:"
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Please enter the URI of the LDAP server used. This is a string in the "
-#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
-#| "used. The port number is optional."
 msgid ""
 "Please enter the Uniform Resource Identifier of the LDAP server. The format "
 "is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
-"Zadejte URI (Uniform Resource Identifier) použitého LDAP serveru. Jedná se o "
-"řetězec ve tvaru „ldap://<jmeno_nebo_IP_adresa_serveru>:<port>/“. Možné jsou "
-"i varianty „ldaps://“ a „ldapi://“. Číslo portu není povinné."
+"Zadejte URI (Uniform Resource Identifier) LDAP serveru ve formátu „ldap://"
+"<jmeno_nebo_IP_adresa_serveru>:<port>/“. Možné jsou i varianty „ldaps://“ a "
+"„ldapi://“. Číslo portu není povinné."
 
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "When useing the ldap or ldaps schemes it is usually a good idea to use an "
-#| "IP address; this reduces the risk of failure when name services are "
-#| "unavailable."
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
 "Při použití schémat ldap nebo ldaps se doporučuje použít IP adresu, protože "
-"se tím snižuje riziko chyby v případě, že je služba překladu jmen nedostupná."
+"tím předejdete chybám v případech, kdy je služba překladu jmen nedostupná."
 
 #. Type: string
 #. Description
@@ -97,10 +85,6 @@ msgstr "LDAP uživatel:"
 #. Type: string
 #. Description
 #: ../libnss-ldapd.templates:3001
-#, fuzzy
-#| msgid ""
-#| "If the LDAP database requires a login for normal lookups, enter the name "
-#| "of the account that will be used here. Leave empty otherwise."
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave it empty otherwise."
@@ -130,7 +114,7 @@ msgstr "Zadejte heslo, které se použije pro přístup k LDAP databázi."
 #. Description
 #: ../libnss-ldapd.templates:5001
 msgid "Use StartTLS?"
-msgstr ""
+msgstr "Používat StartTLS?"
 
 #. Type: boolean
 #. Description
@@ -139,36 +123,38 @@ msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
 msgstr ""
+"Vyberte, zda má přpojení k LDAP serveru používat StartTLS pro šifrování "
+"spojení."
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "never"
-msgstr ""
+msgstr "nikdy"
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "allow"
-msgstr ""
+msgstr "povoleno"
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "try"
-msgstr ""
+msgstr "pokusit se"
 
 #. Type: select
 #. Choices
 #: ../libnss-ldapd.templates:6001
 msgid "demand"
-msgstr ""
+msgstr "vyžadováno"
 
 #. Type: select
 #. Description
 #: ../libnss-ldapd.templates:6002
 msgid "Check server's SSL certificate:"
-msgstr ""
+msgstr "Kontrolovat SSL certifikát serveru:"
 
 #. Type: select
 #. Description
@@ -186,6 +172,17 @@ msgid ""
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
 "tls_cacertfile options must be put in /etc/nss-ldapd.conf."
 msgstr ""
+"Při použití šifrovaného spojení, může být vyžádán a zkontrolován certifikát "
+"serveru. Vyberte si, zda mají dotazy certifikát vyžadovat a zda se má "
+"kontrolovat jeho platnost:\n"
+" * nikdy: certifikát nebude nikdy vyžadován ani kontrolován;\n"
+" * povoleno: certifikát bude vyžádán, ale není povinný a nebude\n"
+"             kontrolován;\n"
+" * pokusit se: certifikát bude vyžádán a zkontrolován, ale pokud\n"
+"               nebude certifikát obdržen, bude to ignorováno;\n"
+" * vyžadováno: certifikát je povinný a bude zkontrolován.\n"
+"Je-li zapnuta kontrola certifikátů, musí být v /etc/nss-ldapd.conf povolena "
+"minimálně jedna z voleb tls_cacertdir a tls_cacertfile."
 
 #. Type: multiselect
 #. Description
@@ -206,18 +203,13 @@ msgstr ""
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:7001
-#, fuzzy
-#| msgid ""
-#| "You can select the services that should be enabled or disabled for LDAP "
-#| "lookups. The new LDAP lookups will be added as last option. Be sure to "
-#| "review these changes."
 msgid ""
 "You can select the services that should have LDAP lookups enabled. The new "
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
 msgstr ""
-"Můžete si vybrat služby, které mají mít povoleno/zakázáno vyhledávání přes "
-"LDAP. Vyhledávání přes LDAP bude přidáno jako poslední možnost. Rozhodně "
+"Můžete si vybrat služby, které mají mít povoleno vyhledávání přes LDAP. "
+"Vyhledávání přes LDAP bude přidáno jako poslední datový zdroj. Rozhodně "
 "doporučujeme tyto změny zkontrolovat."
 
 #. Type: boolean
@@ -229,19 +221,15 @@ msgstr "Odstranit LDAP z nsswitch.conf?"
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:8001
-#, fuzzy
-#| msgid ""
-#| "LDAP is still configured for name lookups for the following services:\n"
-#| "  ${services}\n"
-#| "but the libnss-ldapd package is about to be removed."
 msgid ""
 "The following services are still configured to use LDAP for lookups:\n"
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
-"Následující služby jsou stále nastaveny pro vyhledávání jmen přes LDAP:\n"
+"Následující služby jsou stále nastaveny, aby pro vyhledávání používaly "
+"LDAP:\n"
 "  ${services}\n"
-"avšak balík libnss-ldap je právě odebírán ze systému."
+"avšak balík libnss-ldapd je právě odebírán ze systému."
 
 #. Type: boolean
 #. Description
