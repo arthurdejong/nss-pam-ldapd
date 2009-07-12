@@ -16,6 +16,9 @@ Recommends: nscd, libnss-ldapd, libpam-ldapd
 Description: Daemon for NSS and PAM lookups using LDAP
  This package provides a daemon for retrieving user account, and other
  system information from LDAP.
+ .
+ It is used by the libnss-ldapd and libpam-ldapd packages but by itself is
+ not very useful.
 
 Package: libnss-ldapd
 Architecture: any
@@ -42,3 +45,6 @@ Provides: libpam-ldap
 Description: PAM module for using LDAP as an authentication service
  This package provides a Pluggable Authentication Module that allows
  user authentication based on credentials stored in an LDAP server.
+ .
+ This module is still under development but strives to be able to replace
+ the libpam-ldap package in most cases.
