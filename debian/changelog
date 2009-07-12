@@ -1,3 +1,30 @@
+nss-ldapd (0.6.11) unstable; urgency=low
+
+  * fix user name to groups mapping (a bug in buffer checking in initgroups()
+    that was introduced in 0.6.9)
+  * fix a possible buffer overflow with too many uidNumber or gidNumber
+    attributes (thanks to David Binderman for finding this)
+  * lookups for group, netgroup, passwd, protocols, rpc, services and shadow
+    maps are now case-sensitive
+  * test suite is now minimally documented
+  * added --disable-sasl and --disable-kerberos configure options
+  * changed references to home page and contact email addresses to use
+    arthurdejong.org
+  * upgrade to standards-version 3.8.2 (no changes needed)
+  * make configuring SSL/TLS possible with debconf (closes: #529985)
+  * updated Finnish debconf translation by Esko Arajärvi (closes: #534343)
+  * updated Japanese debconf translation by Kenshi Muto (closes: #534399)
+  * updated Russian debconf translation by Yuri Kozlov (closes: #534780)
+  * updated Swedish debconf translation by Martin Ågren (closes: #534869)
+  * updated Spanish debconf translation by Francisco Javier Cuadrado
+    (closes: #535438)
+  * updated Portuguese debconf translation by Américo Monteiro
+    (closes: #535641)
+  * updated Czech debconf translation by Miroslav Kure (closes: #535678)
+  * updated French debconf translation by Christian Perrier (closes: #536717)
+
+ -- Arthur de Jong <adejong@debian.org>  Sun, 12 Jul 2009 22:30:00 +0200
+
 nss-ldapd (0.6.10) unstable; urgency=low
 
   * implement searching through multiple search bases, based on a patch by

@@ -1,3 +1,19 @@
+changes from 0.6.10 to 0.6.11
+-----------------------------
+
+* fix user name to groups mapping (a bug in buffer checking in initgroups()
+  that was introduced in 0.6.9)
+* fix a possible buffer overflow with too many uidNumber or gidNumber
+  attributes (thanks to David Binderman for finding this)
+* lookups for group, netgroup, passwd, protocols, rpc, services and shadow
+  maps are now case-sensitive
+* test suite is now minimally documented
+* added --disable-sasl and --disable-kerberos configure options
+* changed references to home page and contact email addresses to use
+  arthurdejong.org
+* Debian packaging improvements
+
+
 changes from 0.6.9 to 0.6.10
 ----------------------------
 
