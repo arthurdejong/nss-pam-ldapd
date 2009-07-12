@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+
+<!--
+   pam_ldap.8.xml - docbook manual page for pam_ldap PAM module
+
+   Copyright (C) 2009 Arthur de Jong
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+   02110-1301 USA
+-->
+
+<refentry id="pamldap5">
+
+ <refentryinfo>
+  <author>
+   <firstname>Arthur</firstname>
+   <surname>de Jong</surname>
+  </author>
+ </refentryinfo>
+
+ <refmeta>
+  <refentrytitle>pam_ldap</refentrytitle>
+  <manvolnum>8</manvolnum>
+  <refmiscinfo class="version">Version 0.6.10</refmiscinfo>
+  <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
+  <refmiscinfo class="date">Jun 2009</refmiscinfo>
+ </refmeta>
+
+ <refnamediv id="name">
+  <refname>pam_ldap</refname>
+  <refpurpose>PAM module for LDAP-based authentication</refpurpose>
+ </refnamediv>
+
+ <refsynopsisdiv id="synopsis">
+  <cmdsynopsis>
+   <command>pam_ldap.so</command>
+   <arg choice="opt"><replaceable>...</replaceable></arg>
+  </cmdsynopsis>
+ </refsynopsisdiv>
+
+ <refsect1 id="description">
+  <title>Description</title>
+  <para>
+   This is a <acronym>PAM</acronym> module that uses an
+   <acronym>LDAP</acronym> server to verify user access rights and
+   credentials.
+  </para>
+ </refsect1>
+
+ <refsect1 id="options">
+  <title>Options</title>
+  <variablelist remap="TP">
+   <varlistentry>
+    <term>
+     <option>use_first_pass</option>
+    </term>
+    <listitem>
+     <para>
+      Specifies that the <acronym>PAM</acronym> module should use the first
+      password provided in the authentication stack and not prompt the user
+      for a password.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>
+     <option>try_first_pass</option>
+    </term>
+    <listitem>
+     <para>
+      Specifies that the <acronym>PAM</acronym> module should use the first
+      password provided in the authentication stack and if that fails prompt
+      the user for a password.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>
+     <option>ignore_unknown_user</option>
+    </term>
+    <listitem>
+     <para>
+      Specifies that the <acronym>PAM</acronym> module should return
+      PAM_IGNORE for users that are not present in the <acronym>LDAP</acronym>
+      directory.
+      This causes the <acronym>PAM</acronym> framework to ignore this module.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>
+     <option>ignore_authinfo_unavail</option>
+    </term>
+    <listitem>
+     <para>
+      Specifies that the <acronym>PAM</acronym> module should return
+      PAM_IGNORE if it cannot contact the <acronym>LDAP</acronym> server.
+      This causes the <acronym>PAM</acronym> framework to ignore this module.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>
+     <option>no_warn</option>
+    </term>
+    <listitem>
+     <para>
+      Specifies that warning messages should not be propagated to the
+      <acronym>PAM</acronym> application.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>
+     <option>use_authtok</option>
+    </term>
+    <listitem>
+     <para>
+      This causes the <acronym>PAM</acronym> module to use the earlier
+      provided password, analogous to <option>use_first_pass</option>, when
+      the password is changed.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>
+     <option>debug</option>
+    </term>
+    <listitem>
+     <para>
+      This option is ignored.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 id="moduleservices">
+  <title>Module Services Provided</title>
+  <para>
+   All service are provided by this module but currently only authentication
+   (auth) is supported and password change (password) is under development.
+  </para>
+ </refsect1>
+
+ <refsect1 id="files">
+  <title>Files</title>
+  <variablelist remap="TP">
+   <varlistentry>
+    <term><filename>/etc/pam.conf</filename></term>
+    <listitem><para>the main PAM configuration file</para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><filename>/etc/nss-ldapd.conf</filename></term>
+    <listitem><para>
+     The configuration file for the <command>nslcd</command> daemon
+     (see <citerefentry><refentrytitle>nss-ldapd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>)
+    </para></listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 id="see_also">
+  <title>See Also</title>
+  <para>
+   <citerefentry><refentrytitle>pam.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
+   <citerefentry><refentrytitle>nslcd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
+   <citerefentry><refentrytitle>nss-ldapd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+  </para>
+ </refsect1>
+
+ <refsect1 id="author">
+  <title>Author</title>
+  <para>
+   This manual was written by Arthur de Jong &lt;arthur@arthurdejong.org&gt;.
+  </para>
+ </refsect1>
+
+</refentry>

@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2007 Arthur de Jong
+# Copyright (C) 2007, 2009 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,16 @@
 
 dist_man_MANS = nss-ldapd.conf.5 nslcd.8
 
-EXTRA_DIST = nss-ldapd.conf.5.xml nslcd.8.xml
+EXTRA_DIST = nss-ldapd.conf.5.xml nslcd.8.xml pam_ldap.8.xml
+
+# ensure that the pam_ldap manpage is always built but only installed
+# if the PAM module is built
+if ENABLE_PAM
+dist_man_MANS += pam_ldap.8
+else
+EXTRA_DIST += pam_ldap.8
+noinst_DATA = pam_ldap.8
+endif
 
 if GENMAN
 
