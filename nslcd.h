@@ -189,11 +189,6 @@
      STRING  user name (cannonical name)
      STRING  DN (can be used to speed up requests) */
 
-/*
-   WARNING: the PAM code is under development and the details of the protocol
-            may change between releases.
-*/
-
 /* PAM authentication check request. The extra request values are:
      STRING  password
    and the result value ends with:
