@@ -119,13 +119,9 @@ AC_MSG_CHECKING([whether to build the PAM module])
 AC_ARG_ENABLE(pam,
               AS_HELP_STRING([--enable-pam],
                              [build the PAM module [[default=no]]]),,
-              [enable_pam="no"])
+              [enable_pam="yes"])
 AC_MSG_RESULT($enable_pam)
 AM_CONDITIONAL([ENABLE_PAM], [test "x$enable_pam" = "xyes"])
-if test "x$enable_pam" = "xyes"
-then
-  AC_MSG_WARN([the PAM module is experimental and support in nslcd is not yet finished])
-fi
 
 # check whether the nslcd daemon should be built
 AC_MSG_CHECKING([whether to build the nslcd server])
