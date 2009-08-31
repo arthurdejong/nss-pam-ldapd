@@ -27,14 +27,14 @@
 # X-Start-Before:    $mail-transport-agent mail-transport-agent exim4 sendmail nullmailer masqmail citadel cron atd autofs am-utils
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: nss-ldapd connection daemon
+# Short-Description: LDAP connection daemon
 # Description:       nslcd is a LDAP connection daemon that is used to
-#                    do LDAP queries for the NSS libraries.
+#                    do LDAP queries for the NSS and PAM modules.
 ### END INIT INFO
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 NSLCD_BIN=/usr/sbin/nslcd
-NSLCD_DESC="nss-ldapd connection daemon"
+NSLCD_DESC="LDAP connection daemon"
 NSLCD_CFG=/etc/nss-ldapd.conf
 
 [ -x "$NSLCD_BIN" ] || exit 0

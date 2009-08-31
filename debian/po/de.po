@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.5\n"
-"Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
+"Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-26 17:06+0200\n"
 "PO-Revision-Date: 2008-01-27 21:02+0100\n"
 "Last-Translator: Erik Schanze <eriks@debian.org>\n"

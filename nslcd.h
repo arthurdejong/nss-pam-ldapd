@@ -68,7 +68,7 @@
 
 /* The current version of the protocol. Note that version 1
    is experimental and this version will be used until a
-   1.0 release of nss-ldapd is made. */
+   1.0 release of nss-pam-ldapd is made. */
 #define NSLCD_VERSION 1
 
 /* Email alias (/etc/aliases) NSS requests. The result values for a

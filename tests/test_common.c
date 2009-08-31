@@ -1,6 +1,6 @@
 /*
    test_common.c - simple test for the common module
-   This file is part of the nss-ldapd library.
+   This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2008 Arthur de Jong
 

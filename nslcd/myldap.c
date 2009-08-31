@@ -1,7 +1,7 @@
 /*
    myldap.c - simple interface to do LDAP requests
    Parts of this file were part of the nss_ldap library (as ldap-nss.c)
-   which has been forked into the nss-ldapd library.
+   which has been forked into the nss-pam-ldapd library.
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006, 2007 West Consulting

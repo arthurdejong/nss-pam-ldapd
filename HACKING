@@ -1,11 +1,12 @@
 
-This document tries to describe the software layout and design of nss-ldapd.
-It should provide some help for contributing code to this package.
+This document tries to describe the software layout and design of
+nss-pam-ldapd. It should provide some help for contributing code to this
+package.
 
-CONTRIBUTING TO NSS-LDAPD
-=========================
+CONTRIBUTING TO NSS-PAM-LDAPD
+=============================
 
-Contributions to nss-ldapd are most welcome. Integrating contributions
+Contributions to nss-pam-ldapd are most welcome. Integrating contributions
 will be done on a best-effort basis and can be made easier if the following
 are considered:
 

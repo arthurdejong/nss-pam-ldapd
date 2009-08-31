@@ -1,13 +1,13 @@
-Source: nss-ldapd
+Source: nss-pam-ldapd
 Section: admin
 Priority: extra
 Maintainer: Arthur de Jong <adejong@debian.org>
 Uploaders: Richard A Nelson (Rick) <cowboy@debian.org>
 Standards-Version: 3.8.3
 Build-Depends: debhelper (>= 7), libkrb5-dev, libldap2-dev, libsasl2-dev, po-debconf (>= 0.5.0), docbook2x, docbook-xml, libpam0g-dev
-Homepage: http://arthurdejong.org/nss-ldapd/
-Vcs-Svn: http://arthurdejong.org/svn/nss-ldapd/nss-ldapd/
-Vcs-Browser: http://arthurdejong.org/viewvc/nss-ldapd/nss-ldapd/
+Homepage: http://arthurdejong.org/nss-pam-ldapd/
+Vcs-Svn: http://arthurdejong.org/svn/nss-pam-ldapd/nss-pam-ldapd/
+Vcs-Browser: http://arthurdejong.org/viewvc/nss-pam-ldapd/nss-pam-ldapd/
 
 Package: nslcd
 Architecture: any
