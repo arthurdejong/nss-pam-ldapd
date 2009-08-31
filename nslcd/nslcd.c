@@ -562,7 +562,7 @@ int main(int argc,char *argv[])
   if (myldap_set_debuglevel(nslcd_debugging)!=LDAP_SUCCESS)
     exit(EXIT_FAILURE);
   /* read configuration file */
-  cfg_init(NSS_LDAP_PATH_CONF);
+  cfg_init(NSLCD_CONF_PATH);
   /* daemonize */
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
   {

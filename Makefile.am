@@ -54,27 +54,27 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/po/POTFILES.in debian/po/templates.pot \
                $(wildcard debian/po/*.po)
 
-EXTRA_DIST = nss-ldapd.conf nslcd.h \
+EXTRA_DIST = nslcd.conf nslcd.h \
              $(wildcard m4/*.m4) HACKING $(DEBIAN_FILES)
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-warnings
 
 ACLOCAL_AMFLAGS = -I m4
 
-NSS_LDAP_PATH_CONF = @NSS_LDAP_PATH_CONF@
+NSLCD_CONF_PATH = @NSLCD_CONF_PATH@
 
-install-data-local: install-ldap_conf
-uninstall-local: uninstall-ldap_conf
+install-data-local: install-nslcd_conf
+uninstall-local: uninstall-nslcd_conf
 
 # install a default configuration file if it is not already there
-install-ldap_conf:
-	@if [ -f $(DESTDIR)$(NSS_LDAP_PATH_CONF) ]; then \
-	  echo "$(DESTDIR)$(NSS_LDAP_PATH_CONF) already exists, install will not overwrite"; \
+install-nslcd_conf:
+	@if [ -f $(DESTDIR)$(NSLCD_CONF_PATH) ]; then \
+	  echo "$(DESTDIR)$(NSLCD_CONF_PATH) already exists, install will not overwrite"; \
 	else \
-	  $(INSTALL_DATA) -D $(srcdir)/nss-ldapd.conf $(DESTDIR)$(NSS_LDAP_PATH_CONF); \
+	  $(INSTALL_DATA) -D $(srcdir)/nslcd.conf $(DESTDIR)$(NSLCD_CONF_PATH) || true; \
 	fi
-uninstall-ldap_conf:
-	-rm -f $(DESTDIR)$(NSS_LDAP_PATH_CONF)
+uninstall-nslcd_conf:
+	-rm -f $(DESTDIR)$(NSLCD_CONF_PATH)
 
 # target for easily creating a Debian package
 # the find is an ugly hack to fix a bug if being built on an nfs filesystem

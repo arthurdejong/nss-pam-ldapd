@@ -168,7 +168,7 @@ msgid ""
 "        certificate is provided it is ignored;\n"
 " * demand: a certificate will be requested, required, and checked.\n"
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
-"tls_cacertfile options must be put in /etc/nss-ldapd.conf."
+"tls_cacertfile options must be put in /etc/nslcd.conf."
 msgstr ""
 "Quando é usada uma ligação encriptada, pode ser requisitado e verificado um "
 "certificado do servidor. Por favor escolha se as buscas devem ser "
@@ -181,7 +181,7 @@ msgstr ""
 "              se nenhum certificado for disponibilizado;\n"
 " * obrigar: será obrigatória a requisição e verificação de um certificado.\n"
 "Se a verificação de certificados for activada, pelo menos uma das opções "
-"tls_cacertdir ou tls_cacertfile tem que ser colocada em /etc/nss-ldapd.conf."
+"tls_cacertdir ou tls_cacertfile tem que ser colocada em /etc/nslcd.conf."
 
 #. Type: multiselect
 #. Description

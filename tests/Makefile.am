@@ -29,7 +29,7 @@ EXTRA_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                  test_rpc test_services test_shadow \
                  test_nslcd_group
 
-EXTRA_DIST = nss-ldapd-test.conf test_myldap.sh test_nsscmds.sh usernames.txt
+EXTRA_DIST = nslcd-test.conf test_myldap.sh test_nsscmds.sh usernames.txt
 
 CLEANFILES = $(EXTRA_PROGRAMS)
 

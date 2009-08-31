@@ -20,14 +20,14 @@
 # 02110-1301 USA
 
 # This script expects to be run in an environment where an LDAP server
-# is available at the location specified in nss-ldapd-test.conf in
+# is available at the location specified in nslcd-test.conf in
 # this directory.
 
 set -e
 
 # get LDAP config
 srcdir="${srcdir-"."}"
-cfgfile="$srcdir/nss-ldapd-test.conf"
+cfgfile="$srcdir/nslcd-test.conf"
 uri=`sed -n 's/^uri *//p' "$cfgfile" | head -n 1`
 base="dc=test,dc=tld"
 

@@ -165,10 +165,10 @@
     <listitem><para>the main PAM configuration file</para></listitem>
    </varlistentry>
    <varlistentry>
-    <term><filename>/etc/nss-ldapd.conf</filename></term>
+    <term><filename>/etc/nslcd.conf</filename></term>
     <listitem><para>
      The configuration file for the <command>nslcd</command> daemon
-     (see <citerefentry><refentrytitle>nss-ldapd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>)
+     (see <citerefentry><refentrytitle>nslcd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>)
     </para></listitem>
    </varlistentry>
   </variablelist>
@@ -179,7 +179,7 @@
   <para>
    <citerefentry><refentrytitle>pam.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
    <citerefentry><refentrytitle>nslcd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
-   <citerefentry><refentrytitle>nss-ldapd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+   <citerefentry><refentrytitle>nslcd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
   </para>
  </refsect1>
 

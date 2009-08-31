@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# /etc/init.d/linbss-ldapd script for starting and stopping nslcd
+# /etc/init.d/nslcd script for starting and stopping nslcd
 # Copyright (C) 2006 West Consulting
 # Copyright (C) 2006, 2008, 2009 Arthur de Jong
 #
@@ -35,7 +35,7 @@
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 NSLCD_BIN=/usr/sbin/nslcd
 NSLCD_DESC="LDAP connection daemon"
-NSLCD_CFG=/etc/nss-ldapd.conf
+NSLCD_CFG=/etc/nslcd.conf
 
 [ -x "$NSLCD_BIN" ] || exit 0
 [ -f "$NSLCD_CFG" ] || exit 0

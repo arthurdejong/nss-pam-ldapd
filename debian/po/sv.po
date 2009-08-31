@@ -176,7 +176,7 @@ msgid ""
 "        certificate is provided it is ignored;\n"
 " * demand: a certificate will be requested, required, and checked.\n"
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
-"tls_cacertfile options must be put in /etc/nss-ldapd.conf."
+"tls_cacertfile options must be put in /etc/nslcd.conf."
 msgstr ""
 "När en krypterad uppkoppling används, kan ett servercertifikat efterfrågas "
 "och kontrolleras. Välj huruvida uppslag ska konfigureras för att kräva ett "
@@ -188,7 +188,7 @@ msgstr ""
 "           inget certifikat tillhandahålls kommer detta ignoreras;\n"
 " * kräv: ett certifikat kommer efterfrågas och kontrolleras.\n"
 "Om certifikatkontroll är aktiverad måste åtminstone ett avtls_cacertdir- och "
-"tls_cacertfile-direktiven läggas i /etc/nss-ldapd.conf."
+"tls_cacertfile-direktiven läggas i /etc/nslcd.conf."
 
 #. Type: multiselect
 #. Description

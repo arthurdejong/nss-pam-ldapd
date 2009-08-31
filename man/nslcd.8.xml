@@ -64,7 +64,7 @@
   </para>
   <para>
    <command>nslcd</command> is configured through a configuration file
-   (see <citerefentry><refentrytitle>nss-ldapd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>).
+   (see <citerefentry><refentrytitle>nslcd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>).
   </para>
   <para>
    See the included README for information on configuring the LDAP server.
@@ -114,15 +114,15 @@
  <refsect1 id="files">
   <title>Files</title>
   <para>
-   <filename>/etc/nss-ldapd.conf</filename> - the configuration file
-   (see <citerefentry><refentrytitle>nss-ldapd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>)
+   <filename>/etc/nslcd.conf</filename> - the configuration file
+   (see <citerefentry><refentrytitle>nslcd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>)
   </para>
  </refsect1>
 
  <refsect1 id="see_also">
   <title>See Also</title>
   <para>
-   <citerefentry><refentrytitle>nss-ldapd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+   <citerefentry><refentrytitle>nslcd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
   </para>
  </refsect1>
 

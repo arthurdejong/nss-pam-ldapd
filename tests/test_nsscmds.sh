@@ -29,7 +29,7 @@
 set -e
 
 # check if LDAP is configured correctly
-cfgfile="/etc/nss-ldapd.conf"
+cfgfile="/etc/nslcd.conf"
 if [ -r "$cfgfile" ]
 then
   :

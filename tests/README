@@ -56,10 +56,10 @@ rpc:            db files ldap
 netgroup:       files ldap
 aliases:        files ldap
 
-nss-ldapd.conf
---------------
+nslcd.conf
+----------
 
-The /etc/nss-ldapd.conf file is expected to be configured like the following.
+The /etc/nslcd.conf file is expected to be configured like the following.
 
 uid nslcd
 gid nslcd

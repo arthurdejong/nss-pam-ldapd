@@ -199,7 +199,7 @@ pam_ldap.so files and the daemon (nslcd). The boot process needs to be
 manually modified to start the daemon at the right time.
 
 Also it is recommended to create a dedicated user to run the nslcd daemon as.
-Configure this user in /etc/nss-ldapd.conf using the uid and gid options.
+Configure this user in /etc/nslcd.conf using the uid and gid options.
 
 
 CONFIGURATION
@@ -233,7 +233,7 @@ on the format. As an example the file could look a little like this:
   # whether alias lookups really use NSS depends on the mail server
   aliases:        files ldap
 
-Furthermore a configuration file (by default /etc/nss-ldapd.conf) needs to be
+Furthermore a configuration file (by default /etc/nslcd.conf) needs to be
 made. The location of this file can be specified with configure. See the
 shipped manual page for details on the format and options. It should at least
 contain something like:
@@ -271,8 +271,8 @@ default attributes
 ------------------
 
 This paragraph describes the mapping between the NSS lookups and the LDAP
-database. The mapping may be modified by changeging the nss-ldapd.conf
-configuration file. See the nss-ldapd.conf(5) manual page for details.
+database. The mapping may be modified by changeging the nslcd.conf
+configuration file. See the nslcd.conf(5) manual page for details.
 
 aliases (objectClass=nisMailAlias)
   cn                - alias name
@@ -331,7 +331,7 @@ using Microsoft Active Directory
 --------------------------------
 
 When using Microsoft Active Directory server (typically on Microsoft Windows
-2000) some changes need to be made to the nss-ldapd.conf configuration file.
+2000) some changes need to be made to the nslcd.conf configuration file.
 The included sample configuration file has some commented out attribute
 mappings for such a set-up.
 

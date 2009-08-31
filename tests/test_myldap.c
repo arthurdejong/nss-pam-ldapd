@@ -401,7 +401,7 @@ int main(int argc,char *argv[])
   srcdir=getenv("srcdir");
   if (srcdir==NULL)
     srcdir=".";
-  snprintf(fname,sizeof(fname),"%s/nss-ldapd-test.conf",srcdir);
+  snprintf(fname,sizeof(fname),"%s/nslcd-test.conf",srcdir);
   fname[sizeof(fname)-1]='\0';
   /* initialize configuration */
   cfg_init(fname);

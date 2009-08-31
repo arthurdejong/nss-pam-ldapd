@@ -51,4 +51,4 @@ _Description: Check server's SSL certificate:
          certificate is provided it is ignored;
   * demand: a certificate will be requested, required, and checked.
  If certificate checking is enabled, at least one of the tls_cacertdir or
- tls_cacertfile options must be put in /etc/nss-ldapd.conf.
+ tls_cacertfile options must be put in /etc/nslcd.conf.

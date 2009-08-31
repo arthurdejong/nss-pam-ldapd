@@ -2,7 +2,8 @@
 
 set -e
 
-CONFFILE="/etc/nss-ldapd.conf"
+CONFFILE="/etc/nslcd.conf"
+OCONFFILE="/etc/nss-ldapd.conf"
 
 # set an option in the configuration file to the specified value
 cfg_set()
@@ -83,10 +84,18 @@ create_config()
 {
   if [ ! -e "$CONFFILE" ]
   then
-    # create a simple configuration file from this template
-    cat > "$CONFFILE" << EOM
+    # check if the file with the old name exists
+    if [ -e "$OCONFFILE" ]
+    then
+      # copy the existing file
+      cp -p $OCONFFILE $CONFFILE
+      # fix reference to manual page
+      sed -i 's/nss-ldapd/nslcd/' $CONFFILE
+    else
+      # create a simple configuration file from this template
+      cat > "$CONFFILE" << EOM
 # $CONFFILE
-# nslcd configuration file. See nss-ldapd.conf(5)
+# nslcd configuration file. See nslcd.conf(5)
 # for details.
 
 # The user and group nslcd should run as.
@@ -114,9 +123,10 @@ base dc=example,dc=net
 #scope sub
 
 EOM
-    # fix permissions
-    chmod 640 "$CONFFILE"
-    chown root:nslcd "$CONFFILE"
+      # fix permissions
+      chmod 640 "$CONFFILE"
+      chown root:nslcd "$CONFFILE"
+    fi
   fi
   # we're done
   return 0
