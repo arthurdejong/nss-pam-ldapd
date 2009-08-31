@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+CONFFILE="/etc/nss-ldapd.conf"
+
+# remove /var/run/nslcd directory
+rm -rf /var/run/nslcd
+
+# remove our configuration file (not a conffile) on purge manually
+if [ "$1" = "purge" ]
+then
+  rm -f "$CONFFILE"
+fi
+
+#DEBHELPER#

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd\n"
 "Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-06-23 09:34+0200\n"
+"POT-Creation-Date: 2009-06-26 17:06+0200\n"
 "PO-Revision-Date: 2009-07-09 10:04+0200\n"
 "Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
 "Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
@@ -25,13 +25,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:1001
+#: ../nslcd.templates:1001
 msgid "LDAP server URI:"
 msgstr "URI LDAP serveru:"
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:1001
+#: ../nslcd.templates:1001
 msgid ""
 "Please enter the Uniform Resource Identifier of the LDAP server. The format "
 "is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
@@ -43,7 +43,7 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:1001
+#: ../nslcd.templates:1001
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
@@ -53,19 +53,19 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:1001
+#: ../nslcd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
 msgstr "Více URI je možno zadat tak, že je oddělíte mezerami."
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:2001
+#: ../nslcd.templates:2001
 msgid "LDAP server search base:"
 msgstr "Kořen prohledávaného LDAP stromu:"
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:2001
+#: ../nslcd.templates:2001
 msgid ""
 "Please enter the distinguished name of the LDAP search base. Many sites use "
 "the components of their domain names for this purpose. For example, the "
@@ -78,13 +78,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:3001
+#: ../nslcd.templates:3001
 msgid "LDAP database user:"
 msgstr "LDAP uživatel:"
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:3001
+#: ../nslcd.templates:3001
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave it empty otherwise."
@@ -94,31 +94,31 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../libnss-ldapd.templates:3001
+#: ../nslcd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
 msgstr "Tato hodnota by měla být zadána jako rozlišitelné jméno (DN)."
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:4001
+#: ../nslcd.templates:4001
 msgid "LDAP user password:"
 msgstr "Heslo LDAP uživatele:"
 
 #. Type: password
 #. Description
-#: ../libnss-ldapd.templates:4001
+#: ../nslcd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr "Zadejte heslo, které se použije pro přístup k LDAP databázi."
 
 #. Type: boolean
 #. Description
-#: ../libnss-ldapd.templates:5001
+#: ../nslcd.templates:5001
 msgid "Use StartTLS?"
 msgstr "Používat StartTLS?"
 
 #. Type: boolean
 #. Description
-#: ../libnss-ldapd.templates:5001
+#: ../nslcd.templates:5001
 msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
@@ -128,37 +128,37 @@ msgstr ""
 
 #. Type: select
 #. Choices
-#: ../libnss-ldapd.templates:6001
+#: ../nslcd.templates:6001
 msgid "never"
 msgstr "nikdy"
 
 #. Type: select
 #. Choices
-#: ../libnss-ldapd.templates:6001
+#: ../nslcd.templates:6001
 msgid "allow"
 msgstr "povoleno"
 
 #. Type: select
 #. Choices
-#: ../libnss-ldapd.templates:6001
+#: ../nslcd.templates:6001
 msgid "try"
 msgstr "pokusit se"
 
 #. Type: select
 #. Choices
-#: ../libnss-ldapd.templates:6001
+#: ../nslcd.templates:6001
 msgid "demand"
 msgstr "vyžadováno"
 
 #. Type: select
 #. Description
-#: ../libnss-ldapd.templates:6002
+#: ../nslcd.templates:6002
 msgid "Check server's SSL certificate:"
 msgstr "Kontrolovat SSL certifikát serveru:"
 
 #. Type: select
 #. Description
-#: ../libnss-ldapd.templates:6002
+#: ../nslcd.templates:6002
 msgid ""
 "When an encrypted connection is used, a server certificate can be requested "
 "and checked. Please choose whether lookups should be configured to require a "
@@ -186,13 +186,13 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:1001
 msgid "Name services to configure:"
 msgstr "Jmenné služby, které se mají nastavit:"
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:1001
 msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
@@ -202,7 +202,7 @@ msgstr ""
 
 #. Type: multiselect
 #. Description
-#: ../libnss-ldapd.templates:7001
+#: ../libnss-ldapd.templates:1001
 msgid ""
 "You can select the services that should have LDAP lookups enabled. The new "
 "LDAP lookups will be added as the last datasource. Be sure to review these "
@@ -214,13 +214,13 @@ msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../libnss-ldapd.templates:8001
+#: ../libnss-ldapd.templates:2001
 msgid "Remove LDAP from nsswitch.conf now?"
 msgstr "Odstranit LDAP z nsswitch.conf?"
 
 #. Type: boolean
 #. Description
-#: ../libnss-ldapd.templates:8001
+#: ../libnss-ldapd.templates:2001
 msgid ""
 "The following services are still configured to use LDAP for lookups:\n"
 "  ${services}\n"
@@ -233,7 +233,7 @@ msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../libnss-ldapd.templates:8001
+#: ../libnss-ldapd.templates:2001
 msgid ""
 "You are advised to remove the entries if you don't plan on using LDAP for "
 "name resolution any more. Not removing ldap from nsswitch.conf should, for "
@@ -247,7 +247,7 @@ msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../libnss-ldapd.templates:8001
+#: ../libnss-ldapd.templates:2001
 msgid ""
 "You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "

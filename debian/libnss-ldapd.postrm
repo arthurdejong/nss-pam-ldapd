@@ -2,8 +2,6 @@
 
 set -e
 
-CONFFILE="/etc/nss-ldapd.conf"
-
 # remove NSS lookups though LDAP for the specified service
 nss_disable()
 {
@@ -26,9 +24,6 @@ nss_disable()
   # we're done
   return 0
 }
-
-# remove /var/run/nslcd directory
-rm -rf /var/run/nslcd
 
 # offer to remove ldap from nsswitch.conf
 if ( [ "$1" = "remove" ] || [ "$1" = "purge" ] )
@@ -66,12 +61,6 @@ then
       echo "WARNING: LDAP is still configured in /etc/nsswitch.conf" >&2
     fi
   fi
-fi
-
-# remove our configuration file (not a conffile) on purge
-if [ "$1" = "purge" ]
-then
-  rm -f "$CONFFILE"
 fi
 
 # call ldconfig to signal the removal of our NSS library

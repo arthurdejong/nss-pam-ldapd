@@ -33,16 +33,26 @@ SUBDIRS = compat common $(MAYBE_NSS) $(MAYBE_PAM) $(ENABLE_NSLCD) man tests
 
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/copyright debian/rules \
-               debian/libnss-ldapd.docs \
-               debian/libnss-ldapd.examples \
-               debian/libnss-ldapd.lintian-overrides \
-               debian/libnss-ldapd.nslcd.init \
+               debian/nslcd.config \
+               debian/nslcd.docs \
+               debian/nslcd.examples \
+               debian/nslcd.init \
+               debian/nslcd.install \
+               debian/nslcd.postinst \
+               debian/nslcd.postrm \
+               debian/nslcd.templates \
                debian/libnss-ldapd.config \
-               debian/libnss-ldapd.templates \
+               debian/libnss-ldapd.install \
+               debian/libnss-ldapd.lintian-overrides \
                debian/libnss-ldapd.postinst \
                debian/libnss-ldapd.postrm \
-               $(wildcard debian/po/*.po) debian/po/templates.pot \
-               debian/po/POTFILES.in
+               debian/libnss-ldapd.templates \
+               debian/libpam-ldapd.install \
+               debian/libpam-ldapd.pam-auth-update \
+               debian/libpam-ldapd.postinst \
+               debian/libpam-ldapd.prerm \
+               debian/po/POTFILES.in debian/po/templates.pot \
+               $(wildcard debian/po/*.po)
 
 EXTRA_DIST = nss-ldapd.conf nslcd.h \
              $(wildcard m4/*.m4) HACKING $(DEBIAN_FILES)

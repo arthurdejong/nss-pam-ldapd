@@ -50,12 +50,14 @@ install: build
 	dh_testdir
 	dh_testroot
 	dh_prep
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/libnss-ldapd
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 	# make configfile fully generated
-	rm -f $(CURDIR)/debian/libnss-ldapd/etc/nss-ldapd.conf
+	rm -f $(CURDIR)/debian/tmp/etc/nss-ldapd.conf
 	# install a lintian override file
 	install -D -m 644 $(CURDIR)/debian/libnss-ldapd.lintian-overrides \
 	        $(CURDIR)/debian/libnss-ldapd/usr/share/lintian/overrides/libnss-ldapd
+	# install a pam-auth-update configuration file
+	install -D -m 644 debian/libpam-ldapd.pam-auth-update debian/tmp/usr/share/pam-configs/ldap
 
 # build architecture-independent files
 binary-indep: build install
@@ -65,10 +67,11 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
+	dh_install
 	dh_installdebconf
 	dh_installdocs
 	dh_installexamples
-	dh_installinit --name=nslcd
+	dh_installinit
 	dh_installman
 	dh_installchangelogs
 	dh_link

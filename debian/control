@@ -4,15 +4,27 @@ Priority: extra
 Maintainer: Arthur de Jong <adejong@debian.org>
 Uploaders: Richard A Nelson (Rick) <cowboy@debian.org>
 Standards-Version: 3.8.2
-Build-Depends: debhelper (>= 7), libkrb5-dev, libldap2-dev, libsasl2-dev, po-debconf (>= 0.5.0), docbook2x, docbook-xml
+Build-Depends: debhelper (>= 7), libkrb5-dev, libldap2-dev, libsasl2-dev, po-debconf (>= 0.5.0), docbook2x, docbook-xml, libpam0g-dev
 Homepage: http://arthurdejong.org/nss-ldapd/
 Vcs-Svn: http://arthurdejong.org/svn/nss-ldapd/nss-ldapd/
 Vcs-Browser: http://arthurdejong.org/viewvc/nss-ldapd/nss-ldapd/
 
-Package: libnss-ldapd
+Package: nslcd
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, adduser
-Recommends: nscd, libpam-ldap
+Recommends: nscd, libnss-ldapd, libpam-ldapd
+Conflicts: libnss-ldapd (< 0.7.0)
+Description: Daemon for NSS and PAM lookups using LDAP
+ This package provides a daemon for retrieving user account, and other
+ system information from LDAP.
+ .
+ It is used by the libnss-ldapd and libpam-ldapd packages but by itself is
+ not very useful.
+
+Package: libnss-ldapd
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, nslcd
+Recommends: libpam-ldapd | libpam-ldap
 Conflicts: libnss-ldap
 Provides: libnss-ldap
 Description: NSS module for using LDAP as a naming service
@@ -24,3 +36,16 @@ Description: NSS module for using LDAP as a naming service
  This is a fork from libnss-ldap implementing structural design changes
  to fix, amongst other things, problems related to host name lookups and
  name lookups during booting.
+
+Package: libpam-ldapd
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, nslcd, libpam-runtime (>= 1.0.1-6)
+Recommends: libnss-ldapd | libnss-ldap
+Conflicts: libpam-ldap
+Provides: libpam-ldap
+Description: PAM module for using LDAP as an authentication service
+ This package provides a Pluggable Authentication Module that allows
+ user authentication based on credentials stored in an LDAP server.
+ .
+ This module is still under development but strives to be able to replace
+ the libpam-ldap package in most cases.
