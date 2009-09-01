@@ -150,6 +150,19 @@ AC_ARG_ENABLE(kerberos,
               [enable_kerberos="yes"])
 AC_MSG_RESULT($enable_kerberos)
 
+# check whether configfile options should be checked
+AC_MSG_CHECKING([whether to check configfile options])
+AC_ARG_ENABLE(configfile_checking,
+              AS_HELP_STRING([--disable-configfile-checking],
+                             [check configfile options [[default=yes]]]),
+              [configfile_checking=$enableval],
+              [configfile_checking="yes"])
+AC_MSG_RESULT($configfile_checking)
+if test "x$configfile_checking" = "xyes"
+then
+  AC_DEFINE(ENABLE_CONFIGFILE_CHECKING,1,[Whether to check configfile options.])
+fi
+
 AC_ARG_WITH(ldap-lib,
             AS_HELP_STRING([--with-ldap-lib=TYPE],
                            [select ldap library (auto|netscape5|netscape4|netscape3|umich|openldap) @<:@auto@:>@]))

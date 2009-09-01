@@ -931,12 +931,14 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       get_int(filename,lnr,keyword,&line,&cfg->ldc_pagesize);
       get_eol(filename,lnr,keyword,&line);
     }
+#ifdef ENABLE_CONFIGFILE_CHECKING
     /* fallthrough */
     else
     {
       log_log(LOG_ERR,"%s:%d: unknown keyword: '%s'",filename,lnr,keyword);
       exit(EXIT_FAILURE);
     }
+#endif
   }
   /* we're done reading file, close */
   fclose(fp);
