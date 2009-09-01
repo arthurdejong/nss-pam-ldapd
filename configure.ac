@@ -117,8 +117,8 @@ AM_CONDITIONAL([ENABLE_NSS], [test "x$enable_nss" = "xyes"])
 # check whether the PAM module should be built
 AC_MSG_CHECKING([whether to build the PAM module])
 AC_ARG_ENABLE(pam,
-              AS_HELP_STRING([--enable-pam],
-                             [build the PAM module [[default=no]]]),,
+              AS_HELP_STRING([--disable-pam],
+                             [build the PAM module [[default=yes]]]),,
               [enable_pam="yes"])
 AC_MSG_RESULT($enable_pam)
 AM_CONDITIONAL([ENABLE_PAM], [test "x$enable_pam" = "xyes"])
