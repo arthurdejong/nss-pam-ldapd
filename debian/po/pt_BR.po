@@ -14,7 +14,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: libnss-ldap_203-1\n"
-"Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
+"Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-26 17:06+0200\n"
 "PO-Revision-Date: 2003-03-08 11:39+0300\n"
 "Last-Translator: André Luís Lopes <andrelop@ig.com.br>\n"
@@ -172,7 +172,7 @@ msgid ""
 "        certificate is provided it is ignored;\n"
 " * demand: a certificate will be requested, required, and checked.\n"
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
-"tls_cacertfile options must be put in /etc/nss-ldapd.conf."
+"tls_cacertfile options must be put in /etc/nslcd.conf."
 msgstr ""
 
 #. Type: multiselect

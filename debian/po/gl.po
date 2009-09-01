@@ -2,60 +2,48 @@
 # This file is distributed under the same license as the nss-ldap package.
 #
 # marce villarino <mvillarino@users.sourceforge.net>, 2009.
+# Marce Villarino <mvillarino@gmail.com>, 2009.
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.6\n"
-"Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
+"Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-26 17:06+0200\n"
-"PO-Revision-Date: 2009-05-06 22:55+0200\n"
-"Last-Translator: marce villarino <mvillarino@users.sourceforge.net>\n"
-"Language-Team: Galician <proxecto@trasno.ent>\n"
+"PO-Revision-Date: 2009-07-18 10:02+0200\n"
+"Last-Translator: Marce Villarino <mvillarino@gmail.com>\n"
+"Language-Team: Galician <proxecto@trasno.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Lokalize 0.2\n"
+"X-Generator: Lokalize 0.3\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid "LDAP server search base:"
 msgid "LDAP server URI:"
-msgstr "Base da procura de servidor LDAP:"
+msgstr "URI do servidor LDAP:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Please enter the URI of the LDAP server used. This is a string in the "
-#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
-#| "used. The port number is optional."
 msgid ""
 "Please enter the Uniform Resource Identifier of the LDAP server. The format "
 "is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
-"Indique o URI do servidor LDAP. Isto é unha cadea coa forma ldap://<máquina "
-"ou IP>:<porto>/. Tamén pode empregar ldaps:// ou ldapi://. O número de porto "
-"é opcional."
+"Introduza o URI do servidor LDAP. O formato é «ldap://<nome_ou_IP>:<porto>/». "
+"Tamén se poden empregar «ldaps://» ou «ldapi://» . O número do porto é "
+"opcional."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "When using the ldap or ldaps schemes it is usually a good idea to use an "
-#| "IP address; this reduces the risk of failure when name services are "
-#| "unavailable."
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
-"Cando se empregan os esquemas ldap ou ldaps xeralmente é boa idea empregar "
-"un enderezo IP, xa que se reduce o risco de fallo se non hai servizos de "
-"nome dispoñíbeis."
+"Cando se emprega un esquema ldap ou ldaps recoméndase empregar un enderezo "
+"IP para evitar fallos se o servizo de nomes non está dispoñíbel."
 
 #. Type: string
 #. Description
@@ -92,10 +80,6 @@ msgstr "Usuario da base de datos LDAP:"
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
-#, fuzzy
-#| msgid ""
-#| "If the LDAP database requires a login for normal lookups, enter the name "
-#| "of the account that will be used here. Leave empty otherwise."
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave it empty otherwise."
@@ -128,7 +112,7 @@ msgstr ""
 #. Description
 #: ../nslcd.templates:5001
 msgid "Use StartTLS?"
-msgstr ""
+msgstr "Debe empregarse StartTLS?"
 
 #. Type: boolean
 #. Description
@@ -137,36 +121,38 @@ msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
 msgstr ""
+"Indique se a conexión co servidor LDAP debe empregar StartTLS para cifrar a "
+"conexión."
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "never"
-msgstr ""
+msgstr "nunca"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "allow"
-msgstr ""
+msgstr "permitir"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "try"
-msgstr ""
+msgstr "tentar"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "demand"
-msgstr ""
+msgstr "demandar"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:6002
 msgid "Check server's SSL certificate:"
-msgstr ""
+msgstr "Comprobación do certificado SSL do servidor:"
 
 #. Type: select
 #. Description
@@ -182,8 +168,18 @@ msgid ""
 "        certificate is provided it is ignored;\n"
 " * demand: a certificate will be requested, required, and checked.\n"
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
-"tls_cacertfile options must be put in /etc/nss-ldapd.conf."
+"tls_cacertfile options must be put in /etc/nslcd.conf."
 msgstr ""
+"Cando se emprega unha conexión cifrada pode pedirse e comprobarse un "
+"certificado do servidor. Escolla se as procuras deben estar configuradas "
+"para requirir un certificado e se debe comprobarse a validez destes:\n"
+" * nunca: non se pedirá nin se comprobará ningún certificado,\n"
+" * permitir: pedirase un certificado, pero non é requirido nin comprobado,\n"
+" * tentar: pedirase e comprobarase un certificado, pero de non fornecerse\n"
+"   ningún ignorarase,\n"
+" * demandar:pedirase, requirirase e comprobarase un certificado.\n"
+"Se desactiva a comprobación do certificado, debe ter no ficheiro /etc/nss-"
+"ldap.conf polo menos unha das opcións tls_cacertdir ou tlscacertfile."
 
 #. Type: multiselect
 #. Description
@@ -204,18 +200,13 @@ msgstr ""
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "You can select the services that should be enabled or disabled for LDAP "
-#| "lookups. The new LDAP lookups will be added as last option. Be sure to "
-#| "review these changes."
 msgid ""
 "You can select the services that should have LDAP lookups enabled. The new "
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
 msgstr ""
-"Pode escoller or servizos que se deben activar ou desactivar nas procuras "
-"LDAP. As novas procuras LDAP engadiranse como última opción. Revise estas "
+"Pode escoller os servizos que se deben ter activadas as procuras LDAP. As "
+"novas procuras LDAP engadiranse como última fonte de datos. Revise estas "
 "modificacións."
 
 #. Type: boolean
@@ -227,18 +218,13 @@ msgstr "Desexa eliminar LDAP de nsswitch.conf?"
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:2001
-#, fuzzy
-#| msgid ""
-#| "LDAP is still configured for name lookups for the following services:\n"
-#| "  ${services}\n"
-#| "but the libnss-ldapd package is about to be removed."
 msgid ""
 "The following services are still configured to use LDAP for lookups:\n"
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
-"LDAP aínda está configurado para facer procuras de nomes para os seguintes "
-"servizos:\n"
+"Os seguintes servizos aínda están configurados para facer procuras mediante "
+"LDAP:\n"
 " ${services}\n"
 "pero o paquete libnss-ldapd está a piques de ser eliminado."
 

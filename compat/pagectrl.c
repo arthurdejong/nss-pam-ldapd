@@ -1,7 +1,7 @@
 /*
    pagectrl.c - provide a replacement ldap_create_page_control() function.
    This file was part of the nss_ldap library which has been
-   forked into the nss-ldapd library.
+   forked into the nss-pam-ldapd library.
 
    Copyright (C) 2002 Max Caines
    This software is not subject to any license of the University

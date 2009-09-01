@@ -1,7 +1,7 @@
 /*
    cfg.c - functions for configuration information
    This file contains parts that were part of the nss_ldap
-   library which has been forked into the nss-ldapd library.
+   library which has been forked into the nss-pam-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting

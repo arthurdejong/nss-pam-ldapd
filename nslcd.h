@@ -68,7 +68,7 @@
 
 /* The current version of the protocol. Note that version 1
    is experimental and this version will be used until a
-   1.0 release of nss-ldapd is made. */
+   1.0 release of nss-pam-ldapd is made. */
 #define NSLCD_VERSION 1
 
 /* Email alias (/etc/aliases) NSS requests. The result values for a
@@ -188,11 +188,6 @@
    all requests, except the SESSION requests start the result value with:
      STRING  user name (cannonical name)
      STRING  DN (can be used to speed up requests) */
-
-/*
-   WARNING: the PAM code is under development and the details of the protocol
-            may change between releases.
-*/
 
 /* PAM authentication check request. The extra request values are:
      STRING  password

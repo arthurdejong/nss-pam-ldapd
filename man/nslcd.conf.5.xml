@@ -3,7 +3,7 @@
                    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 
 <!--
-   nss-ldapd.conf.5.xml - docbook manual page for nss-ldapd.conf
+   nslcd.conf.5.xml - docbook manual page for nslcd.conf
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007, 2008, 2009 Arthur de Jong
@@ -34,29 +34,29 @@
  </refentryinfo>
 
  <refmeta>
-  <refentrytitle>nss-ldapd.conf</refentrytitle>
+  <refentrytitle>nslcd.conf</refentrytitle>
   <manvolnum>5</manvolnum>
-  <refmiscinfo class="version">Version 0.6.10</refmiscinfo>
+  <refmiscinfo class="version">Version 0.6.11</refmiscinfo>
   <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
-  <refmiscinfo class="date">Jun 2009</refmiscinfo>
+  <refmiscinfo class="date">Jul 2009</refmiscinfo>
  </refmeta>
 
  <refnamediv id="name">
-  <refname>nss-ldapd.conf</refname>
-  <refpurpose>configuration file for LDAP nameservice provider</refpurpose>
+  <refname>nslcd.conf</refname>
+  <refpurpose>configuration file for LDAP nameservice daemon</refpurpose>
  </refnamediv>
 
  <refsect1 id="description">
   <title>Description</title>
   <para>
-   The <emphasis>nss-ldapd</emphasis> module allows <acronym>LDAP</acronym>
+   The <emphasis>nss-pam-ldapd</emphasis> package allows <acronym>LDAP</acronym>
    directory servers to be used as a primary source of name service
    information. (Name service information typically includes users, hosts,
    groups, and other such data historically stored in flat files or
    <acronym>NIS</acronym>.)
   </para>
   <para>
-    The file <filename>nss-ldapd.conf</filename> contains the
+    The file <filename>nslcd.conf</filename> contains the
     configuration information for running <command>nslcd</command> (see
     <citerefentry><refentrytitle>nslcd</refentrytitle><manvolnum>8</manvolnum></citerefentry>).
     The file contains options, one on each line, defining the way
@@ -177,7 +177,7 @@
        Specifies the clear text credentials with which to bind.
        This option is only applicable when used with <option>binddn</option> above.
        If you set this option you should consider changing the permissions
-       of the <filename>nss-ldapd.conf</filename> file to only grant access to
+       of the <filename>nslcd.conf</filename> file to only grant access to
        the root user.
 <!-- WHEN SASL IS DOCUMENTED:
        This option is only applicable when either the <option>binddn</option> or
@@ -690,7 +690,7 @@
   <title>Files</title>
   <variablelist remap="TP">
    <varlistentry>
-    <term><filename>/etc/nss-ldapd.conf</filename></term>
+    <term><filename>/etc/nslcd.conf</filename></term>
     <listitem><para>the main configuration file</para></listitem>
    </varlistentry>
    <varlistentry>

@@ -1,6 +1,6 @@
 /*
    myldap.h - simple interface to do LDAP requests
-   This file is part of the nss-ldapd library.
+   This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2007, 2008, 2009 Arthur de Jong
 

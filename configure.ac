@@ -32,8 +32,8 @@ version 2.1 of the License, or (at your option) any later version. See the
 configure.ac file for more details.])
 
 # initialize and set version and bugreport address
-AC_INIT([nss-ldapd],[0.6.10],[arthur@arthurdejong.org])
-RELEASE_MONTH="Jun 2009"
+AC_INIT([nss-pam-ldapd],[0.6.11],[arthur@arthurdejong.org])
+RELEASE_MONTH="Jul 2009"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])
 
@@ -160,11 +160,11 @@ fi
 
 AC_ARG_WITH(ldap-conf-file,
             AS_HELP_STRING([--with-ldap-conf-file=PATH],
-                           [path to LDAP configuration file @<:@/etc/nss-ldapd.conf@:>@]),
-            [ NSS_LDAP_PATH_CONF="$with_ldap_conf_file" ],
-            [ NSS_LDAP_PATH_CONF="/etc/nss-ldapd.conf" ])
-AC_DEFINE_UNQUOTED(NSS_LDAP_PATH_CONF,"$NSS_LDAP_PATH_CONF",[Path to LDAP configuration file.])
-AC_SUBST(NSS_LDAP_PATH_CONF)
+                           [path to nslcd configuration file @<:@/etc/nslcd.conf@:>@]),
+            [ NSLCD_CONF_PATH="$with_ldap_conf_file" ],
+            [ NSLCD_CONF_PATH="/etc/nslcd.conf" ])
+AC_DEFINE_UNQUOTED(NSLCD_CONF_PATH,"$NSLCD_CONF_PATH",[Path to nslcd configuration file.])
+AC_SUBST(NSLCD_CONF_PATH)
 
 AC_ARG_WITH(nslcd-pidfile,
             AS_HELP_STRING([--with-nslcd-pidfile=PATH],

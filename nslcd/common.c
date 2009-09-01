@@ -1,6 +1,6 @@
 /*
    common.c - common server code routines
-   This file is part of the nss-ldapd library.
+   This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong

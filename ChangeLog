@@ -1,3 +1,206 @@
+2009-07-12 20:43  arthur
+
+	* [r965] debian/po/fr.po: updated French (fr) translation of
+	  debconf templates by Christian Perrier <bubulle@debian.org>
+
+2009-07-10 06:49  arthur
+
+	* [r962] debian/po/cs.po: updated Czech (cs) translation of debconf
+	  templates by Miroslav Kure <kurem@debian.cz>
+
+2009-07-04 10:49  arthur
+
+	* [r961] debian/po/cs.po: unfuzzy translations that were due to
+	  fixes in the English template
+
+2009-07-04 10:39  arthur
+
+	* [r960] debian/po/cs.po: updated Czech (cs) translation of debconf
+	  templates by Miroslav Kure <kurem@debian.cz>
+
+2009-07-04 10:08  arthur
+
+	* [r959] debian/po/pt.po: updated Portuguese (pt) translation of
+	  debconf templates by Américo Monteiro <a_monteiro@netcabo.pt>
+
+2009-07-02 07:05  arthur
+
+	* [r958] debian/po/es.po: updated Spanish (es) translation of
+	  debconf templates by Francisco Javier Cuadrado
+	  <fcocuadrado@gmail.com>
+
+2009-06-29 19:16  arthur
+
+	* [r957] nslcd/group.c: fix off by one error in the maximum number
+	  of gidNumber attributes in an LDAP group entry
+
+2009-06-29 19:10  arthur
+
+	* [r956] nslcd/passwd.c: fix off by one error in the maximum number
+	  of uidNumber attributes in an LDAP entry (thanks to David
+	  Binderman for finding this)
+
+2009-06-27 20:02  arthur
+
+	* [r955] debian/po/sv.po: updated Swedish (sv) translation of
+	  debconf templates by Martin Ågren <martin.agren@gmail.com>
+
+2009-06-27 10:04  arthur
+
+	* [r954] debian/control: upgrade to standards-version 3.8.2 (no
+	  changes needed)
+
+2009-06-27 09:44  arthur
+
+	* [r953] debian/po/ru.po: updated Russian (ru) translation of
+	  debconf templates by Yuri Kozlov <yuray@komyakino.ru>
+
+2009-06-26 15:09  arthur
+
+	* [r951] debian/control: add missing slash to homepage
+
+2009-06-24 07:39  arthur
+
+	* [r950] debian/po/ja.po: updated Japanese (ja) translation of
+	  debconf templates by Kenshi Muto <kmuto@debian.org>
+
+2009-06-24 07:12  arthur
+
+	* [r949] debian/po/fi.po: updated Finnish (fi) translation of
+	  debconf templates by Esko Arajärvi <edu@iki.fi>
+
+2009-06-23 07:34  arthur
+
+	* [r948] debian/libnss-ldapd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fi.po, debian/po/fr.po,
+	  debian/po/gl.po, debian/po/it.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po, debian/po/zh_CN.po: change reqcert choice
+	  description and make choices translatable
+
+2009-06-23 07:17  arthur
+
+	* [r947] debian/po/zh_CN.po: added Simplified Chinese (zh_CN)
+	  translation of debconf templates by zym <zym@3721.com>
+
+2009-06-22 19:37  arthur
+
+	* [r946] debian/po/fi.po: fix non-ascii characters that got lost
+	  when importing the file
+
+2009-06-21 21:12  arthur
+
+	* [r945] debian/libnss-ldapd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fi.po, debian/po/fr.po,
+	  debian/po/gl.po, debian/po/it.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po: improvements to debconf templates (English
+	  language review by Justin B Rye <jbr@edlug.org.uk>
+
+2009-06-20 09:54  arthur
+
+	* [r944] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fi.po,
+	  debian/po/fr.po, debian/po/gl.po, debian/po/it.po,
+	  debian/po/ja.po, debian/po/nl.po, debian/po/pt.po,
+	  debian/po/pt_BR.po, debian/po/ru.po, debian/po/sv.po,
+	  debian/po/templates.pot, debian/po/vi.po: update debconf
+	  translation files
+
+2009-06-20 09:50  arthur
+
+	* [r943] debian/libnss-ldapd.config, debian/libnss-ldapd.postinst,
+	  debian/libnss-ldapd.templates: make configuring SSL/TLS possible
+	  with debconf
+
+2009-06-20 09:39  arthur
+
+	* [r942] nslcd/cfg.c: also support starttls as value for the ssl
+	  option
+
+2009-06-19 09:24  arthur
+
+	* [r941] debian/libnss-ldapd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fi.po, debian/po/fr.po,
+	  debian/po/gl.po, debian/po/it.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po: rephrase LDAP server URI question based on
+	  pam_ldap's new debconf templates
+
+2009-06-19 09:12  arthur
+
+	* [r940] debian/libnss-ldapd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fi.po, debian/po/fr.po,
+	  debian/po/gl.po, debian/po/it.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po: fix wrapping, use of double spaces and unfuzzy
+	  translations
+
+2009-06-14 18:41  arthur
+
+	* [r939] debian/control: fix Vcs-Browser link
+
+2009-06-12 21:53  arthur
+
+	* [r938] AUTHORS, HACKING, README, configure.ac, debian/control,
+	  debian/copyright, man/nslcd.8.xml, man/nss-ldapd.conf.5.xml:
+	  replace references to ch.tudelft.nl with arthurdejong.org
+
+2009-06-12 11:49  arthur
+
+	* [r937] nslcd/nslcd.c: make error message a little clearer
+
+2009-06-06 20:46  arthur
+
+	* [r934] README, nslcd/alias.c, nslcd/ether.c, nslcd/group.c,
+	  nslcd/netgroup.c, nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c,
+	  nslcd/service.c, nslcd/shadow.c, tests/test_nsscmds.sh: implement
+	  case-sensitive filtering for group, netgroup, passwd, protocols,
+	  rpc, services and shadow lookups
+
+2009-06-06 20:45  arthur
+
+	* [r933] tests/README: fix wrapping
+
+2009-06-06 20:17  arthur
+
+	* [r932] HACKING, tests/README, tests/test.ldif.gz,
+	  tests/test_nsscmds.sh: update and document test suite
+
+2009-06-06 18:53  arthur
+
+	* [r931] nss/group.c: fix buffer check for user to groups mapping
+	  function
+
+2009-06-06 16:29  arthur
+
+	* [r930] configure.ac: add --disable-sasl and --disable-kerberos
+	  configure options
+
+2009-06-04 19:46  arthur
+
+	* [r929] nslcd/myldap.c: also compile correctly if
+	  HAVE_LDAP_SASL_INTERACTIVE_BIND_S is not set
+
+2009-06-04 19:40  arthur
+
+	* [r928] configure.ac: let configure --help show the correct
+	  behaviour
+
+2009-06-03 14:28  arthur
+
+	* [r926] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.10 release
+
 2009-06-03 14:19  arthur
 
 	* [r925] nslcd/cfg.c: remove SSL/TLS warning messages during

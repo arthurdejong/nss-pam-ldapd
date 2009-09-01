@@ -87,9 +87,9 @@ static void initconfig(void)
   /* build the name of the file to read */
   srcdir=getenv("srcdir");
   if (srcdir==NULL)
-    strcpy(fname,"nss-ldapd-test.conf");
+    strcpy(fname,"nslcd-test.conf");
   else
-    snprintf(fname,sizeof(fname),"%s/nss-ldapd-test.conf",srcdir);
+    snprintf(fname,sizeof(fname),"%s/nslcd-test.conf",srcdir);
   fname[sizeof(fname)-1]='\0';
   /* load config file */
   cfg_init(fname);

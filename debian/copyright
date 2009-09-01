@@ -1,16 +1,18 @@
-This is nss-ldapd, a library for doging NSS name lookups using an LDAP server.
+This is nss-pam-ldapd, a library for doging NSS and PAM lookups using an LDAP
+server.
 
-nss-ldapd is a fork from nss_ldap which was originally written by Luke Howard
-of PADL Software Pty Ltd. http://www.padl.com/OSS/nss_ldap.html
+nss-pam-ldapd started as nss-ldapd which was a fork from nss_ldap which was
+originally written by Luke Howard of PADL Software Pty Ltd.
+http://www.padl.com/OSS/nss_ldap.html
 
 In 2006 Arthur de Jong of West Consuling forked the library to split it into a
 thin NSS part and a server part. Most of the code was rewritten.
-http://arthurdejong.org/nss-ldapd/
+http://arthurdejong.org/nss-pam-ldapd/
 
 Arthur de Jong is both the upstream and Debian package maintainer, so there
 are no differences between the Debian package and the upstream version.
 
-The Debian package of nss-ldapd was partially based on packaging of the
+The Debian package of nss-pam-ldapd was partially based on packaging of the
 libnss-ldap package. The libnss-ldap package was maintained by Ben Collins,
 Davide Puricelli (evo), Sami Haahtinen and Stephen Frost.
 
@@ -86,4 +88,3 @@ The file m4/acx_pthread.m4 contains the following copyright statement:
   make and distribute a modified version of the Autoconf Macro, you
   may extend this special exception to the GPL to apply to your
   modified version as well.
-

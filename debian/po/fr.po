@@ -3,63 +3,54 @@
 # This file is distributed under the same license as the nss-ldapd package.
 #
 # Translators:
+#
 # Cyril Brulebois <cyril.brulebois@enst-bretagne.fr>, 2007.
 # Philippe Batailler <philippe.batailler@free.fr>, 2007.
 # Guillaume Delacour <gui@iroqwa.org>, 2009.
-#
+# Christian Perrier <bubulle@debian.org>, 2009.
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.3\n"
-"Report-Msgid-Bugs-To: nss-ldapd@packages.debian.org\n"
+"Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-26 17:06+0200\n"
-"PO-Revision-Date: 2009-04-23 01:38+0100\n"
-"Last-Translator: Guillaume Delacour <gui@iroqwa.org>\n"
+"PO-Revision-Date: 2009-06-25 17:07+0200\n"
+"Last-Translator: Christian Perrier <bubulle@debian.org>\n"
 "Language-Team: French <debian-l10n-french@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Lokalize 0.3\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid "LDAP server search base:"
 msgid "LDAP server URI:"
-msgstr "Base de recherche du serveur LDAP :"
+msgstr "URI du serveur LDAP :"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Please enter the URI of the LDAP server used. This is a string in the "
-#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
-#| "used. The port number is optional."
 msgid ""
 "Please enter the Uniform Resource Identifier of the LDAP server. The format "
 "is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
-"Veuillez indiquer l'adresse du serveur LDAP à utiliser. Il s'agit d'une "
-"chaîne de la forme « ldap://<nom de machine ou IP>:<port>/ ». Des adresses "
-"sous la forme « ldaps:// » et « ldapi:// » peuvent aussi être utilisées. Le "
-"numéro de port est facultatif."
+"Veuillez indiquer l'URI (« Uniform Resource Identifier ») du serveur LDAP à "
+"utiliser. Il s'agit d'une adresse de la forme « ldap://<nom de machine ou IP>:"
+"<port>/ ». Des adresses sous la forme « ldaps:// » et « ldapi:// » peuvent "
+"aussi être utilisées. Le numéro de port est facultatif."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "When using the ldap or ldaps schemes it is usually a good idea to use an "
-#| "IP address; this reduces the risk of failure when name services are "
-#| "unavailable."
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
 "Lorsque le protocole utilisé est « ldap » ou « ldaps », il est recommandé "
-"d'utiliser une adresse IP plutôt qu'un nom d'hôte ; les risques d'échec sont "
-"réduits en cas d'indisponibilité du service de noms."
+"d'utiliser une adresse IP plutôt qu'un nom d'hôte afin de réduire les "
+"risques d'échec en cas d'indisponibilité du service de noms."
 
 #. Type: string
 #. Description
@@ -83,7 +74,7 @@ msgid ""
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
 msgstr ""
-"Veuillez indiquer le nom distingué (« DN ») de la base de recherche du "
+"Veuillez indiquer le nom distinctif (« DN ») de la base de recherche du "
 "serveur LDAP. Beaucoup de sites utilisent les éléments composant leur nom de "
 "domaine à cette fin. Par exemple, le domaine « exemple.net » utiliserait "
 "« dc=exemple,dc=net »."
@@ -97,10 +88,6 @@ msgstr "Utilisateur de la base LDAP :"
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
-#, fuzzy
-#| msgid ""
-#| "If the LDAP database requires a login for normal lookups, enter the name "
-#| "of the account that will be used here. Leave empty otherwise."
 msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave it empty otherwise."
@@ -113,7 +100,7 @@ msgstr ""
 #. Description
 #: ../nslcd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
-msgstr "Cette valeur doit être un nom distingué (« DN »)."
+msgstr "Cette valeur doit être un nom distinctif (« DN »)."
 
 #. Type: password
 #. Description
@@ -133,7 +120,7 @@ msgstr ""
 #. Description
 #: ../nslcd.templates:5001
 msgid "Use StartTLS?"
-msgstr ""
+msgstr "Faut-il utiliser StartTLS ?"
 
 #. Type: boolean
 #. Description
@@ -142,36 +129,38 @@ msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
 msgstr ""
+"Veuillez choisir si la connexion au serveur LDAP doit être chiffrée avec "
+"StartTLS."
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "never"
-msgstr ""
+msgstr "Jamais"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "allow"
-msgstr ""
+msgstr "Autoriser"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "try"
-msgstr ""
+msgstr "Essayer"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "demand"
-msgstr ""
+msgstr "Demander"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:6002
 msgid "Check server's SSL certificate:"
-msgstr ""
+msgstr "Contrôle du certificat SSL du serveur :"
 
 #. Type: select
 #. Description
@@ -187,8 +176,18 @@ msgid ""
 "        certificate is provided it is ignored;\n"
 " * demand: a certificate will be requested, required, and checked.\n"
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
-"tls_cacertfile options must be put in /etc/nss-ldapd.conf."
+"tls_cacertfile options must be put in /etc/nslcd.conf."
 msgstr ""
+"En cas de connexion chiffrée, le certificat du serveur peut être demandé et "
+"contrôlé. Veuillez choisir la façon de réaliser ce contrôle :\n"
+" - Jamais    : certificat non demandé ni contrôlé ; \n"
+" - Autoriser : certificat demandé mais facultatif et non\n"
+"               contrôlé ; \n"
+" - Essayer   : certificat demandé et contrôlé, mais facultatif ;\n"
+" - Demander  : certificat obligatoire et contrôlé.\n"
+"Si le contrôle du certificat est activé, il est indispensable d'utiliser au "
+"moins l'une des options « tls_cacertdir » ou « tls_cacertfile » dans le "
+"fichier /etc/nss-ldap.conf."
 
 #. Type: multiselect
 #. Description
@@ -209,11 +208,6 @@ msgstr ""
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "You can select the services that should be enabled or disabled for LDAP "
-#| "lookups. The new LDAP lookups will be added as last option. Be sure to "
-#| "review these changes."
 msgid ""
 "You can select the services that should have LDAP lookups enabled. The new "
 "LDAP lookups will be added as the last datasource. Be sure to review these "
@@ -221,8 +215,8 @@ msgid ""
 msgstr ""
 "Vous pouvez aussi choisir les services qui doivent être activés ou "
 "désactivés pour les requêtes LDAP. Les nouvelles requêtes LDAP seront "
-"ajoutées comme dernière option. Il est important de bien contrôler ces "
-"modifications."
+"ajoutées comme dernière source possible. Il est important de bien contrôler "
+"ces modifications."
 
 #. Type: boolean
 #. Description
@@ -233,18 +227,12 @@ msgstr "Faut-il supprimer LDAP de nsswitch.conf maintenant ?"
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:2001
-#, fuzzy
-#| msgid ""
-#| "LDAP is still configured for name lookups for the following services:\n"
-#| "  ${services}\n"
-#| "but the libnss-ldapd package is about to be removed."
 msgid ""
 "The following services are still configured to use LDAP for lookups:\n"
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
-"LDAP est toujours configuré pour la recherche de nom pour les services "
-"suivants :\n"
+"Les services suivants utilisent toujours LDAP pour la recherche de nom :\n"
 "  ${services}\n"
 "mais le paquet libnss-ldapd est sur le point d'être supprimé."
 
@@ -257,10 +245,10 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
-"Il vous est conseillé de supprimer les entrées si vous ne pensez pas "
-"utiliser LDAP pour la résolution de noms. Il est probable qu'omettre de "
-"supprimer LDAP dans nsswitch.conf soit sans conséquences pour la plupart des "
-"services, mais la résolution de noms peut être affectée de manière subtile."
+"Il est conseillé de supprimer les entrées si vous ne pensez pas utiliser "
+"LDAP pour la résolution de noms. Il est probable qu'omettre de supprimer "
+"LDAP dans nsswitch.conf soit sans conséquences pour la plupart des services, "
+"mais la résolution de noms peut être affectée de manière subtile."
 
 #. Type: boolean
 #. Description

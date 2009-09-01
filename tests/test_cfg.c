@@ -1,6 +1,6 @@
 /*
    test_cfg.c - simple test for the cfg module
-   This file is part of the nss-ldapd library.
+   This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2007, 2009 Arthur de Jong
 

@@ -1,6 +1,4 @@
 * test reachability problems with LDAP server more
-* document test suite (instructions for setting up environment (server), LDIF
-  file, nsswitch.conf and nss-ldapd.conf)
 * write more unit tests
 * maybe implement a connection object in the myldap module that is shared
   by different sessions (sessions need to be cleaned up)
@@ -9,6 +7,7 @@
 * log some statistics: "passwd=100 shadow=10 host=20 rpc=10" (10 req/minute)
 * in the server: once the request is done pass the flushing of the buffers to
   a separate thread so our workers are available to handle new requests
+  (test whether this actually improves performace)
 * tune the filter and parameter buffer sizes
 * split out idle checking into separate function so we may be able to call it
   periodically from elsewhere (e.g. the main loop)
@@ -16,14 +15,13 @@
   chroot jails)
 * make I/O timeout between NSS lib and daemon configurable with configure
 * ethers: also look in ipHostNumber attribute to look up an IPv4 (IPv6)
-  address and return it as an alternative entry
+  address and return it as an alternative entry (investigate whether this is
+  sane)
 * protocols/rpc: the description attribute should be used as an alias?
 * do more checks with failing LDAP connections (e.g. killing connections)
 * maybe make myldap code thread-safe (use locking)
 * review changes in nss_ldap and merge any useful changes
 * maybe rate-limit LDAP entry warnings
-* consider returning the canonical value as it is stored in LDAP, not
-  the requested value (they can differ in case)
 * test non-ASCII characters in fields (mostly cn)
 * implement attribute defaults (for when they're missing from the directory)
 * implement attribute overrides (to always return a specific value, no matter
@@ -32,12 +30,9 @@
   install NSS library in system path
 * only parse configuration options if they are available on the platform
 * have some more general mechanism to disable NSS lookups from nslcd
-* support searchbase autodetection
-* support multiple search bases
-* support memberOf attribute in passwd entries that map to groups
+* maybe support memberOf attribute in passwd entries that map to groups
 * setnetgrent() may need to return an error if the netgroup is undefined
 * handle repeated calls to getent() better (see http://bugzilla.padl.com/show_bug.cgi?id=376)
-* make it possible to start nslcd really early in the boot process and have
+* make it possible to start nslcd real early in the boot process and have
   it become available when it determines it can (other timeout/retry mechanism
   on startup)
-* make lookups case-sensitive

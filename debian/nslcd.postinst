@@ -2,7 +2,8 @@
 
 set -e
 
-CONFFILE="/etc/nss-ldapd.conf"
+CONFFILE="/etc/nslcd.conf"
+OCONFFILE="/etc/nss-ldapd.conf"
 
 # set an option in the configuration file to the specified value
 cfg_set()
@@ -83,10 +84,18 @@ create_config()
 {
   if [ ! -e "$CONFFILE" ]
   then
-    # create a simple configuration file from this template
-    cat > "$CONFFILE" << EOM
+    # check if the file with the old name exists
+    if [ -e "$OCONFFILE" ]
+    then
+      # copy the existing file
+      cp -p $OCONFFILE $CONFFILE
+      # fix reference to manual page
+      sed -i 's/nss-ldapd/nslcd/' $CONFFILE
+    else
+      # create a simple configuration file from this template
+      cat > "$CONFFILE" << EOM
 # $CONFFILE
-# nss-ldapd configuration file. See nss-ldapd.conf(5)
+# nslcd configuration file. See nslcd.conf(5)
 # for details.
 
 # The user and group nslcd should run as.
@@ -114,9 +123,10 @@ base dc=example,dc=net
 #scope sub
 
 EOM
-    # fix permissions
-    chmod 640 "$CONFFILE"
-    chown root:nslcd "$CONFFILE"
+      # fix permissions
+      chmod 640 "$CONFFILE"
+      chown root:nslcd "$CONFFILE"
+    fi
   fi
   # we're done
   return 0
@@ -134,7 +144,7 @@ then
   else
     # create nslcd user and group
     adduser --system --group --home /var/run/nslcd/ \
-            --gecos "nss-ldapd name service LDAP connection daemon" \
+            --gecos "nslcd name service LDAP connection daemon" \
             --no-create-home \
             nslcd
     # add uid/gid options to the config file if it exists
@@ -142,7 +152,7 @@ then
     if [ -f "$CONFFILE" ]
     then
       echo "Adding uid and gid options to $CONFFILE..." >&2
-      echo "# automatically added on upgrade of libnss-ldapd package" >> "$CONFFILE"
+      echo "# automatically added on upgrade of nslcd package" >> "$CONFFILE"
       cfg_set uid nslcd
       cfg_set gid nslcd
     fi
@@ -150,10 +160,10 @@ then
   # create a default configuration
   create_config
   # set server uri
-  db_get libnss-ldapd/ldap-uris
+  db_get nslcd/ldap-uris
   cfg_uris "$RET"
   # set search base
-  db_get libnss-ldapd/ldap-base
+  db_get nslcd/ldap-base
   if [ -n "$RET" ]
   then
     cfg_set base "$RET"
@@ -161,11 +171,11 @@ then
     cfg_disable base
   fi
   # set bind dn/pw
-  db_get libnss-ldapd/ldap-binddn
+  db_get nslcd/ldap-binddn
   if [ -n "$RET" ]
   then
     cfg_set binddn "$RET"
-    db_get libnss-ldapd/ldap-bindpw
+    db_get nslcd/ldap-bindpw
     if [ -n "$RET" ]
     then
       cfg_set bindpw "$RET"
@@ -187,9 +197,9 @@ then
     fi
   fi
   # remove password from database
-  db_set libnss-ldapd/ldap-bindpw ""
+  db_set nslcd/ldap-bindpw ""
   # set ssl option
-  db_get libnss-ldapd/ldap-starttls
+  db_get nslcd/ldap-starttls
   if [ "$RET" = "true" ]
   then
     cfg_set ssl "start_tls"
@@ -198,7 +208,7 @@ then
     cfg_disable ssl
   fi
   # set tls_reqcert option
-  db_get libnss-ldapd/ldap-reqcert
+  db_get nslcd/ldap-reqcert
   if [ -n "$RET" ]
   then
     # rename any tls_checkpeer options
@@ -206,7 +216,7 @@ then
     # set tls_reqcert option
     cfg_set tls_reqcert "$RET"
     # clear debconf value so that this option is only set if the question is asked
-    db_set libnss-ldapd/ldap-reqcert ""
+    db_set nslcd/ldap-reqcert ""
   fi
   # we're done
   db_stop

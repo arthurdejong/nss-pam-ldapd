@@ -398,9 +398,9 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
     case NSLCD_ACTION_NETWORK_BYNAME:   (void)nslcd_network_byname(fp,session); break;
     case NSLCD_ACTION_NETWORK_BYADDR:   (void)nslcd_network_byaddr(fp,session); break;
     case NSLCD_ACTION_NETWORK_ALL:      (void)nslcd_network_all(fp,session); break;
-    case NSLCD_ACTION_PASSWD_BYNAME:    (void)nslcd_passwd_byname(fp,session); break;
-    case NSLCD_ACTION_PASSWD_BYUID:     (void)nslcd_passwd_byuid(fp,session); break;
-    case NSLCD_ACTION_PASSWD_ALL:       (void)nslcd_passwd_all(fp,session); break;
+    case NSLCD_ACTION_PASSWD_BYNAME:    (void)nslcd_passwd_byname(fp,session,uid); break;
+    case NSLCD_ACTION_PASSWD_BYUID:     (void)nslcd_passwd_byuid(fp,session,uid); break;
+    case NSLCD_ACTION_PASSWD_ALL:       (void)nslcd_passwd_all(fp,session,uid); break;
     case NSLCD_ACTION_PROTOCOL_BYNAME:  (void)nslcd_protocol_byname(fp,session); break;
     case NSLCD_ACTION_PROTOCOL_BYNUMBER:(void)nslcd_protocol_bynumber(fp,session); break;
     case NSLCD_ACTION_PROTOCOL_ALL:     (void)nslcd_protocol_all(fp,session); break;
@@ -562,7 +562,7 @@ int main(int argc,char *argv[])
   if (myldap_set_debuglevel(nslcd_debugging)!=LDAP_SUCCESS)
     exit(EXIT_FAILURE);
   /* read configuration file */
-  cfg_init(NSS_LDAP_PATH_CONF);
+  cfg_init(NSLCD_CONF_PATH);
   /* daemonize */
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
   {

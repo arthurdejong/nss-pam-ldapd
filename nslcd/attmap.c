@@ -1,6 +1,6 @@
 /*
    attmap.c - attribute mapping values and functions
-   This file is part of the nss-ldapd library.
+   This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2007, 2008, 2009 Arthur de Jong
 

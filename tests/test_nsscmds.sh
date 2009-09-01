@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-# This script expects to be run in an environment where nss-ldapd
+# This script expects to be run in an environment where nss-pam-ldapd
 # is deployed with an LDAP server with the proper contents (nslcd running).
 # FIXME: update the above description and provide actual LDIF file
 # It's probably best to run this in an environment without nscd.
@@ -29,7 +29,7 @@
 set -e
 
 # check if LDAP is configured correctly
-cfgfile="/etc/nss-ldapd.conf"
+cfgfile="/etc/nslcd.conf"
 if [ -r "$cfgfile" ]
 then
   :

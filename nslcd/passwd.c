@@ -1,7 +1,7 @@
 /*
    passwd.c - password entry lookup routines
    Parts of this file were part of the nss_ldap library (as ldap-pwd.c)
-   which has been forked into the nss-ldapd library.
+   which has been forked into the nss-pam-ldapd library.
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
@@ -292,7 +292,7 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
 #define MAXUIDS_PER_ENTRY 5
 
 static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
-                        const uid_t *requid)
+                        const uid_t *requid,uid_t calleruid)
 {
   int32_t tmpint32;
   const char **tmpvalues;
@@ -323,7 +323,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   else
   {
     passwd=get_userpassword(entry,attmap_passwd_userPassword);
-    if (passwd==NULL)
+    if ((passwd==NULL)||(calleruid!=0))
       passwd=default_passwd_userPassword;
   }
   /* get the uids for this entry */
@@ -341,7 +341,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
                           myldap_get_dn(entry),attmap_passwd_uidNumber);
       return 0;
     }
-    for (numuids=0;(numuids<=MAXUIDS_PER_ENTRY)&&(tmpvalues[numuids]!=NULL);numuids++)
+    for (numuids=0;(numuids<MAXUIDS_PER_ENTRY)&&(tmpvalues[numuids]!=NULL);numuids++)
     {
       uids[numuids]=(uid_t)strtol(tmpvalues[numuids],&tmp,0);
       if ((*(tmpvalues[numuids])=='\0')||(*tmp!='\0'))
@@ -451,7 +451,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   return 0;
 }
 
-NSLCD_HANDLE(
+NSLCD_HANDLE_UID(
   passwd,byname,
   char name[256];
   char filter[1024];
@@ -463,10 +463,10 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);,
   NSLCD_ACTION_PASSWD_BYNAME,
   mkfilter_passwd_byname(name,filter,sizeof(filter)),
-  write_passwd(fp,entry,name,NULL)
+  write_passwd(fp,entry,name,NULL,calleruid)
 )
 
-NSLCD_HANDLE(
+NSLCD_HANDLE_UID(
   passwd,byuid,
   uid_t uid;
   char filter[1024];
@@ -474,15 +474,15 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_passwd_byuid(%d)",(int)uid);,
   NSLCD_ACTION_PASSWD_BYUID,
   mkfilter_passwd_byuid(uid,filter,sizeof(filter)),
-  write_passwd(fp,entry,NULL,&uid)
+  write_passwd(fp,entry,NULL,&uid,calleruid)
 )
 
-NSLCD_HANDLE(
+NSLCD_HANDLE_UID(
   passwd,all,
   const char *filter;
   /* no parameters to read */,
   log_log(LOG_DEBUG,"nslcd_passwd_all()");,
   NSLCD_ACTION_PASSWD_ALL,
   (filter=passwd_filter,0),
-  write_passwd(fp,entry,NULL,NULL)
+  write_passwd(fp,entry,NULL,NULL,calleruid)
 )

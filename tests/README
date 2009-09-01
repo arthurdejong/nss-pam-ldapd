@@ -3,9 +3,9 @@ This document tries to descrive the test in this directory. Most of these
 tests should be self-explanitory as they should be simple unit tests of the
 shipped modules (more unit tests are welcome).
 
-Since nss-ldapd is meant for providing data from an LDAP server for some tests
-you should have an LDAP server and for even other tests you need to have
-nss-ldapd installed (patches for using LD_PRELOAD or similar tricks instead
+Since nss-pam-ldapd is meant for providing data from an LDAP server for some
+tests you should have an LDAP server and for even other tests you need to have
+nss-pam-ldapd installed (patches for using LD_PRELOAD or similar tricks instead
 are welcome).
 
 For this a test setup should be made (the tests are ignored if no such setup
@@ -56,10 +56,10 @@ rpc:            db files ldap
 netgroup:       files ldap
 aliases:        files ldap
 
-nss-ldapd.conf
---------------
+nslcd.conf
+----------
 
-The /etc/nss-ldapd.conf file is expected to be configured like the following.
+The /etc/nslcd.conf file is expected to be configured like the following.
 
 uid nslcd
 gid nslcd

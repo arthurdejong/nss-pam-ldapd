@@ -1,7 +1,7 @@
 /*
    group.c - group entry lookup routines
    Parts of this file were part of the nss_ldap library (as ldap-grp.c) which
-   has been forked into the nss-ldapd library.
+   has been forked into the nss-pam-ldapd library.
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
@@ -259,7 +259,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
                           myldap_get_dn(entry),attmap_group_gidNumber);
       return 0;
     }
-    for (numgids=0;(gidvalues[numgids]!=NULL)&&(numgids<=MAXGIDS_PER_ENTRY);numgids++)
+    for (numgids=0;(gidvalues[numgids]!=NULL)&&(numgids<MAXGIDS_PER_ENTRY);numgids++)
     {
       gids[numgids]=(gid_t)strtol(gidvalues[numgids],&tmp,0);
       if ((*(gidvalues[numgids])=='\0')||(*tmp!='\0'))
