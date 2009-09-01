@@ -101,11 +101,11 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_scope=LDAP_SCOPE_SUBTREE;
   cfg->ldc_deref=LDAP_DEREF_NEVER;
   cfg->ldc_referrals=1;
-  cfg->ldc_bind_timelimit=30;
+  cfg->ldc_bind_timelimit=10;
   cfg->ldc_timelimit=LDAP_NO_LIMIT;
   cfg->ldc_idle_timelimit=0;
   cfg->ldc_reconnect_sleeptime=1;
-  cfg->ldc_reconnect_maxsleeptime=30;
+  cfg->ldc_reconnect_maxsleeptime=10;
 #ifdef LDAP_OPT_X_TLS
   cfg->ldc_ssl_on=SSL_OFF;
 #endif /* LDAP_OPT_X_TLS */

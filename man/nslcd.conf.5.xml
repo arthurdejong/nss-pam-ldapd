@@ -423,7 +423,7 @@
        <option>timelimit</option> and affects the setup of the connection only.
        Note that not all <acronym>LDAP</acronym> client libraries have support
        for setting the connection time out.
-       The default <option>bind_timelimit</option> is 30 seconds.
+       The default <option>bind_timelimit</option> is 10 seconds.
       </para>
      </listitem>
     </varlistentry>
@@ -470,7 +470,7 @@
        Specified the time after the last successful operation from which the
        <acronym>LDAP</acronym> server is considered permanently unavailable.
        Retries will be done only once in this time period.
-       The default value is 30 seconds.
+       The default value is 10 seconds.
       </para>
      </listitem>
     </varlistentry>
