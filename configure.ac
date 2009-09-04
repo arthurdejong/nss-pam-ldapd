@@ -229,7 +229,7 @@ then
 fi
 if test "x$enable_kerberos" = "xyes"
 then
-  AC_CHECK_HEADERS(gssapi/gssapi_krb5.h gssapi.h)
+  AC_CHECK_HEADERS(gssapi/gssapi.h gssapi/gssapi_generic.h gssapi/gssapi_krb5.h gssapi.h)
 fi
 
 # set up directory with compatibility replacement files

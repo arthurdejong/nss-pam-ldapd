@@ -25,12 +25,18 @@
 
 #include <nss.h>
 #include <aliases.h>
+#ifdef HAVE_NETINET_ETHER_H
 #include <netinet/ether.h>
+#endif /* HAVE_NETINET_ETHER_H */
+#include <net/ethernet.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <grp.h>
 #include <netdb.h>
 #include <pwd.h>
+#ifdef HAVE_SHADOW_H
 #include <shadow.h>
+#endif /* HAVE_SHADOW_H */
 
 /* We define struct etherent here because it does not seem to
    be defined in any publicly available header file exposed

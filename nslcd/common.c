@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <strings.h>
 #include <limits.h>
