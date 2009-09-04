@@ -1,3 +1,152 @@
+2009-09-04 11:54  arthur
+
+	* [r986] configure.ac, nslcd/cfg.c, nslcd/common.c,
+	  nss/prototypes.h: some simple changes in includes to make FreeBSD
+	  diff smaller
+
+2009-09-01 14:52  arthur
+
+	* [r985] configure.ac, nslcd/cfg.c: add a
+	  --disable-configfile-checking option to configure to cause
+	  unknown options to be ignored from the configuration
+
+2009-09-01 14:36  arthur
+
+	* [r984] configure.ac: fix help message to indicate that PAM module
+	  is built by default
+
+2009-09-01 13:43  arthur
+
+	* [r983] man/nslcd.conf.5.xml, nslcd/cfg.c: lower the default
+	  values for bind_timelimit and reconnect_maxsleeptime from 30 to
+	  10 seconds
+
+2009-09-01 13:35  arthur
+
+	* [r982] Makefile.am: fix generation of ChangeLog
+
+2009-09-01 13:26  arthur
+
+	* [r981] .: rename trunk to nss-pam-ldapd
+
+2009-08-31 21:46  arthur
+
+	* [r980] Makefile.am, README, configure.ac,
+	  debian/libnss-ldapd.config, debian/nslcd.config,
+	  debian/nslcd.examples, debian/nslcd.init, debian/nslcd.postinst,
+	  debian/nslcd.postrm, debian/nslcd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fi.po, debian/po/fr.po,
+	  debian/po/gl.po, debian/po/it.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po, debian/po/zh_CN.po, debian/rules, man,
+	  man/Makefile.am, man/nslcd.8.xml, man/nslcd.conf.5.xml,
+	  man/nss-ldapd.conf.5.xml, man/pam_ldap.8.xml, nslcd.conf,
+	  nslcd/nslcd.c, nss-ldapd.conf, tests/Makefile.am, tests/README,
+	  tests/nslcd-test.conf, tests/nss-ldapd-test.conf,
+	  tests/test_myldap.c, tests/test_myldap.sh,
+	  tests/test_nslcd_group.c, tests/test_nsscmds.sh: rename
+	  configfile to /etc/nslcd.conf and make debian packaging copy the
+	  file to the new name on upgrade
+
+2009-08-31 20:03  arthur
+
+	* [r979] INSTALL, autogen.sh, compile, depcomp, install-sh,
+	  missing, mkinstalldirs: upgrade to using automake 1.11
+
+2009-08-31 18:49  arthur
+
+	* [r978] ., HACKING, README, common/dict.c, common/dict.h,
+	  common/set.c, common/set.h, common/tio.c, common/tio.h,
+	  compat/getpeercred.c, compat/getpeercred.h, compat/pagectrl.c,
+	  compat/pagectrl.h, configure.ac, debian/control,
+	  debian/copyright, debian/nslcd.config, debian/nslcd.init,
+	  debian/nslcd.postinst, debian/nslcd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fi.po, debian/po/fr.po,
+	  debian/po/gl.po, debian/po/it.po, debian/po/ja.po,
+	  debian/po/nl.po, debian/po/pt.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po, debian/po/zh_CN.po, nslcd.h, nslcd/alias.c,
+	  nslcd/attmap.c, nslcd/attmap.h, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/common.c, nslcd/common.h, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/myldap.c, nslcd/myldap.h, nslcd/netgroup.c,
+	  nslcd/network.c, nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c,
+	  nslcd/service.c, nslcd/shadow.c, tests/README, tests/test_cfg.c,
+	  tests/test_common.c, tests/test_dict.c, tests/test_getpeercred.c,
+	  tests/test_myldap.c, tests/test_nsscmds.sh, tests/test_set.c,
+	  tests/test_tio.c: rename software to nss-pam-ldapd
+
+2009-08-31 18:42  arthur
+
+	* [r977] debian/control: upgrade to standards-version 3.8.3 (no
+	  changes needed)
+
+2009-08-31 15:11  arthur
+
+	* [r975] Makefile.am, debian/control, debian/libnss-ldapd.config,
+	  debian/libnss-ldapd.docs, debian/libnss-ldapd.examples,
+	  debian/libnss-ldapd.install, debian/libnss-ldapd.nslcd.init,
+	  debian/libnss-ldapd.postinst, debian/libnss-ldapd.postrm,
+	  debian/libnss-ldapd.templates, debian/libpam-ldapd.install,
+	  debian/libpam-ldapd.pam-auth-update,
+	  debian/libpam-ldapd.postinst, debian/libpam-ldapd.prerm,
+	  debian/nslcd.config, debian/nslcd.docs, debian/nslcd.examples,
+	  debian/nslcd.init, debian/nslcd.install, debian/nslcd.postinst,
+	  debian/nslcd.postrm, debian/nslcd.templates,
+	  debian/po/POTFILES.in, debian/po/ca.po, debian/po/cs.po,
+	  debian/po/da.po, debian/po/de.po, debian/po/es.po,
+	  debian/po/fi.po, debian/po/fr.po, debian/po/gl.po,
+	  debian/po/it.po, debian/po/ja.po, debian/po/nl.po,
+	  debian/po/pt.po, debian/po/pt_BR.po, debian/po/ru.po,
+	  debian/po/sv.po, debian/po/templates.pot, debian/po/vi.po,
+	  debian/po/zh_CN.po, debian/rules: split into binary packages
+	  libnss-ldapd, libpam-ldapd and nslcd packages, using a patch for
+	  libpam-ldap by Steve Langasek <vorlon@debian.org> for the
+	  libpam-ldapd package
+
+2009-08-31 14:58  arthur
+
+	* [r974] debian/libnss-ldapd.nslcd.init: patch by Petter
+	  Reinholdtsen <pere@hungry.com> to fix init script to start before
+	  autofs
+
+2009-08-16 08:17  arthur
+
+	* [r973] config.guess, config.sub: include updated files
+
+2009-08-16 08:15  arthur
+
+	* [r972] Makefile.am, configure.ac: enable building PAM module by
+	  default
+
+2009-08-16 08:03  arthur
+
+	* [r971] nslcd.h: remove development warning
+
+2009-08-16 07:54  arthur
+
+	* [r970] man, man/Makefile.am, man/pam_ldap.8.xml: add basic
+	  pam_ldap manual page
+
+2009-08-12 21:41  arthur
+
+	* [r969] nslcd/common.h, nslcd/nslcd.c, nslcd/passwd.c: don't
+	  return password hashes at all for non-root users, based on a
+	  patch by Alexander V. Chernikov <melifaro@ipfw.ru>
+
+2009-07-18 21:11  arthur
+
+	* [r968] debian/po/gl.po: updated Galician (gl) translation of
+	  debconf ates by Marce Villarino <mvillarino@gmail.com>
+
+2009-07-12 20:47  arthur
+
+	* [r966] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.11 release
+
 2009-07-12 20:43  arthur
 
 	* [r965] debian/po/fr.po: updated French (fr) translation of

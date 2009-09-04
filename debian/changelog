@@ -1,3 +1,23 @@
+nss-pam-ldapd (0.7.0) unstable; urgency=low
+
+  * rename software to nss-pam-ldapd to indicate that PAM module is now a
+    standard part of the software
+  * split into the binary packages libnss-ldapd, libpam-ldapd and nslcd
+    (libpam-ldapd packaging used a patch for libpam-ldap by Steve Langasek)
+    (closes: #535505)
+  * the configuration file name has been changed to /etc/nslcd.conf (package
+    upgrade should migrate the configuration)
+  * updated Galician debconf translation by Marce Villarino (closes: #537424)
+  * patch by Petter Reinholdtsen to fix init script to start before autofs
+    (closes: #544093)
+  * the default values for bind_timelimit and reconnect_maxsleeptime were
+    lowered from 30 to 10 seconds (closes: #532874)
+  * upgrade to standards-version 3.8.3 (no changes needed)
+  * password hashes are no longer returned to non-root users (based on a patch
+    by Alexander V. Chernikov)
+
+ -- Arthur de Jong <adejong@debian.org>  Tue, 01 Sep 2009 17:00:00 +0200
+
 nss-ldapd (0.6.11) unstable; urgency=low
 
   * fix user name to groups mapping (a bug in buffer checking in initgroups()

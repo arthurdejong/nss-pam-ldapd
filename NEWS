@@ -1,3 +1,20 @@
+changes from 0.6.11 to 0.7.0
+----------------------------
+
+* rename software to nss-pam-ldapd to indicate that PAM module is now a
+  standard part of the software
+* the PAM module is now built by default (the configure script can be
+  instructed whether or not to build certain parts)
+* the default configuration file name has been changed to /etc/nslcd.conf
+* the default values for bind_timelimit and reconnect_maxsleeptime were
+  lowered from 30 to 10 seconds
+* password hashes are no longer returned to non-root users (based on a patch
+  by Alexander V. Chernikov)
+* a pam_ldap(8) manual page was added
+* unknown options in the configuration file can now be ignored with a new
+  --disable-configfile-checking configure option
+
+
 changes from 0.6.10 to 0.6.11
 -----------------------------
 
