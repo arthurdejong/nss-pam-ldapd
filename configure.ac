@@ -105,6 +105,9 @@ do
   fi
 done
 
+# add --disable-maintainer-mode option
+AM_MAINTAINER_MODE([enable])
+
 # check whether the NSS module should be built
 AC_MSG_CHECKING([whether to build the NSS module])
 AC_ARG_ENABLE(nss,
