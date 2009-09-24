@@ -73,6 +73,7 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
 {
   MYLDAP_ENTRY *entry=NULL;
   const char *value;
+  const char **values;
   /* check username for validity */
   if (!isvalidname(username))
   {
@@ -98,6 +99,16 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
     }
     /* get the "real" username */
     value=myldap_get_rdn_value(entry,attmap_passwd_uid);
+    if (value==NULL)
+    {
+      /* get the username from the uid attribute */
+      values=myldap_get_values(entry,attmap_passwd_uid);
+      if ((values==NULL)||(values[0]==NULL))
+        log_log(LOG_WARNING,"\"%s\": DN %s is missing a %s attribute",
+                            username,userdn,attmap_passwd_uid);
+      value=values[0];
+    }
+    /* check the username */
     if ((value==NULL)||!isvalidname(value)||strlen(value)>=usernamesz)
     {
       log_log(LOG_WARNING,"\"%s\": DN %s has invalid username",username,userdn);
