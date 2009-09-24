@@ -20,17 +20,14 @@
    02110-1301 USA
 */
 
-/*
-   WARNING: this code is under development and the details of the protocol
-            may change between releases.
-*/
-
 #include "config.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <syslog.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "common.h"
 #include "compat/attrs.h"
@@ -152,7 +149,7 @@ static int ctx_get(pam_handle_t *pamh,const char *username,pld_ctx **pctx)
 }
 
 /* ask the user for an authentication token (password) */
-static int pam_get_authtok(pam_handle_t *pamh,int flags,char *prompt1,char *prompt2,char **pwd)
+static int pam_get_authtok(pam_handle_t *pamh,int flags,char *prompt1,char *prompt2,const char **pwd)
 {
   int rc;
   char *p;
@@ -219,13 +216,14 @@ static int pam_get_authtok(pam_handle_t *pamh,int flags,char *prompt1,char *prom
 }
 
 /* perform an authentication call over nslcd */
-static int nslcd_request_authc(pld_ctx *ctx,const char *username,const char *svc,const char *passwd)
+static int nslcd_request_authc(pld_ctx *ctx,const char *username,
+                               const char *service,const char *passwd)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_AUTHC,
     /* write the request parameters */
     WRITE_STRING(fp,username);
     WRITE_STRING(fp,ctx->dn);
-    WRITE_STRING(fp,svc);
+    WRITE_STRING(fp,service);
     WRITE_STRING(fp,passwd),
     /* read the result entry */
     READ_BUF_STRING(fp,ctx->tmpluser);
@@ -278,7 +276,7 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
   {
     if (!first_pass)
     {
-      rc=pam_get_authtok(pamh,flags,i==0?"Password: ":"LDAP Password: ",NULL,&passwd);
+      rc=pam_get_authtok(pamh,flags,i==0?"Password: ":"LDAP Password: ",NULL,(const char **)&passwd);
       if (rc!=PAM_SUCCESS)
         return rc;
       /* exit loop after trying this password */
@@ -320,7 +318,8 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
 }
 
 /* called to update the authentication credentials */
-int pam_sm_setcred(pam_handle_t *pamh,int flags,int argc,const char **argv)
+int pam_sm_setcred(pam_handle_t UNUSED(*pamh),int UNUSED(flags),
+                   int UNUSED(argc),const char UNUSED(**argv))
 {
   /* we don't need to do anything here */
   return PAM_SUCCESS;
@@ -338,7 +337,7 @@ static int pam_warn(
   pmsg=&msg;
 
   msg.msg_style=style;
-  msg.msg=(char *) message;
+  msg.msg=(char *)message;
   resp=NULL;
 
   return aconv->conv(1,
@@ -348,13 +347,14 @@ static int pam_warn(
 
 /* perform an authorisation call over nslcd */
 static int nslcd_request_authz(pld_ctx *ctx,const char *username,
-        const char *svc,const char *ruser,const char *rhost,const char *tty)
+                               const char *service,const char *ruser,
+                               const char *rhost,const char *tty)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_AUTHZ,
     /* write the request parameters */
     WRITE_STRING(fp,username);
     WRITE_STRING(fp,ctx->dn);
-    WRITE_STRING(fp,svc);
+    WRITE_STRING(fp,service);
     WRITE_STRING(fp,ruser);
     WRITE_STRING(fp,rhost);
     WRITE_STRING(fp,tty),
@@ -459,19 +459,15 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
 }
 
 /* do a session nslcd request (open or close) */
-static int nslcd_request_sess(pam_handle_t *pamh,pld_ctx *ctx,int action)
+static int nslcd_request_sess(pld_ctx *ctx,int action,const char *service,
+                              const char *tty, const char *rhost,
+                              const char *ruser)
 {
-  const char *svc=NULL,*tty=NULL,*rhost=NULL,*ruser=NULL;
   PAM_REQUEST(action,
-    /* get information for request (ignore errors) */
-    pam_get_item(pamh,PAM_SERVICE,(const void **)&svc);
-    pam_get_item(pamh,PAM_TTY,(const void **)&tty);
-    pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
-    pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
     /* write the request parameters */
     WRITE_STRING(fp,ctx->user);
     WRITE_STRING(fp,ctx->dn);
-    WRITE_STRING(fp,svc);
+    WRITE_STRING(fp,service);
     WRITE_STRING(fp,tty);
     WRITE_STRING(fp,rhost);
     WRITE_STRING(fp,ruser);
@@ -484,11 +480,12 @@ static int pam_sm_session(
   pam_handle_t *pamh, int flags, int argc, const char **argv,
   int action, int *no_warn)
 {
-  int rc, err;
+  int rc;
   const char *username;
   int ignore_flags=0;
-  int i, success=PAM_SUCCESS;
+  int i;
   pld_ctx *ctx=NULL;
+  const char *service=NULL,*tty=NULL,*rhost=NULL,*ruser=NULL;
 
   for (i=0;i<argc;i++)
   {
@@ -521,8 +518,13 @@ static int pam_sm_session(
   rc=ctx_get(pamh,username,&ctx);
   if (rc!=PAM_SUCCESS)
     return rc;
-
-  rc=nslcd_request_sess(pamh,ctx,action);
+  /* read PAM information */
+  pam_get_item(pamh,PAM_SERVICE,(const void **)&service);
+  pam_get_item(pamh,PAM_TTY,(const void **)&tty);
+  pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
+  pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
+  /* do the nslcd request */
+  rc=nslcd_request_sess(ctx,action,service,tty,rhost,ruser);
   if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
@@ -549,7 +551,7 @@ int pam_sm_open_session(
 int pam_sm_close_session(
   pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-  int rc, no_warn=0;;
+  int rc, no_warn=0;
   struct pam_conv *appconv;
 
   rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
@@ -563,16 +565,17 @@ int pam_sm_close_session(
 }
 
 /* do a password modification nslcd call */
-static int nslcd_request_pwmod(pld_ctx *ctx,const char *username,const char *svc,
-                    const char *oldpw,const char *newpw)
+static int nslcd_request_pwmod(pld_ctx *ctx,const char *username,
+                               const char *service,const char *oldpasswd,
+                               const char *newpasswd)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_AUTHZ,
     /* write the request parameters */
     WRITE_STRING(fp,username);
     WRITE_STRING(fp,ctx->dn);
-    WRITE_STRING(fp,svc);
-    WRITE_STRING(fp,oldpw);
-    WRITE_STRING(fp,newpw),
+    WRITE_STRING(fp,service);
+    WRITE_STRING(fp,oldpasswd);
+    WRITE_STRING(fp,newpasswd),
     /* read the result entry */
     READ_BUF_STRING(fp,ctx->tmpluser);
     READ_BUF_STRING(fp,ctx->dn);
@@ -586,7 +589,7 @@ int pam_sm_chauthtok(
   int rc;
   const char *username, *p=NULL, *q=NULL, *svc;
   int first_pass=0, no_warn=0, ignore_flags=0;
-  int i, success=PAM_SUCCESS;
+  int i;
   struct pam_conv *appconv;
   pld_ctx *ctx=NULL;
 
@@ -638,11 +641,11 @@ int pam_sm_chauthtok(
         rc=pam_get_authtok(pamh,flags,"(current) LDAP Password: ",NULL,&p);
         if (rc==PAM_SUCCESS) {
           pam_set_item(pamh,PAM_OLDAUTHTOK,p);
-          memset(p,0,strlen(p));
-          free(p);
+          memset((void *)p,0,strlen(p));
+          free((void *)p);
         }
       }
-      rc=pam_get_item(pamh,PAM_OLDAUTHTOK,&p);
+      rc=pam_get_item(pamh,PAM_OLDAUTHTOK,(const void **)&p);
       if (rc)
         return rc;
     }
@@ -659,7 +662,7 @@ int pam_sm_chauthtok(
     return rc;
   }
 
-  rc=pam_get_item(pamh,PAM_OLDAUTHTOK,&p);
+  rc=pam_get_item(pamh,PAM_OLDAUTHTOK,(const void **)&p);
   if (rc)
     return rc;
 
@@ -668,7 +671,7 @@ int pam_sm_chauthtok(
 
   if (first_pass)
   {
-    rc=pam_get_item(pamh,PAM_AUTHTOK,&q);
+    rc=pam_get_item(pamh,PAM_AUTHTOK,(const void **)&q);
     if ((rc!=PAM_SUCCESS || !q) && (first_pass & (USE_FIRST|USE_TOKEN))) {
       if (rc==PAM_SUCCESS)
         rc=PAM_AUTHTOK_RECOVERY_ERR;
@@ -682,9 +685,9 @@ int pam_sm_chauthtok(
     if (rc==PAM_SUCCESS)
     {
       pam_set_item(pamh,PAM_AUTHTOK,q);
-      memset(q,0,strlen(q));
-      free(q);
-      rc=pam_get_item(pamh,PAM_AUTHTOK,&q);
+      memset((void *)q,0,strlen(q));
+      free((void *)q);
+      rc=pam_get_item(pamh,PAM_AUTHTOK,(const void **)&q);
     }
     if (rc!=PAM_SUCCESS)
       return rc;
