@@ -1,62 +1,74 @@
-# Vietnamese Translation for libnss-ldap.
-# Copyright © 2005 Free Software Foundation, Inc.
-# Clytie Siddall <clytie@riverland.net.au>, 2005.
+# Vietnamese Translation for NSS LDAPd.
+# Copyright © 2009 Free Software Foundation, Inc.
+# Clytie Siddall <clytie@riverland.net.au>, 2005-2009.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: libnss-ldap 238-1\n"
+"Project-Id-Version: nss-ldapd 0.6.8\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-26 17:06+0200\n"
-"PO-Revision-Date: 2005-06-08 15:25+0930\n"
+"PO-Revision-Date: 2009-09-23 21:26+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
-"Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
+"Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: LocFactoryEditor 1.8\n"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 #, fuzzy
+#| msgid "LDAP server Uniform Resource Identifier:"
 msgid "LDAP server URI:"
-msgstr "Địa chỉ máy phục vụ LDAP"
-
-#. Type: string
-#. Description
-#: ../nslcd.templates:1001
-msgid ""
-"Please enter the Uniform Resource Identifier of the LDAP server. The format "
-"is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
-"'ldapi://' can be used. The port number is optional."
-msgstr ""
+msgstr "URI của trình phục vụ LDAP:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 #, fuzzy
 #| msgid ""
-#| "Note: It is usually a good idea to use an IP address; this reduces risks "
-#| "of failure in the event name service is unavailable."
+#| "Please enter the URI of the LDAP server used. This is a string in the "
+#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
+#| "used. The port number is optional."
+msgid ""
+"Please enter the Uniform Resource Identifier of the LDAP server. The format "
+"is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
+"'ldapi://' can be used. The port number is optional."
+msgstr ""
+"Hãy gõ địa chỉ URI (nhận diện tài nguyên thống nhất) của trình phục vụ LDAP "
+"được dùng. Định dạng nên là « ldap://tên_máy_hay_địa_chỉ_IP:cổng/ ». Cũng có "
+"thể sử dụng tiền tố « ldaps:// » hay « ldapi:// ». Số thứ tự dộng vẫn còn tuỳ "
+"chọn"
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "When using the ldap or ldaps schemes it is usually a good idea to use an "
+#| "IP address; this reduces the risk of failure when name services are "
+#| "unavailable."
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
-"Ghi chú: thường là ý kiến tốt để sử dụng một địa chỉ dạng IP vì sẽ gặp ít "
-"lỗi hơn nếu dịch vụ tên miền không sẵn sàng."
+"Khi sử dụng lược đồ ldap hay ldaps, tốt hơn khi đặt một địa chỉ IP, thì "
+"tránh kết nối bị lỗi khi dịch vụ tên miền không sẵn sàng."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 msgid "Multiple URIs can be be specified by separating them with spaces."
 msgstr ""
+"Cũng có thể đưa ra nhiều địa chỉ URI bằng cách định giới bằng dấu cách."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:2001
-#, fuzzy
 msgid "LDAP server search base:"
-msgstr "Địa chỉ máy phục vụ LDAP"
+msgstr "Cơ bản tìm kiếm trình phục vụ LDAP:"
 
 #. Type: string
 #. Description
@@ -67,16 +79,15 @@ msgid ""
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
 msgstr ""
-"Hãy nhập tên phân biệt của cơ bản tìm kiếm LDAP. Nhiều nơi Mạng sử dụng "
-"thành phần của tên miền là giá trị này. Lấy thí dụ, miền «thídụ.net» sẽ dùng "
-"«dc=thídụ,dc=net» là tên phân biệt của cơ baản tìm kiếm."
+"Hãy gõ tên phân biệt (DN) của cơ bản tìm kiếm LDAP. Nhiều chỗ sử dụng thành "
+"phần tên miền cho mục đích này, v.d. miền « ví_dụ.net » sẽ sử dụng « dc=ví_dụ,"
+"dc=net » làm tên phân biệt của cơ bản tìm kiếm."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
-#, fuzzy
 msgid "LDAP database user:"
-msgstr "người dùng cơ sở dữ liệu không có quyền truy cập đặc biệt"
+msgstr "Người dùng cơ sở dữ liệu LDAP:"
 
 #. Type: string
 #. Description
@@ -85,24 +96,26 @@ msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave it empty otherwise."
 msgstr ""
+"Nếu cơ sở dữ liệu LDAP yêu cầu đăng nhập để tra cứu một cách tiêu chuẩn, hãy "
+"gõ vào đây tên của tài khoản sẽ dùng. Không thì bỏ trống trường này."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
-msgstr ""
+msgstr "Giá trị này nên được ghi rõ dưới dạng một DN (tên phân biệt)."
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:4001
 msgid "LDAP user password:"
-msgstr ""
+msgstr "Mật khẩu người dùng LDAP:"
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:4001
 msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr "Hãy nhập mật khẩu sẽ được dùng để đăng nhập vào cơ sở dữ liệu LDAP."
+msgstr "Hãy gõ mật khẩu sẽ được dùng để đăng nhập vào cơ sở dữ liệu LDAP."
 
 #. Type: boolean
 #. Description
@@ -169,7 +182,7 @@ msgstr ""
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Name services to configure:"
-msgstr ""
+msgstr "Các dịch vụ tên cần cấu hình:"
 
 #. Type: multiselect
 #. Description
@@ -178,21 +191,31 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
+"Để gói này hoạt động được, bạn cần phải sửa đổi tập tin cấu hình « /etc/"
+"nsswitch.conf » để sử dụng nguồn dữ liệu ldap."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "You can select the services that should be enabled or disabled for LDAP "
+#| "lookups. The new LDAP lookups will be added as last option. Be sure to "
+#| "review these changes."
 msgid ""
 "You can select the services that should have LDAP lookups enabled. The new "
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
 msgstr ""
+"Bạn có khả năng chọn những dịch vụ nên bật hay tắt đối với sự tra cứu LDAP. "
+"Những sự tra cứu LDAP mới sẽ được thêm vào dưới dạng tuỳ chọn cuối cùng. Xem "
+"lại kỹ các thay đổi này."
 
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:2001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr ""
+msgstr "Gỡ bỏ LDAP khỏi « nsswitch.conf » ngay bây giờ ?"
 
 #. Type: boolean
 #. Description
@@ -202,6 +225,10 @@ msgid ""
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
+"LDAP vẫn còn được cấu hình cho sự tra cứu tên đối với những dịch vụ theo "
+"đây:\n"
+"  ${services}\n"
+"còn gói « libnss-ldapd » sắp bị gỡ bỏ."
 
 #. Type: boolean
 #. Description
@@ -212,6 +239,10 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
+"Khuyên bạn gỡ bỏ các mục nhập này nếu không còn định lại sử dụng LDAP để "
+"quyết định tên. Không gỡ bỏ ldap khởi tập tin cấu hình « nsswitch.conf » thì "
+"không nên gây ra vấn đề cho phần lớn dịch vụ, nhưng dịch vụ quyết định tên "
+"máy có thể bị ảnh hưởng bằng cách tế nhị."
 
 #. Type: boolean
 #. Description
@@ -221,137 +252,6 @@ msgid ""
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you choose to remove the entries now."
 msgstr ""
-
-#, fuzzy
-#~ msgid ""
-#~ "Enter the password that will be used to log in to the LDAP database when "
-#~ "the root process does lookups."
-#~ msgstr "Hãy nhập mật khẩu sẽ được dùng để đăng nhập vào cơ sở dữ liệu LDAP."
-
-#, fuzzy
-#~ msgid "LDAP version to use:"
-#~ msgstr "Phiên bản LDAP cần dùng"
-
-#, fuzzy
-#~ msgid ""
-#~ "Please enter which version of the LDAP protocol is to use. It is usually "
-#~ "a good idea to set this to highest available version number."
-#~ msgstr ""
-#~ "Hãy nhập phiên bản giao thức LDAP nào mà ldapns nên dùng. Thường là ý "
-#~ "kiến tốt để lập số phiên bản cao nhất có thể."
-
-#, fuzzy
-#~ msgid ""
-#~ "For this package to work, you need to modify your /etc/nsswitch.conf to "
-#~ "use the ldap datasource. There is an example file at /usr/share/doc/"
-#~ "libnss-ldap/examples/nsswitch.ldap which can be used as an example for "
-#~ "your nsswitch setup."
-#~ msgstr ""
-#~ "Gói tin này sẽ hoạt động sau khi bạn sửa đổi tập tin «/etc/nsswitch.conf» "
-#~ "để dùng nguồn dữ liệu LDAP. Có một tập tin thí dụ tại «usr/share/doc/"
-#~ "libnss-ldap/examples/nsswitch.ldap» mà bạn có thể sử dụng là lời thí dụ "
-#~ "cho thiết lập nsswitch bạn, hoặc có thể sao chép nó trên thiết lập hiện "
-#~ "có."
-
-#~ msgid "distinguished name of the search base"
-#~ msgstr "tên phân biệt của cơ bản tìm kiếm"
-
-#~ msgid "password for database login account"
-#~ msgstr "mật khẩu cho tài khoản cơ sở dữ liệu"
-
-#~ msgid "nsswitch.conf is not managed automatically"
-#~ msgstr "Không tự động quản lý tập tin nsswitch.conf"
-
-#~ msgid "make configuration readable/writeable by owner only"
-#~ msgstr "cho phép chỉ người sở hữu đọc/ghi vào cấu hình"
-
-#~ msgid ""
-#~ "Should the libnss-ldap configuration file be readable and writable only "
-#~ "by the file owner?"
-#~ msgstr ""
-#~ "Cho phép chỉ người sở hữu tập tin cấu hình libnss-ldap đọc và ghi vào nó "
-#~ "không?"
-
-#~ msgid ""
-#~ "If you use passwords in your libnss-ldap configuration, it is usually a "
-#~ "good idea to have the configuration set with mode 0600 (readable and "
-#~ "writable only by the file's owner)."
-#~ msgstr ""
-#~ "Nếu bạn sử dụng mật khẩu trong cấu hình libnss-ldap thì thường là ý kiến "
-#~ "tốt để lập cấu hình ấy trong chế độ 0600 (chỉ cho phép chỉ người sở hữu "
-#~ "tập tin ấy đọc/ghi vào nó)."
-
-#~ msgid ""
-#~ "Note: As a sanity check, libnss-ldap will check if you have nscd "
-#~ "installed and will only set the mode to 0600 if nscd is present."
-#~ msgstr ""
-#~ "Ghi chú: để đảm bảo thông tin hữu ích, trình libnss-ldap sẽ kiểm tra nếu "
-#~ "bạn đã cài đặt nscd hay không, và sẽ chỉ lập chế độ thành 0600 nếu có "
-#~ "ncsd."
-
-#~ msgid "database requires login"
-#~ msgstr "cơ sở dữ liệu cần đến đăng nhập"
-
-#~ msgid "Does the LDAP database require login?"
-#~ msgstr "Cơ sở dữ liệu LDAP ấy cần đến đăng nhập không?"
-
-#~ msgid ""
-#~ "Answer this question affirmatively only if you can't retreive entries "
-#~ "from the database without logging in."
-#~ msgstr ""
-#~ "Trả lời «Có» tại đây chỉ nếu bạn không gọi được mục nhập từ cơ sở dữ liệu "
-#~ "ấy khi chưa đang nhập."
-
-#~ msgid "Note: Under a normal setup, this is not needed."
-#~ msgstr "Ghi chú: trong một thiết lập thường, không cần điều này."
-
-#~ msgid "enable automatic configuration updates by debconf"
-#~ msgstr "hiệu lực debconf tự động cập nhật cấu hình"
-
-#~ msgid ""
-#~ "Should debconf automatically update libnss-ldap's configuration file?"
-#~ msgstr ""
-#~ "Cho phép debconf tự động cập nhật tập tin cấu hình của libnss-ldap không?"
-
-#~ msgid "libnss-ldap has been moved to use debconf for its configuration."
-#~ msgstr "Đã lập libnss-ldap sẽ dùng debconf để cấu hình."
-
-#~ msgid ""
-#~ "The file will be prepended with \"###DEBCONF###\"; you can disable the "
-#~ "debconf updates by removing that line."
-#~ msgstr ""
-#~ "Sẽ thêm «###DEBCONF###» vào đầu tập tin ấy: bạn có thể vô hiệu hóa thiết "
-#~ "lập tự cập nhật debconf bằng cách loại bỏ dòng ấy."
-
-#~ msgid "All new installations will have this by default."
-#~ msgstr "Mọi bản cài đặt mới sẽ có thiết lập này theo mặc định."
-
-#~ msgid ""
-#~ "Enter the name of the account that will be used to log in to the LDAP "
-#~ "database."
-#~ msgstr ""
-#~ "Hãy nhập tên của tài khoản sẽ được dùng để đăng nhập vào cơ sở dữ liệu "
-#~ "LDAP."
-
-#~ msgid ""
-#~ "Also, before removing this package, it is wise to remove the ldap entries "
-#~ "from nsswitch.conf to keep basic services functioning."
-#~ msgstr ""
-#~ "Hơn nữa, trước loại bỏ gói tin này, bạn nên loại bỏ các mục nhập LDAP ra "
-#~ "tập tin nsswitch.conf, để cho phép dịch vụ cơ bản tiếp tục hoạt động."
-
-#~ msgid "dc=example,dc=net"
-#~ msgstr "dc=thídụ,dc=net"
-
-#~ msgid "cn=proxyuser,dc=example,dc=net"
-#~ msgstr "cn=proxyuser,dc=example,dc=net"
-
-#~ msgid "3, 2"
-#~ msgstr "3, 2"
-
-#, fuzzy
-#~ msgid "ldap://127.0.0.1/"
-#~ msgstr "127.0.0.1"
-
-#~ msgid "Please enter the address of the LDAP server used."
-#~ msgstr "Hãy nhập địa chỉ của máy phục vụ LDAP sẽ dùng."
+"Bạn có thể tự sửa đổi tập tin cấu hình « /etc/nsswitch.conf », hoặc chọn tự "
+"động gỡ bỏ các mục nhập ngay bây giờ. Xem lại kỹ các thay đổi trong « /etc/"
+"nsswitch.conf » nếu bạn chọn gỡ bỏ các mục nhập ngay bây giờ."
