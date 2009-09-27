@@ -24,6 +24,8 @@
 #ifndef _SERVER_COMMON_H
 #define _SERVER_COMMON_H 1
 
+#include <errno.h>
+
 #include "nslcd.h"
 #include "common/nslcd-prot.h"
 #include "common/tio.h"
@@ -36,11 +38,11 @@
    stream */
 
 #define ERROR_OUT_WRITEERROR(fp) \
-  log_log(LOG_WARNING,"error writing to client"); \
+  log_log(LOG_WARNING,"error writing to client: %s",strerror(errno)); \
   return -1;
 
 #define ERROR_OUT_READERROR(fp) \
-  log_log(LOG_WARNING,"error reading from client"); \
+  log_log(LOG_WARNING,"error reading from client: %s",strerror(errno)); \
   return -1;
 
 #define ERROR_OUT_BUFERROR(fp) \
