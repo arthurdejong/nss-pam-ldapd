@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.6.8\n"
+"Project-Id-Version: nss-ldapd 0.7.0\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-26 17:06+0200\n"
-"PO-Revision-Date: 2009-09-23 21:26+0930\n"
+"PO-Revision-Date: 2009-09-26 18:51+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -19,37 +19,24 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid "LDAP server Uniform Resource Identifier:"
 msgid "LDAP server URI:"
-msgstr "URI của trình phục vụ LDAP:"
+msgstr "URI trình phục vụ LDAP:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Please enter the URI of the LDAP server used. This is a string in the "
-#| "form ldap://<hostname or IP>:<port>/ . ldaps:// or ldapi:// can also be "
-#| "used. The port number is optional."
 msgid ""
 "Please enter the Uniform Resource Identifier of the LDAP server. The format "
 "is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
-"Hãy gõ địa chỉ URI (nhận diện tài nguyên thống nhất) của trình phục vụ LDAP "
-"được dùng. Định dạng nên là « ldap://tên_máy_hay_địa_chỉ_IP:cổng/ ». Cũng có "
-"thể sử dụng tiền tố « ldaps:// » hay « ldapi:// ». Số thứ tự dộng vẫn còn tuỳ "
-"chọn"
+"Hãy gõ địa chỉ URI (nhận diện tài nguyên thống nhất) của máy phục vụ LDAP. "
+"Định dạng nên là « ldap://tên_máy_hay_địa_chỉ_IP:cổng/ ». Cũng có thể sử dụng "
+"tiền tố « ldaps:// » hay « ldapi:// ». Số thứ tự dộng vẫn còn tuỳ chọn"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "When using the ldap or ldaps schemes it is usually a good idea to use an "
-#| "IP address; this reduces the risk of failure when name services are "
-#| "unavailable."
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
@@ -68,7 +55,7 @@ msgstr ""
 #. Description
 #: ../nslcd.templates:2001
 msgid "LDAP server search base:"
-msgstr "Cơ bản tìm kiếm trình phục vụ LDAP:"
+msgstr "Cơ bản tìm kiếm máy phục vụ LDAP:"
 
 #. Type: string
 #. Description
@@ -121,7 +108,7 @@ msgstr "Hãy gõ mật khẩu sẽ được dùng để đăng nhập vào cơ s
 #. Description
 #: ../nslcd.templates:5001
 msgid "Use StartTLS?"
-msgstr ""
+msgstr "Dùng StartTLS ?"
 
 #. Type: boolean
 #. Description
@@ -130,36 +117,38 @@ msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
 msgstr ""
+"Hãy chọn nếu kết nối tới máy phục vụ LDAP nên sử dụng StarTLS để mật mã hoá "
+"kết nối, hay không."
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "never"
-msgstr ""
+msgstr "không bao giờ"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "allow"
-msgstr ""
+msgstr "cho phép"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "try"
-msgstr ""
+msgstr "thử"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "demand"
-msgstr ""
+msgstr "đòi hỏi"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:6002
 msgid "Check server's SSL certificate:"
-msgstr ""
+msgstr "Kiểm tra chứng nhận SSL của máy phục vụ :"
 
 #. Type: select
 #. Description
@@ -177,6 +166,19 @@ msgid ""
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
 "tls_cacertfile options must be put in /etc/nslcd.conf."
 msgstr ""
+"Khi sử dụng một kết nối đã mật mã, cũng có thể yêu cầu và kiểm tra một chứng "
+"nhận máy phục vụ. Hãy chọn nếu chức năng tra cứu nên được cấu hình để yêu "
+"cầu một chứng nhận, và nếu chứng nhận nên được kiểm tra là hợp lệ hay "
+"không.\n"
+" • không bao giờ\tkhông có chứng nhận nào được yêu cầu hoặc kiểm tra\n"
+" • cho phép\t\tmột chứng nhận sẽ được yêu cầu, còn nó không phải\n"
+"\t\t\t\tđược đòi hỏi hoặc kiểm tra\n"
+" • thử\t\t\tmột chứng nhận được yêu cầu và kiểm tra, nhưng mà lờ đi\n"
+"\t\t\t\tnếu chứng nhận không được cung cấp\n"
+" • đòi hỏi\t\t\tmột chứng nhận được yêu cầu, đòi hỏi và kiểm tra.\n"
+"Nếu tính năng kiểm tra được hiệu lực thì ít nhất một của hai tuỳ chọn « "
+"tls_cacertdir » và « tls_cacertfile » phải được để vào tập tin cấu hình « /etc/"
+"nslcd.conf »."
 
 #. Type: multiselect
 #. Description
@@ -197,19 +199,14 @@ msgstr ""
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "You can select the services that should be enabled or disabled for LDAP "
-#| "lookups. The new LDAP lookups will be added as last option. Be sure to "
-#| "review these changes."
 msgid ""
 "You can select the services that should have LDAP lookups enabled. The new "
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
 msgstr ""
-"Bạn có khả năng chọn những dịch vụ nên bật hay tắt đối với sự tra cứu LDAP. "
-"Những sự tra cứu LDAP mới sẽ được thêm vào dưới dạng tuỳ chọn cuối cùng. Xem "
-"lại kỹ các thay đổi này."
+"Bạn có khả năng chọn những dịch vụ nên được bật hay tắt cho chức năng tra "
+"cứu LDAP. Các sự tra cứu LDAP mới sẽ được thêm như là nguồn dữ liệu cuối "
+"cùng. Hãy xem lại kỹ những thay đổi này."
 
 #. Type: boolean
 #. Description
