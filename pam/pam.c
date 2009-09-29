@@ -440,6 +440,7 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   }
   else
   {
+    rc=ctx2.authz;
     if (ctx2.authzmsg && ctx2.authzmsg[0])
       pam_warn(appconv,ctx2.authzmsg,PAM_TEXT_INFO,no_warn);
     if (ctx2.authz==PAM_SUCCESS)
