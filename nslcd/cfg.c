@@ -457,6 +457,7 @@ static void get_gid(const char *filename,int lnr,
   exit(EXIT_FAILURE);
 }
 
+#ifdef LDAP_OPT_X_TLS
 static void get_reqcert(const char *filename,int lnr,
                         const char *keyword,char **line,
                         int *var)
@@ -483,6 +484,7 @@ static void get_reqcert(const char *filename,int lnr,
     exit(EXIT_FAILURE);
   }
 }
+#endif /* LDAP_OPT_X_TLS */
 
 static void parse_krb5_ccname_statement(const char *filename,int lnr,
                                         const char *keyword,char *line)
@@ -659,8 +661,10 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
   char keyword[32];
   char token[64];
   int i;
+#ifdef LDAP_OPT_X_TLS
   int rc;
   char *value;
+#endif
   /* open config file */
   if ((fp=fopen(filename,"r"))==NULL)
   {

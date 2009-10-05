@@ -476,12 +476,16 @@ static int do_set_options(MYLDAP_SESSION *session)
      http://www.openldap.org/software/man.cgi?query=ldap_set_rebind_proc&manpath=OpenLDAP+2.4-Release */
   /* TODO: probably only set this if we should chase referrals */
   log_log(LOG_DEBUG,"ldap_set_rebind_proc()");
+  #if LDAP_SET_REBIND_PROC_TYPE == int
   rc=ldap_set_rebind_proc(session->ld,do_rebind,session);
   if (rc!=LDAP_SUCCESS)
   {
     log_log(LOG_ERR,"ldap_set_rebind_proc() failed: %s",ldap_err2string(rc));
     return rc;
   }
+  #else /* LDAP_SET_REBIND_PROC_TYPE == void */
+  ldap_set_rebind_proc(session->ld,do_rebind,session);
+  #endif
 #endif /* HAVE_LDAP_SET_REBIND_PROC */
   /* set the protocol version to use */
   log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_PROTOCOL_VERSION,%d)",nslcd_cfg->ldc_version);

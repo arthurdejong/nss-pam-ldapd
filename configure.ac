@@ -222,7 +222,12 @@ AC_CHECK_HEADERS(sys/ucred.h)
 AC_CHECK_HEADERS(ucred.h)
 if test "x$enable_pam" = "xyes"
 then
-  AC_CHECK_HEADERS(security/pam_modules.h)
+  AC_CHECK_HEADERS(security/pam_appl.h)
+  AC_CHECK_HEADERS(security/pam_modules.h,,,[
+  #ifdef HAVE_SECURITY_PAM_APPL_H
+  #include <security/pam_appl.h>
+  #endif
+  ])
   AC_CHECK_HEADERS(pam/pam_modules.h)
 fi
 if test "x$enable_sasl" = "xyes"
@@ -416,16 +421,38 @@ AC_CHECK_FUNCS(ldap_create_page_control ldap_parse_page_control,,[AC_LIBOBJ(page
 # check the number of arguments that ldap_set_rebind_proc() uses
 AC_CACHE_CHECK(
     [number of arguments to ldap_set_rebind_proc],
-    nss_ldapd_cv_ldap_set_rebind_proc,
+    nss_ldapd_cv_ldap_set_rebind_proc_args,
     [AC_COMPILE_IFELSE(
         [AC_LANG_PROGRAM([[
             #include <lber.h>
-            #include <ldap.h>]],
-            [[ldap_set_rebind_proc(0, 0, 0);]])],
-        [nss_ldapd_cv_ldap_set_rebind_proc=3],
-        [nss_ldapd_cv_ldap_set_rebind_proc=2]) ])
-AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS,$nss_ldapd_cv_ldap_set_rebind_proc,
+            #include <ldap.h>
+            ]],[[
+            ldap_set_rebind_proc(0,0,0);
+            ]])],
+        [nss_ldapd_cv_ldap_set_rebind_proc_args=3],
+        [nss_ldapd_cv_ldap_set_rebind_proc_args=2]) ])
+AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS,$nss_ldapd_cv_ldap_set_rebind_proc_args,
                    [Define to the number of arguments to ldap_set_rebindproc.])
+
+# check the return type of ldap_set_rebind_proc()
+AC_CACHE_CHECK(
+    [return type of ldap_set_rebind_proc],
+    nss_ldapd_cv_ldap_set_rebind_proc_type,
+    [AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([[
+            #include <lber.h>
+            #include <ldap.h>
+            ]],[[
+            #if LDAP_SET_REBIND_PROC_ARGS == 3
+            return ldap_set_rebind_proc(0,0,0);
+            #else
+            return ldap_set_rebind_proc(0,0);
+            #endif
+            ]])],
+        [nss_ldapd_cv_ldap_set_rebind_proc_type=int],
+        [nss_ldapd_cv_ldap_set_rebind_proc_type=void]) ])
+AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_TYPE, $nss_ldapd_cv_ldap_set_rebind_proc_type,
+                   [Define as the return type of ldap_set_rebind_proc (`int' or `void').])
 
 CFLAGS="$save_CFLAGS"
 nslcd_LIBS="$LIBS"

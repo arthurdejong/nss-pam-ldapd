@@ -28,6 +28,7 @@
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <lber.h>
 #include <ldap.h>
 
 #include "compat/attrs.h"

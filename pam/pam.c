@@ -38,9 +38,12 @@
 #define PAM_SM_SESSION
 #define PAM_SM_PASSWORD
 
+#ifdef HAVE_SECURITY_PAM_APPL_H
+#include <security/pam_appl.h>
+#endif /* HAVE_SECURITY_PAM_APPL_H */
 #ifndef HAVE_PAM_PAM_MODULES_H
 #include <security/pam_modules.h>
-#else
+#else /* not HAVE_PAM_PAM_MODULES_H */
 #include <pam/pam_modules.h>
 #endif
 
@@ -52,6 +55,11 @@
 #define USE_TOKEN 4
 
 #define PLD_CTX "PAM_LDAPD_CTX"
+
+/* some systems don't have LOG_AUTHPRIV */
+#ifndef LOG_AUTHPRIV
+#define LOG_AUTHPRIV LOG_AUTH
+#endif /* not LOG_AUTHPRIV */
 
 /* this struct represents that context that the PAM module keeps
    between calls */
