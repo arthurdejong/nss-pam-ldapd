@@ -95,8 +95,8 @@ static void debug_dump(const void *ptr,size_t size)
   WRITE_TYPE(fp,tmpint32,int32_t)
 
 #define WRITE_STRING(fp,str) \
-  DEBUG_PRINT("WRITE_STRING: var="__STRING(str)" string=\"%s\"",str); \
-  if (str==NULL) \
+  DEBUG_PRINT("WRITE_STRING: var="__STRING(str)" string=\"%s\"",(str)); \
+  if ((str)==NULL) \
   { \
     WRITE_INT32(fp,0); \
   } \
@@ -104,7 +104,7 @@ static void debug_dump(const void *ptr,size_t size)
   { \
     WRITE_INT32(fp,strlen(str)); \
     if (tmpint32>0) \
-      { WRITE(fp,str,tmpint32); } \
+      { WRITE(fp,(str),tmpint32); } \
   }
 
 #define WRITE_STRINGLIST(fp,arr) \
