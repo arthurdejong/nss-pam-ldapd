@@ -23,7 +23,7 @@
    02110-1301 USA
 -->
 
-<refentry id="pamldap5">
+<refentry id="pamldap8">
 
  <refentryinfo>
   <author>
@@ -131,8 +131,9 @@
     <listitem>
      <para>
       This causes the <acronym>PAM</acronym> module to use the earlier
-      provided password, analogous to <option>use_first_pass</option>, when
-      the password is changed.
+      provided password when chanhing the password. The module will not
+      prompt the user for a new password (it is analogous to
+      <option>use_first_pass</option>).
      </para>
     </listitem>
    </varlistentry>
@@ -152,8 +153,8 @@
  <refsect1 id="moduleservices">
   <title>Module Services Provided</title>
   <para>
-   All service are provided by this module but currently only authentication
-   (auth) is supported and password change (password) is under development.
+   All services are provided by this module but currently only authentication
+   (auth) and password change (password) are implemented in the nslcd daemon.
   </para>
  </refsect1>
 

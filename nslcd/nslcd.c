@@ -417,6 +417,7 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
     case NSLCD_ACTION_PAM_SESS_O:       (void)nslcd_pam_sess_o(fp,session); break;
     case NSLCD_ACTION_PAM_SESS_C:       (void)nslcd_pam_sess_c(fp,session); break;
     case NSLCD_ACTION_PAM_PWMOD:        (void)nslcd_pam_pwmod(fp,session); break;
+      /* TODO: maybe only do pwmod for (suid) root users */
     default:
       log_log(LOG_WARNING,"invalid request id: %d",(int)action);
       break;

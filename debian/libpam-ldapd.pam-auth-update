@@ -11,9 +11,9 @@ Account:
 	[success=end default=ignore]	pam_ldap.so
 Password-Type: Primary
 Password-Initial:
-	[success=end user_unknown=ignore default=die]	pam_ldap.so
+	[success=end default=ignore]	pam_ldap.so
 Password:
-	[success=end user_unknown=ignore default=die]	pam_ldap.so use_authtok try_first_pass
+	[success=end default=ignore]	pam_ldap.so try_first_pass
 Session-Type: Additional
 Session:
 	optional			pam_ldap.so

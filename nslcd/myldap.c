@@ -1647,3 +1647,40 @@ int myldap_set_debuglevel(int level)
   }
   return LDAP_SUCCESS;
 }
+
+int myldap_passwd(
+        MYLDAP_SESSION *session,
+        const char *userdn,const char *oldpassword,const char *newpasswd)
+{
+  int rc;
+  struct berval ber_userdn, ber_oldpassword, ber_newpassword, ber_retpassword;
+  /* check parameters */
+  if (!is_valid_session(session)||(userdn==NULL)||(oldpassword==NULL)||(newpasswd==NULL))
+  {
+    log_log(LOG_ERR,"myldap_exop_passwd(): invalid parameter passed");
+    errno=EINVAL;
+    return NULL;
+  }
+  /* log the call */
+  log_log(LOG_DEBUG,"myldap_exop_passwd(userdn=\"%s\")",userdn);
+  /* translate to ber stuff */
+  ber_userdn.bv_val=userdn;
+  ber_userdn.bv_len=strlen(userdn);
+  ber_oldpassword.bv_val=oldpassword;
+  ber_oldpassword.bv_len=strlen(oldpassword);
+  ber_newpassword.bv_val=newpasswd;
+  ber_newpassword.bv_len=strlen(newpasswd);
+  ber_retpassword.bv_val=NULL;
+  ber_retpassword.bv_len=0;
+  /* perform request */
+  rc=ldap_passwd_s(session->ld,&ber_userdn,&ber_oldpassword,&ber_newpassword,
+                   &ber_retpassword,NULL,NULL);
+  if (rc!=LDAP_SUCCESS)
+    log_log(LOG_ERR,"ldap_passwd_s() failed: %s",ldap_err2string(rc));
+
+
+  /* FIXME: free ber_retpassword data if bv_val!=NULL */
+
+  return rc;
+
+}

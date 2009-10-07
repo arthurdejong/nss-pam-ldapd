@@ -140,7 +140,8 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
   READ_STRING(fp,servicename);
   READ_STRING(fp,password);
   /* log call */
-  log_log(LOG_DEBUG,"nslcd_pam_authc(\"%s\",\"%s\",\"%s\")",username,userdn,servicename);
+  log_log(LOG_DEBUG,"nslcd_pam_authc(\"%s\",\"%s\",\"%s\",\"%s\")",
+                    username,userdn,servicename,*password?"***":"");
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHC);
@@ -261,37 +262,72 @@ int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session)
   return 0;
 }
 
+static int try_pwmod(const char *userdn,const char *oldpassword,
+                     const char *newpassword)
+{
+  MYLDAP_SESSION *session;
+  int rc;
+  /* set up a new connection */
+  session=myldap_create_session();
+  if (session==NULL)
+    return NSLCD_PAM_AUTH_ERR;
+  /* set up credentials for the session */
+  rc=myldap_set_credentials(session,userdn,oldpassword);
+  if (rc==LDAP_SUCCESS)
+  {
+    /* perform password modification */
+    rc=myldap_passwd(session,userdn,oldpassword,newpassword);
+  }
+  /* close the session */
+  myldap_session_close(session);
+  /* return */
+  return rc;
+}
+
 int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session)
 {
-/*
-  struct berval dn, uid, opw, npw;
   int32_t tmpint32;
-  char dnc[1024];
-  char uidc[256];
-  char opwc[256];
-  char npwc[256];
-
-  READ_STRING(fp,dnc);
-  dn.bv_val = dnc;
-  dn.bv_len = tmpint32;
-  READ_STRING(fp,uidc);
-  uid.bv_val = uidc;
-  uid.bv_len = tmpint32;
-  READ_STRING(fp,opwc);
-  opw.bv_val = opwc;
-  opw.bv_len = tmpint32;
-  READ_STRING(fp,npwc);
-  npw.bv_val = npwc;
-  npw.bv_len = tmpint32;
-
-  Debug(LDAP_DEBUG_TRACE,"nssov_pam_pwmod(%s), %s\n",dn.bv_val,uid.bv_val,0);
-
-  BER_BVZERO(&npw);
+  char username[256];
+  char userdn[256];
+  char servicename[64];
+  char oldpassword[64];
+  char newpassword[64];
+  int rc;
+  /* read request parameters */
+  READ_STRING(fp,username);
+  READ_STRING(fp,userdn);
+  READ_STRING(fp,servicename);
+  READ_STRING(fp,oldpassword);
+  READ_STRING(fp,newpassword);
+  /* log call */
+  log_log(LOG_DEBUG,"nslcd_pam_pwmod(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")",
+                    username,userdn,servicename,*oldpassword?"***":"",
+                    *newpassword?"***":"");
+  /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_PWMOD);
+  /* validate request and fill in the blanks */
+  if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
+  {
+    WRITE_INT32(fp,NSLCD_RESULT_END);
+    return -1;
+  }
+  /* perform password modification */
+  rc=try_pwmod(userdn,oldpassword,newpassword);
+  /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-  WRITE_INT32(fp,PAM_SUCCESS);
-  WRITE_BERVAL(fp,&npw);
-*/
+  WRITE_STRING(fp,username);
+  WRITE_STRING(fp,userdn);
+  if (rc==LDAP_SUCCESS)
+  {
+    WRITE_INT32(fp,NSLCD_PAM_SUCCESS);
+    WRITE_STRING(fp,"");
+  }
+  else
+  {
+    WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);
+    WRITE_STRING(fp,ldap_err2string(rc));
+  }
+  WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }

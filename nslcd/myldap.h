@@ -133,4 +133,9 @@ MUST_USE int myldap_escape(const char *src,char *buffer,size_t buflen);
 /* Set the debug level globally. Returns an LDAP status code. */
 int myldap_set_debuglevel(int i);
 
+/* Perform an EXOP password modification call. */
+int myldap_passwd(
+        MYLDAP_SESSION *session,
+        const char *userdn,const char *oldpassword,const char *newpasswd);
+
 #endif /* not _MYLDAP_H */
