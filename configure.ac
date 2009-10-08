@@ -63,10 +63,6 @@ then
 fi
 AM_CONDITIONAL([GENMAN], [test "x${DOCBOOK2X_MAN}" != x])
 
-# start with default options
-nss_ldap_so_LIBS=
-nslcd_LIBS=
-
 # check for debugging options
 AC_ARG_ENABLE(debug,
               AS_HELP_STRING([--enable-debug],
@@ -84,7 +80,6 @@ AC_ARG_ENABLE(warnings,
                  CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations -Wunused -Wformat=2 -Wswitch-default -Wswitch-enum -Wfloat-equal -Wbad-function-cast -Wunreachable-code -Wredundant-decls"
                  DESIRED_CFLAGS="$DESIRED_CFLAGS -Wextra -Wdeclaration-after-statement -Werror-implicit-function-declaration"
                fi])
-
 test_gcc_flag() {
   AC_LANG_CONFTEST([int main() {}])
   $CC -c conftest.c $CFLAGS $@ > /dev/null 2> /dev/null
@@ -92,7 +87,6 @@ test_gcc_flag() {
   rm -f conftest.o
   return $ret
 }
-
 for flag in $DESIRED_CFLAGS
 do
   AC_MSG_CHECKING([whether $CC accepts $flag])
@@ -166,14 +160,7 @@ then
   AC_DEFINE(ENABLE_CONFIGFILE_CHECKING,1,[Whether to check configfile options.])
 fi
 
-AC_ARG_WITH(ldap-lib,
-            AS_HELP_STRING([--with-ldap-lib=TYPE],
-                           [select ldap library (auto|netscape5|netscape4|netscape3|umich|openldap) @<:@auto@:>@]))
-if test -z "$with_ldap_lib"
-then
-  with_ldap_lib=auto
-fi
-
+# check the name of the configuration file
 AC_ARG_WITH(ldap-conf-file,
             AS_HELP_STRING([--with-ldap-conf-file=PATH],
                            [path to nslcd configuration file @<:@/etc/nslcd.conf@:>@]),
@@ -182,6 +169,7 @@ AC_ARG_WITH(ldap-conf-file,
 AC_DEFINE_UNQUOTED(NSLCD_CONF_PATH,"$NSLCD_CONF_PATH",[Path to nslcd configuration file.])
 AC_SUBST(NSLCD_CONF_PATH)
 
+# where should the pidfile be written
 AC_ARG_WITH(nslcd-pidfile,
             AS_HELP_STRING([--with-nslcd-pidfile=PATH],
                            [path to pidfile @<:@/var/run/nslcd/nslcd.pid@:>@]),
@@ -190,6 +178,7 @@ AC_ARG_WITH(nslcd-pidfile,
 AC_DEFINE_UNQUOTED(NSLCD_PIDFILE,"$NSLCD_PIDFILE",[The location of the pidfile used for checking availability of the nslcd.])
 AC_SUBST(NSLCD_PIDFILE)
 
+# where is the socket used for communication
 AC_ARG_WITH(nslcd-socket,
             AS_HELP_STRING([--with-nslcd-socket=PATH],
                            [path to socket @<:@/var/run/nslcd/socket@:>@]),
@@ -198,88 +187,68 @@ AC_ARG_WITH(nslcd-socket,
 AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used for communicating.])
 AC_SUBST(NSLCD_SOCKET)
 
-# checks for availability of header files
-AC_CHECK_HEADERS(lber.h)
-AC_CHECK_HEADERS(ldap.h,,AC_MSG_ERROR([could not locate <ldap.h>]),[
-    #if HAVE_LBER_H
-    #include <lber.h>
-    #endif
-    ])
-AC_CHECK_HEADERS(ldap_ssl.h)
-AC_CHECK_HEADERS(nss.h)
-AC_CHECK_HEADERS(pthread.h)
-AC_CHECK_HEADERS(shadow.h)
-AC_CHECK_HEADERS(aliases.h)
-AC_CHECK_HEADERS(netinet/ether.h)
+# set up directory with compatibility replacement files
+AC_CONFIG_LIBOBJ_DIR([compat])
+
+# checks for availability of common header files
 AC_CHECK_HEADERS(ctype.h)
-AC_CHECK_HEADERS(getopt.h)
-AC_CHECK_HEADERS(sys/un.h)
 AC_CHECK_HEADERS(strings.h)
-AC_CHECK_HEADERS(gssldap.h)
 AC_CHECK_HEADERS(grp.h)
 AC_CHECK_HEADERS(sys/socket.h)
-AC_CHECK_HEADERS(sys/ucred.h)
-AC_CHECK_HEADERS(ucred.h)
+AC_CHECK_HEADERS(sys/un.h)
+AC_CHECK_HEADERS(pthread.h)
+
+# NSS module-specific headers
+if test "x$enable_nss" = "xyes"
+then
+  AC_CHECK_HEADERS(netinet/ether.h)
+  AC_CHECK_HEADERS(shadow.h)
+  AC_CHECK_HEADERS(aliases.h)
+  AC_CHECK_HEADERS(nss.h)
+fi
+
+# PAM module-specific headers
 if test "x$enable_pam" = "xyes"
 then
   AC_CHECK_HEADERS(security/pam_appl.h)
   AC_CHECK_HEADERS(security/pam_modules.h,,,[
-  #ifdef HAVE_SECURITY_PAM_APPL_H
-  #include <security/pam_appl.h>
-  #endif
-  ])
+      #ifdef HAVE_SECURITY_PAM_APPL_H
+      #include <security/pam_appl.h>
+      #endif
+      ])
   AC_CHECK_HEADERS(pam/pam_modules.h)
 fi
-if test "x$enable_sasl" = "xyes"
+
+# nslcd daemon-specific headers
+if test "x$enable_nslcd" = "xyes"
 then
-  AC_CHECK_HEADERS(sasl.h sasl/sasl.h)
-  AC_CHECK_HEADERS(gsssasl.h)
+  AC_CHECK_HEADERS(getopt.h)
+  AC_CHECK_HEADERS(sys/ucred.h)
+  AC_CHECK_HEADERS(ucred.h)
+  AC_CHECK_HEADERS(lber.h)
+  AC_CHECK_HEADERS(ldap.h,, test "x$enable_nslcd" = "xyes" && AC_MSG_ERROR([could not locate <ldap.h>]),[
+      #if HAVE_LBER_H
+      #include <lber.h>
+      #endif
+      ])
+  AC_CHECK_HEADERS(ldap_ssl.h)
+  AC_CHECK_HEADERS(gssldap.h)
+  if test "x$enable_sasl" = "xyes"
+  then
+    AC_CHECK_HEADERS(sasl.h sasl/sasl.h)
+    AC_CHECK_HEADERS(gsssasl.h)
+  fi
+  if test "x$enable_kerberos" = "xyes"
+  then
+    AC_CHECK_HEADERS(gssapi/gssapi.h gssapi/gssapi_generic.h gssapi/gssapi_krb5.h gssapi.h)
+  fi
 fi
-if test "x$enable_kerberos" = "xyes"
-then
-  AC_CHECK_HEADERS(gssapi/gssapi.h gssapi/gssapi_generic.h gssapi/gssapi_krb5.h gssapi.h)
-fi
 
-# set up directory with compatibility replacement files
-AC_CONFIG_LIBOBJ_DIR([compat])
-
-# checks for availability of system libraries for nslcd
-save_LIBS="$LIBS"
-LIBS="$nslcd_LIBS"
-AC_SEARCH_LIBS(gethostbyname,nsl socket)
-AC_SEARCH_LIBS(socket,socket)
-#AC_CHECK_LIB(resolv,main)
-nslcd_LIBS="$LIBS"
-LIBS="$save_LIBS"
-
-# check for availability of system libraries for nss part
-save_LIBS="$LIBS"
-LIBS="$nss_ldap_so_LIBS"
-AC_SEARCH_LIBS(socket,socket)
-nss_ldap_so_LIBS="$LIBS"
-LIBS="$save_LIBS"
-
-# TODO: simplify the above since we need a correct LIBS for the following
-#       tests
-
-# checks for availability of functions
+# checks for availability of common functions
 AC_CHECK_FUNCS(sigaction)
 AC_CHECK_FUNCS(snprintf)
 AC_CHECK_FUNCS(gethostbyname)
-AC_CHECK_FUNCS(setgroups)
-AC_CHECK_FUNCS(getpeereid)
-AC_CHECK_FUNCS(getpeerucred)
-AC_CHECK_FUNCS(__nss_configure_lookup)
-AC_CHECK_FUNCS(getenv putenv clearenv)
-
-# replace getopt_long() function if it is not on the system
-AC_REPLACE_FUNCS(getopt_long)
-# replace daemon() function if it is not on the system
-AC_SEARCH_LIBS(daemon,bsd)
-AC_REPLACE_FUNCS(daemon)
-# replace ether_ntoa_r() and ether_aton_r() if they are not found
-AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,,[AC_CHECK_FUNCS(ether_aton ether_ntoa)
-                                           AC_LIBOBJ(ether)])
+AC_SEARCH_LIBS(socket,socket)
 
 # checks for types
 AC_C_CONST
@@ -312,154 +281,189 @@ AC_CHECK_TYPE(socklen_t,,
     #include <sys/types.h>
     #include <sys/socket.h>])
 
-# check to see if struct sockaddr_storage is defined
-AC_CHECK_TYPE(struct sockaddr_storage,,
-    AC_DEFINE(sockaddr_storage,sockaddr_in,[Define to `sockaddr_in' if not defined elsewhere.]),[
-    #include <sys/types.h>
-    #include <sys/socket.h>])
-
-# check for support for the struct ucred structure
-AC_CHECK_TYPE(struct ucred,
-    AC_DEFINE(HAVE_STRUCT_UCRED,1,[Define to 1 if you have a `struct ucred' definition.]),,[
-    #include <sys/socket.h>
-    #include <sys/un.h>
-    #include <sys/types.h>])
-
-if test "$enable_sasl" = "yes"
-then
-  AC_CHECK_TYPE(sasl_interact_t,
-      AC_DEFINE(HAVE_SASL_INTERACT_T,1,[Define to 1 if you have a `sasl_interact_t' definition.]),,[
-      #ifdef HAVE_SASL_SASL_H
-      #include <sasl/sasl.h>
-      #elif defined(HAVE_SASL_H)
-      #include <sasl.h>
-      #endif])
-fi
-
-# checks for LDAP library
-save_LIBS="$LIBS"
-LIBS="$nslcd_LIBS"
-save_CFLAGS="$CFLAGS"
-
 # check threading stuff
 ACX_PTHREAD(,AC_MSG_ERROR([no support for pthreads]))
-AC_CHECK_FUNCS(pthread_atfork)
+AC_CHECK_FUNCS(pthread_mutex_lock)
 
-LIBS="$PTHREAD_LIBS $LIBS"
-CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
-
-if test "$enable_kerberos" = "yes"
+# nslcd daemon-specific tests
+if test "x$enable_nslcd" = "xyes"
 then
-  AC_CHECK_LIB(gssapi, gss_krb5_ccache_name,[LIBS="-lgssapi $LIBS" found_gssapi_lib=yes],,$LIBS)
-  if test -z "$found_gssapi_lib"
+  # save CFLAGS and LIBS to restore later
+  save_CFLAGS="$CFLAGS"
+  save_LIBS="$LIBS"
+  CFLAGS="$PTHREAD_CFLAGS $CFLAGS"
+  LIBS="$PTHREAD_LIBS $LIBS"
+
+  # check which LDAP flavour to use (unsupported)
+  AC_ARG_WITH(ldap-lib,
+              AS_HELP_STRING([--with-ldap-lib=TYPE],
+                             [select ldap library (auto|netscape5|netscape4|netscape3|umich|openldap) @<:@auto@:>@]))
+  if test -z "$with_ldap_lib"
   then
-    AC_CHECK_LIB(gssapi_krb5, gss_krb5_ccache_name,[LIBS="-lgssapi_krb5 $LIBS"],,$LIBS)
+    with_ldap_lib=auto
   fi
-fi
 
-if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = umich -o $with_ldap_lib = openldap \)
-then
-  AC_SEARCH_LIBS(ldap_search_ext,[ldap_r ldap],found_ldap_lib=yes,,)
-fi
-if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape5 \)
-then
-  AC_CHECK_LIB(ldap50, main, LIBS="-lldap50 -lssldap50 -lssl3 -lnss3 -lnspr4 -lprldap50 -lplc4 -lplds4 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
-fi
-if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape4 \)
-then
-  AC_CHECK_LIB(ldapssl41, main, LIBS="-lldapssl41 -lplc3 -lplds3 -lnspr3 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
+  # checks for availability of system libraries for nslcd
+  AC_SEARCH_LIBS(gethostbyname,nsl socket)
+  AC_SEARCH_LIBS(socket,socket)
+
+
+  AC_CHECK_FUNCS(setgroups)
+  AC_CHECK_FUNCS(getpeereid)
+  AC_CHECK_FUNCS(getpeerucred)
+  AC_CHECK_FUNCS(__nss_configure_lookup)
+  AC_CHECK_FUNCS(getenv putenv clearenv)
+
+  # replace getopt_long() function if it is not on the system
+  AC_REPLACE_FUNCS(getopt_long)
+  # replace daemon() function if it is not on the system
+  AC_SEARCH_LIBS(daemon,bsd)
+  AC_REPLACE_FUNCS(daemon)
+
+  # replace ether_ntoa_r() and ether_aton_r() if they are not found
+  AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,,[AC_CHECK_FUNCS(ether_aton ether_ntoa)
+                                             AC_LIBOBJ(ether)])
+
+  # check to see if struct sockaddr_storage is defined
+  AC_CHECK_TYPE(struct sockaddr_storage,,
+      AC_DEFINE(sockaddr_storage,sockaddr_in,[Define to `sockaddr_in' if not defined elsewhere.]),[
+      #include <sys/types.h>
+      #include <sys/socket.h>])
+
+  # check for support for the struct ucred structure
+  AC_CHECK_TYPE(struct ucred,
+      AC_DEFINE(HAVE_STRUCT_UCRED,1,[Define to 1 if you have a `struct ucred' definition.]),,[
+      #include <sys/socket.h>
+      #include <sys/un.h>
+      #include <sys/types.h>])
+
+  if test "$enable_sasl" = "yes"
+  then
+    AC_CHECK_TYPE(sasl_interact_t,
+        AC_DEFINE(HAVE_SASL_INTERACT_T,1,[Define to 1 if you have a `sasl_interact_t' definition.]),,[
+        #ifdef HAVE_SASL_SASL_H
+        #include <sasl/sasl.h>
+        #elif defined(HAVE_SASL_H)
+        #include <sasl.h>
+        #endif])
+  fi
+
+  if test "$enable_kerberos" = "yes"
+  then
+    AC_CHECK_LIB(gssapi, gss_krb5_ccache_name,[LIBS="-lgssapi $LIBS" found_gssapi_lib=yes],,$LIBS)
+    if test -z "$found_gssapi_lib"
+    then
+      AC_CHECK_LIB(gssapi_krb5, gss_krb5_ccache_name,[LIBS="-lgssapi_krb5 $LIBS"],,$LIBS)
+    fi
+  fi
+
+  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = umich -o $with_ldap_lib = openldap \)
+  then
+    AC_SEARCH_LIBS(ldap_search_ext,[ldap_r ldap],found_ldap_lib=yes,,)
+  fi
+  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape5 \)
+  then
+    AC_CHECK_LIB(ldap50, main, LIBS="-lldap50 -lssldap50 -lssl3 -lnss3 -lnspr4 -lprldap50 -lplc4 -lplds4 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
+  fi
+  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape4 \)
+  then
+    AC_CHECK_LIB(ldapssl41, main, LIBS="-lldapssl41 -lplc3 -lplds3 -lnspr3 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
+    if test -z "$found_ldap_lib"
+    then
+      AC_CHECK_LIB(ldapssl40, main, LIBS="-lldapssl40 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
+    fi
+    if test -z "$found_ldap_lib"
+    then
+      AC_CHECK_LIB(ldap41, main, LIBS="-lldap41 $LIBS" found_ldap_lib=yes need_pthread=no,,)
+    fi
+    if test -z "$found_ldap_lib"
+    then
+      AC_CHECK_LIB(ldap40, main, LIBS="-lldap40 $LIBS" found_ldap_lib=yes need_pthread=no,,)
+    fi
+  fi
+  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape3 \)
+  then
+    AC_CHECK_LIB(ldapssl30, main, LIBS="-lldapssl30 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
+  fi
   if test -z "$found_ldap_lib"
   then
-    AC_CHECK_LIB(ldapssl40, main, LIBS="-lldapssl40 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
+    AC_MSG_ERROR(could not locate a valid LDAP library)
   fi
-  if test -z "$found_ldap_lib"
+  if test "$need_pthread" = "yes"
   then
-    AC_CHECK_LIB(ldap41, main, LIBS="-lldap41 $LIBS" found_ldap_lib=yes need_pthread=no,,)
+    AC_CHECK_LIB(pthread, main)
   fi
-  if test -z "$found_ldap_lib"
+  AC_CHECK_LIB(gssldap, ldap_gss_bind,[LIBS="-lgssldap $LIBS"],,$LIBS)
+
+  if test "$enable_sasl" = "yes"
   then
-    AC_CHECK_LIB(ldap40, main, LIBS="-lldap40 $LIBS" found_ldap_lib=yes need_pthread=no,,)
+    AC_CHECK_LIB(sasl2, sasl_client_init)
+    AC_CHECK_FUNCS(sasl_auxprop_request)
+    AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s)
   fi
+  if test "$enable_kerberos" = "yes"
+  then
+    AC_CHECK_FUNCS(gss_krb5_ccache_name)
+  fi
+
+  AC_CHECK_FUNCS(ldap_parse_result ldap_memfree ldap_controls_free ldap_control_free)
+  AC_CHECK_FUNCS(ldap_explode_dn ldap_explode_rdn ldap_set_option ldap_get_option)
+  AC_CHECK_FUNCS(ldap_abandon ldap_simple_bind_s ldap_unbind ldap_set_rebind_proc)
+  AC_CHECK_FUNCS(ldap_initialize ldap_search_ext)
+  AC_CHECK_FUNCS(ldap_create_control)
+  AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)
+  AC_CHECK_FUNCS(ldap_get_values ldap_value_free ldap_get_dn)
+  AC_CHECK_FUNCS(ldap_err2string ldap_msgfree ldap_result)
+
+  # replace ldap_create_page_control() and ldap_parse_page_control()
+  AC_CHECK_FUNCS(ldap_create_page_control ldap_parse_page_control,,[AC_LIBOBJ(pagectrl)])
+
+  # check the number of arguments that ldap_set_rebind_proc() uses
+  AC_CACHE_CHECK(
+      [number of arguments to ldap_set_rebind_proc],
+      nss_ldapd_cv_ldap_set_rebind_proc_args,
+      [AC_COMPILE_IFELSE(
+          [AC_LANG_PROGRAM([[
+              #include <lber.h>
+              #include <ldap.h>
+              ]],[[
+              ldap_set_rebind_proc(0,0,0);
+              ]])],
+          [nss_ldapd_cv_ldap_set_rebind_proc_args=3],
+          [nss_ldapd_cv_ldap_set_rebind_proc_args=2]) ])
+  AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS,$nss_ldapd_cv_ldap_set_rebind_proc_args,
+                     [Define to the number of arguments to ldap_set_rebindproc.])
+
+  # check the return type of ldap_set_rebind_proc()
+  AC_CACHE_CHECK(
+      [return type of ldap_set_rebind_proc],
+      nss_ldapd_cv_ldap_set_rebind_proc_type,
+      [AC_COMPILE_IFELSE(
+          [AC_LANG_PROGRAM([[
+              #include <lber.h>
+              #include <ldap.h>
+              ]],[[
+              #if LDAP_SET_REBIND_PROC_ARGS == 3
+              return ldap_set_rebind_proc(0,0,0);
+              #else
+              return ldap_set_rebind_proc(0,0);
+              #endif
+              ]])],
+          [nss_ldapd_cv_ldap_set_rebind_proc_type=int],
+          [nss_ldapd_cv_ldap_set_rebind_proc_type=void]) ])
+  if test "x$nss_ldapd_cv_ldap_set_rebind_proc_type" = "xvoid"
+  then
+    AC_DEFINE(LDAP_SET_REBIND_PROC_RETURNS_VOID,1,
+              [Define to 1 if ldap_set_rebind_proc() returns void.])
+  fi
+
+  # save nslcd LIBS and CFLAGS and restore originals
+  nslcd_CFLAGS="$CFLAGS"
+  nslcd_LIBS="$LIBS"
+  CFLAGS="$save_CFLAGS"
+  LIBS="$save_LIBS"
+  AC_SUBST(nslcd_LIBS)
 fi
-if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape3 \)
-then
-  AC_CHECK_LIB(ldapssl30, main, LIBS="-lldapssl30 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
-fi
-if test -z "$found_ldap_lib"
-then
-  AC_MSG_ERROR(could not locate a valid LDAP library)
-fi
-if test "$need_pthread" = "yes"
-then
-  AC_CHECK_LIB(pthread, main)
-fi
-AC_CHECK_LIB(gssldap, ldap_gss_bind,[LIBS="-lgssldap $LIBS"],,$LIBS)
-
-if test "$enable_sasl" = "yes"
-then
-  AC_CHECK_LIB(sasl2, sasl_client_init)
-  AC_CHECK_FUNCS(sasl_auxprop_request)
-  AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s)
-fi
-if test "$enable_kerberos" = "yes"
-then
-  AC_CHECK_FUNCS(gss_krb5_ccache_name)
-fi
-
-AC_CHECK_FUNCS(ldap_parse_result ldap_memfree ldap_controls_free ldap_control_free)
-AC_CHECK_FUNCS(ldap_explode_dn ldap_explode_rdn ldap_set_option ldap_get_option)
-AC_CHECK_FUNCS(ldap_abandon ldap_simple_bind_s ldap_unbind ldap_set_rebind_proc)
-AC_CHECK_FUNCS(ldap_initialize ldap_search_ext)
-AC_CHECK_FUNCS(ldap_create_control)
-AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)
-AC_CHECK_FUNCS(ldap_get_values ldap_value_free ldap_get_dn)
-AC_CHECK_FUNCS(ldap_err2string ldap_msgfree ldap_result)
-
-# replace ldap_create_page_control() and ldap_parse_page_control()
-AC_CHECK_FUNCS(ldap_create_page_control ldap_parse_page_control,,[AC_LIBOBJ(pagectrl)])
-
-# check the number of arguments that ldap_set_rebind_proc() uses
-AC_CACHE_CHECK(
-    [number of arguments to ldap_set_rebind_proc],
-    nss_ldapd_cv_ldap_set_rebind_proc_args,
-    [AC_COMPILE_IFELSE(
-        [AC_LANG_PROGRAM([[
-            #include <lber.h>
-            #include <ldap.h>
-            ]],[[
-            ldap_set_rebind_proc(0,0,0);
-            ]])],
-        [nss_ldapd_cv_ldap_set_rebind_proc_args=3],
-        [nss_ldapd_cv_ldap_set_rebind_proc_args=2]) ])
-AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS,$nss_ldapd_cv_ldap_set_rebind_proc_args,
-                   [Define to the number of arguments to ldap_set_rebindproc.])
-
-# check the return type of ldap_set_rebind_proc()
-AC_CACHE_CHECK(
-    [return type of ldap_set_rebind_proc],
-    nss_ldapd_cv_ldap_set_rebind_proc_type,
-    [AC_COMPILE_IFELSE(
-        [AC_LANG_PROGRAM([[
-            #include <lber.h>
-            #include <ldap.h>
-            ]],[[
-            #if LDAP_SET_REBIND_PROC_ARGS == 3
-            return ldap_set_rebind_proc(0,0,0);
-            #else
-            return ldap_set_rebind_proc(0,0);
-            #endif
-            ]])],
-        [nss_ldapd_cv_ldap_set_rebind_proc_type=int],
-        [nss_ldapd_cv_ldap_set_rebind_proc_type=void]) ])
-AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_TYPE, $nss_ldapd_cv_ldap_set_rebind_proc_type,
-                   [Define as the return type of ldap_set_rebind_proc (`int' or `void').])
-
-CFLAGS="$save_CFLAGS"
-nslcd_LIBS="$LIBS"
-LIBS="$save_LIBS"
-
-AC_SUBST(nss_ldap_so_LIBS)
-AC_SUBST(nslcd_LIBS)
 
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile
