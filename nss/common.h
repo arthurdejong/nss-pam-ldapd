@@ -147,7 +147,7 @@
   if (fp==NULL) \
   { \
     /* open a new stream and write the request */ \
-    NSLCD_REQUEST(fp,action,/* no writefn */); \
+    NSLCD_REQUEST(fp,action,/* no writefn */;); \
   } \
   /* prepare for buffer errors */ \
   tio_mark(fp); \
