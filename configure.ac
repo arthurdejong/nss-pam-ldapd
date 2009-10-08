@@ -197,15 +197,13 @@ AC_CHECK_HEADERS(grp.h)
 AC_CHECK_HEADERS(sys/socket.h)
 AC_CHECK_HEADERS(sys/un.h)
 AC_CHECK_HEADERS(pthread.h)
-
-# NSS module-specific headers
-if test "x$enable_nss" = "xyes"
-then
-  AC_CHECK_HEADERS(netinet/ether.h)
-  AC_CHECK_HEADERS(shadow.h)
-  AC_CHECK_HEADERS(aliases.h)
-  AC_CHECK_HEADERS(nss.h)
-fi
+AC_CHECK_HEADERS(nss.h)
+AC_CHECK_HEADERS(netinet/ether.h)
+AC_CHECK_HEADERS(shadow.h)
+AC_CHECK_HEADERS(aliases.h)
+AC_CHECK_HEADERS(getopt.h)
+AC_CHECK_HEADERS(sys/ucred.h)
+AC_CHECK_HEADERS(ucred.h)
 
 # PAM module-specific headers
 if test "x$enable_pam" = "xyes"
@@ -219,12 +217,9 @@ then
   AC_CHECK_HEADERS(pam/pam_modules.h)
 fi
 
-# nslcd daemon-specific headers
+# LDAP-specific headers
 if test "x$enable_nslcd" = "xyes"
 then
-  AC_CHECK_HEADERS(getopt.h)
-  AC_CHECK_HEADERS(sys/ucred.h)
-  AC_CHECK_HEADERS(ucred.h)
   AC_CHECK_HEADERS(lber.h)
   AC_CHECK_HEADERS(ldap.h,, test "x$enable_nslcd" = "xyes" && AC_MSG_ERROR([could not locate <ldap.h>]),[
       #if HAVE_LBER_H
@@ -307,7 +302,7 @@ then
   AC_SEARCH_LIBS(gethostbyname,nsl socket)
   AC_SEARCH_LIBS(socket,socket)
 
-
+  # check for availability of functions
   AC_CHECK_FUNCS(setgroups)
   AC_CHECK_FUNCS(getpeereid)
   AC_CHECK_FUNCS(getpeerucred)
@@ -316,6 +311,7 @@ then
 
   # replace getopt_long() function if it is not on the system
   AC_REPLACE_FUNCS(getopt_long)
+
   # replace daemon() function if it is not on the system
   AC_SEARCH_LIBS(daemon,bsd)
   AC_REPLACE_FUNCS(daemon)
@@ -406,6 +402,7 @@ then
     AC_CHECK_FUNCS(gss_krb5_ccache_name)
   fi
 
+  # check for ldap function availability
   AC_CHECK_FUNCS(ldap_parse_result ldap_memfree ldap_controls_free ldap_control_free)
   AC_CHECK_FUNCS(ldap_explode_dn ldap_explode_rdn ldap_set_option ldap_get_option)
   AC_CHECK_FUNCS(ldap_abandon ldap_simple_bind_s ldap_unbind ldap_set_rebind_proc)
