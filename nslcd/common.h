@@ -148,12 +148,12 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session);
 
 /* macros for generating service handling code */
 #define NSLCD_HANDLE(db,fn,readfn,logcall,action,mkfilter,writefn) \
-  NSLCD_HANDLE_PARAMS(db,fn,,readfn,logcall,action,mkfilter,writefn)
-#define COMMA ,
+  int nslcd_##db##_##fn(TFILE *fp,MYLDAP_SESSION *session) \
+  NSLCD_HANDLE_BODY(db,fn,readfn,logcall,action,mkfilter,writefn)
 #define NSLCD_HANDLE_UID(db,fn,readfn,logcall,action,mkfilter,writefn) \
-  NSLCD_HANDLE_PARAMS(db,fn,COMMA uid_t calleruid,readfn,logcall,action,mkfilter,writefn)
-#define NSLCD_HANDLE_PARAMS(db,fn,params,readfn,logcall,action,mkfilter,writefn) \
-  int nslcd_##db##_##fn(TFILE *fp,MYLDAP_SESSION *session params ) \
+  int nslcd_##db##_##fn(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid) \
+  NSLCD_HANDLE_BODY(db,fn,readfn,logcall,action,mkfilter,writefn)
+#define NSLCD_HANDLE_BODY(db,fn,readfn,logcall,action,mkfilter,writefn) \
   { \
     /* define common variables */ \
     int32_t tmpint32; \
