@@ -215,6 +215,7 @@ then
       #endif
       ])
   AC_CHECK_HEADERS(pam/pam_modules.h)
+  AC_CHECK_HEADERS(security/pam_ext.h)
 fi
 
 # LDAP-specific headers

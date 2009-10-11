@@ -43,10 +43,12 @@
 #endif /* HAVE_SECURITY_PAM_APPL_H */
 #ifndef HAVE_PAM_PAM_MODULES_H
 #include <security/pam_modules.h>
+#ifdef HAVE_SECURITY_PAM_EXT_H
 #include <security/pam_ext.h>
+#endif /* HAVE_SECURITY_PAM_EXT_H */
 #else /* not HAVE_PAM_PAM_MODULES_H */
 #include <pam/pam_modules.h>
-#endif
+#endif /* not HAVE_PAM_PAM_MODULES_H */
 
 #define IGNORE_UNKNOWN  1
 #define IGNORE_UNAVAIL  2
