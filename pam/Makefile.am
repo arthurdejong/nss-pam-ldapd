@@ -25,7 +25,8 @@ AM_CFLAGS = -fPIC
 pam_ldap_so_SOURCES = ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h pam.c common.h
 pam_ldap_so_LDFLAGS = -shared -Wl,--version-script,\$(srcdir)/exports.linux
-pam_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a -lpam
+pam_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a -lpam \
+                    ../compat/libcompat.a
 
 EXTRA_DIST = exports.linux
 

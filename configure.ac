@@ -281,6 +281,20 @@ AC_CHECK_TYPE(socklen_t,,
 ACX_PTHREAD(,AC_MSG_ERROR([no support for pthreads]))
 AC_CHECK_FUNCS(pthread_mutex_lock)
 
+# PAM module-specific tests
+if test "x$enable_pam" = "xyes"
+then
+  # save CFLAGS and LIBS to restore later
+  save_CFLAGS="$CFLAGS"
+  save_LIBS="$LIBS"
+  # replace the pam_get_authtok() function if it's unavailable
+  AC_SEARCH_LIBS(pam_get_authtok,pam)
+  AC_REPLACE_FUNCS(pam_get_authtok)
+  # restore CFLAGS and LIBS
+  CFLAGS="$save_CFLAGS"
+  LIBS="$save_LIBS"
+fi
+
 # nslcd daemon-specific tests
 if test "x$enable_nslcd" = "xyes"
 then

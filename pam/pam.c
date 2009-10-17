@@ -31,6 +31,7 @@
 
 #include "common.h"
 #include "compat/attrs.h"
+#include "compat/pam_compat.h"
 
 /* these are defined (before including pam_modules.h) for staticly linking */
 #define PAM_SM_AUTH
@@ -681,7 +682,8 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
            root is unlikely to be in LDAP anyway but perhaps we can check
            the requested username and only use the administrator if that
            isn't root) */
-  /* prelimenary check, just see if we can connect to the LDAP server */
+  /* prelimenary check, just see if we can connect to the LDAP server
+     and authenticate with the current password */
   if (flags&PAM_PRELIM_CHECK)
   {
     /* get old (current) password */
