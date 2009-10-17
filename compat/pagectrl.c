@@ -32,7 +32,7 @@
 #include <lber.h>
 #include <ldap.h>
 
-#include "pagectrl.h"
+#include "compat/ldap_compat.h"
 
 #ifndef LDAP_CONTROL_PAGE_OID
 #define LDAP_CONTROL_PAGE_OID           "1.2.840.113556.1.4.319"

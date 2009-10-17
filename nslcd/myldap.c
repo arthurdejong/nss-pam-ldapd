@@ -72,20 +72,12 @@
 #include <pthread.h>
 
 #include "myldap.h"
-#include "compat/pagectrl.h"
 #include "common.h"
 #include "log.h"
 #include "cfg.h"
 #include "attmap.h"
 #include "common/set.h"
-
-/* compatibility macros */
-#ifndef LDAP_CONST
-#define LDAP_CONST const
-#endif /* not LDAP_CONST */
-#ifndef LDAP_MSG_ONE
-#define LDAP_MSG_ONE 0x00
-#endif /* not LDAP_MSG_ONE */
+#include "compat/ldap_compat.h"
 
 /* the maximum number of searches per session */
 #define MAX_SEARCHES_IN_SESSION 4
