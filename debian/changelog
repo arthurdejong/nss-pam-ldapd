@@ -1,3 +1,20 @@
+nss-pam-ldapd (0.7.1) unstable; urgency=low
+
+  * implement password changing by performing an LDAP password modify EXOP
+    request (closes: #550836)
+  * fix return of authorisation check in PAM module (patch by Howard Chu)
+  * fix "Use StartTLS?" debconf question when no ssl option is defined in the
+    config
+  * fix for problem when authenticating to LDAP entries without a uid
+    attribute in the DN
+  * general code clean-up and portability improvements and include all
+    needed header files (closes: #547206)
+  * provide more information with communication error messages
+  * updated German debconf translation by Erik Schanze (closes: #546244)
+  * updated Vietnamese debconf translation by Clytie Siddall (closes: #548037)
+
+ -- Arthur de Jong <adejong@debian.org>  Tue, 20 Oct 2009 12:00:00 +0200
+
 nss-pam-ldapd (0.7.0) unstable; urgency=low
 
   * rename software to nss-pam-ldapd to indicate that PAM module is now a

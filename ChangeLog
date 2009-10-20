@@ -1,3 +1,118 @@
+2009-10-17 15:08  arthur
+
+	* [r1008] compat/Makefile.am, compat/pam_compat.h,
+	  compat/pam_get_authtok.c, configure.ac, pam/Makefile.am,
+	  pam/pam.c: provide a replacement for the pam_get_authtok()
+	  functions for systems without it
+
+2009-10-17 10:17  arthur
+
+	* [r1007] compat/Makefile.am, compat/ldap_compat.h,
+	  compat/ldap_initialize.c, compat/ldap_passwd_s.c,
+	  compat/pagectrl.c, compat/pagectrl.h, configure.ac,
+	  nslcd/myldap.c: provide replacement functions for
+	  ldap_initialize() and ldap_passwd_s() and centralise LDAP
+	  compatibility hacks into ldap_compat.h
+
+2009-10-17 10:12  arthur
+
+	* [r1006] compat/ether.c: also provide some function definitions
+	  for ether_ntoa() and ether_aton() because definitions seem to be
+	  missing on some platforms
+
+2009-10-11 16:38  arthur
+
+	* [r1005] nslcd/common.h: make NSLCD_HANDLE_PARAMS() macro simpler
+	  and not have empty argument
+
+2009-10-11 16:16  arthur
+
+	* [r1004] configure.ac, pam/pam.c: only include security/pam_ext.h
+	  for systems that have it
+
+2009-10-08 21:01  arthur
+
+	* [r1003] configure.ac, nslcd/myldap.c: fix some header checks in
+	  configure and fix ldap_set_rebind_proc() return type check
+
+2009-10-08 21:00  arthur
+
+	* [r1002] nss/common.h: don't pass an empty parameter to a macro
+
+2009-10-08 19:53  arthur
+
+	* [r1001] configure.ac, nss/Makefile.am: re-organise configure
+	  script and only run tests for parts that are enabled
+
+2009-10-07 19:12  arthur
+
+	* [r1000] debian/libpam-ldapd.pam-auth-update, man/pam_ldap.8.xml,
+	  nslcd/myldap.c, nslcd/myldap.h, nslcd/nslcd.c, nslcd/pam.c,
+	  pam/pam.c: implement password changing in the PAM module by
+	  performing an LDAP password modify EXOP request
+
+2009-10-07 18:54  arthur
+
+	* [r999] common/nslcd-prot.h: fix the case where the string passed
+	  to WRITE_STRING() is an expression
+
+2009-10-05 19:31  arthur
+
+	* [r998] configure.ac, nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c,
+	  pam/pam.c: some compatibility improvements
+
+2009-09-29 19:36  arthur
+
+	* [r997] pam/pam.c: fix return of authorisation check (patch by
+	  Howard Chu <hyc@symas.com>)
+
+2009-09-27 14:36  arthur
+
+	* [r996] debian/po/vi.po: updated Vietnamese (vi) translation of
+	  debconf templates by Clytie Siddall <clytie@riverland.net.au>
+
+2009-09-27 14:28  arthur
+
+	* [r995] nslcd/common.h: log reading and writing errors with errno
+	  message
+
+2009-09-24 19:37  arthur
+
+	* [r994] debian/po/vi.po: partially updated Vietnamese (vi)
+	  translation of debconf templates by Clytie Siddall
+	  <clytie@riverland.net.au>
+
+2009-09-24 18:43  arthur
+
+	* [r993] pam/pam.c: general code cleanup and add missing casts and
+	  includes
+
+2009-09-24 18:11  arthur
+
+	* [r992] nslcd/pam.c: fix for problem when authenticating to LDAP
+	  entries without a uid attribute
+
+2009-09-13 08:00  arthur
+
+	* [r991] debian/po/de.po: updated German (de) translation of
+	  debconf templates by Erik Schanze <schanzi_@gmx.de>
+
+2009-09-08 17:30  arthur
+
+	* [r990] configure.ac: add the possibility to specify
+	  --disable-maintainer-mode
+
+2009-09-08 17:24  arthur
+
+	* [r989] debian/nslcd.config: fix "Use StartTLS?" debconf question
+	  when no ssl option is defined in the config
+
+2009-09-04 13:00  arthur
+
+	* [r987] ChangeLog, Makefile.am, NEWS, configure.ac, debian/NEWS,
+	  debian/changelog, man/nslcd.8.xml, man/nslcd.conf.5.xml,
+	  man/pam_ldap.8.xml: get files ready for 0.7.0 release
+
 2009-09-04 11:54  arthur
 
 	* [r986] configure.ac, nslcd/cfg.c, nslcd/common.c,

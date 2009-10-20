@@ -1,3 +1,15 @@
+changes from 0.7.0 to 0.7.1
+---------------------------
+
+* implement password changing by performing an LDAP password modify EXOP
+  request
+* fix return of authorisation check in PAM module (patch by Howard Chu)
+* fix for problem when authenticating to LDAP entries without a uid attribute
+  in the DN
+* general code clean-up and portability improvements
+* provide more information with communication error messages
+
+
 changes from 0.6.11 to 0.7.0
 ----------------------------
 
