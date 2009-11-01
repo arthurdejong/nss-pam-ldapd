@@ -216,6 +216,12 @@ then
       ])
   AC_CHECK_HEADERS(pam/pam_modules.h)
   AC_CHECK_HEADERS(security/pam_ext.h)
+  # at least one of security/pam_modules.h or pam/pam_modules.h is required
+  if test "x$ac_cv_header_security_pam_modules_h" != "xyes" && \
+     test "x$ac_cv_header_pam_pam_modules_h" != "xyes"
+  then
+    AC_MSG_ERROR(PAM header files are missing)
+  fi
 fi
 
 # LDAP-specific headers
@@ -290,6 +296,8 @@ then
   # replace the pam_get_authtok() function if it's unavailable
   AC_SEARCH_LIBS(pam_get_authtok,pam)
   AC_REPLACE_FUNCS(pam_get_authtok)
+  # require the pam_get_data() function
+  AC_CHECK_FUNCS(pam_get_data,,AC_MSG_ERROR(no PAM library available))
   # restore CFLAGS and LIBS
   CFLAGS="$save_CFLAGS"
   LIBS="$save_LIBS"
