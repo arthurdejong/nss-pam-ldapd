@@ -149,7 +149,7 @@ EOM
 echo "test_nsscmds.sh: testing group..."
 
 check "getent group testgroup" << EOM
-testgroup:*:6100:arthur,test
+testgroup:*:6100:arthur,test,testuser4
 EOM
 
 # this does not work because users is in /etc/group but it would
@@ -163,16 +163,20 @@ check "getent group TESTGROUP" << EOM
 EOM
 
 check "getent group 6100" << EOM
-testgroup:*:6100:arthur,test
+testgroup:*:6100:arthur,test,testuser4
 EOM
 
 check "groups arthur | sed 's/^.*://'" << EOM
 users testgroup testgroup2
 EOM
 
+check "groups testuser4 | sed 's/^.*://'" << EOM
+users testgroup testgroup2
+EOM
+
 check "getent group | egrep '^(testgroup|users):'" << EOM
 users:x:100:
-testgroup:*:6100:arthur,test
+testgroup:*:6100:arthur,test,testuser4
 users:*:100:arthur,test
 EOM
 
@@ -416,7 +420,7 @@ ecordas:*::::7:2::0
 EOM
 
 check "getent shadow arthur" << EOM
-arthur:*::100:200:7:2::0
+arthur:*::1000:200:7:2::0
 EOM
 
 # check case-sensitivity
