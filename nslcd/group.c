@@ -109,19 +109,27 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
                                    char *buffer,size_t buflen)
 {
   char buf[80],*dn;
+  char safeuid[80];
+  char safedn[1024];
+  /* escape attribute */
+  if(myldap_escape(uid,safeuid,sizeof(safeuid)))
+    return -1;
   /* try to translate uid to DN */
   dn=uid2dn(session,uid,buf,sizeof(buf));
   if (dn==NULL)
     return mysnprintf(buffer,buflen,
                       "(&%s(%s=%s))",
                       group_filter,
-                      attmap_group_memberUid,uid);
-  else /* also lookup using user DN */
-    return mysnprintf(buffer,buflen,
-                      "(&%s(|(%s=%s)(%s=%s)))",
-                      group_filter,
-                      attmap_group_memberUid,uid,
-                      attmap_group_uniqueMember,dn);
+                      attmap_group_memberUid,safeuid);
+  /* escape DN */
+  if(myldap_escape(dn,safedn,sizeof(safedn)))
+    return -1;
+  /* also lookup using user DN */
+  return mysnprintf(buffer,buflen,
+                    "(&%s(|(%s=%s)(%s=%s)))",
+                    group_filter,
+                    attmap_group_memberUid,safeuid,
+                    attmap_group_uniqueMember,safedn);
 }
 
 void group_init(void)
