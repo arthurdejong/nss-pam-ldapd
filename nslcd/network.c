@@ -66,29 +66,29 @@ static const char *network_attrs[3];
 static int mkfilter_network_byname(const char *name,
                                    char *buffer,size_t buflen)
 {
-  char buf2[1024];
+  char safename[1024];
   /* escape attribute */
-  if (myldap_escape(name,buf2,sizeof(buf2)))
+  if (myldap_escape(name,safename,sizeof(safename)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%s))",
                     network_filter,
-                    attmap_network_cn,buf2);
+                    attmap_network_cn,safename);
 }
 
 static int mkfilter_network_byaddr(const char *name,
                                    char *buffer,size_t buflen)
 {
-  char buf2[1024];
+  char safename[1024];
   /* escape attribute */
-  if (myldap_escape(name,buf2,sizeof(buf2)))
+  if (myldap_escape(name,safename,sizeof(safename)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%s))",
                     network_filter,
-                    attmap_network_ipNetworkNumber,buf2);
+                    attmap_network_ipNetworkNumber,safename);
 }
 
 void network_init(void)

@@ -65,15 +65,15 @@ static const char *netgroup_attrs[4];
 static int mkfilter_netgroup_byname(const char *name,
                                     char *buffer,size_t buflen)
 {
-  char buf2[1024];
+  char safename[1024];
   /* escape attribute */
-  if (myldap_escape(name,buf2,sizeof(buf2)))
+  if (myldap_escape(name,safename,sizeof(safename)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%s))",
                     netgroup_filter,
-                    attmap_netgroup_cn,buf2);
+                    attmap_netgroup_cn,safename);
 }
 
 void netgroup_init(void)

@@ -66,23 +66,23 @@ static const char *ether_attrs[3];
 static int mkfilter_ether_byname(const char *name,
                                  char *buffer,size_t buflen)
 {
-  char buf2[1024];
+  char safename[1024];
   /* escape attribute */
-  if(myldap_escape(name,buf2,sizeof(buf2)))
+  if(myldap_escape(name,safename,sizeof(safename)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
                    "(&%s(%s=%s))",
                    ether_filter,
-                   attmap_ether_cn,buf2);
+                   attmap_ether_cn,safename);
 }
 
 static int mkfilter_ether_byether(const struct ether_addr *addr,
                                   char *buffer,size_t buflen)
 {
-  char buf2[20];
+  char ethername[20];
   /* transform into string */
-  if (ether_ntoa_r(addr,buf2)==NULL)
+  if (ether_ntoa_r(addr,ethername)==NULL)
     return -1;
   /* FIXME: this has a bug when the directory has 01:00:0e:...
             and we're looking for 1:0:e:... (leading zeros) */
@@ -91,7 +91,7 @@ static int mkfilter_ether_byether(const struct ether_addr *addr,
   return mysnprintf(buffer,buflen,
                    "(&%s(%s=%s))",
                    ether_filter,
-                   attmap_ether_macAddress,buf2);
+                   attmap_ether_macAddress,ethername);
 }
 
 void ether_init(void)

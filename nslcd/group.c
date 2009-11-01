@@ -80,15 +80,15 @@ static const char *group_attrs[6];
 static int mkfilter_group_byname(const char *name,
                                  char *buffer,size_t buflen)
 {
-  char buf2[1024];
+  char safename[1024];
   /* escape attribute */
-  if(myldap_escape(name,buf2,sizeof(buf2)))
+  if(myldap_escape(name,safename,sizeof(safename)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%s))",
                     group_filter,
-                    attmap_group_cn,buf2);
+                    attmap_group_cn,safename);
 }
 
 /* create a search filter for searching a group entry

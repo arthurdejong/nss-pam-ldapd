@@ -79,15 +79,15 @@ static const char *shadow_attrs[10];
 static int mkfilter_shadow_byname(const char *name,
                                   char *buffer,size_t buflen)
 {
-  char buf2[1024];
+  char safename[1024];
   /* escape attribute */
-  if(myldap_escape(name,buf2,sizeof(buf2)))
+  if(myldap_escape(name,safename,sizeof(safename)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%s))",
                     shadow_filter,
-                    attmap_shadow_uid,buf2);
+                    attmap_shadow_uid,safename);
 }
 
 void shadow_init(void)

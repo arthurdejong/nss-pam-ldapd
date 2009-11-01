@@ -64,15 +64,15 @@ static const char *rpc_attrs[3];
 static int mkfilter_rpc_byname(const char *name,
                                char *buffer,size_t buflen)
 {
-  char buf2[1024];
+  char safename[1024];
   /* escape attribute */
-  if (myldap_escape(name,buf2,sizeof(buf2)))
+  if (myldap_escape(name,safename,sizeof(safename)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%s))",
                     rpc_filter,
-                    attmap_rpc_cn,buf2);
+                    attmap_rpc_cn,safename);
 }
 
 static int mkfilter_rpc_bynumber(int number,

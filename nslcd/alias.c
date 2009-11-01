@@ -64,15 +64,15 @@ static const char *alias_attrs[3];
 static int mkfilter_alias_byname(const char *name,
                                  char *buffer,size_t buflen)
 {
-  char buf2[1024];
+  char safename[1024];
   /* escape attribute */
-  if (myldap_escape(name,buf2,sizeof(buf2)))
+  if (myldap_escape(name,safename,sizeof(safename)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%s))",
                     alias_filter,
-                    attmap_alias_cn,buf2);
+                    attmap_alias_cn,safename);
 }
 
 void alias_init(void)

@@ -66,43 +66,43 @@ static int mkfilter_service_byname(const char *name,
                                    const char *protocol,
                                    char *buffer,size_t buflen)
 {
-  char buf2[1024],buf3[1024];
+  char safename[1024],safeprotocol[1024];
   /* escape attributes */
-  if (myldap_escape(name,buf2,sizeof(buf2)))
+  if (myldap_escape(name,safename,sizeof(safename)))
     return -1;
-  if (*protocol!='\0')
-    if (myldap_escape(protocol,buf3,sizeof(buf3)))
-      return -1;
   /* build filter */
   if (*protocol!='\0')
+  {
+    if (myldap_escape(protocol,safeprotocol,sizeof(safeprotocol)))
+      return -1;
     return mysnprintf(buffer,buflen,
                       "(&%s(%s=%s)(%s=%s))",
                       service_filter,
-                      attmap_service_cn,buf2,
-                      attmap_service_ipServiceProtocol,buf3);
+                      attmap_service_cn,safename,
+                      attmap_service_ipServiceProtocol,safeprotocol);
+  }
   else
     return mysnprintf(buffer,buflen,
                       "(&%s(%s=%s))",
                       service_filter,
-                      attmap_service_cn,buf2);
+                      attmap_service_cn,safename);
 }
 
 static int mkfilter_service_bynumber(int number,
                                      const char *protocol,
                                      char *buffer,size_t buflen)
 {
-  char buf3[1024];
-  /* escape attribute */
+  char safeprotocol[1024];
   if (*protocol!='\0')
-    if (myldap_escape(protocol,buf3,sizeof(buf3)))
+  {
+    if (myldap_escape(protocol,safeprotocol,sizeof(safeprotocol)))
       return -1;
-  /* build filter */
-  if (*protocol!='\0')
     return mysnprintf(buffer,buflen,
                       "(&%s(%s=%d)(%s=%s))",
                       service_filter,
                       attmap_service_ipServicePort,number,
-                      attmap_service_ipServiceProtocol,buf3);
+                      attmap_service_ipServiceProtocol,safeprotocol);
+  }
   else
     return mysnprintf(buffer,buflen,
                       "(&%s(%s=%d))",

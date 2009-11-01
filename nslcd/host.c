@@ -81,15 +81,15 @@ static int mkfilter_host_byname(const char *name,
 static int mkfilter_host_byaddr(const char *name,
                                 char *buffer,size_t buflen)
 {
-  char buf2[1024];
+  char safename[1024];
   /* escape attribute */
-  if (myldap_escape(name,buf2,sizeof(buf2)))
+  if (myldap_escape(name,safename,sizeof(safename)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%s))",
                     host_filter,
-                    attmap_host_ipHostNumber,buf2);
+                    attmap_host_ipHostNumber,safename);
 }
 
 void host_init(void)
