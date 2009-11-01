@@ -106,7 +106,7 @@ AM_MAINTAINER_MODE([enable])
 AC_MSG_CHECKING([whether to build the NSS module])
 AC_ARG_ENABLE(nss,
               AS_HELP_STRING([--disable-nss],
-                             [build the NSS module [[default=yes]]]),,
+                             [build the NSS module [[default=enabled]]]),,
               [enable_nss="yes"])
 AC_MSG_RESULT($enable_nss)
 AM_CONDITIONAL([ENABLE_NSS], [test "x$enable_nss" = "xyes"])
@@ -115,7 +115,7 @@ AM_CONDITIONAL([ENABLE_NSS], [test "x$enable_nss" = "xyes"])
 AC_MSG_CHECKING([whether to build the PAM module])
 AC_ARG_ENABLE(pam,
               AS_HELP_STRING([--disable-pam],
-                             [build the PAM module [[default=yes]]]),,
+                             [build the PAM module [[default=enabled]]]),,
               [enable_pam="yes"])
 AC_MSG_RESULT($enable_pam)
 AM_CONDITIONAL([ENABLE_PAM], [test "x$enable_pam" = "xyes"])
@@ -124,7 +124,7 @@ AM_CONDITIONAL([ENABLE_PAM], [test "x$enable_pam" = "xyes"])
 AC_MSG_CHECKING([whether to build the nslcd server])
 AC_ARG_ENABLE(nslcd,
               AS_HELP_STRING([--disable-nslcd],
-                             [build the nslcd server [[default=yes]]]),,
+                             [build the nslcd server [[default=enabled]]]),,
               [enable_nslcd="yes"])
 AC_MSG_RESULT($enable_nslcd)
 AM_CONDITIONAL([ENABLE_NSLCD], [test "x$enable_nslcd" = "xyes"])
@@ -133,7 +133,7 @@ AM_CONDITIONAL([ENABLE_NSLCD], [test "x$enable_nslcd" = "xyes"])
 AC_MSG_CHECKING([whether to enable SASL support])
 AC_ARG_ENABLE(sasl,
               AS_HELP_STRING([--disable-sasl],
-                             [disable SASL support [[default=yes]]]),
+                             [disable SASL support [[default=enabled]]]),
               [enable_sasl=$enableval],
               [enable_sasl="yes"])
 AC_MSG_RESULT($enable_sasl)
@@ -142,7 +142,7 @@ AC_MSG_RESULT($enable_sasl)
 AC_MSG_CHECKING([whether to enable Kerberos support])
 AC_ARG_ENABLE(kerberos,
               AS_HELP_STRING([--disable-kerberos],
-                             [disable Kerberos support [[default=yes]]]),
+                             [disable Kerberos support [[default=enabled]]]),
               [enable_kerberos=$enableval],
               [enable_kerberos="yes"])
 AC_MSG_RESULT($enable_kerberos)
@@ -151,7 +151,7 @@ AC_MSG_RESULT($enable_kerberos)
 AC_MSG_CHECKING([whether to check configfile options])
 AC_ARG_ENABLE(configfile_checking,
               AS_HELP_STRING([--disable-configfile-checking],
-                             [check configfile options [[default=yes]]]),
+                             [check configfile options [[default=enabled]]]),
               [configfile_checking=$enableval],
               [configfile_checking="yes"])
 AC_MSG_RESULT($configfile_checking)
