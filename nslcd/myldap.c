@@ -379,8 +379,8 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
     rc=ldap_start_tls_s(session->ld,NULL,NULL);
     if (rc!=LDAP_SUCCESS)
     {
-      log_log(LOG_WARNING,"ldap_start_tls_s() failed: %s: %s",
-                          ldap_err2string(rc),strerror(errno));
+      log_log(LOG_WARNING,"ldap_start_tls_s() failed: %s: %s (uri=\"%s\")",
+                          ldap_err2string(rc),strerror(errno),uri);
       return rc;
     }
   }
