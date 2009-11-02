@@ -293,11 +293,10 @@ then
   # save CFLAGS and LIBS to restore later
   save_CFLAGS="$CFLAGS"
   save_LIBS="$LIBS"
+  # find pam library
+  AC_SEARCH_LIBS(pam_get_data,pam,,AC_MSG_ERROR(no PAM library available))
   # replace the pam_get_authtok() function if it's unavailable
-  AC_SEARCH_LIBS(pam_get_authtok,pam)
   AC_REPLACE_FUNCS(pam_get_authtok)
-  # require the pam_get_data() function
-  AC_CHECK_FUNCS(pam_get_data,,AC_MSG_ERROR(no PAM library available))
   # restore CFLAGS and LIBS
   CFLAGS="$save_CFLAGS"
   LIBS="$save_LIBS"
