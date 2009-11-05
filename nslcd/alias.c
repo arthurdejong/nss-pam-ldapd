@@ -92,34 +92,27 @@ static void alias_init(void)
 static int write_alias(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqalias)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  const char *tmparr[2];
   const char **names,**members;
   int i;
   /* get the name of the alias */
-  if (reqalias!=NULL)
+  names=myldap_get_values(entry,attmap_alias_cn);
+  if ((names==NULL)||(names[0]==NULL))
   {
-    names=tmparr;
-    names[0]=reqalias;
-    names[1]=NULL;
-  }
-  else
-  {
-    names=myldap_get_values(entry,attmap_alias_cn);
-    if ((names==NULL)||(names[0]==NULL))
-    {
-      log_log(LOG_WARNING,"alias entry %s does not contain %s value",
-                          myldap_get_dn(entry),attmap_alias_cn);
-      return 0;
-    }
+    log_log(LOG_WARNING,"alias entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_alias_cn);
+    return 0;
   }
   /* get the members of the alias */
   members=myldap_get_values(entry,attmap_alias_rfc822MailMember);
   /* for each name, write an entry */
   for (i=0;names[i]!=NULL;i++)
   {
-    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-    WRITE_STRING(fp,names[i]);
-    WRITE_STRINGLIST(fp,members);
+    if ((reqalias==NULL)||(strcasecmp(reqalias,names[i])==0))
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_STRING(fp,names[i]);
+      WRITE_STRINGLIST(fp,members);
+    }
   }
   return 0;
 }

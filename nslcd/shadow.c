@@ -190,7 +190,6 @@ static long to_date(const char *date,const char *attr)
 static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
 {
   int32_t tmpint32;
-  const char *tmparr[2];
   const char **tmpvalues;
   char *tmp;
   const char **usernames;
@@ -204,21 +203,12 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   unsigned long flag;
   int i;
   /* get username */
-  if (requser!=NULL)
+  usernames=myldap_get_values(entry,attmap_shadow_uid);
+  if ((usernames==NULL)||(usernames[0]==NULL))
   {
-    usernames=tmparr;
-    usernames[0]=requser;
-    usernames[1]=NULL;
-  }
-  else
-  {
-    usernames=myldap_get_values(entry,attmap_shadow_uid);
-    if ((usernames==NULL)||(usernames[0]==NULL))
-    {
-      log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
-                          myldap_get_dn(entry),attmap_shadow_uid);
-      return 0;
-    }
+    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_shadow_uid);
+    return 0;
   }
   /* get password */
   passwd=get_userpassword(entry,attmap_shadow_userPassword);
@@ -247,18 +237,19 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   }
   /* write the entries */
   for (i=0;usernames[i]!=NULL;i++)
-  {
-    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-    WRITE_STRING(fp,usernames[i]);
-    WRITE_STRING(fp,passwd);
-    WRITE_INT32(fp,lastchangedate);
-    WRITE_INT32(fp,mindays);
-    WRITE_INT32(fp,maxdays);
-    WRITE_INT32(fp,warndays);
-    WRITE_INT32(fp,inactdays);
-    WRITE_INT32(fp,expiredate);
-    WRITE_INT32(fp,flag);
-  }
+    if ((requser==NULL)||(strcmp(requser,usernames[i])==0))
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_STRING(fp,usernames[i]);
+      WRITE_STRING(fp,passwd);
+      WRITE_INT32(fp,lastchangedate);
+      WRITE_INT32(fp,mindays);
+      WRITE_INT32(fp,maxdays);
+      WRITE_INT32(fp,warndays);
+      WRITE_INT32(fp,inactdays);
+      WRITE_INT32(fp,expiredate);
+      WRITE_INT32(fp,flag);
+    }
   return 0;
 }
 

@@ -275,7 +275,6 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
                         const uid_t *requid)
 {
   int32_t tmpint32;
-  const char *tmparr[2];
   const char **tmpvalues;
   char *tmp;
   const char **usernames;
@@ -288,21 +287,12 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   const char *shell;
   int i,j;
   /* get the usernames for this entry */
-  if (requser!=NULL)
+  usernames=myldap_get_values(entry,attmap_passwd_uid);
+  if ((usernames==NULL)||(usernames[0]==NULL))
   {
-    usernames=tmparr;
-    usernames[0]=requser;
-    usernames[1]=NULL;
-  }
-  else
-  {
-    usernames=myldap_get_values(entry,attmap_passwd_uid);
-    if ((usernames==NULL)||(usernames[0]==NULL))
-    {
-      log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
-                          myldap_get_dn(entry),attmap_passwd_uid);
-      return 0;
-    }
+    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_passwd_uid);
+    return 0;
   }
   /* get the password for this entry */
   if (myldap_has_objectclass(entry,"shadowAccount"))
@@ -416,27 +406,28 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   }
   /* write the entries */
   for (i=0;usernames[i]!=NULL;i++)
-  {
-    if (!isvalidname(usernames[i]))
+    if ((requser==NULL)||(strcmp(requser,usernames[i])==0))
     {
-      log_log(LOG_WARNING,"passwd entry %s contains invalid user name: \"%s\"",
-                          myldap_get_dn(entry),usernames[i]);
-    }
-    else
-    {
-      for (j=0;j<numuids;j++)
+      if (!isvalidname(usernames[i]))
       {
-        WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-        WRITE_STRING(fp,usernames[i]);
-        WRITE_STRING(fp,passwd);
-        WRITE_TYPE(fp,uids[j],uid_t);
-        WRITE_TYPE(fp,gid,gid_t);
-        WRITE_STRING(fp,gecos);
-        WRITE_STRING(fp,homedir);
-        WRITE_STRING(fp,shell);
+        log_log(LOG_WARNING,"passwd entry %s contains invalid user name: \"%s\"",
+                            myldap_get_dn(entry),usernames[i]);
+      }
+      else
+      {
+        for (j=0;j<numuids;j++)
+        {
+          WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+          WRITE_STRING(fp,usernames[i]);
+          WRITE_STRING(fp,passwd);
+          WRITE_TYPE(fp,uids[j],uid_t);
+          WRITE_TYPE(fp,gid,gid_t);
+          WRITE_STRING(fp,gecos);
+          WRITE_STRING(fp,homedir);
+          WRITE_STRING(fp,shell);
+        }
       }
     }
-  }
   return 0;
 }
 

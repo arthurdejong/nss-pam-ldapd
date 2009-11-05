@@ -125,14 +125,14 @@ static void service_init(void)
   service_attrs[3]=NULL;
 }
 
-static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqprotocol)
+static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
+                         const char *reqname,const char *reqprotocol)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   const char *name;
   const char **aliases;
   const char **ports;
   const char **protocols;
-  const char *tmparr[2];
   char *tmp;
   int port;
   int i;
@@ -149,6 +149,14 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqprotocol)
   /* if the service name is not yet found, get the first entry */
   if (name==NULL)
     name=aliases[0];
+  /* check case of returned servies entry */
+  if ((reqname!=NULL)&&(strcmp(reqname,name)!=0))
+  {
+    for (i=0;(aliases[i]!=NULL)&&(strcmp(reqname,aliases[i])!=0);i++)
+      /* nothing here */ ;
+    if (aliases[i]==NULL)
+      return 0; /* neither the name nor any of the aliases matched */
+  }
   /* get the service number */
   ports=myldap_get_values(entry,attmap_service_ipServicePort);
   if ((ports==NULL)||(ports[0]==NULL))
@@ -170,31 +178,23 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqprotocol)
     return 0;
   }
   /* get protocols */
-  if ((reqprotocol!=NULL)&&(*reqprotocol!='\0'))
+  protocols=myldap_get_values(entry,attmap_service_ipServiceProtocol);
+  if ((protocols==NULL)||(protocols[0]==NULL))
   {
-    protocols=tmparr;
-    protocols[0]=reqprotocol;
-    protocols[1]=NULL;
-  }
-  else
-  {
-    protocols=myldap_get_values(entry,attmap_service_ipServiceProtocol);
-    if ((protocols==NULL)||(protocols[0]==NULL))
-    {
-      log_log(LOG_WARNING,"service entry %s does not contain %s value",
-                          myldap_get_dn(entry),attmap_service_ipServiceProtocol);
-      return 0;
-    }
+    log_log(LOG_WARNING,"service entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_service_ipServiceProtocol);
+    return 0;
   }
   /* write the entries */
   for (i=0;protocols[i]!=NULL;i++)
-  {
-    WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
-    WRITE_STRING(fp,name);
-    WRITE_STRINGLIST_EXCEPT(fp,aliases,name);
-    WRITE_INT32(fp,port);
-    WRITE_STRING(fp,protocols[i]);
-  }
+    if ((reqprotocol==NULL)||(*reqprotocol=='\0')||(strcmp(reqprotocol,protocols[i])==0))
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_SUCCESS);
+      WRITE_STRING(fp,name);
+      WRITE_STRINGLIST_EXCEPT(fp,aliases,name);
+      WRITE_INT32(fp,port);
+      WRITE_STRING(fp,protocols[i]);
+    }
   return 0;
 }
 
@@ -208,7 +208,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_service_byname(%s,%s)",name,protocol);,
   NSLCD_ACTION_SERVICE_BYNAME,
   mkfilter_service_byname(name,protocol,filter,sizeof(filter)),
-  write_service(fp,entry,protocol)
+  write_service(fp,entry,name,protocol)
 )
 
 NSLCD_HANDLE(
@@ -221,7 +221,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_service_bynumber(%d,%s)",number,protocol);,
   NSLCD_ACTION_SERVICE_BYNUMBER,
   mkfilter_service_bynumber(number,protocol,filter,sizeof(filter)),
-  write_service(fp,entry,protocol)
+  write_service(fp,entry,NULL,protocol)
 )
 
 NSLCD_HANDLE(
@@ -231,5 +231,5 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_service_all()");,
   NSLCD_ACTION_SERVICE_ALL,
   (filter=service_filter,0),
-  write_service(fp,entry,NULL)
+  write_service(fp,entry,NULL,NULL)
 )

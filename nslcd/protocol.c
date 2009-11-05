@@ -98,7 +98,7 @@ static void protocol_init(void)
   protocol_attrs[2]=NULL;
 }
 
-static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry)
+static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   const char *name;
@@ -106,6 +106,7 @@ static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry)
   const char **protos;
   char *tmp;
   int proto;
+  int i;
   /* get the most canonical name */
   name=myldap_get_rdn_value(entry,attmap_protocol_cn);
   /* get the other names for the protocol */
@@ -119,6 +120,14 @@ static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry)
   /* if the protocol name is not yet found, get the first entry */
   if (name==NULL)
     name=aliases[0];
+  /* check case of returned protocol entry */
+  if ((reqname!=NULL)&&(strcmp(reqname,name)!=0))
+  {
+    for (i=0;(aliases[i]!=NULL)&&(strcmp(reqname,aliases[i])!=0);i++)
+      /* nothing here */ ;
+    if (aliases[i]==NULL)
+      return 0; /* neither the name nor any of the aliases matched */
+  }
   /* get the protocol number */
   protos=myldap_get_values(entry,attmap_protocol_ipProtocolNumber);
   if ((protos==NULL)||(protos[0]==NULL))
@@ -155,7 +164,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_protocol_byname(%s)",name);,
   NSLCD_ACTION_PROTOCOL_BYNAME,
   mkfilter_protocol_byname(name,filter,sizeof(filter)),
-  write_protocol(fp,entry)
+  write_protocol(fp,entry,name)
 )
 
 NSLCD_HANDLE(
@@ -166,7 +175,7 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_protocol_bynumber(%d)",protocol);,
   NSLCD_ACTION_PROTOCOL_BYNUMBER,
   mkfilter_protocol_bynumber(protocol,filter,sizeof(filter)),
-  write_protocol(fp,entry)
+  write_protocol(fp,entry,NULL)
 )
 
 NSLCD_HANDLE(
@@ -176,5 +185,5 @@ NSLCD_HANDLE(
   log_log(LOG_DEBUG,"nslcd_protocol_all()");,
   NSLCD_ACTION_PROTOCOL_ALL,
   (filter=protocol_filter,0),
-  write_protocol(fp,entry)
+  write_protocol(fp,entry,NULL)
 )
