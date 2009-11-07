@@ -1,6 +1,6 @@
 nss-ldapd (0.6.7.1) stable-security; urgency=high
 
-  * security upload
+  * security upload (CVE-2009-1073)
   * fix the permissions of /etc/nss-ldapd.conf to not be world readable
     (file can be used to store LDAP password) (closes: #520476)
 
