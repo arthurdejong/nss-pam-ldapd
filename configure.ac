@@ -311,15 +311,6 @@ then
   CFLAGS="$PTHREAD_CFLAGS $CFLAGS"
   LIBS="$PTHREAD_LIBS $LIBS"
 
-  # check which LDAP flavour to use (unsupported)
-  AC_ARG_WITH(ldap-lib,
-              AS_HELP_STRING([--with-ldap-lib=TYPE],
-                             [select ldap library (auto|netscape5|netscape4|netscape3|umich|openldap) @<:@auto@:>@]))
-  if test -z "$with_ldap_lib"
-  then
-    with_ldap_lib=auto
-  fi
-
   # checks for availability of system libraries for nslcd
   AC_SEARCH_LIBS(gethostbyname,nsl socket)
   AC_SEARCH_LIBS(socket,socket)
@@ -355,6 +346,48 @@ then
       #include <sys/un.h>
       #include <sys/types.h>])
 
+  # search for an LDAP library (only OpenLDAP is tested)
+  AC_ARG_WITH(ldap-lib,
+              AS_HELP_STRING([--with-ldap-lib=TYPE],
+                             [select ldap library (auto|netscape5|netscape4|netscape3|umich|openldap) @<:@auto@:>@]))
+  if test -z "$with_ldap_lib"
+  then
+    with_ldap_lib=auto
+  fi
+  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = umich -o $with_ldap_lib = openldap \)
+  then
+    AC_SEARCH_LIBS(ldap_search_ext,[ldap_r ldap],found_ldap_lib=yes,,)
+  fi
+  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape5 \)
+  then
+    AC_CHECK_LIB(ldap50, main, LIBS="-lldap50 -lssldap50 -lssl3 -lnss3 -lnspr4 -lprldap50 -lplc4 -lplds4 $LIBS" found_ldap_lib=yes,, -lpthread)
+  fi
+  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape4 \)
+  then
+    AC_CHECK_LIB(ldapssl41, main, LIBS="-lldapssl41 -lplc3 -lplds3 -lnspr3 $LIBS" found_ldap_lib=yes,, -lpthread)
+    if test -z "$found_ldap_lib"
+    then
+      AC_CHECK_LIB(ldapssl40, main, LIBS="-lldapssl40 $LIBS" found_ldap_lib=yes,, -lpthread)
+    fi
+    if test -z "$found_ldap_lib"
+    then
+      AC_CHECK_LIB(ldap41, main, LIBS="-lldap41 $LIBS" found_ldap_lib=yes,,)
+    fi
+    if test -z "$found_ldap_lib"
+    then
+      AC_CHECK_LIB(ldap40, main, LIBS="-lldap40 $LIBS" found_ldap_lib=yes,,)
+    fi
+  fi
+  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape3 \)
+  then
+    AC_CHECK_LIB(ldapssl30, main, LIBS="-lldapssl30 $LIBS" found_ldap_lib=yes,, -lpthread)
+  fi
+  AC_CHECK_FUNCS(ldap_search_ext,,AC_MSG_ERROR([could not locate a valid LDAP library]))
+
+  # see if we need a BER library
+  AC_SEARCH_LIBS(ber_memfree,lber)
+
+  # check for extra SASL libraries
   if test "$enable_sasl" = "yes"
   then
     AC_CHECK_TYPE(sasl_interact_t,
@@ -364,63 +397,15 @@ then
         #elif defined(HAVE_SASL_H)
         #include <sasl.h>
         #endif])
+    AC_SEARCH_LIBS(sasl_client_init,sasl2)
+    AC_CHECK_FUNCS(sasl_auxprop_request ldap_sasl_interactive_bind_s)
   fi
 
+  # check for extra Kerberos libraries
   if test "$enable_kerberos" = "yes"
   then
-    AC_CHECK_LIB(gssapi, gss_krb5_ccache_name,[LIBS="-lgssapi $LIBS" found_gssapi_lib=yes],,$LIBS)
-    if test -z "$found_gssapi_lib"
-    then
-      AC_CHECK_LIB(gssapi_krb5, gss_krb5_ccache_name,[LIBS="-lgssapi_krb5 $LIBS"],,$LIBS)
-    fi
-  fi
-
-  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = umich -o $with_ldap_lib = openldap \)
-  then
-    AC_SEARCH_LIBS(ldap_search_ext,[ldap_r ldap],found_ldap_lib=yes,,)
-  fi
-  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape5 \)
-  then
-    AC_CHECK_LIB(ldap50, main, LIBS="-lldap50 -lssldap50 -lssl3 -lnss3 -lnspr4 -lprldap50 -lplc4 -lplds4 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
-  fi
-  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape4 \)
-  then
-    AC_CHECK_LIB(ldapssl41, main, LIBS="-lldapssl41 -lplc3 -lplds3 -lnspr3 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
-    if test -z "$found_ldap_lib"
-    then
-      AC_CHECK_LIB(ldapssl40, main, LIBS="-lldapssl40 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
-    fi
-    if test -z "$found_ldap_lib"
-    then
-      AC_CHECK_LIB(ldap41, main, LIBS="-lldap41 $LIBS" found_ldap_lib=yes need_pthread=no,,)
-    fi
-    if test -z "$found_ldap_lib"
-    then
-      AC_CHECK_LIB(ldap40, main, LIBS="-lldap40 $LIBS" found_ldap_lib=yes need_pthread=no,,)
-    fi
-  fi
-  if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape3 \)
-  then
-    AC_CHECK_LIB(ldapssl30, main, LIBS="-lldapssl30 $LIBS" found_ldap_lib=yes need_pthread=yes,, -lpthread)
-  fi
-  if test -z "$found_ldap_lib"
-  then
-    AC_MSG_ERROR(could not locate a valid LDAP library)
-  fi
-  if test "$need_pthread" = "yes"
-  then
-    AC_CHECK_LIB(pthread, main)
-  fi
-  AC_CHECK_LIB(gssldap, ldap_gss_bind,[LIBS="-lgssldap $LIBS"],,$LIBS)
-
-  if test "$enable_sasl" = "yes"
-  then
-    AC_CHECK_LIB(sasl2, sasl_client_init)
-    AC_CHECK_FUNCS(sasl_auxprop_request)
-    AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s)
-  fi
-  if test "$enable_kerberos" = "yes"
-  then
+    AC_SEARCH_LIBS(gss_krb5_ccache_name,gssapi gssapi_krb5)
+    AC_SEARCH_LIBS(ldap_gss_bind,gssldap)
     AC_CHECK_FUNCS(gss_krb5_ccache_name)
   fi
 
@@ -428,7 +413,7 @@ then
   AC_CHECK_FUNCS(ldap_parse_result ldap_memfree ldap_controls_free ldap_control_free)
   AC_CHECK_FUNCS(ldap_explode_dn ldap_explode_rdn ldap_set_option ldap_get_option)
   AC_CHECK_FUNCS(ldap_abandon ldap_simple_bind_s ldap_unbind ldap_set_rebind_proc)
-  AC_CHECK_FUNCS(ldap_initialize ldap_search_ext ber_memfree)
+  AC_CHECK_FUNCS(ldap_initialize ldap_search_ext ber_memfree ber_bvfree ber_set_option)
   AC_CHECK_FUNCS(ldap_create_control ldap_extended_operation_s)
   AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)
   AC_CHECK_FUNCS(ldap_get_values ldap_value_free ldap_get_dn)
