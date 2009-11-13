@@ -385,7 +385,7 @@ then
   AC_CHECK_FUNCS(ldap_search_ext,,AC_MSG_ERROR([could not locate a valid LDAP library]))
 
   # see if we need a BER library
-  AC_SEARCH_LIBS(ber_memfree,lber)
+  AC_SEARCH_LIBS(ber_bvfree,lber)
 
   # check for extra SASL libraries
   if test "$enable_sasl" = "yes"
@@ -413,11 +413,12 @@ then
   AC_CHECK_FUNCS(ldap_parse_result ldap_memfree ldap_controls_free ldap_control_free)
   AC_CHECK_FUNCS(ldap_explode_dn ldap_explode_rdn ldap_set_option ldap_get_option)
   AC_CHECK_FUNCS(ldap_abandon ldap_simple_bind_s ldap_unbind ldap_set_rebind_proc)
-  AC_CHECK_FUNCS(ldap_initialize ldap_search_ext ber_memfree ber_bvfree ber_set_option)
+  AC_CHECK_FUNCS(ldap_initialize ldap_search_ext)
   AC_CHECK_FUNCS(ldap_create_control ldap_extended_operation_s)
   AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)
   AC_CHECK_FUNCS(ldap_get_values ldap_value_free ldap_get_dn)
   AC_CHECK_FUNCS(ldap_err2string ldap_msgfree ldap_result)
+  AC_CHECK_FUNCS(ber_bvfree ber_free ber_set_option)
 
   # replace ldap_create_page_control() and ldap_parse_page_control()
   AC_CHECK_FUNCS(ldap_create_page_control ldap_parse_page_control,,[AC_LIBOBJ(pagectrl)])
