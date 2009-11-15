@@ -1,10 +1,10 @@
-nss-ldapd (0.6.7.2) stable-security; urgency=low
+nss-ldapd (0.6.7.2) stable-security; urgency=high
 
   * security upload
   * perform case-sensitive filtering for group, netgroup, passwd, protocols,
     rpc, services and shadow lookups (closes: #552433)
 
- -- Arthur de Jong <adejong@debian.org>  Thu, 07 Nov 2009 12:00:00 +0100
+ -- Arthur de Jong <adejong@debian.org>  Sun, 15 Nov 2009 09:30:00 +0100
 
 nss-ldapd (0.6.7.1) stable-security; urgency=high
 
