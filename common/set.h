@@ -2,7 +2,7 @@
    set.h - set functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008 Arthur de Jong
+   Copyright (C) 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -51,15 +51,9 @@ int set_contains(SET *set,const char *value)
    for the set and the values is freed. */
 void set_free(SET *set);
 
-/* Function for looping over all set values.
-   This resets the search to the beginning of the set.
-   This is required before calling set_loop_next(); */
-void set_loop_first(SET *set);
-
-/* Function for looping over all set values.
-   This returns a stored value. NULL is returned when all
-   values have been returned. */
-const char *set_loop_next(SET *set)
+/* Return the content of the set as a list of strings.
+   The caller should free the memory with a single call to free(). */
+const char **set_tolist(SET *set)
   MUST_USE;
 
 #endif /* _SET_H */

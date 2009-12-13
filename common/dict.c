@@ -2,7 +2,7 @@
    dict.c - dictionary functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -46,9 +46,6 @@
    All the keys are copied in a separate linked list of buffers where each new
    buffer that is allocated is larger than the previous one. The first buffer
    in the linked list is always the current one.
-
-   Note that the initial sizes of hashtable and the loadfactor still need to
-   be tuned to the use in this application.
 */
 
 /* an entry stores one key/value pair */
@@ -70,8 +67,6 @@ struct dictionary {
   int size;                      /* size of the hashtable */
   int num;                       /* total number of keys stored */
   struct dict_entry **table;     /* the hashtable */
-  int loop_idx;                  /* for looping */
-  struct dict_entry *loop_entry; /* for looping */
 };
 
 /* Simple hash function that computes the hash value of a lower-cased
@@ -243,27 +238,47 @@ int dict_put(DICT *dict,const char *key,void *value)
   return 0;
 }
 
-void dict_loop_first(DICT *dict)
+const char **dict_keys(DICT *dict)
 {
-  dict->loop_idx=0;
-  dict->loop_entry=NULL;
-}
-
-const char *dict_loop_next(DICT *dict,const char **key,void **value)
-{
+  int i;
   struct dict_entry *entry;
-  /* find non-empty entry */
-  while ( (dict->loop_idx<dict->size) && (dict->loop_entry==NULL) )
-    dict->loop_entry=dict->table[dict->loop_idx++];
-  if (dict->loop_entry==NULL)
-    return NULL; /* no more entries to check */
-  /* save current result and go to next entry */
-  entry=dict->loop_entry;
-  dict->loop_entry=entry->next;
-  /* return results */
-  if (key!=NULL)
-    *key=entry->key;
-  if (value!=NULL)
-    *value=entry->value;
-  return entry->key;
+  char *buf;
+  const char **values;
+  size_t sz;
+  int num;
+  /* figure out how much memory to allocate */
+  num=0;
+  sz=0;
+  for (i=0;i<dict->size;i++)
+  {
+    entry=dict->table[i];
+    while (entry!=NULL)
+    {
+      num++;
+      sz+=strlen(entry->key)+1;
+      entry=entry->next;
+    }
+  }
+  /* allocate the needed memory */
+  buf=(char *)malloc((num+1)*sizeof(char *)+sz);
+  if (buf==NULL)
+    return NULL;
+  values=(const char **)(void *)buf;
+  buf+=(num+1)*sizeof(char *);
+  /* fill the array with the keys */
+  num=0;
+  for (i=0;i<dict->size;i++)
+  {
+    entry=dict->table[i];
+    while (entry!=NULL)
+    {
+      strcpy(buf,entry->key);
+      values[num++]=buf;
+      buf+=strlen(buf)+1;
+      entry=entry->next;
+    }
+  }
+  values[num]=NULL;
+  /* done */
+  return values;
 }

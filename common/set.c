@@ -2,7 +2,7 @@
    set.c - set functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008 Arthur de Jong
+   Copyright (C) 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,12 @@
 #include "set.h"
 #include "dict.h"
 
+/*
+   The SET object is just a DICT which is passed around. The value
+   for each entry in the dict is just the pointer to the dict.
+   Another API is provided to give it a more set-like interface.
+*/
+
 SET *set_new(void)
 {
   return (SET *)dict_new();
@@ -50,15 +56,7 @@ void set_free(SET *set)
   dict_free((DICT *)set);
 }
 
-void set_loop_first(SET *set)
+const char **set_tolist(SET *set)
 {
-  dict_loop_first((DICT *)set);
-}
-
-const char *set_loop_next(SET *set)
-{
-  const char *value=NULL;
-  if (dict_loop_next((DICT *)set,&value,NULL)==NULL)
-    return NULL;
-  return value;
+  return dict_keys((DICT *)set);
 }

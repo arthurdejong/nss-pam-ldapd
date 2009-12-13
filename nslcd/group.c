@@ -153,20 +153,10 @@ void group_init(void)
 
 static int do_write_group(
     TFILE *fp,MYLDAP_ENTRY *entry,const char **names,gid_t gids[],int numgids,
-    const char *passwd,SET *members,const char *reqname)
+    const char *passwd,const char **members,const char *reqname)
 {
-  int32_t tmpint32;
+  int32_t tmpint32,tmp2int32,tmp3int32;
   int i,j;
-  int nummembers;
-  const char *tmp;
-  /* count the number of members */
-  nummembers=0;
-  if (members!=NULL)
-  {
-    set_loop_first(members);
-    while (set_loop_next(members)!=NULL)
-      nummembers++;
-  }
   /* write entries for all names and gids */
   for (i=0;names[i]!=NULL;i++)
   {
@@ -183,14 +173,7 @@ static int do_write_group(
         WRITE_STRING(fp,names[i]);
         WRITE_STRING(fp,passwd);
         WRITE_TYPE(fp,gids[j],gid_t);
-        /* write a list of values */
-        WRITE_INT32(fp,nummembers);
-        if (members!=NULL)
-        {
-          set_loop_first(members);
-          while ((tmp=set_loop_next(members))!=NULL)
-            { WRITE_STRING(fp,tmp); }
-        }
+        WRITE_STRINGLIST(fp,members);
       }
     }
   }
@@ -199,7 +182,7 @@ static int do_write_group(
 
 /* return the list of members as a \0 separated string with an extra \0
    at the end (doing dn->uid lookups as needed) */
-static SET *getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
+static const char **getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
 {
   char buf[20];
   int i;
@@ -227,7 +210,9 @@ static SET *getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
         set_add(set,buf);
     }
   /* return the members */
-  return set;
+  values=set_tolist(set);
+  set_free(set);
+  return values;
 }
 
 /* the maximum number of gidNumber attributes per entry */
@@ -239,7 +224,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
 {
   const char **names,**gidvalues;
   const char *passwd;
-  SET *members;
+  const char **members;
   gid_t gids[MAXGIDS_PER_ENTRY];
   int numgids;
   char *tmp;
@@ -292,7 +277,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   rc=do_write_group(fp,entry,names,gids,numgids,passwd,members,reqname);
   /* free and return */
   if (members!=NULL)
-    set_free(members);
+    free(members);
   return rc;
 }
 

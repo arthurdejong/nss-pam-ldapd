@@ -2,7 +2,7 @@
    test_dict.c - simple test for the dict module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -35,11 +35,12 @@
 static void test_simple(void)
 {
   DICT *dict;
-  const char *key;
   void *val;
   static char *value1="value1";
   static char *value2="value2";
   static char *replace2="replace2";
+  const char **keys;
+  int i;
   /* initialize */
   dict=dict_new();
   /* store some entries */
@@ -61,13 +62,15 @@ static void test_simple(void)
   val=dict_get(dict,"keY3");
   assert(val==NULL);
   /* loop over dictionary contents */
-  dict_loop_first(dict);
-  while (dict_loop_next(dict,&key,&val)!=NULL)
+  keys=dict_keys(dict);
+  for (i=0;keys[i]!=NULL;i++)
   {
+    val=dict_get(dict,keys[i]);
     assert(((val==value1)||(val==replace2)));
   }
-  /* free dictionary */
+  /* free stuff */
   dict_free(dict);
+  free(keys);
 }
 
 /* Test to insert a large number of elements in the dict. */
@@ -76,8 +79,8 @@ static void test_lotsofelements(void)
   DICT *dict;
   char buf[80];
   int i,r;
-  const char *key;
   void *val;
+  const char **keys;
   /* initialize */
   dict=dict_new();
   /* insert a number of entries */
@@ -102,13 +105,15 @@ static void test_lotsofelements(void)
     dict_put(dict,buf,&buf);
   }
   /* loop over dictionary contents */
-  dict_loop_first(dict);
-  while (dict_loop_next(dict,&key,&val)!=NULL)
+  keys=dict_keys(dict);
+  for (i=0;keys[i]!=NULL;i++)
   {
+    val=dict_get(dict,keys[i]);
     assert(val==buf);
   }
-  /* free dictionary */
+  /* free stuff */
   dict_free(dict);
+  free(keys);
 }
 
 /* Test to insert a large number of elements in the dict. */
@@ -117,8 +122,9 @@ static void test_readelements(const char *fname)
   DICT *dict;
   char buf[80];
   FILE *fp;
-  const char *key;
   void *val;
+  const char **keys;
+  int i;
   /* initialize */
   dict=dict_new();
   /* read file and insert all entries */
@@ -132,22 +138,23 @@ static void test_readelements(const char *fname)
   }
   fclose(fp);
   /* loop over dictionary contents */
-  dict_loop_first(dict);
-  while (dict_loop_next(dict,&key,&val)!=NULL)
+  keys=dict_keys(dict);
+  for (i=0;keys[i]!=NULL;i++)
   {
+    val=dict_get(dict,keys[i]);
     assert(val==buf);
   }
-  /* free dictionary */
+  /* free stuff */
   dict_free(dict);
+  free(keys);
 }
 
 static void test_countelements(int num)
 {
   DICT *dict;
   char buf[80];
-  int i,j,r;
-  const char *key;
-  void *val;
+  int i,r;
+  const char **keys;
   /* initialize */
   dict=dict_new();
   /* insert a number of entries */
@@ -158,17 +165,13 @@ static void test_countelements(int num)
     dict_put(dict,buf,&buf);
   }
   /* loop over dictionary contents */
-  dict_loop_first(dict);
-  i=0;
-  while (dict_loop_next(dict,&key,&val)!=NULL)
-  {
-    assert(val==buf);
-    i++;
-  }
+  keys=dict_keys(dict);
+  for (i=0;keys[i]!=NULL;i++);
   /* we should have num elements */
   assert(i==num);
-  /* free dictionary */
+  /* free stuff */
   dict_free(dict);
+  free(keys);
 }
 
 /* the main program... */

@@ -75,7 +75,6 @@
 #include "common.h"
 #include "log.h"
 #include "cfg.h"
-#include "attmap.h"
 #include "common/set.h"
 #include "compat/ldap_compat.h"
 
@@ -1215,57 +1214,10 @@ char *myldap_cpy_dn(MYLDAP_ENTRY *entry,char *buf,size_t buflen)
   return buf;
 }
 
-/* Return a buffer that is an a list of strings that can be freed
-   with a single call to free(). This function frees the set. */
-static char **set2values(SET *set)
-{
-  char *buf;
-  char **values;
-  const char *val;
-  size_t sz;
-  int num;
-  /* check set */
-  if (set==NULL)
-    return NULL;
-  /* count number of entries and needed space */
-  sz=0;
-  num=1;
-  set_loop_first(set);
-  while ((val=set_loop_next(set))!=NULL)
-  {
-    num++;
-    sz+=strlen(val)+1;
-  }
-  /* allocate the needed memory */
-  buf=(char *)malloc(num*sizeof(char *)+sz);
-  if (buf==NULL)
-  {
-    log_log(LOG_CRIT,"set2values(): malloc() failed to allocate memory");
-    set_free(set);
-    return NULL;
-  }
-  values=(char **)(void *)buf;
-  buf+=num*sizeof(char *);
-  /* copy set into buffer */
-  sz=0;
-  num=0;
-  set_loop_first(set);
-  while ((val=set_loop_next(set))!=NULL)
-  {
-    strcpy(buf,val);
-    values[num++]=buf;
-    buf+=strlen(buf)+1;
-  }
-  values[num]=NULL;
-  /* we're done */
-  set_free(set);
-  return values;
-}
-
 /* Perform ranged retreival of attributes.
    http://msdn.microsoft.com/en-us/library/aa367017(vs.85).aspx
    http://www.tkk.fi/cc/docs/kerberos/draft-kashi-incremental-00.txt */
-static char **myldap_get_ranged_values(MYLDAP_ENTRY *entry,const char *attr)
+static SET *myldap_get_ranged_values(MYLDAP_ENTRY *entry,const char *attr)
 {
   char **values;
   char *attn;
@@ -1345,7 +1297,8 @@ static char **myldap_get_ranged_values(MYLDAP_ENTRY *entry,const char *attr)
   /* close any started searches */
   if (search!=NULL)
     myldap_search_close(search);
-  return set2values(set);
+  /* return the contents of the set as a list */
+  return set;
 }
 
 /* Simple wrapper around ldap_get_values(). */
@@ -1354,6 +1307,7 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
   char **values;
   int rc;
   int i;
+  SET *set;
   /* check parameters */
   if (!is_valid_entry(entry))
   {
@@ -1385,19 +1339,20 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
     {
       /* we have a success code but no values, let's try to get ranged
          values */
-      values=myldap_get_ranged_values(entry,attr);
-      if (values==NULL)
+      set=myldap_get_ranged_values(entry,attr);
+      if (set==NULL)
         return NULL;
       /* store values entry so we can free it later on */
       for (i=0;i<MAX_RANGED_ATTRIBUTES_PER_ENTRY;i++)
         if (entry->rangedattributevalues[i]==NULL)
         {
-          entry->rangedattributevalues[i]=values;
-          return (const char **)values;
+          entry->rangedattributevalues[i]=(char **)set_tolist(set);
+          set_free(set);
+          return (const char **)entry->rangedattributevalues[i];
         }
       /* we found no room to store the values */
       log_log(LOG_ERR,"ldap_get_values() couldn't store results, increase MAX_RANGED_ATTRIBUTES_PER_ENTRY");
-      free(values);
+      set_free(set);
       return NULL;
     }
     else
@@ -1651,7 +1606,7 @@ int myldap_passwd(
   {
     log_log(LOG_ERR,"myldap_exop_passwd(): invalid parameter passed");
     errno=EINVAL;
-    return NULL;
+    return LDAP_OTHER;
   }
   /* log the call */
   log_log(LOG_DEBUG,"myldap_exop_passwd(userdn=\"%s\")",userdn);

@@ -2,7 +2,7 @@
    test_set.c - simple test for the set module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008 Arthur de Jong
+   Copyright (C) 2008, 2009 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include "common/set.h"
 #include "compat/attrs.h"
@@ -33,7 +34,8 @@
 int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
   SET *set;
-  const char *val;
+  const char **list;
+  int i;
 
   /* initialize */
   set=set_new();
@@ -51,16 +53,17 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   assert(!set_contains(set,"key4"));
 
   /* loop over set contents */
-  set_loop_first(set);
-  while ((val=set_loop_next(set))!=NULL)
+  list=set_tolist(set);
+  for (i=0;list[i]!=NULL;i++)
   {
-    assert( (strcasecmp(val,"key1")==0) ||
-            (strcasecmp(val,"key2")==0) ||
-            (strcasecmp(val,"key3")==0) );
+    assert( (strcasecmp(list[i],"key1")==0) ||
+            (strcasecmp(list[i],"key2")==0) ||
+            (strcasecmp(list[i],"key3")==0) );
   }
 
   /* free set */
   set_free(set);
+  free(list);
 
   return 0;
 }
