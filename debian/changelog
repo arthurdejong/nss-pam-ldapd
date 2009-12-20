@@ -2,7 +2,9 @@ nss-ldapd (0.6.7.2) stable; urgency=high
 
   * security upload to proposed-updates
   * perform case-sensitive filtering for group, netgroup, passwd, protocols,
-    rpc, services and shadow lookups (closes: #552433)
+    rpc, services and shadow lookups to prevent denial of service in nscd
+    and possibly wrong privileges assigned (closes: #552433)
+    (fix back-ported from 0.6.11)
 
  -- Arthur de Jong <adejong@debian.org>  Sun, 20 Dec 2009 13:00:00 +0100
 
