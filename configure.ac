@@ -275,7 +275,10 @@ AC_CHECK_TYPE(struct ether_addr,
     #include <sys/socket.h>
     #include <net/if.h>
     #include <netinet/in.h>
-    #include <netinet/if_ether.h>])
+    #include <netinet/if_ether.h>
+    #ifdef HAVE_NETINET_ETHER_H
+    #include <netinet/ether.h>
+    #endif])
 
 # check to see if socklen_t is defined
 AC_CHECK_TYPE(socklen_t,,
