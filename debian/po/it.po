@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.6.10\n"
+"Project-Id-Version: nss-ldapd 0.7.1\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2009-06-26 17:06+0200\n"
-"PO-Revision-Date: 2009-11-13 16:38+0100\n"
+"PO-Revision-Date: 2009-12-27 16:48+0100\n"
 "Last-Translator: Vincenzo Campanella <vinz65@gmail.com>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
 "MIME-Version: 1.0\n"
@@ -128,25 +128,25 @@ msgstr ""
 #. Choices
 #: ../nslcd.templates:6001
 msgid "never"
-msgstr ""
+msgstr "mai"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "allow"
-msgstr ""
+msgstr "consenti"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "try"
-msgstr ""
+msgstr "prova"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "demand"
-msgstr ""
+msgstr "richiedi"
 
 #. Type: select
 #. Description
@@ -172,14 +172,14 @@ msgid ""
 msgstr ""
 "Quando viene utilizzata una connessione cifrata è possibile chiedere e "
 "controllare un certificato del server. Scegliere se le ricerche devono "
-"essere configurate per richiedere il certificato e se la validità dei "
+"essere configurate per richiedere un certificato e se la validità dei "
 "certificati deve essere controllata:\n"
-" * never (mai): non verrà richiesto né controllato alcun certificato;\n"
-" * allow (permetti): un certificato viene richiesto, ma non in modo\n"
-"   vincolante, né viene controllato;\n"
-" * try (prova): un certificato verrà richiesto e controllato, ma la\n"
-"   mancata fornitura di un certificato viene ignorata;\n"
-" * demand (richiedi): viene chiesto in modo vincolante e controllato.\n"
+" * mai:      non verrà richiesto né controllato alcun certificato;\n"
+" * consenti: un certificato viene richiesto, ma non in modo vincolante,\n"
+"             né viene controllato;\n"
+" * prova:    un certificato verrà richiesto e controllato, ma la mancata\n"
+"             fornitura di un certificato viene ignorata;\n"
+" * richiedi: viene chiesto in modo vincolante e controllato.\n"
 "Se è abilitata la richiesta di certificati, almeno una delle opzioni "
 "tls_cacertdir o tls_cacertfile devono trovarsi in «/etc/nslcd.conf»."
 
@@ -242,7 +242,7 @@ msgstr ""
 "Rimuovere le voci solo se si prevede di non utilizzare più LDAP per le "
 "risoluzioni dei nomi. Per la maggior parte dei servizi la mancata rimozione "
 "di LDAP da nsswitch.conf non dovrebbe causare problemi, ma la risoluzione "
-"dei nomi host potrebbe essere in qualche modo influenzata."
+"dei nomi degli host potrebbe essere in qualche modo influenzata."
 
 #. Type: boolean
 #. Description
@@ -253,8 +253,8 @@ msgid ""
 "you choose to remove the entries now."
 msgstr ""
 "È possibile modificare manualmente «/etc/nsswitch.conf» o scegliere di "
-"rimuovere le voci automaticamente adesso. Ci si accerti di controllare le "
-"modifiche a «/etc/nsswitch.conf» se si sceglie la rimozione automatica."
+"rimuovere le voci automaticamente adesso. Controllare le modifiche a "
+"«/etc/nsswitch.conf» se si sceglie la rimozione automatica."
 
 #~ msgid "LDAP server Uniform Resource Identifier:"
 #~ msgstr "Uniform Resource Identifier (URI) del server LDAP:"
