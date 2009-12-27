@@ -180,8 +180,7 @@ static int do_write_group(
   return 0;
 }
 
-/* return the list of members as a \0 separated string with an extra \0
-   at the end (doing dn->uid lookups as needed) */
+/* return the list of members */
 static const char **getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
 {
   char buf[20];
