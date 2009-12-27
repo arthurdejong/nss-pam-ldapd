@@ -208,7 +208,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   usernames=myldap_get_values(entry,attmap_shadow_uid);
   if ((usernames==NULL)||(usernames[0]==NULL))
   {
-    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+    log_log(LOG_WARNING,"shadow entry %s does not contain %s value",
                         myldap_get_dn(entry),attmap_shadow_uid);
     return 0;
   }
