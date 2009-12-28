@@ -108,16 +108,24 @@ static void debug_dump(const void *ptr,size_t size)
   }
 
 #define WRITE_STRINGLIST(fp,arr) \
-  /* first determin length of array */ \
-  for (tmp3int32=0;(arr)[tmp3int32]!=NULL;tmp3int32++) \
-    /*noting*/ ; \
-  /* write number of strings */ \
-  DEBUG_PRINT("WRITE_STRLST: var="__STRING(arr)" num=%d",(int)tmp3int32); \
-  WRITE_TYPE(fp,tmp3int32,int32_t); \
-  /* write strings */ \
-  for (tmp2int32=0;tmp2int32<tmp3int32;tmp2int32++) \
+  if ((arr)==NULL) \
   { \
-    WRITE_STRING(fp,(arr)[tmp2int32]); \
+    DEBUG_PRINT("WRITE_STRLST: var="__STRING(arr)" num=%d",0); \
+    WRITE_INT32(fp,0); \
+  } \
+  else \
+  { \
+    /* first determin length of array */ \
+    for (tmp3int32=0;(arr)[tmp3int32]!=NULL;tmp3int32++) \
+      /*noting*/ ; \
+    /* write number of strings */ \
+    DEBUG_PRINT("WRITE_STRLST: var="__STRING(arr)" num=%d",(int)tmp3int32); \
+    WRITE_TYPE(fp,tmp3int32,int32_t); \
+    /* write strings */ \
+    for (tmp2int32=0;tmp2int32<tmp3int32;tmp2int32++) \
+    { \
+      WRITE_STRING(fp,(arr)[tmp2int32]); \
+    } \
   }
 
 #define WRITE_STRINGLIST_EXCEPT(fp,arr,not) \
