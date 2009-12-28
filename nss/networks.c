@@ -108,17 +108,19 @@ enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,
 }
 
 /* write an address value */
-#define WRITE_ADDRESS(fp,af,len,addr) \
-  WRITE_INT32(fp,af); \
-  WRITE_INT32(fp,len); \
-  WRITE(fp,addr,len);
+/* version 2.10 of glibc changed the address from network to host order
+   (changelog entry 2009-07-01) */
+#define WRITE_ADDRESS(fp,addr) \
+  WRITE_INT32(fp,AF_INET); \
+  WRITE_INT32(fp,4); \
+  WRITE_INT32(htonl(addr));
 
 /* Note: the af parameter is ignored and is assumed to be AF_INET */
 /* TODO: implement handling of af parameter */
 enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int UNUSED(af),struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,
-            WRITE_ADDRESS(fp,AF_INET,4,&addr),
+            WRITE_ADDRESS(fp,addr),
             read_netent(fp,result,buffer,buflen,errnop,h_errnop))
 }
 
