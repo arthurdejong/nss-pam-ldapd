@@ -64,6 +64,11 @@ fi
 
 echo "test_nsscmds.sh: using LDAP server $uri"
 
+# preload our own NSS module
+srcdir="${srcdir-"."}"
+LD_PRELOAD="$srcdir/../nss/nss_ldap.so"
+export LD_PRELOAD
+
 # the total number of errors
 FAIL=0
 
