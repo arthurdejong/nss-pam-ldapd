@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2007, 2008 Arthur de Jong
+# Copyright (C) 2007, 2008, 2009 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-noinst_LIBRARIES = libtio.a libprot.a libdict.a
+noinst_LIBRARIES = libtio.a libprot.a libdict.a libexpr.a
 
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = -fPIC
@@ -28,3 +28,5 @@ libprot_a_SOURCES = nslcd-prot.c nslcd-prot.h
 
 libdict_a_SOURCES = dict.c dict.h \
                     set.c set.h
+
+libexpr_a_SOURCES = expr.c expr.h

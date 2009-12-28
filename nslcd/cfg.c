@@ -623,7 +623,7 @@ static void parse_map_statement(const char *filename,int lnr,
 {
   enum ldap_map_selector map;
   const char **var;
-  char oldatt[32], newatt[32];
+  char oldatt[32], newatt[1024];
   /* get the map */
   if ((map=get_map(&line))==LM_NONE)
   {
@@ -636,19 +636,17 @@ static void parse_map_statement(const char *filename,int lnr,
       (get_token(&line,newatt,sizeof(newatt))!=NULL));
   /* check that there are no more tokens left on the line */
   get_eol(filename,lnr,keyword,&line);
-  /* get the attribute variable to set */
+  /* change attribute mapping */
   var=attmap_get_var(map,oldatt);
   if (var==NULL)
   {
     log_log(LOG_ERR,"%s:%d: unknown attribute to map: '%s'",filename,lnr,oldatt);
     exit(EXIT_FAILURE);
   }
-  /* check if the value will be changed */
-  if ( (*var==NULL) || (strcmp(*var,newatt)!=0) )
+  if (attmap_set_mapping(var,newatt)==NULL)
   {
-    /* Note: we have a memory leak here if a single mapping is changed
-             multiple times in one config (deemed not a problem) */
-    *var=xstrdup(newatt);
+    log_log(LOG_ERR,"%s:%d: attribute %s cannot be an expression",filename,lnr,oldatt);
+    exit(EXIT_FAILURE);
   }
 }
 

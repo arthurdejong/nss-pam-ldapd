@@ -1,7 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,10 +19,10 @@
 # 02110-1301 USA
 
 TESTS = test_dict test_set test_tio test_cfg test_myldap.sh test_nsscmds.sh \
-        test_getpeercred test_common
+        test_getpeercred test_common test_expr
 
 check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap \
-                 test_getpeercred test_common
+                 test_getpeercred test_common test_expr
 
 EXTRA_PROGRAMS = test_aliases test_ethers test_group test_hosts \
                  test_netgroup test_networks test_passwd test_protocols \
@@ -52,14 +52,17 @@ test_tio_SOURCES = test_tio.c ../common/tio.h ../common/tio.c
 test_tio_LDFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 test_cfg_SOURCES = test_cfg.c
-test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o \
+test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o  \
                  ../nslcd/common.o ../nslcd/myldap.o \
                  ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
                  ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
                  ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
                  ../nslcd/service.o ../nslcd/shadow.o \
                  @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a \
-                 ../compat/libcompat.a
+                 ../common/libexpr.a ../compat/libcompat.a
+
+test_expr_SOURCES = test_expr.c
+test_expr_LDADD = ../common/set.o ../common/dict.o
 
 test_myldap_SOURCES = test_myldap.c
 test_myldap_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \

@@ -26,8 +26,8 @@
 #include <strings.h>
 
 #include "attmap.h"
-
-const char *attmap_objectClass           = "objectClass";
+#include "log.h"
+#include "common/expr.h"
 
 /* these are the bases that are defined per database */
 extern const char *alias_bases[];
@@ -172,7 +172,6 @@ const char **attmap_get_var(enum ldap_map_selector map,const char *name)
     if (strcasecmp(name,"uidNumber")==0)         return &attmap_passwd_uidNumber;
     if (strcasecmp(name,"gidNumber")==0)         return &attmap_passwd_gidNumber;
     if (strcasecmp(name,"gecos")==0)             return &attmap_passwd_gecos;
-    if (strcasecmp(name,"cn")==0)                return &attmap_passwd_cn;
     if (strcasecmp(name,"homeDirectory")==0)     return &attmap_passwd_homeDirectory;
     if (strcasecmp(name,"loginShell")==0)        return &attmap_passwd_loginShell;
   }
@@ -205,4 +204,85 @@ const char **attmap_get_var(enum ldap_map_selector map,const char *name)
     if (strcasecmp(name,"shadowFlag")==0)        return &attmap_shadow_shadowFlag;
   }
   return NULL;
+}
+
+const char *attmap_set_mapping(const char **var,const char *value)
+{
+  /* check if we are setting an expression */
+  if (value[0]=='"')
+  {
+    /* these attributes may contain an expression
+       (note that this needs to match the functionality in the specific
+       lookup module) */
+    if ( (var!=&attmap_passwd_gidNumber) &&
+         (var!=&attmap_passwd_gecos) &&
+         (var!=&attmap_passwd_homeDirectory) &&
+         (var!=&attmap_passwd_loginShell) &&
+         (var!=&attmap_shadow_shadowLastChange) &&
+         (var!=&attmap_shadow_shadowMin) &&
+         (var!=&attmap_shadow_shadowMax) &&
+         (var!=&attmap_shadow_shadowWarning) &&
+         (var!=&attmap_shadow_shadowInactive) &&
+         (var!=&attmap_shadow_shadowExpire) &&
+         (var!=&attmap_shadow_shadowFlag) )
+      return NULL;
+  }
+  /* check if the value will be changed */
+  if ( (*var==NULL) || (strcmp(*var,value)!=0) )
+    *var=strdup(value);
+  return *var;
+}
+
+static const char *entry_expand(const char *name,void *expander_attr)
+{
+  MYLDAP_ENTRY *entry=(MYLDAP_ENTRY *)expander_attr;
+  const char **values;
+  if (strcasecmp(name,"dn")==0)
+    return myldap_get_dn(entry);
+  values=myldap_get_values(entry,name);
+  if (values==NULL)
+    return "";
+  /* TODO: handle userPassword attribute specially */
+  if ((values[0]!=NULL)&&(values[1]!=NULL))
+  {
+    log_log(LOG_WARNING,"entry %s contains multiple %s values",
+                        myldap_get_dn(entry),name);
+  }
+  return values[0];
+}
+
+MUST_USE const char *attmap_get_value(MYLDAP_ENTRY *entry,const char *attr,char *buffer,size_t buflen)
+{
+  const char **values;
+  /* for simple values just return the attribute */
+  if (attr[0]!='"')
+  {
+    values=myldap_get_values(entry,attr);
+    if (values==NULL)
+      return NULL;
+    strncpy(buffer,values[0],buflen);
+    buffer[buflen-1]='\0';
+    return buffer;
+    /* TODO: maybe warn when multiple values are found */
+  }
+  if ( (attr[strlen(attr)-1]!='"') ||
+       (expr_parse(attr+1,buffer,buflen,entry_expand,(void *)entry)==NULL) )
+  {
+    log_log(LOG_ERR,"attribute mapping %s is invalid",attr);
+    buffer[0]='\0';
+    return NULL;
+  }
+  /* strip trailing " */
+  if (buffer[strlen(buffer)-1]=='"')
+    buffer[strlen(buffer)-1]='\0';
+  return buffer;
+}
+
+SET *attmap_add_attributes(SET *set,const char *attr)
+{
+  if (attr[0]!='\"')
+    set_add(set,attr);
+  else
+    expr_vars(attr,set);
+  return set;
 }

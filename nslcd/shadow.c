@@ -55,26 +55,19 @@ const char *shadow_filter = "(objectClass=shadowAccount)";
 /* the attributes to request with searches */
 const char *attmap_shadow_uid              = "uid";
 const char *attmap_shadow_userPassword     = "userPassword";
-const char *attmap_shadow_shadowLastChange = "shadowLastChange";
-const char *attmap_shadow_shadowMin        = "shadowMin";
-const char *attmap_shadow_shadowMax        = "shadowMax";
-const char *attmap_shadow_shadowWarning    = "shadowWarning";
-const char *attmap_shadow_shadowInactive   = "shadowInactive";
-const char *attmap_shadow_shadowExpire     = "shadowExpire";
-const char *attmap_shadow_shadowFlag       = "shadowFlag";
+const char *attmap_shadow_shadowLastChange = "\"${shadowLastChange:--1}\"";
+const char *attmap_shadow_shadowMin        = "\"${shadowMin:--1}\"";
+const char *attmap_shadow_shadowMax        = "\"${shadowMax:--1}\"";
+const char *attmap_shadow_shadowWarning    = "\"${shadowWarning:--1}\"";
+const char *attmap_shadow_shadowInactive   = "\"${shadowInactive:--1}\"";
+const char *attmap_shadow_shadowExpire     = "\"${shadowExpire:--1}\"";
+const char *attmap_shadow_shadowFlag       = "\"${shadowFlag:-0}\"";
 
 /* default values for attributes */
 static const char *default_shadow_userPassword     = "*"; /* unmatchable */
-static const char *default_shadow_shadowLastChange = "-1";
-static const char *default_shadow_shadowMin        = "-1";
-static const char *default_shadow_shadowMax        = "-1";
-static const char *default_shadow_shadowWarning    = "-1";
-static const char *default_shadow_shadowInactive   = "-1";
-static const char *default_shadow_shadowExpire     = "-1";
-static const char *default_shadow_shadowFlag       = "0";
 
 /* the attribute list to request with searches */
-static const char *shadow_attrs[10];
+static const char **shadow_attrs=NULL;
 
 static int mkfilter_shadow_byname(const char *name,
                                   char *buffer,size_t buflen)
@@ -93,6 +86,7 @@ static int mkfilter_shadow_byname(const char *name,
 void shadow_init(void)
 {
   int i;
+  SET *set;
   /* set up search bases */
   if (shadow_bases[0]==NULL)
     for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
@@ -101,16 +95,18 @@ void shadow_init(void)
   if (shadow_scope==LDAP_SCOPE_DEFAULT)
     shadow_scope=nslcd_cfg->ldc_scope;
   /* set up attribute list */
-  shadow_attrs[0]=attmap_shadow_uid;
-  shadow_attrs[1]=attmap_shadow_userPassword;
-  shadow_attrs[2]=attmap_shadow_shadowLastChange;
-  shadow_attrs[3]=attmap_shadow_shadowMax;
-  shadow_attrs[4]=attmap_shadow_shadowMin;
-  shadow_attrs[5]=attmap_shadow_shadowWarning;
-  shadow_attrs[6]=attmap_shadow_shadowInactive;
-  shadow_attrs[7]=attmap_shadow_shadowExpire;
-  shadow_attrs[8]=attmap_shadow_shadowFlag;
-  shadow_attrs[9]=NULL;
+  set=set_new();
+  attmap_add_attributes(set,attmap_shadow_uid);
+  attmap_add_attributes(set,attmap_shadow_userPassword);
+  attmap_add_attributes(set,attmap_shadow_shadowLastChange);
+  attmap_add_attributes(set,attmap_shadow_shadowMax);
+  attmap_add_attributes(set,attmap_shadow_shadowMin);
+  attmap_add_attributes(set,attmap_shadow_shadowWarning);
+  attmap_add_attributes(set,attmap_shadow_shadowInactive);
+  attmap_add_attributes(set,attmap_shadow_shadowExpire);
+  attmap_add_attributes(set,attmap_shadow_shadowFlag);
+  shadow_attrs=set_tolist(set);
+  set_free(set);
 }
 
 static long to_date(const char *date,const char *attr)
@@ -156,43 +152,27 @@ static long to_date(const char *date,const char *attr)
 #endif
 
 #define GET_OPTIONAL_LONG(var,att) \
-  tmpvalues=myldap_get_values(entry,attmap_shadow_##att); \
-  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL)) \
-    var=strtol(default_shadow_##att,NULL,0); \
-  else \
+  tmpvalue=attmap_get_value(entry,attmap_shadow_##att,buffer,sizeof(buffer)); \
+  if (tmpvalue==NULL) \
+    tmpvalue=""; \
+  var=strtol(tmpvalue,&tmp,0); \
+  if ((*(tmpvalue)=='\0')||(*tmp!='\0')) \
   { \
-    if (tmpvalues[1]!=NULL) \
-    { \
-      log_log(LOG_WARNING,"shadow entry %s contains multiple %s values", \
-                          myldap_get_dn(entry),attmap_shadow_##att); \
-    } \
-    var=strtol(tmpvalues[0],&tmp,0); \
-    if ((*(tmpvalues[0])=='\0')||(*tmp!='\0')) \
-    { \
-      log_log(LOG_WARNING,"shadow entry %s contains non-numeric %s value", \
-                          myldap_get_dn(entry),attmap_shadow_##att); \
-      return 0; \
-    } \
+    log_log(LOG_WARNING,"shadow entry %s contains non-numeric %s value", \
+                        myldap_get_dn(entry),attmap_shadow_##att); \
+    return 0; \
   }
 
 #define GET_OPTIONAL_DATE(var,att) \
-  tmpvalues=myldap_get_values(entry,attmap_shadow_##att); \
-  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL)) \
-    var=to_date(default_shadow_##att,attmap_shadow_##att); \
-  else \
-  { \
-    if (tmpvalues[1]!=NULL) \
-    { \
-      log_log(LOG_WARNING,"shadow entry %s contains multiple %s values", \
-                          myldap_get_dn(entry),attmap_shadow_##att); \
-    } \
-    var=to_date(tmpvalues[0],attmap_shadow_##att); \
-  }
+  tmpvalue=attmap_get_value(entry,attmap_shadow_##att,buffer,sizeof(buffer)); \
+  if (tmpvalue==NULL) \
+    tmpvalue=""; \
+  var=to_date(tmpvalue,attmap_shadow_##att);
 
 static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
 {
   int32_t tmpint32;
-  const char **tmpvalues;
+  const char *tmpvalue;
   char *tmp;
   const char **usernames;
   const char *passwd;
@@ -204,6 +184,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   long expiredate;
   unsigned long flag;
   int i;
+  char buffer[80];
   /* get username */
   usernames=myldap_get_values(entry,attmap_shadow_uid);
   if ((usernames==NULL)||(usernames[0]==NULL))

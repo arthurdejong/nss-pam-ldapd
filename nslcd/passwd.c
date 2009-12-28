@@ -59,17 +59,14 @@ const char *attmap_passwd_uid           = "uid";
 const char *attmap_passwd_userPassword  = "userPassword";
 const char *attmap_passwd_uidNumber     = "uidNumber";
 const char *attmap_passwd_gidNumber     = "gidNumber";
-const char *attmap_passwd_gecos         = "gecos";
-const char *attmap_passwd_cn            = "cn";
+const char *attmap_passwd_gecos         = "\"${gecos:-$cn}\"";
 const char *attmap_passwd_homeDirectory = "homeDirectory";
 const char *attmap_passwd_loginShell    = "loginShell";
 
 /* default values for attributes */
 static const char *default_passwd_userPassword     = "*"; /* unmatchable */
-static const char *default_passwd_homeDirectory    = "";
-static const char *default_passwd_loginShell       = "";
 
-/* Note that the password value should be one of:
+/* Note that the resulting password value should be one of:
    <empty> - no password set, allow login without password
    *       - often used to prevent logins
    x       - "valid" encrypted password that does not match any valid password
@@ -77,7 +74,7 @@ static const char *default_passwd_loginShell       = "";
    other   - encrypted password, usually in crypt(3) format */
 
 /* the attribute list to request with searches */
-static const char *passwd_attrs[10];
+static const char **passwd_attrs=NULL;
 
 /* create a search filter for searching a passwd entry
    by name, return -1 on errors */
@@ -109,6 +106,7 @@ static int mkfilter_passwd_byuid(uid_t uid,
 void passwd_init(void)
 {
   int i;
+  SET *set;
   /* set up search bases */
   if (passwd_bases[0]==NULL)
     for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
@@ -117,16 +115,17 @@ void passwd_init(void)
   if (passwd_scope==LDAP_SCOPE_DEFAULT)
     passwd_scope=nslcd_cfg->ldc_scope;
   /* set up attribute list */
-  passwd_attrs[0]=attmap_passwd_uid;
-  passwd_attrs[1]=attmap_passwd_userPassword;
-  passwd_attrs[2]=attmap_passwd_uidNumber;
-  passwd_attrs[3]=attmap_passwd_gidNumber;
-  passwd_attrs[4]=attmap_passwd_cn;
-  passwd_attrs[5]=attmap_passwd_homeDirectory;
-  passwd_attrs[6]=attmap_passwd_loginShell;
-  passwd_attrs[7]=attmap_passwd_gecos;
-  passwd_attrs[8]="objectClass";
-  passwd_attrs[9]=NULL;
+  set=set_new();
+  attmap_add_attributes(set,"objectClass"); /* for testing shadowAccount */
+  attmap_add_attributes(set,attmap_passwd_uid);
+  attmap_add_attributes(set,attmap_passwd_userPassword);
+  attmap_add_attributes(set,attmap_passwd_uidNumber);
+  attmap_add_attributes(set,attmap_passwd_gidNumber);
+  attmap_add_attributes(set,attmap_passwd_gecos);
+  attmap_add_attributes(set,attmap_passwd_homeDirectory);
+  attmap_add_attributes(set,attmap_passwd_loginShell);
+  passwd_attrs=set_tolist(set);
+  set_free(set);
 }
 
 /* the cache that is used in dn2uid() */
@@ -301,10 +300,11 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   const char *passwd;
   uid_t uids[MAXUIDS_PER_ENTRY];
   int numuids;
+  char gidbuf[10];
   gid_t gid;
-  const char *gecos;
-  const char *homedir;
-  const char *shell;
+  char gecos[100];
+  char homedir[100];
+  char shell[100];
   int i,j;
   /* get the usernames for this entry */
   usernames=myldap_get_values(entry,attmap_passwd_uid);
@@ -353,77 +353,29 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
     }
   }
   /* get the gid for this entry */
-  tmpvalues=myldap_get_values(entry,attmap_passwd_gidNumber);
-  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
+  attmap_get_value(entry,attmap_passwd_gidNumber,gidbuf,sizeof(gidbuf));
+  if (gidbuf[0]=='\0')
   {
     log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
                         myldap_get_dn(entry),attmap_passwd_gidNumber);
     return 0;
   }
-  else if (tmpvalues[1]!=NULL)
-  {
-    log_log(LOG_WARNING,"passwd entry %s contains multiple %s values",
-                        myldap_get_dn(entry),attmap_passwd_gidNumber);
-  }
-  gid=(gid_t)strtol(tmpvalues[0],&tmp,0);
-  if ((*(tmpvalues[0])=='\0')||(*tmp!='\0'))
+  gid=(gid_t)strtol(gidbuf,&tmp,0);
+  if ((gidbuf[0]=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
                         myldap_get_dn(entry),attmap_passwd_gidNumber);
     return 0;
   }
-  /* get the gecos for this entry (fall back to cn) */
-  tmpvalues=myldap_get_values(entry,attmap_passwd_gecos);
-  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
-    tmpvalues=myldap_get_values(entry,attmap_passwd_cn);
-  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
-  {
-    log_log(LOG_WARNING,"passwd entry %s does not contain %s or %s value",
-                        myldap_get_dn(entry),attmap_passwd_gecos,attmap_passwd_cn);
-    return 0;
-  }
-  else if (tmpvalues[1]!=NULL)
-  {
-    log_log(LOG_WARNING,"passwd entry %s contains multiple %s or %s values",
-                        myldap_get_dn(entry),attmap_passwd_gecos,attmap_passwd_cn);
-  }
-  gecos=tmpvalues[0];
+  /* get the gecos for this entry */
+  attmap_get_value(entry,attmap_passwd_gecos,gecos,sizeof(gecos));
   /* get the home directory for this entry */
-  tmpvalues=myldap_get_values(entry,attmap_passwd_homeDirectory);
-  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
-  {
+  attmap_get_value(entry,attmap_passwd_homeDirectory,homedir,sizeof(homedir));
+  if (homedir[0]=='\0')
     log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
                         myldap_get_dn(entry),attmap_passwd_homeDirectory);
-    homedir=default_passwd_homeDirectory;
-  }
-  else
-  {
-    if (tmpvalues[1]!=NULL)
-    {
-      log_log(LOG_WARNING,"passwd entry %s contains multiple %s values",
-                          myldap_get_dn(entry),attmap_passwd_homeDirectory);
-    }
-    homedir=tmpvalues[0];
-    if (*homedir=='\0')
-      homedir=default_passwd_homeDirectory;
-  }
   /* get the shell for this entry */
-  tmpvalues=myldap_get_values(entry,attmap_passwd_loginShell);
-  if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
-  {
-    shell=default_passwd_loginShell;
-  }
-  else
-  {
-    if (tmpvalues[1]!=NULL)
-    {
-      log_log(LOG_WARNING,"passwd entry %s contains multiple %s values",
-                          myldap_get_dn(entry),attmap_passwd_loginShell);
-    }
-    shell=tmpvalues[0];
-    if (*shell=='\0')
-      shell=default_passwd_loginShell;
-  }
+  attmap_get_value(entry,attmap_passwd_loginShell,shell,sizeof(shell));
   /* write the entries */
   for (i=0;usernames[i]!=NULL;i++)
     if ((requser==NULL)||(strcmp(requser,usernames[i])==0))

@@ -375,13 +375,13 @@
        <code>ipProtocolNumber</code> or <code>macAddress</code>).
        The <emphasis remap="I">NEWATTRIBUTE</emphasis> may be any attribute
        as it is available in the directory.
-<!--
+      </para>
+      <para>
        If the <emphasis remap="I">NEWATTRIBUTE</emphasis> is presented in
-       quotes (") the specfied value will be used instead of looking up the
-       value in the directory.
-       Specifies a value to use for the specified attribute in preference
-       to that contained in the actual entry.
--->
+       quotes (") it is treated as an expression which will be evaluated
+       to build up the actual value used.
+       Not all attributes can be mapped this way.
+       See the section on attribute mapping below for more details.
       </para>
      </listitem>
     </varlistentry>
@@ -682,6 +682,73 @@
    <varlistentry>
     <term>shadow</term>
     <listitem><para>Shadow user password information.</para></listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 id="attmappingexpressions">
+  <title>Attribute mapping expressions</title>
+  <para>
+   For some attributes a mapping expression may be used to construct the
+   resulting value. This is currently only possible for attributes that do
+   not need to be used in search filters.
+  </para>
+  <para>
+   The expressions are a subset of the double quoted string expressions in the
+   Bourne (POSIX) shell.
+   Instead of variable substitution, attribute lookups are done on the current
+   entry and the attribute value is substituted.
+   The following expressions are supported:
+  </para>
+  <variablelist remap="TP">
+   <varlistentry>
+    <term><literal>${attr}</literal> (or <literal>$attr</literal> for short)</term>
+    <listitem><para>
+     will substitute the value of the attribute
+    </para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><literal>${attr:-word}</literal></term>
+    <listitem><para>
+     (use default) will substitbute the value of the attribute or, if the
+     attribute is not set or empty substitute the word
+    </para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><literal>${attr:+word}</literal></term>
+    <listitem><para>
+     (use alternative) will substitbute word if attribute is set, otherwise
+     substitute the empty string
+    </para></listitem>
+   </varlistentry>
+  </variablelist>
+  <para>
+   The <command>nslcd</command> daemon checks the expressions to figure
+   out which attributes to fetch from <acronym>LDAP</acronym>.
+   Some examples to demonstrate how these expressions may be used in
+   attribute mapping:
+  </para>
+  <variablelist remap="TP">
+   <varlistentry>
+    <term><literal>"${shadowFlag:-0}"</literal></term>
+    <listitem><para>
+     use the <literal>shadowFlag</literal> attribute, using the
+     value 0 as default
+    </para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><literal>"/home/$uid/$uid"</literal></term>
+    <listitem><para>
+     use the <literal>uid</literal> attribute to build a
+     <literal>homeDirectory</literal> value if that attribute is missing
+    </para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><literal>"${isDisabled:+100}"</literal></term>
+    <listitem><para>
+     if the <literal>isDisabled</literal> attribute is set, return 100,
+     otherwise leave value empty
+    </para></listitem>
    </varlistentry>
   </variablelist>
  </refsect1>

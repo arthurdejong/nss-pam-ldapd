@@ -206,6 +206,7 @@ static void test_read(void)
              "base dc=test, dc=tld\n"
              "base passwd ou=Some People,dc=test,dc=tld\n"
              "map\tpasswd uid\t\tsAMAccountName\n"
+             "map passwd homeDirectory \"${homeDirectory:-/home/$uid}\"\n"
              "filter group (&(objeclClass=posixGroup)(gid=1*))\n"
              "\n"
              "scope passwd one\n");
