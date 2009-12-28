@@ -113,7 +113,7 @@ enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,
 #define WRITE_ADDRESS(fp,addr) \
   WRITE_INT32(fp,AF_INET); \
   WRITE_INT32(fp,4); \
-  WRITE_INT32(htonl(addr));
+  WRITE_INT32(fp,htonl(addr));
 
 /* Note: the af parameter is ignored and is assumed to be AF_INET */
 /* TODO: implement handling of af parameter */
