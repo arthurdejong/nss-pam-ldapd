@@ -1,3 +1,139 @@
+2009-12-28 20:24  arthur
+
+	* [r1043] debian/nslcd.postrm: fix removal of old configuration
+	  file (thanks piuparts)
+
+2009-12-28 12:34  arthur
+
+	* [r1042] debian/control: fix Conflicts relationship
+
+2009-12-28 12:18  arthur
+
+	* [r1041] common/Makefile.am, common/expr.c, common/expr.h,
+	  man/nslcd.conf.5.xml, nslcd.conf, nslcd/Makefile.am,
+	  nslcd/attmap.c, nslcd/attmap.h, nslcd/cfg.c, nslcd/passwd.c,
+	  nslcd/shadow.c, tests, tests/Makefile.am, tests/test_cfg.c,
+	  tests/test_common.c, tests/test_expr.c, tests/test_myldap.c:
+	  implement attribute mapping using shell-like expressions
+
+2009-12-28 11:01  arthur
+
+	* [r1040] nss/networks.c: fix missing argument (problem in r1039)
+
+2009-12-28 10:45  arthur
+
+	* [r1039] nss/networks.c: Glibc changed the addr parameter of
+	  getnetbyaddr_r() from network-byte-order to host-byte-order
+
+2009-12-28 09:58  arthur
+
+	* [r1038] tests/test_nsscmds.sh: preload our own NSS module for
+	  tests
+
+2009-12-28 09:47  arthur
+
+	* [r1037] common/nslcd-prot.h: WRITE_STRINGLIST(): properly handle
+	  the case where the list is null (result of change in r1028)
+
+2009-12-27 22:20  arthur
+
+	* [r1036] nslcd/shadow.c: fix log message
+
+2009-12-27 21:08  arthur
+
+	* [r1035] nslcd/group.c: fix comment
+
+2009-12-27 17:57  arthur
+
+	* [r1034] debian/po/it.po: updated Italian (it) translation of
+	  debconf templates by Vincenzo Campanella <vinz65@gmail.com>
+
+2009-12-21 07:59  arthur
+
+	* [r1033] configure.ac: remove -Wunreachable-code because it was
+	  turning up too many false positives (our use of macros, system
+	  string functions, etc)
+
+2009-12-21 07:56  arthur
+
+	* [r1032] nss/prototypes.h: also use compat/ether.h for nss
+	  functions
+
+2009-12-21 07:55  arthur
+
+	* [r1031] configure.ac: include the same headers in configure as in
+	  compat/ether.h
+
+2009-12-13 10:27  arthur
+
+	* [r1028] common/dict.c, common/dict.h, common/set.c, common/set.h,
+	  nslcd/group.c, nslcd/myldap.c, tests/test_dict.c,
+	  tests/test_set.c: change dict and set API to perform loops with a
+	  list of strings instead of loop_first() and loop_next() functions
+
+2009-12-06 19:43  arthur
+
+	* [r1027] debian/control: recommend libpam-krb5 als an alternative
+	  to libpam-ldapd for Kerberos environments
+
+2009-11-14 20:29  arthur
+
+	* [r1024] debian/po/it.po: updated Italian (it) translation of
+	  debconf templates by Vincenzo Campanella <vinz65@gmail.com>
+
+2009-11-13 16:02  arthur
+
+	* [r1023] configure.ac: fix lber library check for function we
+	  actually use and another small reorganisation
+
+2009-11-11 21:43  arthur
+
+	* [r1022] configure.ac: simplify structure of configure script and
+	  see if -llber is needed
+
+2009-11-02 20:25  arthur
+
+	* [r1017] configure.ac: fix PAM library check for systems without
+	  pam_get_authtok()
+
+2009-11-01 15:08  arthur
+
+	* [r1016] configure.ac: fail in configure if PAM functionality is
+	  missing
+
+2009-11-01 14:55  arthur
+
+	* [r1015] tests/test.ldif.gz, tests/test_nsscmds.sh: add test case
+	  for comma in DN attribute value
+
+2009-11-01 14:51  arthur
+
+	* [r1014] nslcd/alias.c, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/netgroup.c, nslcd/network.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  give search filter escaping buffers more logical names
+
+2009-11-01 14:40  arthur
+
+	* [r1013] nslcd/group.c: also do proper escaping in
+	  mkfilter_group_bymember()
+
+2009-11-01 13:33  arthur
+
+	* [r1012] nslcd/myldap.c: also log uri when ldap_start_tls_s()
+	  fails
+
+2009-11-01 13:28  arthur
+
+	* [r1011] configure.ac: make --disable-* configure options default
+	  values clearer
+
+2009-10-20 10:56  arthur
+
+	* [r1009] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.1 release
+
 2009-10-17 15:08  arthur
 
 	* [r1008] compat/Makefile.am, compat/pam_compat.h,

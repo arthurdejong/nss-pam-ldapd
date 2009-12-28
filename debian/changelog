@@ -1,3 +1,27 @@
+nss-pam-ldapd (0.7.2) unstable; urgency=low
+
+  * some attributes may be mapped to a shell-like expression that expand
+    attributes from LDAP entries; this allows attributes overrides, defaults
+    and much more (as a result the passwd cn attribute mapping has been
+    removed because the gecos mapping is now "${gecos:-$cn}" by default)
+  * update the NSS module to follow the change in Glibc where the addr 
+    parameter of getnetbyaddr_r() was changed from network-byte-order to
+    host-byte-order
+  * properly escape searches for uniqueMember attributes for DN with a comma
+    in an attribute value
+  * miscellaneous improvements to the configure script implementing better
+    (and simpler) library detection
+  * some general refactoring and other miscellaneous improvements
+  * make configure check if we need to explicitly link to -llber
+    (closes: #555779)
+  * libnss-ldapd: recommend libpam-krb5 as an alternative to libpam-ldapd for
+    Kerberos environments
+  * updated Italian debconf translation by Vincenzo Campanella
+    (closes: #556107)
+  * fix nslcd postrm to remove old config file (thanks piuparts)
+
+ -- Arthur de Jong <adejong@debian.org>  Mon, 28 Dec 2009 13:30:00 +0100
+
 nss-pam-ldapd (0.7.1) unstable; urgency=low
 
   * implement password changing by performing an LDAP password modify EXOP
