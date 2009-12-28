@@ -11,7 +11,7 @@ rm -rf /var/run/nslcd
 # remove our configuration file (not a conffile) on purge manually
 if [ "$1" = "purge" ]
 then
-  rm -f "$CONFFILE" "$OOCONFFILE"
+  rm -f "$CONFFILE" "$OCONFFILE"
 fi
 
 #DEBHELPER#
