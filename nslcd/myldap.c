@@ -569,7 +569,6 @@ static void do_close(MYLDAP_SESSION *session)
 static void myldap_session_check(MYLDAP_SESSION *session)
 {
   int i;
-  int runningsearches=0;
   time_t current_time;
   /* check parameters */
   if (!is_valid_session(session))
@@ -581,24 +580,16 @@ static void myldap_session_check(MYLDAP_SESSION *session)
   /* check if we should time out the connection */
   if ((session->ld!=NULL)&&(nslcd_cfg->ldc_idle_timelimit>0))
   {
-    /* check if we have any running searches */
+    /* if we have any running searches, don't time out */
     for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
-    {
       if ((session->searches[i]!=NULL)&&(session->searches[i]->valid))
-      {
-        runningsearches=1;
-        break;
-      }
-    }
-    /* only consider timeout if we have no running searches */
-    if (!runningsearches)
+        return;
+    /* consider timeout (there are no running searches) */
+    time(&current_time);
+    if ((session->lastactivity+nslcd_cfg->ldc_idle_timelimit)<current_time)
     {
-      time(&current_time);
-      if ((session->lastactivity+nslcd_cfg->ldc_idle_timelimit)<current_time)
-      {
-        log_log(LOG_DEBUG,"do_open(): idle_timelimit reached");
-        do_close(session);
-      }
+      log_log(LOG_DEBUG,"myldap_session_check(): idle_timelimit reached");
+      do_close(session);
     }
   }
 }
