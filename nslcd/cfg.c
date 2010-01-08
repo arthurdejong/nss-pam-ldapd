@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <ctype.h>
 #include <assert.h>
 #include <sys/types.h>
@@ -161,32 +162,55 @@ static void add_uri(const char *filename,int lnr,
 
 #ifdef HAVE_LDAP_DOMAIN2HOSTLIST
 /* return the domain name of the current host
-   we return part of the structure that is retured by gethostbyname()
-   so there should be no need to free() this entry, however we should
-   use the value before any other call to gethostbyname() */
-static const char *cfg_getdomainname(const char *filename,int lnr)
+   the returned string must be freed by caller */
+static char *cfg_getdomainname(const char *filename,int lnr)
 {
-  char hostname[HOST_NAME_MAX],*domain;
-  struct hostent *host;
-  /* lookup the hostname and with that the fqdn to extract the domain */
+  char hostname[HOST_NAME_MAX+1],*domain;
+  int hostnamelen;
+  int i;
+  struct hostent *host=NULL;
+  /* get system hostname */
   if (gethostname(hostname,sizeof(hostname))<0)
   {
-    log_log(LOG_ERR,"%s:%d: gethostname(): %s",filename,lnr,strerror(errno));
-    exit(EXIT_FAILURE);
+    log_log(LOG_ERR,"%s:%d: gethostname() failed: %s",filename,lnr,strerror(errno));
+    exit (EXIT_FAILURE);
   }
-  if ((host=gethostbyname(hostname))==NULL)
+  hostnamelen=strlen(hostname);
+  /* lookup hostent */
+  host=gethostbyname(hostname);
+  if (host==NULL)
   {
     log_log(LOG_ERR,"%s:%d: gethostbyname(%s): %s",filename,lnr,hostname,hstrerror(h_errno));
     exit(EXIT_FAILURE);
   }
-  /* TODO: this may fail if the fqdn is in h_aliases */
-  if ((domain=strchr(host->h_name,'.'))==NULL)
+  /* check h_name for fqdn starting with our hostname */
+  if ((strncasecmp(hostname,host->h_name,hostnamelen)==0)&&
+      (host->h_name[hostnamelen]=='.')&&
+      (host->h_name[hostnamelen+1]!='\0'))
+    return strdup(host->h_name+hostnamelen+1);
+  /* also check h_aliases */
+  for (i=0;host->h_aliases[i]!=NULL;i++)
   {
-    log_log(LOG_ERR,"%s:%d: host name %s is not in fqdn form",filename,lnr,host->h_name);
-    exit(EXIT_FAILURE);
+    if ((strncasecmp(hostname,host->h_aliases[i],hostnamelen)==0)&&
+        (host->h_aliases[i][hostnamelen]=='.')&&
+        (host->h_aliases[i][hostnamelen+1]!='\0'))
+      return strdup(host->h_aliases[i]+hostnamelen+1);
   }
-  /* we're done */
-  return domain+1;
+  /* fall back to any domain part in h_name */
+  if (((domain=strchr(host->h_name,'.'))!=NULL)&&
+      (domain[1]!='\0'))
+    return strdup(domain+1);
+  /* also check h_aliases */
+  for (i=0;host->h_aliases[i]!=NULL;i++)
+  {
+    if (((domain=strchr(host->h_aliases[i],'.'))!=NULL)&&
+        (domain[1]!='\0'))
+      return strdup(domain+1);
+  }
+  /* we've tried everything now */
+  log_log(LOG_ERR,"%s:%d: unable to determinate a domainname for hostname %s",
+          filename,lnr,hostname);
+  exit(EXIT_FAILURE);
 }
 
 /* add URIs by doing DNS queries for SRV records */
@@ -194,7 +218,7 @@ static void add_uris_from_dns(const char *filename,int lnr,
                               struct ldap_config *cfg)
 {
   int ret=0;
-  const char *domain;
+  char *domain;
   char *hostlist=NULL,*nxt;
   char buf[HOST_NAME_MAX+sizeof("ldap://")];
   domain=cfg_getdomainname(filename,lnr);
@@ -223,6 +247,7 @@ static void add_uris_from_dns(const char *filename,int lnr,
     /* get next entry from list */
     hostlist=nxt;
   }
+  free(domain);
 }
 #endif /* HAVE_LDAP_DOMAIN2HOSTLIST */
 
@@ -540,13 +565,16 @@ static void set_base(const char *filename,int lnr,
                      const char *value,const char **var)
 {
 #ifdef HAVE_LDAP_DOMAIN2DN
+  char *domain = NULL;
   char *domaindn=NULL;
 #endif /* HAVE_LDAP_DOMAIN2DN */
   /* if the base is "DOMAIN" use the domain name */
   if (strcasecmp(value,"domain")==0)
   {
 #ifdef HAVE_LDAP_DOMAIN2DN
-    ldap_domain2dn(cfg_getdomainname(filename,lnr),&domaindn);
+    domain=cfg_getdomainname(filename,lnr);
+    ldap_domain2dn(domain,&domaindn);
+    free(domain);
     log_log(LOG_DEBUG,"set_base(): setting base to %s from domain",domaindn);
     value=domaindn;
 #else /* not HAVE_LDAP_DOMAIN2DN */
