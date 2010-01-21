@@ -25,8 +25,8 @@ are considered:
 * when including third-party code, retain copyright information (copyright
   holder and license) and ensure that the license is LGPL compatible
 
-Please contact Arthur de Jong <arthur@arthurdejong.org> if you want to
-contribute or use the Debian BTS if you're using the Debian package.
+Please email nss-pam-ldapd-users@lists.arthurdejong.org if you want to
+contribute.
 
 
 BUILD DEPENDENCIES

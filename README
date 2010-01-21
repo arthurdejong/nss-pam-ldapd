@@ -386,7 +386,7 @@ REPORTING BUGS
 ==============
 
 If you find any bugs or missing features please send email to
-  arthur@arthurdejong.org
+  nss-pam-ldapd-users@lists.arthurdejong.org
 If you are using the Debian package you are encouraged to use the BTS. Please
 include as much information as needed (platform, output of configure if
 compilation fails, output of the failure, etc). Patches are more than welcome
