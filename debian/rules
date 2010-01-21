@@ -53,9 +53,7 @@ install: build
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 	# make configfile fully generated
 	rm -f $(CURDIR)/debian/tmp/etc/nslcd.conf
-	# install a lintian override file
-	install -D -m 644 $(CURDIR)/debian/libnss-ldapd.lintian-overrides \
-	        $(CURDIR)/debian/libnss-ldapd/usr/share/lintian/overrides/libnss-ldapd
+	dh_lintian
 	# install a pam-auth-update configuration file
 	install -D -m 644 debian/libpam-ldapd.pam-auth-update debian/tmp/usr/share/pam-configs/ldap
 
