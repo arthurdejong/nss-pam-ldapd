@@ -467,27 +467,54 @@ static void acceptconnection(MYLDAP_SESSION *session)
   handleconnection(csock,session);
 }
 
+/* test to see if we can lock the specified file */
+static void test_lock(const char* filename)
+{
+  int fd;
+  if (filename!=NULL)
+  {
+    errno=0;
+    if ((fd=open(filename,O_RDWR,0644))<0)
+    {
+      if (errno==ENOENT)
+        return; /* if file doesn't exist it cannot be locked */
+      log_log(LOG_ERR,"cannot open lock file (%s): %s",filename,strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+    if (lockf(fd,F_TEST,0)<0)
+    {
+      log_log(LOG_ERR,"daemon may already be active, cannot acquire lock (%s): %s",filename,strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+    close(fd);
+  }
+}
+
 /* write the current process id to the specified file */
 static void create_pidfile(const char *filename)
 {
-  FILE *fp;
+  int fd;
+  char buffer[20];
   if (filename!=NULL)
   {
-    if ((fp=fopen(filename,"w"))==NULL)
+    if ((fd=open(filename,O_RDWR|O_CREAT,0644))<0)
     {
       log_log(LOG_ERR,"cannot create pid file (%s): %s",filename,strerror(errno));
       exit(EXIT_FAILURE);
     }
-    if (fprintf(fp,"%d\n",(int)getpid())<=0)
+    if (lockf(fd,F_TLOCK,0)<0)
     {
-      log_log(LOG_ERR,"error writing pid file (%s)",filename);
+      log_log(LOG_ERR,"cannot lock pid file (%s): %s",filename,strerror(errno));
       exit(EXIT_FAILURE);
     }
-    if (fclose(fp))
+    ftruncate(fd,0);
+    mysnprintf(buffer,sizeof(buffer),"%d\n",(int)getpid());
+    if (write(fd,buffer,strlen(buffer))!=(int)strlen(buffer))
     {
       log_log(LOG_ERR,"error writing pid file (%s): %s",filename,strerror(errno));
       exit(EXIT_FAILURE);
     }
+    /* we keep the pidfile open so the lock remains valid */
   }
 }
 
@@ -564,26 +591,28 @@ int main(int argc,char *argv[])
     exit(EXIT_FAILURE);
   /* read configuration file */
   cfg_init(NSLCD_CONF_PATH);
+  /* set default mode for pidfile and socket */
+  (void)umask((mode_t)0022);
+  /* see if someone already locked the pidfile */
+  test_lock(NSLCD_PIDFILE);
   /* daemonize */
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
   {
     log_log(LOG_ERR,"unable to daemonize: %s",strerror(errno));
     exit(EXIT_FAILURE);
   }
-  /* set default mode for pidfile and socket */
-  (void)umask((mode_t)0022);
   /* intilialize logging */
   if (!nslcd_debugging)
     log_startlogging();
   log_log(LOG_INFO,"version %s starting",VERSION);
+  /* write pidfile */
+  create_pidfile(NSLCD_PIDFILE);
   /* install handler to close stuff off on exit and log notice */
   if (atexit(exithandler))
   {
     log_log(LOG_ERR,"atexit() failed: %s",strerror(errno));
     exit(EXIT_FAILURE);
   }
-  /* write pidfile */
-  create_pidfile(NSLCD_PIDFILE);
   /* create socket */
   nslcd_serversocket=create_socket();
 #ifdef HAVE_SETGROUPS
