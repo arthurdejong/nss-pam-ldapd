@@ -24,7 +24,9 @@
 #define _NSS_EXPORTS_H 1
 
 #include <nss.h>
+#ifdef HAVE_ALIASES_H
 #include <aliases.h>
+#endif
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <grp.h>
