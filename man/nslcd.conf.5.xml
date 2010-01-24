@@ -737,7 +737,7 @@
     </para></listitem>
    </varlistentry>
    <varlistentry>
-    <term><literal>"/home/$uid/$uid"</literal></term>
+    <term><literal>"${homeDirectory:-/home/$uid}"</literal></term>
     <listitem><para>
      use the <literal>uid</literal> attribute to build a
      <literal>homeDirectory</literal> value if that attribute is missing
