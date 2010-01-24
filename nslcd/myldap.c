@@ -389,7 +389,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   {
     /* do a simple bind */
     log_log(LOG_DEBUG,"ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",session->binddn,
-                      (session->bindpw[0]!='\0')?"\"*****\"":"empty",uri);
+                      (session->bindpw[0]!='\0')?"\"***\"":"\"\"",uri);
     return ldap_simple_bind_s(session->ld,session->binddn,session->bindpw);
   }
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
@@ -400,10 +400,10 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
     /* do a simple bind */
     if (nslcd_cfg->ldc_binddn)
       log_log(LOG_DEBUG,"ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",nslcd_cfg->ldc_binddn,
-                        nslcd_cfg->ldc_bindpw?"\"*****\"":"NULL",uri);
+                        nslcd_cfg->ldc_bindpw?"\"***\"":"NULL",uri);
     else
       log_log(LOG_DEBUG,"ldap_simple_bind_s(NULL,%s) (uri=\"%s\")",
-                        nslcd_cfg->ldc_bindpw?"\"*****\"":"NULL",uri);
+                        nslcd_cfg->ldc_bindpw?"\"***\"":"NULL",uri);
     return ldap_simple_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_bindpw);
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
   }
@@ -433,7 +433,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
       cred.bv_len=0;
     }
     log_log(LOG_DEBUG,"ldap_sasl_bind_s(\"%s\",\"%s\",%s)",nslcd_cfg->ldc_binddn,
-                      nslcd_cfg->ldc_sasl_mech,nslcd_cfg->ldc_bindpw?"\"*****\"":"NULL");
+                      nslcd_cfg->ldc_sasl_mech,nslcd_cfg->ldc_bindpw?"\"***\"":"NULL");
     return ldap_sasl_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,&cred,NULL,NULL,NULL);
 #endif /* not HAVE_SASL_INTERACT_T */
   }
@@ -1593,26 +1593,27 @@ int myldap_passwd(
   int rc;
   struct berval ber_userdn, ber_oldpassword, ber_newpassword, ber_retpassword;
   /* check parameters */
-  if (!is_valid_session(session)||(userdn==NULL)||(oldpassword==NULL)||(newpasswd==NULL))
+  if (!is_valid_session(session)||(userdn==NULL)||(newpasswd==NULL))
   {
-    log_log(LOG_ERR,"myldap_exop_passwd(): invalid parameter passed");
+    log_log(LOG_ERR,"myldap_passwd(): invalid parameter passed");
     errno=EINVAL;
     return LDAP_OTHER;
   }
   /* log the call */
-  log_log(LOG_DEBUG,"myldap_exop_passwd(userdn=\"%s\")",userdn);
+  log_log(LOG_DEBUG,"myldap_passwd(userdn=\"%s\",oldpasswd=%s,newpasswd=\"***\")",
+                    userdn,oldpassword?"\"***\"":"NULL");
   /* translate to ber stuff */
   ber_userdn.bv_val=(char *)userdn;
   ber_userdn.bv_len=strlen(userdn);
   ber_oldpassword.bv_val=(char *)oldpassword;
-  ber_oldpassword.bv_len=(oldpassword==NULL)?0:strlen(oldpassword);
+  ber_oldpassword.bv_len=oldpassword?strlen(oldpassword):NULL;
   ber_newpassword.bv_val=(char *)newpasswd;
   ber_newpassword.bv_len=strlen(newpasswd);
   ber_retpassword.bv_val=NULL;
   ber_retpassword.bv_len=0;
   /* perform request */
-  rc=ldap_passwd_s(session->ld,&ber_userdn,&ber_oldpassword,&ber_newpassword,
-                   &ber_retpassword,NULL,NULL);
+  rc=ldap_passwd_s(session->ld,&ber_userdn,oldpassword?&ber_oldpassword:NULL,
+                   &ber_newpassword,&ber_retpassword,NULL,NULL);
   if (rc!=LDAP_SUCCESS)
     log_log(LOG_ERR,"ldap_passwd_s() failed: %s",ldap_err2string(rc));
   /* free returned data if needed */
