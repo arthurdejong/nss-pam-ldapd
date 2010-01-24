@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006, 2007 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -1602,11 +1602,11 @@ int myldap_passwd(
   /* log the call */
   log_log(LOG_DEBUG,"myldap_exop_passwd(userdn=\"%s\")",userdn);
   /* translate to ber stuff */
-  ber_userdn.bv_val=userdn;
+  ber_userdn.bv_val=(char *)userdn;
   ber_userdn.bv_len=strlen(userdn);
-  ber_oldpassword.bv_val=oldpassword;
-  ber_oldpassword.bv_len=strlen(oldpassword);
-  ber_newpassword.bv_val=newpasswd;
+  ber_oldpassword.bv_val=(char *)oldpassword;
+  ber_oldpassword.bv_len=(oldpassword==NULL)?0:strlen(oldpassword);
+  ber_newpassword.bv_val=(char *)newpasswd;
   ber_newpassword.bv_len=strlen(newpasswd);
   ber_retpassword.bv_val=NULL;
   ber_retpassword.bv_len=0;
@@ -1615,10 +1615,8 @@ int myldap_passwd(
                    &ber_retpassword,NULL,NULL);
   if (rc!=LDAP_SUCCESS)
     log_log(LOG_ERR,"ldap_passwd_s() failed: %s",ldap_err2string(rc));
-
-
-  /* FIXME: free ber_retpassword data if bv_val!=NULL */
-
+  /* free returned data if needed */
+  if (ber_retpassword.bv_val!=NULL)
+    ldap_memfree(ber_retpassword.bv_val);
   return rc;
-
 }
