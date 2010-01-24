@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -168,6 +168,15 @@ AC_ARG_WITH(ldap-conf-file,
             [ NSLCD_CONF_PATH="/etc/nslcd.conf" ])
 AC_DEFINE_UNQUOTED(NSLCD_CONF_PATH,"$NSLCD_CONF_PATH",[Path to nslcd configuration file.])
 AC_SUBST(NSLCD_CONF_PATH)
+
+# check the name of the file with a bindpw value
+AC_ARG_WITH(bindpw-file,
+            AS_HELP_STRING([--with-bindpw-file=PATH],
+                           [path to file with value for bindpw @<:@disabled@:>@]),
+            [ NSLCD_BINDPW_PATH="$with_bindpw_file"
+              AC_DEFINE_UNQUOTED(NSLCD_BINDPW_PATH,"$NSLCD_BINDPW_PATH",[Path to bindpw value.])
+              AC_SUBST(NSLCD_BINDPW_PATH)
+            ])
 
 # where should the pidfile be written
 AC_ARG_WITH(nslcd-pidfile,

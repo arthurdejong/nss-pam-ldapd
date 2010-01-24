@@ -699,7 +699,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     exit(EXIT_FAILURE);
   }
   /* read file and parse lines */
-  while (fgets(linebuf,MAX_LINE_LENGTH,fp)!=NULL)
+  while (fgets(linebuf,sizeof(linebuf),fp)!=NULL)
   {
     lnr++;
     line=linebuf;
@@ -984,6 +984,59 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
   fclose(fp);
 }
 
+#ifdef NSLCD_BINDPW_PATH
+static void bindpw_read(const char *filename,struct ldap_config *cfg)
+{
+  FILE *fp;
+  char linebuf[MAX_LINE_LENGTH];
+  int i;
+  /* open config file */
+  errno=0;
+  if ((fp=fopen(filename,"r"))==NULL)
+  {
+    if (errno==ENOENT)
+    {
+      log_log(LOG_DEBUG,"no bindpw file (%s)",filename);
+      return; /* ignore */
+    }
+    else
+    {
+      log_log(LOG_ERR,"cannot open bindpw file (%s): %s",filename,strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+  }
+  /* read the first line */
+  if (fgets(linebuf,sizeof(linebuf),fp)==NULL)
+  {
+    log_log(LOG_ERR,"%s: error reading first line",filename);
+    exit(EXIT_FAILURE);
+  }
+  /* chop the last char off and save the rest as bindpw */
+  i=strlen(linebuf);
+
+  i=(int)strlen(linebuf);
+  if ((i<=0)||(linebuf[i-1]!='\n'))
+  {
+    log_log(LOG_ERR,"%s:1: line too long or missing newline",filename);
+    exit(EXIT_FAILURE);
+  }
+  linebuf[i-1]='\0';
+  if (strlen(linebuf)==0)
+  {
+    log_log(LOG_ERR,"%s:1: the password is empty",filename);
+    exit(EXIT_FAILURE);
+  }
+  cfg->ldc_bindpw=strdup(linebuf);
+  /* check if there is no more data in the file */
+  if (fgets(linebuf,sizeof(linebuf),fp)!=NULL)
+  {
+    log_log(LOG_ERR,"%s:2: there is more than one line in the bindpw file",filename);
+    exit(EXIT_FAILURE);
+  }
+  fclose(fp);
+}
+#endif /* NSLCD_BINDPW_PATH */
+
 /* This function tries to get the LDAP search base from the LDAP server.
    Note that this returns a string that has been allocated with strdup().
    For this to work the myldap module needs enough configuration information
@@ -1055,6 +1108,9 @@ void cfg_init(const char *fname)
   cfg_defaults(nslcd_cfg);
   /* read configfile */
   cfg_read(fname,nslcd_cfg);
+#ifdef NSLCD_BINDPW_PATH
+  bindpw_read(NSLCD_BINDPW_PATH,nslcd_cfg);
+#endif /* NSLCD_BINDPW_PATH */
   /* do some sanity checks */
   if (nslcd_cfg->ldc_uris[0].uri==NULL)
   {
