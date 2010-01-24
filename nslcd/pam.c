@@ -2,7 +2,7 @@
    pam.c - pam processing routines
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009 Arthur de Jong
+   Copyright (C) 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -145,8 +145,18 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHC);
-  /* validate request and fill in the blanks */
-  if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
+  /* if the username is blank and admindn is configure, try to authenticate
+     as administrator, otherwise validate request as usual */
+  if ((*username=='\0')&&(nslcd_cfg->ldc_admindn!=NULL))
+  {
+    if (strlen(nslcd_cfg->ldc_admindn)>=sizeof(userdn))
+    {
+      log_log(LOG_ERR,"nslcd_pam_authc(): admindn will not fit in userdn");
+      return -1;
+    }
+    strcpy(userdn,nslcd_cfg->ldc_admindn);
+  }
+  else if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
   {
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
@@ -262,8 +272,8 @@ int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session)
   return 0;
 }
 
-static int try_pwmod(const char *userdn,const char *oldpassword,
-                     const char *newpassword)
+static int try_pwmod(const char *binddn,const char *userdn,
+                     const char *oldpassword,const char *newpassword)
 {
   MYLDAP_SESSION *session;
   int rc;
@@ -272,9 +282,12 @@ static int try_pwmod(const char *userdn,const char *oldpassword,
   if (session==NULL)
     return NSLCD_PAM_AUTH_ERR;
   /* set up credentials for the session */
-  rc=myldap_set_credentials(session,userdn,oldpassword);
+  rc=myldap_set_credentials(session,binddn,oldpassword);
   if (rc==LDAP_SUCCESS)
   {
+    /* if doing password modification as admin, don't pass old password along */
+    if ((nslcd_cfg->ldc_admindn!=NULL)&&(strcmp(binddn,nslcd_cfg->ldc_admindn)==0))
+      oldpassword=NULL;
     /* perform password modification */
     rc=myldap_passwd(session,userdn,oldpassword,newpassword);
   }
@@ -292,6 +305,7 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session)
   char servicename[64];
   char oldpassword[64];
   char newpassword[64];
+  char *binddn=userdn; /* the user performing the modification */
   int rc;
   /* read request parameters */
   READ_STRING(fp,username);
@@ -306,6 +320,12 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_PWMOD);
+  /* check if the the user passed the admindn */
+  if ((nslcd_cfg->ldc_admindn!=NULL)&&(strcmp(userdn,nslcd_cfg->ldc_admindn)==0))
+  {
+    binddn=nslcd_cfg->ldc_admindn;
+    userdn[0]='\0'; /* cause validate_user() to get the user DN */
+  }
   /* validate request and fill in the blanks */
   if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
   {
@@ -313,7 +333,7 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session)
     return -1;
   }
   /* perform password modification */
-  rc=try_pwmod(userdn,oldpassword,newpassword);
+  rc=try_pwmod(binddn,userdn,oldpassword,newpassword);
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);

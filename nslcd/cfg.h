@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -92,6 +92,8 @@ struct ldap_config
   char *ldc_binddn;
   /* bind cred */
   char *ldc_bindpw;
+  /* bind DN for password modification by administrator */
+  char *ldc_admindn;
   /* sasl authentication id */
   char *ldc_sasl_authcid;
   /* sasl authorization id */

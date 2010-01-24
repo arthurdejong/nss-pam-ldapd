@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -96,6 +96,7 @@ static void cfg_defaults(struct ldap_config *cfg)
 #endif /* not LDAP_VERSION3 */
   cfg->ldc_binddn=NULL;
   cfg->ldc_bindpw=NULL;
+  cfg->ldc_admindn=NULL;
   cfg->ldc_sasl_authcid=NULL;
   cfg->ldc_sasl_authzid=NULL;
   cfg->ldc_sasl_secprops=NULL;
@@ -766,6 +767,10 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     else if (strcasecmp(keyword,"bindpw")==0)
     {
       get_restdup(filename,lnr,keyword,&line,&cfg->ldc_bindpw);
+    }
+    else if (strcasecmp(keyword,"admindn")==0)
+    {
+      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_admindn);
     }
     /* SASL authentication options */
     else if (strcasecmp(keyword,"sasl_authcid")==0)

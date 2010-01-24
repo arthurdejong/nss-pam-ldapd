@@ -2,7 +2,7 @@
    nslcd.h - file describing client/server protocol
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -194,7 +194,10 @@
    and the result value ends with:
      INT32   authc NSLCD_PAM_* result code
      INT32   authz NSLCD_PAM_* result code
-     STRING  authorisation error message */
+     STRING  authorisation error message
+   If the username is empty in this request an attempt is made to
+   authenticate as the administrator (set using admindn). The returned DN
+   is that of the administrator. */
 #define NSLCD_ACTION_PAM_AUTHC         20001
 
 /* PAM authorisation check request. The extra request values are:
@@ -225,7 +228,10 @@
      STRING new password
    and returns there extra result values:
      INT32   authz NSLCD_PAM_* result code
-     STRING  authorisation error message */
+     STRING  authorisation error message
+   In this request the DN may be set to the administrator's DN. In this
+   case old password should be the administrator's password. This allows
+   the administrator to change any user's password. */
 #define NSLCD_ACTION_PAM_PWMOD         20005
 
 /* Request result codes. */

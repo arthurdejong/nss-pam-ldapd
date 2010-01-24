@@ -6,7 +6,7 @@
    nslcd.conf.5.xml - docbook manual page for nslcd.conf
 
    Copyright (C) 1997-2005 Luke Howard
-   Copyright (C) 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -183,6 +183,17 @@
        This option is only applicable when either the <option>binddn</option> or
        <option>sasl_authcid</option> options are used.
 -->
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>admindn</option> <emphasis remap="I">DN</emphasis></term>
+     <listitem>
+      <para>
+       Specifies the distinguished name to use when the root user tries to
+       modify a user's password using the PAM module. The PAM module prompts
+       the user for the admin password instead of the user's password.
       </para>
      </listitem>
     </varlistentry>

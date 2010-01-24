@@ -115,6 +115,9 @@ base dc=example,dc=net
 #binddn cn=annonymous,dc=example,dc=net
 #bindpw secret
 
+# The DN used for password modifications by root.
+#admindn cn=admin,dc=example,dc=com
+
 # SSL options
 #ssl off
 #tls_reqcert never

@@ -2,7 +2,7 @@
    pam.c - pam module functions
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009 Arthur de Jong
+   Copyright (C) 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@
 #include <syslog.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <pwd.h>
 
 #include "common.h"
 #include "compat/attrs.h"
@@ -596,6 +597,8 @@ static int nslcd_request_pwmod(pld_ctx *ctx,const char *username,
     READ_BUF_STRING(fp,ctx->authzmsg);)
 }
 
+/* prompt for LDAP administrator password */
+
 /* ensure that the context includes and oldpassword field */
 static const char *get_old_password(pam_handle_t *pamh, int flags,pld_ctx *ctx)
 {
@@ -635,7 +638,8 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   int i;
   struct pam_conv *appconv;
   pld_ctx *ctx=NULL;
-
+  struct passwd *pwent;
+  /* parse module options */
   for (i=0;i<argc;i++)
   {
     if (strcmp(argv[i],"use_first_pass")==0)
@@ -686,10 +690,24 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
      and authenticate with the current password */
   if (flags&PAM_PRELIM_CHECK)
   {
-    /* get old (current) password */
-    oldpassword=get_old_password(pamh,flags,ctx);
-    /* check the old password */
-    rc=nslcd_request_authc(ctx,username,service,oldpassword);
+    /* see if the user is trying to modify another user's password */
+    pwent=getpwnam(username);
+    if ((pwent!=NULL)&&(pwent->pw_uid!=getuid()))
+    {
+      /* prompt for the admin password */
+      rc=pam_get_authtok(pamh,PAM_OLDAUTHTOK,&oldpassword,"LDAP administrator password: ");
+      if (rc!=PAM_SUCCESS)
+        return rc;
+      /* try authenticating */
+      rc=nslcd_request_authc(ctx,"",service,oldpassword);
+    }
+    else
+    {
+      /* get old (current) password */
+      oldpassword=get_old_password(pamh,flags,ctx);
+      /* check the old password */
+      rc=nslcd_request_authc(ctx,username,service,oldpassword);
+    }
     if (rc==PAM_SUCCESS)
       rc=ctx->authok;
     if ((rc==PAM_AUTHINFO_UNAVAIL)&&(ignore_flags&IGNORE_UNAVAIL))
