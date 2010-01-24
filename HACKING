@@ -16,7 +16,6 @@ are considered:
 * clearly state which problem you're trying to solve and how this is
   accomplished
 * please follow the existing coding conventions
-* patches
 * please test the patch and include information on testing with the patch
   (platforms tested, etc)
 * contributions will be acknowledged in the AUTHORS file
@@ -35,11 +34,10 @@ BUILD DEPENDENCIES
 For building svn snapshots the following tools are needed:
 
 * autoconf (2.61 is used but 2.59 is minimal)
-* automake (1.10 is used)
-* check (0.9.5 is used)
+* automake (1.11 is used)
 
 and of course the usual build tools (gcc/make/etc). Also see debian/control
-(Build-Depends field) for libraries you need.
+(Build-Depends field) for libraries you may need.
 
 To build the svn snapshot run the autogen.sh shell script to build the
 configure script. When developing patches please use --enable-warnings with
@@ -51,36 +49,41 @@ RELEASE VERSIONING
 ==================
 
 A new versioning scheme was chosen over the nss_ldap release scheme. The
-scheme is a simple major.minor numbering starting with 0.1. Until a 1.0
-release is made the code will be considered work in progress. The interfaces
-may change and features may be added and removed.
+scheme is a simple major.minor.micro numbering. Until a 1.0 release is made
+the code will be considered work in progress. The interfaces may change and
+features may be added and removed.
 
 
 GENERAL DESIGN
 ==============
 
-The basic design splits the functionality in two parts. The NSS part
+The basic design splits the functionality in three parts. The NSS part
 interfaces with libc and translates the NSS requests into simple generic
 requests (e.g. "get user with name test", "get group with gid 101" or "get all
-shadow entries"). Translating these requests into LDAP requests is then the
-job of the daemon (nslcd) so that the NSS part won't have to know anything
-about LDAP (in fact replacing it with another lookup method should be very
-simple).
+shadow entries").
 
-                nslcd  -> OpenLDAP -> LDAP server
-                  ^
-    libc NSS -> libnss_ldap.so
+Another part is the PAM module which handles authentication requests from the
+system.
+
+Both these parts translate the queries in a higher-level simple protocol used
+to communicate with the nslcd daemon. This daemon translates the requests into
+LDAP searches. As a result the NSS and PAM modules don't need to known
+anything about LDAP (in fact replacing it with another lookup method should be
+very simple) and don't have to link with the LDAP libraries.
+
+  libc NSS -> libnss_ldap.so
+                 \
+                  |->  nslcd  -> OpenLDAP -> LDAP server
+                 /
+  PAM stack -> libpam_ldap.so
 
 design goals
 ------------
 * make it as simple as possible
-* design as specified above
 * simpler configuration and semantics
 * simpler, clearer and completer documentation
 * split source code into manageable parts
 * get rid of unneeded code and complexity
-* split complexity in two parts (LDAP interface in server, NSS interface in
-  library)
 * have a stable, easily maintainable piece of quality software
 
 
@@ -96,7 +99,9 @@ _nss_ldap_FUNCTION_r(...)
   for an answer (again with a time-out)
 
 The complete list of exported functions can be found in exports.linux and
-prototypes.h.
+prototypes.h. The NSS interface seems to be fairly libc-specific and is
+currently tuned towards GNU Libc, although FreeBSD has a port based on this
+code.
 
 Currently a number of macros are used to build most of the function bodies for
 these functions. Part of this is defined in the common/nslcd-prot.h file and
@@ -107,29 +112,49 @@ http://mirrors.usc.edu/pub/gnu/Manuals/glibc-2.2.3/html_chapter/libc_28.html#SEC
 http://www.gnu.org/software/libc/manual/html_node/index.html
 
 
+PAM MODULE
+==========
+
+The PAM module is implemented in the pam directory. Implementation is fairly
+straight-forward. The PAM module stores some state between PAM calls in a
+struct. The calls to nslcd are however stateless. The PAM module may however
+supply some information that help lookups (most notably DNs of user entries).
+
+Care must be taken with the communication because the nslcd requests are not
+authenticated (e.g. changing passwords requests should include all
+credentials). This is where the PAM module is different from the NSS module.
+The PAM module could result in state changes on the LDAP server.
+
+Some useful links:
+http://www.kernel.org/pub/linux/libs/pam/
+http://www.opengroup.org/tech/rfc/rfc86.0.html
+
+
 THE COMMUNICATIONS PROTOCOL
 ===========================
 
-The protocol used for communicating between the NSS library and the nslcd
-daemon is very simple and almost fully described in the nslcd.h header file.
-The common/nslcd-prot.h header file defines some macros that are used for
-reading and writing protocol entities (strings, 32-bit integers, etc).
+The protocol used for communicating between the NSS library and PAM module on
+one end and the nslcd daemon on the other is very simple and almost fully
+described in the nslcd.h header file. The common/nslcd-prot.h header file
+defines some macros that are used for reading and writing protocol entities
+(strings, 32-bit integers, etc).
 
 Every NSS database has a corresponding source file in the nss and the nslcd
-directory.
+directory. The PAM module is built up of a single file in both the pam and
+nslcd directories.
 
 If the protocol is changed in an incompatible way the protocol version should
 be incremented in nslcd.h. There is currently no versioning scheme available
 for this.
 
 A special module (common/tio.c) was made so we can define simpler semantics
-for time-out values and buffer sizes. Both the NSS library and nslcd use this
-module which means that it includes functionality that is needed for both
-(e.g. large write buffers for the server part and large resettable read
-buffers for the NSS part). Maybe building two modules from the same source
-with different features in them is an option (e.g. the NSS part needs the
-read buffers and handling of SIGPIPE and the nslcd part needs the write
-buffers and possibly flushing in the background).
+for time-out values and buffer sizes. All components use this module which
+means that it includes functionality that is needed for both (e.g. large write
+buffers for the server part and large resettable read buffers for the NSS
+part). Maybe building two modules from the same source with different features
+in them is an option (e.g. the NSS part needs the read buffers and handling of
+SIGPIPE and the nslcd part needs the write buffers and possibly flushing in
+the background).
 
 The common directory also contains some other generally useful modules that
 are used in some components.
@@ -143,8 +168,7 @@ the database specific functions.
 
 nslcd_FUNCION(...)
   This functions fills in the correct parameters from the request. This
-  function should write responses to the stream. Almost all these functions
-  are generated from a macro in nslcd/common.h.
+  function should write responses to the stream.
 
 
 SECURITY NOTES
@@ -155,6 +179,14 @@ is now a local interface to a daemon with privileges. Before processes could
 only potentially exploit bugs in the library and gain the privileges of the
 process that was doing the name lookups. In this case the privileges of the
 daemon are potentially exposed.
+
+Extra care should be taken with processes that normally require extra
+privileges (getting shadow entries, authentication, updating session
+information, etc).
+
+Any user on the system can perform nslcd queries so either the nslcd daemon
+needs to check the userid of the caller or the request needs to contain the
+needed credentials itself.
 
 
 TEST SETUP
