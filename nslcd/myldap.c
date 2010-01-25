@@ -1606,7 +1606,7 @@ int myldap_passwd(
   ber_userdn.bv_val=(char *)userdn;
   ber_userdn.bv_len=strlen(userdn);
   ber_oldpassword.bv_val=(char *)oldpassword;
-  ber_oldpassword.bv_len=oldpassword?strlen(oldpassword):NULL;
+  ber_oldpassword.bv_len=oldpassword?strlen(oldpassword):0;
   ber_newpassword.bv_val=(char *)newpasswd;
   ber_newpassword.bv_len=strlen(newpasswd);
   ber_retpassword.bv_val=NULL;
