@@ -78,6 +78,17 @@
   <variablelist remap="TP">
    <varlistentry>
     <term>
+     <option>-c, --check</option>
+    </term>
+    <listitem>
+     <para>
+      Check if the daemon is running.
+      This causes nslcd to return 0 if the daemon is already running and 1 if it is not.
+     </para>
+    </listitem>
+    </varlistentry>
+    <varlistentry>
+    <term>
      <option>-d, --debug</option>
     </term>
     <listitem>

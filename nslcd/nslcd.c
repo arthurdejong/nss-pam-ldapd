@@ -2,7 +2,7 @@
    nslcd.c - ldap local connection daemon
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -72,6 +72,9 @@
 /* flag to indictate if we are in debugging mode */
 static int nslcd_debugging=0;
 
+/* flag to indicate user requested the --check option */
+static int nslcd_checkonly=0;
+
 /* the exit flag to indicate that a signal was received */
 static volatile int nslcd_exitsignal=0;
 
@@ -112,6 +115,7 @@ static void display_usage(FILE *fp,const char *program_name)
 {
   fprintf(fp,"Usage: %s [OPTION]...\n",program_name);
   fprintf(fp,"Name Service LDAP connection daemon.\n");
+  fprintf(fp,"  -c, --check        check if the daemon already is running\n");
   fprintf(fp,"  -d, --debug        don't fork and print debugging to stderr\n");
   fprintf(fp,"      --help         display this help and exit\n");
   fprintf(fp,"      --version      output version information and exit\n");
@@ -122,12 +126,13 @@ static void display_usage(FILE *fp,const char *program_name)
 /* the definition of options for getopt(). see getopt(2) */
 static struct option const nslcd_options[] =
 {
+  { "check",       no_argument,       NULL, 'c' },
   { "debug",       no_argument,       NULL, 'd' },
   { "help",        no_argument,       NULL, 'h' },
   { "version",     no_argument,       NULL, 'V' },
   { NULL, 0, NULL, 0 }
 };
-#define NSLCD_OPTIONSTRING "dhV"
+#define NSLCD_OPTIONSTRING "cdhV"
 
 /* parse command line options and save settings in struct  */
 static void parse_cmdline(int argc,char *argv[])
@@ -137,6 +142,9 @@ static void parse_cmdline(int argc,char *argv[])
   {
     switch (optc)
     {
+    case 'c': /* -c, --check        check if the daemon already is running */
+      nslcd_checkonly=1;
+      break;
     case 'd': /* -d, --debug        don't fork and print debugging to stderr */
       nslcd_debugging++;
       log_setdefaultloglevel(LOG_DEBUG);
@@ -468,7 +476,7 @@ static void acceptconnection(MYLDAP_SESSION *session)
 }
 
 /* test to see if we can lock the specified file */
-static void test_lock(const char* filename)
+static int is_locked(const char* filename)
 {
   int fd;
   if (filename!=NULL)
@@ -477,17 +485,18 @@ static void test_lock(const char* filename)
     if ((fd=open(filename,O_RDWR,0644))<0)
     {
       if (errno==ENOENT)
-        return; /* if file doesn't exist it cannot be locked */
+        return 0; /* if file doesn't exist it cannot be locked */
       log_log(LOG_ERR,"cannot open lock file (%s): %s",filename,strerror(errno));
       exit(EXIT_FAILURE);
     }
     if (lockf(fd,F_TEST,0)<0)
     {
-      log_log(LOG_ERR,"daemon may already be active, cannot acquire lock (%s): %s",filename,strerror(errno));
-      exit(EXIT_FAILURE);
+      close(fd);
+      return -1;
     }
     close(fd);
   }
+  return 0;
 }
 
 /* write the current process id to the specified file */
@@ -593,8 +602,28 @@ int main(int argc,char *argv[])
   cfg_init(NSLCD_CONF_PATH);
   /* set default mode for pidfile and socket */
   (void)umask((mode_t)0022);
-  /* see if someone already locked the pidfile */
-  test_lock(NSLCD_PIDFILE);
+  /* see if someone already locked the pidfile
+     if --check option was given:
+       exit TRUE if daemon runs (pidfile locked), FALSE otherwise */
+  if (nslcd_checkonly)
+  {
+    if (is_locked(NSLCD_PIDFILE))
+    {
+      log_log(LOG_DEBUG,"pidfile (%s) is locked",NSLCD_PIDFILE);
+      exit(EXIT_SUCCESS);
+    }
+    else
+    {
+      log_log(LOG_DEBUG,"pidfile (%s) is not locked",NSLCD_PIDFILE);
+      exit(EXIT_FAILURE);
+    }
+  }
+  /* normal check for pidfile locked */
+  if (is_locked(NSLCD_PIDFILE))
+  {
+    log_log(LOG_ERR,"daemon may already be active, cannot acquire lock (%s): %s",NSLCD_PIDFILE,strerror(errno));
+    exit(EXIT_FAILURE);
+  }
   /* daemonize */
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
   {
