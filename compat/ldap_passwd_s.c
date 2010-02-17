@@ -62,7 +62,7 @@ int ldap_extended_operation_s(LDAP *ld,LDAP_CONST char *reqoid,
 /* Replacement for password modification. user is the DN of the entry to
    change, oldpw is the old password (may not always be needed?), newpw is
    the new password to set and newpasswd is sometimes returned (though not
-   by us). */
+   by us). See RFC 3062 for details.*/
 int ldap_passwd_s(LDAP *ld,struct berval *user,struct berval *oldpw,
                   struct berval *newpw,struct berval *newpasswd,
                   LDAPControl **sctrls,LDAPControl **cctrls)
