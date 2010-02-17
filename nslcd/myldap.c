@@ -1605,19 +1605,33 @@ int myldap_passwd(
   /* translate to ber stuff */
   ber_userdn.bv_val=(char *)userdn;
   ber_userdn.bv_len=strlen(userdn);
-  ber_oldpassword.bv_val=(char *)oldpassword;
-  ber_oldpassword.bv_len=oldpassword?strlen(oldpassword):0;
   ber_newpassword.bv_val=(char *)newpasswd;
   ber_newpassword.bv_len=strlen(newpasswd);
   ber_retpassword.bv_val=NULL;
   ber_retpassword.bv_len=0;
   /* perform request */
-  rc=ldap_passwd_s(session->ld,&ber_userdn,oldpassword?&ber_oldpassword:NULL,
+  log_log(LOG_DEBUG,"myldap_passwd(): try ldap_passwd_s() without old password");
+  rc=ldap_passwd_s(session->ld,&ber_userdn,NULL,
                    &ber_newpassword,&ber_retpassword,NULL,NULL);
   if (rc!=LDAP_SUCCESS)
-    log_log(LOG_ERR,"ldap_passwd_s() failed: %s",ldap_err2string(rc));
+    log_log(LOG_ERR,"ldap_passwd_s() without old password failed: %s",ldap_err2string(rc));
   /* free returned data if needed */
   if (ber_retpassword.bv_val!=NULL)
     ldap_memfree(ber_retpassword.bv_val);
+  if ((rc!=LDAP_SUCCESS)&&(oldpassword!=NULL))
+  {
+    /* retry with old password */
+    log_log(LOG_DEBUG,"myldap_passwd(): try ldap_passwd_s() with old password");
+    ber_oldpassword.bv_val=(char *)oldpassword;
+    ber_oldpassword.bv_len=strlen(oldpassword);
+    /* perform request */
+    rc=ldap_passwd_s(session->ld,&ber_userdn,&ber_oldpassword,
+                     &ber_newpassword,&ber_retpassword,NULL,NULL);
+    if (rc!=LDAP_SUCCESS)
+      log_log(LOG_ERR,"ldap_passwd_s() with old password failed: %s",ldap_err2string(rc));
+    /* free returned data if needed */
+    if (ber_retpassword.bv_val!=NULL)
+      ldap_memfree(ber_retpassword.bv_val);
+  }
   return rc;
 }
