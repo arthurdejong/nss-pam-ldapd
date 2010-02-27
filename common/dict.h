@@ -59,7 +59,7 @@ void *dict_get(DICT *dict,const char *key)
    of the caller. */
 void dict_free(DICT *dict);
 
-/* Return the keys of the dicta as a list of strings.
+/* Return the keys of the dict as a list of strings.
    The caller should free the memory with a single call to free(). */
 const char **dict_keys(DICT *dict)
   MUST_USE;
