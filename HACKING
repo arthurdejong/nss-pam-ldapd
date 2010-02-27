@@ -75,7 +75,7 @@ very simple) and don't have to link with the LDAP libraries.
                  \
                   |->  nslcd  -> OpenLDAP -> LDAP server
                  /
-  PAM stack -> libpam_ldap.so
+  PAM stack -> pam_ldap.so
 
 design goals
 ------------

@@ -4,13 +4,12 @@ tests should be self-explanitory as they should be simple unit tests of the
 shipped modules (more unit tests are welcome).
 
 Since nss-pam-ldapd is meant for providing data from an LDAP server for some
-tests you should have an LDAP server and for even other tests you need to have
-nss-pam-ldapd installed (patches for using LD_PRELOAD or similar tricks instead
-are welcome).
+tests you should have an LDAP server running and for even other tests you need
+to have nslcd running.
 
-For this a test setup should be made (the tests are ignored if no such setup
-was detected). In my development environment I use a chroot jail with Debian.
-The instructions in this document assume a similar environment.
+For this a test environment should be set up (the tests are ignored if no such
+environment was detected). In my development environment I use a chroot jail
+with Debian. The instructions in this document assume a similar environment.
 
 
 TEST ENVIRONMENT
