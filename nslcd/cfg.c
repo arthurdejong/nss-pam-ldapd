@@ -96,7 +96,7 @@ static void cfg_defaults(struct ldap_config *cfg)
 #endif /* not LDAP_VERSION3 */
   cfg->ldc_binddn=NULL;
   cfg->ldc_bindpw=NULL;
-  cfg->ldc_admindn=NULL;
+  cfg->ldc_rootpwmoddn=NULL;
   cfg->ldc_sasl_authcid=NULL;
   cfg->ldc_sasl_authzid=NULL;
   cfg->ldc_sasl_secprops=NULL;
@@ -768,9 +768,9 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     {
       get_restdup(filename,lnr,keyword,&line,&cfg->ldc_bindpw);
     }
-    else if (strcasecmp(keyword,"admindn")==0)
+    else if (strcasecmp(keyword,"rootpwmoddn")==0)
     {
-      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_admindn);
+      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_rootpwmoddn);
     }
     /* SASL authentication options */
     else if (strcasecmp(keyword,"sasl_authcid")==0)

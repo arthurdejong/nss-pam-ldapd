@@ -145,16 +145,16 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHC);
-  /* if the username is blank and admindn is configure, try to authenticate
+  /* if the username is blank and rootpwmoddn is configure, try to authenticate
      as administrator, otherwise validate request as usual */
-  if ((*username=='\0')&&(nslcd_cfg->ldc_admindn!=NULL))
+  if ((*username=='\0')&&(nslcd_cfg->ldc_rootpwmoddn!=NULL))
   {
-    if (strlen(nslcd_cfg->ldc_admindn)>=sizeof(userdn))
+    if (strlen(nslcd_cfg->ldc_rootpwmoddn)>=sizeof(userdn))
     {
-      log_log(LOG_ERR,"nslcd_pam_authc(): admindn will not fit in userdn");
+      log_log(LOG_ERR,"nslcd_pam_authc(): rootpwmoddn will not fit in userdn");
       return -1;
     }
-    strcpy(userdn,nslcd_cfg->ldc_admindn);
+    strcpy(userdn,nslcd_cfg->ldc_rootpwmoddn);
   }
   else if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
   {
@@ -286,7 +286,7 @@ static int try_pwmod(const char *binddn,const char *userdn,
   if (rc==LDAP_SUCCESS)
   {
     /* if doing password modification as admin, don't pass old password along */
-    if ((nslcd_cfg->ldc_admindn!=NULL)&&(strcmp(binddn,nslcd_cfg->ldc_admindn)==0))
+    if ((nslcd_cfg->ldc_rootpwmoddn!=NULL)&&(strcmp(binddn,nslcd_cfg->ldc_rootpwmoddn)==0))
       oldpassword=NULL;
     /* perform password modification */
     rc=myldap_passwd(session,userdn,oldpassword,newpassword);
@@ -320,10 +320,10 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_PWMOD);
-  /* check if the the user passed the admindn */
-  if ((nslcd_cfg->ldc_admindn!=NULL)&&(strcmp(userdn,nslcd_cfg->ldc_admindn)==0))
+  /* check if the the user passed the rootpwmoddn */
+  if ((nslcd_cfg->ldc_rootpwmoddn!=NULL)&&(strcmp(userdn,nslcd_cfg->ldc_rootpwmoddn)==0))
   {
-    binddn=nslcd_cfg->ldc_admindn;
+    binddn=nslcd_cfg->ldc_rootpwmoddn;
     userdn[0]='\0'; /* cause validate_user() to get the user DN */
   }
   /* validate request and fill in the blanks */

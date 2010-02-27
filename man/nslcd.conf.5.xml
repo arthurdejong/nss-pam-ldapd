@@ -188,7 +188,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>admindn</option> <emphasis remap="I">DN</emphasis></term>
+     <term><option>rootpwmoddn</option> <emphasis remap="I">DN</emphasis></term>
      <listitem>
       <para>
        Specifies the distinguished name to use when the root user tries to

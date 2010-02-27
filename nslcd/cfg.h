@@ -93,7 +93,7 @@ struct ldap_config
   /* bind cred */
   char *ldc_bindpw;
   /* bind DN for password modification by administrator */
-  char *ldc_admindn;
+  char *ldc_rootpwmoddn;
   /* sasl authentication id */
   char *ldc_sasl_authcid;
   /* sasl authorization id */

@@ -196,7 +196,7 @@
      INT32   authz NSLCD_PAM_* result code
      STRING  authorisation error message
    If the username is empty in this request an attempt is made to
-   authenticate as the administrator (set using admindn). The returned DN
+   authenticate as the administrator (set using rootpwmoddn). The returned DN
    is that of the administrator. */
 #define NSLCD_ACTION_PAM_AUTHC         20001
 

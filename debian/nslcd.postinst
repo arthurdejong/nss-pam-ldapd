@@ -116,7 +116,7 @@ base dc=example,dc=net
 #bindpw secret
 
 # The DN used for password modifications by root.
-#admindn cn=admin,dc=example,dc=com
+#rootpwmoddn cn=admin,dc=example,dc=com
 
 # SSL options
 #ssl off
