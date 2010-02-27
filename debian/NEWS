@@ -9,3 +9,4 @@ nss-pam-ldapd (0.7.0) unstable; urgency=low
     any existing /etc/nss-ldapd.conf file).
 
  -- Arthur de Jong <adejong@debian.org>  Tue, 01 Sep 2009 17:00:00 +0200
+
