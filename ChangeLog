@@ -1,3 +1,131 @@
+2010-02-27 15:26  arthur
+
+	* [r1070] debian/NEWS: add blank line for apt-listchanges
+
+2010-02-27 15:23  arthur
+
+	* [r1069] debian/control: upgrade to standards-version 3.8.4 (no
+	  changes needed)
+
+2010-02-27 14:45  arthur
+
+	* [r1068] common/dict.h: fix typo
+
+2010-02-27 14:08  arthur
+
+	* [r1067] debian/nslcd.postinst, man/nslcd.conf.5.xml, nslcd.conf,
+	  nslcd.h, nslcd/cfg.c, nslcd/cfg.h, nslcd/pam.c: rename admindn
+	  option to rootpwmoddn
+
+2010-02-27 14:03  arthur
+
+	* [r1066] INSTALL, compile: update from latest automake
+
+2010-02-27 12:34  arthur
+
+	* [r1065] HACKING, tests/README: small updates to documentation
+
+2010-02-17 20:21  arthur
+
+	* [r1064] nslcd/myldap.c: first try password modification without
+	  the old password and if that fails with the old password
+
+2010-02-17 20:21  arthur
+
+	* [r1063] compat/ldap_passwd_s.c: add pointer to RFC 3062
+
+2010-01-28 21:04  arthur
+
+	* [r1062] man/nslcd.8.xml, nslcd/nslcd.c: patch by Jan Schampera to
+	  implement a --check option
+
+2010-01-25 19:27  arthur
+
+	* [r1061] nslcd/myldap.c: fix for type mismatch (thanks to Jan
+	  Schampera)
+
+2010-01-24 17:07  arthur
+
+	* [r1060] configure.ac, nslcd/cfg.c: add --with-bindpw-file
+	  configure option to enable reading the bindpw option from a file
+
+2010-01-24 14:33  arthur
+
+	* [r1059] debian/nslcd.postinst, man/nslcd.conf.5.xml, nslcd.conf,
+	  nslcd.h, nslcd/cfg.c, nslcd/cfg.h, nslcd/pam.c, pam/pam.c: add
+	  admindn configuration file option that is used when modifying
+	  another user's password
+
+2010-01-24 13:46  arthur
+
+	* [r1058] man/nslcd.conf.5.xml: fix example
+
+2010-01-24 13:36  arthur
+
+	* [r1057] nslcd/myldap.c: make logging of passwords consistent and
+	  support a NULL oldpassword value in myldap_passwd()
+
+2010-01-24 11:31  arthur
+
+	* [r1056] nslcd/myldap.c: free data returned from ldap_passwd_s()
+	  call if needed and add missing casts
+
+2010-01-24 11:10  arthur
+
+	* [r1055] HACKING: general updates and add PAM module information
+
+2010-01-23 13:37  arthur
+
+	* [r1054] nss/prototypes.h: simple improvement for FreeBSD
+
+2010-01-23 13:33  arthur
+
+	* [r1053] nslcd/nslcd.c: lock the pidfile at start-up to ensure
+	  only one nslcd process is running (based on a patch by Jan
+	  Schampera <jan.schampera@web.de>)
+
+2010-01-21 22:00  arthur
+
+	* [r1052] debian/nslcd.init: start nslcd before apache for systems
+	  that use LDAP users to run virtual hosts
+
+2010-01-21 21:06  arthur
+
+	* [r1051] HACKING, README, configure.ac: set contact address to
+	  mailing list
+
+2010-01-21 20:46  arthur
+
+	* [r1050] debian/NEWS: change format of NEWS entry based on
+	  Developer's Reference
+
+2010-01-21 20:45  arthur
+
+	* [r1049] debian/rules: install lintian overrides with dh_lintian
+
+2010-01-08 22:40  arthur
+
+	* [r1048] nslcd/cfg.c: improve getting of domain name by also
+	  checking hostname aliases (based on patch by Jan Schampera
+	  <jan.schampera@web.de>)
+
+2010-01-08 22:38  arthur
+
+	* [r1047] AUTHORS: improve getting of domain name by also checking
+	  hostname aliases (based on patch by Jan Schampera
+	  <jan.schampera@web.de>)
+
+2009-12-29 12:44  arthur
+
+	* [r1046] nslcd/cfg.h, nslcd/myldap.c: some small simplifcations
+	  and clarifications
+
+2009-12-28 21:23  arthur
+
+	* [r1044] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.2 release
+
 2009-12-28 20:24  arthur
 
 	* [r1043] debian/nslcd.postrm: fix removal of old configuration

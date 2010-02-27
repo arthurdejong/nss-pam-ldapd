@@ -1,10 +1,29 @@
+nss-pam-ldapd (0.7.3) unstable; urgency=low
+
+  * allow password modification by root using the rootpwmoddn configuration
+    file option (the user will be prompted for the password for rootpwmoddn
+    instead of the user's password)
+  * the LDAP password modify EXOP is first tried without the old password and
+    if that fails retried with the old password
+  * when determining the domain name (used for some value of the base and uri
+    options) also try to use the hostname aliases to build the domain name
+    (patch by Jan Schampera)
+  * perform locking on the pidfile on start-up to ensure that  only one nslcd
+    process is running and implement a --check option (patch by Jan Schampera)
+  * documentation improvements
+  * upgrade to standards-version 3.8.4 (no changes needed)
+  * start nslcd before apache for systems that use LDAP users to run virtual
+    hosts (closes: #565971)
+
+ -- Arthur de Jong <adejong@debian.org>  Sat, 27 Feb 2010 16:00:00 +0100
+
 nss-pam-ldapd (0.7.2) unstable; urgency=low
 
   * some attributes may be mapped to a shell-like expression that expand
     attributes from LDAP entries; this allows attributes overrides, defaults
     and much more (as a result the passwd cn attribute mapping has been
     removed because the gecos mapping is now "${gecos:-$cn}" by default)
-  * update the NSS module to follow the change in Glibc where the addr 
+  * update the NSS module to follow the change in Glibc where the addr
     parameter of getnetbyaddr_r() was changed from network-byte-order to
     host-byte-order
   * properly escape searches for uniqueMember attributes for DN with a comma
