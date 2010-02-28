@@ -363,7 +363,9 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
    This returns an LDAP result code. */
 static int do_bind(MYLDAP_SESSION *session,const char *uri)
 {
+#ifdef LDAP_OPT_X_TLS
   int rc;
+#endif /* LDAP_OPT_X_TLS */
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
 #ifndef HAVE_SASL_INTERACT_T
   struct berval cred;
@@ -460,7 +462,9 @@ static int do_set_options(MYLDAP_SESSION *session)
   /* FIXME: move this to a global initialisation routine */
   int rc;
   struct timeval tv;
+#ifdef LDAP_OPT_X_TLS
   int i;
+#endif /* LDAP_OPT_X_TLS */
 #ifdef HAVE_LDAP_SET_REBIND_PROC
   /* the rebind function that is called when chasing referrals, see
      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/apis/ldap_set_rebind_proc.htm
