@@ -391,8 +391,20 @@
        If the <emphasis remap="I">NEWATTRIBUTE</emphasis> is presented in
        quotes (") it is treated as an expression which will be evaluated
        to build up the actual value used.
-       Not all attributes can be mapped this way.
-       See the section on attribute mapping below for more details.
+       See the section on attribute mapping expressions below for more details.
+      </para>
+      <para>
+       Only some attributes for passwd and shadow entries may be mapped with
+       an expression (because other attributes may be used in search
+       filters).
+       For passwd entries the following attributes may be mapped with an
+       expression: <code>gidNumber</code>, <code>gecos</code>,
+       <code>homeDirectory</code> and <code>loginShell</code>.
+       For shadow entries the following attributes may be mapped with an
+       expression: <code>shadowLastChange</code>, <code>shadowMin</code>,
+       <code>shadowMax</code>, <code>shadowWarning</code>,
+       <code>shadowInactive</code>, <code>shadowExpire</code> and
+       <code>shadowFlag</code>.
       </para>
      </listitem>
     </varlistentry>
