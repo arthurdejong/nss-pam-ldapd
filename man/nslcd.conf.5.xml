@@ -409,26 +409,6 @@
      </listitem>
     </varlistentry>
 
-<!--
-    <varlistentry>
-     <term><option>default</option>
-           <emphasis remap="I">MAP</emphasis>
-           <emphasis remap="I">ATTRIBUTE</emphasis>
-           "<emphasis remap="I">VALUE</emphasis>"</term>
-     <listitem>
-      <para>
-       Specifies the default value to use for entries that lack the
-       specified attribute.
-       Use the specified <emphasis remap="I">VALUE</emphasis> if the
-       lookup in the directory for the specified attribute would not return
-       any data.
-       Note that if the <acronym>LDAP</acronym> server returns an empty string
-       for the attribute an empty string is returned.
-      </para>
-     </listitem>
-    </varlistentry>
--->
-
    </variablelist>
   </refsect2>
 
