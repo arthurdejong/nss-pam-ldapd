@@ -314,6 +314,15 @@ NSLCD_HANDLE(
   if (!isvalidname(name)) {
     log_log(LOG_WARNING,"nslcd_group_bymember(%s): invalid user name",name);
     return -1;
+  }
+  if ((nslcd_cfg->ldc_nss_initgroups_ignoreusers!=NULL)&&
+      set_contains(nslcd_cfg->ldc_nss_initgroups_ignoreusers,name))
+  {
+    /* just end the request, returning no results */
+    WRITE_INT32(fp,NSLCD_VERSION);
+    WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYMEMBER);
+    WRITE_INT32(fp,NSLCD_RESULT_END);
+    return 0;
   },
   log_log(LOG_DEBUG,"nslcd_group_bymember(%s)",name);,
   NSLCD_ACTION_GROUP_BYMEMBER,

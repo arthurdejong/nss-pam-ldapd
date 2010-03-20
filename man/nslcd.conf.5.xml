@@ -625,6 +625,23 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry>
+     <term><option>nss_initgroups_ignoreusers</option> user1,user2,...</term>
+     <listitem>
+      <para>
+       This option prevents group membership lookups through
+       <acronym>LDAP</acronym> for the specified users. This can be useful
+       in case of unavailability of the <acronym>LDAP</acronym> server.
+       This option may be specified multiple times.
+      </para>
+      <para>
+       Alternatively, the value <emphasis remap="I">ALLLOCAL</emphasis> may be
+       used. With that value nslcd builds a full list of
+       non-<acronym>LDAP</acronym> users on startup.
+      </para>
+     </listitem>
+    </varlistentry>
+
    </variablelist>
   </refsect2>
 

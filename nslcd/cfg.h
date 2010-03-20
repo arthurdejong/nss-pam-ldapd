@@ -32,6 +32,7 @@
 #include <ldap.h>
 
 #include "compat/attrs.h"
+#include "common/set.h"
 
 /* values for uid and gid */
 #define NOUID ((gid_t)-1)
@@ -132,6 +133,9 @@ struct ldap_config
   int ldc_restart;
   /* set to a greater than 0 to enable handling of paged results with the specified size */
   int ldc_pagesize;
+  /* the users for which no initgroups() searches should be done
+     Note: because we use a set here comparisons will be case-insensitive */
+  SET *ldc_nss_initgroups_ignoreusers;
 };
 
 /* this is a pointer to the global configuration, it should be available

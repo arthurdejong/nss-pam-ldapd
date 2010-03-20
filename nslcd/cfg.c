@@ -118,6 +118,7 @@ static void cfg_defaults(struct ldap_config *cfg)
 #endif /* LDAP_OPT_X_TLS */
   cfg->ldc_restart=1;
   cfg->ldc_pagesize=0;
+  cfg->ldc_nss_initgroups_ignoreusers=NULL;
 }
 
 /* simple strdup wrapper */
@@ -679,6 +680,50 @@ static void parse_map_statement(const char *filename,int lnr,
   }
 }
 
+/* this function modifies the statement argument passed */
+static void parse_nss_initgroups_ignoreusers_statement(
+              const char *filename,int lnr,const char *keyword,
+              char *line,struct ldap_config *cfg)
+{
+  char token[MAX_LINE_LENGTH];
+  char *username,*next;
+  struct passwd *pwent;
+  check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
+  if (cfg->ldc_nss_initgroups_ignoreusers==NULL)
+    cfg->ldc_nss_initgroups_ignoreusers=set_new();
+  while (get_token(&line,token,sizeof(token))!=NULL)
+  {
+    if (strcasecmp(token,"alllocal")==0)
+    {
+      /* go over all users (this will work because nslcd is not yet running) */
+      setpwent();
+      while ((pwent=getpwent())!=NULL)
+        set_add(cfg->ldc_nss_initgroups_ignoreusers,pwent->pw_name);
+      endpwent();
+    }
+    else
+    {
+      next=token;
+      while (*next!='\0')
+      {
+        username=next;
+        /* find the end of the current username */
+        while ((*next!='\0')&&(*next!=',')) next++;
+        if (*next==',')
+        {
+          *next='\0';
+          next++;
+        }
+        /* check if user exists (but add anyway) */
+        pwent=getpwnam(username);
+        if (pwent==NULL)
+          log_log(LOG_ERR,"%s:%d: user '%s' does not exist",filename,lnr,username);
+        set_add(cfg->ldc_nss_initgroups_ignoreusers,username);
+      }
+    }
+  }
+}
+
 static void cfg_read(const char *filename,struct ldap_config *cfg)
 {
   FILE *fp;
@@ -970,6 +1015,10 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     {
       get_int(filename,lnr,keyword,&line,&cfg->ldc_pagesize);
       get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"nss_initgroups_ignoreusers")==0)
+    {
+      parse_nss_initgroups_ignoreusers_statement(filename,lnr,keyword,line,cfg);
     }
 #ifdef ENABLE_CONFIGFILE_CHECKING
     /* fallthrough */
