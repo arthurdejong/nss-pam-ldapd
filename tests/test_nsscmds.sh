@@ -2,7 +2,7 @@
 
 # test.sh - simple test script to check output of name lookup commands
 #
-# Copyright (C) 2007, 2008, 2009 Arthur de Jong
+# Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,11 +20,9 @@
 # 02110-1301 USA
 
 # This script expects to be run in an environment where nss-pam-ldapd
-# is deployed with an LDAP server with the proper contents (nslcd running).
-# FIXME: update the above description and provide actual LDIF file
-# It's probably best to run this in an environment without nscd.
-
-# note that nscd should not be running (breaks services test)
+# is deployed with an LDAP server with the proper content (and nslcd running).
+# It's probably best to run this in an environment without nscd (this breaks
+# the services tests).
 
 set -e
 
@@ -91,6 +89,8 @@ check() {
 ###########################################################################
 
 echo "test_nsscmds.sh: testing aliases..."
+
+# note that this doesn't work if /etc/aliases contains anything
 
 # check all aliases
 check "getent aliases|sort" << EOM
@@ -230,11 +230,6 @@ check "getent hosts | grep testhost" << EOM
 10.0.0.1        testhost testhostalias
 EOM
 
-# dummy test for IPv6 envoronment
-check "getent hosts ::1" << EOM
-::1             ip6-localhost ip6-loopback
-EOM
-
 # TODO: add more tests for IPv6 support
 
 ###########################################################################
@@ -303,11 +298,11 @@ EOM
 echo "test_nsscmds.sh: testing protocols..."
 
 check "getent protocols protfoo" << EOM
-protfoo               140 protfooalias
+protfoo               253 protfooalias
 EOM
 
 check "getent protocols protfooalias" << EOM
-protfoo               140 protfooalias
+protfoo               253 protfooalias
 EOM
 
 # check protocol with different case
@@ -318,8 +313,8 @@ EOM
 check "getent protocols PROTFOOALIAS" << EOM
 EOM
 
-check "getent protocols 140" << EOM
-protfoo               140 protfooalias
+check "getent protocols 253" << EOM
+protfoo               253 protfooalias
 EOM
 
 check "getent protocols icmp" << EOM
@@ -327,7 +322,7 @@ icmp                  1 ICMP
 EOM
 
 check "getent protocols | grep protfoo" << EOM
-protfoo               140 protfooalias
+protfoo               253 protfooalias
 EOM
 
 ###########################################################################
