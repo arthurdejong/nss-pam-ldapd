@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -145,29 +145,25 @@ char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp)
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   static const char *attrs[2];
-  int rc;
+  int rc=LDAP_SUCCESS;
   const char **values;
   char *uid;
-  if (rcp!=NULL)
-    *rcp=LDAP_SUCCESS;
+  if (rcp==NULL)
+    rcp=&rc;
   /* we have to look up the entry */
   attrs[0]=attmap_passwd_uid;
   attrs[1]=NULL;
-  search=myldap_search(session,dn,LDAP_SCOPE_BASE,passwd_filter,attrs);
+  search=myldap_search(session,dn,LDAP_SCOPE_BASE,passwd_filter,attrs,rcp);
   if (search==NULL)
   {
-    log_log(LOG_WARNING,"lookup of user %s failed",dn);
+    log_log(LOG_WARNING,"lookup of user %s failed: %s",dn,ldap_err2string(*rcp));
     return NULL;
   }
-  entry=myldap_get_entry(search,&rc);
+  entry=myldap_get_entry(search,rcp);
   if (entry==NULL)
   {
-    if (rc!=LDAP_SUCCESS)
-    {
-      log_log(LOG_WARNING,"lookup of user %s failed: %s",dn,ldap_err2string(rc));
-      if (rcp!=NULL)
-        *rcp=rc;
-    }
+    if (*rcp!=LDAP_SUCCESS)
+      log_log(LOG_WARNING,"lookup of user %s failed: %s",dn,ldap_err2string(*rcp));
     return NULL;
   }
   /* get uid (just use first one) */
@@ -254,7 +250,6 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid)
   const char *base;
   int i;
   static const char *attrs[2];
-  int rc;
   char filter[1024];
   /* if it isn't a valid username, just bail out now */
   if (!isvalidname(uid))
@@ -266,10 +261,10 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid)
   mkfilter_passwd_byname(uid,filter,sizeof(filter));
   for (i=0;(i<NSS_LDAP_CONFIG_MAX_BASES)&&((base=passwd_bases[i])!=NULL);i++)
   {
-    search=myldap_search(session,base,passwd_scope,filter,attrs);
+    search=myldap_search(session,base,passwd_scope,filter,attrs,NULL);
     if (search==NULL)
       return NULL;
-    entry=myldap_get_entry(search,&rc);
+    entry=myldap_get_entry(search,NULL);
     if (entry!=NULL)
       return entry;
   }

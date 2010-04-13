@@ -72,7 +72,7 @@ static void test_search(void)
   search=myldap_search(session,nslcd_cfg->ldc_bases[0],
                        LDAP_SCOPE_SUBTREE,
                        "(objectclass=posixAccount)",
-                       attrs);
+                       attrs,NULL);
   assert(search!=NULL);
   /* go over results */
   printf("test_myldap: test_search(): get results...\n");
@@ -89,7 +89,7 @@ static void test_search(void)
   search=myldap_search(session,nslcd_cfg->ldc_bases[0],
                        LDAP_SCOPE_SUBTREE,
                        "(objectclass=posixGroup)",
-                       attrs);
+                       attrs,NULL);
   assert(search!=NULL);
   /* go over results */
   printf("test_myldap: test_search(): get results...\n");
@@ -122,7 +122,7 @@ static void test_get(void)
   search1=myldap_search(session,nslcd_cfg->ldc_bases[0],
                         LDAP_SCOPE_SUBTREE,
                         "(&(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))(cn=testgroup2))",
-                        attrs1);
+                        attrs1,NULL);
   assert(search1!=NULL);
   /* get one entry */
   entry=myldap_get_entry(search1,&rc);
@@ -138,7 +138,7 @@ static void test_get(void)
   search2=myldap_search(session,"cn=Test User2,ou=people,dc=test,dc=tld",
                         LDAP_SCOPE_BASE,
                         "(objectclass=posixAccount)",
-                        attrs2);
+                        attrs2,NULL);
   assert(search2!=NULL);
   /* get one entry */
   entry=myldap_get_entry(search2,&rc);
@@ -169,7 +169,7 @@ static void test_get_values(void)
   search=myldap_search(session,nslcd_cfg->ldc_bases[0],
                           LDAP_SCOPE_SUBTREE,
                           "(&(objectClass=posixAccount)(uid=*))",
-                          attrs);
+                          attrs,NULL);
   assert(search!=NULL);
   /* go over results */
   for (i=0;(entry=myldap_get_entry(search,NULL))!=NULL;i++)
@@ -224,7 +224,7 @@ static void test_get_rdnvalues(void)
   search=myldap_search(session,"cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld",
                        LDAP_SCOPE_BASE,
                        "(objectClass=*)",
-                       attrs);
+                       attrs,NULL);
   assert(search!=NULL);
   /* get one entry */
   entry=myldap_get_entry(search,&rc);
@@ -259,7 +259,7 @@ static void test_two_searches(void)
   search1=myldap_search(session,nslcd_cfg->ldc_bases[0],
                         LDAP_SCOPE_SUBTREE,
                         "(&(objectClass=posixAccount)(uid=*))",
-                        attrs);
+                        attrs,NULL);
   assert(search1!=NULL);
   /* get a result from search1 */
   entry=myldap_get_entry(search1,NULL);
@@ -272,7 +272,7 @@ static void test_two_searches(void)
   search2=myldap_search(session,nslcd_cfg->ldc_bases[0],
                         LDAP_SCOPE_SUBTREE,
                         "(&(objectclass=posixGroup)(gidNumber=*))",
-                        attrs);
+                        attrs,NULL);
   assert(search2!=NULL);
   /* get a result from search2 */
   entry=myldap_get_entry(search2,NULL);
@@ -318,7 +318,7 @@ static void *worker(void *arg)
   search=myldap_search(session,nslcd_cfg->ldc_bases[0],
                        LDAP_SCOPE_SUBTREE,
                        "(objectclass=posixAccount)",
-                       attrs);
+                       attrs,NULL);
   assert(search!=NULL);
   /* go over results */
   for (i=0;(entry=myldap_get_entry(search,&rc))!=NULL;i++)
@@ -385,7 +385,7 @@ static void test_connections(void)
   search=myldap_search(session,nslcd_cfg->ldc_bases[0],
                        LDAP_SCOPE_SUBTREE,
                        "(objectclass=posixAccount)",
-                       attrs);
+                       attrs,NULL);
   assert(search==NULL);
   /* clean up */
   myldap_session_close(session);

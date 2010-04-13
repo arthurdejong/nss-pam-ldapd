@@ -1104,7 +1104,7 @@ static MUST_USE char *get_base_from_rootdse(void)
   session=myldap_create_session();
   assert(session!=NULL);
   /* perform search */
-  search=myldap_search(session,"",LDAP_SCOPE_BASE,"(objectClass=*)",attrs);
+  search=myldap_search(session,"",LDAP_SCOPE_BASE,"(objectClass=*)",attrs,NULL);
   if (search==NULL)
   {
     myldap_session_close(session);

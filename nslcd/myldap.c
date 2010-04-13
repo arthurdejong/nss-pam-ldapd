@@ -871,15 +871,19 @@ static int do_retry_search(MYLDAP_SEARCH *search)
 
 MYLDAP_SEARCH *myldap_search(
         MYLDAP_SESSION *session,
-        const char *base,int scope,const char *filter,const char **attrs)
+        const char *base,int scope,const char *filter,const char **attrs,
+        int *rcp)
 {
   MYLDAP_SEARCH *search;
   int i;
+  int rc;
   /* check parameters */
   if (!is_valid_session(session)||(base==NULL)||(filter==NULL)||(attrs==NULL))
   {
     log_log(LOG_ERR,"myldap_search(): invalid parameter passed");
     errno=EINVAL;
+    if (rcp!=NULL)
+      *rcp=LDAP_OPERATIONS_ERROR;
     return NULL;
   }
   /* log the call */
@@ -895,16 +899,23 @@ MYLDAP_SEARCH *myldap_search(
     log_log(LOG_ERR,"myldap_search(): too many searches registered with session (max %d)",
                     MAX_SEARCHES_IN_SESSION);
     myldap_search_close(search);
+    if (rcp!=NULL)
+      *rcp=LDAP_OPERATIONS_ERROR;
     return NULL;
   }
   /* regsiter search with the session so we can free it later on */
   session->searches[i]=search;
   /* do the search with retries to all configured servers */
-  if (do_retry_search(search)!=LDAP_SUCCESS)
+  rc=do_retry_search(search);
+  if (rc!=LDAP_SUCCESS)
   {
     myldap_search_close(search);
+    if (rcp!=NULL)
+      *rcp=rc;
     return NULL;
   }
+  if (rcp!=NULL)
+    *rcp=LDAP_SUCCESS;
   return search;
 }
 
@@ -1282,7 +1293,7 @@ static SET *myldap_get_ranged_values(MYLDAP_ENTRY *entry,const char *attr)
     if (search!=NULL)
       myldap_search_close(search);
     /* start the new search */
-    search=myldap_search(session,dn,LDAP_SCOPE_BASE,"(objectClass=*)",attrs);
+    search=myldap_search(session,dn,LDAP_SCOPE_BASE,"(objectClass=*)",attrs,NULL);
     if (search==NULL)
       break;
     entry=myldap_get_entry(search,NULL);

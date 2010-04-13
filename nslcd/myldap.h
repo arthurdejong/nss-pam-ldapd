@@ -2,7 +2,7 @@
    myldap.h - simple interface to do LDAP requests
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -83,10 +83,12 @@ void myldap_session_close(MYLDAP_SESSION *session);
 
 /* Do an LDAP search and return a reference to the results (returns NULL on
    error). This function uses paging, and does reconnects to the configured
-   URLs transparently. */
+   URLs transparently. The function returns an LDAP status code in the
+   location pointed to by rcp if it is non-NULL. */
 MUST_USE MYLDAP_SEARCH *myldap_search(
         MYLDAP_SESSION *session,
-        const char *base,int scope,const char *filter,const char **attrs);
+        const char *base,int scope,const char *filter,const char **attrs,
+        int *rcp);
 
 /* Close the specified search. This frees all the memory that was allocated
    for the search and its results. */
