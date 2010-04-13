@@ -677,7 +677,7 @@ static int do_open(MYLDAP_SESSION *session)
 }
 
 /* Set alternative credentials for the session. */
-int myldap_set_credentials(MYLDAP_SESSION *session,const char *dn,
+void myldap_set_credentials(MYLDAP_SESSION *session,const char *dn,
                            const char *password)
 {
   /* copy dn and password into session */
@@ -685,8 +685,6 @@ int myldap_set_credentials(MYLDAP_SESSION *session,const char *dn,
   session->binddn[sizeof(session->binddn)-1]='\0';
   strncpy(session->bindpw,password,sizeof(session->bindpw));
   session->bindpw[sizeof(session->bindpw)-1]='\0';
-  /* try to open a connection */
-  return do_open(session);
 }
 
 static int do_try_search(MYLDAP_SEARCH *search)

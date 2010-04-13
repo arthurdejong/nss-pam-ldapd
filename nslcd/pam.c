@@ -47,15 +47,11 @@ static int try_bind(const char *userdn,const char *password)
   if (session==NULL)
     return NSLCD_PAM_AUTH_ERR;
   /* set up credentials for the session */
-  rc=myldap_set_credentials(session,userdn,password);
-  /* TODO: test rc */
-  if (rc==LDAP_SUCCESS)
-  {
-    /* perform search for own object (just to do any kind of search) */
-    username=lookup_dn2uid(session,userdn,&rc);
-    if (username!=NULL)
-      free(username);
-  }
+  myldap_set_credentials(session,userdn,password);
+  /* perform search for own object (just to do any kind of search) */
+  username=lookup_dn2uid(session,userdn,&rc);
+  if (username!=NULL)
+    free(username);
   /* close the session */
   myldap_session_close(session);
   /* handle the results */
@@ -276,13 +272,19 @@ static int try_pwmod(const char *binddn,const char *userdn,
                      const char *oldpassword,const char *newpassword)
 {
   MYLDAP_SESSION *session;
+  char *username;
   int rc;
   /* set up a new connection */
   session=myldap_create_session();
   if (session==NULL)
     return NSLCD_PAM_AUTH_ERR;
   /* set up credentials for the session */
-  rc=myldap_set_credentials(session,binddn,oldpassword);
+  myldap_set_credentials(session,binddn,oldpassword);
+  /* perform search for own object (just to do any kind of search) */
+  username=lookup_dn2uid(session,userdn,&rc);
+  if (username!=NULL)
+    free(username);
+  /* perform actual password modification */
   if (rc==LDAP_SUCCESS)
   {
     /* if doing password modification as admin, don't pass old password along */
