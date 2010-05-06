@@ -1,7 +1,7 @@
 /*
    pam_compat.h - provide a replacement definitions for some pam functions
 
-   Copyright (C) 2009 Arthur de Jong
+   Copyright (C) 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -33,9 +33,20 @@
 #else /* not HAVE_PAM_PAM_MODULES_H */
 #include <pam/pam_modules.h>
 #endif /* not HAVE_PAM_PAM_MODULES_H */
+#ifdef HAVE_SECURITY_PAM_MODUTIL_H
+#include <security/pam_modutil.h>
+#endif /* HAVE_SECURITY_PAM_MODUTIL_H */
 
+/* define our own replacement pam_get_authtok() if it wasn't found */
 #ifndef HAVE_PAM_GET_AUTHTOK
 int pam_get_authtok(pam_handle_t *pamh,int item,const char **authtok,const char *prompt);
 #endif /* HAVE_PAM_GET_AUTHTOK */
+
+/* fall back to using getpwnam() if pam_modutil_getpwnam() isn't defined */
+#ifndef HAVE_PAM_MODUTIL_GETGWNAM
+#include <sys/types.h>
+#include <pwd.h>
+#define pam_modutil_getpwnam(pamh,user) getpwnam(user)
+#endif /* not HAVE_PAM_MODUTIL_GETGWNAM */
 
 #endif /* _COMPAT_LDAP_COMPAT_H */

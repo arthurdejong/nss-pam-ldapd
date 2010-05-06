@@ -254,6 +254,8 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
   int first_pass=0,ignore_flags=0;
   int i;
   pld_ctx *ctx;
+  uid_t minimum_uid=0;
+  struct passwd *pwd;
   /* go over arguments */
   for (i=0;i<argc;i++)
   {
@@ -269,6 +271,8 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
       /* ignore */;
     else if (strcmp(argv[i],"debug")==0)
       /* ignore */;
+    else if (strncmp(argv[i], "minimum_uid=", 12) == 0)
+      minimum_uid=(uid_t)atoi(argv[i]+12);
     else
       syslog(LOG_AUTHPRIV|LOG_ERR,"unknown option: %s",argv[i]);
   }
@@ -276,6 +280,15 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
   rc=pam_get_user(pamh,(const char **)&username,NULL);
   if (rc!=PAM_SUCCESS)
     return rc;
+  if ((username==NULL)||(username[0]=='\0'))
+    return PAM_USER_UNKNOWN;
+  /* check uid */
+  if (minimum_uid>0)
+  {
+    pwd=pam_modutil_getpwnam(args->pamh,username);
+    if ((pwd!=NULL)&&(pwd->pw_uid<minimum_uid))
+      return ignore_flags&IGNORE_UNKNOWN?PAM_IGNORE:PAM_USER_UNKNOWN;
+  }
   /* get our context */
   rc=ctx_get(pamh,username,&ctx);
   if (rc!=PAM_SUCCESS)
@@ -386,7 +399,9 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   int i;
   struct pam_conv *appconv;
   pld_ctx *ctx=NULL, ctx2;
-
+  uid_t minimum_uid=0;
+  struct passwd *pwent;
+  /* go over arguments */
   for (i=0;i<argc;i++)
   {
     if (strcmp(argv[i],"use_first_pass")==0)
@@ -401,6 +416,8 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
       ignore_flags|=IGNORE_UNAVAIL;
     else if (strcmp(argv[i],"debug")==0)
       ;
+    else if (strncmp(argv[i], "minimum_uid=", 12) == 0)
+      minimum_uid=(uid_t)atoi(argv[i]+12);
     else
       syslog(LOG_AUTHPRIV|LOG_ERR,"unknown option: %s",argv[i]);
   }
@@ -411,13 +428,19 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
   if (rc!=PAM_SUCCESS)
     return rc;
-
+  /* get user name */
   rc=pam_get_user(pamh,(const char **)&username,NULL);
   if (rc!=PAM_SUCCESS)
     return rc;
-
   if ((username==NULL)||(username[0]=='\0'))
     return PAM_USER_UNKNOWN;
+  /* check uid */
+  if (minimum_uid>0)
+  {
+    pwent=pam_modutil_getpwnam(args->pamh,username);
+    if ((pwent!=NULL)&&(pwent->pw_uid<minimum_uid))
+      return ignore_flags&IGNORE_UNKNOWN?PAM_IGNORE:PAM_USER_UNKNOWN;
+  }
 
   rc=ctx_get(pamh,username,&ctx);
   if (rc!=PAM_SUCCESS)
@@ -500,7 +523,9 @@ static int pam_sm_session(
   int i;
   pld_ctx *ctx=NULL;
   const char *service=NULL,*tty=NULL,*rhost=NULL,*ruser=NULL;
-
+  uid_t minimum_uid=0;
+  struct passwd *pwent;
+  /* go over arguments */
   for (i=0;i<argc;i++)
   {
     if (strcmp(argv[i],"use_first_pass")==0)
@@ -515,19 +540,27 @@ static int pam_sm_session(
       ignore_flags|=IGNORE_UNAVAIL;
     else if (strcmp(argv[i],"debug")==0)
       ;
+    else if (strncmp(argv[i], "minimum_uid=", 12) == 0)
+      minimum_uid=(uid_t)atoi(argv[i]+12);
     else
       syslog(LOG_AUTHPRIV|LOG_ERR,"unknown option: %s",argv[i]);
   }
 
   if (flags & PAM_SILENT)
     *no_warn=1;
-
+  /* get user name */
   rc=pam_get_user(pamh,(const char **)&username,NULL);
   if (rc!=PAM_SUCCESS)
     return rc;
-
   if ((username==NULL)||(username[0]=='\0'))
     return PAM_USER_UNKNOWN;
+  /* check uid */
+  if (minimum_uid>0)
+  {
+    pwent=pam_modutil_getpwnam(args->pamh,username);
+    if ((pwent!=NULL)&&(pwent->pw_uid<minimum_uid))
+      return ignore_flags&IGNORE_UNKNOWN?PAM_IGNORE:PAM_USER_UNKNOWN;
+  }
 
   rc=ctx_get(pamh,username,&ctx);
   if (rc!=PAM_SUCCESS)
@@ -638,6 +671,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   int i;
   struct pam_conv *appconv;
   pld_ctx *ctx=NULL;
+  uid_t minimum_uid=0;
   struct passwd *pwent;
   /* parse module options */
   for (i=0;i<argc;i++)
@@ -656,6 +690,8 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
       ignore_flags|=IGNORE_UNAVAIL;
     else if (strcmp(argv[i],"debug")==0)
       ;
+    else if (strncmp(argv[i], "minimum_uid=", 12) == 0)
+      minimum_uid=(uid_t)atoi(argv[i]+12);
     else
       syslog(LOG_AUTHPRIV|LOG_ERR,"unknown option: %s",argv[i]);
   }
@@ -666,13 +702,19 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
   if (rc!=PAM_SUCCESS)
     return rc;
-
+  /* get user name */
   rc=pam_get_user(pamh,(const char **)&username,NULL);
   if (rc!=PAM_SUCCESS)
     return rc;
-
-  if (username==NULL)
+  if ((username==NULL)||(username[0]=='\0'))
     return PAM_USER_UNKNOWN;
+  /* check uid */
+  if (minimum_uid>0)
+  {
+    pwent=pam_modutil_getpwnam(args->pamh,username);
+    if ((pwent!=NULL)&&(pwent->pw_uid<minimum_uid))
+      return ignore_flags&IGNORE_UNKNOWN?PAM_IGNORE:PAM_USER_UNKNOWN;
+  }
 
   rc=ctx_get(pamh,username,&ctx);
   if (rc!=PAM_SUCCESS)

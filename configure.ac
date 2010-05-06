@@ -225,6 +225,7 @@ then
       ])
   AC_CHECK_HEADERS(pam/pam_modules.h)
   AC_CHECK_HEADERS(security/pam_ext.h)
+  AC_CHECK_HEADERS(security/pam_modutil.h)
   # at least one of security/pam_modules.h or pam/pam_modules.h is required
   if test "x$ac_cv_header_security_pam_modules_h" != "xyes" && \
      test "x$ac_cv_header_pam_pam_modules_h" != "xyes"
@@ -309,6 +310,7 @@ then
   AC_SEARCH_LIBS(pam_get_data,pam,,AC_MSG_ERROR(no PAM library available))
   # replace the pam_get_authtok() function if it's unavailable
   AC_REPLACE_FUNCS(pam_get_authtok)
+  AC_CHECK_FUNCS(pam_modutil_getpwnam)
   # restore CFLAGS and LIBS
   CFLAGS="$save_CFLAGS"
   LIBS="$save_LIBS"
