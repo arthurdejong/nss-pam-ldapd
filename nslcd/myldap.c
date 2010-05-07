@@ -1524,7 +1524,7 @@ int myldap_escape(const char *src,char *buffer,size_t buflen)
   for (;*src!='\0';src++)
   {
     /* check if char will fit */
-    if (pos>=(buflen+4))
+    if ((pos+4)>=buflen)
       return -1;
     /* do escaping for some characters */
     switch (*src)
