@@ -73,7 +73,7 @@
    <variablelist>
 
     <varlistentry>
-     <term><option>threads</option> <emphasis remap="I">NUM</emphasis></term>
+     <term><option>threads</option> <replaceable>NUM</replaceable></term>
      <listitem>
       <para>
        Specifies the number of threads to start that can handle requests
@@ -84,7 +84,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>uid</option> <emphasis remap="I">UID</emphasis></term>
+     <term><option>uid</option> <replaceable>UID</replaceable></term>
      <listitem>
       <para>
        This specifies  which user id with which the daemon should be run.
@@ -97,7 +97,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>gid</option> <emphasis remap="I">GID</emphasis></term>
+     <term><option>gid</option> <replaceable>GID</replaceable></term>
      <listitem>
       <para>
        This specifies  which group id with which the daemon should be run.
@@ -117,17 +117,17 @@
    <variablelist>
 
     <varlistentry>
-     <term><option>uri</option> <emphasis remap="I">URI</emphasis></term>
+     <term><option>uri</option> <replaceable>URI</replaceable></term>
      <listitem>
       <para>
        Specifies the <acronym>LDAP</acronym> <acronym>URI</acronym> of the
        server to connect to.
-       The <acronym>URI</acronym> scheme may be <emphasis>ldap</emphasis>,
-       <emphasis>ldapi</emphasis> or <emphasis>ldaps</emphasis>, specifying
+       The <acronym>URI</acronym> scheme may be <literal>ldap</literal>,
+       <literal>ldapi</literal> or <literal>ldaps</literal>, specifying
        <acronym>LDAP</acronym> over <acronym>TCP</acronym>,
        <acronym>ICP</acronym> or <acronym>SSL</acronym> respectively (if
        supported by the <acronym>LDAP</acronym> library).
-       Alternatively, the value <emphasis remap="I">DNS</emphasis> may be
+       Alternatively, the value <literal>DNS</literal> may be
        used to try to lookup the server using <acronym>DNS</acronym>
        <acronym>SRV</acronym> records.
       </para>
@@ -150,7 +150,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>ldap_version</option> <emphasis remap="I">VERSION</emphasis></term>
+     <term><option>ldap_version</option> <replaceable>VERSION</replaceable></term>
      <listitem>
       <para>
        Specifies the version of the <acronym>LDAP</acronym> protocol to use.
@@ -160,7 +160,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>binddn</option> <emphasis remap="I">DN</emphasis></term>
+     <term><option>binddn</option> <replaceable>DN</replaceable></term>
      <listitem>
       <para>
        Specifies the distinguished name with which to bind to the directory
@@ -171,7 +171,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>bindpw</option> <emphasis remap="I">PASSWORD</emphasis></term>
+     <term><option>bindpw</option> <replaceable>PASSWORD</replaceable></term>
      <listitem>
       <para>
        Specifies the clear text credentials with which to bind.
@@ -188,7 +188,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>rootpwmoddn</option> <emphasis remap="I">DN</emphasis></term>
+     <term><option>rootpwmoddn</option> <replaceable>DN</replaceable></term>
      <listitem>
       <para>
        Specifies the distinguished name to use when the root user tries to
@@ -216,7 +216,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>sasl_mech</option> <emphasis remap="I">MECHANISM</emphasis></term>
+     <term><option>sasl_mech</option> <replaceable>MECHANISM</replaceable></term>
      <listitem>
       <para>
        Specifies the <acronym>SASL</acronym> mechanism to be used when
@@ -226,7 +226,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>sasl_realm</option> <emphasis remap="I">REALM</emphasis></term>
+     <term><option>sasl_realm</option> <replaceable>REALM</replaceable></term>
      <listitem>
       <para>
        Specifies the <acronym>SASL</acronym> realm to be used when performing
@@ -236,7 +236,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>sasl_authcid</option> <emphasis remap="I">AUTHCID</emphasis></term>
+     <term><option>sasl_authcid</option> <replaceable>AUTHCID</replaceable></term>
      <listitem>
       <para>
        Specifies the authentication identity to be used when performing
@@ -246,7 +246,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>sasl_authzid</option> <emphasis remap="I">AUTHZID</emphasis></term>
+     <term><option>sasl_authzid</option> <replaceable>AUTHZID</replaceable></term>
      <listitem>
       <para>
        Specifies the authorization identity to be used when performing
@@ -258,7 +258,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>sasl_secprops</option> <emphasis remap="I">PROPERTIES</emphasis></term>
+     <term><option>sasl_secprops</option> <replaceable>PROPERTIES</replaceable></term>
      <listitem>
       <para>
        Specifies Cyrus <acronym>SASL</acronym> security properties.
@@ -278,7 +278,7 @@
    <variablelist>
 
     <varlistentry>
-     <term><option>krb5_ccname</option> <emphasis remap="I">NAME</emphasis></term>
+     <term><option>krb5_ccname</option> <replaceable>NAME</replaceable></term>
      <listitem>
       <para>
        Set the name for the GSS-API Kerberos credentials cache.
@@ -295,8 +295,8 @@
 
     <varlistentry>
      <term><option>base</option>
-           <optional><emphasis remap="I">MAP</emphasis></optional>
-           <emphasis remap="I">DN</emphasis></term>
+           <optional><replaceable>MAP</replaceable></optional>
+           <replaceable>DN</replaceable></term>
      <listitem>
       <para>
        Specifies the base distinguished name (<acronym>DN</acronym>)
@@ -310,7 +310,7 @@
       </para>
       <para>
        If, instead of a <acronym>DN</acronym>, the value
-       <emphasis remap="I">DOMAIN</emphasis> is specified, the host's
+       <replaceable>DOMAIN</replaceable> is specified, the host's
        <acronym>DNS</acronym> domain is used to construct a search base.
       </para>
       <para>
@@ -324,7 +324,7 @@
 
     <varlistentry>
      <term><option>scope</option>
-           <optional><emphasis remap="I">MAP</emphasis></optional>
+           <optional><replaceable>MAP</replaceable></optional>
            sub<optional>tree</optional>|one<optional>level</optional>|base</term>
      <listitem>
       <para>
@@ -357,38 +357,38 @@
 
     <varlistentry>
      <term><option>filter</option>
-           <emphasis remap="I">MAP</emphasis>
-           <emphasis remap="I">FILTER</emphasis></term>
+           <replaceable>MAP</replaceable>
+           <replaceable>FILTER</replaceable></term>
      <listitem>
       <para>
-       The <emphasis remap="I">FILTER</emphasis>
+       The <replaceable>FILTER</replaceable>
        is an <acronym>LDAP</acronym> search filter to use for a
        specific map.
        The default filter is a basic search on the
-       objectClass for the map (e.g. <code>(objectClass=posixAccount)</code>).
+       objectClass for the map (e.g. <literal>(objectClass=posixAccount)</literal>).
       </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
      <term><option>map</option>
-           <emphasis remap="I">MAP</emphasis>
-           <emphasis remap="I">ATTRIBUTE</emphasis>
-           <emphasis remap="I">NEWATTRIBUTE</emphasis></term>
+           <replaceable>MAP</replaceable>
+           <replaceable>ATTRIBUTE</replaceable>
+           <replaceable>NEWATTRIBUTE</replaceable></term>
      <listitem>
       <para>
        This option allows for custom attributes to be looked up instead of
        the default RFC 2307 attributes.
-       The <emphasis remap="I">MAP</emphasis> may be one of
+       The <replaceable>MAP</replaceable> may be one of
        the supported maps below.
-       The <emphasis remap="I">ATTRIBUTE</emphasis> is the one as
-       used in <acronym>RFC</acronym> 2307 (e.g. <code>userPassword</code>,
-       <code>ipProtocolNumber</code> or <code>macAddress</code>).
-       The <emphasis remap="I">NEWATTRIBUTE</emphasis> may be any attribute
+       The <replaceable>ATTRIBUTE</replaceable> is the one as
+       used in <acronym>RFC</acronym> 2307 (e.g. <literal>userPassword</literal>,
+       <literal>ipProtocolNumber</literal> or <literal>macAddress</literal>).
+       The <replaceable>NEWATTRIBUTE</replaceable> may be any attribute
        as it is available in the directory.
       </para>
       <para>
-       If the <emphasis remap="I">NEWATTRIBUTE</emphasis> is presented in
+       If the <replaceable>NEWATTRIBUTE</replaceable> is presented in
        quotes (") it is treated as an expression which will be evaluated
        to build up the actual value used.
        See the section on attribute mapping expressions below for more details.
@@ -398,13 +398,13 @@
        an expression (because other attributes may be used in search
        filters).
        For passwd entries the following attributes may be mapped with an
-       expression: <code>gidNumber</code>, <code>gecos</code>,
-       <code>homeDirectory</code> and <code>loginShell</code>.
+       expression: <literal>gidNumber</literal>, <literal>gecos</literal>,
+       <literal>homeDirectory</literal> and <literal>loginShell</literal>.
        For shadow entries the following attributes may be mapped with an
-       expression: <code>shadowLastChange</code>, <code>shadowMin</code>,
-       <code>shadowMax</code>, <code>shadowWarning</code>,
-       <code>shadowInactive</code>, <code>shadowExpire</code> and
-       <code>shadowFlag</code>.
+       expression: <literal>shadowLastChange</literal>, <literal>shadowMin</literal>,
+       <literal>shadowMax</literal>, <literal>shadowWarning</literal>,
+       <literal>shadowInactive</literal>, <literal>shadowExpire</literal> and
+       <literal>shadowFlag</literal>.
       </para>
      </listitem>
     </varlistentry>
@@ -417,7 +417,7 @@
    <variablelist>
 
     <varlistentry>
-     <term><option>bind_timelimit</option> <emphasis remap="I">SECONDS</emphasis></term>
+     <term><option>bind_timelimit</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
        Specifies the time limit (in seconds) to use when connecting to the
@@ -432,7 +432,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>timelimit</option> <emphasis remap="I">SECONDS</emphasis></term>
+     <term><option>timelimit</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
        Specifies the time limit (in seconds) to wait for a response from the
@@ -444,7 +444,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>idle_timelimit</option> <emphasis remap="I">SECONDS</emphasis></term>
+     <term><option>idle_timelimit</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
        Specifies the period if inactivity (in seconds) after which the
@@ -455,7 +455,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>reconnect_sleeptime</option> <emphasis remap="I">SECONDS</emphasis></term>
+     <term><option>reconnect_sleeptime</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
        Specifies the number of seconds to sleep when connecting to all
@@ -467,7 +467,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>reconnect_maxsleeptime</option> <emphasis remap="I">SECONDS</emphasis></term>
+     <term><option>reconnect_maxsleeptime</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
        Specified the time after the last successful operation from which the
@@ -502,7 +502,7 @@
      <listitem>
       <para>
        Specifies whether to use <acronym>SSL</acronym>/<acronym>TLS</acronym> or not (the default is not to). If
-       <emphasis remap="I">start_tls</emphasis>
+       <replaceable>start_tls</replaceable>
        is specified then StartTLS is used rather than raw <acronym>LDAP</acronym> over <acronym>SSL</acronym>.
        Not all <acronym>LDAP</acronym> client libraries support both <acronym>SSL</acronym>,
        StartTLS and all related configuration options.
@@ -526,7 +526,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>tls_cacertdir</option> <emphasis remap="I">PATH</emphasis></term>
+     <term><option>tls_cacertdir</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
        Specifies the directory containing X.509 certificates for peer
@@ -536,7 +536,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>tls_cacertfile</option> <emphasis remap="I">PATH</emphasis></term>
+     <term><option>tls_cacertfile</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
        Specifies the path to the X.509 certificate for peer authentication.
@@ -545,7 +545,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>tls_randfile</option> <emphasis remap="I">PATH</emphasis></term>
+     <term><option>tls_randfile</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
        Specifies the path to an entropy source.
@@ -554,7 +554,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>tls_ciphers</option> <emphasis remap="I">CIPHERS</emphasis></term>
+     <term><option>tls_ciphers</option> <replaceable>CIPHERS</replaceable></term>
      <listitem>
       <para>
        Specifies the ciphers to use for <acronym>TLS</acronym>.
@@ -565,7 +565,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>tls_cert</option> <emphasis remap="I">PATH</emphasis></term>
+     <term><option>tls_cert</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
        Specifies the path to the file containing the local certificate for
@@ -575,7 +575,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>tls_key</option> <emphasis remap="I">PATH</emphasis></term>
+     <term><option>tls_key</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
        Specifies the path to the file containing the private key for client
@@ -607,7 +607,7 @@
 -->
 
     <varlistentry>
-     <term><option>pagesize</option> <emphasis remap="I">NUMBER</emphasis></term>
+     <term><option>pagesize</option> <replaceable>NUMBER</replaceable></term>
      <listitem>
       <para>
        Set this to a number greater than 0 to request paged results from
@@ -635,7 +635,7 @@
        This option may be specified multiple times.
       </para>
       <para>
-       Alternatively, the value <emphasis remap="I">ALLLOCAL</emphasis> may be
+       Alternatively, the value <literal>ALLLOCAL</literal> may be
        used. With that value nslcd builds a full list of
        non-<acronym>LDAP</acronym> users on startup.
       </para>
@@ -651,7 +651,7 @@
   <title>Supported maps</title>
   <para>
    The following maps are supported. They are referenced as
-   <emphasis remap="I">MAP</emphasis> in the options above.
+   <replaceable>MAP</replaceable> in the options above.
   </para>
   <variablelist remap="TP">
    <varlistentry>

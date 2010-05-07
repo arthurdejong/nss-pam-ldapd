@@ -149,14 +149,14 @@
    </varlistentry>
    <varlistentry>
     <term>
-     <option>minimum_uid=<emphasis remap="I">UID</emphasis></option>
+     <option>minimum_uid=<replaceable>UID</replaceable></option>
     </term>
     <listitem>
      <para>
       This option causes the <acronym>PAM</acronym> module to ignore the user
       if the user id is lower than the specified value. This can be used to
       only authenticate normal users (non-system users) using
-      <acronym>LDAP</acronym> (e.g. by setting it to 1000).
+      <acronym>LDAP</acronym> (e.g. by setting it to <literal>1000</literal>).
      </para>
     </listitem>
    </varlistentry>
