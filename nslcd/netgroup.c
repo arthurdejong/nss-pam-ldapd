@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -55,7 +55,7 @@ int netgroup_scope = LDAP_SCOPE_DEFAULT;
 const char *netgroup_filter = "(objectClass=nisNetgroup)";
 
 /* the attributes to request with searches */
-const char *attmap_netgroup_cn              = "cn";
+const char *attmap_netgroup_cn                = "cn";
 const char *attmap_netgroup_nisNetgroupTriple = "nisNetgroupTriple";
 const char *attmap_netgroup_memberNisNetgroup = "memberNisNetgroup";
 
@@ -65,7 +65,7 @@ static const char *netgroup_attrs[4];
 static int mkfilter_netgroup_byname(const char *name,
                                     char *buffer,size_t buflen)
 {
-  char safename[1024];
+  char safename[300];
   /* escape attribute */
   if (myldap_escape(name,safename,sizeof(safename)))
     return -1;

@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -66,7 +66,7 @@ static int mkfilter_service_byname(const char *name,
                                    const char *protocol,
                                    char *buffer,size_t buflen)
 {
-  char safename[1024],safeprotocol[1024];
+  char safename[300],safeprotocol[300];
   /* escape attributes */
   if (myldap_escape(name,safename,sizeof(safename)))
     return -1;
@@ -92,7 +92,7 @@ static int mkfilter_service_bynumber(int number,
                                      const char *protocol,
                                      char *buffer,size_t buflen)
 {
-  char safeprotocol[1024];
+  char safeprotocol[300];
   if (*protocol!='\0')
   {
     if (myldap_escape(protocol,safeprotocol,sizeof(safeprotocol)))

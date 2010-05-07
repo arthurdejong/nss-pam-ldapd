@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -80,7 +80,7 @@ static int mkfilter_network_byname(const char *name,
 static int mkfilter_network_byaddr(const char *name,
                                    char *buffer,size_t buflen)
 {
-  char safename[1024];
+  char safename[64];
   /* escape attribute */
   if (myldap_escape(name,safename,sizeof(safename)))
     return -1;
@@ -166,7 +166,7 @@ NSLCD_HANDLE(
   int af;
   char addr[64];
   int len=sizeof(addr);
-  char name[1024];
+  char name[64];
   char filter[1024];
   READ_ADDRESS(fp,addr,len,af);
   /* translate the address to a string */
