@@ -42,4 +42,7 @@ SUFFIXES = .xml
 	  --encoding=utf-8 \
 	  $<
 
+.xml.html:
+	xmlto xhtml-nochunks $<
+
 endif
