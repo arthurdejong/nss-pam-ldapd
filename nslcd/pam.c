@@ -28,12 +28,19 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif /* HAVE_STDINT_H */
+#include <unistd.h>
 
 #include "common.h"
 #include "log.h"
 #include "myldap.h"
 #include "cfg.h"
 #include "attmap.h"
+#include "common/dict.h"
+#include "common/expr.h"
+
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 255
+#endif /* not HOST_NAME_MAX */
 
 /* set up a connection and try to bind with the specified DN and password
    returns a NSLCD_PAM_* error code */
@@ -170,6 +177,92 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
   return 0;
 }
 
+static void autzsearch_var_add(DICT *dict,const char *name,const char *value)
+{
+  size_t sz;
+  char *escaped_value;
+  /* allocate memory for escaped string */
+  sz=((strlen(value)+8)*120)/100;
+  escaped_value=(char *)malloc(sz);
+  if (escaped_value==NULL)
+  {
+    log_log(LOG_CRIT,"autzsearch_var_add(): malloc() failed to allocate memory");
+    return;
+  }
+  /* perform escaping of the value */
+  if(myldap_escape(value,escaped_value,sz))
+  {
+    log_log(LOG_CRIT,"autzsearch_var_add(): myldap_escape() failed to fit in buffer");
+    return;
+  }
+  /* add to dict */
+  dict_put(dict,name,escaped_value);
+}
+
+static void autzsearch_vars_free(DICT *dict)
+{
+  int i;
+  const char **keys;
+  void *value;
+  /* go over all keys and free all the values
+     (they were allocated in autzsearch_var_add) */
+  /* loop over dictionary contents */
+  keys=dict_keys(dict);
+  for (i=0;keys[i]!=NULL;i++)
+  {
+    value=dict_get(dict,keys[i]);
+    if (value)
+      free(value);
+  }
+  free(keys);
+  /* after this values from the dict should obviously no longer be used */
+}
+
+static const char *autzsearch_var_get(const char *name,void *expander_attr)
+{
+  DICT *dict=(DICT *)expander_attr;
+  return (const char *)dict_get(dict,name);
+  /* TODO: if not set use entry to get attribute name (entry can be an
+           element in the dict) */
+}
+
+static int try_autzsearch(MYLDAP_SESSION *session,DICT *dict,const char *searchfilter)
+{
+  char filter_buffer[1024];
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  static const char *attrs[2];
+  int rc;
+  /* build the search filter */
+  if (expr_parse(searchfilter,filter_buffer,sizeof(filter_buffer),
+                 autzsearch_var_get,(void *)dict)==NULL)
+  {
+    log_log(LOG_ERR,"authorisation search \"%s\" is invalid",searchfilter);
+    return -1;
+  }
+  /* perform the search */
+  attrs[0]="dn";
+  attrs[1]=NULL;
+  /* FIXME: this only searches the first base */
+  search=myldap_search(session,nslcd_cfg->ldc_bases[0],LDAP_SCOPE_SUB,
+                       filter_buffer,attrs,&rc);
+  if (search==NULL)
+  {
+    log_log(LOG_ERR,"authorisation search \"%s\" failed: %s",
+            filter_buffer,ldap_err2string(rc));
+    return -1;
+  }
+  /* try to get an entry */
+  entry=myldap_get_entry(search,NULL);
+  if (entry==NULL)
+  {
+    log_log(LOG_ERR,"no entry found");
+    return -1;
+  }
+  /* we've found an entry so it's OK */
+  return 0;
+}
+
 /* check authorisation of the user */
 int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
 {
@@ -180,6 +273,8 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   char ruser[32];
   char rhost[256];
   char tty[256];
+  char hostname[HOST_NAME_MAX+1];
+  DICT *dict;
   /* read request parameters */
   READ_STRING(fp,username);
   READ_STRING(fp,userdn);
@@ -199,7 +294,33 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
   }
-  /* TODO: perform any authorisation checks */
+  if (nslcd_cfg->ldc_authz_search)
+  {
+    /* TODO: perform any authorisation checks */
+    dict=dict_new();
+    autzsearch_var_add(dict,"username",username);
+    autzsearch_var_add(dict,"service",servicename);
+    autzsearch_var_add(dict,"ruser",ruser);
+    autzsearch_var_add(dict,"rhost",rhost);
+    autzsearch_var_add(dict,"tty",tty);
+    if (gethostname(hostname,sizeof(hostname))==0)
+      autzsearch_var_add(dict,"hostname",hostname);
+    /* TODO: fqdn */
+    autzsearch_var_add(dict,"dn",userdn);
+    autzsearch_var_add(dict,"uid",username);
+    if (try_autzsearch(session,dict,nslcd_cfg->ldc_authz_search))
+    {
+      log_log(LOG_DEBUG,"LDAP authorisation check failed");
+      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+      WRITE_STRING(fp,username);
+      WRITE_STRING(fp,userdn);
+      WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);  /* authz */
+      WRITE_STRING(fp,"LDAP authorisation check failed"); /* authzmsg */
+      WRITE_INT32(fp,NSLCD_RESULT_END);
+    }
+    autzsearch_vars_free(dict);
+    dict_free(dict);
+  }
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);

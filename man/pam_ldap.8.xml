@@ -166,8 +166,8 @@
  <refsect1 id="moduleservices">
   <title>Module Services Provided</title>
   <para>
-   All services are provided by this module but currently only authentication
-   (auth) and password change (password) are implemented in the nslcd daemon.
+   All services are provided by this module but currently sessions changes
+   are not implemented in the nslcd daemon.
   </para>
  </refsect1>
 
