@@ -33,6 +33,26 @@
 #include "nslcd/cfg.h"
 #include "nslcd/myldap.h"
 
+#ifndef __ASSERT_FUNCTION
+#define __ASSERT_FUNCTION ""
+#endif /* not __ASSERT_FUNCTION */
+
+#define assertstreq(str1,str2) \
+  (assertstreq_impl(str1,str2,"strcmp(" __STRING(str1) "," __STRING(str2) ")==0", \
+                    __FILE__, __LINE__, __ASSERT_FUNCTION))
+
+/* for Solaris: */
+#define __assert_fail(assertion,file,line,function) __assert(assertion,file,line)
+
+/* method for determening string equalness */
+static void assertstreq_impl(const char *str1,const char *str2,
+                             const char *assertion,const char *file,
+                             int line,const char *function)
+{
+  if (strcmp(str1,str2)!=0)
+    __assert_fail(assertion,file,line,function);
+}
+
 struct worker_args {
   int id;
 };
@@ -394,6 +414,16 @@ static void test_connections(void)
     nslcd_cfg->ldc_uris[i].uri=old_uris[i];
 }
 
+/* test whether myldap_escape() handles buffer overlows correctly */
+static void test_escape(void)
+{
+  char buffer[1024];
+  assert(myldap_escape("test",buffer,4)!=0);
+  assert(myldap_escape("t*st",buffer,5)!=0);
+  assert(myldap_escape("t*st",buffer,20)==0);
+  assertstreq(buffer,"t\\2ast");
+}
+
 /* the main program... */
 int main(int argc,char *argv[])
 {
@@ -424,5 +454,6 @@ int main(int argc,char *argv[])
   test_two_searches();
   test_threads();
   test_connections();
+  test_escape();
   return 0;
 }
