@@ -664,7 +664,8 @@
       <para>
        For example, to check that the user has a proper authorizedService
        value if the attribute is present:
-       <literal>(&amp;(objectClass=posixAccount)(uid=$username)(|(authorizedService=$service)(!(authorizedService=*))))</literal>
+       <literal>(&amp;(objectClass=posixAccount)(uid=$username)
+       (|(authorizedService=$service)(!(authorizedService=*))))</literal>
       </para>
       <para>
        The default behaviour is not to do this extra search and always
