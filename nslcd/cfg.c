@@ -119,7 +119,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_restart=1;
   cfg->ldc_pagesize=0;
   cfg->ldc_nss_initgroups_ignoreusers=NULL;
-  cfg->ldc_authz_search=NULL;
+  cfg->ldc_pam_authz_search=NULL;
 }
 
 /* simple strdup wrapper */
@@ -1021,10 +1021,10 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     {
       parse_nss_initgroups_ignoreusers_statement(filename,lnr,keyword,line,cfg);
     }
-    else if (strcasecmp(keyword,"authz_search")==0)
+    else if (strcasecmp(keyword,"pam_authz_search")==0)
     {
       check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
-      cfg->ldc_authz_search=xstrdup(line);
+      cfg->ldc_pam_authz_search=xstrdup(line);
     }
 #ifdef ENABLE_CONFIGFILE_CHECKING
     /* fallthrough */

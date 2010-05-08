@@ -294,7 +294,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
   }
-  if (nslcd_cfg->ldc_authz_search)
+  if (nslcd_cfg->ldc_pam_authz_search)
   {
     /* TODO: perform any authorisation checks */
     dict=dict_new();
@@ -308,7 +308,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     /* TODO: fqdn */
     autzsearch_var_add(dict,"dn",userdn);
     autzsearch_var_add(dict,"uid",username);
-    if (try_autzsearch(session,dict,nslcd_cfg->ldc_authz_search))
+    if (try_autzsearch(session,dict,nslcd_cfg->ldc_pam_authz_search))
     {
       log_log(LOG_DEBUG,"LDAP authorisation check failed");
       WRITE_INT32(fp,NSLCD_RESULT_BEGIN);

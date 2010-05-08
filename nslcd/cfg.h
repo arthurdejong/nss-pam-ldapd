@@ -137,7 +137,7 @@ struct ldap_config
      Note: because we use a set here comparisons will be case-insensitive */
   SET *ldc_nss_initgroups_ignoreusers;
   /* the search that should be performed to do autorisation checks */
-  char *ldc_authz_search;
+  char *ldc_pam_authz_search;
 };
 
 /* this is a pointer to the global configuration, it should be available
