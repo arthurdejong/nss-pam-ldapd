@@ -470,9 +470,9 @@
      <term><option>reconnect_maxsleeptime</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
-       Specified the time after the last successful operation from which the
-       <acronym>LDAP</acronym> server is considered permanently unavailable.
-       Retries will be done only once in this time period.
+       Specifies the time after which the <acronym>LDAP</acronym> server is
+       considered to be permanently unavailable.
+       Once this time is reached retries will be done only once per this time period.
        The default value is 10 seconds.
       </para>
      </listitem>

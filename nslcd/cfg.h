@@ -71,8 +71,8 @@ enum ldap_map_selector
 struct myldap_uri
 {
   char *uri;
-  /* time of last successful operation */
-  time_t lastok;
+  /* time of first failed operation */
+  time_t firstfail;
   /* time of last failed operation */
   time_t lastfail;
 };

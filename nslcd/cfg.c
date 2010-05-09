@@ -86,7 +86,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   for (i=0;i<(NSS_LDAP_CONFIG_URI_MAX+1);i++)
   {
     cfg->ldc_uris[i].uri=NULL;
-    cfg->ldc_uris[i].lastok=0;
+    cfg->ldc_uris[i].firstfail=0;
     cfg->ldc_uris[i].lastfail=0;
   }
 #ifdef LDAP_VERSION3
