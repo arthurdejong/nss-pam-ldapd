@@ -675,8 +675,6 @@ static int do_open(MYLDAP_SESSION *session)
   }
   /* update last activity and finish off state */
   time(&(session->lastactivity));
-  log_log(LOG_INFO,"connected to LDAP server %s",
-                   nslcd_cfg->ldc_uris[session->current_uri].uri);
   return LDAP_SUCCESS;
 }
 
@@ -838,6 +836,9 @@ static int do_retry_search(MYLDAP_SEARCH *search)
           pthread_mutex_lock(&uris_mutex);
           current_uri->firstfail=0;
           current_uri->lastfail=0;
+          /* check if we are coming back from an error */
+          if ((current_uri->lastfail>0)||(search->session->current_uri!=start_uri))
+            log_log(LOG_INFO,"connected to LDAP server %s",current_uri->uri);
           pthread_mutex_unlock(&uris_mutex);
           /* flag the search as valid */
           search->valid=1;
