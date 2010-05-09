@@ -380,8 +380,9 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
     rc=ldap_start_tls_s(session->ld,NULL,NULL);
     if (rc!=LDAP_SUCCESS)
     {
-      log_log(LOG_WARNING,"ldap_start_tls_s() failed: %s: %s (uri=\"%s\")",
-                          ldap_err2string(rc),strerror(errno),uri);
+      log_log(LOG_WARNING,"ldap_start_tls_s() failed: %s%s%s (uri=\"%s\")",
+                          ldap_err2string(rc),(errno==0)?"":": ",
+                          (errno==0)?"":strerror(errno),uri);
       return rc;
     }
   }
@@ -620,9 +621,10 @@ static int do_open(MYLDAP_SESSION *session)
   rc=ldap_initialize(&(session->ld),nslcd_cfg->ldc_uris[session->current_uri].uri);
   if (rc!=LDAP_SUCCESS)
   {
-    log_log(LOG_WARNING,"ldap_initialize(%s) failed: %s: %s",
+    log_log(LOG_WARNING,"ldap_initialize(%s) failed: %s%s%s",
                         nslcd_cfg->ldc_uris[session->current_uri].uri,
-                        ldap_err2string(rc),strerror(errno));
+                        ldap_err2string(rc),(errno==0)?"":": ",
+                        (errno==0)?"":strerror(errno));
     if (session->ld!=NULL)
     {
       log_log(LOG_DEBUG,"ldap_unbind()");
@@ -655,9 +657,10 @@ static int do_open(MYLDAP_SESSION *session)
   {
     /* log actual LDAP error code */
     log_log((session->binddn[0]=='\0')?LOG_WARNING:LOG_DEBUG,
-                        "failed to bind to LDAP server %s: %s: %s",
+                        "failed to bind to LDAP server %s: %s%s%s",
                         nslcd_cfg->ldc_uris[session->current_uri].uri,
-                        ldap_err2string(rc),strerror(errno));
+                        ldap_err2string(rc),(errno==0)?"":": ",
+                        (errno==0)?"":strerror(errno));
     rc2=ldap_unbind(session->ld);
     session->ld=NULL;
     if (rc2!=LDAP_SUCCESS)
