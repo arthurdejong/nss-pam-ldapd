@@ -1,3 +1,22 @@
+changes from 0.7.3 to 0.7.4
+---------------------------
+
+* fix a buffer overflow that should have no security consequences
+* perform proper fail-over when authenticating in the PAM module
+* add an nss_initgroups_ignoreusers option to ignore user name to group
+  lookups for the specified users
+* add an pam_authz_search option to perform a flexible authorisation check on
+  login (e.g. to restrict which users can login to which hosts, etc)
+* implement a minimum_uid option for the PAM module to ignore users that have
+  a lower numeric user id
+* change the way retries are done to error out quicker if the LDAP server is
+  down for some time (this should make the system more responsive when the
+  LDAP server is unavailable) and rename the reconnect_maxsleeptime option to
+  reconnect_retrytime to better describe the behaviour
+* only log "connected to LDAP server" if the previous connection failed
+* documentation improvements
+
+
 changes from 0.7.2 to 0.7.3
 ---------------------------
 

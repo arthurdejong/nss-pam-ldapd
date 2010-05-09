@@ -22,7 +22,6 @@
 * maybe make myldap code thread-safe (use locking)
 * review changes in nss_ldap and merge any useful changes
 * maybe rate-limit LDAP entry warnings
-* test non-ASCII characters in fields (mostly cn)
 * only parse configuration options if they are available on the platform
 * have some more general mechanism to disable NSS lookups from nslcd
 * maybe support memberOf attribute in passwd entries that map to groups

@@ -1,3 +1,136 @@
+2010-05-09 10:44  arthur
+
+	* [r1095] nslcd/myldap.c: only log "connected to LDAP server" if
+	  the previous connect failed or we are failing over to a different
+	  server
+
+2010-05-09 10:39  arthur
+
+	* [r1094] debian/nslcd.postinst, man/nslcd.conf.5.xml, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/myldap.c, tests/README, tests/nslcd-test.conf:
+	  rename reconnect_maxsleeptime option to reconnect_retrytime
+
+2010-05-09 10:20  arthur
+
+	* [r1093] nslcd/myldap.c: don't log errno if it is not set (make
+	  error less confusing)
+
+2010-05-09 10:08  arthur
+
+	* [r1092] nslcd/myldap.c: handle authentication searches a little
+	  differently (only try once if an authentication error is
+	  returned)
+
+2010-05-09 09:51  arthur
+
+	* [r1091] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/myldap.c: refactor retry timing mechanism to use time
+	  between first and last error to determin when to rerty and only
+	  try once (and don't sleep) when we have been failing for a long
+	  time
+
+2010-05-08 10:39  arthur
+
+	* [r1090] man/nslcd.conf.5.xml: fix wrapping of long line (thanks
+	  lintian)
+
+2010-05-08 10:34  arthur
+
+	* [r1089] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/pam.c: rename authz_search option to pam_authz_search
+
+2010-05-07 21:45  arthur
+
+	* [r1088] man/nslcd.conf.5.xml, man/pam_ldap.8.xml, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/pam.c: implement an authz_search option to
+	  test whether the user is authorised
+
+2010-05-07 21:25  arthur
+
+	* [r1087] nslcd/alias.c, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/netgroup.c, nslcd/network.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  tune some buffer sizes and small cleanups
+
+2010-05-07 20:43  arthur
+
+	* [r1086] tests/test_myldap.c: implement test for buffer overflow
+
+2010-05-07 20:40  arthur
+
+	* [r1085] nslcd/myldap.c: fix buffer overflow
+
+2010-05-07 11:23  arthur
+
+	* [r1084] man, man/Makefile.am: have the possibility to generate
+	  HTML for manual pages (not done by default)
+
+2010-05-07 11:22  arthur
+
+	* [r1083] man/nslcd.conf.5.xml, man/pam_ldap.8.xml: use docbook
+	  elements where possible
+
+2010-05-06 21:40  arthur
+
+	* [r1082] compat/pam_compat.h, configure.ac,
+	  debian/libpam-ldapd.pam-auth-update, man/pam_ldap.8.xml,
+	  pam/pam.c: implement a minimum_uid option for the PAM module to
+	  ignore users that have a lower numeric user id
+
+2010-05-05 10:58  arthur
+
+	* [r1081] config.guess, config.sub: include updated files
+
+2010-05-03 20:29  arthur
+
+	* [r1080] debian/nslcd.config: also parse /etc/ldap.conf for
+	  systems that use that for NSS and PAM configuration
+
+2010-04-13 19:21  arthur
+
+	* [r1079] nslcd/myldap.c, nslcd/myldap.h, nslcd/pam.c: don't have
+	  myldap_set_credentials() try to open a connection but have the
+	  PAM code perform a search with the new credentials so we re-use
+	  the fail-over mechanism in myldap_search()
+
+2010-04-13 19:17  arthur
+
+	* [r1078] nslcd/cfg.c, nslcd/common.h, nslcd/myldap.c,
+	  nslcd/myldap.h, nslcd/passwd.c, tests/test_myldap.c: also have
+	  myldap_search() return an LDAP status code
+
+2010-04-01 19:49  arthur
+
+	* [r1077] tests/README, tests/test.ldif.gz, tests/test_nsscmds.sh:
+	  small improvements to the test setup
+
+2010-03-20 16:01  arthur
+
+	* [r1076] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/group.c: add an nss_initgroups_ignoreusers option to ignore
+	  username to group lookups for the specified users
+
+2010-03-13 15:40  arthur
+
+	* [r1075] man/nslcd.conf.5.xml: remove commented-oud default option
+	  because it is not implemented and we have a better mechanism now
+
+2010-02-28 08:10  arthur
+
+	* [r1074] nslcd/myldap.c: have less warnings when LDAP_OPT_X_TLS
+	  isn't defined
+
+2010-02-28 08:07  arthur
+
+	* [r1073] man/nslcd.conf.5.xml: document which attributes may be
+	  mapped with an expression
+
+2010-02-27 15:28  arthur
+
+	* [r1071] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.3 release
+
 2010-02-27 15:26  arthur
 
 	* [r1070] debian/NEWS: add blank line for apt-listchanges
