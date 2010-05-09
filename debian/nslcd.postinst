@@ -223,6 +223,12 @@ then
   fi
   # we're done
   db_stop
+  # rename reconnect_maxsleeptime to reconnect_retrytime
+  if grep -qi '^reconnect_maxsleeptime[[:space:]]' $CONFFILE
+  then
+    echo "Renaming reconnect_maxsleeptime to reconnect_retrytime in $CONFFILE..." >&2
+    sed -i 's/^reconnect_maxsleeptime[[:space:]]/reconnect_retrytime /' "$CONFFILE"
+  fi
   # fix permissions of configfile if upgrading from an old version
   if dpkg --compare-versions "$2" lt-nl "0.6.7.1"
   then

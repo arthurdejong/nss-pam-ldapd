@@ -805,7 +805,7 @@ static int do_retry_search(MYLDAP_SEARCH *search)
   for (start_uri=0;start_uri<NSS_LDAP_CONFIG_URI_MAX;start_uri++)
     dotry[start_uri]=1;
   /* keep trying until we time out */
-  endtime=time(NULL)+nslcd_cfg->ldc_reconnect_maxsleeptime;
+  endtime=time(NULL)+nslcd_cfg->ldc_reconnect_retrytime;
   while (1)
   {
     nexttry=endtime;
@@ -818,8 +818,8 @@ static int do_retry_search(MYLDAP_SEARCH *search)
       /* only try this URI if we should */
       if (!dotry[search->session->current_uri])
       { /* skip this URI */ }
-      else if ( (current_uri->lastfail > (current_uri->firstfail+nslcd_cfg->ldc_reconnect_maxsleeptime)) &&
-                ((t=time(NULL)) < (current_uri->lastfail+nslcd_cfg->ldc_reconnect_maxsleeptime)) )
+      else if ( (current_uri->lastfail > (current_uri->firstfail+nslcd_cfg->ldc_reconnect_retrytime)) &&
+                ((t=time(NULL)) < (current_uri->lastfail+nslcd_cfg->ldc_reconnect_retrytime)) )
       {
         /* we are in a hard fail state and have retried not long ago */
         log_log(LOG_DEBUG,"not retrying server %s which failed just %d second(s) ago and has been failing for %d seconds",
@@ -860,7 +860,7 @@ static int do_retry_search(MYLDAP_SEARCH *search)
             (rc==LDAP_AUTH_METHOD_NOT_SUPPORTED))
           dotry[search->session->current_uri]=0;
         /* check whether we should try this URI again */
-        else if (t <= (current_uri->firstfail+nslcd_cfg->ldc_reconnect_maxsleeptime))
+        else if (t <= (current_uri->firstfail+nslcd_cfg->ldc_reconnect_retrytime))
         {
           t+=nslcd_cfg->ldc_reconnect_sleeptime;
           if (t<nexttry)

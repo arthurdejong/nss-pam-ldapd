@@ -124,7 +124,7 @@ struct ldap_config
   /* seconds to sleep; doubled until max */
   int ldc_reconnect_sleeptime;
   /* maximum seconds to sleep */
-  int ldc_reconnect_maxsleeptime;
+  int ldc_reconnect_retrytime;
 #ifdef LDAP_OPT_X_TLS
   /* SSL enabled */
   enum ldap_ssl_options ldc_ssl_on;

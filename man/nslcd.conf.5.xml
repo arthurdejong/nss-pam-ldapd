@@ -467,7 +467,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><option>reconnect_maxsleeptime</option> <replaceable>SECONDS</replaceable></term>
+     <term><option>reconnect_retrytime</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
        Specifies the time after which the <acronym>LDAP</acronym> server is

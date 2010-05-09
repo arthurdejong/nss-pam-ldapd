@@ -112,7 +112,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_timelimit=LDAP_NO_LIMIT;
   cfg->ldc_idle_timelimit=0;
   cfg->ldc_reconnect_sleeptime=1;
-  cfg->ldc_reconnect_maxsleeptime=10;
+  cfg->ldc_reconnect_retrytime=10;
 #ifdef LDAP_OPT_X_TLS
   cfg->ldc_ssl_on=SSL_OFF;
 #endif /* LDAP_OPT_X_TLS */
@@ -924,9 +924,12 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       get_int(filename,lnr,keyword,&line,&cfg->ldc_reconnect_sleeptime);
       get_eol(filename,lnr,keyword,&line);
     }
-    else if (strcasecmp(keyword,"reconnect_maxsleeptime")==0)
+    else if ( (strcasecmp(keyword,"reconnect_retrytime")==0) ||
+              (strcasecmp(keyword,"reconnect_maxsleeptime")==0) )
     {
-      get_int(filename,lnr,keyword,&line,&cfg->ldc_reconnect_maxsleeptime);
+      if (strcasecmp(keyword,"reconnect_maxsleeptime")==0)
+        log_log(LOG_WARNING,"%s:%d: option %s has been renamed to reconnect_retrytime",filename,lnr,keyword);
+      get_int(filename,lnr,keyword,&line,&cfg->ldc_reconnect_retrytime);
       get_eol(filename,lnr,keyword,&line);
     }
 #ifdef LDAP_OPT_X_TLS
