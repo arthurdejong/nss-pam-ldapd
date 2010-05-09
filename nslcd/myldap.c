@@ -654,7 +654,8 @@ static int do_open(MYLDAP_SESSION *session)
   if (rc!=LDAP_SUCCESS)
   {
     /* log actual LDAP error code */
-    log_log(LOG_WARNING,"failed to bind to LDAP server %s: %s: %s",
+    log_log((session->binddn[0]=='\0')?LOG_WARNING:LOG_DEBUG,
+                        "failed to bind to LDAP server %s: %s: %s",
                         nslcd_cfg->ldc_uris[session->current_uri].uri,
                         ldap_err2string(rc),strerror(errno));
     rc2=ldap_unbind(session->ld);
@@ -844,12 +845,19 @@ static int do_retry_search(MYLDAP_SEARCH *search)
         /* update time of failure and figure out when we should retry */
         pthread_mutex_lock(&uris_mutex);
         t=time(NULL);
-        /* update timestaps */
-        if (current_uri->firstfail==0)
-          current_uri->firstfail=t;
-        current_uri->lastfail=t;
+        /* update timestaps unless we are doing an authentication search */
+        if (search->session->binddn[0]=='\0')
+        {
+          if (current_uri->firstfail==0)
+            current_uri->firstfail=t;
+          current_uri->lastfail=t;
+        }
+        /* if it is one of these, retrying this URI is not going to help */
+        if ((rc==LDAP_INVALID_CREDENTIALS)||(rc==LDAP_INSUFFICIENT_ACCESS)||
+            (rc==LDAP_AUTH_METHOD_NOT_SUPPORTED))
+          dotry[search->session->current_uri]=0;
         /* check whether we should try this URI again */
-        if (t <= (current_uri->firstfail+nslcd_cfg->ldc_reconnect_maxsleeptime))
+        else if (t <= (current_uri->firstfail+nslcd_cfg->ldc_reconnect_maxsleeptime))
         {
           t+=nslcd_cfg->ldc_reconnect_sleeptime;
           if (t<nexttry)
