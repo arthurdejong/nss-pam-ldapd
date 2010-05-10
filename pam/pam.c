@@ -492,13 +492,13 @@ static int nslcd_request_sess(pld_ctx *ctx,int action,const char *service,
     READ_INT32(fp,ctx->sessid))
 }
 
-static int pam_sm_session(
-  pam_handle_t *pamh, int flags, int argc, const char **argv,
-  int action, int *no_warn)
+static int pam_sm_session(pam_handle_t *pamh,int flags,int argc,
+                          const char **argv,int action)
 {
   int rc;
   const char *username;
   int ignore_flags=0;
+  int no_warn;
   int i;
   pld_ctx *ctx=NULL;
   const char *service=NULL,*tty=NULL,*rhost=NULL,*ruser=NULL;
@@ -512,7 +512,7 @@ static int pam_sm_session(
     else if (strcmp(argv[i],"try_first_pass")==0)
       ;
     else if (strcmp(argv[i],"no_warn")==0)
-      *no_warn=1;
+      no_warn=1;
     else if (strcmp(argv[i],"ignore_unknown_user")==0)
       ignore_flags|=IGNORE_UNKNOWN;
     else if (strcmp(argv[i],"ignore_authinfo_unavail")==0)
@@ -525,8 +525,8 @@ static int pam_sm_session(
       syslog(LOG_AUTHPRIV|LOG_ERR,"unknown option: %s",argv[i]);
   }
 
-  if (flags & PAM_SILENT)
-    *no_warn=1;
+  if (flags&PAM_SILENT)
+    no_warn=1;
   /* get user name */
   rc=pam_get_user(pamh,(const char **)&username,NULL);
   if (rc!=PAM_SUCCESS)
@@ -555,31 +555,23 @@ static int pam_sm_session(
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
     rc=PAM_IGNORE;
+  if ((rc!=PAM_SUCCESS)&&(rc!=PAM_IGNORE))
+    if (!no_warn)
+      pam_error(pamh,"LDAP %s session failed",
+                     (action==NSLCD_ACTION_PAM_SESS_O)?"open":"clode");
   return rc;
 }
 
 int pam_sm_open_session(
   pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-  int rc, no_warn=0;
-
-  rc=pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_O,&no_warn);
-  if ((rc!=PAM_SUCCESS)&&(rc!=PAM_IGNORE))
-    if (!no_warn)
-      pam_error(pamh,"LDAP open_session failed");
-  return rc;
+  return pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_O);
 }
 
 int pam_sm_close_session(
   pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
-  int rc, no_warn=0;
-
-  rc=pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_C,&no_warn);
-  if ((rc!=PAM_SUCCESS)&&(rc!=PAM_IGNORE))
-    if (!no_warn)
-      pam_error(pamh,"LDAP close_session failed");
-  return rc;
+  return pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_C);
 }
 
 /* do a password modification nslcd call */
