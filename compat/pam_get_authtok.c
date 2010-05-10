@@ -32,41 +32,12 @@
 #include "compat/attrs.h"
 #include "compat/pam_compat.h"
 
-static int prompt_passwd(struct pam_conv *conv,const char *prompt,
-                         char **passwd)
-{
-  struct pam_message msg,*msgs[1];
-  struct pam_response *resp;
-  int rc;
-  /* provide fallback */
-  *passwd=NULL;
-  /* set up prompt */
-  msg.msg_style=PAM_PROMPT_ECHO_OFF;
-  msg.msg=prompt;
-  msgs[0]=&msg;
-  resp=NULL;
-  rc=conv->conv(1,(const struct pam_message **)msgs,&resp,conv->appdata_ptr);
-  if (rc!=PAM_SUCCESS)
-    return rc;
-  else if (resp==NULL)
-    return PAM_CONV_ERR;
-  else if (resp[0].resp==NULL)
-  {
-    free(resp);
-    return PAM_CONV_ERR;
-  }
-  *passwd=resp[0].resp;
-  resp[0].resp=NULL;
-  free(resp);
-  return PAM_SUCCESS;
-}
 
 int pam_get_authtok(pam_handle_t *pamh,int item,const char **authtok,const char *prompt)
 {
   int rc;
   char *passwd=NULL,*retype_passwd=NULL;
   const void *oldauthtok;
-  struct pam_conv *conv;
   char retype_prompt[80];
   /* first try to see if the value is already on the stack */
   *authtok=NULL;
@@ -89,18 +60,14 @@ int pam_get_authtok(pam_handle_t *pamh,int item,const char **authtok,const char 
     else
       prompt=(prompt!=NULL)?prompt:"Password: ";
   }
-  /* get PAM_CONV */
-  rc=pam_get_item(pamh,PAM_CONV,(const void **)&conv);
-  if (rc!=PAM_SUCCESS)
-    return rc;
   /* prepare prompt and get password */
-  rc=prompt_passwd(conv,prompt,&passwd);
+  rc=pam_prompt(pamh,PAM_PROMPT_ECHO_OFF,&passwd,"%s",prompt);
   if (rc!=PAM_SUCCESS)
     return rc;
   /* if a second prompt should be presented, do it */
   if (*retype_prompt)
   {
-    rc=prompt_passwd(conv,retype_prompt,&retype_passwd);
+    rc=pam_prompt(pamh,PAM_PROMPT_ECHO_OFF,&retype_passwd,"%s",retype_prompt);
     /* check passwords */
     if ((rc==PAM_SUCCESS)&&(strcmp(retype_passwd,passwd)!=0))
       rc=PAM_AUTHTOK_RECOVERY_ERR;

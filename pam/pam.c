@@ -351,26 +351,6 @@ int pam_sm_setcred(pam_handle_t UNUSED(*pamh),int UNUSED(flags),
   return PAM_SUCCESS;
 }
 
-static int my_pam_warn(
-  struct pam_conv *aconv, const char *message, int style, int no_warn)
-{
-  struct pam_message msg, *pmsg;
-  struct pam_response *resp;
-
-  if (no_warn)
-    return PAM_SUCCESS;
-
-  pmsg=&msg;
-
-  msg.msg_style=style;
-  msg.msg=(char *)message;
-  resp=NULL;
-
-  return aconv->conv(1,
-          (const struct pam_message **) &pmsg,
-          &resp, aconv->appdata_ptr);
-}
-
 /* perform an authorisation call over nslcd */
 static int nslcd_request_authz(pld_ctx *ctx,const char *username,
                                const char *service,const char *ruser,
@@ -397,7 +377,6 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   const char *username,*svc,*ruser,*rhost,*tty;
   int no_warn=0, ignore_flags=0;
   int i;
-  struct pam_conv *appconv;
   pld_ctx *ctx=NULL, ctx2;
   uid_t minimum_uid=0;
   struct passwd *pwent;
@@ -425,9 +404,6 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   if (flags&PAM_SILENT)
     no_warn=1;
 
-  rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
-  if (rc!=PAM_SUCCESS)
-    return rc;
   /* get user name */
   rc=pam_get_user(pamh,(const char **)&username,NULL);
   if (rc!=PAM_SUCCESS)
@@ -472,18 +448,21 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   if (rc!=PAM_SUCCESS)
   {
     if (rc!=PAM_IGNORE)
-      my_pam_warn(appconv,"LDAP authorization failed",PAM_ERROR_MSG,no_warn);
+      if (!no_warn)
+        pam_error(pamh,"LDAP authorization failed");
   }
   else
   {
     rc=ctx2.authz;
     if (ctx2.authzmsg && ctx2.authzmsg[0])
-      my_pam_warn(appconv,ctx2.authzmsg,PAM_TEXT_INFO,no_warn);
+      if (!no_warn)
+        pam_info(pamh,"%s",ctx2.authzmsg);
     if (ctx2.authz==PAM_SUCCESS)
     {
       rc=ctx->authz;
       if (ctx->authzmsg && ctx->authzmsg[0])
-        my_pam_warn(appconv,ctx->authzmsg,PAM_TEXT_INFO,no_warn);
+        if (!no_warn)
+          pam_info(pamh,"%s",ctx->authzmsg);
     }
   }
 
@@ -583,15 +562,11 @@ int pam_sm_open_session(
   pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
   int rc, no_warn=0;
-  struct pam_conv *appconv;
-
-  rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
-  if (rc!=PAM_SUCCESS)
-    return rc;
 
   rc=pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_O,&no_warn);
   if ((rc!=PAM_SUCCESS)&&(rc!=PAM_IGNORE))
-    my_pam_warn(appconv,"LDAP open_session failed",PAM_ERROR_MSG,no_warn);
+    if (!no_warn)
+      pam_error(pamh,"LDAP open_session failed");
   return rc;
 }
 
@@ -599,15 +574,11 @@ int pam_sm_close_session(
   pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
   int rc, no_warn=0;
-  struct pam_conv *appconv;
-
-  rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
-  if (rc!=PAM_SUCCESS)
-    return rc;
 
   rc=pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_C,&no_warn);
   if ((rc!=PAM_SUCCESS)&&(rc!=PAM_IGNORE))
-    my_pam_warn(appconv,"LDAP close_session failed",PAM_ERROR_MSG,no_warn);
+    if (!no_warn)
+      pam_error(pamh,"LDAP close_session failed");
   return rc;
 }
 
@@ -669,7 +640,6 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   const char *newpassword=NULL;
   int first_pass=0, no_warn=0, ignore_flags=0;
   int i;
-  struct pam_conv *appconv;
   pld_ctx *ctx=NULL;
   uid_t minimum_uid=0;
   struct passwd *pwent;
@@ -699,9 +669,6 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   if (flags&PAM_SILENT)
     no_warn=1;
 
-  rc=pam_get_item(pamh,PAM_CONV,(const void **)&appconv);
-  if (rc!=PAM_SUCCESS)
-    return rc;
   /* get user name */
   rc=pam_get_user(pamh,(const char **)&username,NULL);
   if (rc!=PAM_SUCCESS)
@@ -778,8 +745,8 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&(ignore_flags&IGNORE_UNKNOWN))
     rc=PAM_IGNORE;
-  else
-    my_pam_warn(appconv,ctx->authzmsg,PAM_ERROR_MSG,no_warn);
+  else if (!no_warn)
+    pam_error(pamh,"%s",ctx->authzmsg);
   return rc;
 }
 

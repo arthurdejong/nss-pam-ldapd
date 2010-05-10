@@ -40,7 +40,23 @@
 /* define our own replacement pam_get_authtok() if it wasn't found */
 #ifndef HAVE_PAM_GET_AUTHTOK
 int pam_get_authtok(pam_handle_t *pamh,int item,const char **authtok,const char *prompt);
-#endif /* HAVE_PAM_GET_AUTHTOK */
+#endif /* not HAVE_PAM_GET_AUTHTOK */
+
+/* replace pam_prompt() if needed */
+#ifndef HAVE_PAM_PROMPT
+int pam_prompt(pam_handle_t *pamh,int style,char **response,const char *format,...)
+  LIKE_PRINTF(4,5);
+#endif /* not HAVE_PAM_PROMPT */
+
+/* provide pam_info() if needed */
+#ifndef pam_info
+#define pam_info(pamh, fmt...) pam_prompt(pamh,PAM_TEXT_INFO,NULL,__VA_ARGS__)
+#endif /* not pam_info */
+
+/* provide pam_error() if needed */
+#ifndef pam_error
+#define pam_error(pamh, fmt...) pam_prompt(pamh,PAM_ERROR_MSG,NULL,__VA_ARGS__)
+#endif /* not pam_error */
 
 /* fall back to using getpwnam() if pam_modutil_getpwnam() isn't defined */
 #ifndef HAVE_PAM_MODUTIL_GETGWNAM
