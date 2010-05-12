@@ -50,12 +50,14 @@ int pam_prompt(pam_handle_t *pamh,int style,char **response,const char *format,.
 
 /* provide pam_info() if needed */
 #ifndef pam_info
-#define pam_info(pamh, fmt...) pam_prompt(pamh,PAM_TEXT_INFO,NULL,__VA_ARGS__)
+#define pam_info(pamh,format,args...) \
+            pam_prompt(pamh,PAM_TEXT_INFO,NULL,format,##args)
 #endif /* not pam_info */
 
 /* provide pam_error() if needed */
 #ifndef pam_error
-#define pam_error(pamh, fmt...) pam_prompt(pamh,PAM_ERROR_MSG,NULL,__VA_ARGS__)
+#define pam_error(pamh,format,args...) \
+            pam_prompt(pamh,PAM_ERROR_MSG,NULL,format,##args)
 #endif /* not pam_error */
 
 /* fall back to using getpwnam() if pam_modutil_getpwnam() isn't defined */

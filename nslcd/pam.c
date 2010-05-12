@@ -244,7 +244,7 @@ static int try_autzsearch(MYLDAP_SESSION *session,DICT *dict,const char *searchf
   attrs[0]="dn";
   attrs[1]=NULL;
   /* FIXME: this only searches the first base */
-  search=myldap_search(session,nslcd_cfg->ldc_bases[0],LDAP_SCOPE_SUB,
+  search=myldap_search(session,nslcd_cfg->ldc_bases[0],LDAP_SCOPE_SUBTREE,
                        filter_buffer,attrs,&rc);
   if (search==NULL)
   {
