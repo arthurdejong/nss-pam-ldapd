@@ -188,74 +188,6 @@ static void parse_args(struct pld_cfg *cfg,int flags,int argc,const char **argv)
     cfg->no_warn=1;
 }
 
-/* ask the user for an authentication token (password) */
-/* FIXME: get rid of this and use proper pam_get_authtok() */
-static int my_pam_get_authtok(pam_handle_t *pamh,int flags,char *prompt1,char *prompt2,const char **pwd)
-{
-  int rc;
-  char *p;
-  struct pam_message msg[1], *pmsg[1];
-  struct pam_response *resp;
-  struct pam_conv *conv;
-
-  *pwd=NULL;
-
-  rc=pam_get_item(pamh,PAM_CONV,(const void **)&conv);
-  if (rc==PAM_SUCCESS) {
-    pmsg[0]=&msg[0];
-    msg[0].msg_style=PAM_PROMPT_ECHO_OFF;
-    msg[0].msg=prompt1;
-    resp=NULL;
-    rc=conv->conv(1,
-       (const struct pam_message **)pmsg,
-       &resp,conv->appdata_ptr);
-  } else {
-    return rc;
-  }
-
-  if (resp!=NULL) {
-    if ((flags & PAM_DISALLOW_NULL_AUTHTOK) && resp[0].resp==NULL)
-    {
-      free(resp);
-      return PAM_AUTH_ERR;
-    }
-
-    p=resp[0].resp;
-    resp[0].resp=NULL;
-    free(resp);
-  } else {
-    return PAM_CONV_ERR;
-  }
-
-  if (prompt2) {
-    msg[0].msg=prompt2;
-    resp=NULL;
-    rc=conv->conv(1,
-       (const struct pam_message **) pmsg,
-       &resp, conv->appdata_ptr);
-    if (resp && resp[0].resp && !strcmp(resp[0].resp, p))
-      rc=PAM_SUCCESS;
-    else
-      rc=PAM_AUTHTOK_RECOVERY_ERR;
-    if (resp) {
-      if (resp[0].resp) {
-        (void) memset(resp[0].resp, 0, strlen(resp[0].resp));
-        free(resp[0].resp);
-      }
-      free(resp);
-    }
-  }
-
-  if (rc==PAM_SUCCESS)
-    *pwd=p;
-  else if (p) {
-    memset(p, 0, strlen(p));
-    free(p);
-  }
-
-  return rc;
-}
-
 /* map a NSLCD PAM status code to a PAM status code */
 static int nslcd2pam_rc(int rc)
 {
@@ -391,16 +323,11 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
   {
     if ((!cfg.try_first_pass)&&(!cfg.use_first_pass))
     {
-      rc=my_pam_get_authtok(pamh,flags,i==0?"Password: ":"LDAP Password: ",NULL,(const char **)&passwd);
+      rc=pam_get_authtok(pamh,PAM_AUTHTOK,(const char **)&passwd,i==0?"Password: ":"LDAP Password: ");
       if (rc!=PAM_SUCCESS)
         return rc;
       /* exit loop after trying this password */
       i=2;
-      /* store password */
-      pam_set_item(pamh,PAM_AUTHTOK,passwd);
-      /* clear and free password */
-      memset(passwd,0,strlen(passwd));
-      free(passwd);
     }
     rc=pam_get_item(pamh,PAM_AUTHTOK,(const void **)&passwd);
     if (rc==PAM_SUCCESS)
@@ -472,15 +399,15 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   if (rc!=PAM_SUCCESS)
     return rc;
   /* get remote user name */
-  rc=pam_get_item (pamh,PAM_RUSER,(const void **)&ruser);
+  rc=pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
   if (rc!=PAM_SUCCESS)
     return rc;
   /* get service host */
-  rc=pam_get_item (pamh,PAM_RHOST,(const void **)&rhost);
+  rc=pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
   if (rc!=PAM_SUCCESS)
     return rc;
   /* get tty name */
-  rc=pam_get_item (pamh,PAM_TTY,(const void **)&tty);
+  rc=pam_get_item(pamh,PAM_TTY,(const void **)&tty);
   if (rc!=PAM_SUCCESS)
     return rc;
   /* call the function with a copy of the context to be able to keep the
@@ -582,30 +509,6 @@ int pam_sm_close_session(
   return pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_C);
 }
 
-/* ensure that the context includes and oldpassword field */
-static const char *get_old_password(pam_handle_t *pamh, int flags,struct pld_ctx *ctx)
-{
-  int rc;
-  const char *oldpassword;
-  /* if we already have an old password we are done */
-  if ((ctx->oldpassword!=NULL)&&(*ctx->oldpassword!='\0'))
-    return ctx->oldpassword;
-  /* try to get the old password from the PAM stack */
-  rc=pam_get_item(pamh,PAM_OLDAUTHTOK,(const void **)&oldpassword);
-  if ((rc==PAM_SUCCESS)&&(oldpassword!=NULL)&&(*oldpassword!='\0'))
-    return oldpassword;
-  /* otherwise prompt for it */
-  rc=my_pam_get_authtok(pamh,flags,"(current) LDAP Password: ",NULL,
-                     (const char **)&oldpassword);
-  if ((rc==PAM_SUCCESS)&&(oldpassword!=NULL)&&(*oldpassword!='\0'))
-  {
-    /* save the password */
-    pam_set_item(pamh,PAM_OLDAUTHTOK,oldpassword);
-    return oldpassword;
-  }
-  return NULL;
-}
-
 /* Change the password of the user. This function is first called with
    PAM_PRELIM_CHECK set in the flags and then without the flag. In the first
    pass it is determined whether we can contact the LDAP server and the
@@ -643,11 +546,6 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   rc=pam_get_item(pamh,PAM_SERVICE,(const void **)&service);
   if (rc!=PAM_SUCCESS)
     return rc;
-  /* TODO: if we are root we may want to authenticate with the LDAP
-           administrator password (this shouldn't be a problem because
-           root is unlikely to be in LDAP anyway but perhaps we can check
-           the requested username and only use the administrator if that
-           isn't root) */
   /* prelimenary check, just see if we can connect to the LDAP server
      and authenticate with the current password */
   if (flags&PAM_PRELIM_CHECK)
@@ -656,20 +554,25 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
     pwent=getpwnam(username);
     if ((pwent!=NULL)&&(pwent->pw_uid!=getuid()))
     {
-      /* prompt for the admin password */
+      /* try to  authenticate with the LDAP administrator password by passing
+         an empty username to the authc request */
       rc=pam_get_authtok(pamh,PAM_OLDAUTHTOK,&oldpassword,"LDAP administrator password: ");
       if (rc!=PAM_SUCCESS)
         return rc;
-      /* try authenticating */
-      rc=nslcd_request_authc(ctx,"",service,oldpassword);
+      username="";
     }
+    else if ((ctx->oldpassword!=NULL)&&(*ctx->oldpassword!='\0'))
+      /* we already have an old password stored (from a previous
+         authentication phase) so we'll use that */
+      oldpassword=ctx->oldpassword;
     else
     {
-      /* get old (current) password */
-      oldpassword=get_old_password(pamh,flags,ctx);
-      /* check the old password */
-      rc=nslcd_request_authc(ctx,username,service,oldpassword);
+      rc=pam_get_authtok(pamh,PAM_OLDAUTHTOK,(const char **)&oldpassword,"(current) LDAP Password: ");
+      if (rc!=PAM_SUCCESS)
+        return rc;
     }
+    /* try authenticating */
+    rc=nslcd_request_authc(ctx,username,service,oldpassword);
     if (rc==PAM_SUCCESS)
       rc=ctx->authok;
     if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
