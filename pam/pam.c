@@ -249,13 +249,14 @@ static int nslcd_request_authz(struct pld_ctx *ctx,const char *username,
 }
 
 /* do a session nslcd request (open or close) */
-static int nslcd_request_sess(struct pld_ctx *ctx,int action,const char *service,
+static int nslcd_request_sess(struct pld_ctx *ctx,int action,
+                              const char *username,const char *service,
                               const char *tty, const char *rhost,
                               const char *ruser)
 {
   PAM_REQUEST(action,
     /* write the request parameters */
-    WRITE_STRING(fp,ctx->user);
+    WRITE_STRING(fp,username);
     WRITE_STRING(fp,ctx->dn);
     WRITE_STRING(fp,service);
     WRITE_STRING(fp,tty);
@@ -483,7 +484,7 @@ static int pam_sm_session(pam_handle_t *pamh,int flags,int argc,
   pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
   pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
   /* do the nslcd request */
-  rc=nslcd_request_sess(ctx,action,service,tty,rhost,ruser);
+  rc=nslcd_request_sess(ctx,action,username,service,tty,rhost,ruser);
   if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&cfg.ignore_unknown_user)
