@@ -149,9 +149,13 @@ struct pld_cfg {
   uid_t minimum_uid;
 };
 
-static void parse_args(struct pld_cfg *cfg,int flags,int argc,const char **argv)
+static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
+                struct pld_cfg *cfg,struct pld_ctx **ctx,const char **username,
+                const char **service)
 {
   int i;
+  int rc;
+  struct passwd *pwent;
   /* initialise config with defaults */
   cfg->use_first_pass=0;
   cfg->try_first_pass=0;
@@ -186,6 +190,28 @@ static void parse_args(struct pld_cfg *cfg,int flags,int argc,const char **argv)
   /* check flags */
   if (flags&PAM_SILENT)
     cfg->no_warn=1;
+  /* get user name */
+  rc=pam_get_user(pamh,username,NULL);
+  if (rc!=PAM_SUCCESS)
+    return rc;
+  if ((*username==NULL)||((*username)[0]=='\0'))
+    return PAM_USER_UNKNOWN;
+  /* check uid */
+  if (cfg->minimum_uid>0)
+  {
+    pwent=pam_modutil_getpwnam(args->pamh,*username);
+    if ((pwent!=NULL)&&(pwent->pw_uid<cfg->minimum_uid))
+      return cfg->ignore_unknown_user?PAM_IGNORE:PAM_USER_UNKNOWN;
+  }
+  /* get our context */
+  rc=ctx_get(pamh,*username,ctx);
+  if (rc!=PAM_SUCCESS)
+    return rc;
+  /* get service name */
+  rc=pam_get_item(pamh,PAM_SERVICE,(const void **)service);
+  if (rc!=PAM_SUCCESS)
+    return rc;
+  return PAM_SUCCESS;
 }
 
 /* map a NSLCD PAM status code to a PAM status code */
@@ -289,34 +315,14 @@ static int nslcd_request_pwmod(struct pld_ctx *ctx,const char *username,
 /* PAM authentication check */
 int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
-  struct pld_cfg cfg;
   int rc;
-  const char *username,*svc;
+  struct pld_cfg cfg;
+  struct pld_ctx *ctx;
+  const char *username,*service;
   char *passwd=NULL;
   int i;
-  struct pld_ctx *ctx;
-  struct passwd *pwd;
-  /* parse module options */
-  parse_args(&cfg,flags,argc,argv);
-  /* get user name */
-  rc=pam_get_user(pamh,(const char **)&username,NULL);
-  if (rc!=PAM_SUCCESS)
-    return rc;
-  if ((username==NULL)||(username[0]=='\0'))
-    return PAM_USER_UNKNOWN;
-  /* check uid */
-  if (cfg.minimum_uid>0)
-  {
-    pwd=pam_modutil_getpwnam(args->pamh,username);
-    if ((pwd!=NULL)&&(pwd->pw_uid<cfg.minimum_uid))
-      return cfg.ignore_unknown_user?PAM_IGNORE:PAM_USER_UNKNOWN;
-  }
-  /* get our context */
-  rc=ctx_get(pamh,username,&ctx);
-  if (rc!=PAM_SUCCESS)
-    return rc;
-  /* get service name */
-  rc=pam_get_item(pamh,PAM_SERVICE,(const void **)&svc);
+  /* set up configuration */
+  rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
     return rc;
   /* try twice */
@@ -333,7 +339,7 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
     rc=pam_get_item(pamh,PAM_AUTHTOK,(const void **)&passwd);
     if (rc==PAM_SUCCESS)
     {
-      rc=nslcd_request_authc(ctx,username,svc,passwd);
+      rc=nslcd_request_authc(ctx,username,service,passwd);
       if (rc==PAM_SUCCESS)
         rc=ctx->authok;
       if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
@@ -346,7 +352,8 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
     cfg.try_first_pass=0;
   }
   /* save username */
-  if (rc==PAM_SUCCESS) {
+  if (rc==PAM_SUCCESS)
+  {
     ctx->user=strdup(username);
     /* if password change is required, save old password in context */
     if (ctx->authz==PAM_NEW_AUTHTOK_REQD)
@@ -354,9 +361,8 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
   }
   /* update caller's idea of the user name */
   if ( (rc==PAM_SUCCESS) && ctx->tmpluser && ctx->tmpluser[0] &&
-       (strcmp(ctx->tmpluser,username)!=0) ) {
+       (strcmp(ctx->tmpluser,username)!=0) )
     rc=pam_set_item(pamh,PAM_USER,ctx->tmpluser);
-  }
   return rc;
 }
 
@@ -371,51 +377,25 @@ int pam_sm_setcred(pam_handle_t UNUSED(*pamh),int UNUSED(flags),
 /* PAM authorisation check */
 int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
-  struct pld_cfg cfg;
   int rc;
-  const char *username,*svc,*ruser,*rhost,*tty;
+  struct pld_cfg cfg;
   struct pld_ctx *ctx=NULL, ctx2;
-  struct passwd *pwent;
-  /* parse module options */
-  parse_args(&cfg,flags,argc,argv);
-  /* get user name */
-  rc=pam_get_user(pamh,(const char **)&username,NULL);
+  const char *username,*service;
+  const char *ruser=NULL,*rhost=NULL,*tty=NULL;
+  /* set up configuration */
+  rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
     return rc;
-  if ((username==NULL)||(username[0]=='\0'))
-    return PAM_USER_UNKNOWN;
-  /* check uid */
-  if (cfg.minimum_uid>0)
-  {
-    pwent=pam_modutil_getpwnam(args->pamh,username);
-    if ((pwent!=NULL)&&(pwent->pw_uid<cfg.minimum_uid))
-      return cfg.ignore_unknown_user?PAM_IGNORE:PAM_USER_UNKNOWN;
-  }
-  /* get our context */
-  rc=ctx_get(pamh,username,&ctx);
-  if (rc!=PAM_SUCCESS)
-    return rc;
-  /* get service name */
-  rc=pam_get_item(pamh,PAM_SERVICE,(const void **)&svc);
-  if (rc!=PAM_SUCCESS)
-    return rc;
-  /* get remote user name */
-  rc=pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
-  if (rc!=PAM_SUCCESS)
-    return rc;
-  /* get service host */
-  rc=pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
-  if (rc!=PAM_SUCCESS)
-    return rc;
-  /* get tty name */
-  rc=pam_get_item(pamh,PAM_TTY,(const void **)&tty);
-  if (rc!=PAM_SUCCESS)
-    return rc;
+  /* get more PAM information */
+  pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
+  pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
+  pam_get_item(pamh,PAM_TTY,(const void **)&tty);
   /* call the function with a copy of the context to be able to keep the
      original context */
   ctx2.dn=ctx->dn;
   ctx2.user=ctx->user;
-  rc=nslcd_request_authz(&ctx2,username,svc,ruser,rhost,tty);
+  rc=nslcd_request_authz(&ctx2,username,service,ruser,rhost,tty);
+  /* remap error code */
   if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&cfg.ignore_unknown_user)
@@ -453,38 +433,22 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
 static int pam_sm_session(pam_handle_t *pamh,int flags,int argc,
                           const char **argv,int action)
 {
-  struct pld_cfg cfg;
   int rc;
-  const char *username;
-  struct pld_ctx *ctx=NULL;
-  const char *service=NULL,*tty=NULL,*rhost=NULL,*ruser=NULL;
-  struct passwd *pwent;
-  /* parse module options */
-  parse_args(&cfg,flags,argc,argv);
-  /* get user name */
-  rc=pam_get_user(pamh,(const char **)&username,NULL);
+  struct pld_cfg cfg;
+  struct pld_ctx *ctx;
+  const char *username,*service;
+  const char *tty=NULL,*rhost=NULL,*ruser=NULL;
+  /* set up configuration */
+  rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
     return rc;
-  if ((username==NULL)||(username[0]=='\0'))
-    return PAM_USER_UNKNOWN;
-  /* check uid */
-  if (cfg.minimum_uid>0)
-  {
-    pwent=pam_modutil_getpwnam(args->pamh,username);
-    if ((pwent!=NULL)&&(pwent->pw_uid<cfg.minimum_uid))
-      return cfg.ignore_unknown_user?PAM_IGNORE:PAM_USER_UNKNOWN;
-  }
-  /* get our context */
-  rc=ctx_get(pamh,username,&ctx);
-  if (rc!=PAM_SUCCESS)
-    return rc;
-  /* read PAM information */
-  pam_get_item(pamh,PAM_SERVICE,(const void **)&service);
+  /* get more PAM information */
   pam_get_item(pamh,PAM_TTY,(const void **)&tty);
   pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
   pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
   /* do the nslcd request */
   rc=nslcd_request_sess(ctx,action,username,service,tty,rhost,ruser);
+  /* remap error code */
   if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
     rc=PAM_IGNORE;
   else if ((rc==PAM_USER_UNKNOWN)&&cfg.ignore_unknown_user)
@@ -517,34 +481,14 @@ int pam_sm_close_session(
    password and actually modify the password. */
 int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
-  struct pld_cfg cfg;
   int rc;
+  struct pld_cfg cfg;
+  struct pld_ctx *ctx;
   const char *username,*service;
-  const char *oldpassword=NULL;
-  const char *newpassword=NULL;
-  struct pld_ctx *ctx=NULL;
+  const char *oldpassword=NULL,*newpassword=NULL;
   struct passwd *pwent;
-  /* parse module options */
-  parse_args(&cfg,flags,argc,argv);
-  /* get user name */
-  rc=pam_get_user(pamh,(const char **)&username,NULL);
-  if (rc!=PAM_SUCCESS)
-    return rc;
-  if ((username==NULL)||(username[0]=='\0'))
-    return PAM_USER_UNKNOWN;
-  /* check uid */
-  if (cfg.minimum_uid>0)
-  {
-    pwent=pam_modutil_getpwnam(args->pamh,username);
-    if ((pwent!=NULL)&&(pwent->pw_uid<cfg.minimum_uid))
-      return cfg.ignore_unknown_user?PAM_IGNORE:PAM_USER_UNKNOWN;
-  }
-  /* get our context */
-  rc=ctx_get(pamh,username,&ctx);
-  if (rc!=PAM_SUCCESS)
-    return rc;
-  /* get service name */
-  rc=pam_get_item(pamh,PAM_SERVICE,(const void **)&service);
+  /* set up configuration */
+  rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
     return rc;
   /* prelimenary check, just see if we can connect to the LDAP server
