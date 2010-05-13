@@ -180,7 +180,8 @@ static void debug_dump(const void *ptr,size_t size)
   if (((size_t)tmpint32)>=sizeof(buffer)) \
   { \
     /* will not fit */ \
-    DEBUG_PRINT("READ       : buffer error: %d bytes too large",(tmpint32-sizeof(buffer))+1); \
+    tmpint32=(tmpint32-sizeof(buffer))+1; \
+    DEBUG_PRINT("READ       : buffer %d bytes too small",tmpint32); \
     ERROR_OUT_BUFERROR(fp); \
   } \
   /* read string from the stream */ \
@@ -209,7 +210,8 @@ static void debug_dump(const void *ptr,size_t size)
   if ((bufptr+(size_t)(sz))>buflen) \
   { \
     /* will not fit */ \
-    DEBUG_PRINT("READ       : buffer error: %d bytes too small",(bufptr+(sz)-(buflen))); \
+    tmpint32=bufptr+(sz)-(buflen); \
+    DEBUG_PRINT("READ       : buffer %d bytes too small",tmpint32); \
     ERROR_OUT_BUFERROR(fp); \
   }
 

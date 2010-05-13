@@ -46,7 +46,7 @@
   return -1;
 
 #define ERROR_OUT_BUFERROR(fp) \
-  log_log(LOG_WARNING,"client supplied argument too large"); \
+  log_log(LOG_WARNING,"client supplied argument %d bytes too large",tmpint32); \
   return -1;
 
 /* a simple wrapper around snprintf,
