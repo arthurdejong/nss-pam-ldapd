@@ -1,3 +1,14 @@
+nss-pam-ldapd (0.7.5) unstable; urgency=low
+
+  * fix a problem in the session handling of the PAM module if the minimum_uid
+    option was used (Debian package default)
+  * refactor the PAM module code to be simpler and better maintainable
+  * perform logging from PAM module to syslog and support the debug option to
+    log more information
+  * Switch to "3.0 (native)" format.
+
+ -- Arthur de Jong <adejong@debian.org>  Thu, 13 May 2010 20:17:39 +0200
+
 nss-pam-ldapd (0.7.4) unstable; urgency=low
 
   * fix a buffer overflow that should have no security consequences

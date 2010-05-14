@@ -1,3 +1,13 @@
+changes from 0.7.4 to 0.7.5
+---------------------------
+
+* fix a problem in the session handling of the PAM module if the minimum_uid
+  option was used
+* refactor the PAM module code to be simpler and better maintainable
+* perform logging from PAM module to syslog and support the debug option to
+  log more information
+
+
 changes from 0.7.3 to 0.7.4
 ---------------------------
 

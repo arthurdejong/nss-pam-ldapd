@@ -1,3 +1,68 @@
+2010-05-14 20:38  arthur
+
+	* [r1108] Makefile.am, debian/source, debian/source/format: switch
+	  to source format 3.0 (native)
+
+2010-05-14 20:32  arthur
+
+	* [r1107] pam/pam.c: print uid as a long
+
+2010-05-14 10:20  arthur
+
+	* [r1106] compat/pam_compat.h, configure.ac, man/pam_ldap.8.xml,
+	  pam/common.h, pam/pam.c: perform logging from PAM module to
+	  syslog and support the debug option to log debugging information
+
+2010-05-13 21:27  arthur
+
+	* [r1105] pam/pam.c: centralise initialising functions needed for
+	  every PAM call into one function
+
+2010-05-13 19:13  arthur
+
+	* [r1104] common/nslcd-prot.h, nslcd/common.h: make logging of
+	  buffer checks consistent
+
+2010-05-13 16:31  arthur
+
+	* [r1103] pam/pam.c: also use PAM username instead of one from
+	  context for session open and close
+
+2010-05-13 16:30  arthur
+
+	* [r1102] pam/pam.c: replace my_pam_get_authtok() with standard
+	  pam_get_authtok() function, get rid of get_old_password() and
+	  general cleanups and simplifications
+
+2010-05-12 21:12  arthur
+
+	* [r1101] pam/pam.c: make parsing configuration options global,
+	  reorganise a bit and make code more consistent and easier to read
+
+2010-05-12 20:37  arthur
+
+	* [r1100] compat/pam_compat.h, nslcd/pam.c: small compatibility
+	  improvements
+
+2010-05-10 21:09  arthur
+
+	* [r1099] pam/pam.c: only log "LDAP session failed" if we actually
+	  tried
+
+2010-05-10 20:59  arthur
+
+	* [r1098] compat/Makefile.am, compat/pam_compat.h,
+	  compat/pam_get_authtok.c, compat/pam_prompt.c, configure.ac,
+	  pam/pam.c: replace my_pam_warn() with pam_info() and pam_error()
+	  and provide replacement for pam_prompt() also using it in our
+	  pam_get_authtok() replacement
+
+2010-05-09 11:40  arthur
+
+	* [r1096] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.4 release
+
 2010-05-09 10:44  arthur
 
 	* [r1095] nslcd/myldap.c: only log "connected to LDAP server" if
