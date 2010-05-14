@@ -208,7 +208,7 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
     if ((pwent!=NULL)&&(pwent->pw_uid<cfg->minimum_uid))
     {
       if (cfg->debug)
-        pam_syslog(pamh,LOG_DEBUG,"uid below minimum_uid; user=%s uid=%d",*username,(int)pwent->pw_uid);
+        pam_syslog(pamh,LOG_DEBUG,"uid below minimum_uid; user=%s uid=%ld",*username,(long)pwent->pw_uid);
       return cfg->ignore_unknown_user?PAM_IGNORE:PAM_USER_UNKNOWN;
     }
   }
