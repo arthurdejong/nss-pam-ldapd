@@ -67,4 +67,13 @@ int pam_prompt(pam_handle_t *pamh,int style,char **response,const char *format,.
 #define pam_modutil_getpwnam(pamh,user) getpwnam(user)
 #endif /* not HAVE_PAM_MODUTIL_GETGWNAM */
 
+/* fall back to using syslog() if pam_syslog() doesn't exist */
+#ifndef HAVE_PAM_SYSLOG
+#ifndef LOG_AUTHPRIV
+#define LOG_AUTHPRIV LOG_AUTH
+#endif /* not LOG_AUTHPRIV */
+#define pam_syslog(pamh,priority,format,args...) \
+    syslog(LOG_AUTHPRIV|(priority),format,##args)
+#endif /* not HAVE_PAM_SYSLOG */
+
 #endif /* _COMPAT_LDAP_COMPAT_H */

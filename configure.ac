@@ -310,7 +310,7 @@ then
   AC_SEARCH_LIBS(pam_get_data,pam,,AC_MSG_ERROR(no PAM library available))
   # replace some PAM functions if they are unavailable
   AC_REPLACE_FUNCS(pam_get_authtok pam_prompt)
-  AC_CHECK_FUNCS(pam_modutil_getpwnam)
+  AC_CHECK_FUNCS(pam_modutil_getpwnam pam_syslog)
   # restore CFLAGS and LIBS
   CFLAGS="$save_CFLAGS"
   LIBS="$save_LIBS"

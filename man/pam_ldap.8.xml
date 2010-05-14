@@ -143,7 +143,9 @@
     </term>
     <listitem>
      <para>
-      This option is ignored.
+      This option causes the <acronym>PAM</acronym> module to log debugging
+      information to
+      <citerefentry><refentrytitle>syslog</refentrytitle><manvolnum>3</manvolnum></citerefentry>.
      </para>
     </listitem>
    </varlistentry>
@@ -155,8 +157,8 @@
      <para>
       This option causes the <acronym>PAM</acronym> module to ignore the user
       if the user id is lower than the specified value. This can be used to
-      only authenticate normal users (non-system users) using
-      <acronym>LDAP</acronym> (e.g. by setting it to <literal>1000</literal>).
+      bypass <acronym>LDAP</acronym> checks for system users
+      (e.g. by setting it to <literal>1000</literal>).
      </para>
     </listitem>
    </varlistentry>
