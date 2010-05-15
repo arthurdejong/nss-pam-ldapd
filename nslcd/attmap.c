@@ -251,20 +251,25 @@ static const char *entry_expand(const char *name,void *expander_attr)
   return values[0];
 }
 
-MUST_USE const char *attmap_get_value(MYLDAP_ENTRY *entry,const char *attr,char *buffer,size_t buflen)
+const char *attmap_get_value(MYLDAP_ENTRY *entry,const char *attr,char *buffer,size_t buflen)
 {
   const char **values;
+  /* check and clear buffer */
+  if ((buffer==NULL)||(buflen<=0))
+    return NULL;
+  buffer[0]='\0';
   /* for simple values just return the attribute */
   if (attr[0]!='"')
   {
     values=myldap_get_values(entry,attr);
-    if (values==NULL)
+    if ((values==NULL)||(values[0]==NULL))
       return NULL;
     strncpy(buffer,values[0],buflen);
     buffer[buflen-1]='\0';
     return buffer;
     /* TODO: maybe warn when multiple values are found */
   }
+  /* we have an expression, try to parse */
   if ( (attr[strlen(attr)-1]!='"') ||
        (expr_parse(attr+1,buffer,buflen,entry_expand,(void *)entry)==NULL) )
   {

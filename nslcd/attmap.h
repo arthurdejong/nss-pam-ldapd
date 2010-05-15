@@ -86,11 +86,11 @@ const char **attmap_get_var(enum ldap_map_selector map,const char *name);
 
 /* Set the attribute mapping of the variable to the value specified.
    Returns the new value on success. */
-
-const char *attmap_set_mapping(const char **var,const char *value);
+MUST_USE const char *attmap_set_mapping(const char **var,const char *value);
 
 /* Return a value for the attribute, handling the case where attr
-   is an expression. */
+   is an expression. On error (e.g. problem parsing expression, attribute
+   value not found) it returns NULL and the buffer is made empty. */
 const char *attmap_get_value(MYLDAP_ENTRY *entry,const char *attr,char *buffer,size_t buflen);
 
 /* Add the attributes from attr to the set. The attr argumenent
