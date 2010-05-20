@@ -24,7 +24,7 @@ Description: Daemon for NSS and PAM lookups using LDAP
 Package: libnss-ldapd
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, nslcd
-Recommends: libpam-ldapd | libpam-ldap | libpam-krb5
+Recommends: libpam-ldapd | libpam-ldap | libpam-krb5 | libpam-heimdal
 Conflicts: libnss-ldap
 Provides: libnss-ldap
 Description: NSS module for using LDAP as a naming service
