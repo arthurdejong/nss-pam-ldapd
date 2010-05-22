@@ -237,9 +237,10 @@ static int try_autzsearch(MYLDAP_SESSION *session,DICT *dict,const char *searchf
   if (expr_parse(searchfilter,filter_buffer,sizeof(filter_buffer),
                  autzsearch_var_get,(void *)dict)==NULL)
   {
-    log_log(LOG_ERR,"authorisation search \"%s\" is invalid",searchfilter);
+    log_log(LOG_ERR,"pam_authz_search \"%s\" is invalid",searchfilter);
     return -1;
   }
+  log_log(LOG_DEBUG,"trying pam_authz_search \"%s\"",filter_buffer);
   /* perform the search */
   attrs[0]="dn";
   attrs[1]=NULL;
@@ -248,7 +249,7 @@ static int try_autzsearch(MYLDAP_SESSION *session,DICT *dict,const char *searchf
                        filter_buffer,attrs,&rc);
   if (search==NULL)
   {
-    log_log(LOG_ERR,"authorisation search \"%s\" failed: %s",
+    log_log(LOG_ERR,"pam_authz_search \"%s\" failed: %s",
             filter_buffer,ldap_err2string(rc));
     return -1;
   }
@@ -256,9 +257,10 @@ static int try_autzsearch(MYLDAP_SESSION *session,DICT *dict,const char *searchf
   entry=myldap_get_entry(search,NULL);
   if (entry==NULL)
   {
-    log_log(LOG_ERR,"no entry found");
+    log_log(LOG_ERR,"pam_authz_search \"%s\" found no matches",filter_buffer);
     return -1;
   }
+  log_log(LOG_DEBUG,"pam_authz_search found \"%s\"",myldap_get_dn(entry));
   /* we've found an entry so it's OK */
   return 0;
 }
@@ -310,7 +312,6 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     autzsearch_var_add(dict,"uid",username);
     if (try_autzsearch(session,dict,nslcd_cfg->ldc_pam_authz_search))
     {
-      log_log(LOG_DEBUG,"LDAP authorisation check failed");
       WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
       WRITE_STRING(fp,username);
       WRITE_STRING(fp,userdn);
