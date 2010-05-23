@@ -60,15 +60,15 @@
     configuration information for running <command>nslcd</command> (see
     <citerefentry><refentrytitle>nslcd</refentrytitle><manvolnum>8</manvolnum></citerefentry>).
     The file contains options, one on each line, defining the way
-    <acronym>NSS</acronym> lookups are mapped onto
-    <acronym>LDAP</acronym> lookups.
+    <acronym>NSS</acronym> lookups and <acronym>PAM</acronym> actions
+    are mapped to <acronym>LDAP</acronym> lookups.
   </para>
  </refsect1>
 
  <refsect1 id="options">
   <title>Options</title>
 
-  <refsect2 id='runtime_options'>
+  <refsect2 id="runtime_options">
    <title>Runtime options</title>
    <variablelist>
 
@@ -87,7 +87,7 @@
      <term><option>uid</option> <replaceable>UID</replaceable></term>
      <listitem>
       <para>
-       This specifies  which user id with which the daemon should be run.
+       This specifies the user id with which the daemon should be run.
        This can be a numerical id or a symbolic value.
        If no uid is specified no attempt to change the user will be made.
        Note that you should use values that don't need <acronym>LDAP</acronym>
@@ -100,7 +100,7 @@
      <term><option>gid</option> <replaceable>GID</replaceable></term>
      <listitem>
       <para>
-       This specifies  which group id with which the daemon should be run.
+       This specifies the group id with which the daemon should be run.
        This can be a numerical id or a symbolic value.
        If no gid is specified no attempt to change the group will be made.
        Note that you should use values that don't need <acronym>LDAP</acronym>
@@ -112,7 +112,7 @@
    </variablelist>
   </refsect2>
 
-  <refsect2 id='general_connection_options'>
+  <refsect2 id="general_connection_options">
    <title>General connection options</title>
    <variablelist>
 
@@ -202,7 +202,7 @@
   </refsect2>
 
 <!-- DO NOT DOCUMENT FOR NOW BECAUSE IT'S NOT SUPPORTED
-  <refsect2 id='sasl_authentication_options'>
+  <refsect2 id="sasl_authentication_options">
    <title><acronym>SASL</acronym> authentication options</title>
    <variablelist>
 
@@ -273,7 +273,7 @@
   </refsect2>
 -->
 
-  <refsect2 id='kerberos_authentication_options'>
+  <refsect2 id="kerberos_authentication_options">
    <title>Kerberos authentication options</title>
    <variablelist>
 
@@ -289,7 +289,7 @@
    </variablelist>
   </refsect2>
 
-  <refsect2 id='search_mapping_options'>
+  <refsect2 id="search_mapping_options">
    <title>Search/mapping options</title>
    <variablelist>
 
@@ -412,7 +412,7 @@
    </variablelist>
   </refsect2>
 
-  <refsect2 id='timing_reconnect_options'>
+  <refsect2 id="timing_reconnect_options">
    <title>Timing/reconnect options</title>
    <variablelist>
 
@@ -423,7 +423,7 @@
        Specifies the time limit (in seconds) to use when connecting to the
        directory server.
        This is distinct from the time limit specified in
-       <option>timelimit</option> and affects the setup of the connection only.
+       <option>timelimit</option> and affects the set-up of the connection only.
        Note that not all <acronym>LDAP</acronym> client libraries have support
        for setting the connection time out.
        The default <option>bind_timelimit</option> is 10 seconds.
@@ -483,8 +483,9 @@
    <para>
     Note that the reconnect logic as described above is the mechanism that
     is used between <command>nslcd</command> and the <acronym>LDAP</acronym>
-    server. The mechanism between the <acronym>NSS</acronym> client library
-    and <command>nslcd</command> is simpler with a fixed compiled-in
+    server. The mechanism between the <acronym>NSS</acronym> and
+    <acronym>PAM</acronym> client libraries on one end and
+    <command>nslcd</command> on the other is simpler with a fixed compiled-in
     time out of a 10 seconds for writing to <command>nslcd</command> and
     a time out of 60 seconds for reading answers.
     <command>nslcd</command> itself has a read time out of 0.5 seconds
@@ -493,7 +494,7 @@
 
   </refsect2>
 
-  <refsect2 id='ssl_tls_options'>
+  <refsect2 id="ssl_tls_options">
    <title><acronym>SSL</acronym>/<acronym>TLS</acronym> options</title>
    <variablelist>
 
@@ -587,7 +588,7 @@
    </variablelist>
   </refsect2>
 
-  <refsect2 id='other_options'>
+  <refsect2 id="other_options">
    <title>Other options</title>
    <variablelist>
 

@@ -58,9 +58,9 @@
  <refsect1 id="description">
   <title>Description</title>
   <para>
-   <command>nslcd</command> is a daemon that will do LDAP queries
-   for local processes based on a simple configuration
-   file.
+   <command>nslcd</command> is a daemon that will do LDAP queries for local
+   processes that want to do user, group and other naming lookups (NSS) or do
+   user authentication, authorisation or password modification (PAM).
   </para>
   <para>
    <command>nslcd</command> is configured through a configuration file

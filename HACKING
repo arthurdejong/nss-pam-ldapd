@@ -33,7 +33,7 @@ BUILD DEPENDENCIES
 
 For building svn snapshots the following tools are needed:
 
-* autoconf (2.61 is used but 2.59 is minimal)
+* autoconf (2.65 is used but 2.61 is minimal)
 * automake (1.11 is used)
 
 and of course the usual build tools (gcc/make/etc). Also see debian/control
@@ -51,7 +51,7 @@ RELEASE VERSIONING
 A new versioning scheme was chosen over the nss_ldap release scheme. The
 scheme is a simple major.minor.micro numbering. Until a 1.0 release is made
 the code will be considered work in progress. The interfaces may change and
-features may be added and removed.
+features may be added or removed.
 
 
 GENERAL DESIGN
@@ -67,7 +67,7 @@ system.
 
 Both these parts translate the queries in a higher-level simple protocol used
 to communicate with the nslcd daemon. This daemon translates the requests into
-LDAP searches. As a result the NSS and PAM modules don't need to known
+LDAP searches. As a result, the NSS and PAM modules don't need to known
 anything about LDAP (in fact replacing it with another lookup method should be
 very simple) and don't have to link with the LDAP libraries.
 
@@ -94,9 +94,9 @@ The NSS module is implemented in the nss directory. The functions are split
 into files according to the database they support. Functions look like:
 
 _nss_ldap_FUNCTION_r(...)
-  This function opens the connection to the nslcd (with a time-out) builds the
-  correct data structures and does a request (write()) to the nslcd waiting
-  for an answer (again with a time-out)
+  This function opens the connection to the nslcd (with a time-out), builds
+  the correct data structures and does a request (write()) to the nslcd
+  waiting for an answer (again with a time-out)
 
 The complete list of exported functions can be found in exports.linux and
 prototypes.h. The NSS interface seems to be fairly libc-specific and is
@@ -108,7 +108,6 @@ these functions. Part of this is defined in the common/nslcd-prot.h file and
 the NSS-specific stuff is in nss/common.h.
 
 Some useful links:
-http://mirrors.usc.edu/pub/gnu/Manuals/glibc-2.2.3/html_chapter/libc_28.html#SEC596
 http://www.gnu.org/software/libc/manual/html_node/index.html
 
 
@@ -117,13 +116,13 @@ PAM MODULE
 
 The PAM module is implemented in the pam directory. Implementation is fairly
 straight-forward. The PAM module stores some state between PAM calls in a
-struct. The calls to nslcd are however stateless. The PAM module may however
-supply some information that help lookups (most notably DNs of user entries).
+struct. The calls to nslcd are however stateless. The PAM module may supply
+some information that help lookups (most notably DNs of user entries).
 
 Care must be taken with the communication because the nslcd requests are not
 authenticated (e.g. changing passwords requests should include all
-credentials). This is where the PAM module is different from the NSS module.
-The PAM module could result in state changes on the LDAP server.
+credentials). The PAM requests may result in state changes on the LDAP server
+and this is where they are most notably different from the NSS requests.
 
 Some useful links:
 http://www.kernel.org/pub/linux/libs/pam/
@@ -174,11 +173,11 @@ nslcd_FUNCION(...)
 SECURITY NOTES
 ==============
 
-This design does open up the system to more potential security issues as there
-is now a local interface to a daemon with privileges. Before processes could
-only potentially exploit bugs in the library and gain the privileges of the
-process that was doing the name lookups. In this case the privileges of the
-daemon are potentially exposed.
+This design does open up the system to more potential security issues because
+there is now a local interface to a daemon with privileges. Before (with
+nss_ldap) processes could only potentially exploit bugs in the library and
+gain the privileges of the process that was doing the name lookups. In this
+case the privileges of the daemon are potentially exposed.
 
 Extra care should be taken with processes that normally require extra
 privileges (getting shadow entries, authentication, updating session
@@ -189,8 +188,8 @@ needs to check the userid of the caller or the request needs to contain the
 needed credentials itself.
 
 
-TEST SETUP
-==========
+TEST SET-UP
+===========
 
 In the test directory there are a number of tests available. See the file
 README in the test directory for more details.
