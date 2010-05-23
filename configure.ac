@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.61)
 AC_COPYRIGHT(
 [Copyright (C) 2006 Luke Howard
 Copyright (C) 2006 West Consulting
@@ -37,8 +37,10 @@ RELEASE_MONTH="May 2010"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])
 
+# some initialisation
 AC_CANONICAL_TARGET
 AC_PREFIX_DEFAULT()
+AC_CONFIG_LIBOBJ_DIR([compat])
 
 # display notice and initialize automake
 AC_MSG_NOTICE([configuring AC_PACKAGE_TARNAME AC_PACKAGE_VERSION])
@@ -196,77 +198,34 @@ AC_ARG_WITH(nslcd-socket,
 AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used for communicating.])
 AC_SUBST(NSLCD_SOCKET)
 
-# set up directory with compatibility replacement files
-AC_CONFIG_LIBOBJ_DIR([compat])
+# checks for availability of header files
+AC_CHECK_HEADERS([ctype.h strings.h pthread.h fcntl.h limits.h])
+AC_CHECK_HEADERS([nss.h grp.h shadow.h aliases.h netdb.h])
+AC_CHECK_HEADERS([netinet/ether.h arpa/inet.h netinet/in.h])
+AC_CHECK_HEADERS([sys/socket.h sys/un.h sys/ucred.h ucred.h sys/param.h sys/time.h])
+AC_CHECK_HEADERS([getopt.h syslog.h])
 
-# checks for availability of common header files
-AC_CHECK_HEADERS(ctype.h)
-AC_CHECK_HEADERS(strings.h)
-AC_CHECK_HEADERS(grp.h)
-AC_CHECK_HEADERS(sys/socket.h)
-AC_CHECK_HEADERS(sys/un.h)
-AC_CHECK_HEADERS(pthread.h)
-AC_CHECK_HEADERS(nss.h)
-AC_CHECK_HEADERS(netinet/ether.h)
-AC_CHECK_HEADERS(shadow.h)
-AC_CHECK_HEADERS(aliases.h)
-AC_CHECK_HEADERS(getopt.h)
-AC_CHECK_HEADERS(sys/ucred.h)
-AC_CHECK_HEADERS(ucred.h)
-
-# PAM module-specific headers
-if test "x$enable_pam" = "xyes"
-then
-  AC_CHECK_HEADERS(security/pam_appl.h)
-  AC_CHECK_HEADERS(security/pam_modules.h,,,[
-      #ifdef HAVE_SECURITY_PAM_APPL_H
-      #include <security/pam_appl.h>
-      #endif
-      ])
-  AC_CHECK_HEADERS(pam/pam_modules.h)
-  AC_CHECK_HEADERS(security/pam_ext.h)
-  AC_CHECK_HEADERS(security/pam_modutil.h)
-  # at least one of security/pam_modules.h or pam/pam_modules.h is required
-  if test "x$ac_cv_header_security_pam_modules_h" != "xyes" && \
-     test "x$ac_cv_header_pam_pam_modules_h" != "xyes"
-  then
-    AC_MSG_ERROR(PAM header files are missing)
-  fi
-fi
-
-# LDAP-specific headers
-if test "x$enable_nslcd" = "xyes"
-then
-  AC_CHECK_HEADERS(lber.h)
-  AC_CHECK_HEADERS(ldap.h,, test "x$enable_nslcd" = "xyes" && AC_MSG_ERROR([could not locate <ldap.h>]),[
-      #if HAVE_LBER_H
-      #include <lber.h>
-      #endif
-      ])
-  AC_CHECK_HEADERS(ldap_ssl.h)
-  AC_CHECK_HEADERS(gssldap.h)
-  if test "x$enable_sasl" = "xyes"
-  then
-    AC_CHECK_HEADERS(sasl.h sasl/sasl.h)
-    AC_CHECK_HEADERS(gsssasl.h)
-  fi
-  if test "x$enable_kerberos" = "xyes"
-  then
-    AC_CHECK_HEADERS(gssapi/gssapi.h gssapi/gssapi_generic.h gssapi/gssapi_krb5.h gssapi.h)
-  fi
-fi
+# other general checks
+AC_C_INLINE
+AC_C_CONST
 
 # checks for availability of common functions
-AC_CHECK_FUNCS(sigaction)
-AC_CHECK_FUNCS(snprintf)
+AC_CHECK_FUNCS([sigaction snprintf])
 AC_CHECK_FUNCS(gethostbyname)
 AC_SEARCH_LIBS(socket,socket)
+AC_CHECK_FUNCS([strcasecmp strncasecmp strchr strcspn strspn strtol])
+AC_CHECK_FUNCS([malloc realloc])
+AC_FUNC_FORK
 
 # checks for types
-AC_C_CONST
 AC_TYPE_MODE_T
 AC_TYPE_SIZE_T
 AC_TYPE_UID_T
+AC_TYPE_PID_T
+AC_TYPE_INT32_T
+AC_TYPE_UINT8_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
 
 # check for support for the __thread keyword
 AC_CACHE_CHECK([whether $CC supports '__thread'], [mn_cv_c___thread_supported],
@@ -296,21 +255,38 @@ AC_CHECK_TYPE(socklen_t,,
     #include <sys/types.h>
     #include <sys/socket.h>])
 
-# check threading stuff
-ACX_PTHREAD(,AC_MSG_ERROR([no support for pthreads]))
-AC_CHECK_FUNCS(pthread_mutex_lock)
-
 # PAM module-specific tests
 if test "x$enable_pam" = "xyes"
 then
   # save CFLAGS and LIBS to restore later
   save_CFLAGS="$CFLAGS"
   save_LIBS="$LIBS"
+
+  # check for headers
+  AC_CHECK_HEADERS(security/pam_appl.h)
+  AC_CHECK_HEADERS(security/pam_modules.h,,,[
+      #ifdef HAVE_SECURITY_PAM_APPL_H
+      #include <security/pam_appl.h>
+      #endif
+      ])
+  AC_CHECK_HEADERS(pam/pam_modules.h)
+  AC_CHECK_HEADERS(security/pam_ext.h)
+  AC_CHECK_HEADERS(security/pam_modutil.h)
+
+  # at least one of security/pam_modules.h or pam/pam_modules.h is required
+  if test "x$ac_cv_header_security_pam_modules_h" != "xyes" && \
+     test "x$ac_cv_header_pam_pam_modules_h" != "xyes"
+  then
+    AC_MSG_ERROR(PAM header files are missing)
+  fi
+
   # find pam library
   AC_SEARCH_LIBS(pam_get_data,pam,,AC_MSG_ERROR(no PAM library available))
+
   # replace some PAM functions if they are unavailable
   AC_REPLACE_FUNCS(pam_get_authtok pam_prompt)
   AC_CHECK_FUNCS(pam_modutil_getpwnam pam_syslog)
+
   # restore CFLAGS and LIBS
   CFLAGS="$save_CFLAGS"
   LIBS="$save_LIBS"
@@ -324,6 +300,25 @@ then
   save_LIBS="$LIBS"
   CFLAGS="$PTHREAD_CFLAGS $CFLAGS"
   LIBS="$PTHREAD_LIBS $LIBS"
+
+  # check header files
+  AC_CHECK_HEADERS(lber.h)
+  AC_CHECK_HEADERS(ldap.h,, test "x$enable_nslcd" = "xyes" && AC_MSG_ERROR([could not locate <ldap.h>]),[
+      #if HAVE_LBER_H
+      #include <lber.h>
+      #endif
+      ])
+  AC_CHECK_HEADERS(ldap_ssl.h)
+  AC_CHECK_HEADERS(gssldap.h)
+  if test "x$enable_sasl" = "xyes"
+  then
+    AC_CHECK_HEADERS(sasl.h sasl/sasl.h)
+    AC_CHECK_HEADERS(gsssasl.h)
+  fi
+  if test "x$enable_kerberos" = "xyes"
+  then
+    AC_CHECK_HEADERS(gssapi/gssapi.h gssapi/gssapi_generic.h gssapi/gssapi_krb5.h gssapi.h)
+  fi
 
   # checks for availability of system libraries for nslcd
   AC_SEARCH_LIBS(gethostbyname,nsl socket)
@@ -359,6 +354,10 @@ then
       #include <sys/socket.h>
       #include <sys/un.h>
       #include <sys/types.h>])
+
+  # check threading stuff
+  AX_PTHREAD(,AC_MSG_ERROR([no support for pthreads]))
+  AC_CHECK_FUNCS(pthread_mutex_lock)
 
   # search for an LDAP library (only OpenLDAP is tested)
   AC_ARG_WITH(ldap-lib,
