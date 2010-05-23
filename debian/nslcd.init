@@ -79,7 +79,7 @@ restart|force-reload)
 status)
   if [ -f "$NSLCD_PIDFILE" ]
   then
-    if kill -s 0 `cat $NSLCD_PIDFILE` > /dev/null 2>&1
+    if $NSLCD_BIN --check
     then
       log_success_msg "nslcd running (pid `cat $NSLCD_PIDFILE`)"
       exit 0
