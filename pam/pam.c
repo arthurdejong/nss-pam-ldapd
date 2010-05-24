@@ -105,7 +105,7 @@ static int ctx_get(pam_handle_t *pamh,const char *username,struct pld_ctx **pctx
   struct pld_ctx *ctx=NULL;
   int rc;
   /* try to get the context from PAM */
-  rc=pam_get_data(pamh, PLD_CTX,(const void **)&ctx);
+  rc=pam_get_data(pamh,PLD_CTX,(const void **)&ctx);
   if ((rc==PAM_SUCCESS)&&(ctx!=NULL))
   {
     /* if the user is different clear the context */
@@ -171,7 +171,7 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
       cfg->try_first_pass=1;
     else if (strcmp(argv[i],"use_authtok")==0)
       /* ignore, this option is used by pam_get_authtok() internally */;
-    else if (strcmp(argv[i], "no_warn")==0)
+    else if (strcmp(argv[i],"no_warn")==0)
       cfg->no_warn=1;
     else if (strcmp(argv[i],"ignore_unknown_user")==0)
       cfg->ignore_unknown_user=1;
@@ -179,7 +179,7 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
       cfg->ignore_authinfo_unavail=1;
     else if (strcmp(argv[i],"debug")==0)
       cfg->debug=1;
-    else if (strncmp(argv[i], "minimum_uid=", 12) == 0)
+    else if (strncmp(argv[i],"minimum_uid=",12) == 0)
       cfg->minimum_uid=(uid_t)atoi(argv[i]+12);
     else
       pam_syslog(pamh,LOG_ERR,"unknown option: %s",argv[i]);
@@ -248,7 +248,7 @@ static int nslcd2pam_rc(int rc)
 
 /* perform an authentication call over nslcd */
 static int nslcd_request_authc(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,
-                               const char *username, const char *service,
+                               const char *username,const char *service,
                                const char *passwd)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_AUTHC,
@@ -269,7 +269,7 @@ static int nslcd_request_authc(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld
 
 /* perform an authorisation call over nslcd */
 static int nslcd_request_authz(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,
-                               const char *username, const char *service,
+                               const char *username,const char *service,
                                const char *ruser,const char *rhost,
                                const char *tty)
 {
@@ -293,7 +293,7 @@ static int nslcd_request_authz(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld
 /* do a session nslcd request (open or close) */
 static int nslcd_request_sess(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,int action,
                               const char *username,const char *service,
-                              const char *tty, const char *rhost,
+                              const char *tty,const char *rhost,
                               const char *ruser)
 {
   PAM_REQUEST(action,
@@ -416,7 +416,7 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
   int rc;
   struct pld_cfg cfg;
-  struct pld_ctx *ctx=NULL, ctx2;
+  struct pld_ctx *ctx=NULL,ctx2;
   const char *username,*service;
   const char *ruser=NULL,*rhost=NULL,*tty=NULL;
   /* set up configuration */
@@ -508,14 +508,14 @@ static int pam_sm_session(pam_handle_t *pamh,int flags,int argc,
 
 /* PAM session open call */
 int pam_sm_open_session(
-  pam_handle_t *pamh, int flags, int argc, const char **argv)
+  pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
   return pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_O);
 }
 
 /* PAM session close call */
 int pam_sm_close_session(
-  pam_handle_t *pamh, int flags, int argc, const char **argv)
+  pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
   return pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_C);
 }
