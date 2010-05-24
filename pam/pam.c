@@ -140,7 +140,6 @@ static int ctx_get(pam_handle_t *pamh,const char *username,struct pld_ctx **pctx
 struct pld_cfg {
   int use_first_pass;
   int try_first_pass;
-  int use_authtok;
   int no_warn;
   int ignore_unknown_user;
   int ignore_authinfo_unavail;
@@ -158,7 +157,6 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
   /* initialise config with defaults */
   cfg->use_first_pass=0;
   cfg->try_first_pass=0;
-  cfg->use_authtok=0;
   cfg->no_warn=0;
   cfg->ignore_unknown_user=0;
   cfg->ignore_authinfo_unavail=0;
@@ -172,7 +170,7 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
     else if (strcmp(argv[i],"try_first_pass")==0)
       cfg->try_first_pass=1;
     else if (strcmp(argv[i],"use_authtok")==0)
-      cfg->use_authtok=1;
+      /* ignore, this option is used by pam_get_authtok() internally */;
     else if (strcmp(argv[i], "no_warn")==0)
       cfg->no_warn=1;
     else if (strcmp(argv[i],"ignore_unknown_user")==0)
