@@ -6,14 +6,14 @@ Auth-Initial:
 	[success=end default=ignore]	pam_ldap.so minimum_uid=1000
 Auth:
 	[success=end default=ignore]	pam_ldap.so minimum_uid=1000 use_first_pass
-Account-Type: Primary
+Account-Type: Additional
 Account:
-	[success=end default=ignore]	pam_ldap.so minimum_uid=1000
+	[success=ok user_unknown=ignore default=bad]	pam_ldap.so minimum_uid=1000
 Password-Type: Primary
 Password-Initial:
 	[success=end default=ignore]	pam_ldap.so minimum_uid=1000
 Password:
-	[success=end default=ignore]	pam_ldap.so minimum_uid=1000 try_first_pass
+	[success=end default=ignore]	pam_ldap.so minimum_uid=1000 try_first_pass use_authtok
 Session-Type: Additional
 Session:
-	optional			pam_ldap.so minimum_uid=1000
+	[success=ok default=ignore]	pam_ldap.so minimum_uid=1000
