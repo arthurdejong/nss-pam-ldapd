@@ -131,7 +131,7 @@
     <listitem>
      <para>
       This causes the <acronym>PAM</acronym> module to use the earlier
-      provided password when chanhing the password. The module will not
+      provided password when changing the password. The module will not
       prompt the user for a new password (it is analogous to
       <option>use_first_pass</option>).
      </para>
