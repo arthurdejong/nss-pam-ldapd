@@ -32,10 +32,6 @@ Description: NSS module for using LDAP as a naming service
  server to provide user account, group, host name, alias, netgroup, and
  basically any other information that you would normally get from /etc flat
  files or NIS.
- .
- This is a fork from libnss-ldap implementing structural design changes
- to fix, amongst other things, problems related to host name lookups and
- name lookups during booting.
 
 Package: libpam-ldapd
 Architecture: any
@@ -45,7 +41,5 @@ Conflicts: libpam-ldap
 Provides: libpam-ldap
 Description: PAM module for using LDAP as an authentication service
  This package provides a Pluggable Authentication Module that allows
- user authentication based on credentials stored in an LDAP server.
- .
- This module is still under development but strives to be able to replace
- the libpam-ldap package in most cases.
+ user authentication, authorisation and password management based on
+ credentials stored in an LDAP server.
