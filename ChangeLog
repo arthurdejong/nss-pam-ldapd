@@ -1,3 +1,72 @@
+2010-05-26 21:07  arthur
+
+	* [r1122] debian/control: drop extra parts of package descriptions
+	  that should no longer be really relevant and update libpam-ldapd
+	  description
+
+2010-05-24 21:53  arthur
+
+	* [r1121] debian/libpam-ldapd.pam-auth-update: update
+	  pam-auth-update configuration to always perform LDAP
+	  autorisation, also pass use_authtok on password modification and
+	  spell out session result handling
+
+2010-05-24 21:43  arthur
+
+	* [r1120] pam/pam.c: make code more consistent
+
+2010-05-24 21:36  arthur
+
+	* [r1119] man/pam_ldap.8.xml: fix typo
+
+2010-05-24 21:36  arthur
+
+	* [r1118] pam/pam.c: don't store use_authtok because
+	  pam_get_authtok() looks at the arguments itself
+
+2010-05-23 21:26  arthur
+
+	* [r1117] HACKING, README, man/nslcd.8.xml, man/nslcd.conf.5.xml:
+	  update documentation
+
+2010-05-23 20:11  arthur
+
+	* [r1116] nslcd.conf: include uid and gid options in default
+	  configuration file
+
+2010-05-23 19:53  arthur
+
+	* [r1115] configure.ac, m4/acx_pthread.m4, m4/ax_pthread.m4: update
+	  AC?X_PTHREAD macro and update configure script to be simpler and
+	  add some more checks
+
+2010-05-23 19:33  arthur
+
+	* [r1114] debian/nslcd.init: use nslcd --check in init script's
+	  status command
+
+2010-05-22 13:12  arthur
+
+	* [r1113] nslcd/pam.c: make debug logging for pam_authz_search
+	  option a little more readable
+
+2010-05-20 19:21  arthur
+
+	* [r1112] debian/control: add libpam-heimdal as an alternative
+	  recommends for libnss-ldapd
+
+2010-05-15 15:41  arthur
+
+	* [r1111] nslcd/attmap.c, nslcd/attmap.h: always clear returned
+	  buffer when performing attribute mapping (based on a patch by
+	  Nalin Dahyabhai <nalin@redhat.com>)
+
+2010-05-14 20:49  arthur
+
+	* [r1109] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.5 release
+
 2010-05-14 20:38  arthur
 
 	* [r1108] Makefile.am, debian/source, debian/source/format: switch

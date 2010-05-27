@@ -1,3 +1,16 @@
+nss-pam-ldapd (0.7.6) unstable; urgency=low
+
+  * include libpam-heimdal in libnss-ldapd recommends list of PAM
+    implementations (closes: #582407)
+  * fix a problem with empty attributes if expression-based attribute
+    mapping is used (patch by Nalin Dahyabhai)
+  * make debug logging for pam_authz_search option a little more informative
+  * documentation improvements
+  * update pam-auth-update configuration to always perform LDAP autorisation
+    for LDAP users
+
+ -- Arthur de Jong <adejong@debian.org>  Thu, 27 May 2010 21:00:00 +0200
+
 nss-pam-ldapd (0.7.5) unstable; urgency=low
 
   * fix a problem in the session handling of the PAM module if the minimum_uid

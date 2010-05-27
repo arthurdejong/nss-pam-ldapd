@@ -1,3 +1,13 @@
+changes from 0.7.5 to 0.7.6
+---------------------------
+
+* fix a problem with empty attributes if expression-based attribute
+  mapping is used (patch by Nalin Dahyabhai)
+* make debug logging for pam_authz_search option a little more informative
+* documentation improvements
+* Debian packaging improvements
+
+
 changes from 0.7.4 to 0.7.5
 ---------------------------
 
