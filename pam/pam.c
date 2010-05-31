@@ -299,7 +299,7 @@ static int nslcd_request_sess(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_
   PAM_REQUEST(action,
     /* log debug message */
     pam_syslog(pamh,LOG_DEBUG,"nslcd session %s; user=%s",
-          (action==NSLCD_ACTION_PAM_SESS_O)?"open":"clode",username),
+          (action==NSLCD_ACTION_PAM_SESS_O)?"open":"close",username),
     /* write the request parameters */
     WRITE_STRING(fp,username);
     WRITE_STRING(fp,ctx->dn);
@@ -493,7 +493,7 @@ static int pam_sm_session(pam_handle_t *pamh,int flags,int argc,
     pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,rc),username);
   else if (cfg.debug)
     pam_syslog(pamh,LOG_DEBUG,"session %s succeeded; session_id=%d",
-               (action==NSLCD_ACTION_PAM_SESS_O)?"open":"clode",ctx->sessid);
+               (action==NSLCD_ACTION_PAM_SESS_O)?"open":"close",ctx->sessid);
   /* remap error code */
   if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
     rc=PAM_IGNORE;
@@ -502,7 +502,7 @@ static int pam_sm_session(pam_handle_t *pamh,int flags,int argc,
   if ((rc!=PAM_SUCCESS)&&(rc!=PAM_IGNORE))
     if (!cfg.no_warn)
       pam_error(pamh,"LDAP %s session failed",
-                     (action==NSLCD_ACTION_PAM_SESS_O)?"open":"clode");
+                     (action==NSLCD_ACTION_PAM_SESS_O)?"open":"close");
   return rc;
 }
 
