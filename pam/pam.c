@@ -438,12 +438,7 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   else if ((rc==PAM_USER_UNKNOWN)&&cfg.ignore_unknown_user)
     rc=PAM_IGNORE;
   if (rc!=PAM_SUCCESS)
-  {
-    if (rc!=PAM_IGNORE)
-      if (!cfg.no_warn)
-        pam_error(pamh,"LDAP authorization failed");
     return rc;
-  }
   /* check the returned authorisation value */
   if (ctx2.authz!=PAM_SUCCESS)
   {
@@ -571,6 +566,11 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
       rc=PAM_IGNORE;
     else if ((rc==PAM_USER_UNKNOWN)&&cfg.ignore_unknown_user)
       rc=PAM_IGNORE;
+    /* log error or success */
+    if (rc!=PAM_SUCCESS)
+      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,rc),username);
+    else if (cfg.debug)
+      pam_syslog(pamh,LOG_DEBUG,"authentication succeeded");
     /* TODO: figure out when to return PAM_TRY_AGAIN */
     /* TODO: if password is incorrect (NSLCD_PAM_AUTH_ERR) log that */
     return rc;
