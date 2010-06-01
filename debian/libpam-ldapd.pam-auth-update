@@ -13,7 +13,7 @@ Password-Type: Primary
 Password-Initial:
 	[success=end default=ignore]	pam_ldap.so minimum_uid=1000
 Password:
-	[success=end default=ignore]	pam_ldap.so minimum_uid=1000 try_first_pass use_authtok
+	[success=end default=ignore]	pam_ldap.so minimum_uid=1000 try_first_pass
 Session-Type: Additional
 Session:
 	[success=ok default=ignore]	pam_ldap.so minimum_uid=1000
