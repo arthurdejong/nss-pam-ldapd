@@ -166,6 +166,8 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
   }
   /* try authentication */
   rc=try_bind(userdn,password);
+  if (rc=NSLCD_PAM_SUCCESS)
+    log_log(LOG_DEBUG,"bind successful");
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
