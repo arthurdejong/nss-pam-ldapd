@@ -90,6 +90,17 @@
    </varlistentry>
    <varlistentry>
     <term>
+     <option>nullok</option>
+    </term>
+    <listitem>
+     <para>
+      Specifying this option allows users to log in with a blank password.
+      Normally logins without a password are denied.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term>
      <option>ignore_unknown_user</option>
     </term>
     <listitem>

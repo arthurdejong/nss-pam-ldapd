@@ -140,6 +140,7 @@ static int ctx_get(pam_handle_t *pamh,const char *username,struct pld_ctx **pctx
 struct pld_cfg {
   int use_first_pass;
   int try_first_pass;
+  int nullok;
   int no_warn;
   int ignore_unknown_user;
   int ignore_authinfo_unavail;
@@ -157,6 +158,7 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
   /* initialise config with defaults */
   cfg->use_first_pass=0;
   cfg->try_first_pass=0;
+  cfg->nullok=0;
   cfg->no_warn=0;
   cfg->ignore_unknown_user=0;
   cfg->ignore_authinfo_unavail=0;
@@ -169,6 +171,8 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
       cfg->use_first_pass=1;
     else if (strcmp(argv[i],"try_first_pass")==0)
       cfg->try_first_pass=1;
+    else if (strcmp(argv[i],"nullok")==0)
+      cfg->nullok=1;
     else if (strcmp(argv[i],"use_authtok")==0)
       /* ignore, this option is used by pam_get_authtok() internally */;
     else if (strcmp(argv[i],"no_warn")==0)
@@ -363,7 +367,13 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
     rc=pam_get_item(pamh,PAM_AUTHTOK,(const void **)&passwd);
     if (rc!=PAM_SUCCESS)
       pam_syslog(pamh,LOG_ERR,"failed to get password: %s",pam_strerror(pamh,rc));
-    if (rc==PAM_SUCCESS)
+    else if (!cfg.nullok&&((passwd==NULL)||(passwd[0]=='\0')))
+    {
+      if (cfg.debug)
+        pam_syslog(pamh,LOG_DEBUG,"user has empty password, access denied");
+      rc=PAM_AUTH_ERR;
+    }
+    else
     {
       rc=nslcd_request_authc(pamh,ctx,&cfg,username,service,passwd);
       if (rc==PAM_SUCCESS)
@@ -556,6 +566,13 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
       rc=pam_get_authtok(pamh,PAM_OLDAUTHTOK,(const char **)&oldpassword,"(current) LDAP Password: ");
       if (rc!=PAM_SUCCESS)
         return rc;
+    }
+    /* check for empty password */
+    if (!cfg.nullok&&((oldpassword==NULL)||(oldpassword[0]=='\0')))
+    {
+      if (cfg.debug)
+        pam_syslog(pamh,LOG_DEBUG,"user has empty password, access denied");
+      rc=PAM_AUTH_ERR;
     }
     /* try authenticating */
     rc=nslcd_request_authc(pamh,ctx,&cfg,username,service,oldpassword);
