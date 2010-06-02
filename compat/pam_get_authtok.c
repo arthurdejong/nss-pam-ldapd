@@ -32,6 +32,7 @@
 #include "compat/attrs.h"
 #include "compat/pam_compat.h"
 
+/* warning: this version assumes that try_first_pass is specified */
 
 int pam_get_authtok(pam_handle_t *pamh,int item,const char **authtok,const char *prompt)
 {
