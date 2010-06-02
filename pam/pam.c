@@ -138,8 +138,6 @@ static int ctx_get(pam_handle_t *pamh,const char *username,struct pld_ctx **pctx
 
 /* our PAM module configuration */
 struct pld_cfg {
-  int use_first_pass;
-  int try_first_pass;
   int nullok;
   int no_warn;
   int ignore_unknown_user;
@@ -156,8 +154,6 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
   int rc;
   struct passwd *pwent;
   /* initialise config with defaults */
-  cfg->use_first_pass=0;
-  cfg->try_first_pass=0;
   cfg->nullok=0;
   cfg->no_warn=0;
   cfg->ignore_unknown_user=0;
@@ -168,9 +164,9 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
   for (i=0;i<argc;i++)
   {
     if (strcmp(argv[i],"use_first_pass")==0)
-      cfg->use_first_pass=1;
+      /* ignore, this option is used by pam_get_authtok() internally */;
     else if (strcmp(argv[i],"try_first_pass")==0)
-      cfg->try_first_pass=1;
+      /* ignore, this option is used by pam_get_authtok() internally */;
     else if (strcmp(argv[i],"nullok")==0)
       cfg->nullok=1;
     else if (strcmp(argv[i],"use_authtok")==0)
@@ -337,6 +333,16 @@ static int nslcd_request_pwmod(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld
     READ_BUF_STRING(fp,ctx->authzmsg);)
 }
 
+/* remap the return code based on the configuration */
+static int remap_pam_rc(int rc,struct pld_cfg *cfg)
+{
+  if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg->ignore_authinfo_unavail)
+    return PAM_IGNORE;
+  if ((rc==PAM_USER_UNKNOWN)&&cfg->ignore_unknown_user)
+    return PAM_IGNORE;
+  return rc;
+}
+
 /* PAM authentication check */
 int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
@@ -345,66 +351,45 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
   struct pld_ctx *ctx;
   const char *username,*service;
   char *passwd=NULL;
-  int i;
   /* set up configuration */
   rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
     return rc;
-  /* try twice */
-  for (i=0;i<2;i++)
+  /* get the password */
+  rc=pam_get_authtok(pamh,PAM_AUTHTOK,(const char **)&passwd,NULL);
+  if (rc!=PAM_SUCCESS)
   {
-    if ((!cfg.try_first_pass)&&(!cfg.use_first_pass))
-    {
-      rc=pam_get_authtok(pamh,PAM_AUTHTOK,(const char **)&passwd,i==0?"Password: ":"LDAP Password: ");
-      if (rc!=PAM_SUCCESS)
-      {
-        pam_syslog(pamh,LOG_ERR,"failed to get password: %s",pam_strerror(pamh,rc));
-        return rc;
-      }
-      /* exit loop after trying this password */
-      i=2;
-    }
-    rc=pam_get_item(pamh,PAM_AUTHTOK,(const void **)&passwd);
-    if (rc!=PAM_SUCCESS)
-      pam_syslog(pamh,LOG_ERR,"failed to get password: %s",pam_strerror(pamh,rc));
-    else if (!cfg.nullok&&((passwd==NULL)||(passwd[0]=='\0')))
-    {
-      if (cfg.debug)
-        pam_syslog(pamh,LOG_DEBUG,"user has empty password, access denied");
-      rc=PAM_AUTH_ERR;
-    }
-    else
-    {
-      rc=nslcd_request_authc(pamh,ctx,&cfg,username,service,passwd);
-      if (rc==PAM_SUCCESS)
-      {
-        rc=ctx->authok;
-        if (rc!=PAM_SUCCESS)
-          pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,rc),username);
-        else if (cfg.debug)
-          pam_syslog(pamh,LOG_DEBUG,"authentication succeeded");
-      }
-      /* remap error code */
-      if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
-        rc=PAM_IGNORE;
-      else if ((rc==PAM_USER_UNKNOWN)&&cfg.ignore_unknown_user)
-        rc=PAM_IGNORE;
-    }
-    if ((rc==PAM_SUCCESS)||(cfg.use_first_pass))
-      break;
-    cfg.try_first_pass=0;
+    pam_syslog(pamh,LOG_ERR,"failed to get password: %s",pam_strerror(pamh,rc));
+    return rc;
   }
+  /* check password */
+  if (!cfg.nullok&&((passwd==NULL)||(passwd[0]=='\0')))
+  {
+    if (cfg.debug)
+      pam_syslog(pamh,LOG_DEBUG,"user has empty password, access denied");
+    return PAM_AUTH_ERR;
+  }
+  /* do the nslcd request */
+  rc=nslcd_request_authc(pamh,ctx,&cfg,username,service,passwd);
+  if (rc!=PAM_SUCCESS)
+    return remap_pam_rc(rc,&cfg);
+  /* check the authentication result */
+  rc=ctx->authok;
+  if (rc!=PAM_SUCCESS)
+  {
+    pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,rc),username);
+    return remap_pam_rc(rc,&cfg);
+  }
+  /* debug log */
+  if (cfg.debug)
+    pam_syslog(pamh,LOG_DEBUG,"authentication succeeded");
   /* save username */
-  if (rc==PAM_SUCCESS)
-  {
-    ctx->user=strdup(username);
-    /* if password change is required, save old password in context */
-    if (ctx->authz==PAM_NEW_AUTHTOK_REQD)
-      ctx->oldpassword=strdup(passwd);
-  }
+  ctx->user=strdup(username);
+  /* if password change is required, save old password in context */
+  if (ctx->authz==PAM_NEW_AUTHTOK_REQD)
+    ctx->oldpassword=strdup(passwd);
   /* update caller's idea of the user name */
-  if ( (rc==PAM_SUCCESS) && ctx->tmpluser && ctx->tmpluser[0] &&
-       (strcmp(ctx->tmpluser,username)!=0) )
+  if ( ctx->tmpluser && ctx->tmpluser[0] && (strcmp(ctx->tmpluser,username)!=0) )
   {
     pam_syslog(pamh,LOG_INFO,"username changed from %s to %s",username,
                ctx->tmpluser);
@@ -441,29 +426,27 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
      original context */
   ctx2.dn=ctx->dn;
   ctx2.user=ctx->user;
+  /* do the nslcd request */
   rc=nslcd_request_authz(pamh,&ctx2,&cfg,username,service,ruser,rhost,tty);
-  /* remap error code */
-  if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
-    rc=PAM_IGNORE;
-  else if ((rc==PAM_USER_UNKNOWN)&&cfg.ignore_unknown_user)
-    rc=PAM_IGNORE;
   if (rc!=PAM_SUCCESS)
-    return rc;
+    return remap_pam_rc(rc,&cfg);
   /* check the returned authorisation value */
   if (ctx2.authz!=PAM_SUCCESS)
   {
     pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",ctx2.authzmsg,username);
-    if (!cfg.no_warn)
+    rc=remap_pam_rc(ctx2.authz,&cfg);
+    if ((rc!=PAM_IGNORE)&&(!cfg.no_warn))
       pam_error(pamh,"%s",ctx2.authzmsg);
-    return ctx2.authz;
+    return rc;
   }
   /* check the original authorisation check from authentication */
   if (ctx->authz!=PAM_SUCCESS)
   {
     pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",ctx->authzmsg,username);
-    if (!cfg.no_warn)
+    rc=remap_pam_rc(ctx->authz,&cfg);
+    if ((rc!=PAM_IGNORE)&&(!cfg.no_warn))
       pam_error(pamh,"%s",ctx->authzmsg);
-    return ctx->authz;
+    return rc;
   }
   if (cfg.debug)
     pam_syslog(pamh,LOG_DEBUG,"authorization succeeded");
@@ -495,20 +478,12 @@ static int pam_sm_session(pam_handle_t *pamh,int flags,int argc,
   /* do the nslcd request */
   rc=nslcd_request_sess(pamh,ctx,&cfg,action,username,service,tty,rhost,ruser);
   if (rc!=PAM_SUCCESS)
-    pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,rc),username);
-  else if (cfg.debug)
+    return remap_pam_rc(rc,&cfg);
+  /* debug log */
+  if (cfg.debug)
     pam_syslog(pamh,LOG_DEBUG,"session %s succeeded; session_id=%d",
                (action==NSLCD_ACTION_PAM_SESS_O)?"open":"close",ctx->sessid);
-  /* remap error code */
-  if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
-    rc=PAM_IGNORE;
-  else if ((rc==PAM_USER_UNKNOWN)&&cfg.ignore_unknown_user)
-    rc=PAM_IGNORE;
-  if ((rc!=PAM_SUCCESS)&&(rc!=PAM_IGNORE))
-    if (!cfg.no_warn)
-      pam_error(pamh,"LDAP %s session failed",
-                     (action==NSLCD_ACTION_PAM_SESS_O)?"open":"close");
-  return rc;
+  return PAM_SUCCESS;
 }
 
 /* PAM session open call */
@@ -576,21 +551,15 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
     }
     /* try authenticating */
     rc=nslcd_request_authc(pamh,ctx,&cfg,username,service,oldpassword);
-    if (rc==PAM_SUCCESS)
-      rc=ctx->authok;
-    /* remap error code */
-    if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
-      rc=PAM_IGNORE;
-    else if ((rc==PAM_USER_UNKNOWN)&&cfg.ignore_unknown_user)
-      rc=PAM_IGNORE;
-    /* log error or success */
     if (rc!=PAM_SUCCESS)
-      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,rc),username);
+      return remap_pam_rc(rc,&cfg);
+    /* handle authentication result */
+    if (ctx->authok!=PAM_SUCCESS)
+      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,ctx->authok),username);
     else if (cfg.debug)
       pam_syslog(pamh,LOG_DEBUG,"authentication succeeded");
-    /* TODO: figure out when to return PAM_TRY_AGAIN */
-    /* TODO: if password is incorrect (NSLCD_PAM_AUTH_ERR) log that */
-    return rc;
+    /* remap error code */
+    return remap_pam_rc(ctx->authok,&cfg);
   }
   /* get the old password (from the previous call) */
   rc=pam_get_item(pamh,PAM_OLDAUTHTOK,(const void **)&oldpassword);
@@ -607,10 +576,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   else
     ctx->authzmsg=(char *)pam_strerror(pamh,rc);
   /* remap error code */
-  if ((rc==PAM_AUTHINFO_UNAVAIL)&&cfg.ignore_authinfo_unavail)
-    rc=PAM_IGNORE;
-  else if ((rc==PAM_USER_UNKNOWN)&&cfg.ignore_unknown_user)
-    rc=PAM_IGNORE;
+  rc=remap_pam_rc(rc,&cfg);
   /* check the returned value */
   if (rc!=PAM_SUCCESS)
   {
