@@ -1,3 +1,37 @@
+2010-06-01 20:57  arthur
+
+	* [r1130] nslcd/pam.c: fix bug in test (r1127)
+
+2010-06-01 20:24  arthur
+
+	* [r1129] man/pam_ldap.8.xml, pam/pam.c: implement an nullok PAM
+	  option and disable empty passwords by default
+
+2010-06-01 20:04  arthur
+
+	* [r1128] pam/pam.c: don't log failure to do nslcd request to user
+	  and log authentication errors during password change
+
+2010-06-01 19:40  arthur
+
+	* [r1127] nslcd/pam.c: add a debug log message when user
+	  authentication was successful
+
+2010-06-01 19:39  arthur
+
+	* [r1126] debian/libpam-ldapd.pam-auth-update: don't use
+	  use_authtok for password modification by default
+
+2010-05-31 21:16  arthur
+
+	* [r1125] pam/pam.c: fix typo
+
+2010-05-27 20:09  arthur
+
+	* [r1123] AUTHORS, ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.6 release
+
 2010-05-26 21:07  arthur
 
 	* [r1122] debian/control: drop extra parts of package descriptions

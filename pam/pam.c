@@ -547,7 +547,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
     {
       if (cfg.debug)
         pam_syslog(pamh,LOG_DEBUG,"user has empty password, access denied");
-      rc=PAM_AUTH_ERR;
+      return PAM_AUTH_ERR;
     }
     /* try authenticating */
     rc=nslcd_request_authc(pamh,ctx,&cfg,username,service,oldpassword);
