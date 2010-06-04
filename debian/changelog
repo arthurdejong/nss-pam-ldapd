@@ -1,13 +1,3 @@
-nss-pam-ldapd (0.7.7) unstable; urgency=low
-
-  * don't use use_authtok for password modification by default (Debian specific)
-  * fine tune pam-auth-update configuration after discussion with Steve Langasek (Debian specific)
-
-  * improve logging by PAM module
-  * implement an nullok PAM option and disable empty passwords by default
-
- -- Arthur de Jong <adejong@debian.org>  Tue, 01 Jun 2010 22:39:09 +0200
-
 nss-pam-ldapd (0.7.6) unstable; urgency=low
 
   * include libpam-heimdal in libnss-ldapd recommends list of PAM
