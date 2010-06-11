@@ -110,7 +110,7 @@ static void display_version(FILE *fp)
              "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
 
-/* display usage information to stdout and exit(status) */
+/* display usage information */
 static void display_usage(FILE *fp,const char *program_name)
 {
   fprintf(fp,"Usage: %s [OPTION]...\n",program_name);
@@ -585,8 +585,6 @@ int main(int argc,char *argv[])
   /* this is a bit ugly */
   environ=sane_environment;
 #endif /* not HAVE_CLEARENV */
-  /* check if we are already running */
-  /* FIXME: implement (maybe pass along options or commands) */
   /* disable ldap lookups of host names to avoid lookup loop
      and fall back to files dns (a sensible default) */
   /* TODO: parse /etc/nsswitch ourselves and just remove ldap from the list */
