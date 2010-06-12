@@ -232,7 +232,6 @@ int tio_read(TFILE *fp, void *buf, size_t count)
   /* have a more convenient storage type for the buffer */
   uint8_t *ptr=(uint8_t *)buf;
   /* build a time by which we should be finished */
-  /* TODO: probably only set up deadline if we have to do select() */
   tio_tv_prepare(&deadline,&(fp->readtimeout));
   /* loop until we have returned all the needed data */
   while (1)

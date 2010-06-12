@@ -66,7 +66,6 @@ const char *attmap_group_userPassword  = "userPassword";
 const char *attmap_group_gidNumber     = "gidNumber";
 const char *attmap_group_memberUid     = "memberUid";
 const char *attmap_group_uniqueMember  = "uniqueMember";
-/*const char *attmap_group_memberOf      = "memberOf";*/
 
 /* default values for attributes */
 static const char *default_group_userPassword     = "*"; /* unmatchable */

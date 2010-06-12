@@ -308,7 +308,6 @@ netgroup (objectClass=nisNetgroup)
 networks (objectClass=ipNetwork)
   cn                - network name
   ipNetworkNumber   - network address
-  ipNetmaskNumber   - network netmask
 passwd (objectClass=posixAccount)
   uid               - account name
   userPassword      - password

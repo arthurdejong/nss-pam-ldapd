@@ -37,7 +37,6 @@ extern const char *attmap_group_userPassword;
 extern const char *attmap_group_gidNumber;
 extern const char *attmap_group_memberUid;
 extern const char *attmap_group_uniqueMember;
-/*extern const char *attmap_group_memberOf;*/
 extern const char *attmap_host_cn;
 extern const char *attmap_host_ipHostNumber;
 extern const char *attmap_netgroup_cn;
@@ -45,7 +44,6 @@ extern const char *attmap_netgroup_nisNetgroupTriple;
 extern const char *attmap_netgroup_memberNisNetgroup;
 extern const char *attmap_network_cn;
 extern const char *attmap_network_ipNetworkNumber;
-/*extern const char *attmap_network_ipNetmaskNumber; */
 extern const char *attmap_passwd_uid;
 extern const char *attmap_passwd_userPassword;
 extern const char *attmap_passwd_uidNumber;

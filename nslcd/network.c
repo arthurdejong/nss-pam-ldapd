@@ -56,7 +56,6 @@ const char *network_filter = "(objectClass=ipNetwork)";
 /* the attributes used in searches */
 const char *attmap_network_cn              = "cn";
 const char *attmap_network_ipNetworkNumber = "ipNetworkNumber";
-/*const char *attmap_network_ipNetmaskNumber = "ipNetmaskNumber"; */
 
 /* the attribute list to request with searches */
 static const char *network_attrs[3];
