@@ -12,6 +12,7 @@ msgstr ""
 "PO-Revision-Date: 2009-09-06 01:15+0200\n"
 "Last-Translator: Erik Schanze <eriks@debian.org>\n"
 "Language-Team: German <debian-l10n-german@lists.debian.org>\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -36,8 +37,8 @@ msgid ""
 msgstr ""
 "Bitte geben Sie den Uniform Resource Identifier des benutzten LDAP-Servers "
 "ein. Das Format ist »ldap://<Rechnername oder IP-Adresse>:<Port>/«. "
-"Alternativ kann auch »ldaps://« oder »ldapi://« benutzt werden. Der Port muss "
-"nicht angegeben werden."
+"Alternativ kann auch »ldaps://« oder »ldapi://« benutzt werden. Der Port "
+"muss nicht angegeben werden."
 
 #
 #. Type: string
@@ -47,9 +48,9 @@ msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
-"Wenn Sie »ldap« oder »ldaps« verwenden, sollten Sie eine IP-Adresse eingeben, "
-"um Ausfälle zu verhindern, falls die Namensauflösung einmal nicht verfügbar "
-"ist."
+"Wenn Sie »ldap« oder »ldaps« verwenden, sollten Sie eine IP-Adresse "
+"eingeben, um Ausfälle zu verhindern, falls die Namensauflösung einmal nicht "
+"verfügbar ist."
 
 #. Type: string
 #. Description
@@ -191,8 +192,8 @@ msgstr ""
 " * anfordern: ein Zertifikat wird angefordert, ist erforderlich\n"
 "              und wird überprüft\n"
 "Wenn die Zertifikat-Überprüfung eingeschaltet ist, muss mindestens eine der "
-"Optionen »tls_cacertdir« oder »tls_cacertfile« in die Datei /etc/nslcd."
-"conf eingetragen werden."
+"Optionen »tls_cacertdir« oder »tls_cacertfile« in die Datei /etc/nslcd.conf "
+"eingetragen werden."
 
 #. Type: multiselect
 #. Description

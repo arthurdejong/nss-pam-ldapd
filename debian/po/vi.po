@@ -10,6 +10,7 @@ msgstr ""
 "PO-Revision-Date: 2009-09-26 18:51+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
+"Language: vi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -31,8 +32,8 @@ msgid ""
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
 "Hãy gõ địa chỉ URI (nhận diện tài nguyên thống nhất) của máy phục vụ LDAP. "
-"Định dạng nên là « ldap://tên_máy_hay_địa_chỉ_IP:cổng/ ». Cũng có thể sử dụng "
-"tiền tố « ldaps:// » hay « ldapi:// ». Số thứ tự dộng vẫn còn tuỳ chọn"
+"Định dạng nên là « ldap://tên_máy_hay_địa_chỉ_IP:cổng/ ». Cũng có thể sử "
+"dụng tiền tố « ldaps:// » hay « ldapi:// ». Số thứ tự dộng vẫn còn tuỳ chọn"
 
 #. Type: string
 #. Description
@@ -67,8 +68,8 @@ msgid ""
 "name of the search base."
 msgstr ""
 "Hãy gõ tên phân biệt (DN) của cơ bản tìm kiếm LDAP. Nhiều chỗ sử dụng thành "
-"phần tên miền cho mục đích này, v.d. miền « ví_dụ.net » sẽ sử dụng « dc=ví_dụ,"
-"dc=net » làm tên phân biệt của cơ bản tìm kiếm."
+"phần tên miền cho mục đích này, v.d. miền « ví_dụ.net » sẽ sử dụng « "
+"dc=ví_dụ,dc=net » làm tên phân biệt của cơ bản tìm kiếm."
 
 #. Type: string
 #. Description
@@ -177,8 +178,8 @@ msgstr ""
 "\t\t\t\tnếu chứng nhận không được cung cấp\n"
 " • đòi hỏi\t\t\tmột chứng nhận được yêu cầu, đòi hỏi và kiểm tra.\n"
 "Nếu tính năng kiểm tra được hiệu lực thì ít nhất một của hai tuỳ chọn « "
-"tls_cacertdir » và « tls_cacertfile » phải được để vào tập tin cấu hình « /etc/"
-"nslcd.conf »."
+"tls_cacertdir » và « tls_cacertfile » phải được để vào tập tin cấu hình « /"
+"etc/nslcd.conf »."
 
 #. Type: multiselect
 #. Description

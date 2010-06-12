@@ -11,6 +11,7 @@ msgstr ""
 "PO-Revision-Date: 2004-11-02 20:49+0100\n"
 "Last-Translator: Guillem Jover <guillem@debian.org>\n"
 "Language-Team: Catalan <debian-l10n-catalan@lists.debian.org>\n"
+"Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -70,8 +71,8 @@ msgid ""
 msgstr ""
 "Introduïu el nom distingit de la base de la cerca de l'LDAP. Molts llocs "
 "utilitzen els components del seu nom del domini. Per exemple, el domini "
-"«exemple.net» utilitzaria el nom distingit de la base de la cerca «dc=exemple,"
-"dc=net»."
+"«exemple.net» utilitzaria el nom distingit de la base de la cerca "
+"«dc=exemple,dc=net»."
 
 #. Type: string
 #. Description
