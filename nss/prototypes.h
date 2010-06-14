@@ -2,7 +2,7 @@
    prototypes.h - all functions exported by the NSS library
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2008 Arthur de Jong
+   Copyright (C) 2006, 2008, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -96,6 +96,10 @@ struct __netgrent
    This however is a useful pointer:
    http://www.gnu.org/software/libc/manual/html_node/Name-Service-Switch.html
 */
+
+/* flag to gloabally disable lookups (all _nss_ldap_*() functions will return
+   NSS_STATUS_UNAVAIL */
+extern int _nss_ldap_enablelookups;
 
 /* aliases - mail aliases */
 enum nss_status _nss_ldap_getaliasbyname_r(const char *name,struct aliasent *result,char *buffer,size_t buflen,int *errnop);

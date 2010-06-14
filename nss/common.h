@@ -2,7 +2,7 @@
    common.h - common functions for NSS lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -83,6 +83,8 @@
   TFILE *fp; \
   int32_t tmpint32; \
   enum nss_status retv; \
+  if (!_nss_ldap_enablelookups) \
+    return NSS_STATUS_UNAVAIL; \
   /* check that we have a valid buffer */ \
   if ((buffer==NULL)||(buflen<=0)) \
   { \
@@ -117,6 +119,8 @@
 /* This macro generates a simple setent() function body. This closes any
    open streams so that NSS_GETENT() can open a new file. */
 #define NSS_SETENT(fp) \
+  if (!_nss_ldap_enablelookups) \
+    return NSS_STATUS_UNAVAIL; \
   if (fp!=NULL) \
   { \
     (void)tio_close(fp); \
@@ -130,6 +134,8 @@
 #define NSS_GETENT(fp,action,readfn) \
   int32_t tmpint32; \
   enum nss_status retv; \
+  if (!_nss_ldap_enablelookups) \
+    return NSS_STATUS_UNAVAIL; \
   /* check that we have a valid buffer */ \
   if ((buffer==NULL)||(buflen<=0)) \
   { \
@@ -174,6 +180,8 @@
 /* This macro generates a endent() function body. This just closes
    the stream. */
 #define NSS_ENDENT(fp) \
+  if (!_nss_ldap_enablelookups) \
+    return NSS_STATUS_UNAVAIL; \
   if (fp!=NULL) \
   { \
     (void)tio_close(fp); \

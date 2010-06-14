@@ -96,6 +96,8 @@ enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent UNUSED
   int32_t tmpint32;
   int errnocp;
   int *errnop;
+  if (!_nss_ldap_enablelookups)
+    return NSS_STATUS_UNAVAIL;
   errnop=&errnocp;
   /* check parameter */
   if ((group==NULL)||(group[0]=='\0'))

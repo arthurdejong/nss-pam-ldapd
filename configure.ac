@@ -323,6 +323,7 @@ then
   # checks for availability of system libraries for nslcd
   AC_SEARCH_LIBS(gethostbyname,nsl socket)
   AC_SEARCH_LIBS(socket,socket)
+  AC_SEARCH_LIBS(dlopen,dl)
 
   # check for availability of functions
   AC_CHECK_FUNCS(setgroups)
@@ -330,6 +331,7 @@ then
   AC_CHECK_FUNCS(getpeerucred)
   AC_CHECK_FUNCS(__nss_configure_lookup)
   AC_CHECK_FUNCS(getenv putenv clearenv)
+  AC_CHECK_FUNCS(dlopen dlsym dlerror)
 
   # replace getopt_long() function if it is not on the system
   AC_REPLACE_FUNCS(getopt_long)

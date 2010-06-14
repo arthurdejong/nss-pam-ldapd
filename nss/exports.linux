@@ -3,6 +3,9 @@ EXPORTED {
   # published NSS service functions
   global:
 
+    # flag to enable or disable lookups
+    _nss_ldap_enablelookups;
+
     # aliases - mail aliases
     _nss_ldap_getaliasbyname_r;
     _nss_ldap_setaliasent;

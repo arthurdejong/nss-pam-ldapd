@@ -55,6 +55,7 @@
 #ifndef HAVE_DAEMON
 #include "compat/daemon.h"
 #endif /* not HAVE_DAEMON */
+#include <dlfcn.h>
 
 #include "nslcd.h"
 #include "log.h"
@@ -565,6 +566,41 @@ static void *worker(void UNUSED(*arg))
   return NULL;
 }
 
+/* function to disable lookups through the nss_ldap module to avoid lookup
+   loops */
+static void disable_nss_ldap(void)
+{
+  void *handle;
+  char *error;
+  int *enable_flag;
+  /* try to load the NSS module */
+  handle=dlopen("libnss_ldap.so.2",RTLD_LAZY);
+  if (handle==NULL)
+  {
+    log_log(LOG_WARNING,"Warning: LDAP NSS module not loaded: %s",dlerror());
+    return;
+  }
+  /* clear any existing errors */
+  dlerror();
+  /* try to look up the flag */
+  enable_flag=(int *)dlsym(handle,"_nss_ldap_enablelookups");
+  error=dlerror();
+  if (error!=NULL)
+  {
+    log_log(LOG_WARNING,"Warning: %s (probably older NSS module loaded)",error);
+    /* fall back to changing the way host lookup is done */
+#ifdef HAVE___NSS_CONFIGURE_LOOKUP
+    if (__nss_configure_lookup("hosts","files dns"))
+      log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
+#endif /* HAVE___NSS_CONFIGURE_LOOKUP */
+    return;
+  }
+  /* disable nss_ldap */
+  *enable_flag=0;
+  /* we don't do dlclose() because we want the symbol change to be
+     persistent */
+}
+
 /* the main program... */
 int main(int argc,char *argv[])
 {
@@ -585,14 +621,8 @@ int main(int argc,char *argv[])
   /* this is a bit ugly */
   environ=sane_environment;
 #endif /* not HAVE_CLEARENV */
-  /* disable ldap lookups of host names to avoid lookup loop
-     and fall back to files dns (a sensible default) */
-  /* TODO: parse /etc/nsswitch ourselves and just remove ldap from the list */
-#ifdef HAVE___NSS_CONFIGURE_LOOKUP
-  if (__nss_configure_lookup("hosts","files dns"))
-    log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
-#endif /* HAVE___NSS_CONFIGURE_LOOKUP */
-  /* FIXME: have some other mechanism for systems that don't have this */
+  /* disable the nss_ldap module for this process */
+  disable_nss_ldap();
   /* set LDAP log level */
   if (myldap_set_debuglevel(nslcd_debugging)!=LDAP_SUCCESS)
     exit(EXIT_FAILURE);

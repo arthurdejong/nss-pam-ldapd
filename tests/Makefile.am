@@ -1,7 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -86,7 +86,7 @@ test_common_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
                     ../common/libdict.a ../compat/libcompat.a
 
 common_SOURCES = ../common/nslcd-prot.c ../nslcd.h ../nss/prototypes.h \
-                 ../common/tio.c ../common/tio.h
+                 ../common/tio.c ../common/tio.h ../nss/common.c
 
 test_aliases_SOURCES = test_aliases.c ../nss/aliases.c $(common_SOURCES)
 test_ethers_SOURCES = test_ethers.c ../nss/ethers.c $(common_SOURCES)
