@@ -19,8 +19,8 @@
    02110-1301 USA
 */
 
-#ifndef _COMPAT_PAM_COMPAT_H
-#define _COMPAT_PAM_COMPAT_H 1
+#ifndef COMPAT__PAM_COMPAT_H
+#define COMPAT__PAM_COMPAT_H 1
 
 #ifdef HAVE_SECURITY_PAM_APPL_H
 #include <security/pam_appl.h>

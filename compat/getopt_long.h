@@ -19,8 +19,8 @@
    02110-1301 USA
 */
 
-#ifndef _GETOPT_LONG_H
-#define _GETOPT_LONG_H 1
+#ifndef COMPAT__GETOPT_LONG_H
+#define COMPAT__GETOPT_LONG_H 1
 
 #ifndef HAVE_GETOPT_LONG
 
@@ -47,4 +47,4 @@ int getopt_long(int argc,char * const argv[],
 
 #endif /* not HAVE_GETOPT_LONG */
 
-#endif /* _GETOPT_LONG_H */
+#endif /* COMPAT__GETOPT_LONG_H */

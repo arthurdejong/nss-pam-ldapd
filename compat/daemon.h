@@ -19,8 +19,8 @@
    02110-1301 USA
 */
 
-#ifndef _DAEMON_H
-#define _DAEMON_H 1
+#ifndef COMPAT__DAEMON_H
+#define COMPAT__DAEMON_H 1
 
 #include <unistd.h>
 
@@ -28,4 +28,4 @@
    strdout and stderr and redirect them to /dev/null */
 int daemon(int nochdir,int noclose);
 
-#endif /* not _DAEMON_H */
+#endif /* not COMPAT__DAEMON_H */

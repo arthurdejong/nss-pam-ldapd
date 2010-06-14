@@ -32,8 +32,8 @@
    get attribute values (with myldap_get_values()).
 */
 
-#ifndef _MYLDAP_H
-#define _MYLDAP_H
+#ifndef NSLCD__MYLDAP_H
+#define NSLCD__MYLDAP_H
 
 /* for size_t */
 #include <stdlib.h>
@@ -139,4 +139,4 @@ int myldap_passwd(
         MYLDAP_SESSION *session,
         const char *userdn,const char *oldpassword,const char *newpasswd);
 
-#endif /* not _MYLDAP_H */
+#endif /* not NSLCD__MYLDAP_H */

@@ -20,8 +20,8 @@
 */
 
 
-#ifndef _LOG_H
-#define _LOG_H 1
+#ifndef NSLCD__LOG_H
+#define NSLCD__LOG_H 1
 
 
 #include <syslog.h>
@@ -65,4 +65,4 @@ int log_getloglevel(const char *lvl)
   MUST_USE;
 
 
-#endif /* not _LOG_H */
+#endif /* not NSLCD__LOG_H */

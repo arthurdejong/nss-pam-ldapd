@@ -23,8 +23,8 @@
    02110-1301 USA
 */
 
-#ifndef _CFG_H
-#define _CFG_H
+#ifndef NSLCD__CFG_H
+#define NSLCD__CFG_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -149,4 +149,4 @@ extern struct ldap_config *nslcd_cfg;
    if an error occurs. */
 void cfg_init(const char *fname);
 
-#endif /* _CFG_H */
+#endif /* NSLCD__CFG_H */

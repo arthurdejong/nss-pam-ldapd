@@ -19,8 +19,8 @@
    02110-1301 USA
 */
 
-#ifndef _PAM_COMMON_H
-#define _PAM_COMMON_H 1
+#ifndef PAM__COMMON_H
+#define PAM__COMMON_H 1
 
 #include <stdio.h>
 
@@ -97,4 +97,4 @@
   READ_TYPE(fp,tmpint32,int32_t); \
   i=nslcd2pam_rc(tmpint32);
 
-#endif /* not _PAM_COMMON_H */
+#endif /* not PAM__COMMON_H */

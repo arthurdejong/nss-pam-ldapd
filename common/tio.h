@@ -33,8 +33,8 @@
 
 */
 
-#ifndef _TIO_H
-#define _TIO_H
+#ifndef COMMON__TIO_H
+#define COMMON__TIO_H
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -78,4 +78,4 @@ void tio_mark(TFILE *fp);
    were full). */
 int tio_reset(TFILE *fp);
 
-#endif /* _TIO_H */
+#endif /* COMMON__TIO_H */

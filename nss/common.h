@@ -20,8 +20,8 @@
    02110-1301 USA
 */
 
-#ifndef _NSS_COMMON_H
-#define _NSS_COMMON_H 1
+#ifndef NSS__COMMON_H
+#define NSS__COMMON_H 1
 
 #include <stdio.h>
 #include <nss.h>
@@ -181,4 +181,4 @@
   } \
   return NSS_STATUS_SUCCESS;
 
-#endif /* not _NSS_COMMON_H */
+#endif /* not NSS__COMMON_H */

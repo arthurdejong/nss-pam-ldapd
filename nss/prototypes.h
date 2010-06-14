@@ -20,8 +20,8 @@
    02110-1301 USA
 */
 
-#ifndef _NSS_EXPORTS_H
-#define _NSS_EXPORTS_H 1
+#ifndef NSS__PROTOTYPES_H
+#define NSS__PROTOTYPES_H 1
 
 #include <nss.h>
 #ifdef HAVE_ALIASES_H
@@ -172,4 +172,4 @@ enum nss_status _nss_ldap_setspent(int stayopen);
 enum nss_status _nss_ldap_getspent_r(struct spwd *result,char *buffer,size_t buflen,int *errnop);
 enum nss_status _nss_ldap_endspent(void);
 
-#endif /* not NSS_EXPORTS */
+#endif /* not NSS__PROTOTYPES_H */

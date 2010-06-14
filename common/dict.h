@@ -20,8 +20,8 @@
    02110-1301 USA
 */
 
-#ifndef _DICT_H
-#define _DICT_H
+#ifndef COMMON__DICT_H
+#define COMMON__DICT_H
 
 #include "compat/attrs.h"
 
@@ -64,4 +64,4 @@ void dict_free(DICT *dict);
 const char **dict_keys(DICT *dict)
   MUST_USE;
 
-#endif /* _DICT_H */
+#endif /* COMMON__DICT_H */

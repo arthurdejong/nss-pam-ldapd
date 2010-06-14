@@ -19,8 +19,8 @@
    02110-1301 USA
 */
 
-#ifndef _COMPAT_ETHER_H
-#define _COMPAT_ETHER_H 1
+#ifndef COMPAT__ETHER_H
+#define COMPAT__ETHER_H 1
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -45,5 +45,5 @@ char *ether_ntoa_r(const struct ether_addr *addr,char *buf);
 struct ether_addr *ether_aton_r(const char *asc,struct ether_addr *addr);
 #endif /* not HAVE_ETHER_ATON_R */
 
-#endif /* not _COMPAT_ETHER_H */
+#endif /* not COMPAT__ETHER_H */
 

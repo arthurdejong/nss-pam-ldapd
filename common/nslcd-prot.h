@@ -20,8 +20,8 @@
    02110-1301 USA
 */
 
-#ifndef _NSLCD_PROT_H
-#define _NSLCD_PROT_H 1
+#ifndef COMMON__NSLCD_PROT_H
+#define COMMON__NSLCD_PROT_H 1
 
 #include "tio.h"
 
@@ -355,4 +355,4 @@ TFILE *nslcd_client_open(void)
   if (tmpint32!=(int32_t)NSLCD_RESULT_BEGIN) \
     { ERROR_OUT_NOSUCCESS(fp) }
 
-#endif /* not _NSLCD_PROT_H */
+#endif /* not COMMON__NSLCD_PROT_H */

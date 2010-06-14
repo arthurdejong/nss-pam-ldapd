@@ -20,8 +20,8 @@
    02110-1301 USA
 */
 
-#ifndef _SET_H
-#define _SET_H
+#ifndef COMMON__SET_H
+#define COMMON__SET_H
 
 #include "compat/attrs.h"
 
@@ -56,4 +56,4 @@ void set_free(SET *set);
 const char **set_tolist(SET *set)
   MUST_USE;
 
-#endif /* _SET_H */
+#endif /* COMMON__SET_H */

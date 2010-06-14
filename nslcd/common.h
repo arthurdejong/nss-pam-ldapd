@@ -21,8 +21,8 @@
    02110-1301 USA
 */
 
-#ifndef _SERVER_COMMON_H
-#define _SERVER_COMMON_H 1
+#ifndef NSLCD__COMMON_H
+#define NSLCD__COMMON_H 1
 
 #include <errno.h>
 
@@ -195,4 +195,4 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session);
     return 0; \
   }
 
-#endif /* not _SERVER_COMMON_H */
+#endif /* not NSLCD__COMMON_H */

@@ -21,8 +21,8 @@
    02110-1301 USA
 */
 
-#ifndef _COMPAT_GETPEERCRED_H
-#define _COMPAT_GETPEERCRED_H 1
+#ifndef COMPAT__GETPEERCRED_H
+#define COMPAT__GETPEERCRED_H 1
 
 /* This function tries to determine the (effective) user id, group id
    and process id of the other end of the specified socket.
@@ -32,4 +32,4 @@
    is set appropriately. */
 int getpeercred(int sock,uid_t *uid,gid_t *gid,pid_t *pid);
 
-#endif /* not _COMPAT_GETPEERCRED_H */
+#endif /* not COMPAT__GETPEERCRED_H */

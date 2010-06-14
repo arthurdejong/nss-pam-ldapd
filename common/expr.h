@@ -20,8 +20,8 @@
    02110-1301 USA
 */
 
-#ifndef _EXPR_H
-#define _EXPR_H 1
+#ifndef COMMON__EXPR_H
+#define COMMON__EXPR_H 1
 
 #include "compat/attrs.h"
 #include "common/set.h"
@@ -38,4 +38,4 @@ MUST_USE const char *expr_parse(const char *expr,char *buffer,size_t buflen,
    is allocated, otherwise the passed set is added to. */
 SET *expr_vars(const char *expr,SET *set);
 
-#endif /* not _EXPR_H */
+#endif /* not _COMMON__ */

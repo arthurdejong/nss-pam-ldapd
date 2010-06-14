@@ -19,8 +19,8 @@
    02110-1301 USA
 */
 
-#ifndef _COMPAT_LDAP_COMPAT_H
-#define _COMPAT_LDAP_COMPAT_H 1
+#ifndef COMPAT__LDAP_COMPAT_H
+#define COMPAT__LDAP_COMPAT_H 1
 
 #include <lber.h>
 #include <ldap.h>
@@ -58,4 +58,4 @@ int ldap_passwd_s(LDAP *ld,struct berval *user,struct berval *oldpw,
 #endif /* not HAVE_LDAP_PASSWD_S */
 
 
-#endif /* _COMPAT_LDAP_COMPAT_H */
+#endif /* COMPAT__LDAP_COMPAT_H */

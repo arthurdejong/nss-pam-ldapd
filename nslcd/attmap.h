@@ -20,8 +20,8 @@
    02110-1301 USA
 */
 
-#ifndef _ATTMAP_H
-#define _ATTMAP_H 1
+#ifndef NSLCD__ATTMAP_H
+#define NSLCD__ATTMAP_H 1
 
 #include "cfg.h"
 #include "myldap.h"
@@ -95,4 +95,4 @@ const char *attmap_get_value(MYLDAP_ENTRY *entry,const char *attr,char *buffer,s
    can either be an attribute or an attribute expression. */
 SET *attmap_add_attributes(SET *set,const char *attr);
 
-#endif /* not _ATTMAP_H */
+#endif /* not NSLCD__ATTMAP_H */
