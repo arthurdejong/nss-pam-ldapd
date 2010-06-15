@@ -238,6 +238,23 @@ then
   AC_DEFINE(__thread,,[Define to empty if compiler does not support `__thread' keyword.])
 fi
 
+# check how to pass a symbol map to the linker
+AC_MSG_CHECKING([how linker wants the symbol map])
+if $CC -Wl,--help 2>&1 | grep -- --version-script >/dev/null
+then
+  VERSION_SCRIPT_FLAG="-Wl,--version-script,"
+  AC_SUBST(VERSION_SCRIPT_FLAG)
+  AC_MSG_RESULT([--version-script])
+elif $CC -Wl,--help 2>&1 | grep -- '-M mapfile' >/dev/null
+then
+  VERSION_SCRIPT_FLAG="-Wl,-M,"
+  AC_SUBST(VERSION_SCRIPT_FLAG)
+  AC_MSG_RESULT([-M])
+else
+  AC_MSG_RESULT([unknown, not passing symbol map])
+fi
+AM_CONDITIONAL([HAVE_VERSION_SCRIPT_FLAG], [test "x${VERSION_SCRIPT_FLAG}" != x])
+
 # check for support for the struct ether_addr structure
 AC_CHECK_TYPE(struct ether_addr,
     AC_DEFINE(HAVE_STRUCT_ETHER_ADDR,1,[Define to 1 if you have a `struct ether_addr' definition.]),,[

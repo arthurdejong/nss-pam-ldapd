@@ -34,11 +34,13 @@ nss_ldap_so_SOURCES = common.c common.h prototypes.h \
                       aliases.c ethers.c group.c hosts.c netgroup.c \
                       networks.c passwd.c protocols.c rpc.c services.c \
                       shadow.c
-nss_ldap_so_LDFLAGS = -shared -Wl,-soname,$(NSS_LDAP_NSS_VERSIONED) \
-                      -Wl,--version-script,\$(srcdir)/exports.linux
+nss_ldap_so_LDFLAGS = -shared -Wl,-soname,$(NSS_LDAP_NSS_VERSIONED)
+if HAVE_VERSION_SCRIPT_FLAG
+nss_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/nss_ldap.map
+endif
 nss_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a
 
-EXTRA_DIST = exports.linux
+EXTRA_DIST = nss_ldap.map
 
 install-exec-local: install-nss_ldap_so
 uninstall-local: uninstall-nss_ldap_so

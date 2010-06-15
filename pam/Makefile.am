@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2009 Arthur de Jong
+# Copyright (C) 2009, 2010 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,11 +24,14 @@ AM_CFLAGS = -fPIC
 
 pam_ldap_so_SOURCES = ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h pam.c common.h
-pam_ldap_so_LDFLAGS = -shared -Wl,--version-script,\$(srcdir)/exports.linux
+pam_ldap_so_LDFLAGS = -shared
+if HAVE_VERSION_SCRIPT_FLAG
+pam_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/pam_ldap.map
+endif
 pam_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a -lpam \
                     ../compat/libcompat.a
 
-EXTRA_DIST = exports.linux
+EXTRA_DIST = pam_ldap.map
 
 install-exec-local: install-pam_ldap_so
 uninstall-local: uninstall-pam_ldap_so
