@@ -259,8 +259,8 @@ AC_CHECK_TYPE(socklen_t,,
 if test "x$enable_pam" = "xyes"
 then
   # save CFLAGS and LIBS to restore later
-  save_CFLAGS="$CFLAGS"
-  save_LIBS="$LIBS"
+  pam_save_CFLAGS="$CFLAGS"
+  pam_save_LIBS="$LIBS"
 
   # check for headers
   AC_CHECK_HEADERS(security/pam_appl.h)
@@ -288,18 +288,18 @@ then
   AC_CHECK_FUNCS(pam_modutil_getpwnam pam_syslog)
 
   # restore CFLAGS and LIBS
-  CFLAGS="$save_CFLAGS"
-  LIBS="$save_LIBS"
+  CFLAGS="$pam_save_CFLAGS"
+  LIBS="$pam_save_LIBS"
 fi
 
 # nslcd daemon-specific tests
 if test "x$enable_nslcd" = "xyes"
 then
   # save CFLAGS and LIBS to restore later
-  save_CFLAGS="$CFLAGS"
-  save_LIBS="$LIBS"
-  CFLAGS="$PTHREAD_CFLAGS $CFLAGS"
-  LIBS="$PTHREAD_LIBS $LIBS"
+  nslcd_save_CFLAGS="$CFLAGS"
+  nslcd_save_LIBS="$LIBS"
+  CFLAGS="$CFLAGS"
+  LIBS="$LIBS"
 
   # check header files
   AC_CHECK_HEADERS(lber.h)
@@ -484,8 +484,9 @@ then
   # save nslcd LIBS and CFLAGS and restore originals
   nslcd_CFLAGS="$CFLAGS"
   nslcd_LIBS="$LIBS"
-  CFLAGS="$save_CFLAGS"
-  LIBS="$save_LIBS"
+  CFLAGS="$nslcd_save_CFLAGS"
+  LIBS="$nslcd_save_LIBS"
+
   AC_SUBST(nslcd_LIBS)
 fi
 
