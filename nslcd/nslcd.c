@@ -574,7 +574,7 @@ static void disable_nss_ldap(void)
   char *error;
   int *enable_flag;
   /* try to load the NSS module */
-  handle=dlopen("libnss_ldap.so.2",RTLD_LAZY);
+  handle=dlopen("libnss_ldap.so.2",RTLD_LAZY|RTLD_NODELETE);
   if (handle==NULL)
   {
     log_log(LOG_WARNING,"Warning: LDAP NSS module not loaded: %s",dlerror());
@@ -593,12 +593,13 @@ static void disable_nss_ldap(void)
     if (__nss_configure_lookup("hosts","files dns"))
       log_log(LOG_ERR,"unable to override hosts lookup method: %s",strerror(errno));
 #endif /* HAVE___NSS_CONFIGURE_LOOKUP */
+    dlclose(handle);
     return;
   }
   /* disable nss_ldap */
   *enable_flag=0;
-  /* we don't do dlclose() because we want the symbol change to be
-     persistent */
+  /* close the handle */
+  dlclose(handle);
 }
 
 /* the main program... */
