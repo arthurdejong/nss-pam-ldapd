@@ -200,7 +200,7 @@ AC_SUBST(NSLCD_SOCKET)
 
 # checks for availability of header files
 AC_CHECK_HEADERS([ctype.h strings.h pthread.h fcntl.h limits.h])
-AC_CHECK_HEADERS([nss.h grp.h shadow.h aliases.h netdb.h])
+AC_CHECK_HEADERS([nss.h grp.h shadow.h aliases.h netdb.h rpc/rpcent.h])
 AC_CHECK_HEADERS([netinet/ether.h arpa/inet.h netinet/in.h])
 AC_CHECK_HEADERS([sys/socket.h sys/un.h sys/ucred.h ucred.h sys/param.h sys/time.h])
 AC_CHECK_HEADERS([getopt.h syslog.h])
@@ -256,8 +256,7 @@ fi
 AM_CONDITIONAL([HAVE_VERSION_SCRIPT_FLAG], [test "x${VERSION_SCRIPT_FLAG}" != x])
 
 # check for support for the struct ether_addr structure
-AC_CHECK_TYPE(struct ether_addr,
-    AC_DEFINE(HAVE_STRUCT_ETHER_ADDR,1,[Define to 1 if you have a `struct ether_addr' definition.]),,[
+AC_CHECK_TYPES(struct ether_addr,,,[
     #include <sys/socket.h>
     #include <net/if.h>
     #include <netinet/in.h>
@@ -271,6 +270,41 @@ AC_CHECK_TYPE(socklen_t,,
     AC_DEFINE(socklen_t,size_t,[Define to `size_t' if not defined elswhere.]),[
     #include <sys/types.h>
     #include <sys/socket.h>])
+
+# NSS module-specific tests
+if test "x$enable_nss" = "xyes"
+then
+  # save CFLAGS and LIBS to restore later
+  nss_save_CFLAGS="$CFLAGS"
+  nss_save_LIBS="$LIBS"
+
+  # check for a definition of struct aliasent
+  AC_CHECK_TYPES(struct aliasent,,,[
+      #ifdef HAVE_ALIASES_H
+      #include <aliases.h>
+      #endif])
+
+  # check for a definition of struct etherent
+  AC_CHECK_TYPES(struct etherent,,,[
+    #include <sys/socket.h>
+    #include <net/if.h>
+    #include <netinet/in.h>
+    #include <netinet/if_ether.h>
+    #ifdef HAVE_NETINET_ETHER_H
+    #include <netinet/ether.h>
+    #endif])
+
+  # check for a definition of struct rpcent
+  AC_CHECK_TYPES(struct rpcent,,,[
+      #include <netdb.h>
+      #ifdef HAVE_RPC_RPCENT_H
+      #include <rpc/rpcent.h>
+      #endif])
+
+  # restore CFLAGS and LIBS
+  CFLAGS="$nss_save_CFLAGS"
+  LIBS="$nss_save_LIBS"
+fi
 
 # PAM module-specific tests
 if test "x$enable_pam" = "xyes"
@@ -315,8 +349,6 @@ then
   # save CFLAGS and LIBS to restore later
   nslcd_save_CFLAGS="$CFLAGS"
   nslcd_save_LIBS="$LIBS"
-  CFLAGS="$CFLAGS"
-  LIBS="$LIBS"
 
   # check header files
   AC_CHECK_HEADERS(lber.h)

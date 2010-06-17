@@ -23,66 +23,7 @@
 #ifndef NSS__PROTOTYPES_H
 #define NSS__PROTOTYPES_H 1
 
-#include <nss.h>
-#ifdef HAVE_ALIASES_H
-#include <aliases.h>
-#endif
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <grp.h>
-#include <netdb.h>
-#include <pwd.h>
-#ifdef HAVE_SHADOW_H
-#include <shadow.h>
-#endif /* HAVE_SHADOW_H */
-
-#include "compat/ether.h"
-
-/* We define struct etherent here because it does not seem to
-   be defined in any publicly available header file exposed
-   by glibc. This is taken from include/netinet/ether.h
-   of the glibc (2.3.6) source tarball. */
-struct etherent
-{
-  const char *e_name;
-  struct ether_addr e_addr;
-};
-
-/* We also define struct __netgrent because it's definition is
-   not publically available. This is taken from inet/netgroup.h
-   of the glibc (2.3.6) source tarball.
-   The first part of the struct is the only part that is modified
-   by the getnetgrent() function, all the other fields are not
-   touched at all. */
-struct __netgrent
-{
-  enum { triple_val, group_val } type;
-  union
-  {
-    struct
-    {
-      const char *host;
-      const char *user;
-      const char *domain;
-    } triple;
-    const char *group;
-  } val;
-  /* the following stuff is used by some NSS services
-     but not by ours (it's not completely clear how these
-     are shared between different services) or is used
-     by our caller */
-  char *data;
-  size_t data_size;
-  union
-  {
-    char *cursor;
-    unsigned long int position;
-  } insertedname; /* added name to union to avoid warning */
-  int first;
-  struct name_list *known_groups;
-  struct name_list *needed_groups;
-  void *nip; /* changed from `service_user *nip' */
-};
+#include "compat/nss_compat.h"
 
 /*
    These are prototypes for functions exported from the ldap NSS module.

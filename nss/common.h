@@ -24,11 +24,11 @@
 #define NSS__COMMON_H 1
 
 #include <stdio.h>
-#include <nss.h>
 
 #include "nslcd.h"
 #include "common/nslcd-prot.h"
 #include "compat/attrs.h"
+#include "compat/nss_compat.h"
 
 /* These are macros for handling read and write problems, they are
    NSS specific due to the return code so are defined here. They
