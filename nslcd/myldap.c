@@ -395,22 +395,10 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
                       (session->bindpw[0]!='\0')?"\"***\"":"\"\"",uri);
     return ldap_simple_bind_s(session->ld,session->binddn,session->bindpw);
   }
+  /* perform SASL bind if requested and available on platform */
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
   /* TODO: store this information in the session */
-  if (nslcd_cfg->ldc_sasl_mech==NULL)
-  {
-#endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
-    /* do a simple bind */
-    if (nslcd_cfg->ldc_binddn)
-      log_log(LOG_DEBUG,"ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",nslcd_cfg->ldc_binddn,
-                        nslcd_cfg->ldc_bindpw?"\"***\"":"NULL",uri);
-    else
-      log_log(LOG_DEBUG,"ldap_simple_bind_s(NULL,%s) (uri=\"%s\")",
-                        nslcd_cfg->ldc_bindpw?"\"***\"":"NULL",uri);
-    return ldap_simple_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_bindpw);
-#ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
-  }
-  else
+  if (nslcd_cfg->ldc_sasl_mech!=NULL)
   {
     /* do a SASL bind */
     log_log(LOG_DEBUG,"SASL bind to %s as %s",uri,nslcd_cfg->ldc_binddn);
@@ -422,8 +410,8 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
 #ifdef HAVE_SASL_INTERACT_T
     log_log(LOG_DEBUG,"ldap_sasl_interactive_bind_s(\"%s\",\"%s\")",nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech);
     return ldap_sasl_interactive_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,NULL,NULL,
-                                    LDAP_SASL_QUIET,
-                                    do_sasl_interact,(void *)nslcd_cfg);
+                                        LDAP_SASL_QUIET,
+                                        do_sasl_interact,(void *)nslcd_cfg);
 #else /* HAVE_SASL_INTERACT_T */
     if (nslcd_cfg->ldc_bindpw!=NULL)
     {
@@ -441,6 +429,14 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
 #endif /* not HAVE_SASL_INTERACT_T */
   }
 #endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
+  /* do a simple bind */
+  if (nslcd_cfg->ldc_binddn)
+    log_log(LOG_DEBUG,"ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",nslcd_cfg->ldc_binddn,
+                      nslcd_cfg->ldc_bindpw?"\"***\"":"NULL",uri);
+  else
+    log_log(LOG_DEBUG,"ldap_simple_bind_s(NULL,%s) (uri=\"%s\")",
+                      nslcd_cfg->ldc_bindpw?"\"***\"":"NULL",uri);
+  return ldap_simple_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_bindpw);
 }
 
 #ifdef HAVE_LDAP_SET_REBIND_PROC
