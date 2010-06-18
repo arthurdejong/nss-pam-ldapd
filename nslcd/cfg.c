@@ -102,7 +102,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_sasl_secprops=NULL;
   cfg->ldc_sasl_mech=NULL;
   cfg->ldc_sasl_realm=NULL;
-  cfg->ldc_usesasl=0;
   for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
     cfg->ldc_bases[i]=NULL;
   cfg->ldc_scope=LDAP_SCOPE_SUBTREE;
@@ -851,9 +850,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"use_sasl")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
-      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_usesasl);
-      get_eol(filename,lnr,keyword,&line);
+      log_log(LOG_WARNING,"%s:%d: option %s is deprecated (and will be removed in an upcoming release), use sasl_mech instead",filename,lnr,keyword);
     }
     /* Kerberos authentication options */
     else if (strcasecmp(keyword,"krb5_ccname")==0)

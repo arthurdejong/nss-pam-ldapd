@@ -207,15 +207,6 @@
    <variablelist>
 
     <varlistentry>
-     <term><option>use_sasl</option> yes|no</term>
-     <listitem>
-      <para>
-       Specifies whether <acronym>SASL</acronym> authentication should be used.
-      </para>
-     </listitem>
-    </varlistentry>
-
-    <varlistentry>
      <term><option>sasl_mech</option> <replaceable>MECHANISM</replaceable></term>
      <listitem>
       <para>

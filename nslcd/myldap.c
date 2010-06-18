@@ -397,7 +397,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   }
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
   /* TODO: store this information in the session */
-  if (!nslcd_cfg->ldc_usesasl)
+  if (nslcd_cfg->ldc_sasl_mech==NULL)
   {
 #endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
     /* do a simple bind */

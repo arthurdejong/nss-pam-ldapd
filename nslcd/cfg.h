@@ -105,8 +105,6 @@ struct ldap_config
   char *ldc_sasl_mech;
   /* sasl realm */
   char *ldc_sasl_realm;
-  /* do we use sasl when binding? */
-  int ldc_usesasl;
   /* base DN, eg. dc=gnu,dc=org */
   const char *ldc_bases[NSS_LDAP_CONFIG_MAX_BASES];
   /* scope for searches */
