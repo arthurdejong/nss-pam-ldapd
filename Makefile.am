@@ -34,7 +34,9 @@ SUBDIRS = compat common $(MAYBE_NSS) $(MAYBE_PAM) $(ENABLE_NSLCD) man tests
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/copyright debian/rules debian/NEWS \
                debian/source/format \
+               debian/nslcd.conffile \
                debian/nslcd.config \
+               debian/nslcd.default \
                debian/nslcd.docs \
                debian/nslcd.examples \
                debian/nslcd.init \

@@ -44,10 +44,80 @@ NSLCD_PIDFILE=$NSLCD_STATEDIR/nslcd.pid
 
 . /lib/lsb/init-functions
 
+# default options for k5start
+K5START_BIN=/usr/bin/k5start
+K5START_DESC="Keep alive Kerberos ticket"
+K5START_START=""
+K5START_PIDFILE=$NSLCD_STATEDIR/k5start_nslcd.pid
+K5START_USER=$(sed -n 's/^uid *\([^ ]*\) *$/\1/ip' $NSLCD_CFG)
+K5START_GROUP=$(sed -n 's/^gid *\([^ ]*\) *$/\1/ip' $NSLCD_CFG)
+K5START_MODE=600
+K5START_KEYTAB=/etc/krb5.keytab
+K5START_CCREFRESH=60
+K5START_PRINCIPAL="host/$(hostname -f)"
+K5START_CCFILE=$(sed -n 's/^krb5_ccname *\(FILE:\)\?\([^: ]*\) *$/\2/ip' $NSLCD_CFG)
+
+# check if we should use k5start by default (sasl_mech should be GSSAPI and
+# krb5_ccname should be found)
+if [ -x "$K5START_BIN" ] && \
+   grep -q '^sasl_mech *GSSAPI$' $NSLCD_CFG && \
+   [ -n "$K5START_CCFILE" ]
+then
+  K5START_START="yes"
+fi
+
+# read defaults
+[ -f /etc/default/nslcd ] && . /etc/default/nslcd
+
+k5start_start()
+{
+  if [ "$K5START_START" = "yes" ]
+  then
+    log_daemon_msg "Starting $K5START_DESC" "k5start"
+    start-stop-daemon --start \
+                      --pidfile $K5START_PIDFILE \
+                      --exec $K5START_BIN -- \
+                      -b -p $K5START_PIDFILE \
+                      -o $K5START_USER \
+                      -g $K5START_GROUP \
+                      -m $K5START_MODE \
+                      -f $K5START_KEYTAB \
+                      -K $K5START_CCREFRESH \
+                      -u $K5START_PRINCIPAL \
+                      -k $K5START_CCFILE
+    log_end_msg $?
+  fi
+}
+
+k5start_stop()
+{
+  if [ "$K5START_START" = "yes" ]
+  then
+    log_daemon_msg "Stopping $K5START_DESC" "k5start"
+    start-stop-daemon --stop --oknodo --pidfile $K5START_PIDFILE
+    log_end_msg $?
+    # remove any left behind files
+    [ -n "$K5START_PIDFILE" ] && rm -f $K5START_PIDFILE
+    [ -n "$K5START_CCFILE" ] && rm -f $K5START_CCFILE
+  fi
+}
+
+k5start_status()
+{
+  if [ "$K5START_START" = "yes" ]
+  then
+    status_of_proc -p "$K5START_PIDFILE" "$K5START_BIN" "k5start"
+  fi
+}
+
 case "$1" in
 start)
+  # set up state directory
   [ -d "$NSLCD_STATEDIR" ] || ( mkdir -m 755 "$NSLCD_STATEDIR" ; \
                                 chown nslcd:nslcd "$NSLCD_STATEDIR" )
+  # start k5start if needed
+  k5start_start
+  # start nslcd
   log_daemon_msg "Starting $NSLCD_DESC" "nslcd"
   start-stop-daemon --start --oknodo \
                     --pidfile $NSLCD_PIDFILE \
@@ -55,12 +125,15 @@ start)
   log_end_msg $?
   ;;
 stop)
+  # stop nslcd
   log_daemon_msg "Stopping $NSLCD_DESC" "nslcd"
   start-stop-daemon --stop --oknodo \
                     --pidfile $NSLCD_PIDFILE \
                     --name nslcd
   log_end_msg $?
   [ -n "$NSLCD_PIDFILE" ] && rm -f $NSLCD_PIDFILE
+  # stop k5start
+  k5start_stop
   ;;
 restart|force-reload)
   [ -d "$NSLCD_STATEDIR" ] || ( mkdir -m 755 "$NSLCD_STATEDIR" ; \
@@ -69,7 +142,10 @@ restart|force-reload)
   start-stop-daemon --stop --quiet --retry 10 \
                     --pidfile $NSLCD_PIDFILE \
                     --name nslcd
+  log_end_msg $?
   [ -n "$NSLCD_PIDFILE" ] && rm -f $NSLCD_PIDFILE
+  k5start_stop
+  k5start_start
   start-stop-daemon --start \
                     --pidfile $NSLCD_PIDFILE \
                     --startas $NSLCD_BIN
@@ -90,6 +166,7 @@ status)
     log_success_msg "nslcd stopped"
     exit 3
   fi
+  k5start_status
   ;;
 *)
   log_success_msg "Usage: $0 {start|stop|restart|force-reload|status}"

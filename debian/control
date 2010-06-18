@@ -13,6 +13,7 @@ Package: nslcd
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, adduser
 Recommends: nscd, libnss-ldapd, libpam-ldapd
+Suggests: kstart
 Conflicts: libnss-ldapd (<< 0.7.0)
 Description: Daemon for NSS and PAM lookups using LDAP
  This package provides a daemon for retrieving user account, and other
