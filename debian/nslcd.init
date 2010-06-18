@@ -36,14 +36,13 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 NSLCD_BIN=/usr/sbin/nslcd
 NSLCD_DESC="LDAP connection daemon"
 NSLCD_CFG=/etc/nslcd.conf
+NSLCD_STATEDIR=/var/run/nslcd
+NSLCD_PIDFILE=$NSLCD_STATEDIR/nslcd.pid
 
 [ -x "$NSLCD_BIN" ] || exit 0
 [ -f "$NSLCD_CFG" ] || exit 0
 
 . /lib/lsb/init-functions
-
-NSLCD_STATEDIR=/var/run/nslcd
-NSLCD_PIDFILE=$NSLCD_STATEDIR/nslcd.pid
 
 case "$1" in
 start)
