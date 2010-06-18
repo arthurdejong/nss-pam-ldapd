@@ -95,16 +95,16 @@ struct ldap_config
   char *ldc_bindpw;
   /* bind DN for password modification by administrator */
   char *ldc_rootpwmoddn;
+  /* sasl mech */
+  char *ldc_sasl_mech;
+  /* sasl realm */
+  char *ldc_sasl_realm;
   /* sasl authentication id */
   char *ldc_sasl_authcid;
   /* sasl authorization id */
   char *ldc_sasl_authzid;
   /* sasl security */
   char *ldc_sasl_secprops;
-  /* sasl mech */
-  char *ldc_sasl_mech;
-  /* sasl realm */
-  char *ldc_sasl_realm;
   /* base DN, eg. dc=gnu,dc=org */
   const char *ldc_bases[NSS_LDAP_CONFIG_MAX_BASES];
   /* scope for searches */

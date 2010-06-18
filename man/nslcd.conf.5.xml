@@ -201,7 +201,6 @@
    </variablelist>
   </refsect2>
 
-<!-- DO NOT DOCUMENT FOR NOW BECAUSE IT'S NOT SUPPORTED
   <refsect2 id="sasl_authentication_options">
    <title><acronym>SASL</acronym> authentication options</title>
    <variablelist>
@@ -262,7 +261,6 @@
 
    </variablelist>
   </refsect2>
--->
 
   <refsect2 id="kerberos_authentication_options">
    <title>Kerberos authentication options</title>

@@ -97,11 +97,11 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_binddn=NULL;
   cfg->ldc_bindpw=NULL;
   cfg->ldc_rootpwmoddn=NULL;
+  cfg->ldc_sasl_mech=NULL;
+  cfg->ldc_sasl_realm=NULL;
   cfg->ldc_sasl_authcid=NULL;
   cfg->ldc_sasl_authzid=NULL;
   cfg->ldc_sasl_secprops=NULL;
-  cfg->ldc_sasl_mech=NULL;
-  cfg->ldc_sasl_realm=NULL;
   for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
     cfg->ldc_bases[i]=NULL;
   cfg->ldc_scope=LDAP_SCOPE_SUBTREE;
@@ -818,39 +818,34 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       get_restdup(filename,lnr,keyword,&line,&cfg->ldc_rootpwmoddn);
     }
     /* SASL authentication options */
-    else if (strcasecmp(keyword,"sasl_authcid")==0)
+    else if (strcasecmp(keyword,"use_sasl")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
-      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_authcid);
-      get_eol(filename,lnr,keyword,&line);
-    }
-    else if (strcasecmp(keyword,"sasl_authzid")==0)
-    {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
-      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_authzid);
-      get_eol(filename,lnr,keyword,&line);
+      log_log(LOG_WARNING,"%s:%d: option %s is deprecated (and will be removed in an upcoming release), use sasl_mech instead",filename,lnr,keyword);
     }
     else if (strcasecmp(keyword,"sasl_mech")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
       get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_mech);
       get_eol(filename,lnr,keyword,&line);
     }
     else if (strcasecmp(keyword,"sasl_realm")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
       get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_realm);
+      get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"sasl_authcid")==0)
+    {
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_authcid);
+      get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"sasl_authzid")==0)
+    {
+      get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_authzid);
       get_eol(filename,lnr,keyword,&line);
     }
     else if (strcasecmp(keyword,"sasl_secprops")==0)
     {
-      log_log(LOG_WARNING,"%s:%d: option %s is currently not fully supported (please report any successes)",filename,lnr,keyword);
       get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_secprops);
       get_eol(filename,lnr,keyword,&line);
-    }
-    else if (strcasecmp(keyword,"use_sasl")==0)
-    {
-      log_log(LOG_WARNING,"%s:%d: option %s is deprecated (and will be removed in an upcoming release), use sasl_mech instead",filename,lnr,keyword);
     }
     /* Kerberos authentication options */
     else if (strcasecmp(keyword,"krb5_ccname")==0)
