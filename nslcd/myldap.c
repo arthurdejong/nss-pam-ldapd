@@ -316,30 +316,42 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
       case SASL_CB_GETREALM:
         if (cfg->ldc_sasl_realm)
         {
+          log_log(LOG_DEBUG,"do_sasl_interact(): returning sasl_realm \"%s\"",cfg->ldc_sasl_realm);
           interact->result=cfg->ldc_sasl_realm;
           interact->len=strlen(cfg->ldc_sasl_realm);
         }
+        else
+          log_log(LOG_DEBUG,"do_sasl_interact(): were asked for sasl_realm but we don't have any");
         break;
       case SASL_CB_AUTHNAME:
         if (cfg->ldc_sasl_authcid)
         {
+          log_log(LOG_DEBUG,"do_sasl_interact(): returning sasl_authcid \"%s\"",cfg->ldc_sasl_authcid);
           interact->result=cfg->ldc_sasl_authcid;
           interact->len=strlen(cfg->ldc_sasl_authcid);
         }
+        else
+          log_log(LOG_DEBUG,"do_sasl_interact(): were asked for sasl_authcid but we don't have any");
         break;
       case SASL_CB_USER:
         if (cfg->ldc_sasl_authzid)
         {
+          log_log(LOG_DEBUG,"do_sasl_interact(): returning sasl_authzid \"%s\"",cfg->ldc_sasl_authzid);
           interact->result=cfg->ldc_sasl_authzid;
           interact->len=strlen(cfg->ldc_sasl_authzid);
         }
+        else
+          log_log(LOG_DEBUG,"do_sasl_interact(): were asked for sasl_authzid but we don't have any");
         break;
       case SASL_CB_PASS:
         if (cfg->ldc_bindpw)
         {
+          log_log(LOG_DEBUG,"do_sasl_interact(): returning bindpw \"***\"");
           interact->result=cfg->ldc_bindpw;
           interact->len=strlen(cfg->ldc_bindpw);
         }
+        else
+          log_log(LOG_DEBUG,"do_sasl_interact(): were asked for bindpw but we don't have any");
         break;
       default:
         /* just ignore */
