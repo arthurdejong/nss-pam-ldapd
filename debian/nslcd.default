@@ -9,11 +9,6 @@
 
 # Options for k5start.
 #K5START_BIN=/usr/bin/k5start
-#K5START_PIDFILE=/var/run/nslcd/k5start_nslcd.pid
-#K5START_USER=nslcd
-#K5START_GROUP=nslcd
-#K5START_MODE=600
 #K5START_KEYTAB=/etc/krb5.keytab
 #K5START_CCREFRESH=60
 #K5START_PRINCIPAL="host/$(hostname -f)"
-#K5START_CCNAME=/var/run/nslcd/krb5cc_nslcd
