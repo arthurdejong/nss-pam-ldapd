@@ -401,14 +401,18 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   if (nslcd_cfg->ldc_sasl_mech!=NULL)
   {
     /* do a SASL bind */
-    log_log(LOG_DEBUG,"SASL bind to %s as %s",uri,nslcd_cfg->ldc_binddn);
     if (nslcd_cfg->ldc_sasl_secprops!=NULL)
     {
       log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_SASL_SECPROPS,\"%s\")",nslcd_cfg->ldc_sasl_secprops);
       LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
     }
 #ifdef HAVE_SASL_INTERACT_T
-    log_log(LOG_DEBUG,"ldap_sasl_interactive_bind_s(\"%s\",\"%s\")",nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech);
+    if (nslcd_cfg->ldc_binddn!=NULL)
+      log_log(LOG_DEBUG,"ldap_sasl_interactive_bind_s(\"%s\",\"%s\") (uri=\"%s\")",
+            nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,uri);
+    else
+      log_log(LOG_DEBUG,"ldap_sasl_interactive_bind_s(NULL,\"%s\") (uri=\"%s\")",
+            nslcd_cfg->ldc_sasl_mech,uri);
     return ldap_sasl_interactive_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,NULL,NULL,
                                         LDAP_SASL_QUIET,
                                         do_sasl_interact,(void *)nslcd_cfg);
@@ -423,8 +427,14 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
       cred.bv_val="";
       cred.bv_len=0;
     }
-    log_log(LOG_DEBUG,"ldap_sasl_bind_s(\"%s\",\"%s\",%s)",nslcd_cfg->ldc_binddn,
-                      nslcd_cfg->ldc_sasl_mech,nslcd_cfg->ldc_bindpw?"\"***\"":"NULL");
+    if (nslcd_cfg->ldc_binddn!=NULL)
+      log_log(LOG_DEBUG,"ldap_sasl_bind_s(\"%s\",\"%s\",%s) (uri=\"%s\")",
+            nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,
+            nslcd_cfg->ldc_bindpw?"\"***\"":"NULL",uri);
+    else
+      log_log(LOG_DEBUG,"ldap_sasl_bind_s(NULL,\"%s\",%s) (uri=\"%s\")",
+            nslcd_cfg->ldc_sasl_mech,
+            nslcd_cfg->ldc_bindpw?"\"***\"":"NULL",uri);
     return ldap_sasl_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,&cred,NULL,NULL,NULL);
 #endif /* not HAVE_SASL_INTERACT_T */
   }
