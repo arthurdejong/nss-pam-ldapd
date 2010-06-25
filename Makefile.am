@@ -41,6 +41,7 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/nslcd.examples \
                debian/nslcd.init \
                debian/nslcd.install \
+               debian/nslcd.manpages \
                debian/nslcd.postinst \
                debian/nslcd.postrm \
                debian/nslcd.templates \
@@ -51,6 +52,7 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/libnss-ldapd.postrm \
                debian/libnss-ldapd.templates \
                debian/libpam-ldapd.install \
+               debian/libpam-ldapd.manpages \
                debian/libpam-ldapd.pam-auth-update \
                debian/libpam-ldapd.postinst \
                debian/libpam-ldapd.prerm \
