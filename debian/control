@@ -14,7 +14,8 @@ Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, adduser
 Recommends: nscd, libnss-ldapd, libpam-ldapd
 Suggests: kstart
-Conflicts: libnss-ldapd (<< 0.7.0)
+Replaces: libnss-ldapd (<< 0.7.0)
+Breaks: libnss-ldapd (<< 0.7.0)
 Description: Daemon for NSS and PAM lookups using LDAP
  This package provides a daemon for retrieving user account, and other
  system information from LDAP.
@@ -24,7 +25,7 @@ Description: Daemon for NSS and PAM lookups using LDAP
 
 Package: libnss-ldapd
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, nslcd
+Depends: ${misc:Depends}, ${shlibs:Depends}, nslcd (>= 0.7.0)
 Recommends: libpam-ldapd | libpam-ldap | libpam-krb5 | libpam-heimdal
 Conflicts: libnss-ldap
 Provides: libnss-ldap
