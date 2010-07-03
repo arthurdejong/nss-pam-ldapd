@@ -1,3 +1,30 @@
+nss-pam-ldapd (0.7.7) unstable; urgency=low
+
+  * don't use use_authtok for password modification by default
+  * fine-tune pam-auth-update configuration after discussion with Steve
+    Langasek (see: #583492)
+    Note that this currently requires that shadow information is also provided
+    by LDAP (in /etc/nsswitch.conf).
+  * ensure that nslcd is started after hostname lookups are available so
+    getting to the LDAP server via DNS will work (patch by Petter
+    Reinholdtsen) (closes: #585968)
+  * start k5start from the init script to keep the Kerberos ticket active if
+    nslcd is configured for SASL GSSAPI Kerberos authentication, based on a
+    patch by Daniel Dehennin (closes: #585639)
+  * upgrade to standards-version 3.9.0 (switch to Breaks/Replaces instead of
+    Conflicts)
+  * refactoring and simplification of PAM module which also improves logging
+  * implement a nullok PAM option and disable empty passwords by default
+  * portability improvements and other minor code improvements
+  * the mechanism to disable name lookups through LDAP from within the nslcd
+    process has been improved
+  * the undocumented use_sasl option has been removed (specifying sasl_mech
+    now implies use_sasl)
+  * the sasl_mech, sasl_realm, sasl_authcid, sasl_authzid and sasl_secprops
+    configuration options are now documented
+
+ -- Arthur de Jong <adejong@debian.org>  Sat, 03 Jul 2010 17:00:00 +0200
+
 nss-pam-ldapd (0.7.6) unstable; urgency=low
 
   * include libpam-heimdal in libnss-ldapd recommends list of PAM

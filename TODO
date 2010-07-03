@@ -8,7 +8,6 @@
 * in the server: once the request is done pass the flushing of the buffers to
   a separate thread so our workers are available to handle new requests
   (test whether this actually improves performace)
-* tune the filter and parameter buffer sizes
 * split out idle checking into separate function so we may be able to call it
   periodically from elsewhere (e.g. the main loop)
 * add an option to create an extra socket somewhere (so it may be used in
@@ -22,8 +21,7 @@
 * maybe make myldap code thread-safe (use locking)
 * review changes in nss_ldap and merge any useful changes
 * maybe rate-limit LDAP entry warnings
-* only parse configuration options if they are available on the platform
-* have some more general mechanism to disable NSS lookups from nslcd
+* only parse nslcd.conf options if they are available on the platform
 * maybe support memberOf attribute in passwd entries that map to groups
 * setnetgrent() may need to return an error if the netgroup is undefined
 * handle repeated calls to getent() better (see http://bugzilla.padl.com/show_bug.cgi?id=376)

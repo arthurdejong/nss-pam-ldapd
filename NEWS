@@ -1,3 +1,18 @@
+changes from 0.7.6 to 0.7.7
+---------------------------
+
+* refactoring and simplification of PAM module which also improves logging
+* implement a nullok PAM option and disable empty passwords by default
+* portability improvements and other minor code improvements
+* the mechanism to disable name lookups through LDAP from within the nslcd
+  process has been improved
+* the undocumented use_sasl option has been removed (specifying sasl_mech now
+  implies use_sasl)
+* the sasl_mech, sasl_realm, sasl_authcid, sasl_authzid and sasl_secprops
+  configuration options are now documented
+* Debian packaging improvements
+
+
 changes from 0.7.5 to 0.7.6
 ---------------------------
 
