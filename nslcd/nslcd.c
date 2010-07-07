@@ -574,7 +574,7 @@ static void disable_nss_ldap(void)
   char *error;
   int *enable_flag;
   /* try to load the NSS module */
-  handle=dlopen("libnss_ldap.so.2",RTLD_LAZY|RTLD_NODELETE);
+  handle=dlopen(NSS_LDAP_SONAME,RTLD_LAZY|RTLD_NODELETE);
   if (handle==NULL)
   {
     log_log(LOG_WARNING,"Warning: LDAP NSS module not loaded: %s",dlerror());

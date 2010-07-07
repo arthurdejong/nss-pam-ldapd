@@ -24,17 +24,13 @@ noinst_PROGRAMS = nss_ldap.so
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = -fPIC
 
-# determin version numbers to use in installed files
-NSS_VERS = 2
-NSS_LDAP_NSS_VERSIONED = libnss_ldap.so.$(NSS_VERS)
-
 nss_ldap_so_SOURCES = common.c common.h prototypes.h \
                       ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h \
                       aliases.c ethers.c group.c hosts.c netgroup.c \
                       networks.c passwd.c protocols.c rpc.c services.c \
                       shadow.c
-nss_ldap_so_LDFLAGS = -shared -Wl,-soname,$(NSS_LDAP_NSS_VERSIONED)
+nss_ldap_so_LDFLAGS = -shared -Wl,-soname,$(NSS_LDAP_SONAME)
 if HAVE_VERSION_SCRIPT_FLAG
 nss_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/nss_ldap.map
 endif
@@ -47,6 +43,6 @@ uninstall-local: uninstall-nss_ldap_so
 
 # install libnss_ldap.so.2
 install-nss_ldap_so: nss_ldap.so
-	$(INSTALL_PROGRAM) -D nss_ldap.so $(DESTDIR)$(libdir)/$(NSS_LDAP_NSS_VERSIONED)
+	$(INSTALL_PROGRAM) -D nss_ldap.so $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)
 uninstall-nss_ldap_so:
-	-rm -f $(DESTDIR)$(libdir)/$(NSS_LDAP_NSS_VERSIONED)
+	-rm -f $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)

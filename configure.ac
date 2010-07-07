@@ -198,6 +198,15 @@ AC_ARG_WITH(nslcd-socket,
 AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used for communicating.])
 AC_SUBST(NSLCD_SOCKET)
 
+# the SONAME to use for the NSS module
+AC_ARG_WITH(nss-ldap-soname,
+            AS_HELP_STRING([--with-nss-ldap-soname=SONAME],
+                           [name of NSS module @<:@libnss_ldap.so.2@:>@]),
+            [ NSS_LDAP_SONAME="$with_nslcd_socket" ],
+            [ NSS_LDAP_SONAME="libnss_ldap.so.2" ])
+AC_DEFINE_UNQUOTED(NSS_LDAP_SONAME,"$NSS_LDAP_SONAME",[The SONAME of the NSS library module.])
+AC_SUBST(NSS_LDAP_SONAME)
+
 # checks for availability of header files
 AC_CHECK_HEADERS([ctype.h strings.h pthread.h fcntl.h limits.h])
 AC_CHECK_HEADERS([nss.h grp.h shadow.h aliases.h netdb.h rpc/rpcent.h])
