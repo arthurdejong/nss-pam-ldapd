@@ -22,7 +22,12 @@
 #ifndef COMPAT__NSS_H
 #define COMPAT__NSS_H
 
+#ifdef HAVE_NSS_H
 #include <nss.h>
+#endif /* HAVE_NSS_H */
+#ifdef HAVE_NSS_COMMON_H
+#include <nss_common.h>
+#endif /* HAVE_NSS_COMMON_H */
 #ifdef HAVE_ALIASES_H
 #include <aliases.h>
 #endif

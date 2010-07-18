@@ -209,7 +209,7 @@ AC_SUBST(NSS_LDAP_SONAME)
 
 # checks for availability of header files
 AC_CHECK_HEADERS([ctype.h strings.h pthread.h fcntl.h limits.h])
-AC_CHECK_HEADERS([nss.h grp.h shadow.h aliases.h netdb.h rpc/rpcent.h])
+AC_CHECK_HEADERS([nss.h nss_common.h grp.h shadow.h aliases.h netdb.h rpc/rpcent.h])
 AC_CHECK_HEADERS([netinet/ether.h arpa/inet.h netinet/in.h])
 AC_CHECK_HEADERS([sys/socket.h sys/un.h sys/ucred.h ucred.h sys/param.h sys/time.h])
 AC_CHECK_HEADERS([getopt.h syslog.h])
@@ -308,6 +308,15 @@ then
       #include <netdb.h>
       #ifdef HAVE_RPC_RPCENT_H
       #include <rpc/rpcent.h>
+      #endif])
+
+  # check for a definition of struct rpcent
+  AC_CHECK_TYPES(enum nss_status,,,[
+      #ifdef HAVE_NSS_H
+      #include <nss.h>
+      #endif
+      #ifdef HAVE_NSS_COMMON_H
+      #include <nss_common.h>
       #endif])
 
   # restore CFLAGS and LIBS
