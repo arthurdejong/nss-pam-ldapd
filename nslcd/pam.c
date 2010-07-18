@@ -148,8 +148,8 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHC);
-  /* if the username is blank and rootpwmoddn is configure, try to authenticate
-     as administrator, otherwise validate request as usual */
+  /* if the username is blank and rootpwmoddn is configured, try to
+     authenticate as administrator, otherwise validate request as usual */
   if ((*username=='\0')&&(nslcd_cfg->ldc_rootpwmoddn!=NULL))
   {
     if (strlen(nslcd_cfg->ldc_rootpwmoddn)>=sizeof(userdn))
