@@ -30,7 +30,7 @@ nss_ldap_so_SOURCES = common.c common.h prototypes.h \
                       aliases.c ethers.c group.c hosts.c netgroup.c \
                       networks.c passwd.c protocols.c rpc.c services.c \
                       shadow.c
-nss_ldap_so_LDFLAGS = -shared -Wl,-soname,$(NSS_LDAP_SONAME)
+nss_ldap_so_LDFLAGS = -shared -Wl,-h,$(NSS_LDAP_SONAME)
 if HAVE_VERSION_SCRIPT_FLAG
 nss_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/nss_ldap.map
 endif
