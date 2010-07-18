@@ -50,14 +50,14 @@ int pam_prompt(pam_handle_t *pamh,int style,char **response,const char *format,.
 
 /* provide pam_info() if needed */
 #ifndef pam_info
-#define pam_info(pamh,format,args...) \
-            pam_prompt(pamh,PAM_TEXT_INFO,NULL,format,##args)
+#define pam_info(pamh,format...) \
+            pam_prompt(pamh,PAM_TEXT_INFO,NULL,##format)
 #endif /* not pam_info */
 
 /* provide pam_error() if needed */
 #ifndef pam_error
-#define pam_error(pamh,format,args...) \
-            pam_prompt(pamh,PAM_ERROR_MSG,NULL,format,##args)
+#define pam_error(pamh,format...) \
+            pam_prompt(pamh,PAM_ERROR_MSG,NULL,##format)
 #endif /* not pam_error */
 
 /* fall back to using getpwnam() if pam_modutil_getpwnam() isn't defined */
@@ -72,8 +72,8 @@ int pam_prompt(pam_handle_t *pamh,int style,char **response,const char *format,.
 #ifndef LOG_AUTHPRIV
 #define LOG_AUTHPRIV LOG_AUTH
 #endif /* not LOG_AUTHPRIV */
-#define pam_syslog(pamh,priority,format,args...) \
-    syslog(LOG_AUTHPRIV|(priority),format,##args)
+#define pam_syslog(pamh,priority,format...) \
+    syslog(LOG_AUTHPRIV|(priority),##format)
 #endif /* not HAVE_PAM_SYSLOG */
 
 #endif /* _COMPAT_LDAP_COMPAT_H */
