@@ -124,10 +124,19 @@ MUST_USE static const char *parse_dollar_expression(
     {
       /* if variable is set, substitute remainer */
       (*ptr)+=2;
-      if (parse_expression(str,ptr,'}',buffer,buflen,expander,expander_arg)==NULL)
-        return NULL;
-      if ((varvalue==NULL)||(*varvalue=='\0'))
+      if ((varvalue!=NULL)&&(*varvalue!='\0'))
+      {
+        /* value is set, evaluate rest of expression */
+        if (parse_expression(str,ptr,'}',buffer,buflen,expander,expander_arg)==NULL)
+          return NULL;
+      }
+      else
+      {
+        /* value is not set, skip rest of expression and blank */
+        if (parse_expression(str,ptr,'}',buffer,buflen,empty_expander,NULL)==NULL)
+          return NULL;
         buffer[0]='\0';
+      }
     }
     else
       return NULL;
