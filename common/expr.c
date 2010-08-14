@@ -2,7 +2,7 @@
    expr.c - limited shell-like expression parsing functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2009 Arthur de Jong
+   Copyright (C) 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "expr.h"
+#include "compat/attrs.h"
 
 /* the maximum length of a variable name */
 #define MAXVARLENGTH 30
@@ -39,8 +41,6 @@ static inline int my_isalphanum(const char c)
 {
   return my_isalpha(c)||((c>='0')&&(c<='9'));
 }
-
-#include <stdio.h>
 
 /* return the part of the string that is a valid name */
 MUST_USE static const char *parse_name(const char *str,int *ptr,char *buffer,size_t buflen)
@@ -62,6 +62,12 @@ MUST_USE static const char *parse_name(const char *str,int *ptr,char *buffer,siz
     return NULL;
   buffer[i++]='\0';
   return buffer;
+}
+
+/* dummy expander function to always return an empty string */
+static const char *empty_expander(const char UNUSED(*name),void UNUSED(*expander_arg))
+{
+  return "";
 }
 
 /* definition of the parse functions (they call eachother) */
@@ -98,13 +104,20 @@ MUST_USE static const char *parse_dollar_expression(
     {
       /* if variable is not set or empty, substitute remainder */
       (*ptr)+=2;
-      if (parse_expression(str,ptr,'}',buffer,buflen,expander,expander_arg)==NULL)
-        return NULL;
       if ((varvalue!=NULL)&&(*varvalue!='\0'))
       {
+        /* value is set, skip rest of expression and use value */
+        if (parse_expression(str,ptr,'}',buffer,buflen,empty_expander,NULL)==NULL)
+          return NULL;
         if (strlen(varvalue)>=buflen)
           return NULL;
         strcpy(buffer,varvalue);
+      }
+      else
+      {
+        /* value is not set, evaluate rest of expression */
+        if (parse_expression(str,ptr,'}',buffer,buflen,expander,expander_arg)==NULL)
+          return NULL;
       }
     }
     else if (strncmp(str+*ptr,":+",2)==0)
