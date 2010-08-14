@@ -7,6 +7,7 @@ set -e
 
 # check to see if name is configured to do lookups through
 # LDAP and enable if not
+# Note: this function is in both libnss-ldapd.postinst and libpam-ldapd.postinst
 nss_enable()
 {
   name="$1"
@@ -27,6 +28,7 @@ nss_enable()
 }
 
 # remove NSS lookups though LDAP for the specified service
+# Note: this function is in both libnss-ldapd.postinst and libnss-ldapd.postrm
 nss_disable()
 {
   name="$1"

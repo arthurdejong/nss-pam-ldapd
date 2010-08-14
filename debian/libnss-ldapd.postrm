@@ -3,6 +3,7 @@
 set -e
 
 # remove NSS lookups though LDAP for the specified service
+# Note: this function is in both libnss-ldapd.postinst and libnss-ldapd.postrm
 nss_disable()
 {
   name="$1"

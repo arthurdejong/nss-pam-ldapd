@@ -1,0 +1,6 @@
+# we prompt in postinst instead of config because we can only
+# reliably detect the actual configuration in postinst and are
+# only doing this if we detect that there is something wrong
+# with the actual config
+libpam-ldapd: no-debconf-config
+libpam-ldapd: postinst-uses-db-input
