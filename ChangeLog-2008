@@ -1,0 +1,792 @@
+2008-12-15  arthur
+
+	* [r806] man/nss-ldapd.conf.5.xml: add a note about permissions of
+	  configfile when bindpw is used
+
+2008-12-06  arthur
+
+	* [r805] man/nss-ldapd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/myldap.c, nss-ldapd.conf: rename the tls_checkpeer option
+	  to tls_reqcert, deprecating the old name and supporting all
+	  options that OpenLDAP supports for that value
+
+2008-12-03  arthur
+
+	* [r804] nslcd/common.c, tests/test_common.c: allow backslashes in
+	  names execpt as first or last character
+	* [r803] configure.ac, nslcd/nslcd.c: clean the environment and set
+	  LDAPNOINIT to disable parsing of LDAP configfiles (.ldaprc,
+	  /etc/ldap/ldap.conf, etc)
+
+2008-11-29  arthur
+
+	* [r802] nslcd/myldap.c: use tls_* options also for StartTLS
+	  connections
+	* [r801] man/nss-ldapd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h: remove
+	  sslpath option because it wasn't used for anything
+	* [r800] debian/changelog: add missing pound sign
+
+2008-11-14  arthur
+
+	* [r798] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.7 release
+
+2008-11-13  arthur
+
+	* [r797] debian/libnss-ldapd.templates: also leave out empty
+	  Default line for libnss-ldapd/ldap-binddn
+	* [r796] debian/libnss-ldapd.config, debian/libnss-ldapd.templates:
+	  set debconf values from the environment only when they are empty
+	  or if configfile is present to fix installation problem
+
+2008-11-11  arthur
+
+	* [r795] debian/libnss-ldapd.postinst: any output should go to
+	  stderr to not confuse debconf
+
+2008-11-04  arthur
+
+	* [r793] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.6 release
+	* [r792] NEWS: some spelling fixes
+	* [r791] man/nss-ldapd.conf.5.xml: update manual page with current
+	  timeout numbers
+
+2008-11-01  arthur
+
+	* [r790] debian/libnss-ldapd.postrm: fail on errors
+
+2008-10-31  arthur
+
+	* [r789] debian/libnss-ldapd.postinst: check for existance of init
+	  script instead of daemon
+
+2008-10-01  arthur
+
+	* [r788] nslcd/common.c: also allow spaces in user and group names
+	  because it was causing problems in some environments
+
+2008-09-24  arthur
+
+	* [r787] nslcd/myldap.c: also retry if ldap_result() failed and
+	  getting error number returned LDAP_SUCCESS
+	* [r786] nslcd/myldap.c: log option name instead of option value
+	  for ldap_set_option() value
+	* [r785] debian/control: clarify relationship to nss_ldap in
+	  package description
+
+2008-08-22  arthur
+
+	* [r783] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.5 release
+
+2008-08-07  arthur
+
+	* [r782] debian/copyright, debian/po/da.po: updated Danish (da)
+	  translation of debconf templates by Jonas Smedegaard
+	  <dr@jones.dk>
+	* [r781] debian/po/sv.po: updated Swedish (sv) translation of
+	  debconf templates by Martin Ågren <martin.agren@gmail.com>
+
+2008-07-20  arthur
+
+	* [r778] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.4 release
+	* [r777] nslcd/cfg.c: rename get_base_from_dse() to
+	  get_base_from_rootdse()
+	* [r776] nslcd/cfg.c: make the get_base_from_dse() function cleaner
+	  and add a comment describing the function
+	* [r775] man/nss-ldapd.conf.5.xml, nslcd/cfg.c: implement looking
+	  up search base in DSE of LDAP server
+	* [r774] tests/test_nsscmds.sh: reflect change in test LDAP setup
+
+2008-07-10  arthur
+
+	* [r773] nslcd/myldap.c: LDAP_OPT_X_TLS_REQUIRE_CERT is not a
+	  boolean
+
+2008-06-21  arthur
+
+	* [r772] README: small change to documentation
+	* [r771] nss-ldapd.conf: further improvements to Active Directory
+	  filters and attribute mappings by Petter Reinholdtsen
+	  <pere@hungry.com>
+
+2008-06-17  arthur
+
+	* [r770] nslcd/cfg.c, nslcd/myldap.c: replace https:// by ldaps://
+	  (stupid typo)
+	* [r769] nss-ldapd.conf: Active Directory sample configuration
+	  improvement by Jelmer Jaarsma <jelmer.jaarsma@sara.nl>
+
+2008-06-15  arthur
+
+	* [r767] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.3 release
+	* [r766] Makefile.am, debian/libnss-ldapd.lintian-overrides,
+	  debian/rules: lintian override seems to be no longer necessary
+	* [r765] debian/control: upgrade to standards-version 3.8.0 (no
+	  changes needed)
+	* [r764] debian/libnss-ldapd.nslcd.init: create /var/run/nslcd
+	  directory with owner nslcd:nslcd by default so nslcd can remove
+	  socket and pidfile at exit
+	* [r763] nslcd/nslcd.c: give pidfile and socket creation functions
+	  more logical names
+
+2008-06-14  arthur
+
+	* [r762] AUTHORS, configure.ac, man/nss-ldapd.conf.5.xml,
+	  nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c: implement SASL
+	  authentication based on a patch by Dan White <dwhite@olp.net>
+	* [r761] man/nss-ldapd.conf.5.xml: make formatting of manual page
+	  options consistent
+
+2008-06-13  arthur
+
+	* [r760] tests, tests/Makefile.am, tests/test_common.c: add some
+	  very basic tests for the isvalidname() function
+	* [r759] nslcd/common.c, nslcd/common.h, nslcd/group.c,
+	  nslcd/passwd.c: combine isvalidusername() and isvalidgroupname()
+	  into isvalidname() because they are similar enough and we just
+	  want to check to see if it is a reasonable name (e.g. not a DN)
+
+2008-06-12  arthur
+
+	* [r758] common/tio.c: restore the old writing code which masks
+	  SIGPIPE on platforms that can't use send()
+	* [r757] nslcd/cfg.c: don't perform SSL/TLS sanity checks if it
+	  isn't available on the platform
+	* [r756] tests: ignore test_getpeercred
+
+2008-06-11  arthur
+
+	* [r755] tests: ignore core files
+	* [r754] tests/test_getpeercred.c: remove test socket at end of
+	  test
+
+2008-06-06  arthur
+
+	* [r753] compat/getpeercred.c: use the cr_ prefix when getting a
+	  xucred struct (needed for kfreebsd)
+	* [r752] tests/Makefile.am, tests/test_getpeercred.c: implement a
+	  very basic test for getpeercred()
+	* [r751] nslcd/cfg.c: remove warning on using ssl option
+	* [r750] nslcd/cfg.c: check that all URLs start with https:// if
+	  "ssl on" is specified
+	* [r749] nslcd/myldap.c: also set TLS options if an ldaps:// URL is
+	  specified
+	* [r748] debian/control: add dependency on adduser as required by
+	  the previous commit
+	* [r747] debian/libnss-ldapd.postinst: create a nslcd user in
+	  postinst and ensure that it is used by default
+	* [r746] man/nss-ldapd.conf.5.xml: add uid and gid options to
+	  manual page
+	* [r745] nslcd/cfg.c, nslcd/cfg.h, nslcd/nslcd.c: add uid and gid
+	  configuration keywords that set the user id and group id of the
+	  running nslcd process
+	* [r744] nslcd/nslcd.c: environ is defined in unistd.h
+	* [r743] nslcd/nslcd.c, nss/common.c: increase write buffer size in
+	  nslcd to free up threads earlier and increase timeout for nslcd
+	  to nss communication to one minute (at both places)
+	* [r742] common/dict.c, compat/ether.c, nslcd/group.c,
+	  nslcd/myldap.c, nslcd/passwd.c, tests/test_tio.c: miscellaneous
+	  portability improvements
+
+2008-05-18  arthur
+
+	* [r741] TODO: from a review of glibc 2.3.6 code it shows that
+	  strerror() is only non-threadsafe in some very unlikely
+	  circumstances
+
+2008-05-17  arthur
+
+	* [r740] common/tio.c: use send() with a flag to ignore SIGPIPE
+	  instead of write() so we don't have to muck with signal handlers
+
+2008-05-16  arthur
+
+	* [r739] nslcd/log.c, nslcd/log.h, nslcd/nslcd.c: include a random
+	  string in every log message to be able to group log messages for
+	  a single request
+	* [r738] common/tio.c, nslcd/myldap.c: add sanity checks to sleep
+	  calls to never sleep too long (problems could occur when the
+	  clock moves backwards)
+	* [r737] nss/group.c: remove comment about limitation that has now
+	  been removed
+	* [r736] nss/common.c: grow the read buffer maximum size to 2Mbyte
+	  to allow for groups with about 150000 members maximum
+
+2008-05-15  arthur
+
+	* [r735] README: add some documentation on supported group to
+	  member mappings
+	* [r734] nslcd/myldap.h: improve documentation for
+	  myldap_get_rdn_value() function
+
+2008-05-11  arthur
+
+	* [r733] nslcd/myldap.c: close the connection and retry the search
+	  (once) if the search fails with the first call to
+	  myldap_get_entry() (starting a search doesn't always give an
+	  error when the connection has been broken)
+	* [r732] nslcd/myldap.c: split retry mechanism of myldap_search()
+	  into a new do_retry_search() function
+	* [r731] nslcd/myldap.c: allocate the search memory region in
+	  myldap_search() instead of in do_try_search() and have the latter
+	  return an LDAP status code
+	* [r730] nslcd/myldap.c: also allow closing of searches that no
+	  longer have a valid connection and integrate myldap_search_free()
+	  into myldap_search_close()
+
+2008-05-04  arthur
+
+	* [r728] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.2 release
+	* [r727] HACKING, README: some documentation cleanups and updates
+	* [r726] tests/test_nslcd_group.c: add some tests for
+	  isvalidgroupname()
+	* [r725] man/nss-ldapd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/nslcd.c: make number of threads configurable with the
+	  threads keyword
+	* [r724] nslcd/myldap.h: add reference to note about
+	  thread-safeness of OpenLDAP
+	* [r723] nslcd/nslcd.c: fix copyright year
+
+2008-05-03  arthur
+
+	* [r722] nslcd/passwd.c: implement a cache for dn2uid() lookups
+	  that saves some time doing LDAP searches for groups with a lot of
+	  members, based on a patch by Petter Reinholdtsen
+	  <pere@hungry.com>
+	* [r721] debian/libnss-ldapd.nslcd.init: add soft dependency on
+	  slapd, simplify network and file system dependencies and add
+	  reverse dependencies on some common daemons that may want to do
+	  NSS lookups
+
+2008-05-02  arthur
+
+	* [r720] nss/netgroup.c, nss/prototypes.h: remove checking for
+	  first entry and always return NSS_STATUS_RETURN when no more data
+	  is available in the netgroup (this has the side effect of not
+	  returning NSS_STATUS_NOTFOUND for non-existing netgroups but
+	  seems to be what other NSS modules do) to properly handle empty
+	  netgroups
+	* [r719] tests, tests/Makefile.am, tests/test_nslcd_group.c: add
+	  file for testing nslcd/group.c
+	* [r718] tests/Makefile.am: don't even compile the test programs on
+	  make check
+	* [r717] tests/Makefile.am: don't compile test code on every build
+	  and fix LDADD lists to include correct objects
+	* [r716] nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c: only support
+	  tls-related options if LDAP library supports TLS, only add rebind
+	  code if ldap_set_rebind_proc() is found and only set
+	  LDAP_X_OPT_CONNECT_TIMEOUT if that option is supported
+
+2008-05-01  arthur
+
+	* [r715] nslcd/myldap.c: support ranged attribute values
+	* [r714] nss/common.h: fix comment of return value of
+	  NSS_STATUS_TRYAGAIN
+	* [r713] tests/test_myldap.c: fix a warning
+	* [r712] tests/test_myldap.c: ensure that filter_get_var() and
+	  filter_get_var() return non-NULL to enable parsing of config file
+	  with attribute mapping and filter settings and use base from
+	  config file
+
+2008-04-29  arthur
+
+	* [r711] man/nss-ldapd.conf.5.xml: make language about pagesize
+	  option a little clearer
+
+2008-04-27  arthur
+
+	* [r710] nslcd/cfg.c: support the case where an attribute mapping
+	  variable is NULL
+
+2008-04-26  arthur
+
+	* [r709] nslcd/myldap.c: also close the LDAP connection on
+	  LDAP_SERVER_DOWN (besides LDAP_UNAVAILABLE)
+	* [r708] man/nss-ldapd.conf.5.xml, nss/common.c: increase time out
+	  values because now nslcd will error out more quickly if the LDAP
+	  server is known to be unavailable
+	* [r707] nslcd/nslcd.c: spelling fix in comment
+	* [r706] man/nss-ldapd.conf.5.xml: some spelling fixes and a
+	  clarification of the retry mechanism
+	* [r705] nslcd/cfg.c: fix log message of incorrect map statement
+	* [r704] nslcd/passwd.c: make log message a little more descriptive
+	* [r703] configure.ac: fix quote in comment
+	* [r702] nslcd/myldap.c: ensure that the connection to the LDAP
+	  server is closed whenever any of the ldap_*() functions return
+	  LDAP_UNAVAILABLE
+
+2008-04-25  arthur
+
+	* [r701] man/nss-ldapd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/myldap.c, tests/nss-ldapd-test.conf, tests/test_cfg.c,
+	  tests/test_myldap.c: implement new timing mechanism for retries
+	  to quickly fail lookups to LDAP server that have been failing for
+	  some time, removing the reconnect_tries option and giving
+	  reconnect_sleeptime and reconnect_maxsleeptime options a new
+	  meaning
+	* [r700] tests/test_myldap.c: include missing include
+	* [r699] tests/test_myldap.c: ignore SIGPIPE in myldap tests
+	* [r698] tests/test_myldap.c: fix assert to be test instead of
+	  assignment
+	* [r697] tests/test_myldap.c, tests/test_myldap.sh: have the binary
+	  look up the file name and only use the shell script wrapper to
+	  determine if LDAP server is available
+	* [r696] compat/ether.h: fix typos in references to
+	  HAVE_ETHER_NTOA_R and HAVE_ETHER_ATON_R macros
+
+2008-04-23  arthur
+
+	* [r695] tests/test_nsscmds.sh: fix order of members in group in
+	  tests because of new hashing dict (maybe we should fix the script
+	  instead to always sort members properly)
+	* [r694] common/dict.c: fix problem where first item in the
+	  hashtable could be returned twice while looping
+	* [r693] tests/test_dict.c: add test for problem with duplicate
+	  entries being returned while looping over results
+	* [r692] nslcd/passwd.c: don't issue warning when
+	  myldap_get_entry() returns NULL and LDAP_SUCCESS
+
+2008-04-21  arthur
+
+	* [r691] common/dict.c: allocate room for key string just after
+	  entry to save on calls to malloc() and make it simpler
+
+2008-04-20  arthur
+
+	* [r690] nslcd/group.c, nslcd/passwd.c: fix tests for valid user
+	  and group names
+	* [r689] nslcd/common.h, nslcd/group.c, nslcd/passwd.c: add checks
+	  for valid user and group names in incoming requests and for data
+	  returned from LDAP
+	* [r688] nslcd/group.c: only support uniqueMember containing DN
+	  values
+	* [r687] nslcd/group.c: fix warning message to not refer to alias
+	* [r686] nslcd/myldap.c: make warning message more verbose, fix
+	  comment and don't try to store empty results
+
+2008-04-19  arthur
+
+	* [r685] debian/libnss-ldapd.config: only guess the searchbase if
+	  the value doesn't seem to be preseeded (based on a patch by
+	  Petter Reinholdtsen <pere@hungry.com>)
+	* [r684] common/dict.c: fix wrapping and indenting of comments
+	* [r683] nslcd/group.c: correctly call set_free() instead of free()
+	* [r682] nslcd/group.c: use the new set data structure to gather
+	  the group members
+	* [r681] common/Makefile.am, common/set.c, common/set.h, tests,
+	  tests/Makefile.am, tests/test_set.c: implement a set that uses
+	  the dict module as back-end
+	* [r680] common/dict.c: implement new dict module that uses a
+	  hashtable which is around 40 times faster for large (around 2000)
+	  entries but with around 40% more memory used
+	* [r679] tests/Makefile.am, tests/test_dict.c, tests/usernames.txt:
+	  some new tests for the dictionary module
+	* [r678] nslcd/passwd.c: add test for emtpy DN
+
+2008-04-18  arthur
+
+	* [r677] nslcd/myldap.c: instead of using the dict module to build
+	  a cache just store the values in an fixed-sized array because no
+	  more than 9 attributes are currently retrieved from an entry and
+	  we never retrieve the same value more than once (so the cache is
+	  useless)
+
+2008-04-17  arthur
+
+	* [r676] common/dict.h: add note about freed values
+	* [r675] common/dict.c, common/dict.h, nslcd/myldap.c,
+	  tests/test_dict.c: change dict_values_first() and
+	  dict_values_next() into dict_loop_first() and dict_loop_next() to
+	  have a looping mechanism over keys and values
+
+2008-04-13  arthur
+
+	* [r674] tests/nss-ldapd-test.conf: remote hopefully last reference
+	  to rootbind{dn,pw}
+
+2008-04-06  arthur
+
+	* [r673] nslcd/common.h: return values of dn2uid() and uid2dn()
+	  should always be used
+	* [r672] nslcd/group.c: properly handle the case where dn2uid()
+	  couldn't do a DN->uid lookup
+	* [r670] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6.1 release
+	* [r669] config.guess, config.sub: include updated files
+
+2008-04-05  arthur
+
+	* [r668] AUTHORS: include Petter Reinholdtsen for reporting many
+	  bugs and even some fixes
+	* [r667] debian/libnss-ldapd.postinst: handle case where value
+	  contains spaces properly
+	* [r666] debian/libnss-ldapd.postinst: support having a binddn set
+	  without a bindpw
+	* [r665] debian/libnss-ldapd.config: fix typo in comment
+	* [r664] debian/libnss-ldapd.config, debian/libnss-ldapd.postinst,
+	  debian/libnss-ldapd.templates, debian/po/ca.po, debian/po/cs.po,
+	  debian/po/da.po, debian/po/de.po, debian/po/es.po,
+	  debian/po/fr.po, debian/po/ja.po, debian/po/nl.po,
+	  debian/po/pt.po, debian/po/pt_BR.po, debian/po/ru.po,
+	  debian/po/sv.po, debian/po/templates.pot, debian/po/vi.po: remove
+	  rootbind{dn,pw} options from packaging because the options are
+	  not likely to be implemented in the future
+	* [r663] nslcd/common.h, nslcd/group.c, nslcd/passwd.c: fix
+	  member->group searches by also searching for DN in uniqueMember
+	  attribute
+	* [r662] nslcd/log.c: make log line a little bigger to properly log
+	  more search filters
+	* [r661] nslcd/nslcd.c: only return shadow entries to root users
+	* [r660] nss/group.c: correctly implement buffer handling in
+	  _nss_ldap_initgroups_dyn() to grow buffer when needed, check
+	  limits and handle extra group parameter (had a closer look at
+	  nis-initgroups.c)
+	* [r659] tests/test_nsscmds.sh: no problem to shout a little with
+	  failed tests
+	* [r658] nss/group.c: properly check the limit (as seen in
+	  nis-initgroups.c)
+	* [r657] nslcd/shadow.c: partial support for reading AD date format
+	  for pwdLastSet attribute
+	* [r656] nslcd/myldap.c: split closing of LDAP session to separate
+	  funtion to invalidate running searches always and closes
+	  connection if setting up search failed
+	* [r655] tests/test_group.c: use a larger buffer for group
+	  membership results
+	* [r654] tests/test_myldap.c: check that the last
+	  myldap_get_entry() returned success
+
+2008-04-04  arthur
+
+	* [r653] README, man/nss-ldapd.conf.5.xml, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/myldap.c, nss-ldapd.conf: remove code that
+	  handles special cases when calling as root (removing rootbinddn,
+	  rootbindpw, rootuse_sasl and rootsasl_authid options)
+	* [r652] nslcd/myldap.c: revert r628 (using ldap_str2dn() instead
+	  of ldap_explode_r?dn()) for now to make this compile on older
+	  versions of OpenLDAP
+	* [r651] man/nss-ldapd.conf.5.xml: add some more documentation to
+	  the pagesize option
+
+2008-04-02  arthur
+
+	* [r650] debian/libnss-ldapd.nslcd.init: make start not fail if
+	  nslcd is already running and stop not fail if it wasn't running
+	  before
+
+2008-03-30  arthur
+
+	* [r649] nss-ldapd.conf: some fixes to the configuration when using
+	  Active Directory (provided by Petter Reinholdtsen
+	  <pere@hungry.com>)
+	* [r648] configure.ac, nslcd/myldap.c: only define and use
+	  do_sasl_interact() if we have a sasl library
+	* [r647] compat/attrs.h: make test for compiler versions simpler
+	  and per used attribute
+
+2008-03-29  arthur
+
+	* [r646] HACKING, README: add contact information on reporting bugs
+	  and contributing patches
+	* [r645] HACKING: add some more notes about the design and
+	  direction I want to go in
+
+2008-03-28  arthur
+
+	* [r644] nslcd/myldap.c: don't warn about problems retreiving the
+	  objectClass from en entry
+
+2008-03-27  arthur
+
+	* [r643] nslcd/group.c: fix a problem where the newly allocated
+	  storage by realloc() wasn't used (thanks to Petter Reinholdtsen
+	  <pere@hungry.com> for the patch)
+
+2008-03-16  arthur
+
+	* [r642] debian/libnss-ldapd.config, debian/libnss-ldapd.postinst:
+	  comment out all rootbind{dn,pw} code as to not copy those
+	  directives because they are unsupported
+	* [r641] debian/libnss-ldapd.config: use tail instead of head to
+	  avoid conflicts becase nss_ldap seems to pick up the last option
+	  in the file
+	* [r640] debian/libnss-ldapd.config: handle the case where an
+	  option is defined multiple times
+
+2008-03-06  arthur
+
+	* [r639] AUTHORS, debian/copyright, debian/po/es.po: updated
+	  Spanish (es) translation of debconf templates by Rudy Godoy
+	  Guillén <rudy@debian.org>
+
+2008-03-04  arthur
+
+	* [r638] AUTHORS, debian/po/nl.po: updated Dutch (nl) translation
+	  of debconf templates by Bart Cornelis <cobaco@skolelinux.no>
+
+2008-02-19  arthur
+
+	* [r637] README: some updates to reflect recent changes
+	* [r636] man/Makefile.am: have a better way to specify the manual
+	  page rule
+
+2008-02-15  arthur
+
+	* [r635] common/tio.c: split out the flushing of the buffers to
+	  separate functions and see if we can flush some data from the
+	  buffer if it is overflowing before growing the buffer
+	* [r634] nslcd/myldap.c: add StartTLS support by Ralf Haferkamp
+	  <rhafer@suse.de>
+	* [r633] nslcd/myldap.c: pass URI to do_bind() to make it work with
+	  do_rebind() and use that URI (thanks Ralf Haferkamp
+	  <rhafer@suse.de>)
+	* [r632] tests/test_myldap.c: add tests for myldap_get_rdn_value()
+	  and myldap_cpy_rdn_value()
+
+2008-02-12  arthur
+
+	* [r631] configure.ac: make using implicit function definitions an
+	  error
+	* [r630] common/tio.c, common/tio.h, nslcd/nslcd.c, nss/common.c,
+	  tests/test_tio.c: implement resizable I/O buffers and tune buffer
+	  sizes to normal requests
+	* [r629] common/tio.c: always allocate the read and write buffers
+	  and make the struct tio_buffer inline in struct tio_fileinfo
+
+2008-02-10  arthur
+
+	* [r628] nslcd/myldap.c: replace the calls to ldap_explode_dn() and
+	  ldap_explode_rdn() with a call to ldap_str2dn() resulting in much
+	  simpler code
+
+2008-02-08  arthur
+
+	* [r627] nslcd/cfg.c: only support "dns" and "domain" values on
+	  platforms with the necessary functions available
+	* [r626] nslcd/ether.c: don't define struct ether_addr here, it was
+	  moved to compat/ether.h
+
+2008-02-04  arthur
+
+	* [r625] nslcd/myldap.c: make some changes to allow it to compile
+	  on more platforms
+	* [r624] compat/Makefile.am, compat/ether.c, compat/ether.h,
+	  configure.ac, nslcd/ether.c: provide replacements for
+	  ether_aton_r() and ether_ntoa_r() for platforms that don't have
+	  them
+	* [r623] configure.ac, nslcd/nslcd.c: only call
+	  __nss_configure_lookup() if it is available, if it isn't the
+	  platform is out of luck
+	* [r622] nslcd/myldap.h: defined LDAP_SCOPE_DEFAULT it's not
+	  defined elsewhere
+	* [r621] nslcd/nslcd.c: fix missing casts
+	* [r620] nslcd/nslcd.c: actually include the compat header files
+	  when needed
+
+2008-02-03  arthur
+
+	* [r618] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nss-ldapd.conf.5.xml: get files ready for
+	  0.6 release
+	* [r617] configure.ac: also check for sasl2 library
+	* [r616] tests/test_myldap.c, tests/test_nsscmds.sh: add tests for
+	  new LDAP lookups
+	* [r615] nslcd/attmap.c, nslcd/attmap.h, nslcd/group.c: support the
+	  uniqueMember LDAP attribute that holds DN values (they are
+	  translated with dn2uid() from passwd.c)
+	* [r614] debian/libnss-ldapd.postinst, debian/libnss-ldapd.postrm,
+	  debian/rules: don't use dh_makeshlibs any more because we don't
+	  need the shlibs file; call ldconfig from maintainer scripts
+	  ourselves
+	* [r613] debian/rules: install the NSS library under /lib instead
+	  of /usr/lib to make it easyer to unmount /usr if it's on a
+	  separate filesystem
+
+2008-02-02  arthur
+
+	* [r612] debian/rules: don't pass options to configure which are
+	  not used
+	* [r611] configure.ac: remove --with-ngroups option because it
+	  isn't used
+	* [r610] nslcd/common.h, nslcd/passwd.c: implement a dn2uid()
+	  function to transform a DN into a username (looking inside the DN
+	  or doing an LDAP lookup if neede)
+	* [r609] nslcd/myldap.c, nslcd/myldap.h: implement
+	  myldap_cpy_rdn_value() function to copy rdn value into a buffer
+	  (functionality like myldap_get_rdn_value())
+	* [r608] nslcd/myldap.c: log and otherwise ignore errors in
+	  ldap_parse_page_control()
+	* [r607] nslcd/myldap.c: fix copy-pasto
+	* [r606] nslcd/myldap.c: don't request paging when doing a search
+	  with scope base and ignore errors of ldap_create_page_control()
+	* [r605] nslcd/myldap.c: reset LDAP error flag if ldap_get_values()
+	  returned an error because some LDAP functions don't do this
+	  correctly
+
+2008-02-01  arthur
+
+	* [r604] nslcd/myldap.c: have proper checks and logs of all ldap
+	  operations
+	* [r603] tests/test_group.c: enable _nss_ldap_initgroups_dyn() test
+	  because it's working now
+	* [r602] nslcd-common.h: fix buffer size debug message
+	* [r601] nss/common.h, nss/hosts.c, nss/netgroup.c, nss/networks.c:
+	  do not set errno (and h_errno) if we got the last entry from
+	  get*ent() (this apparently is needed by coreutils' id and groups
+	  commands)
+	* [r600] tests/Makefile.am: pagectrl module has moved
+	* [r599] tests/test_nsscmds.sh: test for hugegroup
+	* [r598] tests/test_nsscmds.sh: the groups command no longer lists
+	  the username
+	* [r597] nss/common.c, nss/common.h, nss/group.c, nss/hosts.c,
+	  nss/netgroup.c, nss/networks.c: remove the nslcd2nss() function
+	  because it's not needed with the current protocol
+	* [r596] nss/common.h: fail with a permanent error if resetting the
+	  stream failed to prevent indefinite retries
+
+2008-01-31  arthur
+
+	* [r595] nslcd/myldap.c: defined LDAP_DEPRECATED to also have
+	  definitions for deprecated functions
+	* [r594] compat/attrs.h: only define MUST_USE attribute if gcc
+	  version is more recent than 3.4
+	* [r593] debian/copyright: update copyright information
+	* [r592] compat/Makefile.am, compat/pagectrl.c, compat/pagectrl.h,
+	  configure.ac, debian/copyright, nslcd/Makefile.am,
+	  nslcd/myldap.c, nslcd/pagectrl.c, nslcd/pagectrl.h: move pagectrl
+	  code into compat directory
+	* [r591] configure.ac: make comments lowercase for consistency
+	* [r590] tests/test_myldap.c: re-add test URIs that accidentally
+	  got commented out in the last commit
+	* [r589] tests/Makefile.am, tests/test_cfg.c, tests/test_myldap.c,
+	  tests/test_nsscmds.sh: pass the correct pthread flags for all
+	  calls to compiler and linker and link in compat code, handle
+	  other assert.h setups and avoid some ! in if statements in shell
+	  scripts
+	* [r588] configure.ac: improve LDAP library autodetection and make
+	  if statements consistent
+	* [r587] configure.ac: move finding of replacement functions to a
+	  more logical place
+	* [r586] configure.ac: define extra macros to import system
+	  extensions from system header files and remove duplicate check
+	  for ldap_set_rebind_proc()
+	* [r585] configure.ac: test to see if the compiler supports certain
+	  -W flags before using them
+
+2008-01-30  arthur
+
+	* [r584] nslcd/ether.c: include stdint.h
+	* [r583] nslcd.h, nslcd/ether.c, nss/ethers.c: use uint8_t instead
+	  of u_int8_t because the former seems to be available on more
+	  platforms
+	* [r582] INSTALL, depcomp, install-sh: update some files from
+	  recent automake
+	* [r581] compat/Makefile.am, compat/daemon.c, compat/daemon.h,
+	  compat/getopt_long.c, compat/getopt_long.h, configure.ac: provide
+	  replacement functions for daemon() and getopt_long() when they
+	  are not available on the system
+	* [r580] configure.ac: remove duplicate warning flags
+	* [r579] compat/attrs.h: define __STRING() if it's not defined by
+	  the system
+	* [r578] tests/test_tio.c: include errno in assertion statement
+	* [r577] compat/getpeercred.c: some fixes for LOCAL_PEERCRED (still
+	  untested)
+
+2008-01-27  arthur
+
+	* [r576] AUTHORS, debian/po/de.po: updated German (de) translation
+	  of debconf templates by Erik Schanze <eriks@debian.org>
+	* [r575] compat/ldap.h, nslcd/Makefile.am, nslcd/myldap.c:
+	  integrate some compatibility code into myldap.c, the only place
+	  it's used
+	* [r573] nslcd/myldap.c: work around some LDAP libraries not having
+	  all options
+	* [r572] configure.ac, nslcd/myldap.h: on some systems lber.h needs
+	  to be included before ldap.h
+	* [r571] common/tio.c, nslcd-common.h, nslcd/nslcd.c, nss/common.c,
+	  tests/test_tio.c: when including stdint.h check if we actually
+	  have it
+	* [r570] nslcd/pagectrl.c, nslcd/pagectrl.h: correct #endif comment
+
+2008-01-26  arthur
+
+	* [r569] nslcd/cfg.c: have a fallback value for HOST_NAME_MAX if it
+	  is not defined
+	* [r568] tests/test_nsscmds.sh: handle the case where
+	  /etc/nss-ldapd.conf does not exist a little more graceful
+	* [r567] nslcd/nslcd.c: log error when getpeercred() returned
+	  nothing
+	* [r566] compat/getpeercred.c, compat/getpeercred.h, configure.ac:
+	  add (untested) support for the Solaris getpeerucred() function
+	* [r565] Makefile.am, compat, compat/Makefile.am,
+	  compat/getpeercred.c, compat/getpeercred.h, configure.ac,
+	  nslcd/Makefile.am, nslcd/nslcd.c: move code to get information
+	  from socket peer to the compat directory because it is very
+	  platform specific
+	* [r564] tests/test_myldap.c, tests/test_nsscmds.sh,
+	  tests/test_tio.c: somewhat improve the output from the tests
+	* [r563] nslcd/cfg.c: fix marsing of map statement
+	* [r562] tests/test_cfg.c: also test map filter and scope
+	  configuration options
+
+2008-01-16  arthur
+
+	* [r561] nslcd/cfg.c: fix problem in map statement end-of-line
+	  handling
+	* [r560] tests/test_cfg.c: add a test for the map statement
+
+2008-01-03  arthur
+
+	* [r559] nslcd/nslcd.c: close connections in worker threads at
+	  program termination
+	* [r558] nslcd/nslcd.c: make code a little more compact, don't
+	  include debug twice in the log message and remove the
+	  capabilities code because it will probably never be used
+	* [r557] tests/test_nsscmds.sh: support the case where + is in
+	  /etc/group
+	* [r556] nss/aliases.c, nss/common.h, nss/ethers.c, nss/group.c,
+	  nss/hosts.c, nss/netgroup.c, nss/networks.c, nss/passwd.c,
+	  nss/protocols.c, nss/rpc.c, nss/services.c, nss/shadow.c: only
+	  start the NSLCD_ACTION_*_ALL requests with the first call to
+	  getent() instead of with setent() to avoid unneeded requests if
+	  compat is used (except with netgroups)
+	* [r555] nslcd/passwd.c, nss/prototypes.h: update copyright year
+	* [r554] tests/test_nsscmds.sh: get the number of groups and
+	  services from files in /etc for comparison
+	* [r553] nslcd/passwd.c: do not warn about missing loginShell
+	  attribute because it is not mandatory
+	* [r552] nss/group.c: increment value that is pointed to, not the
+	  pointer (fixes segfault)
+
+2008-01-02  arthur
+
+	* [r551] nslcd/common.h: immediatly bail out if write entity
+	  function failed (prevents numerous "error writing to client"
+	  messages from filling up the logs)
+
+2008-01-01  arthur
+
+	* [r550] tests/test_nsscmds.sh: check to see if nslcd is running
+	  and add test for a large group (100 members)
+	* [r549] nss/exports.linux, nss/group.c, nss/prototypes.h: enable
+	  the _nss_ldap_initgroups_dyn() function that is now implemented
+	  in nslcd
+	* [r548] nss/common.h: use the new tio_mark()/tio_reset() functions
+	  to support retries of the getent() functions when
+	  NSS_STATUS_TRYAGAIN would be returned
+	* [r547] common/tio.c, common/tio.h, tests/test_tio.c: add limited
+	  implementation of tio_mark() and tio_reset() functions to do
+	  limited seeks in the read stream, clean up header file comments
+	  and write tests for new code
+
