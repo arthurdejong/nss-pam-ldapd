@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.7.0\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-06-26 17:06+0200\n"
+"POT-Creation-Date: 2010-08-15 11:23+0200\n"
 "PO-Revision-Date: 2009-09-26 18:51+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
@@ -249,6 +249,47 @@ msgid ""
 "You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you choose to remove the entries now."
+msgstr ""
+"Bạn có thể tự sửa đổi tập tin cấu hình « /etc/nsswitch.conf », hoặc chọn tự "
+"động gỡ bỏ các mục nhập ngay bây giờ. Xem lại kỹ các thay đổi trong « /etc/"
+"nsswitch.conf » nếu bạn chọn gỡ bỏ các mục nhập ngay bây giờ."
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+msgid "Enable shadow lookups through NSS?"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+msgid ""
+"For the proper operation of the PAM stack the NSS module should return "
+"shadow information for LDAP users, otherwise these users will not be able to "
+"log in. Note that the shadow entries themselves may be empty (i.e. it is not "
+"needed to expose password hashes)."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+msgid ""
+"More background information on this requirement can be found here: http://"
+"bugs.debian.org/583492"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
+#| "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+#| "you choose to remove the entries now."
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or choose to add the entry "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you choose to add the entry now."
 msgstr ""
 "Bạn có thể tự sửa đổi tập tin cấu hình « /etc/nsswitch.conf », hoặc chọn tự "
 "động gỡ bỏ các mục nhập ngay bây giờ. Xem lại kỹ các thay đổi trong « /etc/"

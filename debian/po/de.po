@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd_0.6.11_de\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2009-06-26 17:06+0200\n"
+"POT-Creation-Date: 2010-08-15 11:23+0200\n"
 "PO-Revision-Date: 2009-09-06 01:15+0200\n"
 "Last-Translator: Erik Schanze <eriks@debian.org>\n"
 "Language-Team: German <debian-l10n-german@lists.debian.org>\n"
@@ -262,6 +262,48 @@ msgid ""
 "You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you choose to remove the entries now."
+msgstr ""
+"Sie können die Datei /etc/nsswitch.conf selbst ändern oder Sie stimmen jetzt "
+"zu, die Einträge automatisch zu entfernen. Kontrollieren Sie unbedingt die "
+"Änderungen in der Datei /etc/nsswitch.conf, wenn Sie zustimmen, die Einträge "
+"jetzt zu löschen."
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+msgid "Enable shadow lookups through NSS?"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+msgid ""
+"For the proper operation of the PAM stack the NSS module should return "
+"shadow information for LDAP users, otherwise these users will not be able to "
+"log in. Note that the shadow entries themselves may be empty (i.e. it is not "
+"needed to expose password hashes)."
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+msgid ""
+"More background information on this requirement can be found here: http://"
+"bugs.debian.org/583492"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
+#| "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+#| "you choose to remove the entries now."
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or choose to add the entry "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you choose to add the entry now."
 msgstr ""
 "Sie können die Datei /etc/nsswitch.conf selbst ändern oder Sie stimmen jetzt "
 "zu, die Einträge automatisch zu entfernen. Kontrollieren Sie unbedingt die "
