@@ -34,8 +34,10 @@ nss_enable()
 
 # if /etc/nsswitch.conf contains passwd: ..ldap but not shadow: ...ldap
 # warn the user that this will not work and offer to fix it
+# (only do this if it seems we have switched to pam-auth-update)
 if grep -q '^passwd:.*ldap' /etc/nsswitch.conf && \
-   ! grep -q '^shadow:.*ldap' /etc/nsswitch.conf
+   ! grep -q '^shadow:.*ldap' /etc/nsswitch.conf && \
+   grep -q pam-auth-update /etc/pam.d/common-auth
 then
   if db_input critical libpam-ldapd/enable_shadow
   then
