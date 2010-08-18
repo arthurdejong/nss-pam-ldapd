@@ -7,22 +7,22 @@
 #
 # Debian Description Translation Project <debconf@ddtp.debian.org>, 2003.
 # Ilgiz Kalmetev <translator@ilgiz.pp.ru>, 2003.
-# Yuri Kozlov <yuray@komyakino.ru>, 2009.
+# Yuri Kozlov <yuray@komyakino.ru>, 2009, 2010.
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.6.10\n"
+"Project-Id-Version: nss-pam-ldapd 0.7.8\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2010-08-15 14:13+0200\n"
-"PO-Revision-Date: 2009-06-23 20:24+0400\n"
+"PO-Revision-Date: 2010-08-18 20:51+0400\n"
 "Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
 "Language-Team: Russian <debian-l10n-russian@lists.debian.org>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Lokalize 1.0\n"
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #. Type: string
 #. Description
@@ -39,7 +39,7 @@ msgid ""
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
 "Укажите универсальный индикатор ресурса (URI) сервера LDAP. Формат: \"ldap://"
-"<имя_хоста или IP>:<порт>/\". Также можно использовать \"ldaps://\" или "
+"<имя_узла или IP>:<порт>/\". Также можно использовать \"ldaps://\" или "
 "\"ldapi://\". Номер порта необязателен."
 
 #. Type: string
@@ -245,7 +245,7 @@ msgstr ""
 "Советуем удалить записи, если вы больше не планируете использовать LDAP для "
 "поиска имён. Если ldap останется в nsswitch.conf, то для большинства служб "
 "это не вызовет проблем, но может негативно отразиться при определении имён "
-"хостов."
+"узлов."
 
 #. Type: boolean
 #. Description
@@ -263,7 +263,7 @@ msgstr ""
 #. Description
 #: ../libpam-ldapd.templates:1001
 msgid "Enable shadow lookups through NSS?"
-msgstr ""
+msgstr "Включить поиск в теневых паролях через NSS?"
 
 #. Type: boolean
 #. Description
@@ -274,6 +274,10 @@ msgid ""
 "is, there is no need for password hashes to be exposed. See http://bugs."
 "debian.org/583492 for background."
 msgstr ""
+"Чтобы разрешить вход пользователям LDAP, для модуля NSS нужно включить "
+"поиск в теневых паролях. Сами теневые элементы могут быть пусты, то есть "
+"туда ненужно копировать хэши паролей. Подробней см. в "
+"http://bugs.debian.org/583492."
 
 #. Type: boolean
 #. Description
@@ -283,6 +287,11 @@ msgid ""
 "automatically (in which case it should be reviewed afterwards) or whether it "
 "should be left for an administrator to edit manually."
 msgstr ""
+"Выберите, нужно ли для этого добавить настройку в /etc/nsswitch "
+"автоматически "
+"(по окончании проверьте изменения), или предоставить возможность "
+"администратору "
+"сделать это вручную."
 
 #, fuzzy
 #~| msgid ""
