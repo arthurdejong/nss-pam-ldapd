@@ -1,22 +1,23 @@
-# translation of nss-ldapd debconf to Portuguese
-# Copyright (C) 2007 the nss-ldapd's copyright holder
-# Released under the same license as the nss-ldapd package
+# translation of nss-pam-ldapd debconf to Portuguese
+# Copyright (C) 2007 the nss-pam-ldapd's copyright holder
+# Released under the same license as the nss-pam-ldapd package
 #
 #
-# Américo Monteiro <a_monteiro@netcabo.pt>, 2007, 2009.
+# Américo Monteiro <a_monteiro@netcabo.pt>, 2007, 2009, 2010.
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.6.10\n"
+"Project-Id-Version: nss-pam-ldapd 0.7.8\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2010-08-15 14:13+0200\n"
-"PO-Revision-Date: 2009-06-26 23:09+0100\n"
+"PO-Revision-Date: 2010-08-17 22:34+0100\n"
 "Last-Translator: Américo Monteiro <a_monteiro@netcabo.pt>\n"
 "Language-Team: Portuguese <traduz@debianpt.org>\n"
 "Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
+"X-Generator: Lokalize 1.0\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. Type: string
 #. Description
@@ -261,7 +262,7 @@ msgstr ""
 #. Description
 #: ../libpam-ldapd.templates:1001
 msgid "Enable shadow lookups through NSS?"
-msgstr ""
+msgstr "Activar as buscas shadow através de NSS?"
 
 #. Type: boolean
 #. Description
@@ -272,6 +273,11 @@ msgid ""
 "is, there is no need for password hashes to be exposed. See http://bugs."
 "debian.org/583492 for background."
 msgstr ""
+"Para permitir que os utilizadores do LDAP façam login, o módulo NSS precisa "
+"de estar capaz de fazer buscas de palavras-passe shadow. As próprias "
+"entradas shadow podem estar vazias - isto é, não há necessidade de expor as "
+"hashes das palavras-passe. Veja http://bugs.debian.org/583492 para "
+"antecedentes."
 
 #. Type: boolean
 #. Description
@@ -281,6 +287,10 @@ msgid ""
 "automatically (in which case it should be reviewed afterwards) or whether it "
 "should be left for an administrator to edit manually."
 msgstr ""
+"Por favor escolha se o /etc/nsswitch deverá ter a entrada necessária "
+"adicionada automaticamente (que neste caso deverá ser verificada "
+"posteriormente) ou se deverá ser deixado para um administrador editar "
+"manualmente."
 
 #, fuzzy
 #~| msgid ""
