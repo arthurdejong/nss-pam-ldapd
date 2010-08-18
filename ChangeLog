@@ -1,3 +1,137 @@
+2010-08-18 18:55  arthur
+
+	* [r1182] debian/po/nb.po: added Norwegian Bokmål (nb) translation
+	  of debconf templates by Bjørn Steensrud
+
+2010-08-18 17:31  arthur
+
+	* [r1181] debian/po/ru.po: updated Russian (ru) translation of
+	  debconf templates by Yuri Kozlov
+
+2010-08-18 17:26  arthur
+
+	* [r1180] debian/po/pt.po: updated Portuguese (pt) translation of
+	  debconf templates by Américo Monteir
+
+2010-08-17 20:16  arthur
+
+	* [r1179] debian/po/da.po, debian/po/vi.po, debian/po/zh_CN.po:
+	  remove invalid and bouncing addresses
+
+2010-08-17 16:53  arthur
+
+	* [r1178] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fi.po,
+	  debian/po/fr.po, debian/po/gl.po, debian/po/it.po,
+	  debian/po/ja.po, debian/po/nl.po, debian/po/pt.po,
+	  debian/po/pt_BR.po, debian/po/ru.po, debian/po/sv.po,
+	  debian/po/templates.pot, debian/po/vi.po, debian/po/zh_CN.po:
+	  update debian/po files with modified template
+
+2010-08-17 16:52  arthur
+
+	* [r1177] debian/libpam-ldapd.postinst: only offer to fix
+	  nsswitch.conf if PAM has been converted with pam-auth-update
+
+2010-08-17 16:40  arthur
+
+	* [r1176] debian/libpam-ldapd.templates: updated debconf template
+	  thanks to Justin B Rye
+
+2010-08-15 10:45  arthur
+
+	* [r1175] debian/po/POTFILES.in, debian/po/ca.po, debian/po/cs.po,
+	  debian/po/da.po, debian/po/de.po, debian/po/es.po,
+	  debian/po/fi.po, debian/po/fr.po, debian/po/gl.po,
+	  debian/po/it.po, debian/po/ja.po, debian/po/nl.po,
+	  debian/po/pt.po, debian/po/pt_BR.po, debian/po/ru.po,
+	  debian/po/sv.po, debian/po/templates.pot, debian/po/vi.po,
+	  debian/po/zh_CN.po: update debian/po files with added template
+
+2010-08-14 18:19  arthur
+
+	* [r1174] debian/control: upgrade to standards-version 3.9.1
+
+2010-08-14 16:05  arthur
+
+	* [r1173] debian/control: add libpam-sss as an alternative to
+	  libpam-ldapd
+
+2010-08-14 16:02  arthur
+
+	* [r1172] debian/control: merge the recommends from libnss-ldapd
+	  and libpam-ldapd into those of nslcd so we can track all the PAM
+	  alternatives in one place
+
+2010-08-14 14:33  arthur
+
+	* [r1171] Makefile.am, debian/libnss-ldapd.postinst,
+	  debian/libnss-ldapd.postrm,
+	  debian/libpam-ldapd.lintian-overrides,
+	  debian/libpam-ldapd.postinst, debian/libpam-ldapd.templates:
+	  offer to add ldap to shadow in nsswitch.conf if a potential
+	  broken configuration is found
+
+2010-08-14 13:29  arthur
+
+	* [r1170] ChangeLog, ChangeLog-2006, ChangeLog-2007,
+	  ChangeLog-2008, Makefile.am: archive older ChangeLog entries in
+	  year files
+
+2010-08-14 13:16  arthur
+
+	* [r1169] common/expr.c: also don't expand variables in rest of
+	  ${var:+rest} expressions if var is not set or empty
+
+2010-08-14 13:00  arthur
+
+	* [r1168] common/expr.c: do not expand variables in rest of
+	  ${var:-rest} expressions if var is not blank or empty
+
+2010-07-27 06:26  arthur
+
+	* [r1167] nss/services.c: use htons() instead of ntohs() (thanks
+	  Ted C. Cheng)
+
+2010-07-18 11:40  arthur
+
+	* [r1166] compat/nss_compat.h, configure.ac: compatibility
+	  improvement: also check for nss_common.h and see if enum
+	  nss_status exists
+
+2010-07-18 11:27  arthur
+
+	* [r1165] nslcd/pam.c: fix comment
+
+2010-07-18 11:25  arthur
+
+	* [r1164] nss/Makefile.am: use -h linker flag instead of -soname
+	  which seems more portable
+
+2010-07-18 11:23  arthur
+
+	* [r1163] compat/pam_compat.h: define pam_info(), pam_error() and
+	  pam_syslog() compatibility macros to allow no arguments for
+	  format
+
+2010-07-17 19:09  arthur
+
+	* [r1162] debian/nslcd.config: only go back one step on Debconf
+	  back
+
+2010-07-07 20:21  arthur
+
+	* [r1161] configure.ac, nslcd/nslcd.c, nss/Makefile.am: allow
+	  configuring NSS module's SONAME from configure and use this in
+	  nslcd to dlopen() the correct library (thanks to Alexander V.
+	  Chernikov for the idea)
+
+2010-07-03 16:10  arthur
+
+	* [r1159] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.7 release
+
 2010-07-03 15:22  arthur
 
 	* [r1158] debian/control: upgrade to standards-version 3.9.0

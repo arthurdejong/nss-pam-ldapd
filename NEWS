@@ -1,3 +1,13 @@
+changes from 0.7.7 to 0.7.8
+---------------------------
+
+* minor portability improvements and clean-ups (thanks Alexander V.
+  Chernikov and Ted C. Cheng)
+* don't expand variables in rest of ${var:-rest} and ${var:+rest}
+  expressions if it is not needed
+* Debian packaging improvements
+
+
 changes from 0.7.6 to 0.7.7
 ---------------------------
 

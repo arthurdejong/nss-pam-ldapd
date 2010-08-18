@@ -1,3 +1,25 @@
+nss-pam-ldapd (0.7.8) unstable; urgency=low
+
+  * minor portability improvements and clean-ups (thanks Alexander V.
+    Chernikov and Ted C. Cheng)
+  * don't expand variables in rest of ${var:-rest} and ${var:+rest}
+    expressions if it is not needed (closes: #592320)
+  * libpam-ldapd.postinst: offer to add ldap to shadow in nsswitch.conf if
+    a potential broken configuration is found (closes: #592104)
+    (thanks to Justin B Rye for the template review)
+  * merge the suggests of libnss-ldapd and libpam-ldapd into those of the
+    nslcd package to have a single consistent list of PAM alternatives
+    (closes: #591773)
+  * add libpam-sss as an alternative to libpam-ldapd (closes: #591773)
+  * upgrade to standards-version 3.9.1 (no changes needed)
+  * updated Portuguese debconf translation by Américo Monteir
+    (closes: #593404)
+  * updated Russian debconf translation by Yuri Kozlov (closes: #593491)
+  * added Norwegian Bokmål debconf translation by Bjørn Steensrud
+    (closes: #593501)
+
+ -- Arthur de Jong <adejong@debian.org>  Wed, 18 Aug 2010 21:00:00 +0200
+
 nss-pam-ldapd (0.7.7) unstable; urgency=low
 
   * don't use use_authtok for password modification by default
