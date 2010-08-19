@@ -1,15 +1,15 @@
 # Italian translation of nss-ldapd's PO-Debconf file.
 # COPYRIGHT (C) 2009 THE NSS-LDAPD'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the nss-ldapd package.
-# Vincenzo Campanella <vinz65@gmail.com>, 2009.
 #
 #
+# Vincenzo Campanella <vinz65@gmail.com>, 2009, 2010.
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.7.1\n"
+"Project-Id-Version: nss-ldapd 0.7.8\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2010-08-15 14:13+0200\n"
-"PO-Revision-Date: 2009-12-27 16:48+0100\n"
+"PO-Revision-Date: 2010-08-19 14:20+0200\n"
 "Last-Translator: Vincenzo Campanella <vinz65@gmail.com>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
 "Language: it\n"
@@ -32,8 +32,8 @@ msgid ""
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
 "Inserire l'Uniform Resource Identifier (URI) del server LDAP. Il formato è "
-"«ldap://<nomehost o indirizzo IP>:<porta>»; è anche possibile usare "
-"«ldaps://» oppure «ldapi://». Il numero della porta è facoltativo."
+"«ldap://<nomehost o indirizzo IP>:<porta>»; è anche possibile usare «ldaps://» "
+"oppure «ldapi://». Il numero della porta è facoltativo."
 
 #. Type: string
 #. Description
@@ -261,7 +261,7 @@ msgstr ""
 #. Description
 #: ../libpam-ldapd.templates:1001
 msgid "Enable shadow lookups through NSS?"
-msgstr ""
+msgstr "Abilitare le ricerche «shadow» tramite NSS?"
 
 #. Type: boolean
 #. Description
@@ -272,6 +272,10 @@ msgid ""
 "is, there is no need for password hashes to be exposed. See http://bugs."
 "debian.org/583492 for background."
 msgstr ""
+"Per consentire l'accesso agli utenti LDAP, il modulo NSS deve essere "
+"abilitato per le ricerche «shadow» di password. Le voci «shadow» possono "
+"essere vuote, ossia non è necessario esporre le hash delle password. Per "
+"maggiori informazioni consultare http://bugs.debian.org/583492."
 
 #. Type: boolean
 #. Description
@@ -281,6 +285,9 @@ msgid ""
 "automatically (in which case it should be reviewed afterwards) or whether it "
 "should be left for an administrator to edit manually."
 msgstr ""
+"Scegliere se la voce richiesta deve essere aggiunta automaticamente a «/etc/"
+"nsswitch» o se si preferisce l'immissione manuale da parte di un "
+"amministratore."
 
 #, fuzzy
 #~| msgid ""
@@ -293,8 +300,8 @@ msgstr ""
 #~ "you choose to add the entry now."
 #~ msgstr ""
 #~ "È possibile modificare manualmente «/etc/nsswitch.conf» o scegliere di "
-#~ "rimuovere le voci automaticamente adesso. Controllare le modifiche a «/"
-#~ "etc/nsswitch.conf» se si sceglie la rimozione automatica."
+#~ "rimuovere le voci automaticamente adesso. Controllare le modifiche a «/etc/"
+#~ "nsswitch.conf» se si sceglie la rimozione automatica."
 
 #~ msgid "LDAP server Uniform Resource Identifier:"
 #~ msgstr "Uniform Resource Identifier (URI) del server LDAP:"
