@@ -4,7 +4,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2010-08-15 14:13+0200\n"
 "PO-Revision-Date: \n"
-"Last-Translator: zym\n"
+"Last-Translator: zym <ming_zym@sina.com>\n"
 "Language-Team: \n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -113,33 +113,31 @@ msgstr "请选择是否使用StartTLS来加密到LDAP服务器的连接。"
 #. Choices
 #: ../nslcd.templates:6001
 msgid "never"
-msgstr ""
+msgstr "从不"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "allow"
-msgstr ""
+msgstr "允许"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "try"
-msgstr ""
+msgstr "尝试"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "demand"
-msgstr ""
+msgstr "必须"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:6002
-#, fuzzy
-#| msgid "Check server SSL certificate?"
 msgid "Check server's SSL certificate:"
-msgstr "需要检查服务器的SSL证书吗？"
+msgstr "检查服务器端的SSL证书："
 
 #. Type: select
 #. Description
@@ -235,7 +233,7 @@ msgstr ""
 #. Description
 #: ../libpam-ldapd.templates:1001
 msgid "Enable shadow lookups through NSS?"
-msgstr ""
+msgstr "启用通过NSS查询shadow信息？"
 
 #. Type: boolean
 #. Description
@@ -246,6 +244,9 @@ msgid ""
 "is, there is no need for password hashes to be exposed. See http://bugs."
 "debian.org/583492 for background."
 msgstr ""
+"为了允许LDAP用户登录，NSS模块需要启用shadow密码信息查询功能。就shadow密码本身"
+"而言，其可以是空的：即不会暴露shadow中的密码哈希串。请参考http://bugs.debian."
+"org/583492。"
 
 #. Type: boolean
 #. Description
@@ -255,16 +256,5 @@ msgid ""
 "automatically (in which case it should be reviewed afterwards) or whether it "
 "should be left for an administrator to edit manually."
 msgstr ""
-
-#, fuzzy
-#~| msgid ""
-#~| "You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
-#~| "automatically now. Be sure to review the changes to /etc/nsswitch.conf "
-#~| "if you choose to remove the entries now."
-#~ msgid ""
-#~ "You can edit /etc/nsswitch.conf by hand or choose to add the entry "
-#~ "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
-#~ "you choose to add the entry now."
-#~ msgstr ""
-#~ "您现在可以手工修改/etc/nsswitch.conf或者勾选来删除LDAP功能。如果您删除了条"
-#~ "目，请确保检查/etc/nsswitch.conf文件。"
+"请选择/etc/nsswitch是自动添加必需的条目（后续应当进行审核）还是留给管理员手工"
+"修改。"
