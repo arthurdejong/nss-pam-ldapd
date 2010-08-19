@@ -202,7 +202,7 @@ AC_SUBST(NSLCD_SOCKET)
 AC_ARG_WITH(nss-ldap-soname,
             AS_HELP_STRING([--with-nss-ldap-soname=SONAME],
                            [name of NSS module @<:@libnss_ldap.so.2@:>@]),
-            [ NSS_LDAP_SONAME="$with_nslcd_socket" ],
+            [ NSS_LDAP_SONAME="$with_nss_ldap_soname" ],
             [ NSS_LDAP_SONAME="libnss_ldap.so.2" ])
 AC_DEFINE_UNQUOTED(NSS_LDAP_SONAME,"$NSS_LDAP_SONAME",[The SONAME of the NSS library module.])
 AC_SUBST(NSS_LDAP_SONAME)
@@ -310,7 +310,7 @@ then
       #include <rpc/rpcent.h>
       #endif])
 
-  # check for a definition of struct rpcent
+  # check for a definition of enum nss_status
   AC_CHECK_TYPES(enum nss_status,,,[
       #ifdef HAVE_NSS_H
       #include <nss.h>
