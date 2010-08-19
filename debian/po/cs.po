@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: nss-ldapd\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2010-08-15 14:13+0200\n"
-"PO-Revision-Date: 2009-07-09 10:04+0200\n"
+"PO-Revision-Date: 2010-08-18 22:38+0200\n"
 "Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
 "Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
 "Language: cs\n"
@@ -262,7 +262,7 @@ msgstr ""
 #. Description
 #: ../libpam-ldapd.templates:1001
 msgid "Enable shadow lookups through NSS?"
-msgstr ""
+msgstr "Povolit vyhledávání v shadow pomocí NSS?"
 
 #. Type: boolean
 #. Description
@@ -273,6 +273,10 @@ msgid ""
 "is, there is no need for password hashes to be exposed. See http://bugs."
 "debian.org/583492 for background."
 msgstr ""
+"Abyste umožnili LDAP uživatelům přihlášení do systému, musíte povolit NSS "
+"modul pro vyhledávání ve st9nových heslech. Samotné záznamy v shadow mohou "
+"být prázdné, tj. není důvod vystavovat na venek hashe hesel. Podrobnosti "
+"naleznete v http://bugs.debian.org/583492."
 
 #. Type: boolean
 #. Description
@@ -282,6 +286,9 @@ msgid ""
 "automatically (in which case it should be reviewed afterwards) or whether it "
 "should be left for an administrator to edit manually."
 msgstr ""
+"Rozhodněte se, zda se má požadovaný záznam přidat do /etc/nsswitch "
+"automaticky (což byste měli následně zkontrolovat), nebo zda ho tam přidá "
+"správce systému ručně."
 
 #, fuzzy
 #~| msgid ""
