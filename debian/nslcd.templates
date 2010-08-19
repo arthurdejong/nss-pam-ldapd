@@ -8,7 +8,7 @@ _Description: LDAP server URI:
  When using an ldap or ldaps scheme it is recommended to use an IP address to
  avoid failures when domain name services are unavailable.
  .
- Multiple URIs can be be specified by separating them with spaces.
+ Multiple URIs can be specified by separating them with spaces.
 
 Template: nslcd/ldap-base
 Type: string

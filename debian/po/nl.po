@@ -69,7 +69,7 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-msgid "Multiple URIs can be be specified by separating them with spaces."
+msgid "Multiple URIs can be specified by separating them with spaces."
 msgstr "U kunt meerdere URI's opgeven door ze te scheiden met spaties."
 
 #. Type: string

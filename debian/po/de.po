@@ -55,7 +55,7 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-msgid "Multiple URIs can be be specified by separating them with spaces."
+msgid "Multiple URIs can be specified by separating them with spaces."
 msgstr "Mehrere URIs können, durch Leerzeichen getrennt, eingegeben werden."
 
 #  Template: shared/ldapns/ldap-server

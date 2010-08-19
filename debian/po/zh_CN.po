@@ -42,7 +42,7 @@ msgstr "使用ldap或ldaps模式时，推荐使用IP地址以防止域名无法�
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-msgid "Multiple URIs can be be specified by separating them with spaces."
+msgid "Multiple URIs can be specified by separating them with spaces."
 msgstr "可以加入多个URI地址，用空格分开。"
 
 #. Type: string
