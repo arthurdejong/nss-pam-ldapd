@@ -1,5 +1,5 @@
 # Translation of nss-ldapd debconf templates to French
-# Copyright (C) 2007-2009 Debian French l10n team <debian-l10n-french@lists.debian.org>
+# Copyright (C) 2007, 2009, 2010 Debian French l10n team <debian-l10n-french@lists.debian.org>
 # This file is distributed under the same license as the nss-ldapd package.
 #
 # Translators:
@@ -7,20 +7,20 @@
 # Cyril Brulebois <cyril.brulebois@enst-bretagne.fr>, 2007.
 # Philippe Batailler <philippe.batailler@free.fr>, 2007.
 # Guillaume Delacour <gui@iroqwa.org>, 2009.
-# Christian Perrier <bubulle@debian.org>, 2009.
+# Christian Perrier <bubulle@debian.org>, 2009, 2010.
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.3\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2010-08-15 14:13+0200\n"
-"PO-Revision-Date: 2009-06-25 17:07+0200\n"
+"PO-Revision-Date: 2010-08-17 22:05-0400\n"
 "Last-Translator: Christian Perrier <bubulle@debian.org>\n"
 "Language-Team: French <debian-l10n-french@lists.debian.org>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Lokalize 0.3\n"
+"X-Generator: Lokalize 1.0\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #. Type: string
@@ -50,7 +50,7 @@ msgid ""
 "avoid failures when domain name services are unavailable."
 msgstr ""
 "Lorsque le protocole utilisé est « ldap » ou « ldaps », il est recommandé "
-"d'utiliser une adresse IP plutôt qu'un nom d'hôte afin de réduire les "
+"d'utiliser une adresse IP plutôt qu'un nom d'hôte afin de réduire les "
 "risques d'échec en cas d'indisponibilité du service de noms."
 
 #. Type: string
@@ -77,8 +77,8 @@ msgid ""
 msgstr ""
 "Veuillez indiquer le nom distinctif (« DN ») de la base de recherche du "
 "serveur LDAP. Beaucoup de sites utilisent les éléments composant leur nom de "
-"domaine à cette fin. Par exemple, le domaine « exemple.net » utiliserait "
-"« dc=exemple,dc=net »."
+"domaine à cette fin. Par exemple, le domaine « example.net » utiliserait "
+"« dc=example,dc=net »."
 
 #. Type: string
 #. Description
@@ -181,11 +181,11 @@ msgid ""
 msgstr ""
 "En cas de connexion chiffrée, le certificat du serveur peut être demandé et "
 "contrôlé. Veuillez choisir la façon de réaliser ce contrôle :\n"
-" - Jamais    : certificat non demandé ni contrôlé ; \n"
-" - Autoriser : certificat demandé mais facultatif et non\n"
-"               contrôlé ; \n"
-" - Essayer   : certificat demandé et contrôlé, mais facultatif ;\n"
-" - Demander  : certificat obligatoire et contrôlé.\n"
+" - Jamais    : certificat non demandé ni contrôlé ;\n"
+" - Autoriser : certificat demandé mais facultatif et non\n"
+"               contrôlé ;\n"
+" - Essayer   : certificat demandé et contrôlé, mais facultatif ;\n"
+" - Demander  : certificat obligatoire et contrôlé.\n"
 "Si le contrôle du certificat est activé, il est indispensable d'utiliser au "
 "moins l'une des options « tls_cacertdir » ou « tls_cacertfile » dans le "
 "fichier /etc/nss-ldap.conf."
@@ -268,7 +268,7 @@ msgstr ""
 #. Description
 #: ../libpam-ldapd.templates:1001
 msgid "Enable shadow lookups through NSS?"
-msgstr ""
+msgstr "Faut-il activer les recherches de mots de passe cachés avec NSS ?"
 
 #. Type: boolean
 #. Description
@@ -279,6 +279,12 @@ msgid ""
 "is, there is no need for password hashes to be exposed. See http://bugs."
 "debian.org/583492 for background."
 msgstr ""
+"Pour permettre aux utilisateurs LDAP de se connecter, le module NSS doit "
+"être activé afin de pouvoir faire des recherches de mots de passe cachés "
+"(« shadow passwords »). Les entrées cachées elles-mêmes peuvent être vides, "
+"ce qui signifie qu'il n'est pas nécessaire de faire apparaître les hachages "
+"de mots de passe. Veuillez consulter http://bugs.debian.org/583492 pour plus "
+"de détails."
 
 #. Type: boolean
 #. Description
@@ -288,6 +294,9 @@ msgid ""
 "automatically (in which case it should be reviewed afterwards) or whether it "
 "should be left for an administrator to edit manually."
 msgstr ""
+"Veuillez choisir si l'entrée appropriée dans /etc/nsswitch peut être ajoutée "
+"automatiquement (ce qui peut nécessiter de la vérifier ensuite). Dans le cas "
+"contraire, un administrateur devra l'ajouter plus tard."
 
 #, fuzzy
 #~| msgid ""
