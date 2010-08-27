@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: libnss-ldap 211-4\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2010-08-15 14:13+0200\n"
-"PO-Revision-Date: 2004-11-02 20:49+0100\n"
-"Last-Translator: Guillem Jover <guillem@debian.org>\n"
+"PO-Revision-Date: 2010-08-24 09:14+0100\n"
+"Last-Translator: Agustí Grau <fletxa@gmail.com>\n"
 "Language-Team: Catalan <debian-l10n-catalan@lists.debian.org>\n"
 "Language: ca\n"
 "MIME-Version: 1.0\n"
@@ -19,9 +19,8 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
 msgid "LDAP server URI:"
-msgstr "adreça de l'ordinador del servidor d'LDAP"
+msgstr "URI del servidor LDAP:"
 
 #. Type: string
 #. Description
@@ -31,34 +30,31 @@ msgid ""
 "is 'ldap://<hostname_or_IP_address>:<port>/'. Alternatively, 'ldaps://' or "
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
+"Introduiu la URI del servidor LDAP. El format és 'ldap://"
+"<nom_servidor_o_adreça_IP>:<port>/'. També es pot utilitzar 'ldaps://' or "
+"'ldapi://'. El numero de port és opcional."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "Note: It is usually a good idea to use an IP address; this reduces risks "
-#| "of failure in the event name service is unavailable."
 msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
-"Nota: normalment és una bona idea utilitzar una adreça d'IP; redueix el risc "
-"de produir-se errors si el serveis de noms dels esdeveniments no està "
-"disponible."
+"Quan s'utilitza l'esquema ldap o ldaps es recomana utilitzar l'adreça IP per "
+"evitar fallides quan el servidors de noms de domini no sigui disponible."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 msgid "Multiple URIs can be specified by separating them with spaces."
-msgstr ""
+msgstr "Es poden especificar múltiples URIs separant-les per espaïs."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:2001
-#, fuzzy
 msgid "LDAP server search base:"
-msgstr "adreça de l'ordinador del servidor d'LDAP"
+msgstr "base de cerca del servidor LDAP:"
 
 #. Type: string
 #. Description
@@ -77,9 +73,8 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
-#, fuzzy
 msgid "LDAP database user:"
-msgstr "usuari de la base de dades sense privilegis"
+msgstr "usuari de la base de dades de l'LDAP:"
 
 #. Type: string
 #. Description
@@ -88,18 +83,22 @@ msgid ""
 "If the LDAP database requires a login for normal lookups, enter the name of "
 "the account that will be used here. Leave it empty otherwise."
 msgstr ""
+"Si la base de dades LDAP requereix una autenticació per a realitzar cerques, "
+"entreu el nom del compte que serà utilitzat. Deixeu-lo en blanc en qualsevol "
+"altre cas."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:3001
 msgid "This value should be specified as a DN (distinguished name)."
 msgstr ""
+"Aquest valor hauria de ésser especificat com a DN (distinguished name)."
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:4001
 msgid "LDAP user password:"
-msgstr ""
+msgstr "Contrasenya de l'usuari de l'LDAP:"
 
 #. Type: password
 #. Description
@@ -113,7 +112,7 @@ msgstr ""
 #. Description
 #: ../nslcd.templates:5001
 msgid "Use StartTLS?"
-msgstr ""
+msgstr "Utilitzar StartTLS?"
 
 #. Type: boolean
 #. Description
@@ -122,36 +121,39 @@ msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
 msgstr ""
+"Seleccioneu si la connexió amb el servidor LDAP ha d'utilitzar STARTTLS per "
+"xifrar la connexió."
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
+#, fuzzy
 msgid "never"
-msgstr ""
+msgstr "Mai"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "allow"
-msgstr ""
+msgstr "Permet"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "try"
-msgstr ""
+msgstr "Prova"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
 msgid "demand"
-msgstr ""
+msgstr "Demanda"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:6002
 msgid "Check server's SSL certificate:"
-msgstr ""
+msgstr "Comprovar certificat SSL del servidor:"
 
 #. Type: select
 #. Description
@@ -169,12 +171,25 @@ msgid ""
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
 "tls_cacertfile options must be put in /etc/nslcd.conf."
 msgstr ""
+"Quan s'utilitza una connexió xifrada, es demana el certificat del servidor i "
+"es comprova. Seleccioneu si les consultes han de ésser configurades per a "
+"requerir un certificat i quins certificates tenen que ésser comprovats per "
+"validar-los:\n"
+" * mai: cap certificat serà demanat o comprovat;\n"
+" * permetre: es demana el certificat, però no és\n"
+"          requerit o comprovat;\n"
+" * intent: el certificat serà demanat i comprovat, pero si no\n"
+"          es proporciona serà ignorat;\n"
+" * demanda: el certiicat serà demanat, requerit i comprovat.\n"
+"Si la comprovació de certificats està habilitada, s'haura d'habilitar en el "
+"fitxer /etc/nslcd.conf com a mínim una opció de tls_cacertdir o "
+"tls_cacertfile."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Name services to configure:"
-msgstr ""
+msgstr "Serveis de noms a configurar:"
 
 #. Type: multiselect
 #. Description
@@ -183,6 +198,8 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
+"Per a utilitzar aquest paquet, harieu de modificar el /etc/nsswitch.conf per "
+"utilitzar l'origen de dades ldap."
 
 #. Type: multiselect
 #. Description
@@ -192,12 +209,15 @@ msgid ""
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
 msgstr ""
+"Podeu seleccionar els serveis que haurien de tenir habilitades les consultes "
+"LDAP. Les noves consultes LDAP seran afegides com a l'últim origen de dades. "
+"Assegureu's de revisar els canvis."
 
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:2001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr ""
+msgstr "Eliminar l'LDAP del fitxer nsswitch.conf?"
 
 #. Type: boolean
 #. Description
@@ -207,6 +227,10 @@ msgid ""
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
+"Els serveis següents estan configurats per utilitzar LDAP per a realitzar "
+"consultes:\n"
+"  ${services}\n"
+"pero el paquet libnss-ldapd està a punt de ser eliminat."
 
 #. Type: boolean
 #. Description
@@ -217,6 +241,10 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
+"S'aconsella eliminar les entrades si no utilitzareu més l'LDAP per a la "
+"resolució de noms.No hauria de causar problemes si no s'elimina l'ldap del "
+"fitxer nsswitch.conf, pero la resolució de noms pot ésser afectada de forma "
+"subtil."
 
 #. Type: boolean
 #. Description
@@ -226,12 +254,15 @@ msgid ""
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you choose to remove the entries now."
 msgstr ""
+"Podeu editar el fitxer /etc/nsswitch.conf a mà o escollir eliminar les "
+"entrades automàticament. Assegureu-vos de revisar els canvis al fitxer /etc/"
+"nsswitch.conf si escolliu eliminar les entrades ara."
 
 #. Type: boolean
 #. Description
 #: ../libpam-ldapd.templates:1001
 msgid "Enable shadow lookups through NSS?"
-msgstr ""
+msgstr "Habilitar les cerques shadow a través de NSS?"
 
 #. Type: boolean
 #. Description
@@ -242,6 +273,11 @@ msgid ""
 "is, there is no need for password hashes to be exposed. See http://bugs."
 "debian.org/583492 for background."
 msgstr ""
+"Per habilitar els usuaris de l'LDAP per a autenticar-se, el mòdul NSS "
+"necessitar ser habilitar per a realitzar cerques de contrasenya shadow. Les "
+"entrades shadow haurien de ser buides - no hi ha necessitat d'exposar els "
+"resums de contrasenya. Visiteu http://bugs.debian.org/583492 per a més "
+"informació."
 
 #. Type: boolean
 #. Description
@@ -251,6 +287,9 @@ msgid ""
 "automatically (in which case it should be reviewed afterwards) or whether it "
 "should be left for an administrator to edit manually."
 msgstr ""
+"Seleccioneu si el fitxer /etc/nsswitch hauria de tenir la entrada requerida "
+"afegida automàticament (en aquest cas s'hauria de revisar posteriorment) o "
+"si hauria de deixar per a ser editada manualment per l'administrador."
 
 #, fuzzy
 #~ msgid ""
