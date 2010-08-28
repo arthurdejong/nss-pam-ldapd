@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.7.0\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2010-08-15 14:13+0200\n"
+"POT-Creation-Date: 2010-08-28 13:39+0200\n"
 "PO-Revision-Date: 2009-09-26 18:51+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: \n"
@@ -274,9 +274,9 @@ msgstr ""
 #. Description
 #: ../libpam-ldapd.templates:1001
 msgid ""
-"Please choose whether /etc/nsswitch should have the required entry added "
-"automatically (in which case it should be reviewed afterwards) or whether it "
-"should be left for an administrator to edit manually."
+"Please choose whether /etc/nsswitch.conf should have the required entry "
+"added automatically (in which case it should be reviewed afterwards) or "
+"whether it should be left for an administrator to edit manually."
 msgstr ""
 
 #, fuzzy

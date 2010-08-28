@@ -7,6 +7,6 @@ _Description: Enable shadow lookups through NSS?
  empty - that is, there is no need for password hashes to be exposed. See
  http://bugs.debian.org/583492 for background.
  .
- Please choose whether /etc/nsswitch should have the required entry added
- automatically (in which case it should be reviewed afterwards) or whether
- it should be left for an administrator to edit manually.
+ Please choose whether /etc/nsswitch.conf should have the required entry
+ added automatically (in which case it should be reviewed afterwards) or
+ whether it should be left for an administrator to edit manually.

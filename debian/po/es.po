@@ -33,7 +33,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.6.8\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2010-08-15 14:13+0200\n"
+"POT-Creation-Date: 2010-08-28 13:39+0200\n"
 "PO-Revision-Date: 2009-06-23 12:23+0100\n"
 "Last-Translator: Francisco Javier Cuadrado <fcocuadrado@gmail.com>\n"
 "Language-Team: Debian l10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
@@ -209,7 +209,8 @@ msgstr ""
 "          se proporciona se ignorará.\n"
 " * demanda: se pedirá, necesitará y comprobará un certificado.\n"
 "Si la comprobación del certificado está activa, se debe poner al menos una "
-"de las opciones «tls_cacertdir» o «tls_cacertfile» en el archivo «/etc/nslcd.conf»."
+"de las opciones «tls_cacertdir» o «tls_cacertfile» en el archivo «/etc/nslcd."
+"conf»."
 
 #. Type: multiselect
 #. Description
@@ -304,9 +305,9 @@ msgstr ""
 #. Description
 #: ../libpam-ldapd.templates:1001
 msgid ""
-"Please choose whether /etc/nsswitch should have the required entry added "
-"automatically (in which case it should be reviewed afterwards) or whether it "
-"should be left for an administrator to edit manually."
+"Please choose whether /etc/nsswitch.conf should have the required entry "
+"added automatically (in which case it should be reviewed afterwards) or "
+"whether it should be left for an administrator to edit manually."
 msgstr ""
 
 #, fuzzy
