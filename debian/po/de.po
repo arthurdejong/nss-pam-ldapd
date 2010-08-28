@@ -282,10 +282,10 @@ msgid ""
 "debian.org/583492 for background."
 msgstr ""
 "Um LDAP-Anwendern die Anmeldung zu erlauben, muss das NSS-Modul aktiviert "
-"sein, damit Shadow-Passwort-Anfragen durchgeführt werden können. Die "
-"Shadow-Einträge selbst können leer sein - es besteht keine Notwendigkeit, "
-"Passwortprüfsummen offenzulegen. Lesen Sie "
-"http://bugs.debian.org/583492 bezüglich der Hintergründe."
+"sein, damit Shadow-Passwort-Anfragen durchgeführt werden können. Die Shadow-"
+"Einträge selbst können leer sein - es besteht keine Notwendigkeit, "
+"Passwortprüfsummen offenzulegen. Lesen Sie http://bugs.debian.org/583492 "
+"bezüglich der Hintergründe."
 
 #. Type: boolean
 #. Description

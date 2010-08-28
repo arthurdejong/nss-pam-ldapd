@@ -32,8 +32,8 @@ msgid ""
 "'ldapi://' can be used. The port number is optional."
 msgstr ""
 "Inserire l'Uniform Resource Identifier (URI) del server LDAP. Il formato è "
-"«ldap://<nomehost o indirizzo IP>:<porta>»; è anche possibile usare «ldaps://» "
-"oppure «ldapi://». Il numero della porta è facoltativo."
+"«ldap://<nomehost o indirizzo IP>:<porta>»; è anche possibile usare "
+"«ldaps://» oppure «ldapi://». Il numero della porta è facoltativo."
 
 #. Type: string
 #. Description

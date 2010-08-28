@@ -21,8 +21,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Lokalize 1.0\n"
-"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #. Type: string
 #. Description
@@ -274,10 +274,10 @@ msgid ""
 "is, there is no need for password hashes to be exposed. See http://bugs."
 "debian.org/583492 for background."
 msgstr ""
-"Чтобы разрешить вход пользователям LDAP, для модуля NSS нужно включить "
-"поиск в теневых паролях. Сами теневые элементы могут быть пусты, то есть "
-"туда ненужно копировать хэши паролей. Подробней см. в "
-"http://bugs.debian.org/583492."
+"Чтобы разрешить вход пользователям LDAP, для модуля NSS нужно включить поиск "
+"в теневых паролях. Сами теневые элементы могут быть пусты, то есть туда "
+"ненужно копировать хэши паролей. Подробней см. в http://bugs.debian."
+"org/583492."
 
 #. Type: boolean
 #. Description
@@ -288,10 +288,8 @@ msgid ""
 "should be left for an administrator to edit manually."
 msgstr ""
 "Выберите, нужно ли для этого добавить настройку в /etc/nsswitch "
-"автоматически "
-"(по окончании проверьте изменения), или предоставить возможность "
-"администратору "
-"сделать это вручную."
+"автоматически (по окончании проверьте изменения), или предоставить "
+"возможность администратору сделать это вручную."
 
 #, fuzzy
 #~| msgid ""

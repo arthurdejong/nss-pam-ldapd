@@ -43,8 +43,8 @@ msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
-"Når ldap- eller ldaps-skemaerne bruges, anbefales det, at bruge en IP-adresse "
-"for at undgå fejl når domænenavnstjenester ikke er tilgængelige."
+"Når ldap- eller ldaps-skemaerne bruges, anbefales det, at bruge en IP-"
+"adresse for at undgå fejl når domænenavnstjenester ikke er tilgængelige."
 
 #. Type: string
 #. Description
@@ -168,9 +168,10 @@ msgid ""
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
 "tls_cacertfile options must be put in /etc/nslcd.conf."
 msgstr ""
-"Når en krypteret forbindelse bruges, kan der blive spurgt efter et servercertifikat, "
-"som tjekkes. Vælg venligst hvorvidt opslag skal konfigureres til at kræve et "
-"certifikat, og hvorvidt certifikater skal validitetstjekkes:\n"
+"Når en krypteret forbindelse bruges, kan der blive spurgt efter et "
+"servercertifikat, som tjekkes. Vælg venligst hvorvidt opslag skal "
+"konfigureres til at kræve et certifikat, og hvorvidt certifikater skal "
+"validitetstjekkes:\n"
 " * aldrig: Der vil ikke blive spurgt efter eller tjekket for certifikater;\n"
 " * tillad: Der vil blive spurgt efter et certifikat, men det er ikke krævet\n"
 "           og tjekkes ikke;\n"
@@ -178,8 +179,8 @@ msgstr ""
 "           intet certifikat tilbydes ignoreres det;\n"
 " * kræv: Der vil blive spurgt efter et certifikat, det er krævet og det\n"
 "         tjekkes.\n"
-"Hvis certifikattjek er aktiveret skal mindst en af tilvalgene tls_cacertdir eller "
-"tls_cacertfile være placeret i /etc/nslcd.conf."
+"Hvis certifikattjek er aktiveret skal mindst en af tilvalgene tls_cacertdir "
+"eller tls_cacertfile være placeret i /etc/nslcd.conf."
 
 #. Type: multiselect
 #. Description
@@ -205,9 +206,9 @@ msgid ""
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
 msgstr ""
-"Du kan vælge de tjenester, som skal have LDAP-opslag aktiveret. De nye "
-"LDAP-opslag vil blive tilføjet som den sidste datakilde. Sørg for at "
-"gennemgå ændringerne."
+"Du kan vælge de tjenester, som skal have LDAP-opslag aktiveret. De nye LDAP-"
+"opslag vil blive tilføjet som den sidste datakilde. Sørg for at gennemgå "
+"ændringerne."
 
 #. Type: boolean
 #. Description
@@ -269,10 +270,10 @@ msgid ""
 "is, there is no need for password hashes to be exposed. See http://bugs."
 "debian.org/583492 for background."
 msgstr ""
-"For at tillade LDAP-brugere at logge ind kræver det, at NSS-modulet er aktiveret "
-"til at udføre opslag for skyggeadgangskoder. Skyggepunkterne i sig selv kan være "
-"tomme - det vil sige, at der ingen grund er til at vise hasher frem for adgangskoder. "
-"Se http://bugs.debian.org/583492 for baggrunden."
+"For at tillade LDAP-brugere at logge ind kræver det, at NSS-modulet er "
+"aktiveret til at udføre opslag for skyggeadgangskoder. Skyggepunkterne i sig "
+"selv kan være tomme - det vil sige, at der ingen grund er til at vise hasher "
+"frem for adgangskoder. Se http://bugs.debian.org/583492 for baggrunden."
 
 #. Type: boolean
 #. Description
@@ -285,5 +286,3 @@ msgstr ""
 "Vælg venligst hvorvidt /etc/nsswitch automatisk skal have tilføjet det "
 "krævede punkt (i dette tilfælde skal det fjernes efterfølgende) eller "
 "hvorvidt, det skal efterlades til en administrator for manuel redigering."
-
-
