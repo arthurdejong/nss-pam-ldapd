@@ -127,7 +127,6 @@ msgstr ""
 #. Type: select
 #. Choices
 #: ../nslcd.templates:6001
-#, fuzzy
 msgid "never"
 msgstr "Mai"
 
