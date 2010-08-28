@@ -6,7 +6,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-pam-ldapd\n"
+"Project-Id-Version: nss-pam-ldapd 0.7.9\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2010-08-15 14:13+0200\n"
 "PO-Revision-Date: 2010-08-24 23:51+0200\n"

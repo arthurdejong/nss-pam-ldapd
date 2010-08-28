@@ -1,11 +1,11 @@
-# libnss-ldap (debconf) translation to Catalan.
+# nss-pam-ldapd (debconf) translation to Catalan.
 # Copyright (C) 2004 Free Software Foundation, Inc.
 # Aleix Badia i Bosch <abadia@ica.es>, 2004.
 # Guillem Jover <guillem@debian.org>, 2004.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: libnss-ldap 211-4\n"
+"Project-Id-Version: nss-pam-ldapd 0.7.9\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2010-08-15 14:13+0200\n"
 "PO-Revision-Date: 2010-08-24 09:14+0100\n"

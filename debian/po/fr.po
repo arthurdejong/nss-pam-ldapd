@@ -1,6 +1,6 @@
-# Translation of nss-ldapd debconf templates to French
+# Translation of nss-pam-ldapd debconf templates to French
 # Copyright (C) 2007, 2009, 2010 Debian French l10n team <debian-l10n-french@lists.debian.org>
-# This file is distributed under the same license as the nss-ldapd package.
+# This file is distributed under the same license as the nss-pam-ldapd package.
 #
 # Translators:
 #
@@ -10,7 +10,7 @@
 # Christian Perrier <bubulle@debian.org>, 2009, 2010.
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-ldapd 0.3\n"
+"Project-Id-Version: nss-pam-ldapd 0.7.9\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2010-08-15 14:13+0200\n"
 "PO-Revision-Date: 2010-08-17 22:05-0400\n"
