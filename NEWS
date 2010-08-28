@@ -1,3 +1,10 @@
+changes from 0.7.8 to 0.7.9
+---------------------------
+
+* fix for --with-nss-ldap-soname configure option by Julien Cristau
+* Debian packaging improvements
+
+
 changes from 0.7.7 to 0.7.8
 ---------------------------
 

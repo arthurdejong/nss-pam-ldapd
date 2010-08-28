@@ -1,3 +1,22 @@
+nss-pam-ldapd (0.7.9) unstable; urgency=low
+
+  * fix for --with-nss-ldap-soname configure option by Julien Cristau
+  * fix double "be" in English template thanks to Christian Perrier
+    (closes: #593646)
+  * updated Czech debconf translation by Miroslav Kure (closes: #593510)
+  * updated Simplified Chinese debconf translation by zym
+  * updated Italian debconf translation by Vincenzo Campanella
+  * updated Japanese debconf translation by Kenshi Muto (closes: #593692)
+  * updated Danish debconf translation by Joe Hansen (closes: #594205)
+  * updated French debconf translation by Christian Perrier (closes: #594311)
+  * updated German debconf translation by Chris Leick (closes: #594456)
+  * updated Catalan debconf translation by Agusti Grau
+  * updated Swedish debconf translation by Martin Ågren (closes: #594679)
+  * updated Spanish debconf translation by Francisco Javier Cuadrado
+    (closes: #594723)
+
+ -- Arthur de Jong <adejong@debian.org>  Sat, 28 Aug 2010 20:45:00 +0200
+
 nss-pam-ldapd (0.7.8) unstable; urgency=low
 
   * minor portability improvements and clean-ups (thanks Alexander V.
