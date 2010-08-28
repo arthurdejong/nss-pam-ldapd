@@ -1,6 +1,6 @@
 # Italian translation of nss-pam-ldapd's PO-Debconf file.
 # COPYRIGHT (C) 2009 THE NSS-LDAPD'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the nss-ldapd package.
+# This file is distributed under the same license as the nss-pam-ldapd package.
 #
 #
 # Vincenzo Campanella <vinz65@gmail.com>, 2009, 2010.
