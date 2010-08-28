@@ -179,8 +179,8 @@ msgstr ""
 " * tentar: pedirase e comprobarase un certificado, pero de non fornecerse\n"
 "   ningún ignorarase,\n"
 " * demandar:pedirase, requirirase e comprobarase un certificado.\n"
-"Se desactiva a comprobación do certificado, debe ter no ficheiro /etc/nss-"
-"ldap.conf polo menos unha das opcións tls_cacertdir ou tlscacertfile."
+"Se desactiva a comprobación do certificado, debe ter no ficheiro /etc/nslcd.conf "
+"polo menos unha das opcións tls_cacertdir ou tlscacertfile."
 
 #. Type: multiselect
 #. Description

@@ -209,8 +209,7 @@ msgstr ""
 "          se proporciona se ignorará.\n"
 " * demanda: se pedirá, necesitará y comprobará un certificado.\n"
 "Si la comprobación del certificado está activa, se debe poner al menos una "
-"de las opciones «tls_cacertdir» o «tls_cacertfile» en el archivo «/etc/nss-"
-"ldapd.conf»."
+"de las opciones «tls_cacertdir» o «tls_cacertfile» en el archivo «/etc/nslcd.conf»."
 
 #. Type: multiselect
 #. Description

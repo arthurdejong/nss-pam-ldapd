@@ -183,7 +183,7 @@ msgstr ""
 "         証明書が提供されなかった場合は単に無視される\n"
 " * 要求: 証明書は要求され、必須であり、チェックされる。\n"
 "証明書のチェックが有効の場合、tls_cacertdir、tls_cacertfile オプションのうち"
-"の少なくとも 1 つは /etc/nss-ldap.conf に掲載されている必要があります。"
+"の少なくとも 1 つは /etc/nslcd.conf に掲載されている必要があります。"
 
 #. Type: multiselect
 #. Description

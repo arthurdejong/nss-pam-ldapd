@@ -188,7 +188,7 @@ msgstr ""
 " - Demander  : certificat obligatoire et contrôlé.\n"
 "Si le contrôle du certificat est activé, il est indispensable d'utiliser au "
 "moins l'une des options « tls_cacertdir » ou « tls_cacertfile » dans le "
-"fichier /etc/nss-ldap.conf."
+"fichier /etc/nslcd.conf."
 
 #. Type: multiselect
 #. Description
