@@ -97,6 +97,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_binddn=NULL;
   cfg->ldc_bindpw=NULL;
   cfg->ldc_rootpwmoddn=NULL;
+  cfg->ldc_rootpwmodpw=NULL;
   cfg->ldc_sasl_mech=NULL;
   cfg->ldc_sasl_realm=NULL;
   cfg->ldc_sasl_authcid=NULL;
@@ -373,6 +374,28 @@ static inline void check_argumentcount(const char *filename,int lnr,
   if (!condition)
   {
     log_log(LOG_ERR,"%s:%d: %s: wrong number of arguments",filename,lnr,keyword);
+    exit(EXIT_FAILURE);
+  }
+}
+
+/* check that the file is not world readable */
+static void check_permissions(const char *filename,const char *keyword)
+{
+  struct stat sb;
+  /* get file status */
+  if (stat(filename,&sb))
+  {
+    log_log(LOG_ERR,"cannot stat() %s: %s",filename,strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  /* check permissions */
+  if ((sb.st_mode&0007)!=0)
+  {
+    if (keyword!=NULL)
+      log_log(LOG_ERR,"%s: file should not be world readable if %s is set",
+              filename, keyword);
+    else
+      log_log(LOG_ERR,"%s: file should not be world readable",filename);
     exit(EXIT_FAILURE);
   }
 }
@@ -811,11 +834,17 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"bindpw")==0)
     {
+      check_permissions(filename,keyword);
       get_restdup(filename,lnr,keyword,&line,&cfg->ldc_bindpw);
     }
     else if (strcasecmp(keyword,"rootpwmoddn")==0)
     {
       get_restdup(filename,lnr,keyword,&line,&cfg->ldc_rootpwmoddn);
+    }
+    else if (strcasecmp(keyword,"rootpwmodpw")==0)
+    {
+      check_permissions(filename,keyword);
+      get_restdup(filename,lnr,keyword,&line,&cfg->ldc_rootpwmodpw);
     }
     /* SASL authentication options */
     else if (strcasecmp(keyword,"use_sasl")==0)
@@ -1055,6 +1084,8 @@ static void bindpw_read(const char *filename,struct ldap_config *cfg)
       exit(EXIT_FAILURE);
     }
   }
+  /* check permissions */
+  check_permissions(filename,NULL);
   /* read the first line */
   if (fgets(linebuf,sizeof(linebuf),fp)==NULL)
   {
@@ -1062,8 +1093,6 @@ static void bindpw_read(const char *filename,struct ldap_config *cfg)
     exit(EXIT_FAILURE);
   }
   /* chop the last char off and save the rest as bindpw */
-  i=strlen(linebuf);
-
   i=(int)strlen(linebuf);
   if ((i<=0)||(linebuf[i-1]!='\n'))
   {

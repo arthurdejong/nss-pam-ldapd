@@ -192,8 +192,24 @@
      <listitem>
       <para>
        Specifies the distinguished name to use when the root user tries to
-       modify a user's password using the PAM module. The PAM module prompts
-       the user for the admin password instead of the user's password.
+       modify a user's password using the PAM module.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>rootpwmodpw</option> <replaceable>PASSWORD</replaceable></term>
+     <listitem>
+      <para>
+       Specifies the clear text credentials with which to bind if the root
+       user tries to change a user's password.
+       This option is only applicable when used with
+       <option>rootpwmoddn</option> above.
+       If this option is not specified the PAM module prompts the user for
+       this password.
+       If you set this option you should consider changing the permissions
+       of the <filename>nslcd.conf</filename> file to only grant access to
+       the root user.
       </para>
      </listitem>
     </varlistentry>

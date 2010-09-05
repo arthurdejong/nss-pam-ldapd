@@ -95,6 +95,8 @@ struct ldap_config
   char *ldc_bindpw;
   /* bind DN for password modification by administrator */
   char *ldc_rootpwmoddn;
+  /* bind password for password modification by root */
+  char *ldc_rootpwmodpw;
   /* sasl mech */
   char *ldc_sasl_mech;
   /* sasl realm */

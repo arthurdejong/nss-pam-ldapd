@@ -421,12 +421,11 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
     case NSLCD_ACTION_SERVICE_ALL:      (void)nslcd_service_all(fp,session); break;
     case NSLCD_ACTION_SHADOW_BYNAME:    if (uid==0) (void)nslcd_shadow_byname(fp,session); break;
     case NSLCD_ACTION_SHADOW_ALL:       if (uid==0) (void)nslcd_shadow_all(fp,session); break;
-    case NSLCD_ACTION_PAM_AUTHC:        (void)nslcd_pam_authc(fp,session); break;
+    case NSLCD_ACTION_PAM_AUTHC:        (void)nslcd_pam_authc(fp,session,uid); break;
     case NSLCD_ACTION_PAM_AUTHZ:        (void)nslcd_pam_authz(fp,session); break;
     case NSLCD_ACTION_PAM_SESS_O:       (void)nslcd_pam_sess_o(fp,session); break;
     case NSLCD_ACTION_PAM_SESS_C:       (void)nslcd_pam_sess_c(fp,session); break;
-    case NSLCD_ACTION_PAM_PWMOD:        (void)nslcd_pam_pwmod(fp,session); break;
-      /* TODO: maybe only do pwmod for (suid) root users */
+    case NSLCD_ACTION_PAM_PWMOD:        (void)nslcd_pam_pwmod(fp,session,uid); break;
     default:
       log_log(LOG_WARNING,"invalid request id: %d",(int)action);
       break;

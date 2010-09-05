@@ -129,7 +129,7 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
 }
 
 /* check authentication credentials of the user */
-int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
+int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
 {
   int32_t tmpint32;
   int rc;
@@ -158,6 +158,16 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session)
       return -1;
     }
     strcpy(userdn,nslcd_cfg->ldc_rootpwmoddn);
+    /* if the caller is root we will allow the use of the rootpwmodpw option */
+    if ((*password=='\0')&&(calleruid==0)&&(nslcd_cfg->ldc_rootpwmodpw!=NULL))
+    {
+      if (strlen(nslcd_cfg->ldc_rootpwmodpw)>=sizeof(password))
+      {
+        log_log(LOG_ERR,"nslcd_pam_authc(): rootpwmodpw will not fit in password");
+        return -1;
+      }
+      strcpy(password,nslcd_cfg->ldc_rootpwmodpw);
+    }
   }
   else if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
   {
@@ -423,7 +433,7 @@ static int try_pwmod(const char *binddn,const char *userdn,
   return rc;
 }
 
-int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session)
+int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
 {
   int32_t tmpint32;
   char username[256];
@@ -451,6 +461,16 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session)
   {
     binddn=nslcd_cfg->ldc_rootpwmoddn;
     userdn[0]='\0'; /* cause validate_user() to get the user DN */
+    /* check if rootpwmodpw should be used */
+    if ((*oldpassword=='\0')&&(calleruid==0)&&(nslcd_cfg->ldc_rootpwmodpw!=NULL))
+    {
+      if (strlen(nslcd_cfg->ldc_rootpwmodpw)>=sizeof(oldpassword))
+      {
+        log_log(LOG_ERR,"nslcd_pam_pwmod(): rootpwmodpw will not fit in oldpassword");
+        return -1;
+      }
+      strcpy(oldpassword,nslcd_cfg->ldc_rootpwmodpw);
+    }
   }
   /* validate request and fill in the blanks */
   if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))

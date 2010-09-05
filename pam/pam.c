@@ -513,6 +513,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   const char *username,*service;
   const char *oldpassword=NULL,*newpassword=NULL;
   struct passwd *pwent;
+  uid_t myuid;
   /* set up configuration */
   rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
@@ -523,8 +524,17 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   {
     /* see if the user is trying to modify another user's password */
     pwent=getpwnam(username);
-    if ((pwent!=NULL)&&(pwent->pw_uid!=getuid()))
+    myuid=getuid();
+    if ((pwent!=NULL)&&(pwent->pw_uid!=myuid))
     {
+      /* we are root so we can test if nslcd will allow us to change the
+         user's password without the admin password */
+      if (myuid==0)
+      {
+        rc=nslcd_request_authc(pamh,ctx,&cfg,"",service,"");
+        if ((rc==PAM_SUCCESS)&&(ctx->authok==PAM_SUCCESS))
+          return pam_set_item(pamh,PAM_OLDAUTHTOK,"");
+      }
       /* try to  authenticate with the LDAP administrator password by passing
          an empty username to the authc request */
       rc=pam_get_authtok(pamh,PAM_OLDAUTHTOK,&oldpassword,"LDAP administrator password: ");
@@ -558,6 +568,9 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
       pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,ctx->authok),username);
     else if (cfg.debug)
       pam_syslog(pamh,LOG_DEBUG,"authentication succeeded");
+    /* store password (needed if oldpassword was retreived from context) */
+    if (rc==PAM_SUCCESS)
+      return pam_set_item(pamh,PAM_OLDAUTHTOK,oldpassword);
     /* remap error code */
     return remap_pam_rc(ctx->authok,&cfg);
   }
