@@ -1060,36 +1060,6 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
     /* handle result */
     switch (rc)
     {
-      case -1:
-        /* we have an error condition, try to get error code */
-        if (ldap_get_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
-          rc=LDAP_UNAVAILABLE;
-        log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
-        /* close connection on connection problems */
-        if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN)||(rc==LDAP_SUCCESS))
-        {
-          /* close the connection and retry */
-          do_close(search->session);
-          if (search->may_retry_search)
-          {
-            log_log(LOG_DEBUG,"myldap_get_entry(): retry search");
-            search->may_retry_search=0;
-            if (do_retry_search(search)==LDAP_SUCCESS)
-              return myldap_get_entry(search,rcp);
-          }
-        }
-        /* close search */
-        myldap_search_close(search);
-        if (rcp!=NULL)
-          *rcp=rc;
-        return NULL;
-      case 0:
-        /* the timeout expired */
-        log_log(LOG_ERR,"ldap_result() timed out");
-        myldap_search_close(search);
-        if (rcp!=NULL)
-          *rcp=LDAP_TIMELIMIT_EXCEEDED;
-        return NULL;
       case LDAP_RES_SEARCH_ENTRY:
         /* we have a normal search entry, update timestamp and return result */
         time(&(search->session->lastactivity));
@@ -1205,11 +1175,44 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
       case LDAP_RES_SEARCH_REFERENCE:
         break; /* just ignore search references */
       default:
-        log_log(LOG_WARNING,"ldap_result() returned unexpected result type");
+        /* we have some error condition, find out which */
+        switch (rc)
+        {
+          case -1:
+            /* try to get error code */
+            if (ldap_get_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
+              rc=LDAP_UNAVAILABLE;
+            log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
+            break;
+          case 0:
+            /* the timeout expired */
+            log_log(LOG_ERR,"ldap_result() timed out");
+            rc=LDAP_TIMELIMIT_EXCEEDED;
+            break;
+          default:
+            /* unknown code */
+            log_log(LOG_WARNING,"ldap_result() returned unexpected result type");
+            rc=LDAP_PROTOCOL_ERROR;
+        }
+        /* close connection on some connection problems */
+        if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN)||(rc==LDAP_SUCCESS)||(rc==LDAP_TIMELIMIT_EXCEEDED))
+        {
+          do_close(search->session);
+          /* retry once if no data has been received yet */
+          if (search->may_retry_search)
+          {
+            log_log(LOG_DEBUG,"myldap_get_entry(): retry search");
+            search->may_retry_search=0;
+            if (do_retry_search(search)==LDAP_SUCCESS)
+              return myldap_get_entry(search,rcp);
+          }
+        }
+        /* close search */
         myldap_search_close(search);
         if (rcp!=NULL)
-          *rcp=LDAP_PROTOCOL_ERROR;
+          *rcp=rc;
         return NULL;
+
     }
   }
 }
