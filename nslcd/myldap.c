@@ -1195,7 +1195,9 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
             rc=LDAP_PROTOCOL_ERROR;
         }
         /* close connection on some connection problems */
-        if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN)||(rc==LDAP_SUCCESS)||(rc==LDAP_TIMELIMIT_EXCEEDED))
+        if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN)||(rc==LDAP_SUCCESS)||
+            (rc==LDAP_TIMELIMIT_EXCEEDED)|(rc==LDAP_OPERATIONS_ERROR)||
+            (rc==LDAP_PROTOCOL_ERROR))
         {
           do_close(search->session);
           /* retry once if no data has been received yet */
