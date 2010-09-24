@@ -28,7 +28,7 @@
 #include "prototypes.h"
 #include "common.h"
 
-static enum nss_status read_aliasent(
+static nss_status_t read_aliasent(
         TFILE *fp,struct aliasent *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -46,7 +46,7 @@ static enum nss_status read_aliasent(
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getaliasbyname_r(
+nss_status_t _nss_ldap_getaliasbyname_r(
         const char *name,struct aliasent *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -58,18 +58,18 @@ enum nss_status _nss_ldap_getaliasbyname_r(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *aliasentfp;
 
-enum nss_status _nss_ldap_setaliasent(void)
+nss_status_t _nss_ldap_setaliasent(void)
 {
   NSS_SETENT(aliasentfp);
 }
 
-enum nss_status _nss_ldap_getaliasent_r(struct aliasent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getaliasent_r(struct aliasent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(aliasentfp,NSLCD_ACTION_ALIAS_ALL,
              read_aliasent(aliasentfp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_endaliasent(void)
+nss_status_t _nss_ldap_endaliasent(void)
 {
   NSS_ENDENT(aliasentfp);
 }

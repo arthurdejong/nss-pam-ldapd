@@ -30,7 +30,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-static enum nss_status read_group(
+static nss_status_t read_group(
         TFILE *fp,struct group *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -45,7 +45,7 @@ static enum nss_status read_group(
 
 /* read all group entries from the stream and add
    gids of these groups to the list */
-static enum nss_status read_gids(
+static nss_status_t read_gids(
         TFILE *fp,gid_t skipgroup,long int *start,long int *size,
         gid_t **groupsp,long int limit,int *errnop)
 {
@@ -99,14 +99,14 @@ static enum nss_status read_gids(
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,
              name,
              read_group(fp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,
              gid,gid_t,
@@ -125,7 +125,7 @@ enum nss_status _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer
    limit     IN     - the maxium size of the array
    *errnop   OUT    - for returning errno
 */
-enum nss_status _nss_ldap_initgroups_dyn(
+nss_status_t _nss_ldap_initgroups_dyn(
         const char *user,gid_t skipgroup,long int *start,
         long int *size,gid_t **groupsp,long int limit,int *errnop)
 {
@@ -144,18 +144,18 @@ enum nss_status _nss_ldap_initgroups_dyn(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *grentfp;
 
-enum nss_status _nss_ldap_setgrent(int UNUSED(stayopen))
+nss_status_t _nss_ldap_setgrent(int UNUSED(stayopen))
 {
   NSS_SETENT(grentfp);
 }
 
-enum nss_status _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,
              read_group(grentfp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_endgrent(void)
+nss_status_t _nss_ldap_endgrent(void)
 {
   NSS_ENDENT(grentfp);
 }

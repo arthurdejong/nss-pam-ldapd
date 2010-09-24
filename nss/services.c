@@ -29,7 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-static enum nss_status read_servent(
+static nss_status_t read_servent(
         TFILE *fp,struct servent *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -45,7 +45,7 @@ static enum nss_status read_servent(
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getservbyname_r(const char *name,const char *protocol,struct servent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getservbyname_r(const char *name,const char *protocol,struct servent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,
             WRITE_STRING(fp,name);WRITE_STRING(fp,protocol),
@@ -53,7 +53,7 @@ enum nss_status _nss_ldap_getservbyname_r(const char *name,const char *protocol,
 
 }
 
-enum nss_status _nss_ldap_getservbyport_r(int port,const char *protocol,struct servent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getservbyport_r(int port,const char *protocol,struct servent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,
             WRITE_INT32(fp,ntohs(port));WRITE_STRING(fp,protocol),
@@ -63,18 +63,18 @@ enum nss_status _nss_ldap_getservbyport_r(int port,const char *protocol,struct s
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
-enum nss_status _nss_ldap_setservent(int UNUSED(stayopen))
+nss_status_t _nss_ldap_setservent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp);
 }
 
-enum nss_status _nss_ldap_getservent_r(struct servent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getservent_r(struct servent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL,
              read_servent(protoentfp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_endservent(void)
+nss_status_t _nss_ldap_endservent(void)
 {
   NSS_ENDENT(protoentfp);
 }

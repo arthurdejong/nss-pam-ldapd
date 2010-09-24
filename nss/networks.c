@@ -59,7 +59,7 @@
 
 /* read a single network entry from the stream, ignoring entries
    that are not AF_INET (IPv4), result is stored in result */
-static enum nss_status read_netent(
+static nss_status_t read_netent(
         TFILE *fp,struct netent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
@@ -67,7 +67,7 @@ static enum nss_status read_netent(
   int32_t numaddr,i;
   int readaf;
   size_t bufptr=0;
-  enum nss_status retv=NSS_STATUS_NOTFOUND;
+  nss_status_t retv=NSS_STATUS_NOTFOUND;
   /* read the network entry */
   READ_BUF_STRING(fp,result->n_name);
   READ_BUF_STRINGLIST(fp,result->n_aliases);
@@ -99,7 +99,7 @@ static enum nss_status read_netent(
   return retv;
 }
 
-enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
+nss_status_t _nss_ldap_getnetbyname_r(const char *name,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,
              name,
@@ -116,7 +116,7 @@ enum nss_status _nss_ldap_getnetbyname_r(const char *name,struct netent *result,
 
 /* Note: the af parameter is ignored and is assumed to be AF_INET */
 /* TODO: implement handling of af parameter */
-enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int UNUSED(af),struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
+nss_status_t _nss_ldap_getnetbyaddr_r(uint32_t addr,int UNUSED(af),struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,
             WRITE_ADDRESS(fp,addr),
@@ -126,18 +126,18 @@ enum nss_status _nss_ldap_getnetbyaddr_r(uint32_t addr,int UNUSED(af),struct net
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *netentfp;
 
-enum nss_status _nss_ldap_setnetent(int UNUSED(stayopen))
+nss_status_t _nss_ldap_setnetent(int UNUSED(stayopen))
 {
   NSS_SETENT(netentfp);
 }
 
-enum nss_status _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
+nss_status_t _nss_ldap_getnetent_r(struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   NSS_GETENT(netentfp,NSLCD_ACTION_NETWORK_ALL,
              read_netent(netentfp,result,buffer,buflen,errnop,h_errnop));
 }
 
-enum nss_status _nss_ldap_endnetent(void)
+nss_status_t _nss_ldap_endnetent(void)
 {
   NSS_ENDENT(netentfp);
 }

@@ -39,7 +39,7 @@
   return NSS_STATUS_RETURN;
 
 /* function for reading a single result entry */
-static enum nss_status read_netgrent(
+static nss_status_t read_netgrent(
         TFILE *fp,struct __netgrent *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -89,7 +89,7 @@ static enum nss_status read_netgrent(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *netgrentfp;
 
-enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent UNUSED(*result))
+nss_status_t _nss_ldap_setnetgrent(const char *group,struct __netgrent UNUSED(*result))
 {
   /* we cannot use NSS_SETENT() here because we have a parameter that is only
      available in this function */
@@ -107,13 +107,13 @@ enum nss_status _nss_ldap_setnetgrent(const char *group,struct __netgrent UNUSED
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,
              read_netgrent(netgrentfp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_endnetgrent(struct __netgrent UNUSED(* result))
+nss_status_t _nss_ldap_endnetgrent(struct __netgrent UNUSED(* result))
 {
   NSS_ENDENT(netgrentfp);
 }

@@ -61,7 +61,7 @@
    specified address family, result is stored in result
    it will an empty entry if no addresses in the address family
    were available */
-static enum nss_status read_hostent(
+static nss_status_t read_hostent(
         TFILE *fp,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
@@ -108,11 +108,11 @@ static enum nss_status read_hostent(
 /* this is a wrapper around read_hostent() that does error handling
    if the read address list does not contain any addresses for the
    specified address familiy */
-static enum nss_status read_hostent_erronempty(
+static nss_status_t read_hostent_erronempty(
         TFILE *fp,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  enum nss_status retv;
+  nss_status_t retv;
   retv=read_hostent(fp,af,result,buffer,buflen,errnop,h_errnop);
   /* check result */
   if (retv!=NSS_STATUS_SUCCESS)
@@ -135,12 +135,12 @@ static enum nss_status read_hostent_erronempty(
 /* this is a wrapper around read_hostent() that skips to the
    next address if the address list does not contain any addresses for the
    specified address familiy */
-static enum nss_status read_hostent_nextonempty(
+static nss_status_t read_hostent_nextonempty(
         TFILE *fp,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   int32_t tmpint32;
-  enum nss_status retv;
+  nss_status_t retv;
   /* check until we read an non-empty entry */
   do
   {
@@ -168,7 +168,7 @@ static enum nss_status read_hostent_nextonempty(
    result          - OUT - entry found
    buffer,buflen   - OUT - buffer to store allocated stuff on
    errnop,h_errnop - OUT - for reporting errors */
-enum nss_status _nss_ldap_gethostbyname2_r(
+nss_status_t _nss_ldap_gethostbyname2_r(
         const char *name,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
@@ -179,7 +179,7 @@ enum nss_status _nss_ldap_gethostbyname2_r(
 
 /* this function just calls the gethostbyname2() variant with the address
    familiy set */
-enum nss_status _nss_ldap_gethostbyname_r(
+nss_status_t _nss_ldap_gethostbyname_r(
         const char *name,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
@@ -200,7 +200,7 @@ enum nss_status _nss_ldap_gethostbyname_r(
    result          - OUT - entry found
    buffer,buflen   - OUT - buffer to store allocated stuff on
    errnop,h_errnop - OUT - for reporting errors */
-enum nss_status _nss_ldap_gethostbyaddr_r(
+nss_status_t _nss_ldap_gethostbyaddr_r(
         const void *addr,socklen_t len,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
@@ -212,13 +212,13 @@ enum nss_status _nss_ldap_gethostbyaddr_r(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *hostentfp;
 
-enum nss_status _nss_ldap_sethostent(int UNUSED(stayopen))
+nss_status_t _nss_ldap_sethostent(int UNUSED(stayopen))
 {
   NSS_SETENT(hostentfp);
 }
 
 /* this function only returns addresses of the AF_INET address family */
-enum nss_status _nss_ldap_gethostent_r(
+nss_status_t _nss_ldap_gethostent_r(
         struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
@@ -226,7 +226,7 @@ enum nss_status _nss_ldap_gethostent_r(
              read_hostent_nextonempty(hostentfp,AF_INET,result,buffer,buflen,errnop,h_errnop));
 }
 
-enum nss_status _nss_ldap_endhostent(void)
+nss_status_t _nss_ldap_endhostent(void)
 {
   NSS_ENDENT(hostentfp);
 }

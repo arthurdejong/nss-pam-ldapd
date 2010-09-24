@@ -29,7 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-static enum nss_status read_etherent(
+static nss_status_t read_etherent(
         TFILE *fp,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -41,7 +41,7 @@ static enum nss_status read_etherent(
 }
 
 /* map a hostname to the corresponding ethernet address */
-enum nss_status _nss_ldap_gethostton_r(
+nss_status_t _nss_ldap_gethostton_r(
         const char *name,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -51,7 +51,7 @@ enum nss_status _nss_ldap_gethostton_r(
 }
 
 /* map an ethernet address to the corresponding hostname */
-enum nss_status _nss_ldap_getntohost_r(
+nss_status_t _nss_ldap_getntohost_r(
         const struct ether_addr *addr,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -63,12 +63,12 @@ enum nss_status _nss_ldap_getntohost_r(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *etherentfp;
 
-enum nss_status _nss_ldap_setetherent(int UNUSED(stayopen))
+nss_status_t _nss_ldap_setetherent(int UNUSED(stayopen))
 {
   NSS_SETENT(etherentfp);
 }
 
-enum nss_status _nss_ldap_getetherent_r(
+nss_status_t _nss_ldap_getetherent_r(
         struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -76,7 +76,7 @@ enum nss_status _nss_ldap_getetherent_r(
              read_etherent(etherentfp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_endetherent(void)
+nss_status_t _nss_ldap_endetherent(void)
 {
   NSS_ENDENT(etherentfp);
 }

@@ -29,7 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-static enum nss_status read_protoent(
+static nss_status_t read_protoent(
         TFILE *fp,struct protoent *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -41,14 +41,14 @@ static enum nss_status read_protoent(
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getprotobyname_r(const char *name,struct protoent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getprotobyname_r(const char *name,struct protoent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_PROTOCOL_BYNAME,
              name,
              read_protoent(fp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_getprotobynumber_r(int number,struct protoent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getprotobynumber_r(int number,struct protoent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYINT32(NSLCD_ACTION_PROTOCOL_BYNUMBER,
               number,
@@ -58,18 +58,18 @@ enum nss_status _nss_ldap_getprotobynumber_r(int number,struct protoent *result,
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
-enum nss_status _nss_ldap_setprotoent(int UNUSED(stayopen))
+nss_status_t _nss_ldap_setprotoent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp);
 }
 
-enum nss_status _nss_ldap_getprotoent_r(struct protoent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getprotoent_r(struct protoent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(protoentfp,NSLCD_ACTION_PROTOCOL_ALL,
              read_protoent(protoentfp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_endprotoent(void)
+nss_status_t _nss_ldap_endprotoent(void)
 {
   NSS_ENDENT(protoentfp);
 }

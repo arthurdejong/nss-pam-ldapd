@@ -29,7 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-static enum nss_status read_spwd(
+static nss_status_t read_spwd(
         TFILE *fp,struct spwd *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -47,7 +47,7 @@ static enum nss_status read_spwd(
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getspnam_r(const char *name,struct spwd *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getspnam_r(const char *name,struct spwd *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,
              name,
@@ -57,18 +57,18 @@ enum nss_status _nss_ldap_getspnam_r(const char *name,struct spwd *result,char *
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *spentfp;
 
-enum nss_status _nss_ldap_setspent(int UNUSED(stayopen))
+nss_status_t _nss_ldap_setspent(int UNUSED(stayopen))
 {
   NSS_SETENT(spentfp);
 }
 
-enum nss_status _nss_ldap_getspent_r(struct spwd *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getspent_r(struct spwd *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,
              read_spwd(spentfp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_endspent(void)
+nss_status_t _nss_ldap_endspent(void)
 {
   NSS_ENDENT(spentfp);
 }

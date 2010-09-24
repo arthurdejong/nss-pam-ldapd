@@ -29,7 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-static enum nss_status read_passwd(
+static nss_status_t read_passwd(
         TFILE *fp,struct passwd *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -45,14 +45,14 @@ static enum nss_status read_passwd(
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getpwnam_r(const char *name,struct passwd *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getpwnam_r(const char *name,struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_PASSWD_BYNAME,
              name,
              read_passwd(fp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYTYPE(NSLCD_ACTION_PASSWD_BYUID,
              uid,uid_t,
@@ -63,20 +63,20 @@ enum nss_status _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffe
 static __thread TFILE *pwentfp;
 
 /* open a connection to the nslcd and write the request */
-enum nss_status _nss_ldap_setpwent(int UNUSED(stayopen))
+nss_status_t _nss_ldap_setpwent(int UNUSED(stayopen))
 {
   NSS_SETENT(pwentfp);
 }
 
 /* read password data from an opened stream */
-enum nss_status _nss_ldap_getpwent_r(struct passwd *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getpwent_r(struct passwd *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(pwentfp,NSLCD_ACTION_PASSWD_ALL,
              read_passwd(pwentfp,result,buffer,buflen,errnop));
 }
 
 /* close the stream opened with setpwent() above */
-enum nss_status _nss_ldap_endpwent(void)
+nss_status_t _nss_ldap_endpwent(void)
 {
   NSS_ENDENT(pwentfp);
 }

@@ -82,7 +82,7 @@
 #define NSS_BYGEN(action,writefn,readfn) \
   TFILE *fp; \
   int32_t tmpint32; \
-  enum nss_status retv; \
+  nss_status_t retv; \
   if (!_nss_ldap_enablelookups) \
     return NSS_STATUS_UNAVAIL; \
   /* check that we have a valid buffer */ \
@@ -133,7 +133,7 @@
    a response header. A single entry is read with the readfn() function. */
 #define NSS_GETENT(fp,action,readfn) \
   int32_t tmpint32; \
-  enum nss_status retv; \
+  nss_status_t retv; \
   if (!_nss_ldap_enablelookups) \
     return NSS_STATUS_UNAVAIL; \
   /* check that we have a valid buffer */ \

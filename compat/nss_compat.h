@@ -45,6 +45,41 @@
 
 #include "compat/ether.h"
 
+/* define missing status codes */
+#ifndef HAVE_ENUM_NSS_STATUS
+#ifndef NSS_STATUS_SUCCESS
+#define NSS_STATUS_SUCCESS NSS_SUCCESS
+#endif
+#ifndef NSS_STATUS_NOTFOUND
+#define NSS_STATUS_NOTFOUND NSS_NOTFOUND
+#endif
+#ifndef NSS_STATUS_UNAVAIL
+#define NSS_STATUS_UNAVAIL NSS_UNAVAIL
+#endif
+#ifndef NSS_STATUS_TRYAGAIN
+#define NSS_STATUS_TRYAGAIN NSS_TRYAGAIN
+#endif
+#ifndef NSS_STATUS_RETURN
+#define NSS_STATUS_RETURN NSS_NOTFOUND
+#endif
+#endif /* not HAVE_ENUM_NSS_STATUS */
+
+/* define nss_status_t */
+#ifdef HAVE_ENUM_NSS_STATUS
+typedef enum nss_status nss_status_t;
+#endif
+
+#ifndef HAVE_ENUM_NSS_STATUS
+enum nss_status
+{
+  NSS_STATUS_TRYAGAIN = NSS_TRYAGAIN,
+  NSS_STATUS_UNAVAIL = NSS_UNAVAIL,
+  NSS_STATUS_NOTFOUND = NSS_NOTFOUND,
+  NSS_STATUS_SUCCESS = NSS_SUCCESS,
+  NSS_STATUS_RETURN = NSS_NOTFOUND
+};
+#endif
+
 /* Define an aliasent if it was not found on the system. */
 #ifndef HAVE_STRUCT_ALIASENT
 struct aliasent

@@ -29,7 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-static enum nss_status read_rpcent(
+static nss_status_t read_rpcent(
         TFILE *fp,struct rpcent *result,
         char *buffer,size_t buflen,int *errnop)
 {
@@ -41,14 +41,14 @@ static enum nss_status read_rpcent(
   return NSS_STATUS_SUCCESS;
 }
 
-enum nss_status _nss_ldap_getrpcbyname_r(const char *name,struct rpcent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getrpcbyname_r(const char *name,struct rpcent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,
              name,
              read_rpcent(fp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_getrpcbynumber_r(int number,struct rpcent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getrpcbynumber_r(int number,struct rpcent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,
               number,
@@ -58,18 +58,18 @@ enum nss_status _nss_ldap_getrpcbynumber_r(int number,struct rpcent *result,char
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
-enum nss_status _nss_ldap_setrpcent(int UNUSED(stayopen))
+nss_status_t _nss_ldap_setrpcent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp);
 }
 
-enum nss_status _nss_ldap_getrpcent_r(struct rpcent *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getrpcent_r(struct rpcent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(protoentfp,NSLCD_ACTION_RPC_ALL,
              read_rpcent(protoentfp,result,buffer,buflen,errnop));
 }
 
-enum nss_status _nss_ldap_endrpcent(void)
+nss_status_t _nss_ldap_endrpcent(void)
 {
   NSS_ENDENT(protoentfp);
 }
