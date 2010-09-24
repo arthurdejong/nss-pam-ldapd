@@ -1,3 +1,10 @@
+nss-pam-ldapd (0.7.10) unstable; urgency=low
+
+  * handle errors from ldap_result() better and disconnect (and reconnect)
+    in more cases (closes: #596983)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 24 Sep 2010 09:00:00 +0200
+
 nss-pam-ldapd (0.7.9) unstable; urgency=low
 
   * fix for --with-nss-ldap-soname configure option by Julien Cristau

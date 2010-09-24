@@ -1,3 +1,27 @@
+2010-09-24 07:16  arthur
+
+	* [r1211] ., nslcd/myldap.c: handle errors from ldap_result()
+	  better and disconnect (and reconnect) in more cases (r1207 and
+	  r1208 from trunk)
+
+2010-09-24 07:11  arthur
+
+	* [r1210] Makefile.am: fix way ChangeLog is generated for branch
+
+2010-09-24 07:06  arthur
+
+	* [r1209] .: start a 0.7 maintenance branch
+
+2010-08-28 19:46  arthur
+
+	* [r1205] release 0.7.9
+
+2010-08-28 19:46  arthur
+
+	* [r1204] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.9 release
+
 2010-08-28 19:19  arthur
 
 	* [r1203] debian/po/nl.po: unfuzzy a few Dutch translations and

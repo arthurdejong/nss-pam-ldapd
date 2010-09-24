@@ -1,3 +1,10 @@
+changes from 0.7.9 to 0.7.10
+----------------------------
+
+* handle errors from ldap_result() better and disconnect (and reconnect)
+  in more cases
+
+
 changes from 0.7.8 to 0.7.9
 ---------------------------
 
