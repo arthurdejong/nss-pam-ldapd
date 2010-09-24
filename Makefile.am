@@ -93,7 +93,8 @@ deb: distdir
 
 # target for generating the ChangeLog file
 changelog:
-	( svn2cl -i --stdout -r HEAD:981 ; \
+	( svn2cl -i --stdout -r HEAD:1206 ; \
+		svn2cl -i --stdout -r 1205:981 --strip-prefix='nss-pam-ldapd' ; \
 	  svn2cl -i --stdout -r 980:807 --strip-prefix='nss-ldapd' ; \
 	) > ChangeLog
 
