@@ -207,6 +207,12 @@ AC_ARG_WITH(nss-ldap-soname,
 AC_DEFINE_UNQUOTED(NSS_LDAP_SONAME,"$NSS_LDAP_SONAME",[The SONAME of the NSS library module.])
 AC_SUBST(NSS_LDAP_SONAME)
 
+# check which modules should be build
+AC_ARG_WITH(nss-ldap-maps,
+            AS_HELP_STRING([--with-nss-ldap-maps=MAP LIST],
+                           [comma separated list of NSS maps to build @<:@all@:>@]),
+            ,[ with_nss_ldap_maps="all" ])
+
 # checks for availability of header files
 AC_CHECK_HEADERS([ctype.h strings.h pthread.h fcntl.h limits.h])
 AC_CHECK_HEADERS([nss.h nss_common.h grp.h shadow.h aliases.h netdb.h rpc/rpcent.h])
@@ -318,6 +324,16 @@ then
       #ifdef HAVE_NSS_COMMON_H
       #include <nss_common.h>
       #endif])
+
+  # check which module source files to use
+  AC_MSG_CHECKING([which NSS maps to build])
+  if test "x$with_nss_ldap_maps" = "xall"
+  then
+    with_nss_ldap_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow"
+  fi
+  AC_MSG_RESULT($with_nss_ldap_maps)
+  NSS_MODULE_OBJS="`echo "$with_nss_ldap_maps" | sed 's/,/ /g;s/  *\|$/.$(OBJEXT) /g'`"
+  AC_SUBST(NSS_MODULE_OBJS)
 
   # restore CFLAGS and LIBS
   CFLAGS="$nss_save_CFLAGS"
