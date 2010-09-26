@@ -32,10 +32,19 @@ version 2.1 of the License, or (at your option) any later version. See the
 configure.ac file for more details.])
 
 # initialize and set version and bugreport address
-AC_INIT([nss-pam-ldapd],[0.7.9],[nss-pam-ldapd-users@lists.arthurdejong.org])
+AC_INIT([nss-pam-ldapd],
+        [0.7.9],
+        [nss-pam-ldapd-users@lists.arthurdejong.org],,
+        [http://arthurdejong.org/nss-pam-ldapd/])
 RELEASE_MONTH="Aug 2010"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])
+
+# define package URL (remove when switching to 2.64)
+m4_ifndef([AC_PACKAGE_URL],
+          PACKAGE_URL="http://arthurdejong.org/nss-pam-ldapd/"
+          [AC_DEFINE_UNQUOTED([PACKAGE_URL],"$PACKAGE_URL",[Define to the home page for this package.])
+           AC_SUBST(PACKAGE_URL)])
 
 # some initialisation
 AC_CANONICAL_TARGET
