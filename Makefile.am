@@ -19,17 +19,17 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+SUBDIRS = compat common
 if ENABLE_NSS
-  MAYBE_NSS = nss
+  SUBDIRS += nss
 endif
 if ENABLE_PAM
-  MAYBE_PAM = pam
+  SUBDIRS += pam
 endif
 if ENABLE_NSLCD
-  ENABLE_NSLCD = nslcd
+  SUBDIRS += nslcd
 endif
-
-SUBDIRS = compat common $(MAYBE_NSS) $(MAYBE_PAM) $(ENABLE_NSLCD) man tests
+SUBDIRS += man tests
 
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/copyright debian/rules debian/NEWS \
