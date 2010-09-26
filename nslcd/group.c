@@ -43,12 +43,11 @@
  *   MUST ( cn $ gidNumber )
  *   MAY ( userPassword $ memberUid $ description ) )
  *
- * apart from that the above the uniqueMember attributes may be
- * supported in a coming release (they map to DNs, which is an extra
- * lookup step)
+ * apart from the above a uniqueMember attribute is also supported that
+ * may contains a DN of a user
  *
- * using nested groups (groups that are member of a group) is currently
- * not supported, this may be added in a later release
+ * nested groups (groups that are member of a group) are currently
+ * not supported
  */
 
 /* the search base for searches */
