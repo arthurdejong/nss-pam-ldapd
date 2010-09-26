@@ -1214,7 +1214,6 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         if (rcp!=NULL)
           *rcp=rc;
         return NULL;
-
     }
   }
 }
