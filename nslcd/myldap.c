@@ -622,8 +622,6 @@ static void myldap_session_check(MYLDAP_SESSION *session)
 static int do_open(MYLDAP_SESSION *session)
 {
   int rc,rc2;
-  int sd=-1;
-  int off=0;
   /* check if the idle time for the connection has expired */
   myldap_session_check(session);
   /* if the connection is still there (ie. ldap_unbind() wasn't
