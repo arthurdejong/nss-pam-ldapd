@@ -685,12 +685,6 @@ static int do_open(MYLDAP_SESSION *session)
       log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc2));
     return rc;
   }
-  /* disable keepalive on the LDAP connection socket (why?) */
-  if (ldap_get_option(session->ld,LDAP_OPT_DESC,&sd)==LDAP_SUCCESS)
-  {
-    /* ignore errors */
-    (void)setsockopt(sd,SOL_SOCKET,SO_KEEPALIVE,(void *)&off,sizeof(off));
-  }
   /* update last activity and finish off state */
   time(&(session->lastactivity));
   return LDAP_SUCCESS;
