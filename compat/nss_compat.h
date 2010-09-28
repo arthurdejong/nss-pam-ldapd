@@ -2,6 +2,7 @@
    nss_compat.h - compatibility definitions for NSS functions
 
    Copyright (C) 2010 Arthur de Jong
+   Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -42,6 +43,12 @@
 #ifdef HAVE_RPC_RPCENT_H
 #include <rpc/rpcent.h>
 #endif /* HAVE_RPC_RPCENT_H */
+#ifdef HAVE_NSS_DBDEFS_H
+#include <nss_dbdefs.h>
+#endif /* HAVE_NSS_DBDEFS_H */
+#ifdef HAVE_NSSWITCH_H
+#include <nsswitch.h>
+#endif /* HAVE_NSSWITCH_H */
 
 #include "compat/ether.h"
 

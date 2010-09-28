@@ -2,6 +2,7 @@
    pam_get_authtok.c - replacement function for pam_get_authtok()
 
    Copyright (C) 2009 Arthur de Jong
+   Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -33,6 +34,15 @@
 #include "compat/pam_compat.h"
 
 /* warning: this version assumes that try_first_pass is specified */
+
+/* find value of PAM_AUTHTOK_RECOVERY_ERR */
+#ifndef PAM_AUTHTOK_RECOVERY_ERR
+#ifdef PAM_AUTHTOK_RECOVER_ERR
+#define PAM_AUTHTOK_RECOVERY_ERR PAM_AUTHTOK_RECOVER_ERR
+#else
+#define PAM_AUTHTOK_RECOVERY_ERR 21 /* not defined anywhere */
+#endif
+#endif
 
 int pam_get_authtok(pam_handle_t *pamh,int item,const char **authtok,const char *prompt)
 {
