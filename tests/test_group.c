@@ -31,7 +31,7 @@
 
 #include "nss/prototypes.h"
 
-static char *nssstatus(enum nss_status retv)
+static char *nssstatus(nss_status_t retv)
 {
   switch(retv)
   {
@@ -64,7 +64,7 @@ int main(int argc,char *argv[])
 {
   struct group groupresult;
   char buffer[32*1024];
-  enum nss_status res;
+  nss_status_t res;
   int errnocp=0;
   long int start=0,size=40;
   gid_t *gidlist=(gid_t *)buffer;

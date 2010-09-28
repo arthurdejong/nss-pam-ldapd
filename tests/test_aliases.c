@@ -32,7 +32,7 @@
 #include "nss/prototypes.h"
 #include "compat/attrs.h"
 
-static char *nssstatus(enum nss_status retv)
+static char *nssstatus(nss_status_t retv)
 {
   switch(retv)
   {
@@ -64,7 +64,7 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
   struct aliasent aliasresult;
   char buffer[1024];
-  enum nss_status res;
+  nss_status_t res;
   int errnocp;
 
   /* test getaliasbyname() */

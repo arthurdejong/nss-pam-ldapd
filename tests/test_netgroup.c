@@ -31,7 +31,7 @@
 
 #include "nss/prototypes.h"
 
-static char *nssstatus(enum nss_status retv)
+static char *nssstatus(nss_status_t retv)
 {
   switch(retv)
   {
@@ -78,7 +78,7 @@ int main(int argc,char *argv[])
 {
   struct __netgrent netgroupresult;
   char buffer[1024];
-  enum nss_status res;
+  nss_status_t res;
   int errnocp;
 
   /* test {set,get,end}netgrent() */
