@@ -341,7 +341,7 @@ then
     with_nss_ldap_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow"
   fi
   AC_MSG_RESULT($with_nss_ldap_maps)
-  NSS_MODULE_OBJS="`echo "$with_nss_ldap_maps" | sed 's/,/ /g;s/  *\|$/.$(OBJEXT) /g'`"
+  NSS_MODULE_OBJS="`echo "$with_nss_ldap_maps " | sed 's/,/ /g;s/  */.$(OBJEXT) /g'`"
   AC_SUBST(NSS_MODULE_OBJS)
 
   # restore CFLAGS and LIBS
