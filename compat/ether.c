@@ -37,9 +37,11 @@
 
 #ifndef HAVE_ETHER_NTOA_R
 
+#ifndef HAVE_ETHER_NTOA_DEFINED
 /* we define ether_ntoa() here because on some platforms the function is
    underfined */
 extern char *ether_ntoa(const struct ether_addr *e);
+#endif /* not HAVE_ETHER_NTOA_DEFINED */
 
 char *ether_ntoa_r(const struct ether_addr *addr,char *buf)
 {
@@ -54,9 +56,11 @@ char *ether_ntoa_r(const struct ether_addr *addr,char *buf)
 
 #ifndef HAVE_ETHER_ATON_R
 
+#ifndef HAVE_ETHER_ATON_DEFINED
 /* we define ether_aton() here because on some platforms the function is
    underfined */
 extern struct ether_addr *ether_aton(const char *s);
+#endif /* not HAVE_ETHER_ATON_DEFINED */
 
 struct ether_addr *ether_aton_r(const char *asc,struct ether_addr *addr)
 {
