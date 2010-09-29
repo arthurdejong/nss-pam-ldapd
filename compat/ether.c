@@ -1,7 +1,7 @@
 /*
    ether.c - useful ethernet functions for systems lacking those
 
-   Copyright (C) 2008, 2009 Arthur de Jong
+   Copyright (C) 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@
 
 /* we define ether_ntoa() here because on some platforms the function is
    underfined */
-char *ether_ntoa(struct ether_addr *e);
+extern char *ether_ntoa(const struct ether_addr *e);
 
 char *ether_ntoa_r(const struct ether_addr *addr,char *buf)
 {
@@ -56,7 +56,7 @@ char *ether_ntoa_r(const struct ether_addr *addr,char *buf)
 
 /* we define ether_aton() here because on some platforms the function is
    underfined */
-struct ether_addr *ether_aton(char *s);
+extern struct ether_addr *ether_aton(const char *s);
 
 struct ether_addr *ether_aton_r(const char *asc,struct ether_addr *addr)
 {
