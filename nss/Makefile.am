@@ -27,23 +27,30 @@ AM_CFLAGS = -fPIC
 nss_ldap_so_SOURCES = common.c common.h prototypes.h \
                       ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h
-EXTRA_nss_ldap_so_SOURCES = aliases.c ethers.c group.c hosts.c netgroup.c \
-                            networks.c passwd.c protocols.c rpc.c services.c \
-                            shadow.c
-nss_ldap_so_LDFLAGS = -shared -Wl,-h,$(NSS_LDAP_SONAME)
+nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
 if HAVE_VERSION_SCRIPT_FLAG
 nss_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/nss_ldap.map
 endif
-nss_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a $(NSS_MODULE_OBJS)
 nss_ldap_so_DEPENDENCIES = $(NSS_MODULE_OBJS)
+EXTRA_nss_ldap_so_SOURCES = aliases.c ethers.c group.c hosts.c netgroup.c \
+                            networks.c passwd.c protocols.c rpc.c services.c \
+                            shadow.c
+
+if USE_NATIVE_LINKER
+nss_ldap_so_LINK = @nss_ldap_so_LD@ @nss_ldap_so_LDFLAGS@ -o $@
+else
+nss_ldap_so_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAG) -o $@
+endif
 
 EXTRA_DIST = nss_ldap.map
 
 install-exec-local: install-nss_ldap_so
 uninstall-local: uninstall-nss_ldap_so
 
-# install libnss_ldap.so.2
 install-nss_ldap_so: nss_ldap.so
-	$(INSTALL_PROGRAM) -D nss_ldap.so $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)
+	-rm -f $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	$(INSTALL_PROGRAM) nss_ldap.so $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)
+
 uninstall-nss_ldap_so:
 	-rm -f $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)

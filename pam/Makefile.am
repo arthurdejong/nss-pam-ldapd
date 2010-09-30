@@ -24,20 +24,24 @@ AM_CFLAGS = -fPIC
 
 pam_ldap_so_SOURCES = ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h pam.c common.h
-pam_ldap_so_LDFLAGS = -shared
-if HAVE_VERSION_SCRIPT_FLAG
-pam_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/pam_ldap.map
-endif
 pam_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a -lpam \
                     ../compat/libcompat.a
 
-EXTRA_DIST = pam_ldap.map
+EXTRA_DIST = pam_ldap.map exports.solaris
+
+if USE_NATIVE_LINKER
+pam_ldap_so_LINK = @pam_ldap_so_LD@ @pam_ldap_so_LDFLAGS@ -o $@
+else
+pam_ldap_so_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAG) -o $@
+endif
 
 install-exec-local: install-pam_ldap_so
 uninstall-local: uninstall-pam_ldap_so
 
 # install pam_ldap.so
 install-pam_ldap_so: pam_ldap.so
-	$(INSTALL_PROGRAM) -D pam_ldap.so $(DESTDIR)$(libdir)/security/pam_ldap.so
+	$(mkinstalldirs) $(DESTDIR)/$(PAM_SECLIB_DIR)
+	$(INSTALL_PROGRAM) pam_ldap.so $(DESTDIR)$(PAM_SECLIB_DIR)/$(pam_ldap_soVERSIONED)
+
 uninstall-pam_ldap_so:
-	-rm -f $(DESTDIR)$(libdir)/security/pam_ldap.so
+	-rm -f $(DESTDIR)$(PAM_SECLIB_DIR)/$(pam_ldap_so_VERSIONED)

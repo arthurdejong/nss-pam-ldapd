@@ -1,0 +1,23 @@
+# $Id: exports.solaris,v 1.1 2010-08-07 00:24:21 tedcheng Exp $
+
+nss_ldap.so.1 {
+  # published NSS service functions
+  global:
+    # Published NSS service module interfaces
+	# _nss_ldap_bootparams_constr;
+	_nss_ldap_ethers_constr;
+	_nss_ldap_group_constr;
+	_nss_ldap_hosts_constr;
+	_nss_ldap_networks_constr;
+	_nss_ldap_protocols_constr;
+	_nss_ldap_passwd_constr;
+	_nss_ldap_rpc_constr;
+	_nss_ldap_services_constr;
+	_nss_ldap_shadow_constr;
+	_nss_ldap_netgroup_constr;
+
+  # everything else should not be exported
+  local:
+    *;
+
+};

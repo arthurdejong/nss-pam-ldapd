@@ -207,6 +207,15 @@ AC_ARG_WITH(nslcd-socket,
 AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used for communicating.])
 AC_SUBST(NSLCD_SOCKET)
 
+# the directory PAM librabries are expected to be placed into
+AC_ARG_WITH(pam-seclib-dir,
+            AS_HELP_STRING([--with-pam-seclib-dir=PAM_SECLIB_DIR],
+                           [path to PAM security library]),
+            [ PAM_SECLIB_DIR="$with_pam_seclib_dir" ],
+            [ PAM_SECLIB_DIR="/lib/security" ])
+AC_DEFINE_UNQUOTED(PAM_SECLIB_DIR,"$PAM_SECLIB_DIR",[path to PAM security library])
+AC_SUBST(PAM_SECLIB_DIR)
+
 # the SONAME to use for the NSS module
 AC_ARG_WITH(nss-ldap-soname,
             AS_HELP_STRING([--with-nss-ldap-soname=SONAME],
@@ -637,6 +646,44 @@ then
 
   AC_SUBST(nslcd_LIBS)
 fi
+
+# Always use native linker on Solaris
+# but only invoke directly if compiling with gcc (?)
+case "$target_os" in
+solaris*) if test "$ac_cv_prog_gcc" = yes; then
+    nss_ldap_so_LD="/usr/ccs/bin/ld"
+    pam_ldap_so_LD="/usr/ccs/bin/ld"
+  fi
+  nss_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G"
+  pam_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G"
+  NSS_LDAP_SONAME="nss_ldap.so.1"
+  pam_ldap_so_VERSIONED="pam_ldap.so.1"
+  TARGET_OS="SUNOS" ;;
+linux*) nss_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic -Wl,--version-script,\$(srcdir)/exports.linux"
+  pam_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic -Wl,--version-script,\$(srcdir)/exports.linux"
+  NSS_LDAP_SONAME="libnss_ldap.so.2"
+  pam_ldap_so_VERSIONED="pam_ldap.so"
+  TARGET_OS="LINUX" ;;
+*) nss_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic"
+   pam_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic"
+  NSS_LDAP_SONAME="nss_ldap.so.1"
+  pam_ldap_so_VERSIONED="pam_ldap.so" ;;
+esac
+
+AC_SUBST(nss_ldap_so_LD)
+AC_SUBST(nss_ldap_so_LDFLAGS)
+AC_SUBST(NSS_LDAP_SONAME)
+
+AC_SUBST(pam_ldap_so_LD)
+AC_SUBST(pam_ldap_so_LDFLAGS)
+AC_SUBST(pam_ldap_so_VERSIONED)
+
+AC_SUBST(AIX64SUFFIX)
+AM_CONDITIONAL(GCC, test "$GCC" = "yes")
+AM_CONDITIONAL(GLIBC, test "$target_os" = "linux" -o "$target_os" = "linux-gnu")
+AM_CONDITIONAL(USE_NATIVE_LINKER, test -n "$nss_ldap_so_LD")
+AM_CONDITIONAL(SUNOS, test "x${TARGET_OS}" = "xSUNOS")
+AM_CONDITIONAL(LINUX, test "x${TARGET_OS}" = "xLINUX")
 
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile

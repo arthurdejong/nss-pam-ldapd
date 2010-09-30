@@ -24,11 +24,25 @@
 #define NSS__COMMON_H 1
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "nslcd.h"
 #include "common/nslcd-prot.h"
 #include "compat/attrs.h"
 #include "compat/nss_compat.h"
+
+#ifdef HAVE_NSSWITCH_H
+#include "ldap-nss.h"
+#endif /* HAVE_NSSWITCH_H */
+
+#ifdef HAVE_NSSWITCH_H
+/* Adapted from PADL */
+/* Routines for managing namelists */
+nss_status_t _nss_ldap_namelist_push(struct name_list **head,const char *name);
+void _nss_ldap_namelist_pop(struct name_list **head);
+int _nss_ldap_namelist_find(struct name_list *head,const char *netgroup);
+void _nss_ldap_namelist_destroy(struct name_list **head);
+#endif /* HAVE_NSSWITCH_H */
 
 /* These are macros for handling read and write problems, they are
    NSS specific due to the return code so are defined here. They
