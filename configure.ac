@@ -437,7 +437,7 @@ then
   AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,,[AC_LIBOBJ(ether)])
 
   # check requirements for our replacement functions
-  if test $ac_cv_func_ether_aton_r_func = no
+  if test "x$ac_cv_func_ether_aton_r_func" != "xyes"
   then
     # we should have a simple ether_aton()
     AC_CHECK_FUNCS(ether_aton)
@@ -458,13 +458,13 @@ then
                 ]])],
             [nss_pam_ldapd_cv_have_ether_aton_defined=no],
             [nss_pam_ldapd_cv_have_ether_aton_defined=yes]) ])
-    if test $nss_pam_ldapd_cv_have_ether_aton_defined = yes
+    if test "x$nss_pam_ldapd_cv_have_ether_aton_defined" = "xyes"
     then
       AC_DEFINE_UNQUOTED(HAVE_ETHER_ATON_DEFINED,1,
                          [Define to 1 if you have the definition for `ether_aton'.])
     fi
   fi
-  if test $ac_cv_func_ether_ntoa_r_func = no
+  if test "x$ac_cv_func_ether_ntoa_r_func" != "xyes"
   then
     # we should have a simple ether_ntoa()
     AC_CHECK_FUNCS(ether_ntoa)
@@ -485,7 +485,7 @@ then
                 ]])],
             [nss_pam_ldapd_cv_have_ether_ntoa_defined=no],
             [nss_pam_ldapd_cv_have_ether_ntoa_defined=yes]) ])
-    if test $nss_pam_ldapd_cv_have_ether_ntoa_defined = yes
+    if test "x$nss_pam_ldapd_cv_have_ether_ntoa_defined" = "xyes"
     then
       AC_DEFINE_UNQUOTED(HAVE_ETHER_NTOA_DEFINED,1,
                          [Define to 1 if you have the definition for `ether_ntoa'.])
