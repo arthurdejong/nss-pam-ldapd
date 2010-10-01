@@ -4,7 +4,7 @@
    (taken from _update_authtok() in pam_ldap.c).
 
    Copyright (C) 1998-2004 Luke Howard
-   Copyright (C) 2009 Arthur de Jong
+   Copyright (C) 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -53,11 +53,13 @@
 #define ber_memfree free
 #endif /* not HAVE_BER_MEMFREE */
 
+#if !HAVE_DECL_LDAP_EXTENDED_OPERATION_S
 /* we define this ourselves here because some LDAP header versions don't
    seem to define this */
-int ldap_extended_operation_s(LDAP *ld,LDAP_CONST char *reqoid,
+extern int ldap_extended_operation_s(LDAP *ld,LDAP_CONST char *reqoid,
     struct berval *reqdata,LDAPControl **serverctrls,LDAPControl **clientctrls,
     char **retoidp,struct berval **retdatap);
+#endif /* not HAVE_DECL_LDAP_EXTENDED_OPERATION_S */
 
 /* Replacement for password modification. user is the DN of the entry to
    change, oldpw is the old password (may not always be needed?), newpw is

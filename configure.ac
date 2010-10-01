@@ -446,60 +446,15 @@ then
   AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,,[AC_LIBOBJ(ether)])
 
   # check requirements for our replacement functions
-  if test "x$ac_cv_func_ether_aton_r_func" != "xyes"
-  then
-    # we should have a simple ether_aton()
-    AC_CHECK_FUNCS(ether_aton)
-    # see if ether_aton() is defined in some header file
-    AC_CACHE_CHECK([for ether_aton() definition],
-        nss_pam_ldapd_cv_have_ether_aton_defined,
-        [AC_COMPILE_IFELSE(
-            [AC_LANG_PROGRAM([[
-                #include <sys/socket.h>
-                #include <net/if.h>
-                #include <netinet/in.h>
-                #include <netinet/if_ether.h>
-                #ifdef HAVE_NETINET_ETHER_H
-                #include <netinet/ether.h>
-                #endif
-                ]],[[
-                extern int ether_aton(int);
-                ]])],
-            [nss_pam_ldapd_cv_have_ether_aton_defined=no],
-            [nss_pam_ldapd_cv_have_ether_aton_defined=yes]) ])
-    if test "x$nss_pam_ldapd_cv_have_ether_aton_defined" = "xyes"
-    then
-      AC_DEFINE_UNQUOTED(HAVE_ETHER_ATON_DEFINED,1,
-                         [Define to 1 if you have the definition for `ether_aton'.])
-    fi
-  fi
-  if test "x$ac_cv_func_ether_ntoa_r_func" != "xyes"
-  then
-    # we should have a simple ether_ntoa()
-    AC_CHECK_FUNCS(ether_ntoa)
-    # see if ether_ntoa() is defined in some header file
-    AC_CACHE_CHECK([for ether_ntoa() definition],
-        nss_pam_ldapd_cv_have_ether_ntoa_defined,
-        [AC_COMPILE_IFELSE(
-            [AC_LANG_PROGRAM([[
-                #include <sys/socket.h>
-                #include <net/if.h>
-                #include <netinet/in.h>
-                #include <netinet/if_ether.h>
-                #ifdef HAVE_NETINET_ETHER_H
-                #include <netinet/ether.h>
-                #endif
-                ]],[[
-                extern int ether_ntoa(int);
-                ]])],
-            [nss_pam_ldapd_cv_have_ether_ntoa_defined=no],
-            [nss_pam_ldapd_cv_have_ether_ntoa_defined=yes]) ])
-    if test "x$nss_pam_ldapd_cv_have_ether_ntoa_defined" = "xyes"
-    then
-      AC_DEFINE_UNQUOTED(HAVE_ETHER_NTOA_DEFINED,1,
-                         [Define to 1 if you have the definition for `ether_ntoa'.])
-    fi
-  fi
+  AC_CHECK_FUNCS(ether_ntoa ether_aton)
+  AC_CHECK_DECLS([ether_ntoa,ether_aton],,,[
+      #include <sys/socket.h>
+      #include <net/if.h>
+      #include <netinet/in.h>
+      #include <netinet/if_ether.h>
+      #ifdef HAVE_NETINET_ETHER_H
+      #include <netinet/ether.h>
+      #endif])
 
   # check to see if struct sockaddr_storage is defined
   AC_CHECK_TYPE(struct sockaddr_storage,,
@@ -594,6 +549,11 @@ then
 
   # replace ldap_create_page_control() and ldap_parse_page_control()
   AC_CHECK_FUNCS(ldap_create_page_control ldap_parse_page_control,,[AC_LIBOBJ(pagectrl)])
+  AC_CHECK_DECLS(ldap_extended_operation_s,,,[
+      #if HAVE_LBER_H
+      #include <lber.h>
+      #endif
+      #include <ldap.h>])
 
   # replace other ldap functions
   AC_REPLACE_FUNCS(ldap_passwd_s)
