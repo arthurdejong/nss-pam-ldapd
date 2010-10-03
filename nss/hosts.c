@@ -25,6 +25,9 @@
 
 #include <string.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "prototypes.h"
 #include "common.h"
@@ -162,6 +165,14 @@ static nss_status_t read_hostent_nextonempty(
   return NSS_STATUS_SUCCESS;
 }
 
+/* write an address value */
+#define WRITE_ADDRESS(fp,af,len,addr) \
+  WRITE_INT32(fp,af); \
+  WRITE_INT32(fp,len); \
+  WRITE(fp,addr,len);
+
+#ifdef NSS_FLAVOUR_GLIBC
+
 /* this function looks up a single host entry and returns all the addresses
    associated with the host in a single address familiy
    name            - IN  - hostname to lookup
@@ -173,41 +184,84 @@ nss_status_t _nss_ldap_gethostbyname2_r(
         const char *name,int af,struct hostent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,
+  NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,buffer,buflen,
              name,
              read_hostent_erronempty(fp,af,result,buffer,buflen,errnop,h_errnop));
+  return retv;
 }
 
 /* this function just calls the gethostbyname2() variant with the address
    familiy set */
-#ifdef HAVE_NSSWITCH_H
-static nss_status_t _nss_ldap_gethostbyname_r(nss_backend_t *be,void *args)
+nss_status_t _nss_ldap_gethostbyname_r(
+        const char *name,struct hostent *result,
+        char *buffer,size_t buflen,int *errnop,int *h_errnop)
+{
+  return _nss_ldap_gethostbyname2_r(name,AF_INET,result,buffer,buflen,errnop,h_errnop);
+}
+
+/* this function looks up a single host entry and returns all the addresses
+   associated with the host in a single address familiy
+   addr            - IN  - the address to look up
+   len             - IN  - the size of the addr struct
+   af              - IN  - address familty the address is specified as
+   result          - OUT - entry found
+   buffer,buflen   - OUT - buffer to store allocated stuff on
+   errnop,h_errnop - OUT - for reporting errors */
+nss_status_t _nss_ldap_gethostbyaddr_r(
+        const void *addr,socklen_t len,int af,struct hostent *result,
+        char *buffer,size_t buflen,int *errnop,int *h_errnop)
+{
+  NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,buffer,buflen,
+            WRITE_ADDRESS(fp,af,len,addr),
+            read_hostent_erronempty(fp,af,result,buffer,buflen,errnop,h_errnop))
+  return retv;
+}
+
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *hostentfp;
+
+nss_status_t _nss_ldap_sethostent(int UNUSED(stayopen))
+{
+  NSS_SETENT(hostentfp);
+}
+
+/* this function only returns addresses of the AF_INET address family */
+nss_status_t _nss_ldap_gethostent_r(
+        struct hostent *result,
+        char *buffer,size_t buflen,int *errnop,int *h_errnop)
+{
+  NSS_GETENT(hostentfp,NSLCD_ACTION_HOST_ALL,buffer,buflen,
+             read_hostent_nextonempty(hostentfp,AF_INET,result,buffer,buflen,errnop,h_errnop));
+  return retv;
+}
+
+nss_status_t _nss_ldap_endhostent(void)
+{
+  NSS_ENDENT(hostentfp);
+}
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+/* hack to set the correct errno and h_errno */
+#define errnop &errno
+#define h_errnop &(NSS_ARGS(args)->h_errno)
+
+static nss_status_t _xnss_ldap_gethostbyname_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct hostent priv_host;
   struct hostent *host=NSS_ARGS(args)->buf.result?NSS_ARGS(args)->buf.result:&priv_host;
   char *data_ptr;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  int h_errno;
-  nss_status_t status;
-  status=_nss_ldap_gethostbyname2_r(
-                NSS_ARGS(args)->key.name,
-                AF_INET,
-                host,
-                NSS_ARGS(args)->buf.buffer,
-                NSS_ARGS(args)->buf.buflen,
-                &errno,&h_errno);
-
-  if (status!=NSS_STATUS_SUCCESS)
-  {
-    NSS_ARGS(args)->h_errno=h_errno;
-    return status;
-  }
-
+  NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,
+             NSS_ARGS(args)->key.name,
+             read_hostent_erronempty(fp,AF_INET,host,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,h_errnop));
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
   if (!NSS_ARGS(args)->buf.result)
   {
     /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
+    data_ptr=(char *)malloc(NSS_ARGS(args)->buf.buflen);
     if (host->h_addr_list)
     {
       int i;
@@ -234,7 +288,7 @@ static nss_status_t _nss_ldap_gethostbyname_r(nss_backend_t *be,void *args)
         /* need review */
       }
     }
-    strcpy(buffer,data_ptr);
+    strcpy(NSS_ARGS(args)->buf.buffer,data_ptr);
     free(data_ptr);
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
     NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
@@ -243,127 +297,43 @@ static nss_status_t _nss_ldap_gethostbyname_r(nss_backend_t *be,void *args)
   { /* NSS_ARGS(args)->buf.result!=NULL */
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
   }
-  NSS_ARGS(args)->h_errno=h_errno;
-  return status;
-}
-#else /* not HAVE_NSSWITCH_H */
-nss_status_t _nss_ldap_gethostbyname_r(
-        const char *name,struct hostent *result,
-        char *buffer,size_t buflen,int *errnop,int *h_errnop)
-{
-  return _nss_ldap_gethostbyname2_r(name,AF_INET,result,buffer,buflen,errnop,h_errnop);
-}
-#endif /* HAVE_NSSWITCH_H */
-
-/* write an address value */
-#define WRITE_ADDRESS(fp,af,len,addr) \
-  WRITE_INT32(fp,af); \
-  WRITE_INT32(fp,len); \
-  WRITE(fp,addr,len);
-
-/* this function looks up a single host entry and returns all the addresses
-   associated with the host in a single address familiy
-   addr            - IN  - the address to look up
-   len             - IN  - the size of the addr struct
-   af              - IN  - address familty the address is specified as
-   result          - OUT - entry found
-   buffer,buflen   - OUT - buffer to store allocated stuff on
-   errnop,h_errnop - OUT - for reporting errors */
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_gethostbyaddr_r(
-#else /* not HAVE_NSSWITCH_H */
-nss_status_t _nss_ldap_gethostbyaddr_r(
-#endif /* HAVE_NSSWITCH_H */
-        const void *addr,socklen_t len,int af,struct hostent *result,
-        char *buffer,size_t buflen,int *errnop,int *h_errnop)
-{
-  NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
-            WRITE_ADDRESS(fp,af,len,addr),
-            read_hostent_erronempty(fp,af,result,buffer,buflen,errnop,h_errnop))
+  return retv;
 }
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *hostentfp;
-
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_sethostent(nss_backend_t *hosts_context,void *fakeargs)
-#else /* not HAVE_NSSWITCH_H */
-nss_status_t _nss_ldap_sethostent(int UNUSED(stayopen))
-#endif /* HAVE_NSSWITCH_H */
+static nss_status_t _xnss_ldap_gethostbyaddr_r(nss_backend_t *UNUSED(be),void *args)
 {
-  NSS_SETENT(hostentfp);
-}
-
-/* this function only returns addresses of the AF_INET address family */
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_gethostent_r(
-#else /* not HAVE_NSSWITCH_H */
-nss_status_t _nss_ldap_gethostent_r(
-#endif /* HAVE_NSSWITCH_H */
-        struct hostent *result,
-        char *buffer,size_t buflen,int *errnop,int *h_errnop)
-{
-  NSS_GETENT(hostentfp,NSLCD_ACTION_HOST_ALL,
-             read_hostent_nextonempty(hostentfp,AF_INET,result,buffer,buflen,errnop,h_errnop));
-}
-
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_endhostent(nss_backend_t *hosts_context,void *fakeargs )
-#else /* not HAVE_NSSWITCH_H */
-nss_status_t _nss_ldap_endhostent(void)
-#endif /* HAVE_NSSWITCH_H */
-{
-  NSS_ENDENT(hostentfp);
-}
-
-#ifdef HAVE_NSSWITCH_H
-
-static nss_status_t _nss_ldap_gethostbyaddr_r(nss_backend_t *be,void *args)
-{
-  struct in_addr iaddr;
-  int type;
   struct hostent priv_host;
   struct hostent *host=NSS_ARGS(args)->buf.result?NSS_ARGS(args)->buf.result:&priv_host;
   char *data_ptr;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  int h_errno;
-  nss_status_t status;
-  status=_nss_nslcd_gethostbyaddr_r(
-        NSS_ARGS(args)->key.hostaddr.addr,
-        NSS_ARGS(args)->key.hostaddr.len,
-        NSS_ARGS(args)->key.hostaddr.type,
-        host,
-        NSS_ARGS(args)->buf.buffer,
-        NSS_ARGS(args)->buf.buflen,
-        &errno,&h_errno);
-  if (status!=NSS_STATUS_SUCCESS)
-  {
-    NSS_ARGS(args)->h_errno=h_errno;
-    return status;
-  }
+  NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,
+            WRITE_ADDRESS(fp,NSS_ARGS(args)->key.hostaddr.type,NSS_ARGS(args)->key.hostaddr.len,NSS_ARGS(args)->key.hostaddr.addr),
+            read_hostent_erronempty(fp,NSS_ARGS(args)->key.hostaddr.type,host,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,h_errnop))
+
+
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
   if (!NSS_ARGS(args)->buf.result)
   {
     /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
+    data_ptr=(char *)malloc(NSS_ARGS(args)->buf.buflen);
     if (host->h_addr_list)
     {
       int i;
       struct in_addr in;
-      (void) memcpy(&in.s_addr,host->h_addr_list[0],sizeof(in.s_addr));
+      (void)memcpy(&in.s_addr,host->h_addr_list[0],sizeof(in.s_addr));
       sprintf(data_ptr,"%s %s",inet_ntoa(in),host->h_name);
       if (host->h_aliases)
       {
         int j;
-        for (j=0; host->h_aliases[j]; j++)
+        for (j=0;host->h_aliases[j];j++)
         {
           strcat(data_ptr,"  ");
           strcat(data_ptr,host->h_aliases[j]);
         }
       }
-      for (i=1; host->h_addr_list[i]; i++)
+      for (i=1;host->h_addr_list[i];i++)
       {
-        (void) memcpy(&in.s_addr,host->h_addr_list[i],sizeof(in.s_addr));
+        (void)memcpy(&in.s_addr,host->h_addr_list[i],sizeof(in.s_addr));
         strcat(data_ptr,"\n");
         strcat(data_ptr,inet_ntoa(in));
         strcat(data_ptr," ");
@@ -372,7 +342,7 @@ static nss_status_t _nss_ldap_gethostbyaddr_r(nss_backend_t *be,void *args)
         /* need review */
       }
     }
-    strcpy(buffer,data_ptr);
+    strcpy(NSS_ARGS(args)->buf.buffer,data_ptr);
     free(data_ptr);
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
     NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
@@ -381,31 +351,29 @@ static nss_status_t _nss_ldap_gethostbyaddr_r(nss_backend_t *be,void *args)
   { /* NSS_ARGS(args)->buf.result!=NULL */
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
   }
-  NSS_ARGS(args)->h_errno=h_errno;
-  return status;
+  return retv;
+}
+
+
+static nss_status_t _xnss_ldap_sethostent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+{
+  NSS_SETENT(hostentfp);
 }
 
 /* this function only returns addresses of the AF_INET address family */
-static nss_status_t _nss_ldap_gethostent_r(nss_backend_t *hosts_context,void *args)
+static nss_status_t _xnss_ldap_gethostent_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct hostent priv_host;
-  struct hostent *host=NSS_ARGS(args)->buf.result ?
-                        NSS_ARGS(args)->buf.result : &priv_host;
+  struct hostent *host=NSS_ARGS(args)->buf.result?NSS_ARGS(args)->buf.result:&priv_host;
   char *data_ptr;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  int h_errno;
-  nss_status_t status;
-  status=_nss_nslcd_gethostent_r(host,buffer,buflen,&errno,&h_errno);
-  if (status!=NSS_STATUS_SUCCESS)
-  {
-    NSS_ARGS(args)->h_errno=h_errno;
-    return status;
-  }
+  NSS_GETENT(hostentfp,NSLCD_ACTION_HOST_ALL,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,
+             read_hostent_nextonempty(hostentfp,AF_INET,host,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,h_errnop));
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
   if (!NSS_ARGS(args)->buf.result)
   {
     /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
+    data_ptr=(char *)malloc(NSS_ARGS(args)->buf.buflen);
     if (host->h_addr_list)
     {
       int i;
@@ -429,7 +397,7 @@ static nss_status_t _nss_ldap_gethostent_r(nss_backend_t *hosts_context,void *ar
         /* need review */
       }
     }
-    strcpy(buffer,data_ptr);
+    strcpy(NSS_ARGS(args)->buf.buffer,data_ptr);
     free(data_ptr);
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
     NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
@@ -438,35 +406,38 @@ static nss_status_t _nss_ldap_gethostent_r(nss_backend_t *hosts_context,void *ar
   { /* NSS_ARGS(args)->buf.result!=NULL */
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
   }
-  NSS_ARGS(args)->h_errno=h_errno;
-  return status;
+  return retv;
 }
 
-static nss_status_t _nss_ldap_hosts_destr(nss_backend_t *hosts_context,void *args)
+static nss_status_t _xnss_ldap_endhostent(nss_backend_t *UNUSED(be),void *UNUSED(args))
 {
-  return _nss_ldap_default_destr(hosts_context,args);
+  NSS_ENDENT(hostentfp);
+}
+
+static nss_status_t _xnss_ldap_hosts_destr(nss_backend_t *be,void *UNUSED(args))
+{
+  free(be);
+  return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t host_ops[]={
-  _nss_ldap_hosts_destr,
-  _nss_ldap_endhostent,
-  _nss_ldap_sethostent,
-  _nss_ldap_gethostent_r,
-  _nss_ldap_gethostbyname_r,
-  _nss_ldap_gethostbyaddr_r
+  _xnss_ldap_hosts_destr,
+  _xnss_ldap_endhostent,
+  _xnss_ldap_sethostent,
+  _xnss_ldap_gethostent_r,
+  _xnss_ldap_gethostbyname_r,
+  _xnss_ldap_gethostbyaddr_r
 };
 
-nss_backend_t *_nss_ldap_hosts_constr(const char *db_name,
-                        const char *src_name,const char *cfg_args)
+nss_backend_t *_nss_ldap_hosts_constr(const char *UNUSED(db_name),
+                        const char *UNUSED(src_name),const char *UNUSED(cfg_args))
 {
-  nss_ldap_backend_t *be;
-  if (!(be=(nss_ldap_backend_t *)malloc(sizeof(*be))))
+  nss_backend_t *be;
+  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
     return NULL;
   be->ops=host_ops;
   be->n_ops=sizeof(host_ops)/sizeof(nss_backend_op_t);
-  if (_nss_ldap_default_constr(be)!=NSS_STATUS_SUCCESS)
-    return NULL;
   return (nss_backend_t *)be;
 }
 
-#endif /* HAVE_NSSWITCH_H */
+#endif /* NSS_FLAVOUR_SOLARIS */

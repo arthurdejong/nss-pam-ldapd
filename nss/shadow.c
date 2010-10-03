@@ -48,67 +48,67 @@ static nss_status_t read_spwd(
   return NSS_STATUS_SUCCESS;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getspnam_r(
-#else /* not HAVE_NSSWITCH_H */
+#ifdef NSS_FLAVOUR_GLIBC
+
 nss_status_t _nss_ldap_getspnam_r(
-#endif /* HAVE_NSSWITCH_H */
         const char *name,struct spwd *result,char *buffer,
         size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,
+  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,buffer,buflen,
              name,
              read_spwd(fp,result,buffer,buflen,errnop));
+  return retv;
 }
 
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *spentfp;
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_setspent(nss_backend_t *be,void *args)
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_setspent(int UNUSED(stayopen))
-#endif /* HAVE_NSSWITCH_H */
 {
   NSS_SETENT(spentfp);
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getspent_r(
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_getspent_r(
-#endif /* HAVE_NSSWITCH_H */
         struct spwd *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,
+  NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,buffer,buflen,
              read_spwd(spentfp,result,buffer,buflen,errnop));
+  return retv;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_endspent(nss_backend_t *sp_context,void *args)
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_endspent(void)
-#endif /* HAVE_NSSWITCH_H */
 {
   NSS_ENDENT(spentfp);
 }
 
-#ifdef HAVE_NSSWITCH_H
-static nss_status_t _nss_ldap_getspnam_r(nss_backend_t *be,void *args)
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+static nss_status_t _nss_nslcd_getspnam_r(
+        const char *name,struct spwd *result,char *buffer,
+        size_t buflen,int *errnop)
+{
+  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,buffer,buflen,
+             name,
+             read_spwd(fp,result,buffer,buflen,errnop));
+  return retv;
+}
+
+static nss_status_t _xnss_ldap_getspnam_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct spwd priv_spwd;
   struct spwd *sp=NSS_ARGS(args)->buf.result?(struct spwd *)NSS_ARGS(args)->buf.result:&priv_spwd;
   char *buffer=NSS_ARGS(args)->buf.buffer;
   size_t buflen=NSS_ARGS(args)->buf.buflen;
-  char *name=(char *)NSS_ARGS(args)->key.name;
   char *data_ptr;
   nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen < 0)
+  if (NSS_ARGS(args)->buf.buflen<0)
   {
     NSS_ARGS(args)->erange=1;
     return NSS_STATUS_TRYAGAIN;
   }
-  status=_nss_nslcd_getspnam_r(name,sp,buffer,buflen,&errno);
+  status=_nss_nslcd_getspnam_r(NSS_ARGS(args)->key.name,sp,buffer,buflen,&errno);
   if (status!=NSS_STATUS_SUCCESS)
     return status;
   if (!NSS_ARGS(args)->buf.result)
@@ -164,7 +164,20 @@ static nss_status_t _nss_ldap_getspnam_r(nss_backend_t *be,void *args)
   return status;
 }
 
-static nss_status_t _nss_ldap_getspent_r(nss_backend_t *sp_context,void *args)
+static nss_status_t _xnss_ldap_setspent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+{
+  NSS_SETENT(spentfp);
+}
+
+static nss_status_t _nss_nslcd_getspent_r(
+        struct spwd *result,char *buffer,size_t buflen,int *errnop)
+{
+  NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,buffer,buflen,
+             read_spwd(spentfp,result,buffer,buflen,errnop));
+  return retv;
+}
+
+static nss_status_t _xnss_ldap_getspent_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct spwd priv_spwd;
   struct spwd *sp=NSS_ARGS(args)->buf.result?(struct spwd *)NSS_ARGS(args)->buf.result:&priv_spwd;
@@ -172,7 +185,7 @@ static nss_status_t _nss_ldap_getspent_r(nss_backend_t *sp_context,void *args)
   size_t buflen=NSS_ARGS(args)->buf.buflen;
   char *data_ptr;
   nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen < 0)
+  if (NSS_ARGS(args)->buf.buflen<0)
   {
     NSS_ARGS(args)->erange=1;
     return NSS_STATUS_TRYAGAIN;
@@ -233,30 +246,34 @@ static nss_status_t _nss_ldap_getspent_r(nss_backend_t *sp_context,void *args)
   return status;
 }
 
-static nss_status_t _nss_ldap_shadow_destr(nss_backend_t *sp_context,void *args)
+static nss_status_t _xnss_ldap_endspent(nss_backend_t *UNUSED(be),void *UNUSED(args))
 {
-  return _nss_ldap_default_destr(sp_context,args);
+  NSS_ENDENT(spentfp);
+}
+
+static nss_status_t _xnss_ldap_shadow_destr(nss_backend_t *be,void *UNUSED(args))
+{
+  free(be);
+  return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t shadow_ops[]={
-  _nss_ldap_shadow_destr,
-  _nss_ldap_endspent,         /* NSS_DBOP_ENDENT */
-  _nss_ldap_setspent,         /* NSS_DBOP_SETENT */
-  _nss_ldap_getspent_r,       /* NSS_DBOP_GETENT */
-  _nss_ldap_getspnam_r        /* NSS_DBOP_SHADOW_BYNAME */
+  _xnss_ldap_shadow_destr,
+  _xnss_ldap_endspent,         /* NSS_DBOP_ENDENT */
+  _xnss_ldap_setspent,         /* NSS_DBOP_SETENT */
+  _xnss_ldap_getspent_r,       /* NSS_DBOP_GETENT */
+  _xnss_ldap_getspnam_r        /* NSS_DBOP_SHADOW_BYNAME */
 };
 
-nss_backend_t *_nss_ldap_shadow_constr(const char *db_name,
-                         const char *src_name,const char *cfg_args)
+nss_backend_t *_nss_ldap_shadow_constr(const char *UNUSED(db_name),
+                         const char *UNUSED(src_name),const char *UNUSED(cfg_args))
 {
-  nss_ldap_backend_t *be;
-  if (!(be=(nss_ldap_backend_t *)malloc(sizeof(*be))))
+  nss_backend_t *be;
+  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
     return NULL;
   be->ops=shadow_ops;
   be->n_ops=sizeof(shadow_ops)/sizeof(nss_backend_op_t);
-  if (_nss_ldap_default_constr(be)!=NSS_STATUS_SUCCESS)
-    return NULL;
   return (nss_backend_t *)be;
 }
 
-#endif /* HAVE_NSSWITCH_H */
+#endif /* NSS_FLAVOUR_SOLARIS */

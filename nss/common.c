@@ -44,29 +44,8 @@
 /* flag used to disable NSS lookups using this module */
 int _nss_ldap_enablelookups=1;
 
-#ifdef HAVE_NSSWITCH_H
+#ifdef NSS_FLAVOUR_SOLARIS
 /* Adapted from PADL */
-/*
- *Default destructor.
- *The entry point for this function is the destructor in the dispatch
- *table for the switch. Thus,it's safe to grab the mutex from this
- *function.
- */
-nss_status_t _nss_ldap_default_destr(nss_backend_t *be,void *args)
-{
-  /* Ditch the backend. */
-  free(be);
-  return NSS_STATUS_SUCCESS;
-}
-
-/*
- *This is the default "constructor" which gets called from each
- *constructor,in the NSS dispatch table.
- */
-nss_status_t _nss_ldap_default_constr(nss_ldap_backend_t *be)
-{
-  return NSS_STATUS_SUCCESS;
-}
 
 /* add a nested netgroup or group to the namelist */
 nss_status_t _nss_ldap_namelist_push(struct name_list **head,const char *name)
@@ -129,4 +108,4 @@ int _nss_ldap_namelist_find(struct name_list *head,const char *netgroup)
   return found;
 }
 
-#endif /* HAVE_NSSWITCH_H */
+#endif /* NSS_FLAVOUR_SOLARIS */

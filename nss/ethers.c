@@ -41,106 +41,95 @@ static nss_status_t read_etherent(
   return NSS_STATUS_SUCCESS;
 }
 
+#ifdef NSS_FLAVOUR_GLIBC
+
 /* map a hostname to the corresponding ethernet address */
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_gethostton_r(
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_gethostton_r(
-#endif /* HAVE_NSSWITCH_H */
         const char *name,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,
+  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,buffer,buflen,
              name,
              read_etherent(fp,result,buffer,buflen,errnop));
+  return retv;
 }
 
 /* map an ethernet address to the corresponding hostname */
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getntohost_r(
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_getntohost_r(
-#endif /* HAVE_NSSWITCH_H */
         const struct ether_addr *addr,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,
+  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,buffer,buflen,
              *addr,uint8_t[6],
              read_etherent(fp,result,buffer,buflen,errnop));
+  return retv;
 }
 
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *etherentfp;
 
-#ifdef HAVE_NSSWITCH_H
-static nss_status_t _nss_ldap_setetherent(
-        nss_backend_t *be,void *args)
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_setetherent(int UNUSED(stayopen))
-#endif /* HAVE_NSSWITCH_H */
 {
   NSS_SETENT(etherentfp);
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getetherent_r(
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_getetherent_r(
-#endif /* HAVE_NSSWITCH_H */
         struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(etherentfp,NSLCD_ACTION_ETHER_ALL,
+  NSS_GETENT(etherentfp,NSLCD_ACTION_ETHER_ALL,buffer,buflen,
              read_etherent(etherentfp,result,buffer,buflen,errnop));
+  return retv;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_endetherent(nss_backend_t *be,void *args)
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_endetherent(void)
-#endif /* HAVE_NSSWITCH_H */
 {
   NSS_ENDENT(etherentfp);
 }
 
-#ifdef HAVE_NSSWITCH_H
+#endif /* NSS_FLAVOUR_GLIBC */
 
-/* Solaris wrapper around _nss_nslcd_gethsotton_r */
-static nss_status_t _nss_ldap_gethostton_r(nss_backend_t *be,void *args)
+#ifdef NSS_FLAVOUR_SOLARIS
+
+#define NSS_BUFLEN_ETHERS 1024
+
+#define errnop &errno
+
+/* map a hostname to the corresponding ethernet address */
+static nss_status_t _xnss_ldap_gethostton_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct etherent result;
   char buffer[NSS_BUFLEN_ETHERS];
-  nss_status_t status;
-  char *name=(char *)(NSS_ARGS(args)->key.name);
-  status=_nss_nslcd_gethostton_r(name,&result,buffer,sizeof(buffer),&errno);
-  if (status==NSS_STATUS_SUCCESS)
+  const char *name=(NSS_ARGS(args)->key.name);
+  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,buffer,sizeof(buffer),
+             name,
+             read_etherent(fp,&result,buffer,sizeof(buffer),&errno));
+  if (retv==NSS_STATUS_SUCCESS)
   {
-   /*  if (NSS_ARGS(args)->buf.buffer!=NULL) { */
     if (NSS_ARGS(args)->buf.result==NULL)
     {
       strcpy(NSS_ARGS(args)->buf.buffer,ether_ntoa(&result.e_addr));
       NSS_ARGS(args)->buf.buflen=strlen(NSS_ARGS(args)->buf.buffer);
       NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
       NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-      return status;
+      return retv;
     }
     memcpy(NSS_ARGS(args)->buf.result,&result.e_addr,sizeof(result.e_addr));
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
   }
-  return status;
+  return retv;
 }
 
-/* Solaris wrapper around _nss_nslcd_getntohost_r */
-static nss_status_t _nss_ldap_getntohost_r(nss_backend_t *be,void *args)
+/* map an ethernet address to the corresponding hostname */
+static nss_status_t _xnss_ldap_getntohost_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct etherent result;
-  struct ether_addr *addr;
+  struct ether_addr *addr=(struct ether_addr *)(NSS_ARGS(args)->key.ether);
   char buffer[NSS_BUFLEN_ETHERS];
-  size_t buflen=sizeof(buffer);
-  nss_status_t status;
-  addr=(struct ether_addr *)(NSS_ARGS(args)->key.ether);
-  status=_nss_nslcd_getntohost_r(addr,&result,buffer,buflen,&errno);
-  if (status==NSS_STATUS_SUCCESS)
+  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,buffer,sizeof(buffer),
+             *addr,uint8_t[6],
+             read_etherent(fp,&result,buffer,sizeof(buffer),&errno));
+  if (retv==NSS_STATUS_SUCCESS)
   {
     if (NSS_ARGS(args)->buf.buffer!=NULL)
     {
@@ -151,61 +140,68 @@ static nss_status_t _nss_ldap_getntohost_r(nss_backend_t *be,void *args)
       sprintf(NSS_ARGS(args)->buf.buffer,"%s %s",ether_ntoa(addr),result.e_name);
       NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
       NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-      return status;
+      return retv;
     }
     memcpy(NSS_ARGS(args)->buf.buffer,result.e_name,strlen(result.e_name)+1);
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->buf.buflen=strlen(result.e_name);
+    NSS_ARGS(args)->buf.buflen=strlen(result.e_name); /* ?? */
   }
   else
   {
     NSS_ARGS(args)->returnval=NULL;
   }
-  return status;
+  return retv;
 }
 
-static nss_status_t _nss_ldap_getetherent_r(nss_backend_t *be,void *args)
+static nss_status_t _xnss_ldap_setetherent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+{
+  NSS_SETENT(etherentfp);
+}
+
+static nss_status_t _xnss_ldap_getetherent_r(nss_backend_t *UNUSED(be),void *args)
 {
   /* TODO: cns3 uses struct ether,verify */
   struct etherent result;
-  char *buffer;
-  size_t buflen;
-  int errnop;
-  nss_status_t status;
-  buffer=NSS_ARGS(args)->buf.buffer;
-  buflen=NSS_ARGS(args)->buf.buflen;
-  status=_nss_nslcd_getetherent_r(&result,buffer,buflen,&errnop);
-  if (status==NSS_STATUS_SUCCESS)
+  char *buffer=NSS_ARGS(args)->buf.buffer;
+  size_t buflen=NSS_ARGS(args)->buf.buflen;
+  NSS_GETENT(etherentfp,NSLCD_ACTION_ETHER_ALL,buffer,buflen,
+             read_etherent(etherentfp,&result,buffer,buflen,&errno));
+  if (retv==NSS_STATUS_SUCCESS)
   {
     memcpy(NSS_ARGS(args)->buf.result,&result.e_addr,sizeof(result.e_addr));
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
   }
   else
     NSS_ARGS(args)->returnval=NULL;
-  return status;
+  return retv;
 }
 
-static nss_status_t _nss_ldap_ethers_destr(nss_backend_t *ether_context,void *args)
+static nss_status_t _xnss_ldap_endetherent(nss_backend_t *UNUSED(be),void *UNUSED(args))
 {
-  return _nss_ldap_default_destr(ether_context,args);
+  NSS_ENDENT(etherentfp);
+}
+
+static nss_status_t _xnss_ldap_ethers_destr(nss_backend_t *be,void *UNUSED(args))
+{
+  free(be);
+  return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t ethers_ops[]={
-  _nss_ldap_ethers_destr,
-  _nss_ldap_gethostton_r,
-  _nss_ldap_getntohost_r
+  _xnss_ldap_ethers_destr,
+  _xnss_ldap_gethostton_r,
+  _xnss_ldap_getntohost_r
 };
 
-nss_backend_t *_nss_ldap_ethers_constr(const char *db_name,const char *src_name,const char *cfg_args)
+nss_backend_t *_nss_ldap_ethers_constr(const char *UNUSED(db_name),
+      const char *UNUSED(src_name),const char *UNUSED(cfg_args))
 {
-  nss_ldap_backend_t *be;
-  if (!(be=(nss_ldap_backend_t *)malloc(sizeof(*be))))
+  nss_backend_t *be;
+  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
     return NULL;
   be->ops=ethers_ops;
   be->n_ops=sizeof(ethers_ops)/sizeof(nss_backend_op_t);
-  if (_nss_ldap_default_constr(be)!=NSS_STATUS_SUCCESS)
-    return NULL;
-  return (nss_backend_t *)be;
+  return be;
 }
 
-#endif /* HAVE_NSSWITCH_H */
+#endif /* NSS_FLAVOUR_SOLARIS */

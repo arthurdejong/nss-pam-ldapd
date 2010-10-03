@@ -31,18 +31,17 @@
 #include "compat/attrs.h"
 #include "compat/nss_compat.h"
 
-#ifdef HAVE_NSSWITCH_H
-#include "ldap-nss.h"
-#endif /* HAVE_NSSWITCH_H */
-
-#ifdef HAVE_NSSWITCH_H
 /* Adapted from PADL */
 /* Routines for managing namelists */
+struct name_list
+{
+  char *name;
+  struct name_list *next;
+};
 nss_status_t _nss_ldap_namelist_push(struct name_list **head,const char *name);
 void _nss_ldap_namelist_pop(struct name_list **head);
 int _nss_ldap_namelist_find(struct name_list *head,const char *netgroup);
 void _nss_ldap_namelist_destroy(struct name_list **head);
-#endif /* HAVE_NSSWITCH_H */
 
 /* These are macros for handling read and write problems, they are
    NSS specific due to the return code so are defined here. They
@@ -93,7 +92,7 @@ void _nss_ldap_namelist_destroy(struct name_list **head);
    the result structure, the user buffer with length and the
    errno to return. This macro should be called through some of
    the customized ones below. */
-#define NSS_BYGEN(action,writefn,readfn) \
+#define NSS_BYGEN(action,buffer,buflen,writefn,readfn) \
   TFILE *fp; \
   int32_t tmpint32; \
   nss_status_t retv; \
@@ -112,23 +111,22 @@ void _nss_ldap_namelist_destroy(struct name_list **head);
   retv=readfn; \
   /* close socket and we're done */ \
   if ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_TRYAGAIN)) \
-    (void)tio_close(fp); \
-  return retv;
+    (void)tio_close(fp);
 
 /* This macro can be used to generate a get..byname() function
    body. */
-#define NSS_BYNAME(action,name,readfn) \
-  NSS_BYGEN(action,WRITE_STRING(fp,name),readfn)
+#define NSS_BYNAME(action,buffer,buflen,name,readfn) \
+  NSS_BYGEN(action,buffer,buflen,WRITE_STRING(fp,name),readfn)
 
 /* This macro can be used to generate a get..by..() function
    body where the value that is the key has the specified type. */
-#define NSS_BYTYPE(action,val,type,readfn) \
-  NSS_BYGEN(action,WRITE_TYPE(fp,val,type),readfn)
+#define NSS_BYTYPE(action,buffer,buflen,val,type,readfn) \
+  NSS_BYGEN(action,buffer,buflen,WRITE_TYPE(fp,val,type),readfn)
 
 /* This macro can be used to generate a get..by..() function
    body where the value should be passed as an int32_t. */
-#define NSS_BYINT32(action,val,readfn) \
-  NSS_BYGEN(action,WRITE_INT32(fp,val),readfn)
+#define NSS_BYINT32(action,buffer,buflen,val,readfn) \
+  NSS_BYGEN(action,buffer,buflen,WRITE_INT32(fp,val),readfn)
 
 /* This macro generates a simple setent() function body. This closes any
    open streams so that NSS_GETENT() can open a new file. */
@@ -145,7 +143,7 @@ void _nss_ldap_namelist_destroy(struct name_list **head);
 /* This macro generates a getent() function body. If the stream is not yet
    open, a new one is opened, a request is written and a check is done for
    a response header. A single entry is read with the readfn() function. */
-#define NSS_GETENT(fp,action,readfn) \
+#define NSS_GETENT(fp,action,buffer,buflen,readfn) \
   int32_t tmpint32; \
   nss_status_t retv; \
   if (!_nss_ldap_enablelookups) \
@@ -188,8 +186,7 @@ void _nss_ldap_namelist_destroy(struct name_list **head);
     } \
   } \
   else if (retv!=NSS_STATUS_SUCCESS) \
-    fp=NULL; /* file should be closed by now */ \
-  return retv;
+    fp=NULL; /* file should be closed by now */
 
 /* This macro generates a endent() function body. This just closes
    the stream. */

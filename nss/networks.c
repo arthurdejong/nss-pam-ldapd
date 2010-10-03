@@ -25,6 +25,9 @@
 
 #include <string.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "prototypes.h"
 #include "common.h"
@@ -100,19 +103,6 @@ static nss_status_t read_netent(
   return retv;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getnetbyname_r(
-#else /* not HAVE_NSSWITCH_H */
-nss_status_t _nss_ldap_getnetbyname_r(
-#endif /* HAVE_NSSWITCH_H */
-        const char *name,struct netent *result,char *buffer,
-        size_t buflen,int *errnop,int *h_errnop)
-{
-  NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,
-             name,
-             read_netent(fp,result,buffer,buflen,errnop,h_errnop));
-}
-
 /* write an address value */
 /* version 2.10 of glibc changed the address from network to host order
    (changelog entry 2009-07-01) */
@@ -121,56 +111,67 @@ nss_status_t _nss_ldap_getnetbyname_r(
   WRITE_INT32(fp,4); \
   WRITE_INT32(fp,htonl(addr));
 
+#ifdef NSS_FLAVOUR_GLIBC
+
+nss_status_t _nss_ldap_getnetbyname_r(
+        const char *name,struct netent *result,char *buffer,
+        size_t buflen,int *errnop,int *h_errnop)
+{
+  NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,buffer,buflen,
+             name,
+             read_netent(fp,result,buffer,buflen,errnop,h_errnop));
+  return retv;
+}
+
 /* Note: the af parameter is ignored and is assumed to be AF_INET */
 /* TODO: implement handling of af parameter */
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getnetbyaddr_r(
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_getnetbyaddr_r(
-#endif /* HAVE_NSSWITCH_H */
         uint32_t addr,int UNUSED(af),struct netent *result,
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
-  NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,
+  NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,buffer,buflen,
             WRITE_ADDRESS(fp,addr),
             read_netent(fp,result,buffer,buflen,errnop,h_errnop))
+  return retv;
 }
 
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *netentfp;
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_setnetent(nss_backend_t *net_context,void *fakeargs)
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_setnetent(int UNUSED(stayopen))
-#endif /* HAVE_NSSWITCH_H */
 {
   NSS_SETENT(netentfp);
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getnetent_r(
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_getnetent_r(
-#endif /* HAVE_NSSWITCH_H */
         struct netent *result,char *buffer,size_t buflen,
         int *errnop,int *h_errnop)
 {
-  NSS_GETENT(netentfp,NSLCD_ACTION_NETWORK_ALL,
+  NSS_GETENT(netentfp,NSLCD_ACTION_NETWORK_ALL,buffer,buflen,
              read_netent(netentfp,result,buffer,buflen,errnop,h_errnop));
+  return retv;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_endnetent(nss_backend_t *net_context,void *fakeargs)
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_endnetent(void)
-#endif /* HAVE_NSSWITCH_H */
 {
   NSS_ENDENT(netentfp);
 }
 
-#ifdef HAVE_NSSWITCH_H
-static nss_status_t _nss_ldap_getnetbyname_r(nss_backend_t *be,void *args)
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+static nss_status_t _nss_nslcd_getnetbyname_r(
+        const char *name,struct netent *result,char *buffer,
+        size_t buflen,int *errnop,int *h_errnop)
+{
+  NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,buffer,buflen,
+             name,
+             read_netent(fp,result,buffer,buflen,errnop,h_errnop));
+  return retv;
+}
+
+static nss_status_t _xnss_ldap_getnetbyname_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct netent priv_network;
   struct netent *network=NSS_ARGS(args)->buf.result?(struct netent *)NSS_ARGS(args)->buf.result:&priv_network;
@@ -181,7 +182,7 @@ static nss_status_t _nss_ldap_getnetbyname_r(nss_backend_t *be,void *args)
   int h_errno;
   char *data_ptr;
   nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen < 0)
+  if (NSS_ARGS(args)->buf.buflen<0)
   {
     NSS_ARGS(args)->erange=1;
     return NSS_STATUS_TRYAGAIN;
@@ -219,16 +220,26 @@ static nss_status_t _nss_ldap_getnetbyname_r(nss_backend_t *be,void *args)
   NSS_ARGS(args)->h_errno=h_errno;
   return status;
 }
-#endif /* HAVE_NSSWITCH_H */
 
 /* Note: the af parameter is ignored and is assumed to be AF_INET */
 /* TODO: implement handling of af parameter */
-#ifdef HAVE_NSSWITCH_H
-static nss_status_t _nss_ldap_getnetbyaddr_r(nss_backend_t *be,void *args)
+static nss_status_t _nss_nslcd_getnetbyaddr_r(
+        uint32_t addr,int UNUSED(af),struct netent *result,
+        char *buffer,size_t buflen,int *errnop,int *h_errnop)
+{
+  NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,buffer,buflen,
+            WRITE_ADDRESS(fp,addr),
+            read_netent(fp,result,buffer,buflen,errnop,h_errnop))
+  return retv;
+}
+
+/* Note: the af parameter is ignored and is assumed to be AF_INET */
+/* TODO: implement handling of af parameter */
+static nss_status_t _xnss_ldap_getnetbyaddr_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct netent priv_network;
   struct netent *network=NSS_ARGS(args)->buf.result?(struct netent *)NSS_ARGS(args)->buf.result:&priv_network;
-  int addr=NSS_ARGS(args)->key.netaddr.net;
+  int addr=NSS_ARGS(args)->key.netaddr.net; /* is an addr an int? */
   int af=NSS_ARGS(args)->key.netaddr.type;
   char *buffer=NSS_ARGS(args)->buf.buffer;
   size_t buflen=NSS_ARGS(args)->buf.buflen;
@@ -236,7 +247,7 @@ static nss_status_t _nss_ldap_getnetbyaddr_r(nss_backend_t *be,void *args)
   char *data_ptr;
   struct in_addr in_addr;
   nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen < 0)
+  if (NSS_ARGS(args)->buf.buflen<0)
   {
     NSS_ARGS(args)->erange=1;
     return NSS_STATUS_TRYAGAIN;
@@ -276,7 +287,21 @@ static nss_status_t _nss_ldap_getnetbyaddr_r(nss_backend_t *be,void *args)
   return status;
 }
 
-static nss_status_t _nss_ldap_getnetent_r(nss_backend_t *net_context,void *args)
+static nss_status_t _xnss_ldap_setnetent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+{
+  NSS_SETENT(netentfp);
+}
+
+static nss_status_t _nss_nslcd_getnetent_r(
+        struct netent *result,char *buffer,size_t buflen,
+        int *errnop,int *h_errnop)
+{
+  NSS_GETENT(netentfp,NSLCD_ACTION_NETWORK_ALL,buffer,buflen,
+             read_netent(netentfp,result,buffer,buflen,errnop,h_errnop));
+  return retv;
+}
+
+static nss_status_t _xnss_ldap_getnetent_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct netent priv_network;
   struct netent *network=NSS_ARGS(args)->buf.result?(struct netent *)NSS_ARGS(args)->buf.result:&priv_network;
@@ -285,7 +310,7 @@ static nss_status_t _nss_ldap_getnetent_r(nss_backend_t *net_context,void *args)
   int h_errno;
   char *data_ptr;
   nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen < 0)
+  if (NSS_ARGS(args)->buf.buflen<0)
   {
     NSS_ARGS(args)->erange=1;
     return NSS_STATUS_TRYAGAIN;
@@ -321,31 +346,35 @@ static nss_status_t _nss_ldap_getnetent_r(nss_backend_t *net_context,void *args)
   return status;
 }
 
-static nss_status_t _nss_ldap_networks_destr(nss_backend_t *net_context,void *args)
+static nss_status_t _xnss_ldap_endnetent(nss_backend_t *UNUSED(be),void *UNUSED(args))
 {
-  return _nss_ldap_default_destr(net_context,args);
+  NSS_ENDENT(netentfp);
+}
+
+static nss_status_t _xnss_ldap_networks_destr(nss_backend_t *be,void *UNUSED(args))
+{
+  free(be);
+  return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t net_ops[]={
-  _nss_ldap_networks_destr,
-  _nss_ldap_endnetent,
-  _nss_ldap_setnetent,
-  _nss_ldap_getnetent_r,
-  _nss_ldap_getnetbyname_r,
-  _nss_ldap_getnetbyaddr_r
+  _xnss_ldap_networks_destr,
+  _xnss_ldap_endnetent,
+  _xnss_ldap_setnetent,
+  _xnss_ldap_getnetent_r,
+  _xnss_ldap_getnetbyname_r,
+  _xnss_ldap_getnetbyaddr_r
 };
 
-nss_backend_t *_nss_ldap_networks_constr(const char *db_name,
-                           const char *src_name,const char *cfg_args)
+nss_backend_t *_nss_ldap_networks_constr(const char *UNUSED(db_name),
+                           const char *UNUSED(src_name),const char *UNUSED(cfg_args))
 {
-  nss_ldap_backend_t *be;
-  if (!(be=(nss_ldap_backend_t *)malloc(sizeof(*be))))
+  nss_backend_t *be;
+  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
     return NULL;
   be->ops=net_ops;
   be->n_ops=sizeof(net_ops)/sizeof(nss_backend_op_t);
-  if (_nss_ldap_default_constr(be)!=NSS_STATUS_SUCCESS)
-    return NULL;
   return (nss_backend_t *)be;
 }
 
-#endif /* HAVE_NSSWITCH_H */
+#endif /* NSS_FLAVOUR_SOLARIS */

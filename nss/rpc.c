@@ -42,81 +42,105 @@ static nss_status_t read_rpcent(
   return NSS_STATUS_SUCCESS;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getrpcbyname_r(
-#else /* not HAVE_NSSWITCH_H */
+#ifdef NSS_FLAVOUR_GLIBC
+
 nss_status_t _nss_ldap_getrpcbyname_r(
-#endif /* HAVE_NSSWITCH_H */
         const char *name,struct rpcent *result,char *buffer,
         size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,
+  NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,buffer,buflen,
              name,
              read_rpcent(fp,result,buffer,buflen,errnop));
+  return retv;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getrpcbynumber_r(
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_getrpcbynumber_r(
-#endif /* HAVE_NSSWITCH_H */
         int number,struct rpcent *result,char *buffer,
         size_t buflen,int *errnop)
 {
-  NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,
+  NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,buffer,buflen,
               number,
               read_rpcent(fp,result,buffer,buflen,errnop));
+  return retv;
 }
 
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_setrpcent(nss_backend_t *rpc_context,void *args)
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_setrpcent(int UNUSED(stayopen))
-#endif /* HAVE_NSSWITCH_H */
 {
   NSS_SETENT(protoentfp);
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getrpcent_r(
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_getrpcent_r(
-#endif /* HAVE_NSSWITCH_H */
         struct rpcent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(protoentfp,NSLCD_ACTION_RPC_ALL,
+  NSS_GETENT(protoentfp,NSLCD_ACTION_RPC_ALL,buffer,buflen,
              read_rpcent(protoentfp,result,buffer,buflen,errnop));
+  return retv;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_endrpcent(nss_backend_t *rpc_context,void *args)
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_endrpcent(void)
-#endif /* HAVE_NSSWITCH_H */
 {
   NSS_ENDENT(protoentfp);
 }
 
-#ifdef HAVE_NSSWITCH_H
+#endif /* NSS_FLAVOUR_GLIBC */
 
-static nss_status_t _nss_ldap_getrpcbyname_r(nss_backend_t *be,void *args)
+#ifdef NSS_FLAVOUR_SOLARIS
+
+static nss_status_t _nss_nslcd_getrpcbyname_r(
+        const char *name,struct rpcent *result,char *buffer,
+        size_t buflen,int *errnop)
+{
+  NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,buffer,buflen,
+             name,
+             read_rpcent(fp,result,buffer,buflen,errnop));
+  return retv;
+}
+
+static nss_status_t _nss_nslcd_getrpcbynumber_r(
+        int number,struct rpcent *result,char *buffer,
+        size_t buflen,int *errnop)
+{
+  NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,buffer,buflen,
+              number,
+              read_rpcent(fp,result,buffer,buflen,errnop));
+  return retv;
+}
+
+static nss_status_t _xnss_ldap_setrpcent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+{
+  NSS_SETENT(protoentfp);
+}
+
+static nss_status_t _nss_nslcd_getrpcent_r(
+        struct rpcent *result,char *buffer,size_t buflen,int *errnop)
+{
+  NSS_GETENT(protoentfp,NSLCD_ACTION_RPC_ALL,buffer,buflen,
+             read_rpcent(protoentfp,result,buffer,buflen,errnop));
+  return retv;
+}
+
+static nss_status_t _xnss_ldap_endrpcent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+{
+  NSS_ENDENT(protoentfp);
+}
+
+static nss_status_t _xnss_ldap_getrpcbyname_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct rpcent priv_rpc;
   struct rpcent *rpc=NSS_ARGS(args)->buf.result?(struct rpcent *)NSS_ARGS(args)->buf.result:&priv_rpc;
-  char *name=NSS_ARGS(args)->key.name;
   char *buffer=NSS_ARGS(args)->buf.buffer;
   size_t buflen=NSS_ARGS(args)->buf.buflen;
   char *data_ptr;
   nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen < 0)
+  if (NSS_ARGS(args)->buf.buflen<0)
   {
     NSS_ARGS(args)->erange=1;
     return NSS_STATUS_TRYAGAIN;
   }
-  status=_nss_nslcd_getrpcbyname_r(name,rpc,buffer,buflen,&errno);
+  status=_nss_nslcd_getrpcbyname_r(NSS_ARGS(args)->key.name,rpc,buffer,buflen,&errno);
   if (status!=NSS_STATUS_SUCCESS)
     return status;
   if (!NSS_ARGS(args)->buf.result)
@@ -145,7 +169,7 @@ static nss_status_t _nss_ldap_getrpcbyname_r(nss_backend_t *be,void *args)
   return status;
 }
 
-static nss_status_t _nss_ldap_getrpcbynumber_r(nss_backend_t *be,void *args)
+static nss_status_t _xnss_ldap_getrpcbynumber_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct rpcent priv_rpc;
   struct rpcent *rpc=NSS_ARGS(args)->buf.result?(struct rpcent *)NSS_ARGS(args)->buf.result:&priv_rpc;
@@ -154,7 +178,7 @@ static nss_status_t _nss_ldap_getrpcbynumber_r(nss_backend_t *be,void *args)
   size_t buflen=NSS_ARGS(args)->buf.buflen;
   char *data_ptr;
   nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen < 0)
+  if (NSS_ARGS(args)->buf.buflen<0)
   {
     NSS_ARGS(args)->erange=1;
     return NSS_STATUS_TRYAGAIN;
@@ -188,7 +212,7 @@ static nss_status_t _nss_ldap_getrpcbynumber_r(nss_backend_t *be,void *args)
   return status;
 }
 
-static nss_status_t _nss_ldap_getrpcent_r(nss_backend_t *rpc_context,void *args)
+static nss_status_t _xnss_ldap_getrpcent_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct rpcent priv_rpc;
   struct rpcent *rpc=NSS_ARGS(args)->buf.result?(struct rpcent *)NSS_ARGS(args)->buf.result:&priv_rpc;
@@ -196,7 +220,7 @@ static nss_status_t _nss_ldap_getrpcent_r(nss_backend_t *rpc_context,void *args)
   size_t buflen=NSS_ARGS(args)->buf.buflen;
   char *data_ptr;
   nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen < 0)
+  if (NSS_ARGS(args)->buf.buflen<0)
   {
     NSS_ARGS(args)->erange=1;
     return NSS_STATUS_TRYAGAIN;
@@ -230,31 +254,30 @@ static nss_status_t _nss_ldap_getrpcent_r(nss_backend_t *rpc_context,void *args)
   return status;
 }
 
-static nss_status_t _nss_ldap_rpc_destr(nss_backend_t *rpc_context,void *args)
+static nss_status_t _xnss_ldap_rpc_destr(nss_backend_t *be,void *UNUSED(args))
 {
-  return _nss_ldap_default_destr(rpc_context,args);
+  free(be);
+  return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t rpc_ops[]={
-  _nss_ldap_rpc_destr,
-  _nss_ldap_endrpcent,
-  _nss_ldap_setrpcent,
-  _nss_ldap_getrpcent_r,
-  _nss_ldap_getrpcbyname_r,
-  _nss_ldap_getrpcbynumber_r
+  _xnss_ldap_rpc_destr,
+  _xnss_ldap_endrpcent,
+  _xnss_ldap_setrpcent,
+  _xnss_ldap_getrpcent_r,
+  _xnss_ldap_getrpcbyname_r,
+  _xnss_ldap_getrpcbynumber_r
 };
 
-nss_backend_t *_nss_ldap_rpc_constr(const char *db_name,
-                      const char *src_name,const char *cfg_args)
+nss_backend_t *_nss_ldap_rpc_constr(const char *UNUSED(db_name),
+                      const char *UNUSED(src_name),const char *UNUSED(cfg_args))
 {
-  nss_ldap_backend_t *be;
-  if (!(be=(nss_ldap_backend_t *)malloc(sizeof(*be))))
+  nss_backend_t *be;
+  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
     return NULL;
   be->ops=rpc_ops;
   be->n_ops=sizeof(rpc_ops)/sizeof(nss_backend_op_t);
-  if (_nss_ldap_default_constr(be)!=NSS_STATUS_SUCCESS)
-    return NULL;
   return (nss_backend_t *)be;
 }
 
-#endif /* HAVE_NSSWITCH_H */
+#endif /* NSS_FLAVOUR_SOLARIS */

@@ -45,78 +45,100 @@ static nss_status_t read_servent(
   return NSS_STATUS_SUCCESS;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getservbyname_r(
-#else /* not HAVE_NSSWITCH_H */
+#ifdef NSS_FLAVOUR_GLIBC
+
 nss_status_t _nss_ldap_getservbyname_r(
-#endif /* HAVE_NSSWITCH_H */
         const char *name,const char *protocol,struct servent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,
+  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,buffer,buflen,
             WRITE_STRING(fp,name);WRITE_STRING(fp,protocol),
             read_servent(fp,result,buffer,buflen,errnop));
-
+  return retv;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getservbyport_r(
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_getservbyport_r(
-#endif /* HAVE_NSSWITCH_H */
         int port,const char *protocol,struct servent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,
+  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,buffer,buflen,
             WRITE_INT32(fp,ntohs(port));WRITE_STRING(fp,protocol),
             read_servent(fp,result,buffer,buflen,errnop));
+  return retv;
 }
 
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_setservent(nss_backend_t *serv_context,void *args)
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_setservent(int UNUSED(stayopen))
-#endif /* HAVE_NSSWITCH_H */
 {
   NSS_SETENT(protoentfp);
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_nslcd_getservent_r(
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_getservent_r(
-#endif /* HAVE_NSSWITCH_H */
         struct servent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL,
+  NSS_GETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL,buffer,buflen,
              read_servent(protoentfp,result,buffer,buflen,errnop));
+  return retv;
 }
 
-#ifdef HAVE_NSSWITCH_H
-nss_status_t _nss_ldap_endservent(nss_backend_t *serv_context,void *args)
-#else /* not HAVE_NSSWITCH_H */
 nss_status_t _nss_ldap_endservent(void)
-#endif /* HAVE_NSSWITCH_H */
 {
   NSS_ENDENT(protoentfp);
 }
 
-#ifdef HAVE_NSSWITCH_H
+#endif /* NSS_FLAVOUR_GLIBC */
 
-static nss_status_t _nss_ldap_getservbyname_r(nss_backend_t *be,void *args)
+#ifdef NSS_FLAVOUR_SOLARIS
+
+static nss_status_t _nss_nslcd_getservbyname_r(
+        const char *name,const char *protocol,struct servent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
-  char *name=(char *)NSS_ARGS(args)->key.serv.serv.name;
-  char *protocol=NSS_ARGS(args)->key.serv.proto?(char *)NSS_ARGS(args)->key.serv.proto:"";
+  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,buffer,buflen,
+            WRITE_STRING(fp,name);WRITE_STRING(fp,protocol),
+            read_servent(fp,result,buffer,buflen,errnop));
+  return retv;
+}
+
+static nss_status_t _nss_nslcd_getservbyport_r(
+        int port,const char *protocol,struct servent *result,
+        char *buffer,size_t buflen,int *errnop)
+{
+  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,buffer,buflen,
+            WRITE_INT32(fp,ntohs(port));WRITE_STRING(fp,protocol),
+            read_servent(fp,result,buffer,buflen,errnop));
+  return retv;
+}
+
+static nss_status_t _xnss_ldap_setservent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+{
+  NSS_SETENT(protoentfp);
+}
+
+static nss_status_t _nss_nslcd_getservent_r(
+        struct servent *result,char *buffer,size_t buflen,int *errnop)
+{
+  NSS_GETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL,buffer,buflen,
+             read_servent(protoentfp,result,buffer,buflen,errnop));
+  return retv;
+}
+
+static nss_status_t _xnss_ldap_endservent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+{
+  NSS_ENDENT(protoentfp);
+}
+
+static nss_status_t _xnss_ldap_getservbyname_r(nss_backend_t *UNUSED(be),void *args)
+{
   struct servent priv_service;
   struct servent *service=NSS_ARGS(args)->buf.result?(struct servent *)NSS_ARGS(args)->buf.result:&priv_service;
   char *buffer=NSS_ARGS(args)->buf.buffer;
   size_t buflen=NSS_ARGS(args)->buf.buflen;
   char *data_ptr;
   nss_status_t status;
-  status=_nss_nslcd_getservbyname_r(name,protocol,service,
+  status=_nss_nslcd_getservbyname_r(NSS_ARGS(args)->key.serv.serv.name,NSS_ARGS(args)->key.serv.proto,service,
                                 buffer,buflen,&errno);
   if (status!=NSS_STATUS_SUCCESS)
     return status;
@@ -124,7 +146,7 @@ static nss_status_t _nss_ldap_getservbyname_r(nss_backend_t *be,void *args)
   {
     /* result==NULL, return file format */
     data_ptr=(char *)malloc(buflen);
-    sprintf(data_ptr,"%s %d/%s",name,service->s_port,
+    sprintf(data_ptr,"%s %d/%s",service->s_name,service->s_port,
             service->s_proto);
     if (service->s_aliases)
     {
@@ -147,17 +169,16 @@ static nss_status_t _nss_ldap_getservbyname_r(nss_backend_t *be,void *args)
   return status;
 }
 
-static nss_status_t _nss_ldap_getservbyport_r(nss_backend_t *be,void *args)
+static nss_status_t _xnss_ldap_getservbyport_r(nss_backend_t *UNUSED(be),void *args)
 {
   int port=NSS_ARGS(args)->key.serv.serv.port;
-  char *protocol=(char *)NSS_ARGS(args)->key.serv.proto;
   struct servent priv_service;
   struct servent *service=NSS_ARGS(args)->buf.result?(struct servent *)NSS_ARGS(args)->buf.result:&priv_service;
   char *buffer=NSS_ARGS(args)->buf.buffer;
   size_t buflen=NSS_ARGS(args)->buf.buflen;
   char *data_ptr;
   nss_status_t status;
-  status=_nss_nslcd_getservbyport_r(port,protocol,service,buffer,buflen,&errno);
+  status=_nss_nslcd_getservbyport_r(port,NSS_ARGS(args)->key.serv.proto,service,buffer,buflen,&errno);
   if (status!=NSS_STATUS_SUCCESS)
     return status;
   if (!NSS_ARGS(args)->buf.result)
@@ -187,7 +208,7 @@ static nss_status_t _nss_ldap_getservbyport_r(nss_backend_t *be,void *args)
   return status;
 }
 
-static nss_status_t _nss_ldap_getservent_r(nss_backend_t *serv_context,void *args)
+static nss_status_t _xnss_ldap_getservent_r(nss_backend_t *UNUSED(be),void *args)
 {
   struct servent priv_service;
   struct servent *service=NSS_ARGS(args)->buf.result?(struct servent *)NSS_ARGS(args)->buf.result:&priv_service;
@@ -225,31 +246,30 @@ static nss_status_t _nss_ldap_getservent_r(nss_backend_t *serv_context,void *arg
   return status;
 }
 
-static nss_status_t _nss_ldap_services_destr(nss_backend_t *serv_context,void *args)
+static nss_status_t _xnss_ldap_services_destr(nss_backend_t *be,void *UNUSED(args))
 {
-  return _nss_ldap_default_destr(serv_context,args);
+  free(be);
+  return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t services_ops[]={
-  _nss_ldap_services_destr,
-  _nss_ldap_endservent,
-  _nss_ldap_setservent,
-  _nss_ldap_getservent_r,
-  _nss_ldap_getservbyname_r,
-  _nss_ldap_getservbyport_r
+  _xnss_ldap_services_destr,
+  _xnss_ldap_endservent,
+  _xnss_ldap_setservent,
+  _xnss_ldap_getservent_r,
+  _xnss_ldap_getservbyname_r,
+  _xnss_ldap_getservbyport_r
 };
 
-nss_backend_t *_nss_ldap_services_constr(const char *db_name,
-                           const char *src_name,const char *cfg_args)
+nss_backend_t *_nss_ldap_services_constr(const char *UNUSED(db_name),
+                           const char *UNUSED(src_name),const char *UNUSED(cfg_args))
 {
-  nss_ldap_backend_t *be;
-  if (!(be=(nss_ldap_backend_t *)malloc(sizeof(*be))))
+  nss_backend_t *be;
+  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
     return NULL;
   be->ops=services_ops;
   be->n_ops=sizeof(services_ops)/sizeof(nss_backend_op_t);
-  if (_nss_ldap_default_constr(be)!=NSS_STATUS_SUCCESS)
-    return NULL;
   return (nss_backend_t *)be;
 }
 
-#endif /* HAVE_NSSWITCH_H */
+#endif /* NSS_FLAVOUR_SOLARIS */
