@@ -362,6 +362,24 @@ then
       #include "irs-nss.h"
       #endif])
 
+  # check if struct nss_XbyY_args has a returnlen attribute
+  AC_CHECK_MEMBER([struct nss_XbyY_args.returnlen],,,[[
+      #ifdef HAVE_NSS_H
+      #include <nss.h>
+      #endif
+      #ifdef HAVE_NSS_COMMON_H
+      #include <nss_common.h>
+      #endif
+      #ifdef HAVE_NSS_DBDEFS_H
+      #include <nss_dbdefs.h>
+      #endif
+      #ifdef HAVE_NSSWITCH_H
+      #include <nsswitch.h>
+      #endif
+      #ifdef HAVE_IRS_NSS_H
+      #include "irs-nss.h"
+      #endif]])
+
   # check which NSS flavour to build
   AC_MSG_CHECKING([which NSS flavour to build])
   AC_ARG_WITH(nss-flavour,
