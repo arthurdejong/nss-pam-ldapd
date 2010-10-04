@@ -234,6 +234,23 @@ AC_MSG_RESULT($NSS_LDAP_SONAME)
 AC_DEFINE_UNQUOTED(NSS_LDAP_SONAME,"$NSS_LDAP_SONAME",[The SONAME of the NSS library module.])
 AC_SUBST(NSS_LDAP_SONAME)
 
+# the SONAME to use for the PAM module
+AC_MSG_CHECKING([name of PAM module])
+AC_ARG_WITH(pam-ldap-soname,
+            AS_HELP_STRING([--with-pam-ldap-soname=SONAME],
+                           [name of PAM module @<:@auto@:>@]),
+            [ PAM_LDAP_SONAME="$with_pam_ldap_soname" ],
+            [ PAM_LDAP_SONAME="auto" ])
+if test "x$PAM_LDAP_SONAME" = "xauto"
+then
+  case "$target_os" in
+    solaris*) PAM_LDAP_SONAME="pam_ldap.so.1" ;;
+    *)        PAM_LDAP_SONAME="pam_ldap.so" ;;
+  esac
+fi
+AC_MSG_RESULT($PAM_LDAP_SONAME)
+AC_SUBST(PAM_LDAP_SONAME)
+
 # check which modules should be build
 AC_ARG_WITH(nss-ldap-maps,
             AS_HELP_STRING([--with-nss-ldap-maps=MAP LIST],
@@ -672,15 +689,12 @@ solaris*) if test "$ac_cv_prog_gcc" = yes; then
   fi
   nss_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G"
   pam_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G"
-  pam_ldap_so_VERSIONED="pam_ldap.so.1"
   TARGET_OS="SUNOS" ;;
 linux*) nss_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic -Wl,--version-script,\$(srcdir)/exports.linux"
   pam_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic -Wl,--version-script,\$(srcdir)/exports.linux"
-  pam_ldap_so_VERSIONED="pam_ldap.so"
   TARGET_OS="LINUX" ;;
 *) nss_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic"
    pam_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic"
-  pam_ldap_so_VERSIONED="pam_ldap.so" ;;
 esac
 
 AC_SUBST(nss_ldap_so_LD)
@@ -688,7 +702,6 @@ AC_SUBST(nss_ldap_so_LDFLAGS)
 
 AC_SUBST(pam_ldap_so_LD)
 AC_SUBST(pam_ldap_so_LDFLAGS)
-AC_SUBST(pam_ldap_so_VERSIONED)
 
 AC_SUBST(AIX64SUFFIX)
 AM_CONDITIONAL(GCC, test "$GCC" = "yes")
