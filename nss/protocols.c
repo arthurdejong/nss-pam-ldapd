@@ -99,7 +99,7 @@ static nss_status_t _nss_nslcd_getprotobyname_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getprotobyname_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getprotobyname_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct protoent priv_proto;
   struct protoent *proto=NSS_ARGS(args)->buf.result?(struct protoent *)NSS_ARGS(args)->buf.result:&priv_proto;
@@ -153,7 +153,7 @@ static nss_status_t _nss_nslcd_getprotobynumber_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getprotobynumber_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getprotobynumber_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct protoent priv_proto;
   struct protoent *proto=NSS_ARGS(args)->buf.result?(struct protoent *)NSS_ARGS(args)->buf.result:&priv_proto;
@@ -196,7 +196,7 @@ static nss_status_t _xnss_ldap_getprotobynumber_r(nss_backend_t *UNUSED(be),void
   return status;
 }
 
-static nss_status_t _xnss_ldap_setprotoent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_setprotoent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(protoentfp);
 }
@@ -209,7 +209,7 @@ static nss_status_t _nss_nslcd_getprotoent_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getprotoent_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getprotoent_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct protoent priv_proto;
   struct protoent *proto=NSS_ARGS(args)->buf.result?(struct protoent *)NSS_ARGS(args)->buf.result:&priv_proto;
@@ -251,12 +251,12 @@ static nss_status_t _xnss_ldap_getprotoent_r(nss_backend_t *UNUSED(be),void *arg
   return status;
 }
 
-static nss_status_t _xnss_ldap_endprotoent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_endprotoent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(protoentfp);
 }
 
-static nss_status_t _xnss_ldap_protocols_destr(nss_backend_t *be,void *UNUSED(args))
+static nss_status_t _xnss_ldap_protocols_destr(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
@@ -271,8 +271,8 @@ static nss_backend_op_t proto_ops[]={
   _xnss_ldap_getprotobynumber_r
 };
 
-nss_backend_t *_nss_ldap_protocols_constr(const char *UNUSED(db_name),
-                            const char *UNUSED(src_name),const char *UNUSED(cfg_args))
+nss_backend_t *_nss_ldap_protocols_constr(const char UNUSED(*db_name),
+                            const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

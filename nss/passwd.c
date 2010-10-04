@@ -106,7 +106,7 @@ static nss_status_t _nss_nslcd_getpwnam_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getpwnam_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getpwnam_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct passwd priv_pw;
   struct passwd *pw=NSS_ARGS(args)->buf.result?(struct passwd *)NSS_ARGS(args)->buf.result:&priv_pw;
@@ -155,7 +155,7 @@ static nss_status_t _nss_nslcd_getpwuid_r(
 }
 
 /* open a connection to the nslcd and write the request */
-static nss_status_t _xnss_ldap_setpwent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_setpwent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(pwentfp);
 }
@@ -170,12 +170,12 @@ static nss_status_t _nss_nslcd_getpwent_r(
 }
 
 /* close the stream opened with setpwent() above */
-static nss_status_t _xnss_ldap_endpwent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_endpwent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(pwentfp);
 }
 
-static nss_status_t _xnss_ldap_getpwuid_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getpwuid_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct passwd priv_pw;
   struct passwd *pw=NSS_ARGS(args)->buf.result ?
@@ -209,7 +209,7 @@ static nss_status_t _xnss_ldap_getpwuid_r(nss_backend_t *UNUSED(be),void *args)
   return status;
 }
 
-static nss_status_t _xnss_ldap_getpwent_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getpwent_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct passwd priv_pw;
   struct passwd *pw=NSS_ARGS(args)->buf.result?(struct passwd *)NSS_ARGS(args)->buf.result:&priv_pw;
@@ -241,7 +241,7 @@ static nss_status_t _xnss_ldap_getpwent_r(nss_backend_t *UNUSED(be),void *args)
   return status;
 }
 
-static nss_status_t _xnss_ldap_passwd_destr(nss_backend_t *be,void *UNUSED(args))
+static nss_status_t _xnss_ldap_passwd_destr(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
@@ -256,8 +256,8 @@ static nss_backend_op_t passwd_ops[]={
   _xnss_ldap_getpwuid_r        /* NSS_DBOP_PASSWD_BYUID */
 };
 
-nss_backend_t *_nss_ldap_passwd_constr(const char *UNUSED(db_name),
-                         const char *UNUSED(src_name),const char *UNUSED(cfg_args))
+nss_backend_t *_nss_ldap_passwd_constr(const char UNUSED(*db_name),
+                         const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

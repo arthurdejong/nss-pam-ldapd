@@ -183,7 +183,7 @@ static nss_status_t _nss_nslcd_getgrnam_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getgrnam_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getgrnam_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct group priv_gr;
   struct group *gr=NSS_ARGS(args)->buf.result?(struct group *)NSS_ARGS(args)->buf.result:&priv_gr;
@@ -231,7 +231,7 @@ static nss_status_t _nss_nslcd_getgrgid_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getgrgid_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getgrgid_r(nss_backend_t UNUSED(*be),void *args)
 {
   gid_t gid=NSS_ARGS(args)->key.gid;
   struct group priv_gr;
@@ -270,7 +270,7 @@ static nss_status_t _xnss_ldap_getgrgid_r(nss_backend_t *UNUSED(be),void *args)
   return status;
 }
 
-static nss_status_t _xnss_ldap_setgrent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_setgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(grentfp);
 }
@@ -283,7 +283,7 @@ static nss_status_t _nss_nslcd_getgrent_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getgrent_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getgrent_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct group priv_gr;
   struct group *gr=NSS_ARGS(args)->buf.result?(struct group *)NSS_ARGS(args)->buf.result:&priv_gr;
@@ -321,7 +321,7 @@ static nss_status_t _xnss_ldap_getgrent_r(nss_backend_t *UNUSED(be),void *args)
   return status;
 }
 
-static nss_status_t _xnss_ldap_endgrent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_endgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(grentfp);
 }
@@ -347,7 +347,7 @@ static nss_status_t _xnss_ldap_initgroups_dyn(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getgroupsbymember_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getgroupsbymember_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct nss_groupsbymem *argp=(struct nss_groupsbymem *)args;
   nss_status_t status;
@@ -367,7 +367,7 @@ static nss_status_t _xnss_ldap_getgroupsbymember_r(nss_backend_t *UNUSED(be),voi
   return status;
 }
 
-static nss_status_t _xnss_ldap_group_destr(nss_backend_t *be,void *UNUSED(args))
+static nss_status_t _xnss_ldap_group_destr(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
@@ -383,8 +383,8 @@ static nss_backend_op_t group_ops[]={
   _xnss_ldap_getgroupsbymember_r
 };
 
-nss_backend_t *_nss_ldap_group_constr(const char *UNUSED(db_name),
-                        const char *UNUSED(src_name),const char *UNUSED(cfg_args))
+nss_backend_t *_nss_ldap_group_constr(const char UNUSED(*db_name),
+                        const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

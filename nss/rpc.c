@@ -109,7 +109,7 @@ static nss_status_t _nss_nslcd_getrpcbynumber_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_setrpcent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_setrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(protoentfp);
 }
@@ -122,12 +122,12 @@ static nss_status_t _nss_nslcd_getrpcent_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_endrpcent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_endrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(protoentfp);
 }
 
-static nss_status_t _xnss_ldap_getrpcbyname_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getrpcbyname_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct rpcent priv_rpc;
   struct rpcent *rpc=NSS_ARGS(args)->buf.result?(struct rpcent *)NSS_ARGS(args)->buf.result:&priv_rpc;
@@ -169,7 +169,7 @@ static nss_status_t _xnss_ldap_getrpcbyname_r(nss_backend_t *UNUSED(be),void *ar
   return status;
 }
 
-static nss_status_t _xnss_ldap_getrpcbynumber_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getrpcbynumber_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct rpcent priv_rpc;
   struct rpcent *rpc=NSS_ARGS(args)->buf.result?(struct rpcent *)NSS_ARGS(args)->buf.result:&priv_rpc;
@@ -212,7 +212,7 @@ static nss_status_t _xnss_ldap_getrpcbynumber_r(nss_backend_t *UNUSED(be),void *
   return status;
 }
 
-static nss_status_t _xnss_ldap_getrpcent_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getrpcent_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct rpcent priv_rpc;
   struct rpcent *rpc=NSS_ARGS(args)->buf.result?(struct rpcent *)NSS_ARGS(args)->buf.result:&priv_rpc;
@@ -254,7 +254,7 @@ static nss_status_t _xnss_ldap_getrpcent_r(nss_backend_t *UNUSED(be),void *args)
   return status;
 }
 
-static nss_status_t _xnss_ldap_rpc_destr(nss_backend_t *be,void *UNUSED(args))
+static nss_status_t _xnss_ldap_rpc_destr(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
@@ -269,8 +269,8 @@ static nss_backend_op_t rpc_ops[]={
   _xnss_ldap_getrpcbynumber_r
 };
 
-nss_backend_t *_nss_ldap_rpc_constr(const char *UNUSED(db_name),
-                      const char *UNUSED(src_name),const char *UNUSED(cfg_args))
+nss_backend_t *_nss_ldap_rpc_constr(const char UNUSED(*db_name),
+                      const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

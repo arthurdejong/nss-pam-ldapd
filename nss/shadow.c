@@ -95,7 +95,7 @@ static nss_status_t _nss_nslcd_getspnam_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getspnam_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getspnam_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct spwd priv_spwd;
   struct spwd *sp=NSS_ARGS(args)->buf.result?(struct spwd *)NSS_ARGS(args)->buf.result:&priv_spwd;
@@ -164,7 +164,7 @@ static nss_status_t _xnss_ldap_getspnam_r(nss_backend_t *UNUSED(be),void *args)
   return status;
 }
 
-static nss_status_t _xnss_ldap_setspent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_setspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(spentfp);
 }
@@ -177,7 +177,7 @@ static nss_status_t _nss_nslcd_getspent_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getspent_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getspent_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct spwd priv_spwd;
   struct spwd *sp=NSS_ARGS(args)->buf.result?(struct spwd *)NSS_ARGS(args)->buf.result:&priv_spwd;
@@ -246,12 +246,12 @@ static nss_status_t _xnss_ldap_getspent_r(nss_backend_t *UNUSED(be),void *args)
   return status;
 }
 
-static nss_status_t _xnss_ldap_endspent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_endspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(spentfp);
 }
 
-static nss_status_t _xnss_ldap_shadow_destr(nss_backend_t *be,void *UNUSED(args))
+static nss_status_t _xnss_ldap_shadow_destr(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
@@ -265,8 +265,8 @@ static nss_backend_op_t shadow_ops[]={
   _xnss_ldap_getspnam_r        /* NSS_DBOP_SHADOW_BYNAME */
 };
 
-nss_backend_t *_nss_ldap_shadow_constr(const char *UNUSED(db_name),
-                         const char *UNUSED(src_name),const char *UNUSED(cfg_args))
+nss_backend_t *_nss_ldap_shadow_constr(const char UNUSED(*db_name),
+                         const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

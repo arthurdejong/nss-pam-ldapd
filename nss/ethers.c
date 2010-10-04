@@ -96,7 +96,7 @@ nss_status_t _nss_ldap_endetherent(void)
 #define errnop &errno
 
 /* map a hostname to the corresponding ethernet address */
-static nss_status_t _xnss_ldap_gethostton_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_gethostton_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct etherent result;
   char buffer[NSS_BUFLEN_ETHERS];
@@ -121,7 +121,7 @@ static nss_status_t _xnss_ldap_gethostton_r(nss_backend_t *UNUSED(be),void *args
 }
 
 /* map an ethernet address to the corresponding hostname */
-static nss_status_t _xnss_ldap_getntohost_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getntohost_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct etherent result;
   struct ether_addr *addr=(struct ether_addr *)(NSS_ARGS(args)->key.ether);
@@ -153,12 +153,12 @@ static nss_status_t _xnss_ldap_getntohost_r(nss_backend_t *UNUSED(be),void *args
   return retv;
 }
 
-static nss_status_t _xnss_ldap_setetherent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_setetherent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(etherentfp);
 }
 
-static nss_status_t _xnss_ldap_getetherent_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getetherent_r(nss_backend_t UNUSED(*be),void *args)
 {
   /* TODO: cns3 uses struct ether,verify */
   struct etherent result;
@@ -176,12 +176,12 @@ static nss_status_t _xnss_ldap_getetherent_r(nss_backend_t *UNUSED(be),void *arg
   return retv;
 }
 
-static nss_status_t _xnss_ldap_endetherent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_endetherent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(etherentfp);
 }
 
-static nss_status_t _xnss_ldap_ethers_destr(nss_backend_t *be,void *UNUSED(args))
+static nss_status_t _xnss_ldap_ethers_destr(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
@@ -193,8 +193,8 @@ static nss_backend_op_t ethers_ops[]={
   _xnss_ldap_getntohost_r
 };
 
-nss_backend_t *_nss_ldap_ethers_constr(const char *UNUSED(db_name),
-      const char *UNUSED(src_name),const char *UNUSED(cfg_args))
+nss_backend_t *_nss_ldap_ethers_constr(const char UNUSED(*db_name),
+      const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

@@ -171,7 +171,7 @@ static nss_status_t _nss_nslcd_getnetbyname_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getnetbyname_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getnetbyname_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct netent priv_network;
   struct netent *network=NSS_ARGS(args)->buf.result?(struct netent *)NSS_ARGS(args)->buf.result:&priv_network;
@@ -235,7 +235,7 @@ static nss_status_t _nss_nslcd_getnetbyaddr_r(
 
 /* Note: the af parameter is ignored and is assumed to be AF_INET */
 /* TODO: implement handling of af parameter */
-static nss_status_t _xnss_ldap_getnetbyaddr_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getnetbyaddr_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct netent priv_network;
   struct netent *network=NSS_ARGS(args)->buf.result?(struct netent *)NSS_ARGS(args)->buf.result:&priv_network;
@@ -287,7 +287,7 @@ static nss_status_t _xnss_ldap_getnetbyaddr_r(nss_backend_t *UNUSED(be),void *ar
   return status;
 }
 
-static nss_status_t _xnss_ldap_setnetent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_setnetent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(netentfp);
 }
@@ -301,7 +301,7 @@ static nss_status_t _nss_nslcd_getnetent_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_getnetent_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getnetent_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct netent priv_network;
   struct netent *network=NSS_ARGS(args)->buf.result?(struct netent *)NSS_ARGS(args)->buf.result:&priv_network;
@@ -346,12 +346,12 @@ static nss_status_t _xnss_ldap_getnetent_r(nss_backend_t *UNUSED(be),void *args)
   return status;
 }
 
-static nss_status_t _xnss_ldap_endnetent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_endnetent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(netentfp);
 }
 
-static nss_status_t _xnss_ldap_networks_destr(nss_backend_t *be,void *UNUSED(args))
+static nss_status_t _xnss_ldap_networks_destr(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
@@ -366,8 +366,8 @@ static nss_backend_op_t net_ops[]={
   _xnss_ldap_getnetbyaddr_r
 };
 
-nss_backend_t *_nss_ldap_networks_constr(const char *UNUSED(db_name),
-                           const char *UNUSED(src_name),const char *UNUSED(cfg_args))
+nss_backend_t *_nss_ldap_networks_constr(const char UNUSED(*db_name),
+                           const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

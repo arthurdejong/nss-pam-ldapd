@@ -146,7 +146,7 @@ struct nss_ldap_netgr_backend
 };
 typedef struct nss_ldap_netgr_backend nss_ldap_netgr_backend_t;
 
-static nss_status_t _xnss_ldap_setnetgrent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_setnetgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   return NSS_STATUS_SUCCESS;
 }
@@ -284,12 +284,12 @@ static nss_status_t _xnss_ldap_getnetgrent_r(nss_backend_t *_be,void *_args)
   return status;
 }
 
-static nss_status_t _xnss_ldap_endnetgrent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_endnetgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(netgrentfp);
 }
 
-static nss_status_t _xnss_ldap_netgroup_destr(nss_backend_t *be,void *UNUSED(args))
+static nss_status_t _xnss_ldap_netgroup_destr(nss_backend_t *be,void UNUSED(*args))
 {
   nss_ldap_netgr_backend_t *ngbe=(nss_ldap_netgr_backend_t *)be;
   /* free list of nested netgroups */
@@ -345,8 +345,8 @@ static nss_status_t _xnss_ldap_netgr_set(nss_backend_t *be,void *_args)
   return stat;
 }
 
-nss_backend_t *_nss_ldap_netgroup_constr(const char *UNUSED(db_name),
-                           const char *UNUSED(src_name),const char *UNUSED(cfg_args))
+nss_backend_t *_nss_ldap_netgroup_constr(const char UNUSED(*db_name),
+                           const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_ldap_netgr_backend_t *be;
   if (!(be=(nss_ldap_netgr_backend_t *)malloc(sizeof(*be))))

@@ -112,7 +112,7 @@ static nss_status_t _nss_nslcd_getservbyport_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_setservent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_setservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(protoentfp);
 }
@@ -125,12 +125,12 @@ static nss_status_t _nss_nslcd_getservent_r(
   return retv;
 }
 
-static nss_status_t _xnss_ldap_endservent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_endservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(protoentfp);
 }
 
-static nss_status_t _xnss_ldap_getservbyname_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getservbyname_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct servent priv_service;
   struct servent *service=NSS_ARGS(args)->buf.result?(struct servent *)NSS_ARGS(args)->buf.result:&priv_service;
@@ -169,7 +169,7 @@ static nss_status_t _xnss_ldap_getservbyname_r(nss_backend_t *UNUSED(be),void *a
   return status;
 }
 
-static nss_status_t _xnss_ldap_getservbyport_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getservbyport_r(nss_backend_t UNUSED(*be),void *args)
 {
   int port=NSS_ARGS(args)->key.serv.serv.port;
   struct servent priv_service;
@@ -208,7 +208,7 @@ static nss_status_t _xnss_ldap_getservbyport_r(nss_backend_t *UNUSED(be),void *a
   return status;
 }
 
-static nss_status_t _xnss_ldap_getservent_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_getservent_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct servent priv_service;
   struct servent *service=NSS_ARGS(args)->buf.result?(struct servent *)NSS_ARGS(args)->buf.result:&priv_service;
@@ -246,7 +246,7 @@ static nss_status_t _xnss_ldap_getservent_r(nss_backend_t *UNUSED(be),void *args
   return status;
 }
 
-static nss_status_t _xnss_ldap_services_destr(nss_backend_t *be,void *UNUSED(args))
+static nss_status_t _xnss_ldap_services_destr(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
@@ -261,8 +261,8 @@ static nss_backend_op_t services_ops[]={
   _xnss_ldap_getservbyport_r
 };
 
-nss_backend_t *_nss_ldap_services_constr(const char *UNUSED(db_name),
-                           const char *UNUSED(src_name),const char *UNUSED(cfg_args))
+nss_backend_t *_nss_ldap_services_constr(const char UNUSED(*db_name),
+                           const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

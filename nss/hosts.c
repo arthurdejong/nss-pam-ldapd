@@ -248,7 +248,7 @@ nss_status_t _nss_ldap_endhostent(void)
 #define errnop &errno
 #define h_errnop &(NSS_ARGS(args)->h_errno)
 
-static nss_status_t _xnss_ldap_gethostbyname_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_gethostbyname_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct hostent priv_host;
   struct hostent *host=NSS_ARGS(args)->buf.result?NSS_ARGS(args)->buf.result:&priv_host;
@@ -300,7 +300,7 @@ static nss_status_t _xnss_ldap_gethostbyname_r(nss_backend_t *UNUSED(be),void *a
   return retv;
 }
 
-static nss_status_t _xnss_ldap_gethostbyaddr_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_gethostbyaddr_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct hostent priv_host;
   struct hostent *host=NSS_ARGS(args)->buf.result?NSS_ARGS(args)->buf.result:&priv_host;
@@ -355,13 +355,13 @@ static nss_status_t _xnss_ldap_gethostbyaddr_r(nss_backend_t *UNUSED(be),void *a
 }
 
 
-static nss_status_t _xnss_ldap_sethostent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_sethostent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(hostentfp);
 }
 
 /* this function only returns addresses of the AF_INET address family */
-static nss_status_t _xnss_ldap_gethostent_r(nss_backend_t *UNUSED(be),void *args)
+static nss_status_t _xnss_ldap_gethostent_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct hostent priv_host;
   struct hostent *host=NSS_ARGS(args)->buf.result?NSS_ARGS(args)->buf.result:&priv_host;
@@ -409,12 +409,12 @@ static nss_status_t _xnss_ldap_gethostent_r(nss_backend_t *UNUSED(be),void *args
   return retv;
 }
 
-static nss_status_t _xnss_ldap_endhostent(nss_backend_t *UNUSED(be),void *UNUSED(args))
+static nss_status_t _xnss_ldap_endhostent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(hostentfp);
 }
 
-static nss_status_t _xnss_ldap_hosts_destr(nss_backend_t *be,void *UNUSED(args))
+static nss_status_t _xnss_ldap_hosts_destr(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
@@ -429,8 +429,8 @@ static nss_backend_op_t host_ops[]={
   _xnss_ldap_gethostbyaddr_r
 };
 
-nss_backend_t *_nss_ldap_hosts_constr(const char *UNUSED(db_name),
-                        const char *UNUSED(src_name),const char *UNUSED(cfg_args))
+nss_backend_t *_nss_ldap_hosts_constr(const char UNUSED(*db_name),
+                        const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
