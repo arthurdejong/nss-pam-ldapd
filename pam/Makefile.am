@@ -1,6 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
 # Copyright (C) 2009, 2010 Arthur de Jong
+# Copyright (C) 2010 Symas Corporation
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -36,8 +37,10 @@ EXTRA_DIST = pam_ldap.map
 install-exec-local: install-pam_ldap_so
 uninstall-local: uninstall-pam_ldap_so
 
-# install pam_ldap.so
 install-pam_ldap_so: pam_ldap.so
-	$(INSTALL_PROGRAM) -D pam_ldap.so $(DESTDIR)$(libdir)/security/pam_ldap.so
+	-rm -f $(DESTDIR)/$(PAM_SECLIB_DIR)/$(PAM_LDAP_SONAME)
+	$(mkinstalldirs) $(DESTDIR)/$(PAM_SECLIB_DIR)
+	$(INSTALL_PROGRAM) pam_ldap.so $(DESTDIR)$(libdir)/$(PAM_LDAP_SONAME)
+
 uninstall-pam_ldap_so:
-	-rm -f $(DESTDIR)$(libdir)/security/pam_ldap.so
+	-rm -f $(DESTDIR)/$(PAM_SECLIB_DIR)/$(PAM_LDAP_SONAME)

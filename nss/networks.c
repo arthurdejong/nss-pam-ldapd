@@ -2,7 +2,7 @@
    networks.c - NSS lookup functions for networks database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -99,13 +99,6 @@ static nss_status_t read_netent(
   return retv;
 }
 
-nss_status_t _nss_ldap_getnetbyname_r(const char *name,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
-{
-  NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,
-             name,
-             read_netent(fp,result,buffer,buflen,errnop,h_errnop));
-}
-
 /* write an address value */
 /* version 2.10 of glibc changed the address from network to host order
    (changelog entry 2009-07-01) */
@@ -113,6 +106,13 @@ nss_status_t _nss_ldap_getnetbyname_r(const char *name,struct netent *result,cha
   WRITE_INT32(fp,AF_INET); \
   WRITE_INT32(fp,4); \
   WRITE_INT32(fp,htonl(addr));
+
+nss_status_t _nss_ldap_getnetbyname_r(const char *name,struct netent *result,char *buffer,size_t buflen,int *errnop,int *h_errnop)
+{
+  NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,
+             name,
+             read_netent(fp,result,buffer,buflen,errnop,h_errnop));
+}
 
 /* Note: the af parameter is ignored and is assumed to be AF_INET */
 /* TODO: implement handling of af parameter */

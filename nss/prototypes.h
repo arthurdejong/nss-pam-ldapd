@@ -25,6 +25,10 @@
 
 #include "compat/nss_compat.h"
 
+/* flag to gloabally disable lookups (all _nss_ldap_*() functions will return
+   NSS_STATUS_UNAVAIL */
+extern int _nss_ldap_enablelookups;
+
 /*
    These are prototypes for functions exported from the ldap NSS module.
    For more complete definitions of these functions check the GLIBC
@@ -37,10 +41,6 @@
    This however is a useful pointer:
    http://www.gnu.org/software/libc/manual/html_node/Name-Service-Switch.html
 */
-
-/* flag to gloabally disable lookups (all _nss_ldap_*() functions will return
-   NSS_STATUS_UNAVAIL */
-extern int _nss_ldap_enablelookups;
 
 /* aliases - mail aliases */
 nss_status_t _nss_ldap_getaliasbyname_r(const char *name,struct aliasent *result,char *buffer,size_t buflen,int *errnop);

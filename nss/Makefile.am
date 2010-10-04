@@ -3,6 +3,7 @@
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
 # Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
+# Copyright (C) 2010 Symas Corporation
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -42,8 +43,9 @@ EXTRA_DIST = nss_ldap.map
 install-exec-local: install-nss_ldap_so
 uninstall-local: uninstall-nss_ldap_so
 
-# install libnss_ldap.so.2
 install-nss_ldap_so: nss_ldap.so
-	$(INSTALL_PROGRAM) -D nss_ldap.so $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)
+	-rm -f $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	$(INSTALL_PROGRAM) nss_ldap.so $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)
 uninstall-nss_ldap_so:
 	-rm -f $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)

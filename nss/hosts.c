@@ -2,7 +2,7 @@
    hosts.c - NSS lookup functions for hosts database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -161,6 +161,12 @@ static nss_status_t read_hostent_nextonempty(
   return NSS_STATUS_SUCCESS;
 }
 
+/* write an address value */
+#define WRITE_ADDRESS(fp,af,len,addr) \
+  WRITE_INT32(fp,af); \
+  WRITE_INT32(fp,len); \
+  WRITE(fp,addr,len);
+
 /* this function looks up a single host entry and returns all the addresses
    associated with the host in a single address familiy
    name            - IN  - hostname to lookup
@@ -185,12 +191,6 @@ nss_status_t _nss_ldap_gethostbyname_r(
 {
   return _nss_ldap_gethostbyname2_r(name,AF_INET,result,buffer,buflen,errnop,h_errnop);
 }
-
-/* write an address value */
-#define WRITE_ADDRESS(fp,af,len,addr) \
-  WRITE_INT32(fp,af); \
-  WRITE_INT32(fp,len); \
-  WRITE(fp,addr,len);
 
 /* this function looks up a single host entry and returns all the addresses
    associated with the host in a single address familiy

@@ -49,6 +49,9 @@
 #ifdef HAVE_NSSWITCH_H
 #include <nsswitch.h>
 #endif /* HAVE_NSSWITCH_H */
+#ifdef HAVE_IRS_NSS_H
+#include "irs-nss.h"
+#endif /* HAVE_IRS_NSS_H */
 
 #include "compat/ether.h"
 

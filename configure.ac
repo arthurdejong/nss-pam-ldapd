@@ -207,14 +207,49 @@ AC_ARG_WITH(nslcd-socket,
 AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used for communicating.])
 AC_SUBST(NSLCD_SOCKET)
 
+# the directory PAM librabries are expected to be placed into
+AC_ARG_WITH(pam-seclib-dir,
+            AS_HELP_STRING([--with-pam-seclib-dir=PAM_SECLIB_DIR],
+                           [path to PAM security library]),
+            [ PAM_SECLIB_DIR="$with_pam_seclib_dir" ],
+            [ PAM_SECLIB_DIR="/lib/security" ])
+AC_DEFINE_UNQUOTED(PAM_SECLIB_DIR,"$PAM_SECLIB_DIR",[path to PAM security library])
+AC_SUBST(PAM_SECLIB_DIR)
+
 # the SONAME to use for the NSS module
+AC_MSG_CHECKING([name of NSS module])
 AC_ARG_WITH(nss-ldap-soname,
             AS_HELP_STRING([--with-nss-ldap-soname=SONAME],
-                           [name of NSS module @<:@libnss_ldap.so.2@:>@]),
+                           [name of NSS module @<:@auto@:>@]),
             [ NSS_LDAP_SONAME="$with_nss_ldap_soname" ],
-            [ NSS_LDAP_SONAME="libnss_ldap.so.2" ])
+            [ NSS_LDAP_SONAME="auto" ])
+if test "x$NSS_LDAP_SONAME" = "xauto"
+then
+  case "$target_os" in
+    solaris*) NSS_LDAP_SONAME="nss_ldap.so.1" ;;
+    *)        NSS_LDAP_SONAME="libnss_ldap.so.2" ;;
+  esac
+fi
+AC_MSG_RESULT($NSS_LDAP_SONAME)
 AC_DEFINE_UNQUOTED(NSS_LDAP_SONAME,"$NSS_LDAP_SONAME",[The SONAME of the NSS library module.])
 AC_SUBST(NSS_LDAP_SONAME)
+
+# the SONAME to use for the PAM module
+AC_MSG_CHECKING([name of PAM module])
+AC_ARG_WITH(pam-ldap-soname,
+            AS_HELP_STRING([--with-pam-ldap-soname=SONAME],
+                           [name of PAM module @<:@auto@:>@]),
+            [ PAM_LDAP_SONAME="$with_pam_ldap_soname" ],
+            [ PAM_LDAP_SONAME="auto" ])
+if test "x$PAM_LDAP_SONAME" = "xauto"
+then
+  case "$target_os" in
+    solaris*) PAM_LDAP_SONAME="pam_ldap.so.1" ;;
+    *)        PAM_LDAP_SONAME="pam_ldap.so" ;;
+  esac
+fi
+AC_MSG_RESULT($PAM_LDAP_SONAME)
+AC_SUBST(PAM_LDAP_SONAME)
 
 # check which modules should be build
 AC_ARG_WITH(nss-ldap-maps,
@@ -326,14 +361,61 @@ then
       #include <rpc/rpcent.h>
       #endif])
 
-  # check for a definition of enum nss_status
-  AC_CHECK_TYPES(enum nss_status,,,[
+  # check for a definition of enum nss_status and nss_backend_t
+  AC_CHECK_TYPES([enum nss_status,nss_backend_t],,,[
       #ifdef HAVE_NSS_H
       #include <nss.h>
       #endif
       #ifdef HAVE_NSS_COMMON_H
       #include <nss_common.h>
+      #endif
+      #ifdef HAVE_NSS_DBDEFS_H
+      #include <nss_dbdefs.h>
+      #endif
+      #ifdef HAVE_NSSWITCH_H
+      #include <nsswitch.h>
+      #endif
+      #ifdef HAVE_IRS_NSS_H
+      #include "irs-nss.h"
       #endif])
+
+  # check if struct nss_XbyY_args has a returnlen attribute
+  AC_CHECK_MEMBER([struct nss_XbyY_args.returnlen],,,[[
+      #ifdef HAVE_NSS_H
+      #include <nss.h>
+      #endif
+      #ifdef HAVE_NSS_COMMON_H
+      #include <nss_common.h>
+      #endif
+      #ifdef HAVE_NSS_DBDEFS_H
+      #include <nss_dbdefs.h>
+      #endif
+      #ifdef HAVE_NSSWITCH_H
+      #include <nsswitch.h>
+      #endif
+      #ifdef HAVE_IRS_NSS_H
+      #include "irs-nss.h"
+      #endif]])
+
+  # check which NSS flavour to build
+  AC_MSG_CHECKING([which NSS flavour to build])
+  AC_ARG_WITH(nss-flavour,
+              AS_HELP_STRING([--with-nss-flavour=auto|glibc|solaris],
+                             [the libc flavour to build our NSS module for @<:@auto@:>@]),,
+              with_nss_flavour=auto)
+  if test "x$with_nss_flavour" = "xauto"
+  then
+    # do the guessing game
+    case "$target_os" in
+      solaris*) with_nss_flavour=solaris ;;
+      *)        with_nss_flavour=glibc ;;
+    esac
+  fi
+  AC_MSG_RESULT($with_nss_flavour)
+  case "$with_nss_flavour" in
+    glibc)   AC_DEFINE(NSS_FLAVOUR_GLIBC,1,[Whether to use the Glibc NSS interface flavour.]) ;;
+    solaris) AC_DEFINE(NSS_FLAVOUR_SOLARIS,1,[Whether to use the Solaris NSS interface flavour.]) ;;
+  esac
 
   # check which module source files to use
   AC_MSG_CHECKING([which NSS maps to build])

@@ -24,6 +24,7 @@
 #define NSS__COMMON_H 1
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "nslcd.h"
 #include "common/nslcd-prot.h"
