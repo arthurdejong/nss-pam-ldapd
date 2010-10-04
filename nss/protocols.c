@@ -2,7 +2,7 @@
    protocols.c - NSS lookup functions for protocol database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* read a single protocol entry from the stream */
 static nss_status_t read_protoent(
         TFILE *fp,struct protoent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -41,14 +42,20 @@ static nss_status_t read_protoent(
   return NSS_STATUS_SUCCESS;
 }
 
-nss_status_t _nss_ldap_getprotobyname_r(const char *name,struct protoent *result,char *buffer,size_t buflen,int *errnop)
+/* get a protocol entry by name */
+nss_status_t _nss_ldap_getprotobyname_r(
+        const char *name,struct protoent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_PROTOCOL_BYNAME,
              name,
              read_protoent(fp,result,buffer,buflen,errnop));
 }
 
-nss_status_t _nss_ldap_getprotobynumber_r(int number,struct protoent *result,char *buffer,size_t buflen,int *errnop)
+/* get a protocol entry by number */
+nss_status_t _nss_ldap_getprotobynumber_r(
+        int number,struct protoent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYINT32(NSLCD_ACTION_PROTOCOL_BYNUMBER,
               number,
@@ -58,17 +65,22 @@ nss_status_t _nss_ldap_getprotobynumber_r(int number,struct protoent *result,cha
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
+/* start a request to read all protocol entries */
 nss_status_t _nss_ldap_setprotoent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp);
 }
 
-nss_status_t _nss_ldap_getprotoent_r(struct protoent *result,char *buffer,size_t buflen,int *errnop)
+/* get a single protocol entry */
+nss_status_t _nss_ldap_getprotoent_r(
+        struct protoent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(protoentfp,NSLCD_ACTION_PROTOCOL_ALL,
              read_protoent(protoentfp,result,buffer,buflen,errnop));
 }
 
+/* close the stream opened by setprotoent() above */
 nss_status_t _nss_ldap_endprotoent(void)
 {
   NSS_ENDENT(protoentfp);

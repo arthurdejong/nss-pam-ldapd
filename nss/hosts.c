@@ -29,7 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-/* Redifine some ERROR_OUT macros as we also want to set h_errnop. */
+/* Redefine some ERROR_OUT macros as we also want to set h_errnop. */
 
 #undef ERROR_OUT_OPENERROR
 #define ERROR_OUT_OPENERROR \
@@ -226,6 +226,7 @@ nss_status_t _nss_ldap_gethostent_r(
              read_hostent_nextonempty(hostentfp,AF_INET,result,buffer,buflen,errnop,h_errnop));
 }
 
+/* close the stream opened with sethostent() above */
 nss_status_t _nss_ldap_endhostent(void)
 {
   NSS_ENDENT(hostentfp);

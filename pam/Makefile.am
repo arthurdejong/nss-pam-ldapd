@@ -25,12 +25,13 @@ AM_CFLAGS = -fPIC
 
 pam_ldap_so_SOURCES = ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h pam.c common.h
+pam_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a -lpam \
+                    ../compat/libcompat.a
+
 pam_ldap_so_LDFLAGS = -shared
 if HAVE_VERSION_SCRIPT_FLAG
 pam_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/pam_ldap.map
 endif
-pam_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a -lpam \
-                    ../compat/libcompat.a
 
 EXTRA_DIST = pam_ldap.map
 

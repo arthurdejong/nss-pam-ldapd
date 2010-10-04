@@ -2,7 +2,7 @@
    group.c - NSS lookup functions for group database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* read a single group entry from the stream */
 static nss_status_t read_group(
         TFILE *fp,struct group *result,
         char *buffer,size_t buflen,int *errnop)
@@ -99,14 +100,20 @@ static nss_status_t read_gids(
   return NSS_STATUS_SUCCESS;
 }
 
-nss_status_t _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop)
+/* get a group entry by name */
+nss_status_t _nss_ldap_getgrnam_r(
+        const char *name,struct group *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,
              name,
              read_group(fp,result,buffer,buflen,errnop));
 }
 
-nss_status_t _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer,size_t buflen,int *errnop)
+/* get a group entry by numeric gid */
+nss_status_t _nss_ldap_getgrgid_r(
+        gid_t gid,struct group *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,
              gid,gid_t,
@@ -144,17 +151,22 @@ nss_status_t _nss_ldap_initgroups_dyn(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *grentfp;
 
+/* start a request to read all groups */
 nss_status_t _nss_ldap_setgrent(int UNUSED(stayopen))
 {
   NSS_SETENT(grentfp);
 }
 
-nss_status_t _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop)
+/* read a single group from the stream */
+nss_status_t _nss_ldap_getgrent_r(
+        struct group *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,
              read_group(grentfp,result,buffer,buflen,errnop));
 }
 
+/* close the stream opened with setgrent() above */
 nss_status_t _nss_ldap_endgrent(void)
 {
   NSS_ENDENT(grentfp);

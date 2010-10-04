@@ -31,12 +31,13 @@ nss_ldap_so_SOURCES = common.c common.h prototypes.h \
 EXTRA_nss_ldap_so_SOURCES = aliases.c ethers.c group.c hosts.c netgroup.c \
                             networks.c passwd.c protocols.c rpc.c services.c \
                             shadow.c
+nss_ldap_so_DEPENDENCIES = $(NSS_MODULE_OBJS)
+nss_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a $(NSS_MODULE_OBJS)
+
 nss_ldap_so_LDFLAGS = -shared -Wl,-h,$(NSS_LDAP_SONAME)
 if HAVE_VERSION_SCRIPT_FLAG
 nss_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/nss_ldap.map
 endif
-nss_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a $(NSS_MODULE_OBJS)
-nss_ldap_so_DEPENDENCIES = $(NSS_MODULE_OBJS)
 
 EXTRA_DIST = nss_ldap.map
 

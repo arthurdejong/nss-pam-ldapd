@@ -2,7 +2,7 @@
    ethers.c - NSS lookup functions for ethers database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* read an ethernet entry from the stream */
 static nss_status_t read_etherent(
         TFILE *fp,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -63,11 +64,13 @@ nss_status_t _nss_ldap_getntohost_r(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *etherentfp;
 
+/* open a connection to read all ether entries */
 nss_status_t _nss_ldap_setetherent(int UNUSED(stayopen))
 {
   NSS_SETENT(etherentfp);
 }
 
+/* read a single ethernet entry from the stream */
 nss_status_t _nss_ldap_getetherent_r(
         struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -76,6 +79,7 @@ nss_status_t _nss_ldap_getetherent_r(
              read_etherent(etherentfp,result,buffer,buflen,errnop));
 }
 
+/* close the stream opened with setetherent() above */
 nss_status_t _nss_ldap_endetherent(void)
 {
   NSS_ENDENT(etherentfp);

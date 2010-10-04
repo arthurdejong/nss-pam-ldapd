@@ -2,7 +2,7 @@
    passwd.c - NSS lookup functions for passwd database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* read a passwd entry from the stream */
 static nss_status_t read_passwd(
         TFILE *fp,struct passwd *result,
         char *buffer,size_t buflen,int *errnop)
@@ -45,14 +46,20 @@ static nss_status_t read_passwd(
   return NSS_STATUS_SUCCESS;
 }
 
-nss_status_t _nss_ldap_getpwnam_r(const char *name,struct passwd *result,char *buffer,size_t buflen,int *errnop)
+/* get a single passwd entry by name */
+nss_status_t _nss_ldap_getpwnam_r(
+        const char *name,struct passwd *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_PASSWD_BYNAME,
              name,
              read_passwd(fp,result,buffer,buflen,errnop));
 }
 
-nss_status_t _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffer,size_t buflen,int *errnop)
+/* get a single passwd entry by uid */
+nss_status_t _nss_ldap_getpwuid_r(
+        uid_t uid,struct passwd *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYTYPE(NSLCD_ACTION_PASSWD_BYUID,
              uid,uid_t,
@@ -62,14 +69,16 @@ nss_status_t _nss_ldap_getpwuid_r(uid_t uid,struct passwd *result,char *buffer,s
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *pwentfp;
 
-/* open a connection to the nslcd and write the request */
+/* open a connection to read all passwd entries */
 nss_status_t _nss_ldap_setpwent(int UNUSED(stayopen))
 {
   NSS_SETENT(pwentfp);
 }
 
 /* read password data from an opened stream */
-nss_status_t _nss_ldap_getpwent_r(struct passwd *result,char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getpwent_r(
+        struct passwd *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(pwentfp,NSLCD_ACTION_PASSWD_ALL,
              read_passwd(pwentfp,result,buffer,buflen,errnop));

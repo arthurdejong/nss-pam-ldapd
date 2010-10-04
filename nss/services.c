@@ -2,7 +2,7 @@
    service.c - NSS lookup functions for services database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* read a single services result entry from the stream */
 static nss_status_t read_servent(
         TFILE *fp,struct servent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -45,7 +46,10 @@ static nss_status_t read_servent(
   return NSS_STATUS_SUCCESS;
 }
 
-nss_status_t _nss_ldap_getservbyname_r(const char *name,const char *protocol,struct servent *result,char *buffer,size_t buflen,int *errnop)
+/* get a service entry by name and protocol */
+nss_status_t _nss_ldap_getservbyname_r(
+        const char *name,const char *protocol,struct servent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,
             WRITE_STRING(fp,name);WRITE_STRING(fp,protocol),
@@ -53,7 +57,10 @@ nss_status_t _nss_ldap_getservbyname_r(const char *name,const char *protocol,str
 
 }
 
-nss_status_t _nss_ldap_getservbyport_r(int port,const char *protocol,struct servent *result,char *buffer,size_t buflen,int *errnop)
+/* get a service entry by port and protocol */
+nss_status_t _nss_ldap_getservbyport_r(
+        int port,const char *protocol,struct servent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,
             WRITE_INT32(fp,ntohs(port));WRITE_STRING(fp,protocol),
@@ -63,17 +70,22 @@ nss_status_t _nss_ldap_getservbyport_r(int port,const char *protocol,struct serv
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
+/* open request to get all services */
 nss_status_t _nss_ldap_setservent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp);
 }
 
-nss_status_t _nss_ldap_getservent_r(struct servent *result,char *buffer,size_t buflen,int *errnop)
+/* read a single returned service definition */
+nss_status_t _nss_ldap_getservent_r(
+        struct servent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL,
              read_servent(protoentfp,result,buffer,buflen,errnop));
 }
 
+/* close the stream opened by setservent() above */
 nss_status_t _nss_ldap_endservent(void)
 {
   NSS_ENDENT(protoentfp);
