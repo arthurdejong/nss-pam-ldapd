@@ -30,6 +30,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* read a single shadow entry from the stream */
 static nss_status_t read_spwd(
         TFILE *fp,struct spwd *result,
         char *buffer,size_t buflen,int *errnop)
@@ -50,9 +51,10 @@ static nss_status_t read_spwd(
 
 #ifdef NSS_FLAVOUR_GLIBC
 
+/* get a shadow entry by name */
 nss_status_t _nss_ldap_getspnam_r(
-        const char *name,struct spwd *result,char *buffer,
-        size_t buflen,int *errnop)
+        const char *name,struct spwd *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,buffer,buflen,
              name,
@@ -63,19 +65,23 @@ nss_status_t _nss_ldap_getspnam_r(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *spentfp;
 
+/* start listing all shadow users */
 nss_status_t _nss_ldap_setspent(int UNUSED(stayopen))
 {
   NSS_SETENT(spentfp);
 }
 
+/* return a single shadow entry read from the stream */
 nss_status_t _nss_ldap_getspent_r(
-        struct spwd *result,char *buffer,size_t buflen,int *errnop)
+        struct spwd *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,buffer,buflen,
              read_spwd(spentfp,result,buffer,buflen,errnop));
   return retv;
 }
 
+/* close the stream opened by setspent() above */
 nss_status_t _nss_ldap_endspent(void)
 {
   NSS_ENDENT(spentfp);

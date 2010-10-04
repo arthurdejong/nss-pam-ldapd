@@ -3,6 +3,7 @@
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
 # Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
+# Copyright (C) 2010 Symas Corporation
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,14 +28,16 @@ AM_CFLAGS = -fPIC
 nss_ldap_so_SOURCES = common.c common.h prototypes.h \
                       ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h
+EXTRA_nss_ldap_so_SOURCES = aliases.c ethers.c group.c hosts.c netgroup.c \
+                            networks.c passwd.c protocols.c rpc.c services.c \
+                            shadow.c
+nss_ldap_so_DEPENDENCIES = $(NSS_MODULE_OBJS)
+nss_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a $(NSS_MODULE_OBJS)
+
 nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
 if HAVE_VERSION_SCRIPT_FLAG
 nss_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/nss_ldap.map
 endif
-nss_ldap_so_DEPENDENCIES = $(NSS_MODULE_OBJS)
-EXTRA_nss_ldap_so_SOURCES = aliases.c ethers.c group.c hosts.c netgroup.c \
-                            networks.c passwd.c protocols.c rpc.c services.c \
-                            shadow.c
 
 if USE_NATIVE_LINKER
 nss_ldap_so_LINK = @nss_ldap_so_LD@ @nss_ldap_so_LDFLAGS@ -o $@

@@ -1,6 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
 # Copyright (C) 2009, 2010 Arthur de Jong
+# Copyright (C) 2010 Symas Corporation
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,13 +28,13 @@ pam_ldap_so_SOURCES = ../nslcd.h ../common/nslcd-prot.h \
 pam_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a -lpam \
                     ../compat/libcompat.a
 
-EXTRA_DIST = pam_ldap.map exports.solaris
-
 if USE_NATIVE_LINKER
 pam_ldap_so_LINK = @pam_ldap_so_LD@ @pam_ldap_so_LDFLAGS@ -o $@
 else
 pam_ldap_so_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAG) -o $@
 endif
+
+EXTRA_DIST = pam_ldap.map exports.solaris
 
 install-exec-local: install-pam_ldap_so
 uninstall-local: uninstall-pam_ldap_so

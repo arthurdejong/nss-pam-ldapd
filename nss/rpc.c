@@ -30,6 +30,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* read a sinlge rpc entry from the stream */
 static nss_status_t read_rpcent(
         TFILE *fp,struct rpcent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -44,9 +45,10 @@ static nss_status_t read_rpcent(
 
 #ifdef NSS_FLAVOUR_GLIBC
 
+/* get a rpc entry by name */
 nss_status_t _nss_ldap_getrpcbyname_r(
-        const char *name,struct rpcent *result,char *buffer,
-        size_t buflen,int *errnop)
+        const char *name,struct rpcent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,buffer,buflen,
              name,
@@ -54,9 +56,10 @@ nss_status_t _nss_ldap_getrpcbyname_r(
   return retv;
 }
 
+/* get a rpc entry by number */
 nss_status_t _nss_ldap_getrpcbynumber_r(
-        int number,struct rpcent *result,char *buffer,
-        size_t buflen,int *errnop)
+        int number,struct rpcent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,buffer,buflen,
               number,
@@ -67,19 +70,23 @@ nss_status_t _nss_ldap_getrpcbynumber_r(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
+/* request a stream to list all rpc entries */
 nss_status_t _nss_ldap_setrpcent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp);
 }
 
+/* get an rpc entry from the list */
 nss_status_t _nss_ldap_getrpcent_r(
-        struct rpcent *result,char *buffer,size_t buflen,int *errnop)
+        struct rpcent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(protoentfp,NSLCD_ACTION_RPC_ALL,buffer,buflen,
              read_rpcent(protoentfp,result,buffer,buflen,errnop));
   return retv;
 }
 
+/* close the stream opened by setrpcent() above */
 nss_status_t _nss_ldap_endrpcent(void)
 {
   NSS_ENDENT(protoentfp);

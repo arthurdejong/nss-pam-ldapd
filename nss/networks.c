@@ -33,7 +33,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-/* Redifine some ERROR_OUT macros as we also want to set h_errnop. */
+/* Redefine some ERROR_OUT macros as we also want to set h_errnop. */
 
 #undef ERROR_OUT_OPENERROR
 #define ERROR_OUT_OPENERROR \
@@ -113,9 +113,10 @@ static nss_status_t read_netent(
 
 #ifdef NSS_FLAVOUR_GLIBC
 
+/* get a network entry by name */
 nss_status_t _nss_ldap_getnetbyname_r(
-        const char *name,struct netent *result,char *buffer,
-        size_t buflen,int *errnop,int *h_errnop)
+        const char *name,struct netent *result,
+        char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,buffer,buflen,
              name,
@@ -138,20 +139,23 @@ nss_status_t _nss_ldap_getnetbyaddr_r(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *netentfp;
 
+/* start a request to read all networks */
 nss_status_t _nss_ldap_setnetent(int UNUSED(stayopen))
 {
   NSS_SETENT(netentfp);
 }
 
+/* get a single network entry from the stream */
 nss_status_t _nss_ldap_getnetent_r(
-        struct netent *result,char *buffer,size_t buflen,
-        int *errnop,int *h_errnop)
+        struct netent *result,
+        char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   NSS_GETENT(netentfp,NSLCD_ACTION_NETWORK_ALL,buffer,buflen,
              read_netent(netentfp,result,buffer,buflen,errnop,h_errnop));
   return retv;
 }
 
+/* close the stream opened by setnetent() above */
 nss_status_t _nss_ldap_endnetent(void)
 {
   NSS_ENDENT(netentfp);

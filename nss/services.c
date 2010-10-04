@@ -30,6 +30,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* read a single services result entry from the stream */
 static nss_status_t read_servent(
         TFILE *fp,struct servent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -38,6 +39,7 @@ static nss_status_t read_servent(
   size_t bufptr=0;
   READ_BUF_STRING(fp,result->s_name);
   READ_BUF_STRINGLIST(fp,result->s_aliases);
+  /* store port number in network byte order */
   READ_TYPE(fp,tmpint32,int32_t);
   result->s_port=htons((uint16_t)tmpint32);
   READ_BUF_STRING(fp,result->s_proto);
@@ -47,6 +49,7 @@ static nss_status_t read_servent(
 
 #ifdef NSS_FLAVOUR_GLIBC
 
+/* get a service entry by name and protocol */
 nss_status_t _nss_ldap_getservbyname_r(
         const char *name,const char *protocol,struct servent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -57,6 +60,7 @@ nss_status_t _nss_ldap_getservbyname_r(
   return retv;
 }
 
+/* get a service entry by port and protocol */
 nss_status_t _nss_ldap_getservbyport_r(
         int port,const char *protocol,struct servent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -70,19 +74,23 @@ nss_status_t _nss_ldap_getservbyport_r(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
+/* open request to get all services */
 nss_status_t _nss_ldap_setservent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp);
 }
 
+/* read a single returned service definition */
 nss_status_t _nss_ldap_getservent_r(
-        struct servent *result,char *buffer,size_t buflen,int *errnop)
+        struct servent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL,buffer,buflen,
              read_servent(protoentfp,result,buffer,buflen,errnop));
   return retv;
 }
 
+/* close the stream opened by setservent() above */
 nss_status_t _nss_ldap_endservent(void)
 {
   NSS_ENDENT(protoentfp);

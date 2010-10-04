@@ -31,6 +31,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* read a single group entry from the stream */
 static nss_status_t read_group(
         TFILE *fp,struct group *result,
         char *buffer,size_t buflen,int *errnop)
@@ -47,8 +48,7 @@ static nss_status_t read_group(
 /* read all group entries from the stream and add
    gids of these groups to the list */
 static nss_status_t read_gids(
-        TFILE *fp,gid_t skipgroup,long int *start,
-        long int *size,
+        TFILE *fp,gid_t skipgroup,long int *start,long int *size,
         gid_t **groupsp,long int limit,int *errnop)
 {
   int32_t res=(int32_t)NSLCD_RESULT_BEGIN;
@@ -105,9 +105,10 @@ static nss_status_t read_gids(
 
 #ifdef NSS_FLAVOUR_GLIBC
 
+/* get a group entry by name */
 nss_status_t _nss_ldap_getgrnam_r(
-        const char *name,struct group *result,char *buffer,
-        size_t buflen,int *errnop)
+        const char *name,struct group *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,buffer,buflen,
              name,
@@ -115,9 +116,10 @@ nss_status_t _nss_ldap_getgrnam_r(
   return retv;
 }
 
+/* get a group entry by numeric gid */
 nss_status_t _nss_ldap_getgrgid_r(
-        gid_t gid,struct group *result,char *buffer,
-        size_t buflen,int *errnop)
+        gid_t gid,struct group *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,buffer,buflen,
              gid,gid_t,
@@ -128,19 +130,23 @@ nss_status_t _nss_ldap_getgrgid_r(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *grentfp;
 
+/* start a request to read all groups */
 nss_status_t _nss_ldap_setgrent(int UNUSED(stayopen))
 {
   NSS_SETENT(grentfp);
 }
 
+/* read a single group from the stream */
 nss_status_t _nss_ldap_getgrent_r(
-        struct group *result,char *buffer,size_t buflen,int *errnop)
+        struct group *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,buffer,buflen,
              read_group(grentfp,result,buffer,buflen,errnop));
   return retv;
 }
 
+/* close the stream opened with setgrent() above */
 nss_status_t _nss_ldap_endgrent(void)
 {
   NSS_ENDENT(grentfp);
@@ -160,8 +166,7 @@ nss_status_t _nss_ldap_endgrent(void)
 */
 nss_status_t _nss_ldap_initgroups_dyn(
         const char *user,gid_t skipgroup,long int *start,
-        long int *size,
-        gid_t **groupsp,long int limit,int *errnop)
+        long int *size,gid_t **groupsp,long int limit,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,groupsp,*size,
              user,

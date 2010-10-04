@@ -92,7 +92,9 @@ static nss_status_t read_netgrent(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *netgrentfp;
 
-nss_status_t _nss_ldap_setnetgrent(const char *group,struct __netgrent UNUSED(* result))
+/* start a request to get a netgroup by name */
+nss_status_t _nss_ldap_setnetgrent(
+        const char *group,struct __netgrent UNUSED(*result))
 {
   /* we cannot use NSS_SETENT() here because we have a parameter that is only
      available in this function */
@@ -110,13 +112,17 @@ nss_status_t _nss_ldap_setnetgrent(const char *group,struct __netgrent UNUSED(* 
   return NSS_STATUS_SUCCESS;
 }
 
-nss_status_t _nss_ldap_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop)
+/* get a single netgroup tuple from the stream */
+nss_status_t _nss_ldap_getnetgrent_r(
+        struct __netgrent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,buffer,buflen,
              read_netgrent(netgrentfp,result,buffer,buflen,errnop));
   return retv;
 }
 
+/* close the stream opened with setnetgrent() above */
 nss_status_t _nss_ldap_endnetgrent(struct __netgrent UNUSED(* result))
 {
   NSS_ENDENT(netgrentfp);

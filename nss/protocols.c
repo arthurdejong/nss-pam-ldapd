@@ -30,6 +30,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* read a single protocol entry from the stream */
 static nss_status_t read_protoent(
         TFILE *fp,struct protoent *result,
         char *buffer,size_t buflen,int *errnop)
@@ -44,9 +45,10 @@ static nss_status_t read_protoent(
 
 #ifdef NSS_FLAVOUR_GLIBC
 
+/* get a protocol entry by name */
 nss_status_t _nss_ldap_getprotobyname_r(
-        const char *name,struct protoent *result,char *buffer,
-        size_t buflen,int *errnop)
+        const char *name,struct protoent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYNAME(NSLCD_ACTION_PROTOCOL_BYNAME,buffer,buflen,
              name,
@@ -54,9 +56,10 @@ nss_status_t _nss_ldap_getprotobyname_r(
   return retv;
 }
 
+/* get a protocol entry by number */
 nss_status_t _nss_ldap_getprotobynumber_r(
-        int number,struct protoent *result,char *buffer,
-        size_t buflen,int *errnop)
+        int number,struct protoent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_BYINT32(NSLCD_ACTION_PROTOCOL_BYNUMBER,buffer,buflen,
               number,
@@ -67,19 +70,23 @@ nss_status_t _nss_ldap_getprotobynumber_r(
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
+/* start a request to read all protocol entries */
 nss_status_t _nss_ldap_setprotoent(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp);
 }
 
+/* get a single protocol entry */
 nss_status_t _nss_ldap_getprotoent_r(
-        struct protoent *result,char *buffer,size_t buflen,int *errnop)
+        struct protoent *result,
+        char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(protoentfp,NSLCD_ACTION_PROTOCOL_ALL,buffer,buflen,
              read_protoent(protoentfp,result,buffer,buflen,errnop));
   return retv;
 }
 
+/* close the stream opened by setprotoent() above */
 nss_status_t _nss_ldap_endprotoent(void)
 {
   NSS_ENDENT(protoentfp);
