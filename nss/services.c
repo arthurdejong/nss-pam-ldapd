@@ -54,7 +54,6 @@ nss_status_t _nss_ldap_getservbyname_r(
   NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,
             WRITE_STRING(fp,name);WRITE_STRING(fp,protocol),
             read_servent(fp,result,buffer,buflen,errnop));
-
 }
 
 /* get a service entry by port and protocol */
@@ -68,12 +67,12 @@ nss_status_t _nss_ldap_getservbyport_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *protoentfp;
+static __thread TFILE *serventfp;
 
 /* open request to get all services */
 nss_status_t _nss_ldap_setservent(int UNUSED(stayopen))
 {
-  NSS_SETENT(protoentfp);
+  NSS_SETENT(serventfp);
 }
 
 /* read a single returned service definition */
@@ -81,12 +80,12 @@ nss_status_t _nss_ldap_getservent_r(
         struct servent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL,
-             read_servent(protoentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(serventfp,NSLCD_ACTION_SERVICE_ALL,
+             read_servent(serventfp,result,buffer,buflen,errnop));
 }
 
 /* close the stream opened by setservent() above */
 nss_status_t _nss_ldap_endservent(void)
 {
-  NSS_ENDENT(protoentfp);
+  NSS_ENDENT(serventfp);
 }
