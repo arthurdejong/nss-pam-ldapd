@@ -45,5 +45,20 @@ char *ether_ntoa_r(const struct ether_addr *addr,char *buf);
 struct ether_addr *ether_aton_r(const char *asc,struct ether_addr *addr);
 #endif /* not HAVE_ETHER_ATON_R */
 
-#endif /* not COMPAT__ETHER_H */
+#ifdef HAVE_ETHER_NTOA
+#if !HAVE_DECL_ETHER_NTOA
+/* we define ether_ntoa() here because on some platforms the function is
+   underfined */
+extern char *ether_ntoa(const struct ether_addr *e);
+#endif /* not HAVE_DECL_ETHER_NTOA */
+#endif /* HAVE_ETHER_NTOA */
 
+#ifdef HAVE_ETHER_ATON
+#if !HAVE_DECL_ETHER_ATON
+/* we define ether_aton() here because on some platforms the function is
+   underfined */
+extern struct ether_addr *ether_aton(const char *s);
+#endif /* not HAVE_DECL_ETHER_ATON */
+#endif /* HAVE_ETHER_ATON */
+
+#endif /* not COMPAT__ETHER_H */
