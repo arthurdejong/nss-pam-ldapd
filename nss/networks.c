@@ -179,7 +179,6 @@ static nss_status_t _xnss_ldap_getnetbyname_r(nss_backend_t UNUSED(*be),void *ar
 {
   struct netent priv_network;
   struct netent *network=NSS_ARGS(args)->buf.result?(struct netent *)NSS_ARGS(args)->buf.result:&priv_network;
-  char *name=(char *)NSS_ARGS(args)->key.name;
   int af=NSS_ARGS(args)->key.netaddr.type;
   char *buffer=NSS_ARGS(args)->buf.buffer;
   size_t buflen=NSS_ARGS(args)->buf.buflen;
@@ -191,7 +190,7 @@ static nss_status_t _xnss_ldap_getnetbyname_r(nss_backend_t UNUSED(*be),void *ar
     NSS_ARGS(args)->erange=1;
     return NSS_STATUS_TRYAGAIN;
   }
-  status=_nss_nslcd_getnetbyname_r(name,network,buffer,
+  status=_nss_nslcd_getnetbyname_r(NSS_ARGS(args)->key.name,network,buffer,
                 buflen,&errno,&h_errno);
   if (status!=NSS_STATUS_SUCCESS)
   {
@@ -202,7 +201,7 @@ static nss_status_t _xnss_ldap_getnetbyname_r(nss_backend_t UNUSED(*be),void *ar
   {
     /* result==NULL, return file format */
     data_ptr=(char *)malloc(buflen);
-    sprintf(data_ptr,"%s %s",name,inet_ntoa(network->n_net)); /* ipNetworkNumber */
+    sprintf(data_ptr,"%s %s",network->n_name,inet_ntoa(network->n_net)); /* ipNetworkNumber */
     if (network->n_aliases)
     {
       int i;
@@ -290,6 +289,9 @@ static nss_status_t _xnss_ldap_getnetbyaddr_r(nss_backend_t UNUSED(*be),void *ar
   NSS_ARGS(args)->h_errno=h_errno;
   return status;
 }
+
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *netentfp;
 
 static nss_status_t _xnss_ldap_setnetent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {

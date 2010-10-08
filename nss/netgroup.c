@@ -189,6 +189,9 @@ static char *_nss_ldap_chase_netgroup(nss_ldap_netgr_backend_t *ngbe)
   return group;
 }
 
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *netgrentfp;
+
 static nss_status_t _nss_nslcd_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,buffer,buflen,
@@ -196,7 +199,7 @@ static nss_status_t _nss_nslcd_getnetgrent_r(struct __netgrent *result,char *buf
   return retv;
 }
 
-static nss_status_t _nss_nslcd_setnetgrent(const char *group,struct __netgrent UNUSED(* result))
+static nss_status_t _nss_nslcd_setnetgrent(const char *group,struct __netgrent UNUSED(*result))
 {
   /* we cannot use NSS_SETENT() here because we have a parameter that is only
      available in this function */

@@ -158,6 +158,9 @@ static nss_status_t _nss_nslcd_getpwuid_r(
   return retv;
 }
 
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *pwentfp;
+
 /* open a connection to the nslcd and write the request */
 static nss_status_t _xnss_ldap_setpwent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {

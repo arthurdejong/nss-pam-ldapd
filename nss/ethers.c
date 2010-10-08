@@ -95,7 +95,9 @@ nss_status_t _nss_ldap_endetherent(void)
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
+#ifndef NSS_BUFLEN_ETHERS
 #define NSS_BUFLEN_ETHERS 1024
+#endif
 
 #define errnop &errno
 
@@ -156,6 +158,9 @@ static nss_status_t _xnss_ldap_getntohost_r(nss_backend_t UNUSED(*be),void *args
   }
   return retv;
 }
+
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *etherentfp;
 
 static nss_status_t _xnss_ldap_setetherent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {

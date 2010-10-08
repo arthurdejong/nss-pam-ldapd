@@ -116,6 +116,9 @@ static nss_status_t _nss_nslcd_getrpcbynumber_r(
   return retv;
 }
 
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *protoentfp;
+
 static nss_status_t _xnss_ldap_setrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(protoentfp);

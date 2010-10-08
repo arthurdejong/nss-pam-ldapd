@@ -203,6 +203,9 @@ static nss_status_t _xnss_ldap_getprotobynumber_r(nss_backend_t UNUSED(*be),void
   return status;
 }
 
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *protoentfp;
+
 static nss_status_t _xnss_ldap_setprotoent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(protoentfp);

@@ -355,6 +355,8 @@ static nss_status_t _xnss_ldap_gethostbyaddr_r(nss_backend_t UNUSED(*be),void *a
   return retv;
 }
 
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *hostentfp;
 
 static nss_status_t _xnss_ldap_sethostent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
