@@ -30,6 +30,9 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *spentfp; 
+
 /* read a single shadow entry from the stream */
 static nss_status_t read_spwd(
         TFILE *fp,struct spwd *result,
@@ -63,7 +66,7 @@ nss_status_t _nss_ldap_getspnam_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *spentfp;
+/* static __thread TFILE *spentfp; */
 
 /* start listing all shadow users */
 nss_status_t _nss_ldap_setspent(int UNUSED(stayopen))
@@ -108,7 +111,6 @@ static nss_status_t _xnss_ldap_getspnam_r(nss_backend_t UNUSED(*be),void *args)
   char *buffer=NSS_ARGS(args)->buf.buffer;
   size_t buflen=NSS_ARGS(args)->buf.buflen;
   char *data_ptr;
-  char field_buf[128];
   nss_status_t status;
   if (NSS_ARGS(args)->buf.buflen<0)
   {
@@ -122,6 +124,7 @@ static nss_status_t _xnss_ldap_getspnam_r(nss_backend_t UNUSED(*be),void *args)
   {
     /* result==NULL, return file format */
     data_ptr=(char *)malloc(buflen);
+    char field_buf[128];
     sprintf(data_ptr,"%s:%s:",sp->sp_namp,sp->sp_pwdp);
     if (sp->sp_lstchg >= 0)
       sprintf(field_buf,"%d:",sp->sp_lstchg);
@@ -169,9 +172,6 @@ static nss_status_t _xnss_ldap_getspnam_r(nss_backend_t UNUSED(*be),void *args)
   }
   return status;
 }
-
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *spentfp;
 
 static nss_status_t _xnss_ldap_setspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {

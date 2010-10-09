@@ -30,6 +30,9 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *protoentfp;
+
 /* read a single protocol entry from the stream */
 static nss_status_t read_protoent(
         TFILE *fp,struct protoent *result,
@@ -68,7 +71,7 @@ nss_status_t _nss_ldap_getprotobynumber_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *protoentfp;
+/* static __thread TFILE *protoentfp; */
 
 /* start a request to read all protocol entries */
 nss_status_t _nss_ldap_setprotoent(int UNUSED(stayopen))
@@ -202,9 +205,6 @@ static nss_status_t _xnss_ldap_getprotobynumber_r(nss_backend_t UNUSED(*be),void
   }
   return status;
 }
-
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *protoentfp;
 
 static nss_status_t _xnss_ldap_setprotoent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {

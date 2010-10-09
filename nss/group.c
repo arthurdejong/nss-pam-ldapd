@@ -31,6 +31,8 @@
 #include "common.h"
 #include "compat/attrs.h"
 
+static __thread TFILE *grentfp;
+
 /* read a single group entry from the stream */
 static nss_status_t read_group(
         TFILE *fp,struct group *result,
@@ -54,10 +56,8 @@ static nss_status_t read_gids(
   int32_t res=(int32_t)NSLCD_RESULT_BEGIN;
   int32_t tmpint32,tmp2int32,tmp3int32;
   gid_t gid;
-#ifdef NSS_FLAVOUR_GLIBC
   gid_t *newgroups;
   long int newsize;
-#endif /* NSS_FLAVOUR_GLIBC */
   /* loop over results */
   while (res==(int32_t)NSLCD_RESULT_BEGIN)
   {
@@ -130,7 +130,7 @@ nss_status_t _nss_ldap_getgrgid_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *grentfp;
+/* static __thread TFILE *grentfp; */
 
 /* start a request to read all groups */
 nss_status_t _nss_ldap_setgrent(int UNUSED(stayopen))
@@ -276,9 +276,6 @@ static nss_status_t _xnss_ldap_getgrgid_r(nss_backend_t UNUSED(*be),void *args)
   }
   return status;
 }
-
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *grentfp;
 
 static nss_status_t _xnss_ldap_setgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {

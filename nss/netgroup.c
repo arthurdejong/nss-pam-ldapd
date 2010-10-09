@@ -39,6 +39,8 @@
   fp=NULL; \
   return NSS_STATUS_RETURN;
 
+static __thread TFILE *netgrentfp;
+
 /* function for reading a single result entry */
 static nss_status_t read_netgrent(
         TFILE *fp,struct __netgrent *result,
@@ -90,7 +92,7 @@ static nss_status_t read_netgrent(
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *netgrentfp;
+/* static __thread TFILE *netgrentfp; */
 
 /* start a request to get a netgroup by name */
 nss_status_t _nss_ldap_setnetgrent(
@@ -189,9 +191,6 @@ static char *_nss_ldap_chase_netgroup(nss_ldap_netgr_backend_t *ngbe)
   return group;
 }
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *netgrentfp;
-
 static nss_status_t _nss_nslcd_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop)
 {
   NSS_GETENT(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,buffer,buflen,
@@ -199,7 +198,7 @@ static nss_status_t _nss_nslcd_getnetgrent_r(struct __netgrent *result,char *buf
   return retv;
 }
 
-static nss_status_t _nss_nslcd_setnetgrent(const char *group,struct __netgrent UNUSED(*result))
+static nss_status_t _nss_nslcd_setnetgrent(const char *group,struct __netgrent UNUSED(* result))
 {
   /* we cannot use NSS_SETENT() here because we have a parameter that is only
      available in this function */
