@@ -31,7 +31,7 @@
 #include "compat/attrs.h"
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *protoentfp;
+static __thread TFILE *serventfp;
 
 /* read a single services result entry from the stream */
 static nss_status_t read_servent(
@@ -80,7 +80,7 @@ nss_status_t _nss_ldap_getservbyport_r(
 /* open request to get all services */
 nss_status_t _nss_ldap_setservent(int UNUSED(stayopen))
 {
-  NSS_SETENT(protoentfp);
+  NSS_SETENT(serventfp);
 }
 
 /* read a single returned service definition */
@@ -88,15 +88,15 @@ nss_status_t _nss_ldap_getservent_r(
         struct servent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL,buffer,buflen,
-             read_servent(protoentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(serventfp,NSLCD_ACTION_SERVICE_ALL,buffer,buflen,
+             read_servent(serventfp,result,buffer,buflen,errnop));
   return retv;
 }
 
 /* close the stream opened by setservent() above */
 nss_status_t _nss_ldap_endservent(void)
 {
-  NSS_ENDENT(protoentfp);
+  NSS_ENDENT(serventfp);
 }
 
 #endif /* NSS_FLAVOUR_GLIBC */
@@ -125,20 +125,20 @@ static nss_status_t _nss_nslcd_getservbyport_r(
 
 static nss_status_t _xnss_ldap_setservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
-  NSS_SETENT(protoentfp);
+  NSS_SETENT(serventfp);
 }
 
 static nss_status_t _nss_nslcd_getservent_r(
         struct servent *result,char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(protoentfp,NSLCD_ACTION_SERVICE_ALL,buffer,buflen,
-             read_servent(protoentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(serventfp,NSLCD_ACTION_SERVICE_ALL,buffer,buflen,
+             read_servent(serventfp,result,buffer,buflen,errnop));
   return retv;
 }
 
 static nss_status_t _xnss_ldap_endservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
-  NSS_ENDENT(protoentfp);
+  NSS_ENDENT(serventfp);
 }
 
 static nss_status_t _xnss_ldap_getservbyname_r(nss_backend_t UNUSED(*be),void *args)
