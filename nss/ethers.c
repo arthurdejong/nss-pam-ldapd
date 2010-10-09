@@ -42,8 +42,6 @@ static nss_status_t read_etherent(
   return NSS_STATUS_SUCCESS;
 }
 
-static __thread TFILE *etherentfp;
-
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* map a hostname to the corresponding ethernet address */
@@ -69,7 +67,7 @@ nss_status_t _nss_ldap_getntohost_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-/* static __thread TFILE *etherentfp; */
+static __thread TFILE *etherentfp;
 
 /* open a connection to read all ether entries */
 nss_status_t _nss_ldap_setetherent(int UNUSED(stayopen))
@@ -160,6 +158,9 @@ static nss_status_t _xnss_ldap_getntohost_r(nss_backend_t UNUSED(*be),void *args
   }
   return retv;
 }
+
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *etherentfp;
 
 static nss_status_t _xnss_ldap_setetherent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {

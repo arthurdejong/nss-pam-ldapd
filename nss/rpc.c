@@ -30,9 +30,6 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *protoentfp;
-
 /* read a sinlge rpc entry from the stream */
 static nss_status_t read_rpcent(
         TFILE *fp,struct rpcent *result,
@@ -71,7 +68,7 @@ nss_status_t _nss_ldap_getrpcbynumber_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-/* static __thread TFILE *protoentfp; */
+static __thread TFILE *protoentfp;
 
 /* request a stream to list all rpc entries */
 nss_status_t _nss_ldap_setrpcent(int UNUSED(stayopen))
@@ -118,6 +115,9 @@ static nss_status_t _nss_nslcd_getrpcbynumber_r(
               read_rpcent(fp,result,buffer,buflen,errnop));
   return retv;
 }
+
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *protoentfp;
 
 static nss_status_t _xnss_ldap_setrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {

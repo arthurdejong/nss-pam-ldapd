@@ -61,9 +61,6 @@
 #define ERROR_OUT_WRITEERROR(fp) \
   ERROR_OUT_READERROR(fp)
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *netentfp;
-
 /* read a single network entry from the stream, ignoring entries
    that are not AF_INET (IPv4), result is stored in result */
 static nss_status_t read_netent(
@@ -140,7 +137,7 @@ nss_status_t _nss_ldap_getnetbyaddr_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-/* static __thread TFILE *netentfp; */
+static __thread TFILE *netentfp;
 
 /* start a request to read all networks */
 nss_status_t _nss_ldap_setnetent(int UNUSED(stayopen))
@@ -296,6 +293,9 @@ static nss_status_t _xnss_ldap_getnetbyaddr_r(nss_backend_t UNUSED(*be),void *ar
   return status;
 }
 
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *netentfp;
+
 static nss_status_t _xnss_ldap_setnetent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(netentfp);
@@ -319,7 +319,6 @@ static nss_status_t _xnss_ldap_getnetent_r(nss_backend_t UNUSED(*be),void *args)
   int h_errno;
   char *data_ptr;
   nss_status_t status;
-
   if (NSS_ARGS(args)->buf.buflen<0)
   {
     NSS_ARGS(args)->erange=1;

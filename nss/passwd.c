@@ -30,9 +30,6 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *pwentfp;
-
 /* read a passwd entry from the stream */
 static nss_status_t read_passwd(
         TFILE *fp,struct passwd *result,
@@ -75,7 +72,7 @@ nss_status_t _nss_ldap_getpwuid_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-/* static __thread TFILE *pwentfp; */
+static __thread TFILE *pwentfp;
 
 /* open a connection to read all passwd entries */
 nss_status_t _nss_ldap_setpwent(int UNUSED(stayopen))
@@ -160,6 +157,9 @@ static nss_status_t _nss_nslcd_getpwuid_r(
              read_passwd(fp,result,buffer,buflen,errnop));
   return retv;
 }
+
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *pwentfp;
 
 /* open a connection to the nslcd and write the request */
 static nss_status_t _xnss_ldap_setpwent(nss_backend_t UNUSED(*be),void UNUSED(*args))

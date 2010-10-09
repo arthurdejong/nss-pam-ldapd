@@ -30,9 +30,6 @@
 #include "common.h"
 #include "compat/attrs.h"
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *serventfp;
-
 /* read a single services result entry from the stream */
 static nss_status_t read_servent(
         TFILE *fp,struct servent *result,
@@ -75,7 +72,7 @@ nss_status_t _nss_ldap_getservbyport_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-/* static __thread TFILE *protoentfp; */
+static __thread TFILE *serventfp;
 
 /* open request to get all services */
 nss_status_t _nss_ldap_setservent(int UNUSED(stayopen))
@@ -122,6 +119,9 @@ static nss_status_t _nss_nslcd_getservbyport_r(
             read_servent(fp,result,buffer,buflen,errnop));
   return retv;
 }
+
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *serventfp;
 
 static nss_status_t _xnss_ldap_setservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
