@@ -119,7 +119,7 @@ nss_status_t _nss_ldap_getnetgrent_r(
 }
 
 /* close the stream opened with setnetgrent() above */
-nss_status_t _nss_ldap_endnetgrent(struct __netgrent UNUSED(* result))
+nss_status_t _nss_ldap_endnetgrent(struct __netgrent UNUSED(*result))
 {
   NSS_ENDENT(netgrentfp);
 }

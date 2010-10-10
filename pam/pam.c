@@ -92,7 +92,7 @@ static void ctx_clear(struct pld_ctx *ctx)
 }
 
 /* free the context (this is installed as handler into PAM) */
-static void ctx_free(pam_handle_t *UNUSED(pamh),void *data,int UNUSED(err))
+static void ctx_free(pam_handle_t UNUSED(*pamh),void *data,int UNUSED(err))
 {
   struct pld_ctx *ctx=data;
   ctx_clear(ctx);

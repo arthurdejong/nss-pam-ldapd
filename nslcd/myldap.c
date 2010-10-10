@@ -464,7 +464,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
 #ifdef HAVE_LDAP_SET_REBIND_PROC
 /* This function is called by the LDAP library when chasing referrals.
    It is configured with the ldap_set_rebind_proc() below. */
-static int do_rebind(LDAP *UNUSED(ld),LDAP_CONST char *url,
+static int do_rebind(LDAP UNUSED(*ld),LDAP_CONST char *url,
                      ber_tag_t UNUSED(request),
                      ber_int_t UNUSED(msgid),void *arg)
 {
