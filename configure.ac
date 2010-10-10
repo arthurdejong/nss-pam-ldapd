@@ -380,7 +380,7 @@ then
       #endif])
 
   # check if struct nss_XbyY_args has a returnlen attribute
-  AC_CHECK_MEMBER([struct nss_XbyY_args.returnlen],,,[[
+  AC_CHECK_MEMBERS([struct nss_XbyY_args.returnlen],,,[[
       #ifdef HAVE_NSS_H
       #include <nss.h>
       #endif
