@@ -79,6 +79,45 @@ void _nss_ldap_namelist_destroy(struct name_list **head);
   fp=NULL; \
   return NSS_STATUS_NOTFOUND;
 
+/* These are some general macros that are used to build parts of the
+   genral macros below. */
+
+/* check to see if we should answer NSS requests */
+#define NSS_AVAILCHECK \
+  if (!_nss_ldap_enablelookups) \
+    return NSS_STATUS_UNAVAIL;
+
+#ifdef NSS_FLAVOUR_GLIBC
+
+/* extra definitions we need (nothing for Glibc) */
+#define NSS_EXTRA_DEFS ;
+
+/* check validity of passed buffer (Glibc flavour) */
+#define NSS_BUFCHECK \
+  if ((buffer==NULL)||(buflen<=0)) \
+  { \
+      *errnop=EINVAL; \
+      return NSS_STATUS_UNAVAIL; \
+  }
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+/* extra definitions we need (Solaris NSS functions don't pass errno) */
+#define NSS_EXTRA_DEFS \
+  int *errnop=&(errno);
+
+/* check validity of passed buffer (Solaris flavour) */
+#define NSS_BUFCHECK \
+  if ((NSS_ARGS(args)->buf.buffer==NULL)||(NSS_ARGS(args)->buf.buflen<=0)) \
+  { \
+      NSS_ARGS(args)->erange=1; \
+      return NSS_STATUS_TRYAGAIN; \
+  } \
+
+#endif /* NSS_FLAVOUR_SOLARIS */
+
 /* The following macros to automatically generate get..byname(),
    get..bynumber(), setent(), getent() and endent() function
    bodies. These functions have very common code so this can
@@ -92,18 +131,13 @@ void _nss_ldap_namelist_destroy(struct name_list **head);
    the result structure, the user buffer with length and the
    errno to return. This macro should be called through some of
    the customized ones below. */
-#define NSS_BYGEN(action,buffer,buflen,writefn,readfn) \
+#define NSS_BYGEN(action,writefn,readfn) \
   TFILE *fp; \
   int32_t tmpint32; \
   nss_status_t retv; \
-  if (!_nss_ldap_enablelookups) \
-    return NSS_STATUS_UNAVAIL; \
-  /* check that we have a valid buffer */ \
-  if ((buffer==NULL)||(buflen<=0)) \
-  { \
-      *errnop=EINVAL; \
-      return NSS_STATUS_UNAVAIL; \
-  } \
+  NSS_EXTRA_DEFS; \
+  NSS_AVAILCHECK; \
+  NSS_BUFCHECK; \
   /* open socket and write request */ \
   NSLCD_REQUEST(fp,action,writefn); \
   /* read response */ \
@@ -111,28 +145,28 @@ void _nss_ldap_namelist_destroy(struct name_list **head);
   retv=readfn; \
   /* close socket and we're done */ \
   if ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_TRYAGAIN)) \
-    (void)tio_close(fp);
+    (void)tio_close(fp); \
+  return retv;
 
 /* This macro can be used to generate a get..byname() function
    body. */
-#define NSS_BYNAME(action,buffer,buflen,name,readfn) \
-  NSS_BYGEN(action,buffer,buflen,WRITE_STRING(fp,name),readfn)
+#define NSS_BYNAME(action,name,readfn) \
+  NSS_BYGEN(action,WRITE_STRING(fp,name),readfn)
 
 /* This macro can be used to generate a get..by..() function
    body where the value that is the key has the specified type. */
-#define NSS_BYTYPE(action,buffer,buflen,val,type,readfn) \
-  NSS_BYGEN(action,buffer,buflen,WRITE_TYPE(fp,val,type),readfn)
+#define NSS_BYTYPE(action,val,type,readfn) \
+  NSS_BYGEN(action,WRITE_TYPE(fp,val,type),readfn)
 
 /* This macro can be used to generate a get..by..() function
    body where the value should be passed as an int32_t. */
-#define NSS_BYINT32(action,buffer,buflen,val,readfn) \
-  NSS_BYGEN(action,buffer,buflen,WRITE_INT32(fp,val),readfn)
+#define NSS_BYINT32(action,val,readfn) \
+  NSS_BYGEN(action,WRITE_INT32(fp,val),readfn)
 
 /* This macro generates a simple setent() function body. This closes any
    open streams so that NSS_GETENT() can open a new file. */
 #define NSS_SETENT(fp) \
-  if (!_nss_ldap_enablelookups) \
-    return NSS_STATUS_UNAVAIL; \
+  NSS_AVAILCHECK; \
   if (fp!=NULL) \
   { \
     (void)tio_close(fp); \
@@ -143,24 +177,12 @@ void _nss_ldap_namelist_destroy(struct name_list **head);
 /* This macro generates a getent() function body. If the stream is not yet
    open, a new one is opened, a request is written and a check is done for
    a response header. A single entry is read with the readfn() function. */
-#define NSS_GETENT(fp,action,buffer,buflen,readfn) \
+#define NSS_GETENT(fp,action,readfn) \
   int32_t tmpint32; \
   nss_status_t retv; \
-  if (!_nss_ldap_enablelookups) \
-    return NSS_STATUS_UNAVAIL; \
-  /* check that we have a valid buffer */ \
-  if ((buffer==NULL)||(buflen<=0)) \
-  { \
-      /* close stream */ \
-      if (fp!=NULL) \
-      { \
-        (void)tio_close(fp); \
-        fp=NULL; \
-      } \
-      /* indicate error */ \
-      *errnop=EINVAL; \
-      return NSS_STATUS_UNAVAIL; \
-  } \
+  NSS_EXTRA_DEFS; \
+  NSS_AVAILCHECK; \
+  NSS_BUFCHECK; \
   /* check that we have a valid file descriptor */ \
   if (fp==NULL) \
   { \
@@ -186,13 +208,13 @@ void _nss_ldap_namelist_destroy(struct name_list **head);
     } \
   } \
   else if (retv!=NSS_STATUS_SUCCESS) \
-    fp=NULL; /* file should be closed by now */
+    fp=NULL; /* file should be closed by now */ \
+  return retv;
 
 /* This macro generates a endent() function body. This just closes
    the stream. */
 #define NSS_ENDENT(fp) \
-  if (!_nss_ldap_enablelookups) \
-    return NSS_STATUS_UNAVAIL; \
+  NSS_AVAILCHECK; \
   if (fp!=NULL) \
   { \
     (void)tio_close(fp); \

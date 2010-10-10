@@ -52,10 +52,9 @@ nss_status_t _nss_ldap_getaliasbyname_r(
         const char *name,struct aliasent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_ALIAS_BYNAME,buffer,buflen,
+  NSS_BYNAME(NSLCD_ACTION_ALIAS_BYNAME,
              name,
              read_aliasent(fp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -72,9 +71,8 @@ nss_status_t _nss_ldap_getaliasent_r(
         struct aliasent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(aliasentfp,NSLCD_ACTION_ALIAS_ALL,buffer,buflen,
+  NSS_GETENT(aliasentfp,NSLCD_ACTION_ALIAS_ALL,
              read_aliasent(aliasentfp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* close the stream opened with setaliasent() above */

@@ -117,9 +117,8 @@ nss_status_t _nss_ldap_getnetgrent_r(
         struct __netgrent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,buffer,buflen,
+  NSS_GETENT(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,
              read_netgrent(netgrentfp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* close the stream opened with setnetgrent() above */
@@ -192,13 +191,6 @@ static char *_nss_ldap_chase_netgroup(nss_ldap_netgr_backend_t *ngbe)
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *netgrentfp;
 
-static nss_status_t _nss_nslcd_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,int *errnop)
-{
-  NSS_GETENT(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,buffer,buflen,
-             read_netgrent(netgrentfp,result,buffer,buflen,errnop));
-  return retv;
-}
-
 static nss_status_t _nss_nslcd_setnetgrent(const char *group,struct __netgrent UNUSED(*result))
 {
   /* we cannot use NSS_SETENT() here because we have a parameter that is only
@@ -206,8 +198,7 @@ static nss_status_t _nss_nslcd_setnetgrent(const char *group,struct __netgrent U
   int32_t tmpint32;
   int errnocp;
   int *errnop;
-  if (!_nss_ldap_enablelookups)
-    return NSS_STATUS_UNAVAIL;
+  NSS_AVAILCHECK;
   errnop=&errnocp;
   /* check parameter */
   if ((group==NULL)||(group[0]=='\0'))
@@ -217,6 +208,12 @@ static nss_status_t _nss_nslcd_setnetgrent(const char *group,struct __netgrent U
   return NSS_STATUS_SUCCESS;
 }
 
+static nss_status_t _nss_nslcd_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,void *args)
+{
+  NSS_GETENT(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,
+             read_netgrent(netgrentfp,result,buffer,buflen,errnop));
+}
+
 static nss_status_t _xnss_ldap_getnetgrent_r(nss_backend_t *_be,void *_args)
 {
   nss_ldap_netgr_backend_t *ngbe=(nss_ldap_netgr_backend_t *)_be;
@@ -224,15 +221,14 @@ static nss_status_t _xnss_ldap_getnetgrent_r(nss_backend_t *_be,void *_args)
   struct __netgrent result;
   char *group=NULL;
   int done=0;
-  int err;
   nss_status_t status,rc;
   args->status=NSS_NETGR_NO;
   while (!done)
   {
-    status=_nss_nslcd_getnetgrent_r(&result,args->buffer,args->buflen,&err);
+    status=_nss_nslcd_getnetgrent_r(&result,args->buffer,args->buflen,args);
     if (status!=NSS_STATUS_SUCCESS)
     {
-      if (err==ENOENT)
+      if (errno==ENOENT)
       {
         /* done with the current netgroup */
         /* explore nested netgroup,if any */
@@ -298,7 +294,7 @@ static nss_status_t _xnss_ldap_endnetgrent(nss_backend_t UNUSED(*be),void UNUSED
   NSS_ENDENT(netgrentfp);
 }
 
-static nss_status_t _xnss_ldap_netgroup_destr(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
 {
   nss_ldap_netgr_backend_t *ngbe=(nss_ldap_netgr_backend_t *)be;
   /* free list of nested netgroups */
@@ -311,7 +307,7 @@ static nss_status_t _xnss_ldap_netgroup_destr(nss_backend_t *be,void UNUSED(*arg
 static nss_status_t _xnss_ldap_netgr_set(nss_backend_t *be,void *_args);
 
 static nss_backend_op_t netgroup_ops[]={
-  _xnss_ldap_netgroup_destr,          /* NSS_DBOP_DESTRUCTOR */
+  destructor,          /* NSS_DBOP_DESTRUCTOR */
   _xnss_ldap_endnetgrent,             /* NSS_DBOP_ENDENT */
   _xnss_ldap_setnetgrent,             /* NSS_DBOP_SETNET */
   _xnss_ldap_getnetgrent_r,           /* NSS_DBOP_GETENT */
@@ -325,7 +321,6 @@ static nss_status_t _xnss_ldap_netgr_set(nss_backend_t *be,void *_args)
   struct nss_setnetgrent_args *args;
   nss_ldap_netgr_backend_t *ngbe;
   struct __netgrent result;
-  char *group=NULL;
   args=(struct nss_setnetgrent_args *)_args;
   args->iterator=NULL;        /* initialize */
   ngbe=(nss_ldap_netgr_backend_t *)malloc(sizeof(*ngbe));
@@ -336,18 +331,17 @@ static nss_status_t _xnss_ldap_netgr_set(nss_backend_t *be,void *_args)
   ngbe->state=NULL;
   ngbe->known_groups=NULL;
   ngbe->needed_groups=NULL;
-  group=(char *)args->netgroup;
-  stat=_nss_nslcd_setnetgrent(group,&result);
+  stat=_nss_nslcd_setnetgrent(args->netgroup,&result);
   if (stat!=NSS_STATUS_SUCCESS)
   {
     free(be);
     return stat;
   }
   /* place the group name in known list */
-  stat=_nss_ldap_namelist_push(&ngbe->known_groups,group);
+  stat=_nss_ldap_namelist_push(&ngbe->known_groups,args->netgroup);
   if (stat!=NSS_STATUS_SUCCESS)
   {
-    _xnss_ldap_netgroup_destr((nss_backend_t *)ngbe,NULL);
+    destructor((nss_backend_t *)ngbe,NULL);
     return stat;
   }
   args->iterator=(nss_backend_t *)ngbe;

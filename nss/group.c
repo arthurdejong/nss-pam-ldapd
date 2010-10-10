@@ -112,10 +112,9 @@ nss_status_t _nss_ldap_getgrnam_r(
         const char *name,struct group *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,buffer,buflen,
+  NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,
              name,
              read_group(fp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* get a group entry by numeric gid */
@@ -123,10 +122,9 @@ nss_status_t _nss_ldap_getgrgid_r(
         gid_t gid,struct group *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,buffer,buflen,
+  NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,
              gid,gid_t,
              read_group(fp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -143,9 +141,8 @@ nss_status_t _nss_ldap_getgrent_r(
         struct group *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,buffer,buflen,
+  NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,
              read_group(grentfp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* close the stream opened with setgrent() above */
@@ -170,227 +167,124 @@ nss_status_t _nss_ldap_initgroups_dyn(
         const char *user,gid_t skipgroup,long int *start,
         long int *size,gid_t **groupsp,long int limit,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,groupsp,*size,
+/* temporarily map the buffer and buflen names so the check in NSS_BYNAME
+   for validity of the buffer works (renaming the parameters may cause
+   confusion) */
+#define buffer groupsp
+#define buflen *size
+  NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,
              user,
              read_gids(fp,skipgroup,start,size,groupsp,limit,errnop));
-  return retv;
+#undef buffer
+#undef buflen
 }
 
 #endif /* NSS_FLAVOUR_GLIBC */
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
-static nss_status_t _nss_nslcd_getgrnam_r(
-        const char *name,struct group *result,char *buffer,
-        size_t buflen,int *errnop)
+static nss_status_t read_groupstring(TFILE *fp,nss_XbyY_args_t *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,buffer,buflen,
-             name,
-             read_group(fp,result,buffer,buflen,errnop));
-  return retv;
-}
-
-static nss_status_t _xnss_ldap_getgrnam_r(nss_backend_t UNUSED(*be),void *args)
-{
-  struct group priv_gr;
-  struct group *gr=NSS_ARGS(args)->buf.result?(struct group *)NSS_ARGS(args)->buf.result:&priv_gr;
-  char *data_ptr;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  nss_status_t status;
-  status=_nss_nslcd_getgrnam_r(NSS_ARGS(args)->key.name,gr,buffer,buflen,&errno);
-  if (status!=NSS_STATUS_SUCCESS)
-    return status;
-  if (!NSS_ARGS(args)->buf.result)
-  {
-    /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
-    sprintf(data_ptr,"%s:%s:%d:",gr->gr_name,gr->gr_passwd,(int) gr->gr_gid);
-    if (gr->gr_mem)
+  struct group result;
+  nss_status_t retv;
+  char *buffer;
+  size_t buflen;
+  int i;
+  /* read the groupent */
+  retv=read_group(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno);
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* allocate a temporary buffer */
+  buflen=args->buf.buflen;
+  buffer=(char *)malloc(buflen);
+  /* build the formatted string */
+  /* FIXME: implement proper buffer size checking */
+  sprintf(buffer,"%s:%s:%d:",result.gr_name,result.gr_passwd,(int)result.gr_gid);
+  if (result.gr_mem)
+    for (i=0;result.gr_mem[i];i++)
     {
-      int i;
-      for (i=0; gr->gr_mem[i]; i++)
-      {
-        if (i)
-          strcat(data_ptr,",");
-        strcat(data_ptr,gr->gr_mem[i]);
-      }
+      if (i)
+        strcat(buffer,",");
+      strcat(buffer,result.gr_mem[i]);
     }
-    strcpy(NSS_ARGS(args)->buf.buffer,data_ptr);
-    free(data_ptr);
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-  }
-  else
-  { /* result!=NULL */
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-  }
-  return status;
+  /* copy the result back to the result buffer and free the temporary one */
+  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
+  free(buffer);
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
 }
 
-static nss_status_t _nss_nslcd_getgrgid_r(
-        gid_t gid,struct group *result,char *buffer,
-        size_t buflen,int *errnop)
+#define READ_RESULT(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_group(fp,(struct group *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
+    read_groupstring(fp,args); \
+  if (NSS_ARGS(args)->buf.result) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result
+
+static nss_status_t get_getgrnam_r(nss_backend_t UNUSED(*be),void *args)
 {
-  NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,buffer,buflen,
-             gid,gid_t,
-             read_group(fp,result,buffer,buflen,errnop));
-  return retv;
+  NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,
+             NSS_ARGS(args)->key.name,
+             READ_RESULT(fp));
 }
 
-static nss_status_t _xnss_ldap_getgrgid_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t get_getgrgid_r(nss_backend_t UNUSED(*be),void *args)
 {
-  gid_t gid=NSS_ARGS(args)->key.gid;
-  struct group priv_gr;
-  struct group *gr=NSS_ARGS(args)->buf.result?(struct group *)NSS_ARGS(args)->buf.result:&priv_gr;
-  char *data_ptr;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  nss_status_t status;
-  status=_nss_nslcd_getgrgid_r(gid,gr,buffer,buflen,&errno);
-  if (status!=NSS_STATUS_SUCCESS)
-    return status;
-  if (!NSS_ARGS(args)->buf.result)
-  {
-    /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
-    sprintf(data_ptr,"%s:%s:%d:",gr->gr_name,gr->gr_passwd,(int) gr->gr_gid);
-    if (gr->gr_mem)
-    {
-      int i;
-      for (i=0; gr->gr_mem[i]; i++)
-      {
-        if (i)
-          strcat(data_ptr,",");
-        strcat(data_ptr,gr->gr_mem[i]);
-      }
-    }
-    strcpy(NSS_ARGS(args)->buf.buffer,data_ptr);
-    free(data_ptr);
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-  }
-  else
-  { /* result!=NULL */
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-  }
-  return status;
+  NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,
+             NSS_ARGS(args)->key.gid,gid_t,
+             READ_RESULT(fp));
 }
 
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *grentfp;
 
-static nss_status_t _xnss_ldap_setgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t get_setgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(grentfp);
 }
 
-static nss_status_t _nss_nslcd_getgrent_r(
-        struct group *result,char *buffer,size_t buflen,int *errnop)
+static nss_status_t get_getgrent_r(nss_backend_t UNUSED(*be),void *args)
 {
-  NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,buffer,buflen,
-             read_group(grentfp,result,buffer,buflen,errnop));
-  return retv;
+  NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,
+             READ_RESULT(grentfp));
 }
 
-static nss_status_t _xnss_ldap_getgrent_r(nss_backend_t UNUSED(*be),void *args)
-{
-  struct group priv_gr;
-  struct group *gr=NSS_ARGS(args)->buf.result?(struct group *)NSS_ARGS(args)->buf.result:&priv_gr;
-  char *data_ptr;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  nss_status_t status;
-  status=_nss_nslcd_getgrent_r(gr,buffer,buflen,&errno);
-  if (status!=NSS_STATUS_SUCCESS)
-    return status;
-  if (!NSS_ARGS(args)->buf.result)
-  {
-    /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
-    sprintf(data_ptr,"%s:%s:%d:",gr->gr_name,gr->gr_passwd,(int)gr->gr_gid);
-    if (gr->gr_mem)
-    {
-      int i;
-      for (i=0; gr->gr_mem[i]; i++)
-      {
-        if (i)
-          strcat(data_ptr,",");
-        strcat(data_ptr,gr->gr_mem[i]);
-      }
-    }
-    strcpy(NSS_ARGS(args)->buf.buffer,data_ptr);
-    free(data_ptr);
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-  }
-  else
-  { /* result!=NULL */
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-  }
-  return status;
-}
-
-static nss_status_t _xnss_ldap_endgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t get_endgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(grentfp);
 }
 
-/* this function returns a list of groups, documentation for the
-   interface is scarce (any pointers are welcome) but this is
-   what is assumed the parameters mean:
-
-   user      IN     - the user name to find groups for
-   skipgroup IN     - a group to not include in the list
-   *start    IN/OUT - where to write in the array, is incremented
-   **groupsp IN/OUT - pointer to the array of returned groupids
-   limit     IN     - the maxium size of the array
-   *errnop   OUT    - for returning errno
-*/
-static nss_status_t _xnss_ldap_initgroups_dyn(
+/*
+static nss_status_t get_initgroups_dyn(
         const char *user,gid_t skipgroup,long int *start,
         gid_t **groupsp,long int limit,int *errnop)
-{
-  NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,groupsp,limit,
-             user,
-             read_gids(fp,skipgroup,start,&limit,groupsp,limit,errnop));
-  return retv;
-}
-
-static nss_status_t _xnss_ldap_getgroupsbymember_r(nss_backend_t UNUSED(*be),void *args)
+*/
+static nss_status_t get_getgroupsbymember_r(nss_backend_t UNUSED(*be),void *args)
 {
   struct nss_groupsbymem *argp=(struct nss_groupsbymem *)args;
-  nss_status_t status;
-  long int limit=(long int)argp->maxgids;
   long int start=(long int)argp->numgids;
-  gid_t skipgroup;
-  if (start>0)
-    skipgroup=argp->gid_array[0];
-  status=_xnss_ldap_initgroups_dyn(
-                argp->username,
-                (start>0)?skipgroup:(gid_t)-1,
-                &start,
-                (gid_t **)&argp->gid_array,
-                limit,
-                &errno);
-  argp->numgids=(int)start;
-  return status;
+  gid_t skipgroup=(start>0)?argp->gid_array[0]:(gid_t)-1;
+  NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,
+             argp->username,
+             read_gids(fp,skipgroup,&start,NULL,(gid_t **)&argp->gid_array,argp->maxgids,&errno);
+             argp->numgids=(int)start;);
 }
 
-static nss_status_t _xnss_ldap_group_destr(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t group_ops[]={
-  _xnss_ldap_group_destr,
-  _xnss_ldap_endgrent,
-  _xnss_ldap_setgrent,
-  _xnss_ldap_getgrent_r,
-  _xnss_ldap_getgrnam_r,
-  _xnss_ldap_getgrgid_r,
-  _xnss_ldap_getgroupsbymember_r
+  destructor,
+  get_endgrent,
+  get_setgrent,
+  get_getgrent_r,
+  get_getgrnam_r,
+  get_getgrgid_r,
+  get_getgroupsbymember_r
 };
 
 nss_backend_t *_nss_ldap_group_constr(const char UNUSED(*db_name),

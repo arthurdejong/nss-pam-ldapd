@@ -50,10 +50,9 @@ nss_status_t _nss_ldap_getrpcbyname_r(
         const char *name,struct rpcent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,buffer,buflen,
+  NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,
              name,
              read_rpcent(fp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* get a rpc entry by number */
@@ -61,10 +60,9 @@ nss_status_t _nss_ldap_getrpcbynumber_r(
         int number,struct rpcent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,buffer,buflen,
+  NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,
               number,
               read_rpcent(fp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -81,9 +79,8 @@ nss_status_t _nss_ldap_getrpcent_r(
         struct rpcent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(rpcentfp,NSLCD_ACTION_RPC_ALL,buffer,buflen,
+  NSS_GETENT(rpcentfp,NSLCD_ACTION_RPC_ALL,
              read_rpcent(rpcentfp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* close the stream opened by setrpcent() above */
@@ -96,187 +93,90 @@ nss_status_t _nss_ldap_endrpcent(void)
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
-static nss_status_t _nss_nslcd_getrpcbyname_r(
-        const char *name,struct rpcent *result,char *buffer,
-        size_t buflen,int *errnop)
+static nss_status_t read_rpcstring(TFILE *fp,nss_XbyY_args_t *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,buffer,buflen,
-             name,
-             read_rpcent(fp,result,buffer,buflen,errnop));
-  return retv;
+  struct rpcent result;
+  nss_status_t retv;
+  char *buffer;
+  size_t buflen;
+  int i;
+  /* read the rpcent */
+  retv=read_rpcent(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno);
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* allocate a temporary buffer */
+  buflen=args->buf.buflen;
+  buffer=(char *)malloc(buflen);
+  /* build the formatted string */
+  /* FIXME: implement proper buffer size checking */
+  sprintf(buffer,"%s %d",result.r_name,result.r_number);
+  if (result.r_aliases)
+    for (i=0; result.r_aliases[i]; i++)
+    {
+      strcat(buffer," ");
+      strcat(buffer,result.r_aliases[i]);
+    }
+  /* copy the result back to the result buffer and free the temporary one */
+  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
+  free(buffer);
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
 }
 
-static nss_status_t _nss_nslcd_getrpcbynumber_r(
-        int number,struct rpcent *result,char *buffer,
-        size_t buflen,int *errnop)
+#define READ_RESULT(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_rpcent(fp,(struct rpcent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
+    read_rpcstring(fp,args); \
+  if (NSS_ARGS(args)->buf.result) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result
+
+static nss_status_t get_getrpcbyname_r(nss_backend_t UNUSED(*be),void *args)
 {
-  NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,buffer,buflen,
-              number,
-              read_rpcent(fp,result,buffer,buflen,errnop));
-  return retv;
+  NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,
+             NSS_ARGS(args)->key.name,
+             READ_RESULT(fp));
+}
+
+static nss_status_t get_getrpcbynumber_r(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,
+              NSS_ARGS(args)->key.number,
+              READ_RESULT(fp));
 }
 
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *rpcentfp;
 
-static nss_status_t _xnss_ldap_setrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t get_setrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(rpcentfp);
 }
 
-static nss_status_t _nss_nslcd_getrpcent_r(
-        struct rpcent *result,char *buffer,size_t buflen,int *errnop)
+static nss_status_t get_getrpcent_r(nss_backend_t UNUSED(*be),void *args)
 {
-  NSS_GETENT(rpcentfp,NSLCD_ACTION_RPC_ALL,buffer,buflen,
-             read_rpcent(rpcentfp,result,buffer,buflen,errnop));
-  return retv;
+  NSS_GETENT(rpcentfp,NSLCD_ACTION_RPC_ALL,
+             READ_RESULT(rpcentfp));
 }
 
-static nss_status_t _xnss_ldap_endrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t get_endrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(rpcentfp);
 }
 
-static nss_status_t _xnss_ldap_getrpcbyname_r(nss_backend_t UNUSED(*be),void *args)
-{
-  struct rpcent priv_rpc;
-  struct rpcent *rpc=NSS_ARGS(args)->buf.result?(struct rpcent *)NSS_ARGS(args)->buf.result:&priv_rpc;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  char *data_ptr;
-  nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen<0)
-  {
-    NSS_ARGS(args)->erange=1;
-    return NSS_STATUS_TRYAGAIN;
-  }
-  status=_nss_nslcd_getrpcbyname_r(NSS_ARGS(args)->key.name,rpc,buffer,buflen,&errno);
-  if (status!=NSS_STATUS_SUCCESS)
-    return status;
-  if (!NSS_ARGS(args)->buf.result)
-  {
-    /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
-    sprintf(data_ptr,"%s %d",rpc->r_name,rpc->r_number);
-    if (rpc->r_aliases)
-    {
-      int i;
-      for (i=0; rpc->r_aliases[i]; i++)
-      {
-        strcat(data_ptr," ");
-        strcat(data_ptr,rpc->r_aliases[i]);
-      }
-    }
-    strcpy(buffer,data_ptr);
-    free(data_ptr);
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-  }
-  else
-  {
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-  }
-  return status;
-}
-
-static nss_status_t _xnss_ldap_getrpcbynumber_r(nss_backend_t UNUSED(*be),void *args)
-{
-  struct rpcent priv_rpc;
-  struct rpcent *rpc=NSS_ARGS(args)->buf.result?(struct rpcent *)NSS_ARGS(args)->buf.result:&priv_rpc;
-  int number=NSS_ARGS(args)->key.number;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  char *data_ptr;
-  nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen<0)
-  {
-    NSS_ARGS(args)->erange=1;
-    return NSS_STATUS_TRYAGAIN;
-  }
-  status=_nss_nslcd_getrpcbynumber_r(number,rpc,buffer,buflen,&errno);
-  if (status!=NSS_STATUS_SUCCESS)
-    return status;
-  if (!NSS_ARGS(args)->buf.result)
-  {
-    /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
-    sprintf(data_ptr,"%s %d",rpc->r_name,rpc->r_number);
-    if (rpc->r_aliases)
-    {
-      int i;
-      for (i=0; rpc->r_aliases[i]; i++)
-      {
-        strcat(data_ptr," ");
-        strcat(data_ptr,rpc->r_aliases[i]);
-      }
-    }
-    strcpy(buffer,data_ptr);
-    free(data_ptr);
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-  }
-  else
-  {
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-  }
-  return status;
-}
-
-static nss_status_t _xnss_ldap_getrpcent_r(nss_backend_t UNUSED(*be),void *args)
-{
-  struct rpcent priv_rpc;
-  struct rpcent *rpc=NSS_ARGS(args)->buf.result?(struct rpcent *)NSS_ARGS(args)->buf.result:&priv_rpc;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  char *data_ptr;
-  nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen<0)
-  {
-    NSS_ARGS(args)->erange=1;
-    return NSS_STATUS_TRYAGAIN;
-  }
-  status=_nss_nslcd_getrpcent_r(rpc,buffer,buflen,&errno);
-  if (status!=NSS_STATUS_SUCCESS)
-    return status;
-  if (!NSS_ARGS(args)->buf.result)
-  {
-    /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
-    sprintf(data_ptr,"%s %d",rpc->r_name,rpc->r_number);
-    if (rpc->r_aliases)
-    {
-      int i;
-      for (i=0; rpc->r_aliases[i]; i++)
-      {
-        strcat(data_ptr," ");
-        strcat(data_ptr,rpc->r_aliases[i]);
-      }
-    }
-    strcpy(buffer,data_ptr);
-    free(data_ptr);
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-  }
-  else
-  {
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-  }
-  return status;
-}
-
-static nss_status_t _xnss_ldap_rpc_destr(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t rpc_ops[]={
-  _xnss_ldap_rpc_destr,
-  _xnss_ldap_endrpcent,
-  _xnss_ldap_setrpcent,
-  _xnss_ldap_getrpcent_r,
-  _xnss_ldap_getrpcbyname_r,
-  _xnss_ldap_getrpcbynumber_r
+  destructor,
+  get_endrpcent,
+  get_setrpcent,
+  get_getrpcent_r,
+  get_getrpcbyname_r,
+  get_getrpcbynumber_r
 };
 
 nss_backend_t *_nss_ldap_rpc_constr(const char UNUSED(*db_name),

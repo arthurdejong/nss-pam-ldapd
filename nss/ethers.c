@@ -49,10 +49,9 @@ nss_status_t _nss_ldap_gethostton_r(
         const char *name,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,buffer,buflen,
+  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,
              name,
              read_etherent(fp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* map an ethernet address to the corresponding hostname */
@@ -60,10 +59,9 @@ nss_status_t _nss_ldap_getntohost_r(
         const struct ether_addr *addr,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,buffer,buflen,
+  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,
              *addr,uint8_t[6],
              read_etherent(fp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -80,9 +78,8 @@ nss_status_t _nss_ldap_getetherent_r(
         struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(etherentfp,NSLCD_ACTION_ETHER_ALL,buffer,buflen,
+  NSS_GETENT(etherentfp,NSLCD_ACTION_ETHER_ALL,
              read_etherent(etherentfp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* close the stream opened with setetherent() above */
@@ -99,107 +96,69 @@ nss_status_t _nss_ldap_endetherent(void)
 #define NSS_BUFLEN_ETHERS 1024
 #endif /* NSS_BUFLEN_ETHERS */
 
-#define errnop &errno
+static nss_status_t read_etherstring(TFILE *fp,nss_XbyY_args_t *args)
+{
+  /* TODO: padl uses struct ether, verify */
+  struct etherent result;
+  nss_status_t retv;
+  char *buffer;
+  size_t buflen;
+  /* read the etherent */
+  retv=read_etherent(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno);
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* allocate a temporary buffer */
+  buflen=args->buf.buflen;
+  buffer=(char *)malloc(buflen);
+  /* build the formatted string */
+  /* FIXME: implement proper buffer size checking */
+  /* TODO: OpenSolaris expects "<macAddress> <host>" */
+  /* This output is handled correctly by NSCD,but not */
+  /* when NSCD is off. Not an issue with NSS_LDAP,but */
+  /* with the frontend. */
+  sprintf(buffer,"%s %s",ether_ntoa(&result.e_addr),result.e_name);
+  /* copy the result back to the result buffer and free the temporary one */
+  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
+  free(buffer);
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
+}
+
+#define READ_RESULT(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_etherent(fp,(struct etherent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
+    read_etherstring(fp,args); \
+  if (NSS_ARGS(args)->buf.result) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result
 
 /* map a hostname to the corresponding ethernet address */
-static nss_status_t _xnss_ldap_gethostton_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t get_gethostton(nss_backend_t UNUSED(*be),void *args)
 {
-  struct etherent result;
-  char buffer[NSS_BUFLEN_ETHERS];
-  const char *name=(NSS_ARGS(args)->key.name);
-  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,buffer,sizeof(buffer),
-             name,
-             read_etherent(fp,&result,buffer,sizeof(buffer),&errno));
-  if (retv==NSS_STATUS_SUCCESS)
-  {
-    if (NSS_ARGS(args)->buf.result==NULL)
-    {
-      strcpy(NSS_ARGS(args)->buf.buffer,ether_ntoa(&result.e_addr));
-      NSS_ARGS(args)->buf.buflen=strlen(NSS_ARGS(args)->buf.buffer);
-      NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-      NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-      return retv;
-    }
-    memcpy(NSS_ARGS(args)->buf.result,&result.e_addr,sizeof(result.e_addr));
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-  }
-  return retv;
+  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,
+             NSS_ARGS(args)->key.name,
+             READ_RESULT(fp));
 }
 
 /* map an ethernet address to the corresponding hostname */
-static nss_status_t _xnss_ldap_getntohost_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t get_getntohost(nss_backend_t UNUSED(*be),void *args)
 {
-  struct etherent result;
   struct ether_addr *addr=(struct ether_addr *)(NSS_ARGS(args)->key.ether);
-  char buffer[NSS_BUFLEN_ETHERS];
-  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,buffer,sizeof(buffer),
+  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,
              *addr,uint8_t[6],
-             read_etherent(fp,&result,buffer,sizeof(buffer),&errno));
-  if (retv==NSS_STATUS_SUCCESS)
-  {
-    if (NSS_ARGS(args)->buf.buffer!=NULL)
-    {
-      /* TODO: OpenSolaris expects "<macAddress> <host>" */
-      /* This output is handled correctly by NSCD,but not */
-      /* when NSCD is off. Not an issue with NSS_LDAP,but */
-      /* with the frontend. */
-      sprintf(NSS_ARGS(args)->buf.buffer,"%s %s",ether_ntoa(addr),result.e_name);
-      NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-      NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-      return retv;
-    }
-    memcpy(NSS_ARGS(args)->buf.buffer,result.e_name,strlen(result.e_name)+1);
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->buf.buflen=strlen(result.e_name); /* ?? */
-  }
-  else
-  {
-    NSS_ARGS(args)->returnval=NULL;
-  }
-  return retv;
+             READ_RESULT(fp));
 }
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *etherentfp;
-
-static nss_status_t _xnss_ldap_setetherent(nss_backend_t UNUSED(*be),void UNUSED(*args))
-{
-  NSS_SETENT(etherentfp);
-}
-
-static nss_status_t _xnss_ldap_getetherent_r(nss_backend_t UNUSED(*be),void *args)
-{
-  /* TODO: padl uses struct ether,verify */
-  struct etherent result;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  NSS_GETENT(etherentfp,NSLCD_ACTION_ETHER_ALL,buffer,buflen,
-             read_etherent(etherentfp,&result,buffer,buflen,&errno));
-  if (retv==NSS_STATUS_SUCCESS)
-  {
-    memcpy(NSS_ARGS(args)->buf.result,&result.e_addr,sizeof(result.e_addr));
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-  }
-  else
-    NSS_ARGS(args)->returnval=NULL;
-  return retv;
-}
-
-static nss_status_t _xnss_ldap_endetherent(nss_backend_t UNUSED(*be),void UNUSED(*args))
-{
-  NSS_ENDENT(etherentfp);
-}
-
-static nss_status_t _xnss_ldap_ethers_destr(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t ethers_ops[]={
-  _xnss_ldap_ethers_destr,
-  _xnss_ldap_gethostton_r,
-  _xnss_ldap_getntohost_r
+  destructor,
+  get_gethostton,
+  get_getntohost
 };
 
 nss_backend_t *_nss_ldap_ethers_constr(const char UNUSED(*db_name),

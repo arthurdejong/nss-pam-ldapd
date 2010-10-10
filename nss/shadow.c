@@ -56,10 +56,9 @@ nss_status_t _nss_ldap_getspnam_r(
         const char *name,struct spwd *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,buffer,buflen,
+  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,
              name,
              read_spwd(fp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -76,9 +75,8 @@ nss_status_t _nss_ldap_getspent_r(
         struct spwd *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,buffer,buflen,
+  NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,
              read_spwd(spentfp,result,buffer,buflen,errnop));
-  return retv;
 }
 
 /* close the stream opened by setspent() above */
@@ -91,187 +89,111 @@ nss_status_t _nss_ldap_endspent(void)
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
-static nss_status_t _nss_nslcd_getspnam_r(
-        const char *name,struct spwd *result,char *buffer,
-        size_t buflen,int *errnop)
+static nss_status_t read_spwdstring(TFILE *fp,nss_XbyY_args_t *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,buffer,buflen,
-             name,
-             read_spwd(fp,result,buffer,buflen,errnop));
-  return retv;
+  struct spwd result;
+  nss_status_t retv;
+  char *buffer;
+  char field_buf[128];
+  size_t buflen;
+  /* read the spwd */
+  retv=read_spwd(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno);
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* allocate a temporary buffer */
+  buflen=args->buf.buflen;
+  buffer=(char *)malloc(buflen);
+  /* build the formatted string */
+  /* FIXME: implement proper buffer size checking */
+  sprintf(buffer,"%s:%s:",result.sp_namp,result.sp_pwdp);
+  if (result.sp_lstchg >= 0)
+    sprintf(field_buf,"%d:",result.sp_lstchg);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_min >= 0)
+    sprintf(field_buf,"%d:",result.sp_min);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_max >= 0)
+    sprintf(field_buf,"%d:",result.sp_max);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_warn >= 0)
+    sprintf(field_buf,"%d:",result.sp_warn);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_inact >= 0)
+    sprintf(field_buf,"%d:",result.sp_inact);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_expire >= 0)
+    sprintf(field_buf,"%d:",result.sp_expire);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_flag >= 0)
+    sprintf(field_buf,"%x",result.sp_flag);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  /* copy the result back to the result buffer and free the temporary one */
+  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
+  free(buffer);
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
 }
 
-static nss_status_t _xnss_ldap_getspnam_r(nss_backend_t UNUSED(*be),void *args)
+#define READ_RESULT(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_spwd(fp,(struct spwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
+    read_spwdstring(fp,args); \
+  if (NSS_ARGS(args)->buf.result) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result
+
+static nss_status_t get_getspnam_r(nss_backend_t UNUSED(*be),void *args)
 {
-  struct spwd priv_spwd;
-  struct spwd *sp=NSS_ARGS(args)->buf.result?(struct spwd *)NSS_ARGS(args)->buf.result:&priv_spwd;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  char *data_ptr;
-  char field_buf[128];
-  nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen<0)
-  {
-    NSS_ARGS(args)->erange=1;
-    return NSS_STATUS_TRYAGAIN;
-  }
-  status=_nss_nslcd_getspnam_r(NSS_ARGS(args)->key.name,sp,buffer,buflen,&errno);
-  if (status!=NSS_STATUS_SUCCESS)
-    return status;
-  if (!NSS_ARGS(args)->buf.result)
-  {
-    /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
-    sprintf(data_ptr,"%s:%s:",sp->sp_namp,sp->sp_pwdp);
-    if (sp->sp_lstchg >= 0)
-      sprintf(field_buf,"%d:",sp->sp_lstchg);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_min >= 0)
-      sprintf(field_buf,"%d:",sp->sp_min);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_max >= 0)
-      sprintf(field_buf,"%d:",sp->sp_max);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_warn >= 0)
-      sprintf(field_buf,"%d:",sp->sp_warn);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_inact >= 0)
-      sprintf(field_buf,"%d:",sp->sp_inact);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_expire >= 0)
-      sprintf(field_buf,"%d:",sp->sp_expire);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_flag >= 0)
-      sprintf(field_buf,"%x",sp->sp_flag);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    strcpy(buffer,data_ptr);
-    free(data_ptr);
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-  }
-  else
-  {
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-  }
-  return status;
+  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,
+             NSS_ARGS(args)->key.name,
+             READ_RESULT(fp));
 }
 
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *spentfp;
 
-static nss_status_t _xnss_ldap_setspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t get_setspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(spentfp);
 }
 
-static nss_status_t _nss_nslcd_getspent_r(
-        struct spwd *result,char *buffer,size_t buflen,int *errnop)
+static nss_status_t get_getspent_r(nss_backend_t UNUSED(*be),void *args)
 {
-  NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,buffer,buflen,
-             read_spwd(spentfp,result,buffer,buflen,errnop));
-  return retv;
+  NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,
+             READ_RESULT(spentfp));
 }
 
-static nss_status_t _xnss_ldap_getspent_r(nss_backend_t UNUSED(*be),void *args)
-{
-  struct spwd priv_spwd;
-  struct spwd *sp=NSS_ARGS(args)->buf.result?(struct spwd *)NSS_ARGS(args)->buf.result:&priv_spwd;
-  char *buffer=NSS_ARGS(args)->buf.buffer;
-  size_t buflen=NSS_ARGS(args)->buf.buflen;
-  char *data_ptr;
-  char field_buf[128];
-  nss_status_t status;
-  if (NSS_ARGS(args)->buf.buflen<0)
-  {
-    NSS_ARGS(args)->erange=1;
-    return NSS_STATUS_TRYAGAIN;
-  }
-  status=_nss_nslcd_getspent_r(sp,buffer,buflen,&errno);
-  if (status!=NSS_STATUS_SUCCESS)
-    return status;
-  if (!NSS_ARGS(args)->buf.result)
-  {
-    /* result==NULL, return file format */
-    data_ptr=(char *)malloc(buflen);
-    sprintf(data_ptr,"%s:%s:",sp->sp_namp,sp->sp_pwdp);
-    if (sp->sp_lstchg >= 0)
-      sprintf(field_buf,"%d:",sp->sp_lstchg);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_min >= 0)
-      sprintf(field_buf,"%d:",sp->sp_min);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_max >= 0)
-      sprintf(field_buf,"%d:",sp->sp_max);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_warn >= 0)
-      sprintf(field_buf,"%d:",sp->sp_warn);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_inact >= 0)
-      sprintf(field_buf,"%d:",sp->sp_inact);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_expire >= 0)
-      sprintf(field_buf,"%d:",sp->sp_expire);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    if (sp->sp_flag >= 0)
-      sprintf(field_buf,"%x",sp->sp_flag);
-    else
-      sprintf(field_buf,":");
-    strcat(data_ptr,field_buf);
-    strcpy(buffer,data_ptr);
-    free(data_ptr);
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-  }
-  else
-  {
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-  }
-  return status;
-}
-
-static nss_status_t _xnss_ldap_endspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t get_endspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(spentfp);
 }
 
-static nss_status_t _xnss_ldap_shadow_destr(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t shadow_ops[]={
-  _xnss_ldap_shadow_destr,
-  _xnss_ldap_endspent,         /* NSS_DBOP_ENDENT */
-  _xnss_ldap_setspent,         /* NSS_DBOP_SETENT */
-  _xnss_ldap_getspent_r,       /* NSS_DBOP_GETENT */
-  _xnss_ldap_getspnam_r        /* NSS_DBOP_SHADOW_BYNAME */
+  destructor,
+  get_endspent,         /* NSS_DBOP_ENDENT */
+  get_setspent,         /* NSS_DBOP_SETENT */
+  get_getspent_r,       /* NSS_DBOP_GETENT */
+  get_getspnam_r        /* NSS_DBOP_SHADOW_BYNAME */
 };
 
 nss_backend_t *_nss_ldap_shadow_constr(const char UNUSED(*db_name),
