@@ -28,11 +28,6 @@ pam_ldap_so_SOURCES = ../nslcd.h ../common/nslcd-prot.h \
 pam_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a -lpam \
                     ../compat/libcompat.a
 
-pam_ldap_so_LDFLAGS = -shared
-if HAVE_VERSION_SCRIPT_FLAG
-pam_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/pam_ldap.map
-endif
-
 EXTRA_DIST = pam_ldap.map
 
 install-exec-local: install-pam_ldap_so
