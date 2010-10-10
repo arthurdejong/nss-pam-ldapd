@@ -298,23 +298,6 @@ then
   AC_DEFINE(__thread,,[Define to empty if compiler does not support `__thread' keyword.])
 fi
 
-# check how to pass a symbol map to the linker
-AC_MSG_CHECKING([how linker wants the symbol map])
-if $CC -Wl,--help 2>&1 | grep -- --version-script >/dev/null
-then
-  VERSION_SCRIPT_FLAG="-Wl,--version-script,"
-  AC_SUBST(VERSION_SCRIPT_FLAG)
-  AC_MSG_RESULT([--version-script])
-elif $CC -Wl,--help 2>&1 | grep -- '-M mapfile' >/dev/null
-then
-  VERSION_SCRIPT_FLAG="-Wl,-M,"
-  AC_SUBST(VERSION_SCRIPT_FLAG)
-  AC_MSG_RESULT([-M])
-else
-  AC_MSG_RESULT([unknown, not passing symbol map])
-fi
-AM_CONDITIONAL([HAVE_VERSION_SCRIPT_FLAG], [test "x${VERSION_SCRIPT_FLAG}" != x])
-
 # check for support for the struct ether_addr structure
 AC_CHECK_TYPES(struct ether_addr,,,[
     #include <sys/socket.h>
@@ -427,6 +410,21 @@ then
   NSS_MODULE_OBJS="`echo "$with_nss_ldap_maps " | sed 's/,/ /g;s/  */.$(OBJEXT) /g'`"
   AC_SUBST(NSS_MODULE_OBJS)
 
+  # find out how to link the library
+  case "$target_os" in
+  solaris*)
+    if test "$ac_cv_prog_gcc" = yes; then
+      nss_ldap_so_LD="/usr/ccs/bin/ld"
+      AC_SUBST(nss_ldap_so_LD)
+    fi
+    nss_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G"
+    ;;
+  *)
+    nss_ldap_so_LDFLAGS="-shared -Wl,-h,\$(NSS_LDAP_SONAME) -Wl,--version-script,\$(srcdir)/exports.glibc"
+    ;;
+  esac
+  AC_SUBST(nss_ldap_so_LDFLAGS)
+
   # restore CFLAGS and LIBS
   CFLAGS="$nss_save_CFLAGS"
   LIBS="$nss_save_LIBS"
@@ -463,6 +461,21 @@ then
   # replace some PAM functions if they are unavailable
   AC_REPLACE_FUNCS(pam_get_authtok pam_prompt)
   AC_CHECK_FUNCS(pam_modutil_getpwnam pam_syslog)
+
+  # find out how to link the library
+  case "$target_os" in
+  solaris*)
+    if test "$ac_cv_prog_gcc" = yes; then
+      pam_ldap_so_LD="/usr/ccs/bin/ld"
+      AC_SUBST(pam_ldap_so_LD)
+    fi
+    pam_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/pam_ldap.map -G"
+    ;;
+  *)
+    pam_ldap_so_LDFLAGS="-shared -Wl,--version-script,\$(srcdir)/pam_ldap.map"
+    ;;
+  esac
+  AC_SUBST(pam_ldap_so_LDFLAGS)
 
   # restore CFLAGS and LIBS
   CFLAGS="$pam_save_CFLAGS"
@@ -679,36 +692,6 @@ then
 
   AC_SUBST(nslcd_LIBS)
 fi
-
-# Always use native linker on Solaris
-# but only invoke directly if compiling with gcc (?)
-case "$target_os" in
-solaris*) if test "$ac_cv_prog_gcc" = yes; then
-    nss_ldap_so_LD="/usr/ccs/bin/ld"
-    pam_ldap_so_LD="/usr/ccs/bin/ld"
-  fi
-  nss_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G"
-  pam_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G"
-  TARGET_OS="SUNOS" ;;
-linux*) nss_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic -Wl,--version-script,\$(srcdir)/exports.linux"
-  pam_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic -Wl,--version-script,\$(srcdir)/exports.linux"
-  TARGET_OS="LINUX" ;;
-*) nss_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic"
-   pam_ldap_so_LDFLAGS="-shared -Wl,-Bdynamic"
-esac
-
-AC_SUBST(nss_ldap_so_LD)
-AC_SUBST(nss_ldap_so_LDFLAGS)
-
-AC_SUBST(pam_ldap_so_LD)
-AC_SUBST(pam_ldap_so_LDFLAGS)
-
-AC_SUBST(AIX64SUFFIX)
-AM_CONDITIONAL(GCC, test "$GCC" = "yes")
-AM_CONDITIONAL(GLIBC, test "$target_os" = "linux" -o "$target_os" = "linux-gnu")
-AM_CONDITIONAL(USE_NATIVE_LINKER, test -n "$nss_ldap_so_LD")
-AM_CONDITIONAL(SUNOS, test "x${TARGET_OS}" = "xSUNOS")
-AM_CONDITIONAL(LINUX, test "x${TARGET_OS}" = "xLINUX")
 
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile

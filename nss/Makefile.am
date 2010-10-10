@@ -34,18 +34,7 @@ EXTRA_nss_ldap_so_SOURCES = aliases.c ethers.c group.c hosts.c netgroup.c \
 nss_ldap_so_DEPENDENCIES = $(NSS_MODULE_OBJS)
 nss_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a $(NSS_MODULE_OBJS)
 
-nss_ldap_so_LDFLAGS = @nss_ldap_so_LDFLAGS@
-if HAVE_VERSION_SCRIPT_FLAG
-nss_ldap_so_LDFLAGS += $(VERSION_SCRIPT_FLAG)\$(srcdir)/nss_ldap.map
-endif
-
-if USE_NATIVE_LINKER
-nss_ldap_so_LINK = @nss_ldap_so_LD@ @nss_ldap_so_LDFLAGS@ -o $@
-else
-nss_ldap_so_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAG) -o $@
-endif
-
-EXTRA_DIST = nss_ldap.map
+EXTRA_DIST = exports.glibc exports.solaris
 
 install-exec-local: install-nss_ldap_so
 uninstall-local: uninstall-nss_ldap_so
