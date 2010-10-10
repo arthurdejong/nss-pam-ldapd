@@ -36,13 +36,6 @@
 /* these functions are not really reentrant */
 
 #ifndef HAVE_ETHER_NTOA_R
-
-#if !HAVE_DECL_ETHER_NTOA
-/* we define ether_ntoa() here because on some platforms the function is
-   underfined */
-extern char *ether_ntoa(const struct ether_addr *e);
-#endif /* not HAVE_DECL_ETHER_NTOA */
-
 char *ether_ntoa_r(const struct ether_addr *addr,char *buf)
 {
   char *tmp;
@@ -55,13 +48,6 @@ char *ether_ntoa_r(const struct ether_addr *addr,char *buf)
 #endif /* not HAVE_ETHER_NTOA_R */
 
 #ifndef HAVE_ETHER_ATON_R
-
-#if !HAVE_DECL_ETHER_ATON
-/* we define ether_aton() here because on some platforms the function is
-   underfined */
-extern struct ether_addr *ether_aton(const char *s);
-#endif /* not HAVE_DECL_ETHER_ATON */
-
 struct ether_addr *ether_aton_r(const char *asc,struct ether_addr *addr)
 {
   struct ether_addr *tmp;
