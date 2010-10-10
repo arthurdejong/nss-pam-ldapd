@@ -63,12 +63,12 @@ nss_status_t _nss_ldap_getrpcbynumber_r(
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *protoentfp;
+static __thread TFILE *rpcentfp;
 
 /* request a stream to list all rpc entries */
 nss_status_t _nss_ldap_setrpcent(int UNUSED(stayopen))
 {
-  NSS_SETENT(protoentfp);
+  NSS_SETENT(rpcentfp);
 }
 
 /* get an rpc entry from the list */
@@ -76,12 +76,12 @@ nss_status_t _nss_ldap_getrpcent_r(
         struct rpcent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_GETENT(protoentfp,NSLCD_ACTION_RPC_ALL,
-             read_rpcent(protoentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(rpcentfp,NSLCD_ACTION_RPC_ALL,
+             read_rpcent(rpcentfp,result,buffer,buflen,errnop));
 }
 
 /* close the stream opened by setrpcent() above */
 nss_status_t _nss_ldap_endrpcent(void)
 {
-  NSS_ENDENT(protoentfp);
+  NSS_ENDENT(rpcentfp);
 }
