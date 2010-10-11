@@ -418,10 +418,11 @@ then
   case "$target_os" in
   solaris*)
     if test "$ac_cv_prog_gcc" = yes; then
-      nss_ldap_so_LD="/usr/ccs/bin/ld"
-      AC_SUBST(nss_ldap_so_LD)
+      nss_ldap_so_LINK="/usr/ccs/bin/ld -Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G -o \$@"
+      AC_SUBST(nss_ldap_so_LINK)
+    else
+      nss_ldap_so_LDFLAGS="-Wl,-Bdirect -Wl,-z,nodelete -Wl,-Bdynamic -Wl,-M,\$(srcdir)/exports.solaris -Wl,-G"
     fi
-    nss_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G"
     ;;
   *)
     nss_ldap_so_LDFLAGS="-shared -Wl,-h,\$(NSS_LDAP_SONAME) -Wl,--version-script,\$(srcdir)/exports.glibc"
@@ -470,10 +471,11 @@ then
   case "$target_os" in
   solaris*)
     if test "$ac_cv_prog_gcc" = yes; then
-      pam_ldap_so_LD="/usr/ccs/bin/ld"
-      AC_SUBST(pam_ldap_so_LD)
+      pam_ldap_so_LINK="/usr/ccs/bin/ld -Bdirect -z nodelete -Bdynamic -M \$(srcdir)/pam_ldap.map -G -o \$@"
+      AC_SUBST(pam_ldap_so_LINK)
+    else
+      pam_ldap_so_LDFLAGS="-shared -Wl,-Bdirect -Wl,-z,nodelete -Wl,-Bdynamic -Wl,-M,\$(srcdir)/pam_ldap.map -Wl,-G"
     fi
-    pam_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/pam_ldap.map -G"
     ;;
   *)
     pam_ldap_so_LDFLAGS="-shared -Wl,--version-script,\$(srcdir)/pam_ldap.map"
