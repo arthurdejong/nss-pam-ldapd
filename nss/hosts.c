@@ -242,6 +242,8 @@ nss_status_t _nss_ldap_endhostent(void)
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+
 static nss_status_t read_hoststring(TFILE *fp,nss_XbyY_args_t *args,int erronempty)
 {
   struct hostent result;
@@ -298,16 +300,29 @@ static nss_status_t read_hoststring(TFILE *fp,nss_XbyY_args_t *args,int erronemp
   NSS_ARGS(args)->buf.result? \
     read_hostent_erronempty(fp,NSS_ARGS(args)->key.hostaddr.type,(struct hostent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)): \
     read_hoststring(fp,args,1); \
-  if (NSS_ARGS(args)->buf.result) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result
+  if ((NSS_ARGS(args)->buf.result)&&(retv=NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
 
 #define READ_RESULT_NEXTONEMPTY(fp) \
   NSS_ARGS(args)->buf.result? \
     read_hostent_nextonempty(fp,NSS_ARGS(args)->key.hostaddr.type,(struct hostent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)): \
     read_hoststring(fp,args,0); \
-  if (NSS_ARGS(args)->buf.result) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result
+  if ((NSS_ARGS(args)->buf.result)&&(retv=NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
 
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+#define READ_RESULT_ERRONEMPTY(fp) \
+  read_hostent_erronempty(fp,NSS_ARGS(args)->key.hostaddr.type,(struct hostent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)); \
+  if (retv=NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#define READ_RESULT_NEXTONEMPTY(fp) \
+  read_hostent_nextonempty(fp,NSS_ARGS(args)->key.hostaddr.type,(struct hostent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)); \
+  if (retv=NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 /* hack to set the correct errno and h_errno */
 #define h_errnop &(NSS_ARGS(args)->h_errno)

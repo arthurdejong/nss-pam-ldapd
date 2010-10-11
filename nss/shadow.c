@@ -89,6 +89,8 @@ nss_status_t _nss_ldap_endspent(void)
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+
 static nss_status_t read_spwdstring(TFILE *fp,nss_XbyY_args_t *args)
 {
   struct spwd result;
@@ -153,8 +155,17 @@ static nss_status_t read_spwdstring(TFILE *fp,nss_XbyY_args_t *args)
   NSS_ARGS(args)->buf.result? \
     read_spwd(fp,(struct spwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
     read_spwdstring(fp,args); \
-  if (NSS_ARGS(args)->buf.result) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result
+  if ((NSS_ARGS(args)->buf.result)&&(retv=NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+#define READ_RESULT(fp) \
+  read_spwd(fp,(struct spwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno); \
+  if (retv=NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 static nss_status_t get_getspnam_r(nss_backend_t UNUSED(*be),void *args)
 {

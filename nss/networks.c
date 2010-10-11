@@ -162,6 +162,8 @@ nss_status_t _nss_ldap_endnetent(void)
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+
 static nss_status_t read_netentstring(TFILE *fp,nss_XbyY_args_t *args)
 {
   struct netent result;
@@ -199,8 +201,17 @@ static nss_status_t read_netentstring(TFILE *fp,nss_XbyY_args_t *args)
   NSS_ARGS(args)->buf.result? \
     read_netent(fp,(struct netent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)): \
     read_netentstring(fp,args); \
-  if (NSS_ARGS(args)->buf.result) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result
+  if ((NSS_ARGS(args)->buf.result)&&(retv=NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+#define READ_RESULT(fp) \
+  read_netent(fp,(struct netent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)); \
+  if (retv=NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 /* more of a dirty hack */
 #define h_errnop (&(NSS_ARGS(args)->h_errno))
