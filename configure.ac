@@ -405,7 +405,10 @@ then
   AC_MSG_CHECKING([which NSS maps to build])
   if test "x$with_nss_ldap_maps" = "xall"
   then
-    with_nss_ldap_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow"
+    case "$with_nss_flavour" in
+      glibc)   with_nss_ldap_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow" ;;
+      solaris) with_nss_ldap_maps="ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow" ;;
+    esac
   fi
   AC_MSG_RESULT($with_nss_ldap_maps)
   NSS_MODULE_OBJS="`echo "$with_nss_ldap_maps " | sed 's/,/ /g;s/  */.$(OBJEXT) /g'`"
