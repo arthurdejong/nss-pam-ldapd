@@ -622,6 +622,8 @@ static void myldap_session_check(MYLDAP_SESSION *session)
 static int do_open(MYLDAP_SESSION *session)
 {
   int rc,rc2;
+  int sd=-1;
+  struct timeval tv;
   /* check if the idle time for the connection has expired */
   myldap_session_check(session);
   /* if the connection is still there (ie. ldap_unbind() wasn't
@@ -682,6 +684,15 @@ static int do_open(MYLDAP_SESSION *session)
     if (rc2!=LDAP_SUCCESS)
       log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc2));
     return rc;
+  }
+  /* set timeout options on socket to avoid hang in some cases */
+  if (ldap_get_option(session->ld,LDAP_OPT_DESC,&sd)==LDAP_SUCCESS)
+  {
+    /* ignore errors */
+    tv.tv_sec=nslcd_cfg->ldc_timelimit;
+    tv.tv_usec=500;
+    (void)setsockopt(sd,SOL_SOCKET,SO_RCVTIMEO,(void *)&tv,sizeof(tv));
+    (void)setsockopt(sd,SOL_SOCKET,SO_SNDTIMEO,(void *)&tv,sizeof(tv));
   }
   /* update last activity and finish off state */
   time(&(session->lastactivity));
