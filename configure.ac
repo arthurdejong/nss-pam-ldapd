@@ -308,6 +308,17 @@ AC_CHECK_TYPES(struct ether_addr,,,[
     #include <netinet/ether.h>
     #endif])
 
+# check for ether_aton and ether_ntoa functions
+AC_CHECK_FUNCS(ether_aton ether_ntoa ether_aton_r ether_ntoa_r)
+AC_CHECK_DECLS([ether_aton,ether_ntoa],,,[
+    #include <sys/socket.h>
+    #include <net/if.h>
+    #include <netinet/in.h>
+    #include <netinet/if_ether.h>
+    #ifdef HAVE_NETINET_ETHER_H
+    #include <netinet/ether.h>
+    #endif])
+
 # check to see if socklen_t is defined
 AC_CHECK_TYPE(socklen_t,,
     AC_DEFINE(socklen_t,size_t,[Define to `size_t' if not defined elswhere.]),[
@@ -528,19 +539,8 @@ then
   AC_SEARCH_LIBS(daemon,bsd)
   AC_REPLACE_FUNCS(daemon)
 
-  # replace ether_ntoa_r() and ether_aton_r() if they are not found
+  # replace ether_aton_r() and ether_ntoa_r() if they are not found
   AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,,[AC_LIBOBJ(ether)])
-
-  # check requirements for our replacement functions
-  AC_CHECK_FUNCS(ether_ntoa ether_aton)
-  AC_CHECK_DECLS([ether_ntoa,ether_aton],,,[
-      #include <sys/socket.h>
-      #include <net/if.h>
-      #include <netinet/in.h>
-      #include <netinet/if_ether.h>
-      #ifdef HAVE_NETINET_ETHER_H
-      #include <netinet/ether.h>
-      #endif])
 
   # check to see if struct sockaddr_storage is defined
   AC_CHECK_TYPE(struct sockaddr_storage,,
