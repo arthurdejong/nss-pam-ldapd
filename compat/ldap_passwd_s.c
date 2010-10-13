@@ -29,7 +29,7 @@
 #include <ldap.h>
 
 #include "compat/ldap_compat.h"
-#include "nslcd/log.h"
+#include "compat/attrs.h"
 
 #ifndef LDAP_EXOP_MODIFY_PASSWD
 #ifdef LDAP_EXOP_X_MODIFY_PASSWD
@@ -66,7 +66,7 @@ extern int ldap_extended_operation_s(LDAP *ld,LDAP_CONST char *reqoid,
    the new password to set and newpasswd is sometimes returned (though not
    by us). See RFC 3062 for details.*/
 int ldap_passwd_s(LDAP *ld,struct berval *user,struct berval *oldpw,
-                  struct berval *newpw,struct berval *newpasswd,
+                  struct berval *newpw,struct berval UNUSED(*newpasswd),
                   LDAPControl **sctrls,LDAPControl **cctrls)
 {
 #ifndef HAVE_LDAP_EXTENDED_OPERATION_S
