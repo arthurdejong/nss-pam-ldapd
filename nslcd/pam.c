@@ -274,7 +274,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   char username[256];
   char userdn[256];
   char servicename[64];
-  char ruser[32];
+  char ruser[256];
   char rhost[256];
   char tty[256];
   char hostname[HOST_NAME_MAX+1];
