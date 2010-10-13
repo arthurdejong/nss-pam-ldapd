@@ -252,10 +252,10 @@ AC_MSG_RESULT($PAM_LDAP_SONAME)
 AC_SUBST(PAM_LDAP_SONAME)
 
 # check which modules should be build
-AC_ARG_WITH(nss-ldap-maps,
-            AS_HELP_STRING([--with-nss-ldap-maps=MAP LIST],
+AC_ARG_WITH(nss-maps,
+            AS_HELP_STRING([--with-nss-maps=MAP LIST],
                            [comma separated list of NSS maps to build @<:@all@:>@]),
-            ,[ with_nss_ldap_maps="all" ])
+            ,[ with_nss_maps="all" ])
 
 # checks for availability of header files
 AC_CHECK_HEADERS([ctype.h strings.h pthread.h fcntl.h limits.h])
@@ -402,12 +402,12 @@ then
 
   # check which module source files to use
   AC_MSG_CHECKING([which NSS maps to build])
-  if test "x$with_nss_ldap_maps" = "xall"
+  if test "x$with_nss_maps" = "xall"
   then
-    with_nss_ldap_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow"
+    with_nss_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow"
   fi
-  AC_MSG_RESULT($with_nss_ldap_maps)
-  NSS_MODULE_OBJS="`echo "$with_nss_ldap_maps " | sed 's/,/ /g;s/  */.$(OBJEXT) /g'`"
+  AC_MSG_RESULT($with_nss_maps)
+  NSS_MODULE_OBJS="`echo "$with_nss_maps " | sed 's/,/ /g;s/  */.$(OBJEXT) /g'`"
   AC_SUBST(NSS_MODULE_OBJS)
 
   # find out how to link the library
