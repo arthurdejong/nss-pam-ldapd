@@ -32,7 +32,7 @@ EXTRA_nss_ldap_so_SOURCES = aliases.c ethers.c group.c hosts.c netgroup.c \
                             networks.c passwd.c protocols.c rpc.c services.c \
                             shadow.c
 nss_ldap_so_DEPENDENCIES = $(NSS_MODULE_OBJS)
-nss_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a $(NSS_MODULE_OBJS)
+nss_ldap_so_LDADD = $(NSS_MODULE_OBJS) ../common/libtio.a ../common/libprot.a
 
 EXTRA_DIST = exports.glibc exports.solaris
 
