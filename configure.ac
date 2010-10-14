@@ -424,19 +424,22 @@ then
   AC_SUBST(NSS_MODULE_OBJS)
 
   # find out how to link the library
+  nss_ldap_so_LINK="\$(CCLD) \$(AM_CFLAGS) \$(CFLAGS) \$(nss_ldap_so_LDFLAGS) \$(LDFLAGS) -o \$@"
   case "$target_os" in
   solaris*)
-    if test "$ac_cv_prog_gcc" = yes; then
-      nss_ldap_so_LD="/usr/ccs/bin/ld"
-      AC_SUBST(nss_ldap_so_LD)
+    if test "$ac_cv_prog_gcc" = yes
+    then
+      nss_ldap_so_LINK="/usr/ccs/bin/ld -Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G -o \$@"
+    else
+      nss_ldap_so_LDFLAGS="-Wl,-Bdirect -Wl,-z,nodelete -Wl,-Bdynamic -Wl,-M,\$(srcdir)/exports.solaris -Wl,-G"
     fi
-    nss_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G"
     ;;
   *)
     nss_ldap_so_LDFLAGS="-shared -Wl,-h,\$(NSS_LDAP_SONAME) -Wl,--version-script,\$(srcdir)/exports.glibc"
     ;;
   esac
   AC_SUBST(nss_ldap_so_LDFLAGS)
+  AC_SUBST(nss_ldap_so_LINK)
 
   # restore CFLAGS and LIBS
   CFLAGS="$nss_save_CFLAGS"
@@ -476,19 +479,22 @@ then
   AC_CHECK_FUNCS(pam_modutil_getpwnam pam_syslog)
 
   # find out how to link the library
+  pam_ldap_so_LINK="\$(CCLD) \$(AM_CFLAGS) \$(CFLAGS) \$(pam_ldap_so_LDFLAGS) \$(LDFLAGS) -o \$@"
   case "$target_os" in
   solaris*)
-    if test "$ac_cv_prog_gcc" = yes; then
-      pam_ldap_so_LD="/usr/ccs/bin/ld"
-      AC_SUBST(pam_ldap_so_LD)
+    if test "$ac_cv_prog_gcc" = yes
+    then
+      pam_ldap_so_LINK="/usr/ccs/bin/ld -Bdirect -z nodelete -Bdynamic -M \$(srcdir)/pam_ldap.map -G -o \$@"
+    else
+      pam_ldap_so_LDFLAGS="-shared -Wl,-Bdirect -Wl,-z,nodelete -Wl,-Bdynamic -Wl,-M,\$(srcdir)/pam_ldap.map -Wl,-G"
     fi
-    pam_ldap_so_LDFLAGS="-Bdirect -z nodelete -Bdynamic -M \$(srcdir)/pam_ldap.map -G"
     ;;
   *)
     pam_ldap_so_LDFLAGS="-shared -Wl,--version-script,\$(srcdir)/pam_ldap.map"
     ;;
   esac
   AC_SUBST(pam_ldap_so_LDFLAGS)
+  AC_SUBST(pam_ldap_so_LINK)
 
   # restore CFLAGS and LIBS
   CFLAGS="$pam_save_CFLAGS"
