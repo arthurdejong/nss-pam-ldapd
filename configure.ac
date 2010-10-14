@@ -300,6 +300,7 @@ fi
 
 # check for support for the struct ether_addr structure
 AC_CHECK_TYPES(struct ether_addr,,,[
+    #include <sys/types.h>
     #include <sys/socket.h>
     #include <net/if.h>
     #include <netinet/in.h>
@@ -311,6 +312,7 @@ AC_CHECK_TYPES(struct ether_addr,,,[
 # check for ether_aton and ether_ntoa functions
 AC_CHECK_FUNCS(ether_aton ether_ntoa ether_aton_r ether_ntoa_r)
 AC_CHECK_DECLS([ether_aton,ether_ntoa],,,[
+    #include <sys/types.h>
     #include <sys/socket.h>
     #include <net/if.h>
     #include <netinet/in.h>
