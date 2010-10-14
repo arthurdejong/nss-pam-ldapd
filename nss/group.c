@@ -120,6 +120,30 @@ nss_status_t _nss_ldap_getgrgid_r(
              read_group(fp,result,buffer,buflen,errnop));
 }
 
+/* thread-local file pointer to an ongoing request */
+static __thread TFILE *grentfp;
+
+/* start a request to read all groups */
+nss_status_t _nss_ldap_setgrent(int UNUSED(stayopen))
+{
+  NSS_SETENT(grentfp);
+}
+
+/* read a single group from the stream */
+nss_status_t _nss_ldap_getgrent_r(
+        struct group *result,
+        char *buffer,size_t buflen,int *errnop)
+{
+  NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,
+             read_group(grentfp,result,buffer,buflen,errnop));
+}
+
+/* close the stream opened with setgrent() above */
+nss_status_t _nss_ldap_endgrent(void)
+{
+  NSS_ENDENT(grentfp);
+}
+
 /* this function returns a list of groups, documentation for the
    interface is scarce (any pointers are welcome) but this is
    what is assumed the parameters mean:
@@ -146,28 +170,4 @@ nss_status_t _nss_ldap_initgroups_dyn(
              read_gids(fp,skipgroup,start,size,groupsp,limit,errnop));
 #undef buffer
 #undef buflen
-}
-
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *grentfp;
-
-/* start a request to read all groups */
-nss_status_t _nss_ldap_setgrent(int UNUSED(stayopen))
-{
-  NSS_SETENT(grentfp);
-}
-
-/* read a single group from the stream */
-nss_status_t _nss_ldap_getgrent_r(
-        struct group *result,
-        char *buffer,size_t buflen,int *errnop)
-{
-  NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,
-             read_group(grentfp,result,buffer,buflen,errnop));
-}
-
-/* close the stream opened with setgrent() above */
-nss_status_t _nss_ldap_endgrent(void)
-{
-  NSS_ENDENT(grentfp);
 }
