@@ -6,18 +6,17 @@ nss_ldap.so.1 {
     # flag to enable or disable lookups
     _nss_ldap_enablelookups;
 
-    # Published NSS service module interfaces
-	# _nss_ldap_bootparams_constr;
-	_nss_ldap_ethers_constr;
-	_nss_ldap_group_constr;
-	_nss_ldap_hosts_constr;
-	_nss_ldap_networks_constr;
-	_nss_ldap_protocols_constr;
-	_nss_ldap_passwd_constr;
-	_nss_ldap_rpc_constr;
-	_nss_ldap_services_constr;
-	_nss_ldap_shadow_constr;
-	_nss_ldap_netgroup_constr;
+    # published NSS service module constructors
+    _nss_ldap_ethers_constr;
+    _nss_ldap_group_constr;
+    _nss_ldap_hosts_constr;
+    _nss_ldap_networks_constr;
+    _nss_ldap_protocols_constr;
+    _nss_ldap_passwd_constr;
+    _nss_ldap_rpc_constr;
+    _nss_ldap_services_constr;
+    _nss_ldap_shadow_constr;
+    _nss_ldap_netgroup_constr;
 
   # everything else should not be exported
   local:
