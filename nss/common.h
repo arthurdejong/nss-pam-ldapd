@@ -67,6 +67,22 @@
   fp=NULL; \
   return NSS_STATUS_NOTFOUND;
 
+/* These are some general macros that are used to build parts of the
+   genral macros below. */
+
+/* check to see if we should answer NSS requests */
+#define NSS_AVAILCHECK \
+  if (!_nss_ldap_enablelookups) \
+    return NSS_STATUS_UNAVAIL;
+
+/* check validity of passed buffer */
+#define NSS_BUFCHECK \
+  if ((buffer==NULL)||(buflen<=0)) \
+  { \
+      *errnop=EINVAL; \
+      return NSS_STATUS_UNAVAIL; \
+  }
+
 /* The following macros to automatically generate get..byname(),
    get..bynumber(), setent(), getent() and endent() function
    bodies. These functions have very common code so this can
@@ -84,14 +100,8 @@
   TFILE *fp; \
   int32_t tmpint32; \
   nss_status_t retv; \
-  if (!_nss_ldap_enablelookups) \
-    return NSS_STATUS_UNAVAIL; \
-  /* check that we have a valid buffer */ \
-  if ((buffer==NULL)||(buflen<=0)) \
-  { \
-      *errnop=EINVAL; \
-      return NSS_STATUS_UNAVAIL; \
-  } \
+  NSS_AVAILCHECK; \
+  NSS_BUFCHECK; \
   /* open socket and write request */ \
   NSLCD_REQUEST(fp,action,writefn); \
   /* read response */ \
@@ -120,8 +130,7 @@
 /* This macro generates a simple setent() function body. This closes any
    open streams so that NSS_GETENT() can open a new file. */
 #define NSS_SETENT(fp) \
-  if (!_nss_ldap_enablelookups) \
-    return NSS_STATUS_UNAVAIL; \
+  NSS_AVAILCHECK; \
   if (fp!=NULL) \
   { \
     (void)tio_close(fp); \
@@ -135,21 +144,8 @@
 #define NSS_GETENT(fp,action,readfn) \
   int32_t tmpint32; \
   nss_status_t retv; \
-  if (!_nss_ldap_enablelookups) \
-    return NSS_STATUS_UNAVAIL; \
-  /* check that we have a valid buffer */ \
-  if ((buffer==NULL)||(buflen<=0)) \
-  { \
-      /* close stream */ \
-      if (fp!=NULL) \
-      { \
-        (void)tio_close(fp); \
-        fp=NULL; \
-      } \
-      /* indicate error */ \
-      *errnop=EINVAL; \
-      return NSS_STATUS_UNAVAIL; \
-  } \
+  NSS_AVAILCHECK; \
+  NSS_BUFCHECK; \
   /* check that we have a valid file descriptor */ \
   if (fp==NULL) \
   { \
@@ -181,8 +177,7 @@
 /* This macro generates a endent() function body. This just closes
    the stream. */
 #define NSS_ENDENT(fp) \
-  if (!_nss_ldap_enablelookups) \
-    return NSS_STATUS_UNAVAIL; \
+  NSS_AVAILCHECK; \
   if (fp!=NULL) \
   { \
     (void)tio_close(fp); \
