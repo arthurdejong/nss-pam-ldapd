@@ -547,6 +547,20 @@ static void do_close(MYLDAP_SESSION *session)
 {
   int i;
   int rc;
+  int sd=-1;
+  struct timeval tv;
+  /* set timeout options on socket to avoid hang in some cases
+     (we set a short timeout because we don't care too much about properly
+     shutting down the connection) */
+  if (ldap_get_option(session->ld,LDAP_OPT_DESC,&sd)==LDAP_SUCCESS)
+  {
+    /* ignore errors */
+    tv.tv_sec=nslcd_cfg->ldc_timelimit/2;
+    if (!tv.tv_sec) tv.tv_sec=1;
+    tv.tv_usec=0;
+    (void)setsockopt(sd,SOL_SOCKET,SO_RCVTIMEO,(void *)&tv,sizeof(tv));
+    (void)setsockopt(sd,SOL_SOCKET,SO_SNDTIMEO,(void *)&tv,sizeof(tv));
+  }
   /* if we had reachability problems with the server close the connection */
   if (session->ld!=NULL)
   {
@@ -621,7 +635,7 @@ static void myldap_session_check(MYLDAP_SESSION *session)
    and binds to the server. This returns an LDAP status code. */
 static int do_open(MYLDAP_SESSION *session)
 {
-  int rc,rc2;
+  int rc;
   int sd=-1;
   struct timeval tv;
   /* check if the idle time for the connection has expired */
@@ -644,13 +658,7 @@ static int do_open(MYLDAP_SESSION *session)
                         ldap_err2string(rc),(errno==0)?"":": ",
                         (errno==0)?"":strerror(errno));
     if (session->ld!=NULL)
-    {
-      log_log(LOG_DEBUG,"ldap_unbind()");
-      rc2=ldap_unbind(session->ld);
-      session->ld=NULL;
-      if (rc2!=LDAP_SUCCESS)
-        log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc2));
-    }
+      do_close(session);
     return rc;
   }
   else if (session->ld==NULL)
@@ -662,10 +670,7 @@ static int do_open(MYLDAP_SESSION *session)
   rc=do_set_options(session);
   if (rc!=LDAP_SUCCESS)
   {
-    rc2=ldap_unbind(session->ld);
-    session->ld=NULL;
-    if (rc2!=LDAP_SUCCESS)
-      log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc2));
+    do_close(session);
     return rc;
   }
   /* bind to the server */
@@ -679,18 +684,17 @@ static int do_open(MYLDAP_SESSION *session)
                         nslcd_cfg->ldc_uris[session->current_uri].uri,
                         ldap_err2string(rc),(errno==0)?"":": ",
                         (errno==0)?"":strerror(errno));
-    rc2=ldap_unbind(session->ld);
-    session->ld=NULL;
-    if (rc2!=LDAP_SUCCESS)
-      log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc2));
+    do_close(session);
     return rc;
   }
-  /* set timeout options on socket to avoid hang in some cases */
+  /* set timeout options on socket to avoid hang in some cases
+     (twice the normal timeout so this should only be triggered in cases
+     where the library behaves incorrectly) */
   if (ldap_get_option(session->ld,LDAP_OPT_DESC,&sd)==LDAP_SUCCESS)
   {
     /* ignore errors */
-    tv.tv_sec=nslcd_cfg->ldc_timelimit;
-    tv.tv_usec=500;
+    tv.tv_sec=nslcd_cfg->ldc_timelimit*2;
+    tv.tv_usec=0;
     (void)setsockopt(sd,SOL_SOCKET,SO_RCVTIMEO,(void *)&tv,sizeof(tv));
     (void)setsockopt(sd,SOL_SOCKET,SO_SNDTIMEO,(void *)&tv,sizeof(tv));
   }

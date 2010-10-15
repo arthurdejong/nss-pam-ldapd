@@ -2,7 +2,7 @@
    dict.c - dictionary functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -69,13 +69,12 @@ struct dictionary {
   struct dict_entry **table;     /* the hashtable */
 };
 
-/* Simple hash function that computes the hash value of a lower-cased
-   string. */
+/* Simple hash function that computes the hash value of a string. */
 static uint32_t stringhash(const char *str)
 {
   uint32_t hash=0;
   while (*str!='\0')
-    hash=3*hash+tolower(*str++);
+    hash=3*hash+*str++;
   return hash;
 }
 
@@ -170,9 +169,20 @@ void *dict_get(DICT *dict,const char *key)
   for (entry=dict->table[hash%dict->size];entry!=NULL;entry=entry->next)
   {
     if ( (entry->hash==hash) &&
-         (strcasecmp(entry->key,key)==0) )
+         (strcmp(entry->key,key)==0) )
       return entry->value;
   }
+  /* no matches found */
+  return NULL;
+}
+
+const char *dict_getany(DICT *dict)
+{
+  int i;
+  /* loop over the linked list in the hashtable */
+  for (i=0;i<dict->size;i++)
+    if (dict->table[i])
+      return dict->table[i]->key;
   /* no matches found */
   return NULL;
 }
@@ -196,7 +206,7 @@ int dict_put(DICT *dict,const char *key,void *value)
        prev=entry,entry=entry->next)
   {
     if ( (entry->hash==hash) &&
-         (strcasecmp(entry->key,key)==0) )
+         (strcmp(entry->key,key)==0) )
     {
       /* check if we should unset the entry */
       if (value==NULL)

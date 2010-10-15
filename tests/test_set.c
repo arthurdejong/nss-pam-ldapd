@@ -2,7 +2,7 @@
    test_set.c - simple test for the set module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008, 2009 Arthur de Jong
+   Copyright (C) 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,14 @@
 #include "common/set.h"
 #include "compat/attrs.h"
 
+static int isknownvalue(const char *value)
+{
+  return value!=NULL && (
+          (strcmp(value,"key1")==0) ||
+          (strcmp(value,"key2")==0) ||
+          (strcmp(value,"key3")==0) );
+}
+
 /* the main program... */
 int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
@@ -44,22 +52,27 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   set_add(set,"key1");
   set_add(set,"key2");
   set_add(set,"key3");
-  set_add(set,"KEY2");
+  set_add(set,"key2");
 
   /* check set contents */
-  assert(set_contains(set,"KeY1"));
-  assert(set_contains(set,"kEy2"));
-  assert(set_contains(set,"KeY3"));
+  assert(set_contains(set,"key1"));
+  assert(set_contains(set,"key2"));
+  assert(set_contains(set,"key3"));
   assert(!set_contains(set,"key4"));
+  assert(!set_contains(set,"KEY1"));
 
   /* loop over set contents */
   list=set_tolist(set);
   for (i=0;list[i]!=NULL;i++)
   {
-    assert( (strcasecmp(list[i],"key1")==0) ||
-            (strcasecmp(list[i],"key2")==0) ||
-            (strcasecmp(list[i],"key3")==0) );
+    assert(isknownvalue(list[i]));
   }
+
+  /* remove keys from the set */
+  assert(isknownvalue(set_pop(set)));
+  assert(isknownvalue(set_pop(set)));
+  assert(isknownvalue(set_pop(set)));
+  assert(set_pop(set)==NULL);
 
   /* free set */
   set_free(set);

@@ -2,7 +2,7 @@
    test_dict.c - simple test for the dict module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -47,19 +47,21 @@ static void test_simple(void)
   dict_put(dict,"key1",value1);
   dict_put(dict,"key2",value2);
   dict_put(dict,"key3",dict);
-  dict_put(dict,"KEY2",replace2);
+  dict_put(dict,"key2",replace2);
   /* check dictionary contents */
-  val=dict_get(dict,"KeY1");
+  val=dict_get(dict,"key1");
   assert(val==value1);
-  val=dict_get(dict,"kEy2");
+  val=dict_get(dict,"key2");
   assert(val==replace2);
-  val=dict_get(dict,"KeY3");
+  val=dict_get(dict,"key3");
   assert(val==dict);
   val=dict_get(dict,"key4");
   assert(val==NULL);
+  val=dict_get(dict,"KEY1");
+  assert(val==NULL);
   /* remove a key */
-  dict_put(dict,"kEy3",NULL);
-  val=dict_get(dict,"keY3");
+  dict_put(dict,"key3",NULL);
+  val=dict_get(dict,"key3");
   assert(val==NULL);
   /* loop over dictionary contents */
   keys=dict_keys(dict);

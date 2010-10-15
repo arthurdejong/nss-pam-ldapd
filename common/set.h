@@ -2,7 +2,7 @@
    set.h - set functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008, 2009 Arthur de Jong
+   Copyright (C) 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -26,7 +26,7 @@
 #include "compat/attrs.h"
 
 /*
-   These functions provide a set of string in an unordered
+   These functions provide a set of strings in an unordered
    collection.
 */
 typedef struct set SET;
@@ -39,13 +39,18 @@ SET *set_new(void)
 /* Add a string in the set. The value is duplicated
    and can be reused by the caller.
    This function returns non-0 in case of memory allocation
-   errors. All value comparisons are case insensitive. */
+   errors. All value comparisons are case sensitive. */
 int set_add(SET *set,const char *value);
 
 /* Return non-zero if the value is in the set.
-   All value comparisons are case insensitive. */
+   All value comparisons are case sensitive. */
 int set_contains(SET *set,const char *value)
   MUST_USE;
+
+/* Get an element from the set and removes it from the set.
+   Returns NULL on an empty set. A copy of the string in the set
+   is returned, the caller should use free() to free it. */
+char *set_pop(SET *set);
 
 /* Remove the set from memory. All allocated storage
    for the set and the values is freed. */
