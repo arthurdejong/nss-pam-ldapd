@@ -176,6 +176,17 @@ void *dict_get(DICT *dict,const char *key)
   return NULL;
 }
 
+const char *dict_getany(DICT *dict)
+{
+  int i;
+  /* loop over the linked list in the hashtable */
+  for (i=0;i<dict->size;i++)
+    if (dict->table[i])
+      return dict->table[i]->key;
+  /* no matches found */
+  return NULL;
+}
+
 int dict_put(DICT *dict,const char *key,void *value)
 {
   uint32_t hash;

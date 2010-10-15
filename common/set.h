@@ -47,6 +47,11 @@ int set_add(SET *set,const char *value);
 int set_contains(SET *set,const char *value)
   MUST_USE;
 
+/* Get an element from the set and removes it from the set.
+   Returns NULL on an empty set. A copy of the string in the set
+   is returned, the caller should use free() to free it. */
+char *set_pop(SET *set);
+
 /* Remove the set from memory. All allocated storage
    for the set and the values is freed. */
 void set_free(SET *set);

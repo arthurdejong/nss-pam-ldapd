@@ -30,6 +30,14 @@
 #include "common/set.h"
 #include "compat/attrs.h"
 
+static int isknownvalue(const char *value)
+{
+  return value!=NULL && (
+          (strcmp(value,"key1")==0) ||
+          (strcmp(value,"key2")==0) ||
+          (strcmp(value,"key3")==0) );
+}
+
 /* the main program... */
 int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
@@ -57,10 +65,14 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   list=set_tolist(set);
   for (i=0;list[i]!=NULL;i++)
   {
-    assert( (strcmp(list[i],"key1")==0) ||
-            (strcmp(list[i],"key2")==0) ||
-            (strcmp(list[i],"key3")==0) );
+    assert(isknownvalue(list[i]));
   }
+
+  /* remove keys from the set */
+  assert(isknownvalue(set_pop(set)));
+  assert(isknownvalue(set_pop(set)));
+  assert(isknownvalue(set_pop(set)));
+  assert(set_pop(set)==NULL);
 
   /* free set */
   set_free(set);

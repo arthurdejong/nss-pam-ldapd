@@ -2,7 +2,7 @@
    set.c - set functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008, 2009 Arthur de Jong
+   Copyright (C) 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,19 @@ SET *set_new(void)
 int set_add(SET *set,const char *value)
 {
   return dict_put((DICT *)set,value,set);
+}
+
+char *set_pop(SET *set)
+{
+  const char *key;
+  char *value;
+  key=dict_getany((DICT *)set);
+  if (key==NULL)
+    return NULL; /* no more entries in set */
+  /* remove the entry from the dict and return a copy */
+  value=strdup(key);
+  dict_put((DICT *)set,key,NULL);
+  return value;
 }
 
 int set_contains(SET *set,const char *value)

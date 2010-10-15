@@ -48,6 +48,11 @@ int dict_put(DICT *dict,const char *key,void *value);
 void *dict_get(DICT *dict,const char *key)
   MUST_USE;
 
+/* Get a key from the dictionary that has a value set. The caller does
+   not need to free the returned value (it is freed when dict_free()
+   is called). */
+const char *dict_getany(DICT *dict);
+
 /* Delete a key-value association from the dictionary.
    All key comparisons are case sensitive. */
 /*void dict_del(DICT *dict,const char *key);*/
