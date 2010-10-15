@@ -1,3 +1,11 @@
+changes from 0.7.10 to 0.7.11
+-----------------------------
+
+* grow the buffer for the PAM ruser to not reject logins for users with
+  a ruser including a domain part (closes: #600065)
+* Debian packaging improvements
+
+
 changes from 0.7.9 to 0.7.10
 ----------------------------
 

@@ -35,9 +35,9 @@
  <refmeta>
   <refentrytitle>pam_ldap</refentrytitle>
   <manvolnum>8</manvolnum>
-  <refmiscinfo class="version">Version 0.7.10</refmiscinfo>
+  <refmiscinfo class="version">Version 0.7.11</refmiscinfo>
   <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
-  <refmiscinfo class="date">Sep 2010</refmiscinfo>
+  <refmiscinfo class="date">Oct 2010</refmiscinfo>
  </refmeta>
 
  <refnamediv id="name">

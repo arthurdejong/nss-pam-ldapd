@@ -1,3 +1,11 @@
+nss-pam-ldapd (0.7.11) unstable; urgency=low
+
+  * updated Vietnamese debconf translation by Clytie Siddall (closes: #598500)
+  * grow the buffer for the PAM ruser to not reject logins for users with
+    a ruser including a domain part (closes: #600065)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 15 Oct 2010 15:30:00 +0200
+
 nss-pam-ldapd (0.7.10) unstable; urgency=low
 
   * handle errors from ldap_result() better and disconnect (and reconnect)

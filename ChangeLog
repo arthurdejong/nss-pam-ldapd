@@ -1,3 +1,19 @@
+2010-10-13 20:01  arthur
+
+	* [r1268] nslcd/pam.c: grow ruser buffer (small part of r1267 from
+	  trunk)
+
+2010-09-30 19:12  arthur
+
+	* [r1230] ., debian/po/vi.po: updated Vietnamese (vi) translation
+	  of debconf templates by Clytie Siddall (r1129 from trunk)
+
+2010-09-24 07:25  arthur
+
+	* [r1212] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.10 release
+
 2010-09-24 07:16  arthur
 
 	* [r1211] ., nslcd/myldap.c: handle errors from ldap_result()
