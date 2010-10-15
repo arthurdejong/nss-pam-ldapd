@@ -31,18 +31,6 @@
 #include "compat/attrs.h"
 #include "compat/nss_compat.h"
 
-/* Adapted from PADL */
-/* Routines for managing namelists */
-struct name_list
-{
-  char *name;
-  struct name_list *next;
-};
-nss_status_t _nss_ldap_namelist_push(struct name_list **head,const char *name);
-void _nss_ldap_namelist_pop(struct name_list **head);
-int _nss_ldap_namelist_find(struct name_list *head,const char *netgroup);
-void _nss_ldap_namelist_destroy(struct name_list **head);
-
 /* These are macros for handling read and write problems, they are
    NSS specific due to the return code so are defined here. They
    genrally close the open file, set an error code and return with

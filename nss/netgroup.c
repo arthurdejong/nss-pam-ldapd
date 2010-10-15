@@ -30,6 +30,7 @@
 #include "prototypes.h"
 #include "common.h"
 #include "compat/attrs.h"
+#include "common/set.h"
 
 /* we redefine this here because we need to return NSS_STATUS_RETURN
    instead of NSS_STATUS_NOTFOUND */
@@ -146,8 +147,8 @@ struct nss_ldap_netgr_backend
   nss_backend_op_t *ops;
   int n_ops;
   ent_context_t *state;
-  struct name_list *known_groups; /* netgroups seen, for loop detection */
-  struct name_list *needed_groups; /* nested netgroups to chase */
+  SET *known_groups; /* netgroups seen, for loop detection */
+  SET *needed_groups; /* nested netgroups to chase */
 };
 typedef struct nss_ldap_netgr_backend nss_ldap_netgr_backend_t;
 
@@ -157,35 +158,20 @@ static nss_status_t _xnss_ldap_setnetgrent(nss_backend_t UNUSED(*be),void UNUSED
 }
 
 /* find a netgroup that has not been traversed */
-static char *_nss_ldap_chase_netgroup(nss_ldap_netgr_backend_t *ngbe)
+static char *find_unseen_netgroup(nss_ldap_netgr_backend_t *ngbe)
 {
-  nss_status_t status;
-  char *group=NULL;
-  int found=0;
-  if (!ngbe->needed_groups)
+  char *group;
+  while (1)
   {
-   /* exhausted all netgroups */
-   return NULL;
-  }
-  while (ngbe->needed_groups&&!found)
-  {
-    if (_nss_ldap_namelist_find(ngbe->known_groups,
-                                ngbe->needed_groups->name))
+    group=set_pop(ngbe->needed_groups);
+    if (group==NULL)
+      return NULL;
+    if (set_contains(ngbe->known_groups,group))
     {
-       /* netgroup seen before,ignore it */
-       _nss_ldap_namelist_pop(&ngbe->needed_groups);
+      set_add(ngbe->known_groups,group);
+      return group;
     }
-    else
-      found=1;
   }
-  if (found)
-  {
-    group=strdup(ngbe->needed_groups->name);
-    status=_nss_ldap_namelist_push(&ngbe->known_groups,
-                                   ngbe->needed_groups->name);
-    _nss_ldap_namelist_pop(&ngbe->needed_groups);
-  }
-  return group;
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -236,7 +222,7 @@ static nss_status_t _xnss_ldap_getnetgrent_r(nss_backend_t *_be,void *_args)
         while (!found)
         {
           /* find a nested netgroup to pursue further */
-          group=_nss_ldap_chase_netgroup(ngbe);
+          group=find_unseen_netgroup(ngbe);
           if (!group)
           {
             /* no more netgroup */
@@ -263,11 +249,7 @@ static nss_status_t _xnss_ldap_getnetgrent_r(nss_backend_t *_be,void *_args)
       if (result.type==group_val)
       {
         /* a netgroup nested within the current netgroup */
-        rc=_nss_ldap_namelist_push(&ngbe->needed_groups,result.val.group);
-        if (rc!=NSS_STATUS_SUCCESS)
-        {
-          /* unable to push the group name for later netgroup */
-        }
+        set_add(ngbe->needed_groups,result.val.group);
       }
       else if (result.type==triple_val)
       {
@@ -298,8 +280,8 @@ static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
 {
   nss_ldap_netgr_backend_t *ngbe=(nss_ldap_netgr_backend_t *)be;
   /* free list of nested netgroups */
-  _nss_ldap_namelist_destroy(&ngbe->known_groups);
-  _nss_ldap_namelist_destroy(&ngbe->needed_groups);
+  set_free(ngbe->known_groups);
+  set_free(ngbe->needed_groups);
   free(ngbe);
   return NSS_STATUS_SUCCESS;
 }
@@ -338,12 +320,7 @@ static nss_status_t _xnss_ldap_netgr_set(nss_backend_t *be,void *_args)
     return stat;
   }
   /* place the group name in known list */
-  stat=_nss_ldap_namelist_push(&ngbe->known_groups,args->netgroup);
-  if (stat!=NSS_STATUS_SUCCESS)
-  {
-    destructor((nss_backend_t *)ngbe,NULL);
-    return stat;
-  }
+  set_add(ngbe->known_groups,args->netgroup);
   args->iterator=(nss_backend_t *)ngbe;
   return stat;
 }
@@ -356,8 +333,8 @@ nss_backend_t *_nss_ldap_netgroup_constr(const char UNUSED(*db_name),
     return NULL;
   be->ops=netgroup_ops;
   be->n_ops=sizeof(netgroup_ops)/sizeof(nss_backend_op_t);
-  be->known_groups=NULL;
-  be->needed_groups=NULL;
+  be->known_groups=set_new();
+  be->needed_groups=set_new();
   return (nss_backend_t *)be;
 }
 

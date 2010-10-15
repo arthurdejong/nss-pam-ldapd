@@ -704,6 +704,9 @@ then
   AC_SUBST(nslcd_LIBS)
 fi
 
+AM_CONDITIONAL([NSS_FLAVOUR_GLIBC], [test "x${with_nss_flavour}" = xglibc])
+AM_CONDITIONAL([NSS_FLAVOUR_SOLARIS], [test "x${with_nss_flavour}" = xsolaris])
+
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile
                  pam/Makefile nslcd/Makefile man/Makefile tests/Makefile])
