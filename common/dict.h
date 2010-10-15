@@ -2,7 +2,7 @@
    dict.h - dictionary functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -26,8 +26,7 @@
 #include "compat/attrs.h"
 
 /*
-   These functions provide a mapping between a case insensitive
-   string and a pointer.
+   These functions provide a mapping between a string and a pointer.
 */
 typedef struct dictionary DICT;
 
@@ -40,17 +39,17 @@ DICT *dict_new(void)
    and can be reused by the caller. The pointer is just stored.
    This function returns non-0 in case of memory allocation
    errors. If the key was previously in use the value
-   is replaced. All key comparisons are case insensitive. */
+   is replaced. All key comparisons are case sensitive. */
 int dict_put(DICT *dict,const char *key,void *value);
 
 /* Look up a key in the dictionary and return the associated
    value. NULL is returned if the key is not found in the dictionary.
-   All key comparisons are case insensitive. */
+   All key comparisons are case sensitive. */
 void *dict_get(DICT *dict,const char *key)
   MUST_USE;
 
 /* Delete a key-value association from the dictionary.
-   All key comparisons are case insensitive. */
+   All key comparisons are case sensitive. */
 /*void dict_del(DICT *dict,const char *key);*/
 
 /* Remove the dictionary from memory. All allocated storage
