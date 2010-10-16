@@ -304,7 +304,7 @@ static int create_socket(void)
   /* close the file descriptor on exit */
   if (fcntl(sock,F_SETFD,FD_CLOEXEC)<0)
   {
-    log_log(LOG_ERR,"fctnl(F_SETFL,O_NONBLOCK) failed: %s",strerror(errno));
+    log_log(LOG_ERR,"fctnl(F_SETFL,FD_CLOEXEC) failed: %s",strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     exit(EXIT_FAILURE);
