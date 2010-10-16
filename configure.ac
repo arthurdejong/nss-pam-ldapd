@@ -427,7 +427,7 @@ then
   nss_ldap_so_LINK="\$(CCLD) \$(AM_CFLAGS) \$(CFLAGS) \$(nss_ldap_so_LDFLAGS) \$(LDFLAGS) -o \$@"
   case "$target_os" in
   solaris*)
-    if test "$ac_cv_prog_gcc" = yes
+    if test "x$GCC" = xyes
     then
       nss_ldap_so_LINK="/usr/ccs/bin/ld -Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G -o \$@"
     else
@@ -482,7 +482,7 @@ then
   pam_ldap_so_LINK="\$(CCLD) \$(AM_CFLAGS) \$(CFLAGS) \$(pam_ldap_so_LDFLAGS) \$(LDFLAGS) -o \$@"
   case "$target_os" in
   solaris*)
-    if test "$ac_cv_prog_gcc" = yes
+    if test "x$GCC" = xyes
     then
       pam_ldap_so_LINK="/usr/ccs/bin/ld -Bdirect -z nodelete -Bdynamic -M \$(srcdir)/pam_ldap.map -G -o \$@"
     else
