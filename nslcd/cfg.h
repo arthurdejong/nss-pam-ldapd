@@ -133,8 +133,7 @@ struct ldap_config
   int ldc_restart;
   /* set to a greater than 0 to enable handling of paged results with the specified size */
   int ldc_pagesize;
-  /* the users for which no initgroups() searches should be done
-     Note: because we use a set here comparisons will be case-insensitive */
+  /* the users for which no initgroups() searches should be done */
   SET *ldc_nss_initgroups_ignoreusers;
   /* the search that should be performed to do autorisation checks */
   char *ldc_pam_authz_search;
