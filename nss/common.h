@@ -102,7 +102,7 @@
   { \
       NSS_ARGS(args)->erange=1; \
       return NSS_STATUS_TRYAGAIN; \
-  } \
+  }
 
 #endif /* NSS_FLAVOUR_SOLARIS */
 
