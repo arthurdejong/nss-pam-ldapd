@@ -234,7 +234,11 @@ static const char *signame(int signum)
 static void sigexit_handler(int signum)
 {
   int i;
+  /* indicate that we're stopping */
   nslcd_exitsignal=signum;
+  /* close server socket to trigger failures in threads waiting on accept() */
+  close(nslcd_serversocket);
+  nslcd_serversocket=-1;
   /* cancel all running threads */
   for (i=0;i<nslcd_cfg->ldc_threads;i++)
     if (pthread_cancel(nslcd_threads[i]))
@@ -436,45 +440,6 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
   return;
 }
 
-/* accept a connection on the socket */
-static void acceptconnection(MYLDAP_SESSION *session)
-{
-  int csock;
-  int j;
-  struct sockaddr_storage addr;
-  socklen_t alen;
-  /* accept a new connection */
-  alen=(socklen_t)sizeof(struct sockaddr_storage);
-  csock=accept(nslcd_serversocket,(struct sockaddr *)&addr,&alen);
-  if (csock<0)
-  {
-    if ((errno==EINTR)||(errno==EAGAIN)||(errno==EWOULDBLOCK))
-    {
-      log_log(LOG_DEBUG,"accept() failed (ignored): %s",strerror(errno));
-      return;
-    }
-    log_log(LOG_ERR,"accept() failed: %s",strerror(errno));
-    return;
-  }
-  /* make sure O_NONBLOCK is not inherited */
-  if ((j=fcntl(csock,F_GETFL,0))<0)
-  {
-    log_log(LOG_ERR,"fctnl(F_GETFL) failed: %s",strerror(errno));
-    if (close(csock))
-      log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
-    return;
-  }
-  if (fcntl(csock,F_SETFL,j&~O_NONBLOCK)<0)
-  {
-    log_log(LOG_ERR,"fctnl(F_SETFL,~O_NONBLOCK) failed: %s",strerror(errno));
-    if (close(csock))
-      log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
-    return;
-  }
-  /* handle the connection */
-  handleconnection(csock,session);
-}
-
 /* test to see if we can lock the specified file */
 static int is_locked(const char* filename)
 {
@@ -551,6 +516,10 @@ static void worker_cleanup(void *arg)
 static void *worker(void UNUSED(*arg))
 {
   MYLDAP_SESSION *session;
+  int csock;
+  int j;
+  struct sockaddr_storage addr;
+  socklen_t alen;
   /* create a new LDAP session */
   session=myldap_create_session();
   /* clean up the session if we're done */
@@ -559,7 +528,38 @@ static void *worker(void UNUSED(*arg))
   while (1)
   {
     /* wait for a new connection */
-    acceptconnection(session);
+    alen=(socklen_t)sizeof(struct sockaddr_storage);
+    csock=accept(nslcd_serversocket,(struct sockaddr *)&addr,&alen);
+    /* see if we should exit before doing anything else */
+    if (nslcd_exitsignal!=0)
+      return NULL;
+    if (csock<0)
+    {
+      if ((errno==EINTR)||(errno==EAGAIN)||(errno==EWOULDBLOCK))
+      {
+        log_log(LOG_DEBUG,"accept() failed (ignored): %s",strerror(errno));
+        continue;
+      }
+      log_log(LOG_ERR,"accept() failed: %s",strerror(errno));
+      continue;
+    }
+    /* make sure O_NONBLOCK is not inherited */
+    if ((j=fcntl(csock,F_GETFL,0))<0)
+    {
+      log_log(LOG_ERR,"fctnl(F_GETFL) failed: %s",strerror(errno));
+      if (close(csock))
+        log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
+      continue;
+    }
+    if (fcntl(csock,F_SETFL,j&~O_NONBLOCK)<0)
+    {
+      log_log(LOG_ERR,"fctnl(F_SETFL,~O_NONBLOCK) failed: %s",strerror(errno));
+      if (close(csock))
+        log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
+      continue;
+    }
+    /* handle the connection */
+    handleconnection(csock,session);
   }
   pthread_cleanup_pop(1);
   return NULL;
@@ -605,6 +605,7 @@ static void disable_nss_ldap(void)
 int main(int argc,char *argv[])
 {
   int i;
+  sigset_t signalmask,oldmask;
   /* parse the command line */
   parse_cmdline(argc,argv);
   /* clean the environment */
@@ -701,18 +702,19 @@ int main(int argc,char *argv[])
     }
     log_log(LOG_DEBUG,"setuid(%d) done",(int)nslcd_cfg->ldc_uid);
   }
-  /* install signalhandlers for some signals */
-  install_sighandler(SIGHUP, sigexit_handler);
-  install_sighandler(SIGINT, sigexit_handler);
-  install_sighandler(SIGQUIT,sigexit_handler);
-  install_sighandler(SIGABRT,sigexit_handler);
-  install_sighandler(SIGPIPE,SIG_IGN);
-  install_sighandler(SIGTERM,sigexit_handler);
-  install_sighandler(SIGUSR1,sigexit_handler);
-  install_sighandler(SIGUSR2,sigexit_handler);
-  /* TODO: install signal handlers for reloading configuration */
-  log_log(LOG_INFO,"accepting connections");
+  /* block all these signals so our worker threads won't handle them */
+  sigemptyset(&signalmask);
+  sigaddset(&signalmask,SIGHUP);
+  sigaddset(&signalmask,SIGINT);
+  sigaddset(&signalmask,SIGQUIT);
+  sigaddset(&signalmask,SIGABRT);
+  sigaddset(&signalmask,SIGPIPE);
+  sigaddset(&signalmask,SIGTERM);
+  sigaddset(&signalmask,SIGUSR1);
+  sigaddset(&signalmask,SIGUSR2);
+  pthread_sigmask(SIG_BLOCK,&signalmask,&oldmask);
   /* start worker threads */
+  log_log(LOG_INFO,"accepting connections");
   nslcd_threads=(pthread_t *)malloc(nslcd_cfg->ldc_threads*sizeof(pthread_t));
   if (nslcd_threads==NULL)
   {
@@ -727,6 +729,16 @@ int main(int argc,char *argv[])
       exit(EXIT_FAILURE);
     }
   }
+  pthread_sigmask(SIG_SETMASK,&oldmask,NULL);
+  /* install signalhandlers for some signals */
+  install_sighandler(SIGHUP, sigexit_handler);
+  install_sighandler(SIGINT, sigexit_handler);
+  install_sighandler(SIGQUIT,sigexit_handler);
+  install_sighandler(SIGABRT,sigexit_handler);
+  install_sighandler(SIGPIPE,SIG_IGN);
+  install_sighandler(SIGTERM,sigexit_handler);
+  install_sighandler(SIGUSR1,sigexit_handler);
+  install_sighandler(SIGUSR2,sigexit_handler);
   /* wait for all threads to die */
   /* BUG: this causes problems if for some reason we want to exit but one
           of our threads hangs (e.g. has one of the LDAP locks)
