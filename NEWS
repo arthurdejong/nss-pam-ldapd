@@ -1,8 +1,15 @@
+changes from 0.7.11 to 0.7.12
+-----------------------------
+
+* set a short socket timeout when shutting down the connection to the LDAP
+  server to avoid disconnect problems when using TLS
+
+
 changes from 0.7.10 to 0.7.11
 -----------------------------
 
 * grow the buffer for the PAM ruser to not reject logins for users with
-  a ruser including a domain part (closes: #600065)
+  a ruser including a domain part
 * Debian packaging improvements
 
 

@@ -1,3 +1,11 @@
+nss-pam-ldapd (0.7.12) unstable; urgency=low
+
+  * set a short socket timeout when shutting down the connection to the LDAP
+    server to avoid disconnect problems when using TLS
+    (addresses part of #596983)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 29 Oct 2010 18:00:00 +0200
+
 nss-pam-ldapd (0.7.11) unstable; urgency=low
 
   * updated Vietnamese debconf translation by Clytie Siddall (closes: #598500)

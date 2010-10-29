@@ -1,3 +1,15 @@
+2010-10-29 15:03  arthur
+
+	* [r1291] ., nslcd/myldap.c: set a short socket timeout when
+	  shutting down the connection to the LDAP server (part of r1276
+	  from trunk)
+
+2010-10-15 13:35  arthur
+
+	* [r1284] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.11 release
+
 2010-10-13 20:01  arthur
 
 	* [r1268] nslcd/pam.c: grow ruser buffer (small part of r1267 from
