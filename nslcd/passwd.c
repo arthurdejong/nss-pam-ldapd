@@ -219,6 +219,9 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   uid=lookup_dn2uid(session,dn,NULL);
   /* store the result in the cache */
   pthread_mutex_lock(&dn2uid_cache_mutex);
+  /* try to get the entry from the cache here again because it could have
+     changed in the meantime */
+  cacheentry=dict_get(dn2uid_cache,dn);
   if (cacheentry==NULL)
   {
     /* allocate a new entry in the cache */
