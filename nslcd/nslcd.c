@@ -293,7 +293,7 @@ static int create_socket(void)
   strncpy(addr.sun_path,NSLCD_SOCKET,sizeof(addr.sun_path));
   addr.sun_path[sizeof(addr.sun_path)-1]='\0';
   /* bind to the named socket */
-  if (bind(sock,(struct sockaddr *)&addr,sizeof(struct sockaddr_un)))
+  if (bind(sock,(struct sockaddr *)&addr,(sizeof(addr.sun_family)+strlen(addr.sun_path))))
   {
     log_log(LOG_ERR,"bind() to "NSLCD_SOCKET" failed: %s",
             strerror(errno));

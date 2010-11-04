@@ -66,7 +66,7 @@ TFILE *nslcd_client_open()
   strncpy(addr.sun_path,NSLCD_SOCKET,sizeof(addr.sun_path));
   addr.sun_path[sizeof(addr.sun_path)-1]='\0';
   /* connect to the socket */
-  if (connect(sock,(struct sockaddr *)&addr,(socklen_t)sizeof(struct sockaddr_un))<0)
+  if (connect(sock,(struct sockaddr *)&addr,(socklen_t)(sizeof(addr.sun_family)+strlen(addr.sun_path)))<0)
   {
     (void)close(sock);
     return NULL;
