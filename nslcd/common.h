@@ -83,7 +83,7 @@ MUST_USE int isvalidname(const char *name);
 
 /* Perform an LDAP lookup to translate the DN into a uid.
    This function either returns NULL or a strdup()ed string. */
-MUST_USE char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp);
+MUST_USE char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp,char *buf,size_t buflen);
 
 /* transforms the DN info a uid doing an LDAP lookup if needed */
 MUST_USE char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen);

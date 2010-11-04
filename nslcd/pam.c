@@ -47,7 +47,7 @@
 static int try_bind(const char *userdn,const char *password)
 {
   MYLDAP_SESSION *session;
-  char *username;
+  char buffer[256];
   int rc;
   /* set up a new connection */
   session=myldap_create_session();
@@ -56,9 +56,8 @@ static int try_bind(const char *userdn,const char *password)
   /* set up credentials for the session */
   myldap_set_credentials(session,userdn,password);
   /* perform search for own object (just to do any kind of search) */
-  username=lookup_dn2uid(session,userdn,&rc);
-  if (username!=NULL)
-    free(username);
+  if ((lookup_dn2uid(session,userdn,&rc,buffer,sizeof(buffer))==NULL)&&(rc==LDAP_SUCCESS))
+    rc=LDAP_LOCAL_ERROR;
   /* close the session */
   myldap_session_close(session);
   /* handle the results */
@@ -404,7 +403,7 @@ static int try_pwmod(const char *binddn,const char *userdn,
                      const char *oldpassword,const char *newpassword)
 {
   MYLDAP_SESSION *session;
-  char *username;
+  char buffer[256];
   int rc;
   /* set up a new connection */
   session=myldap_create_session();
@@ -413,11 +412,7 @@ static int try_pwmod(const char *binddn,const char *userdn,
   /* set up credentials for the session */
   myldap_set_credentials(session,binddn,oldpassword);
   /* perform search for own object (just to do any kind of search) */
-  username=lookup_dn2uid(session,userdn,&rc);
-  if (username!=NULL)
-    free(username);
-  /* perform actual password modification */
-  if (rc==LDAP_SUCCESS)
+  if ((lookup_dn2uid(session,userdn,&rc,buffer,sizeof(buffer))!=NULL)&&(rc==LDAP_SUCCESS))
   {
     /* if doing password modification as admin, don't pass old password along */
     if ((nslcd_cfg->ldc_rootpwmoddn!=NULL)&&(strcmp(binddn,nslcd_cfg->ldc_rootpwmoddn)==0))
