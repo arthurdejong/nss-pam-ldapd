@@ -140,14 +140,14 @@ struct dn2uid_cache_entry
 
 /* Perform an LDAP lookup to translate the DN into a uid.
    This function either returns NULL or a strdup()ed string. */
-char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp)
+char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp,char *buf,size_t buflen)
 {
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   static const char *attrs[2];
   int rc=LDAP_SUCCESS;
   const char **values;
-  char *uid;
+  char *uid=NULL;
   if (rcp==NULL)
     rcp=&rc;
   /* we have to look up the entry */
@@ -169,10 +169,12 @@ char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp)
   /* get uid (just use first one) */
   values=myldap_get_values(entry,attmap_passwd_uid);
   /* check the result for presence and validity */
-  if ((values!=NULL)&&(values[0]!=NULL)&&isvalidname(values[0]))
-    uid=strdup(values[0]);
-  else
-    uid=NULL;
+  if ((values!=NULL)&&(values[0]!=NULL)&&isvalidname(values[0])&&(strlen(values[0])<buflen))
+  {
+    strcpy(buf,values[0]);
+    uid=buf;
+  }
+  /* clean up and return */
   myldap_search_close(search);
   return uid;
 }
@@ -216,7 +218,7 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   }
   pthread_mutex_unlock(&dn2uid_cache_mutex);
   /* look up the uid using an LDAP query */
-  uid=lookup_dn2uid(session,dn,NULL);
+  uid=lookup_dn2uid(session,dn,NULL,buf,buflen);
   /* store the result in the cache */
   pthread_mutex_lock(&dn2uid_cache_mutex);
   /* try to get the entry from the cache here again because it could have
@@ -227,23 +229,27 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
     /* allocate a new entry in the cache */
     cacheentry=(struct dn2uid_cache_entry *)malloc(sizeof(struct dn2uid_cache_entry));
     if (cacheentry!=NULL)
+    {
+      cacheentry->uid=NULL;
       dict_put(dn2uid_cache,dn,cacheentry);
+    }
   }
-  else if (cacheentry->uid!=NULL)
-    free(cacheentry->uid);
   /* update the cache entry */
   if (cacheentry!=NULL)
   {
     cacheentry->timestamp=time(NULL);
-    cacheentry->uid=uid;
+    /* copy the uid if needed */
+    if (cacheentry->uid==NULL)
+      cacheentry->uid=uid!=NULL?strdup(uid):NULL;
+    else if (strcmp(cacheentry->uid,uid)!=0)
+    {
+      free(cacheentry->uid);
+      cacheentry->uid=uid!=NULL?strdup(uid):NULL;
+    }
   }
   pthread_mutex_unlock(&dn2uid_cache_mutex);
   /* copy the result into the buffer */
-  if ((uid!=NULL)&&(strlen(uid)<buflen))
-    strcpy(buf,uid);
-  else
-    buf=NULL;
-  return buf;
+  return uid;
 }
 
 MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid)
