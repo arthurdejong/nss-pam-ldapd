@@ -140,6 +140,7 @@ EOM
   return 0
 }
 
+# update a configuration parameter, based on the debconf key
 update_config()
 {
   debconf_param="$1"
