@@ -45,6 +45,11 @@ cfg_set()
 cfg_disable()
 {
   parameter="$1"
+  # handle bindpw option specially by removing value from config first
+  if [ "$parameter" = "bindpw" ] && grep -i -q "^bindpw " $CONFFILE
+  then
+    cfg_set bindpw "*removed*"
+  fi
   # make matching of spaces better in parameter
   param_re=`echo "$parameter" | sed 's#^#[[:space:]]*#;s#[[:space:]][[:space:]]*#[[:space:]][[:space:]]*#g'`
   # lines to not match
@@ -183,21 +188,12 @@ then
     then
       cfg_set bindpw "$RET"
     else
-      # no bindpw set
-      if grep -i -q "^bindpw " $CONFFILE
-      then
-        cfg_set bindpw "*removed*"
-        cfg_disable bindpw
-      fi
+      cfg_disable bindpw
     fi
   else
     # no binddn/pw, disable options
     cfg_disable binddn
-    if grep -i -q "^bindpw " $CONFFILE
-    then
-      cfg_set bindpw "*removed*"
-      cfg_disable bindpw
-    fi
+    cfg_disable bindpw
   fi
   # remove password from database
   db_set nslcd/ldap-bindpw ""
