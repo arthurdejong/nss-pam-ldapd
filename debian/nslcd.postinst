@@ -210,16 +210,16 @@ then
   then
     cfg_disable ssl
   fi
+  # rename any tls_checkpeer options
+  sed -i 's/^tls_checkpeer/tls_reqcert/i' "$CONFFILE"
   # set tls_reqcert option
   db_get nslcd/ldap-reqcert
   if [ -n "$RET" ]
   then
-    # rename any tls_checkpeer options
-    sed -i 's/^tls_checkpeer/tls_reqcert/i' "$CONFFILE"
     # set tls_reqcert option
     cfg_set tls_reqcert "$RET"
-    # clear debconf value so that this option is only set if the question is asked
-    db_set nslcd/ldap-reqcert ""
+  else
+    cfg_disable tls_reqcert
   fi
   # we're done
   db_stop
