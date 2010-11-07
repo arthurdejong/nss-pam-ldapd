@@ -435,7 +435,7 @@ then
     fi
     ;;
   *)
-    nss_ldap_so_LDFLAGS="-shared -Wl,-h,\$(NSS_LDAP_SONAME) -Wl,--version-script,\$(srcdir)/exports.glibc"
+    nss_ldap_so_LDFLAGS="-shared -Wl,-h,\$(NSS_LDAP_SONAME) -Wl,--version-script,\$(srcdir)/exports.$with_nss_flavour"
     ;;
   esac
   AC_SUBST(nss_ldap_so_LDFLAGS)
