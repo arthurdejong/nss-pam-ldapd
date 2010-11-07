@@ -162,8 +162,8 @@ NSLCD_HANDLE(
   protocol,byname,
   char name[256];
   char filter[1024];
-  READ_STRING(fp,name);,
-  log_log(LOG_DEBUG,"nslcd_protocol_byname(%s)",name);,
+  READ_STRING(fp,name);
+  log_setrequest("protocol=\"%s\"",name);,
   NSLCD_ACTION_PROTOCOL_BYNAME,
   mkfilter_protocol_byname(name,filter,sizeof(filter)),
   write_protocol(fp,entry,name)
@@ -173,8 +173,8 @@ NSLCD_HANDLE(
   protocol,bynumber,
   int protocol;
   char filter[1024];
-  READ_INT32(fp,protocol);,
-  log_log(LOG_DEBUG,"nslcd_protocol_bynumber(%d)",protocol);,
+  READ_INT32(fp,protocol);
+  log_setrequest("protocol=%d",protocol);,
   NSLCD_ACTION_PROTOCOL_BYNUMBER,
   mkfilter_protocol_bynumber(protocol,filter,sizeof(filter)),
   write_protocol(fp,entry,NULL)
@@ -183,8 +183,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   protocol,all,
   const char *filter;
-  /* no parameters to read */,
-  log_log(LOG_DEBUG,"nslcd_protocol_all()");,
+  log_setrequest("protocol(all)");,
   NSLCD_ACTION_PROTOCOL_ALL,
   (filter=protocol_filter,0),
   write_protocol(fp,entry,NULL)

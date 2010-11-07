@@ -155,8 +155,8 @@ NSLCD_HANDLE(
   host,byname,
   char name[256];
   char filter[1024];
-  READ_STRING(fp,name);,
-  log_log(LOG_DEBUG,"nslcd_host_byname(%s)",name);,
+  READ_STRING(fp,name);
+  log_setrequest("host=\"%s\"",name);,
   NSLCD_ACTION_HOST_BYNAME,
   mkfilter_host_byname(name,filter,sizeof(filter)),
   write_host(fp,entry)
@@ -175,8 +175,8 @@ NSLCD_HANDLE(
   {
     log_log(LOG_WARNING,"unable to convert address to string");
     return -1;
-  },
-  log_log(LOG_DEBUG,"nslcd_host_byaddr(%s)",name);,
+  }
+  log_setrequest("host=%s",name);,
   NSLCD_ACTION_HOST_BYADDR,
   mkfilter_host_byaddr(name,filter,sizeof(filter)),
   write_host(fp,entry)
@@ -185,8 +185,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   host,all,
   const char *filter;
-  /* no parameters to read */,
-  log_log(LOG_DEBUG,"nslcd_host_all()");,
+  log_setrequest("host(all)");,
   NSLCD_ACTION_HOST_ALL,
   (filter=host_filter,0),
   write_host(fp,entry)

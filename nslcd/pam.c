@@ -142,6 +142,7 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   READ_STRING(fp,servicename);
   READ_STRING(fp,password);
   /* log call */
+  log_setrequest("pam_authc=\"%s\"",username);
   log_log(LOG_DEBUG,"nslcd_pam_authc(\"%s\",\"%s\",\"%s\",\"%s\")",
                     username,userdn,servicename,*password?"***":"");
   /* write the response header */
@@ -294,6 +295,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   READ_STRING(fp,rhost);
   READ_STRING(fp,tty);
   /* log call */
+  log_setrequest("pam_authz=\"%s\"",username);
   log_log(LOG_DEBUG,"nslcd_pam_authz(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")",
             username,userdn,servicename,ruser,rhost,tty);
   /* write the response header */
@@ -358,6 +360,7 @@ int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session)
   READ_STRING(fp,ruser);
   READ_INT32(fp,sessionid);
   /* log call */
+  log_setrequest("pam_sess_o=\"%s\"",username);
   log_log(LOG_DEBUG,"nslcd_pam_sess_o(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")",
                     username,userdn,servicename,tty,rhost,ruser);
   /* write the response header */
@@ -387,6 +390,7 @@ int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session)
   READ_STRING(fp,ruser);
   READ_INT32(fp,sessionid);
   /* log call */
+  log_setrequest("pam_sess_c=\"%s\"",username);
   log_log(LOG_DEBUG,"nslcd_pam_sess_c(\"%s\",\"%s\",\"%s\",%d)",
                     username,userdn,servicename,(int)sessionid);
   /* write the response header */
@@ -443,6 +447,7 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   READ_STRING(fp,oldpassword);
   READ_STRING(fp,newpassword);
   /* log call */
+  log_setrequest("pam_pwmod=\"%s\"",username);
   log_log(LOG_DEBUG,"nslcd_pam_pwmod(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")",
                     username,userdn,servicename,*oldpassword?"***":"",
                     *newpassword?"***":"");

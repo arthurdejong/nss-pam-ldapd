@@ -412,11 +412,11 @@ NSLCD_HANDLE_UID(
   char name[256];
   char filter[1024];
   READ_STRING(fp,name);
+  log_setrequest("passwd=\"%s\"",name);
   if (!isvalidname(name)) {
-    log_log(LOG_WARNING,"nslcd_passwd_byname(%s): invalid user name",name);
+    log_log(LOG_WARNING,"\"%s\": invalid user name",name);
     return -1;
   },
-  log_log(LOG_DEBUG,"nslcd_passwd_byname(%s)",name);,
   NSLCD_ACTION_PASSWD_BYNAME,
   mkfilter_passwd_byname(name,filter,sizeof(filter)),
   write_passwd(fp,entry,name,NULL,calleruid)
@@ -426,8 +426,8 @@ NSLCD_HANDLE_UID(
   passwd,byuid,
   uid_t uid;
   char filter[1024];
-  READ_TYPE(fp,uid,uid_t);,
-  log_log(LOG_DEBUG,"nslcd_passwd_byuid(%d)",(int)uid);,
+  READ_TYPE(fp,uid,uid_t);
+  log_setrequest("passwd=%d",(int)uid);,
   NSLCD_ACTION_PASSWD_BYUID,
   mkfilter_passwd_byuid(uid,filter,sizeof(filter)),
   write_passwd(fp,entry,NULL,&uid,calleruid)
@@ -436,8 +436,7 @@ NSLCD_HANDLE_UID(
 NSLCD_HANDLE_UID(
   passwd,all,
   const char *filter;
-  /* no parameters to read */,
-  log_log(LOG_DEBUG,"nslcd_passwd_all()");,
+  log_setrequest("passwd(all)");,
   NSLCD_ACTION_PASSWD_ALL,
   (filter=passwd_filter,0),
   write_passwd(fp,entry,NULL,NULL,calleruid)

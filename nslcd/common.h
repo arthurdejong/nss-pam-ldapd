@@ -147,13 +147,13 @@ int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid);
 
 /* macros for generating service handling code */
-#define NSLCD_HANDLE(db,fn,readfn,logcall,action,mkfilter,writefn) \
+#define NSLCD_HANDLE(db,fn,readfn,action,mkfilter,writefn) \
   int nslcd_##db##_##fn(TFILE *fp,MYLDAP_SESSION *session) \
-  NSLCD_HANDLE_BODY(db,fn,readfn,logcall,action,mkfilter,writefn)
-#define NSLCD_HANDLE_UID(db,fn,readfn,logcall,action,mkfilter,writefn) \
+  NSLCD_HANDLE_BODY(db,fn,readfn,action,mkfilter,writefn)
+#define NSLCD_HANDLE_UID(db,fn,readfn,action,mkfilter,writefn) \
   int nslcd_##db##_##fn(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid) \
-  NSLCD_HANDLE_BODY(db,fn,readfn,logcall,action,mkfilter,writefn)
-#define NSLCD_HANDLE_BODY(db,fn,readfn,logcall,action,mkfilter,writefn) \
+  NSLCD_HANDLE_BODY(db,fn,readfn,action,mkfilter,writefn)
+#define NSLCD_HANDLE_BODY(db,fn,readfn,action,mkfilter,writefn) \
   { \
     /* define common variables */ \
     int32_t tmpint32; \
@@ -163,8 +163,6 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid);
     int rc,i; \
     /* read request parameters */ \
     readfn; \
-    /* log call */ \
-    logcall; \
     /* write the response header */ \
     WRITE_INT32(fp,NSLCD_VERSION); \
     WRITE_INT32(fp,action); \

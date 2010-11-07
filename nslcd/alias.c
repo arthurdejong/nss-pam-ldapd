@@ -123,8 +123,8 @@ NSLCD_HANDLE(
   alias,byname,
   char name[256];
   char filter[1024];
-  READ_STRING(fp,name);,
-  log_log(LOG_DEBUG,"nslcd_alias_byname(%s)",name);,
+  READ_STRING(fp,name);
+  log_setrequest("alias=\"%s\"",name);,
   NSLCD_ACTION_ALIAS_BYNAME,
   mkfilter_alias_byname(name,filter,sizeof(filter)),
   write_alias(fp,entry,name)
@@ -133,8 +133,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   alias,all,
   const char *filter;
-  /* no parameters to read */,
-  log_log(LOG_DEBUG,"nslcd_alias_all()");,
+  log_setrequest("alias(all)");,
   NSLCD_ACTION_ALIAS_ALL,
   (filter=alias_filter,0),
   write_alias(fp,entry,NULL)

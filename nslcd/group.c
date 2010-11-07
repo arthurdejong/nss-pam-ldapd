@@ -282,11 +282,11 @@ NSLCD_HANDLE(
   char name[256];
   char filter[1024];
   READ_STRING(fp,name);
+  log_setrequest("group=\"%s\"",name);
   if (!isvalidname(name)) {
-    log_log(LOG_WARNING,"nslcd_group_byname(%s): invalid group name",name);
+    log_log(LOG_WARNING,"\"%s\": invalid group name",name);
     return -1;
   },
-  log_log(LOG_DEBUG,"nslcd_group_byname(%s)",name);,
   NSLCD_ACTION_GROUP_BYNAME,
   mkfilter_group_byname(name,filter,sizeof(filter)),
   write_group(fp,entry,name,NULL,1,session)
@@ -296,8 +296,8 @@ NSLCD_HANDLE(
   group,bygid,
   gid_t gid;
   char filter[1024];
-  READ_TYPE(fp,gid,gid_t);,
-  log_log(LOG_DEBUG,"nslcd_group_bygid(%d)",(int)gid);,
+  READ_TYPE(fp,gid,gid_t);
+  log_setrequest("group=%d",(int)gid);,
   NSLCD_ACTION_GROUP_BYGID,
   mkfilter_group_bygid(gid,filter,sizeof(filter)),
   write_group(fp,entry,NULL,&gid,1,session)
@@ -308,20 +308,22 @@ NSLCD_HANDLE(
   char name[256];
   char filter[1024];
   READ_STRING(fp,name);
-  if (!isvalidname(name)) {
-    log_log(LOG_WARNING,"nslcd_group_bymember(%s): invalid user name",name);
+  log_setrequest("group/member=\"%s\"",name);
+  if (!isvalidname(name))
+  {
+    log_log(LOG_WARNING,"\"%s\": invalid user name",name);
     return -1;
   }
   if ((nslcd_cfg->ldc_nss_initgroups_ignoreusers!=NULL)&&
       set_contains(nslcd_cfg->ldc_nss_initgroups_ignoreusers,name))
   {
+    log_log(LOG_DEBUG,"ignored group member");
     /* just end the request, returning no results */
     WRITE_INT32(fp,NSLCD_VERSION);
     WRITE_INT32(fp,NSLCD_ACTION_GROUP_BYMEMBER);
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return 0;
   },
-  log_log(LOG_DEBUG,"nslcd_group_bymember(%s)",name);,
   NSLCD_ACTION_GROUP_BYMEMBER,
   mkfilter_group_bymember(session,name,filter,sizeof(filter)),
   write_group(fp,entry,NULL,NULL,0,session)
@@ -330,8 +332,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   group,all,
   const char *filter;
-  /* no parameters to read */,
-  log_log(LOG_DEBUG,"nslcd_group_all()");,
+  log_setrequest("group(all)");,
   NSLCD_ACTION_GROUP_ALL,
   (filter=group_filter,0),
   write_group(fp,entry,NULL,NULL,1,session)

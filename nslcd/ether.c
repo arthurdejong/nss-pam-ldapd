@@ -165,8 +165,8 @@ NSLCD_HANDLE(
   ether,byname,
   char name[256];
   char filter[1024];
-  READ_STRING(fp,name);,
-  log_log(LOG_DEBUG,"nslcd_ether_byname(%s)",name);,
+  READ_STRING(fp,name);
+  log_setrequest("ether=\"%s\"",name);,
   NSLCD_ACTION_ETHER_BYNAME,
   mkfilter_ether_byname(name,filter,sizeof(filter)),
   write_ether(fp,entry,name,NULL)
@@ -179,8 +179,8 @@ NSLCD_HANDLE(
   char filter[1024];
   READ_TYPE(fp,addr,uint8_t[6]);
   if (ether_ntoa_r(&addr,ether)==NULL)
-    return -1;,
-  log_log(LOG_DEBUG,"nslcd_ether_byether(%s)",ether);,
+    return -1;
+  log_setrequest("ether=%s",ether);,
   NSLCD_ACTION_ETHER_BYETHER,
   mkfilter_ether_byether(&addr,filter,sizeof(filter)),
   write_ether(fp,entry,NULL,ether)
@@ -189,8 +189,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   ether,all,
   const char *filter;
-  /* no parameters to read */,
-  log_log(LOG_DEBUG,"nslcd_ether_all()");,
+  log_setrequest("ether(all)");,
   NSLCD_ACTION_ETHER_ALL,
   (filter=ether_filter,0),
   write_ether(fp,entry,NULL,NULL)
