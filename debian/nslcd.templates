@@ -18,18 +18,86 @@ _Description: LDAP server search base:
  domain "example.net" would use "dc=example,dc=net" as the distinguished name
  of the search base.
 
+Template: nslcd/ldap-auth-type
+Type: select
+__Choices: none, simple, SASL
+Default: none
+_Description: LDAP authentication to use:
+ If your LDAP database requires authentication you can choose which mechanism
+ should be used. Please choose the mechanism by which authentication should
+ be done:
+  * none: no authentication;
+  * simple: simple clear text binddn/password;
+  * SASL: one of the Simple Authentication and Security Layer
+          mechanisms.
+
 Template: nslcd/ldap-binddn
 Type: string
 _Description: LDAP database user:
- If the LDAP database requires a login for normal lookups, enter the name of
- the account that will be used here. Leave it empty otherwise.
- .
- This value should be specified as a DN (distinguished name).
+ Enter the name of the account that will be used to log in to the LDAP
+ database. This value should be specified as a DN (distinguished name).
 
 Template: nslcd/ldap-bindpw
 Type: password
 _Description: LDAP user password:
  Enter the password that will be used to log in to the LDAP database.
+
+Template: nslcd/ldap-sasl-mech
+Type: select
+__Choices: auto, LOGIN, PLAIN, NTLM, CRAM-MD5, DIGEST-MD5, GSSAPI, OTP
+_Description: SASL mechanism to use:
+ Choose the SASL mechanism that will be used to authenticate to the LDAP
+ database:
+  * auto: autonegociation;
+  * LOGIN: deprecated in flavor of PLAIN;
+  * PLAIN: simple cleartext password mechanism;
+  * NTLM: NT LAN Manager authentication mechanism;
+  * CRAM-MD5: challenge-response scheme based on HMAC-MD5;
+  * DIGEST-MD5: HTTP Digest compatible challenge-response scheme;
+  * GSSAPI: used for Kerberos;
+  * OTP: a One Time Password mechanism.
+
+Template: nslcd/ldap-sasl-realm
+Type: string
+_Description: SASL realm:
+ Enter the SASL realm that will be used to authenticate to the LDAP
+ database.
+ .
+ If empty, the GSSAPI mechanism will use information from the Kerberos
+ credential cache. Others mechanisms may need @<REALM> suffixing sasl_authcid
+ and sasl_authzid.
+ .
+ The realm is appended to authentication and authorisation identities.
+
+Template: nslcd/ldap-sasl-authcid
+Type: string
+_Description: SASL authentication identity:
+ Enter the SASL authentication identity that will be used to authenticate to
+ the LDAP database.
+ .
+ This is the login used in LOGIN, PLAIN, CRAM-MD5 and DIGEST-MD5 mechanisms.
+
+Template: nslcd/ldap-sasl-authzid
+Type: string
+_Description: SASL proxy authorisation identity:
+ Enter the proxy authorisation identity that will be used to authenticate to
+ the LDAP database.
+ .
+ This is the object in the name of witch the LDAP request are done.
+ This value should be specified as a DN (distinguished name).
+
+Template: nslcd/ldap-sasl-secprops
+Type: string
+_Description: Cyrus SASL security properties:
+ Enter the Cyrus  SASL  security properties.
+ Allowed values are described in the ldap.conf(5) manual page
+ in the SASL OPTIONS section.
+
+Template: nslcd/ldap-sasl-krb5-ccname
+Type: string
+Default: /var/run/nslcd/nslcd.tkt
+_Description: Kerberos credential cache file path:
+ Enter the GSSAPI/Kerberos credential cache file name that will be used.
 
 Template: nslcd/ldap-starttls
 Type: boolean

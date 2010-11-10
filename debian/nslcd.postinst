@@ -201,6 +201,12 @@ then
   update_config nslcd/ldap-base base
   update_config nslcd/ldap-binddn binddn
   update_config nslcd/ldap-bindpw bindpw
+  update_config nslcd/ldap-sasl-mech sasl_mech
+  update_config nslcd/ldap-sasl-realm sasl_realm
+  update_config nslcd/ldap-sasl-authcid sasl_authcid
+  update_config nslcd/ldap-sasl-authzid sasl_authzid
+  update_config nslcd/ldap-sasl-secprops sasl_secprops
+  update_config nslcd/ldap-sasl-krb5-ccname krb5_ccname
   update_config nslcd/ldap-reqcert tls_reqcert
   # remove password from database
   db_set nslcd/ldap-bindpw ""
