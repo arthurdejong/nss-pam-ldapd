@@ -69,6 +69,7 @@ static int try_bind(const char *userdn,const char *password)
 static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
                          char *username,size_t usernamesz)
 {
+  int rc;
   MYLDAP_ENTRY *entry=NULL;
   const char *value;
   const char **values;
@@ -76,17 +77,17 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
   if (!isvalidname(username))
   {
     log_log(LOG_WARNING,"\"%s\": invalid user name",username);
-    return LDAP_INVALID_SYNTAX;
+    return LDAP_NO_SUCH_OBJECT;
   }
   /* look up user DN if not known */
   if (userdn[0]=='\0')
   {
     /* get the user entry based on the username */
-    entry=uid2entry(session,username);
+    entry=uid2entry(session,username,&rc);
     if (entry==NULL)
     {
-      log_log(LOG_WARNING,"\"%s\": user not found",username);
-      return LDAP_NO_SUCH_OBJECT;
+      log_log(LOG_WARNING,"\"%s\": user not found: %s",username,ldap_err2string(rc));
+      return rc;
     }
     /* get the DN */
     myldap_cpy_dn(entry,userdn,userdnsz);
@@ -165,8 +166,17 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
       strcpy(password,nslcd_cfg->ldc_rootpwmodpw);
     }
   }
-  else if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username))!=LDAP_SUCCESS)
+  else if ((rc=validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))!=LDAP_SUCCESS)
   {
+    if (rc!=LDAP_NO_SUCH_OBJECT)
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+      WRITE_STRING(fp,username);
+      WRITE_STRING(fp,"");
+      WRITE_INT32(fp,NSLCD_PAM_AUTHINFO_UNAVAIL);  /* authc */
+      WRITE_INT32(fp,NSLCD_PAM_AUTHINFO_UNAVAIL);  /* authz */
+      WRITE_STRING(fp,"LDAP server unavaiable"); /* authzmsg */
+    }
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
   }

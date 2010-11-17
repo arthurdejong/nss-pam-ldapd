@@ -252,7 +252,7 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
   return uid;
 }
 
-MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid)
+MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid,int *rcp)
 {
   MYLDAP_SEARCH *search=NULL;
   MYLDAP_ENTRY *entry=NULL;
@@ -270,7 +270,7 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid)
   mkfilter_passwd_byname(uid,filter,sizeof(filter));
   for (i=0;(i<NSS_LDAP_CONFIG_MAX_BASES)&&((base=passwd_bases[i])!=NULL);i++)
   {
-    search=myldap_search(session,base,passwd_scope,filter,attrs,NULL);
+    search=myldap_search(session,base,passwd_scope,filter,attrs,rcp);
     if (search==NULL)
       return NULL;
     entry=myldap_get_entry(search,NULL);
@@ -284,7 +284,7 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
 {
   MYLDAP_ENTRY *entry;
   /* look up the entry */
-  entry=uid2entry(session,uid);
+  entry=uid2entry(session,uid,NULL);
   if (entry==NULL)
     return NULL;
   /* get DN */
