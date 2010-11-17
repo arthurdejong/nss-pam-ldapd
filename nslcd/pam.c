@@ -42,8 +42,8 @@
 #define HOST_NAME_MAX 255
 #endif /* not HOST_NAME_MAX */
 
-/* set up a connection and try to bind with the specified DN and password
-   returns a NSLCD_PAM_* error code */
+/* set up a connection and try to bind with the specified DN and password,
+   returns an LDAP result code */
 static int try_bind(const char *userdn,const char *password)
 {
   MYLDAP_SESSION *session;
@@ -52,24 +52,20 @@ static int try_bind(const char *userdn,const char *password)
   /* set up a new connection */
   session=myldap_create_session();
   if (session==NULL)
-    return NSLCD_PAM_AUTH_ERR;
+    return LDAP_UNAVAILABLE;
   /* set up credentials for the session */
   myldap_set_credentials(session,userdn,password);
   /* perform search for own object (just to do any kind of search) */
   if ((lookup_dn2uid(session,userdn,&rc,buffer,sizeof(buffer))==NULL)&&(rc==LDAP_SUCCESS))
-    rc=LDAP_LOCAL_ERROR;
+    rc=LDAP_LOCAL_ERROR; /* fall back to any error in case function failed with success */
   /* close the session */
   myldap_session_close(session);
-  /* handle the results */
-  switch(rc)
-  {
-    case LDAP_SUCCESS:             return NSLCD_PAM_SUCCESS;
-    case LDAP_INVALID_CREDENTIALS: return NSLCD_PAM_AUTH_ERR;
-    default:                       return NSLCD_PAM_AUTH_ERR;
-  }
+  /* return results */
+  return rc;
 }
 
-/* ensure that both userdn and username are filled in from the entry */
+/* ensure that both userdn and username are filled in from the entry,
+   returns an LDAP result code */
 static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
                          char *username,size_t usernamesz)
 {
@@ -80,7 +76,7 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
   if (!isvalidname(username))
   {
     log_log(LOG_WARNING,"\"%s\": invalid user name",username);
-    return -1;
+    return LDAP_INVALID_SYNTAX;
   }
   /* look up user DN if not known */
   if (userdn[0]=='\0')
@@ -90,14 +86,14 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
     if (entry==NULL)
     {
       log_log(LOG_WARNING,"\"%s\": user not found",username);
-      return -1;
+      return LDAP_NO_SUCH_OBJECT;
     }
     /* get the DN */
     myldap_cpy_dn(entry,userdn,userdnsz);
     if (strcasecmp(userdn,"unknown")==0)
     {
       log_log(LOG_WARNING,"\"%s\": user has no DN",username);
-      return -1;
+      return LDAP_NO_SUCH_OBJECT;
     }
     /* get the "real" username */
     value=myldap_get_rdn_value(entry,attmap_passwd_uid);
@@ -114,7 +110,7 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
     if ((value==NULL)||!isvalidname(value)||strlen(value)>=usernamesz)
     {
       log_log(LOG_WARNING,"\"%s\": DN %s has invalid username",username,userdn);
-      return -1;
+      return LDAP_INVALID_SYNTAX;
     }
     /* check if the username is different and update it if needed */
     if (strcmp(username,value)!=0)
@@ -124,7 +120,7 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
     }
   }
   /* all check passed */
-  return 0;
+  return LDAP_SUCCESS;
 }
 
 /* check authentication credentials of the user */
@@ -169,15 +165,22 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
       strcpy(password,nslcd_cfg->ldc_rootpwmodpw);
     }
   }
-  else if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
+  else if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username))!=LDAP_SUCCESS)
   {
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
   }
   /* try authentication */
   rc=try_bind(userdn,password);
-  if (rc==NSLCD_PAM_SUCCESS)
+  if (rc==LDAP_SUCCESS)
     log_log(LOG_DEBUG,"bind successful");
+  /* map result code */
+  switch(rc)
+  {
+    case LDAP_SUCCESS:             rc=NSLCD_PAM_SUCCESS;
+    case LDAP_INVALID_CREDENTIALS: rc=NSLCD_PAM_AUTH_ERR;
+    default:                       rc=NSLCD_PAM_AUTH_ERR;
+  }
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
@@ -238,6 +241,7 @@ static const char *autzsearch_var_get(const char *name,void *expander_attr)
            element in the dict) */
 }
 
+/* perform an authorisation search, returns an LDAP status code */
 static int try_autzsearch(MYLDAP_SESSION *session,DICT *dict,const char *searchfilter)
 {
   char filter_buffer[1024];
@@ -250,7 +254,7 @@ static int try_autzsearch(MYLDAP_SESSION *session,DICT *dict,const char *searchf
                  autzsearch_var_get,(void *)dict)==NULL)
   {
     log_log(LOG_ERR,"pam_authz_search \"%s\" is invalid",searchfilter);
-    return -1;
+    return LDAP_LOCAL_ERROR;
   }
   log_log(LOG_DEBUG,"trying pam_authz_search \"%s\"",filter_buffer);
   /* perform the search */
@@ -263,18 +267,18 @@ static int try_autzsearch(MYLDAP_SESSION *session,DICT *dict,const char *searchf
   {
     log_log(LOG_ERR,"pam_authz_search \"%s\" failed: %s",
             filter_buffer,ldap_err2string(rc));
-    return -1;
+    return rc;
   }
   /* try to get an entry */
-  entry=myldap_get_entry(search,NULL);
+  entry=myldap_get_entry(search,&rc);
   if (entry==NULL)
   {
     log_log(LOG_ERR,"pam_authz_search \"%s\" found no matches",filter_buffer);
-    return -1;
+    return rc;
   }
   log_log(LOG_DEBUG,"pam_authz_search found \"%s\"",myldap_get_dn(entry));
   /* we've found an entry so it's OK */
-  return 0;
+  return LDAP_SUCCESS;
 }
 
 /* check authorisation of the user */
@@ -302,7 +306,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHZ);
   /* validate request and fill in the blanks */
-  if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
+  if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username))!=LDAP_SUCCESS)
   {
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
@@ -321,7 +325,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     /* TODO: fqdn */
     autzsearch_var_add(dict,"dn",userdn);
     autzsearch_var_add(dict,"uid",username);
-    if (try_autzsearch(session,dict,nslcd_cfg->ldc_pam_authz_search))
+    if (try_autzsearch(session,dict,nslcd_cfg->ldc_pam_authz_search)!=LDAP_SUCCESS)
     {
       WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
       WRITE_STRING(fp,username);
@@ -472,7 +476,7 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
     }
   }
   /* validate request and fill in the blanks */
-  if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username)))
+  if (validate_user(session,userdn,sizeof(userdn),username,sizeof(username))!=LDAP_SUCCESS)
   {
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
