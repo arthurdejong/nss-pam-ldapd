@@ -653,6 +653,14 @@ int main(int argc,char *argv[])
     log_log(LOG_ERR,"daemon may already be active, cannot acquire lock (%s): %s",NSLCD_PIDFILE,strerror(errno));
     exit(EXIT_FAILURE);
   }
+  /* close all file descriptors (except stdin/out/err) */
+  i=sysconf(_SC_OPEN_MAX);
+  /* if the system does not have OPEN_MAX just close the first 32 and
+     hope we closed enough */
+  if (i<0)
+    i=32;
+  for (;i>3;i--)
+    close(i);
   /* daemonize */
   if ((!nslcd_debugging)&&(daemon(0,0)<0))
   {
