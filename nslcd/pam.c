@@ -185,10 +185,10 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   if (rc==LDAP_SUCCESS)
     log_log(LOG_DEBUG,"bind successful");
   /* map result code */
-  switch(rc)
+  switch (rc)
   {
-    case LDAP_SUCCESS:             rc=NSLCD_PAM_SUCCESS;
-    case LDAP_INVALID_CREDENTIALS: rc=NSLCD_PAM_AUTH_ERR;
+    case LDAP_SUCCESS:             rc=NSLCD_PAM_SUCCESS;  break;
+    case LDAP_INVALID_CREDENTIALS: rc=NSLCD_PAM_AUTH_ERR; break;
     default:                       rc=NSLCD_PAM_AUTH_ERR;
   }
   /* write response */
