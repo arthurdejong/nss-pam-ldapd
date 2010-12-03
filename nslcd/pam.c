@@ -47,7 +47,9 @@
 static int try_bind(const char *userdn,const char *password)
 {
   MYLDAP_SESSION *session;
-  char buffer[256];
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  static const char *attrs[2];
   int rc;
   /* set up a new connection */
   session=myldap_create_session();
@@ -56,8 +58,25 @@ static int try_bind(const char *userdn,const char *password)
   /* set up credentials for the session */
   myldap_set_credentials(session,userdn,password);
   /* perform search for own object (just to do any kind of search) */
-  if ((lookup_dn2uid(session,userdn,&rc,buffer,sizeof(buffer))==NULL)&&(rc==LDAP_SUCCESS))
-    rc=LDAP_LOCAL_ERROR; /* fall back to any error in case function failed with success */
+  attrs[0]="dn";
+  attrs[1]=NULL;
+  search=myldap_search(session,userdn,LDAP_SCOPE_BASE,"(objectClass=*)",attrs,&rc);
+  if ((search==NULL)||(rc!=LDAP_SUCCESS))
+  {
+    if (rc==LDAP_SUCCESS)
+      rc=LDAP_LOCAL_ERROR;
+    log_log(LOG_WARNING,"lookup of %s failed: %s",userdn,ldap_err2string(rc));
+  }
+  else
+  {
+    entry=myldap_get_entry(search,&rc);
+    if ((entry==NULL)||(rc!=LDAP_SUCCESS))
+    {
+      if (rc==LDAP_SUCCESS)
+        rc=LDAP_NO_RESULTS_RETURNED;
+      log_log(LOG_WARNING,"lookup of %s failed: %s",userdn,ldap_err2string(rc));
+    }
+  }
   /* close the session */
   myldap_session_close(session);
   /* return results */
