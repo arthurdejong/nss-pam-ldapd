@@ -76,6 +76,11 @@ void myldap_set_credentials(MYLDAP_SESSION *session,const char *dn,
    with these searches. This does not close the session. */
 void myldap_session_cleanup(MYLDAP_SESSION *session);
 
+/* This checks the timeout value of the session and closes the connection
+   to the LDAP server if the timeout has expired and there are no pending
+   searches. */
+void myldap_session_check(MYLDAP_SESSION *session);
+
 /* Close the session and free all the resources allocated for the session.
    After a call to this function the referenced handle is invalid. */
 void myldap_session_close(MYLDAP_SESSION *session);

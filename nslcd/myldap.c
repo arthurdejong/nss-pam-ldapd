@@ -600,10 +600,7 @@ static void do_close(MYLDAP_SESSION *session)
   }
 }
 
-/* This checks the timeout value of the session and closes the connection
-   to the LDAP server if the timeout has expired and there are no pending
-   searches. */
-static void myldap_session_check(MYLDAP_SESSION *session)
+void myldap_session_check(MYLDAP_SESSION *session)
 {
   int i;
   time_t current_time;
@@ -902,8 +899,10 @@ static int do_retry_search(MYLDAP_SEARCH *search)
     if (nexttry>=endtime)
     {
       if (search->session->binddn[0]=='\0')
-        log_log(LOG_ERR,"no available LDAP server found");
-      return rc;
+      {
+        log_log(LOG_ERR,"no available LDAP server found: %s",ldap_err2string(rc));
+        return LDAP_UNAVAILABLE;
+      }
     }
     /* sleep between tries */
     sleeptime=nexttry-time(NULL);

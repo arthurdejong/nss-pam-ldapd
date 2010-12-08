@@ -278,6 +278,7 @@ static void exithandler(void)
 static int create_socket(void)
 {
   int sock;
+  int i;
   struct sockaddr_un addr;
   /* create a socket */
   if ( (sock=socket(PF_UNIX,SOCK_STREAM,0))<0 )
@@ -290,6 +291,21 @@ static int create_socket(void)
   {
     log_log(LOG_DEBUG,"unlink() of "NSLCD_SOCKET" failed (ignored): %s",
             strerror(errno));
+  }
+  /* do not block on accept() */
+  if ((i=fcntl(sock,F_GETFL,0))<0)
+  {
+    log_log(LOG_ERR,"fctnl(F_GETFL) failed: %s",strerror(errno));
+    if (close(sock))
+      log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
+    exit(1);
+  }
+  if (fcntl(sock,F_SETFL,i|O_NONBLOCK)<0)
+  {
+    log_log(LOG_ERR,"fctnl(F_SETFL,O_NONBLOCK) failed: %s",strerror(errno));
+    if (close(sock))
+      log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
+    exit(1);
   }
   /* create socket address structure */
   memset(&addr,0,sizeof(struct sockaddr_un));
@@ -520,6 +536,8 @@ static void *worker(void UNUSED(*arg))
   int j;
   struct sockaddr_storage addr;
   socklen_t alen;
+  fd_set fds;
+  struct timeval tv;
   /* create a new LDAP session */
   session=myldap_create_session();
   /* clean up the session if we're done */
@@ -527,20 +545,40 @@ static void *worker(void UNUSED(*arg))
   /* start waiting for incoming connections */
   while (1)
   {
+    /* time out connection to LDAP server if needed */
+    myldap_session_check(session);
+    /* set up the set of fds to wait on */
+    FD_ZERO(&fds);
+    FD_SET(nslcd_serversocket,&fds);
+    /* set up our timeout value */
+    tv.tv_sec=nslcd_cfg->ldc_idle_timelimit;
+    tv.tv_usec=0;
     /* wait for a new connection */
-    alen=(socklen_t)sizeof(struct sockaddr_storage);
-    csock=accept(nslcd_serversocket,(struct sockaddr *)&addr,&alen);
+    j=select(nslcd_serversocket+1,&fds,NULL,NULL,nslcd_cfg->ldc_idle_timelimit>0?&tv:NULL);
     /* see if we should exit before doing anything else */
     if (nslcd_exitsignal!=0)
       return NULL;
+    /* check result of select() */
+    if (j<0)
+    {
+      if (errno==EINTR)
+        log_log(LOG_DEBUG,"debug: select() failed (ignored): %s",strerror(errno));
+      else
+        log_log(LOG_ERR,"select() failed: %s",strerror(errno));
+      continue;
+    }
+    /* see if our file descriptor is actually ready */
+    if (!FD_ISSET(nslcd_serversocket,&fds))
+      continue;
+    /* wait for a new connection */
+    alen=(socklen_t)sizeof(struct sockaddr_storage);
+    csock=accept(nslcd_serversocket,(struct sockaddr *)&addr,&alen);
     if (csock<0)
     {
       if ((errno==EINTR)||(errno==EAGAIN)||(errno==EWOULDBLOCK))
-      {
         log_log(LOG_DEBUG,"accept() failed (ignored): %s",strerror(errno));
-        continue;
-      }
-      log_log(LOG_ERR,"accept() failed: %s",strerror(errno));
+      else
+        log_log(LOG_ERR,"accept() failed: %s",strerror(errno));
       continue;
     }
     /* make sure O_NONBLOCK is not inherited */
