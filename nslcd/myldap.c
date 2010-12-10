@@ -638,8 +638,6 @@ static int do_open(MYLDAP_SESSION *session)
   int rc;
   int sd=-1;
   int off=0;
-  /* check if the idle time for the connection has expired */
-  myldap_session_check(session);
   /* if the connection is still there (ie. ldap_unbind() wasn't
      called) then we can return the cached connection */
   if (session->ld!=NULL)
@@ -932,6 +930,8 @@ MYLDAP_SEARCH *myldap_search(
   /* log the call */
   log_log(LOG_DEBUG,"myldap_search(base=\"%s\", filter=\"%s\")",
                     base,filter);
+  /* check if the idle time for the connection has expired */
+  myldap_session_check(session);
   /* allocate a new search entry */
   search=myldap_search_new(session,base,scope,filter,attrs);
   /* find a place in the session where we can register our search */
