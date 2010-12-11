@@ -1,3 +1,10 @@
+nss-pam-ldapd (0.7.13) unstable; urgency=low
+
+  * fix handling of idle_timelimit option
+  * fix error code for problem while doing password modification
+
+ -- Arthur de Jong <adejong@debian.org>  Sat, 11 Dec 2010 22:00:00 +0100
+
 nss-pam-ldapd (0.7.12) unstable; urgency=low
 
   * set a short socket timeout when shutting down the connection to the LDAP

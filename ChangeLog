@@ -1,3 +1,21 @@
+2010-12-11 20:11  arthur
+
+	* [r1321] ., nslcd/pam.c: return correct kind of error code from
+	  try_pwmod() (r1313 from trunk)
+
+2010-12-10 14:49  arthur
+
+	* [r1320] ., nslcd/myldap.c: call myldap_session_check() before
+	  adding a new search to the session so the connection actually
+	  gets closed on timeout (the connection isn't closed when there
+	  are active searches) (r1294 from trunk)
+
+2010-10-29 16:15  arthur
+
+	* [r1292] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.12 release
+
 2010-10-29 15:03  arthur
 
 	* [r1291] ., nslcd/myldap.c: set a short socket timeout when

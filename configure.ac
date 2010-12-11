@@ -32,8 +32,8 @@ version 2.1 of the License, or (at your option) any later version. See the
 configure.ac file for more details.])
 
 # initialize and set version and bugreport address
-AC_INIT([nss-pam-ldapd],[0.7.12],[nss-pam-ldapd-users@lists.arthurdejong.org])
-RELEASE_MONTH="Oct 2010"
+AC_INIT([nss-pam-ldapd],[0.7.13],[nss-pam-ldapd-users@lists.arthurdejong.org])
+RELEASE_MONTH="Dec 2010"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])
 

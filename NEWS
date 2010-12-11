@@ -1,3 +1,10 @@
+changes from 0.7.12 to 0.7.13
+-----------------------------
+
+* fix handling of idle_timelimit option
+* fix error code for problem while doing password modification
+
+
 changes from 0.7.11 to 0.7.12
 -----------------------------
 
