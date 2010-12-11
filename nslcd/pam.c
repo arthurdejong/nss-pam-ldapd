@@ -392,6 +392,7 @@ int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session)
   return 0;
 }
 
+/* perform an LDAP password modification, returns an LDAP status code */
 static int try_pwmod(const char *binddn,const char *userdn,
                      const char *oldpassword,const char *newpassword)
 {
@@ -401,7 +402,7 @@ static int try_pwmod(const char *binddn,const char *userdn,
   /* set up a new connection */
   session=myldap_create_session();
   if (session==NULL)
-    return NSLCD_PAM_AUTH_ERR;
+    return LDAP_UNAVAILABLE;
   /* set up credentials for the session */
   myldap_set_credentials(session,binddn,oldpassword);
   /* perform search for own object (just to do any kind of search) */
