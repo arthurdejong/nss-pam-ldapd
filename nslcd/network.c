@@ -153,8 +153,8 @@ NSLCD_HANDLE(
   network,byname,
   char name[256];
   char filter[1024];
-  READ_STRING(fp,name);,
-  log_log(LOG_DEBUG,"nslcd_network_byname(%s)",name);,
+  READ_STRING(fp,name);
+  log_setrequest("network=\"%s\"",name);,
   NSLCD_ACTION_NETWORK_BYNAME,
   mkfilter_network_byname(name,filter,sizeof(filter)),
   write_network(fp,entry)
@@ -173,8 +173,8 @@ NSLCD_HANDLE(
   {
     log_log(LOG_WARNING,"unable to convert address to string");
     return -1;
-  },
-  log_log(LOG_DEBUG,"nslcd_network_byaddr(%s)",name);,
+  }
+  log_setrequest("network=%s",name);,
   NSLCD_ACTION_NETWORK_BYADDR,
   mkfilter_network_byaddr(name,filter,sizeof(filter)),
   write_network(fp,entry)
@@ -183,8 +183,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   network,all,
   const char *filter;
-  /* no parameters to read */,
-  log_log(LOG_DEBUG,"nslcd_network_all()");,
+  log_setrequest("network(all)");,
   NSLCD_ACTION_NETWORK_ALL,
   (filter=network_filter,0),
   write_network(fp,entry)

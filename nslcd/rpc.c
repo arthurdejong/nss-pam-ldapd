@@ -163,8 +163,8 @@ NSLCD_HANDLE(
   rpc,byname,
   char name[256];
   char filter[1024];
-  READ_STRING(fp,name);,
-  log_log(LOG_DEBUG,"nslcd_rpc_byname(%s)",name);,
+  READ_STRING(fp,name);
+  log_setrequest("rpc=\"%s\"",name);,
   NSLCD_ACTION_RPC_BYNAME,
   mkfilter_rpc_byname(name,filter,sizeof(filter)),
   write_rpc(fp,entry,name)
@@ -174,8 +174,8 @@ NSLCD_HANDLE(
   rpc,bynumber,
   int number;
   char filter[1024];
-  READ_INT32(fp,number);,
-  log_log(LOG_DEBUG,"nslcd_rpc_bynumber(%d)",number);,
+  READ_INT32(fp,number);
+  log_setrequest("rpc=%d",number);,
   NSLCD_ACTION_RPC_BYNUMBER,
   mkfilter_rpc_bynumber(number,filter,sizeof(filter)),
   write_rpc(fp,entry,NULL)
@@ -184,8 +184,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   rpc,all,
   const char *filter;
-  /* no parameters to read */,
-  log_log(LOG_DEBUG,"nslcd_rpc_all()");,
+  log_setrequest("rpc(all)");,
   NSLCD_ACTION_RPC_ALL,
   (filter=rpc_filter,0),
   write_rpc(fp,entry,NULL)

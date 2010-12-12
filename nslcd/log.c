@@ -1,7 +1,7 @@
 /*
    log.c - logging funtions
 
-   Copyright (C) 2002, 2003, 2008 Arthur de Jong
+   Copyright (C) 2002, 2003, 2008, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -54,6 +54,11 @@ static int prelogging_loglevel=LOG_INFO;
 
 /* the session id that is set for this thread */
 static __thread char *sessionid=NULL;
+
+
+/* the request identifier that is set for this thread */
+static __thread char *requestid=NULL;
+#define MAX_REQUESTID_LENGTH 40
 
 
 /* set loglevel when no logging is configured */
@@ -144,6 +149,32 @@ void log_newsession(void)
     }
   }
   sprintf(sessionid,"%06x",(int)(rand()&0xffffff));
+  /* set the request id to empty */
+  if (requestid!=NULL)
+    requestid[0]='\0';
+}
+
+
+/* indicate that a request identifier should be included in the output
+   from this point on, until log_newsession() is called */
+void log_setrequest(const char *format, ...)
+{
+  va_list ap;
+  /* ensure that requestid can hold a string */
+  if (requestid==NULL)
+  {
+    requestid=(char *)malloc(MAX_REQUESTID_LENGTH);
+    if (requestid==NULL)
+    {
+      fprintf(stderr,"malloc() failed: %s",strerror(errno));
+      return; /* silently fail */
+    }
+  }
+  /* make the message */
+  va_start(ap,format);
+  vsnprintf(requestid,MAX_REQUESTID_LENGTH,format,ap);
+  requestid[MAX_REQUESTID_LENGTH-1]='\0';
+  va_end(ap);
 }
 
 
@@ -174,7 +205,9 @@ void log_log(int pri,const char *format, ...)
     /* if logging is not yet defined, log to stderr */
     if (pri<=prelogging_loglevel)
     {
-      if (sessionid)
+      if ((requestid!=NULL)&&(requestid[0]!='\0'))
+        fprintf(stderr,"%s: [%s] <%s> %s%s\n",PACKAGE,sessionid,requestid,pri==LOG_DEBUG?"DEBUG: ":"",buffer);
+      else if (sessionid)
         fprintf(stderr,"%s: [%s] %s%s\n",PACKAGE,sessionid,pri==LOG_DEBUG?"DEBUG: ":"",buffer);
       else
         fprintf(stderr,"%s: %s%s\n",PACKAGE,pri==LOG_DEBUG?"DEBUG: ":"",buffer);
@@ -188,14 +221,18 @@ void log_log(int pri,const char *format, ...)
       {
         if (lst->fp==NULL) /* syslog */
         {
-          if (sessionid)
+          if ((requestid!=NULL)&&(requestid[0]!='\0'))
+            syslog(pri,"[%s] <%s> %s",sessionid,requestid,buffer);
+          else if (sessionid)
             syslog(pri,"[%s] %s",sessionid,buffer);
           else
             syslog(pri,"%s",buffer);
         }
         else /* file */
         {
-          if (sessionid)
+          if ((requestid!=NULL)&&(requestid[0]!='\0'))
+            fprintf(lst->fp,"%s: [%s] <%s> %s\n",sessionid,requestid,PACKAGE,buffer);
+          else if (sessionid)
             fprintf(lst->fp,"%s: [%s] %s\n",sessionid,PACKAGE,buffer);
           else
             fprintf(lst->fp,"%s: %s\n",PACKAGE,buffer);

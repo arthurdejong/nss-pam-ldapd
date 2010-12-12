@@ -104,6 +104,7 @@ static void test_search(void)
       printf("test_myldap: test_search(): ...\n");
   }
   printf("test_myldap: test_search(): %d entries returned: %s\n",i,ldap_err2string(rc));
+  assert(rc==LDAP_SUCCESS);
   /* perform another search */
   printf("test_myldap: test_search(): doing search...\n");
   search=myldap_search(session,nslcd_cfg->ldc_bases[0],
@@ -121,6 +122,7 @@ static void test_search(void)
       printf("test_myldap: test_search(): ...\n");
   }
   printf("test_myldap: test_search(): %d entries returned: %s\n",i,ldap_err2string(rc));
+  assert(rc==LDAP_SUCCESS);
   /* clean up */
   myldap_session_close(session);
 }

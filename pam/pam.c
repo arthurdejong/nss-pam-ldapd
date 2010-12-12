@@ -433,6 +433,9 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   /* check the returned authorisation value */
   if (ctx2.authz!=PAM_SUCCESS)
   {
+    /* turn in to generic PAM error message if message is empty */
+    if ((ctx2.authzmsg==NULL)||(ctx2.authzmsg[0]=='\0'))
+      ctx2.authzmsg=(char *)pam_strerror(pamh,ctx2.authz);
     pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",ctx2.authzmsg,username);
     rc=remap_pam_rc(ctx2.authz,&cfg);
     if ((rc!=PAM_IGNORE)&&(!cfg.no_warn))
@@ -442,6 +445,8 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   /* check the original authorisation check from authentication */
   if (ctx->authz!=PAM_SUCCESS)
   {
+    if ((ctx->authzmsg==NULL)||(ctx->authzmsg[0]=='\0'))
+      ctx->authzmsg=(char *)pam_strerror(pamh,ctx->authz);
     pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",ctx->authzmsg,username);
     rc=remap_pam_rc(ctx->authz,&cfg);
     if ((rc!=PAM_IGNORE)&&(!cfg.no_warn))

@@ -372,8 +372,10 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
   }
 
 /* This function performs the authentication phase of opening a connection.
-   This returns an LDAP result code. */
-static int do_bind(MYLDAP_SESSION *session,const char *uri)
+   The binddn and bindpw parameters may be used to override the authentication
+   mechanism defined in the configuration.  This returns an LDAP result
+   code. */
+static int do_bind(LDAP *ld,const char *binddn,const char *bindpw,const char *uri)
 {
 #ifdef LDAP_OPT_X_TLS
   int rc;
@@ -389,7 +391,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   {
     log_log(LOG_DEBUG,"ldap_start_tls_s()");
     errno=0;
-    rc=ldap_start_tls_s(session->ld,NULL,NULL);
+    rc=ldap_start_tls_s(ld,NULL,NULL);
     if (rc!=LDAP_SUCCESS)
     {
       log_log(LOG_WARNING,"ldap_start_tls_s() failed: %s%s%s (uri=\"%s\")",
@@ -400,12 +402,12 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   }
 #endif /* LDAP_OPT_X_TLS */
   /* check if the binddn and bindpw are overwritten in the session */
-  if (session->binddn[0]!='\0')
+  if ((binddn!=NULL)&(binddn[0]!='\0'))
   {
     /* do a simple bind */
-    log_log(LOG_DEBUG,"ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",session->binddn,
-                      (session->bindpw[0]!='\0')?"\"***\"":"\"\"",uri);
-    return ldap_simple_bind_s(session->ld,session->binddn,session->bindpw);
+    log_log(LOG_DEBUG,"ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",binddn,
+                      ((bindpw!=NULL)&&(bindpw[0]!='\0'))?"\"***\"":"\"\"",uri);
+    return ldap_simple_bind_s(ld,binddn,bindpw);
   }
   /* perform SASL bind if requested and available on platform */
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
@@ -416,7 +418,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
     if (nslcd_cfg->ldc_sasl_secprops!=NULL)
     {
       log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_SASL_SECPROPS,\"%s\")",nslcd_cfg->ldc_sasl_secprops);
-      LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
+      LDAP_SET_OPTION(ld,LDAP_OPT_X_SASL_SECPROPS,(void *)nslcd_cfg->ldc_sasl_secprops);
     }
 #ifdef HAVE_SASL_INTERACT_T
     if (nslcd_cfg->ldc_binddn!=NULL)
@@ -425,7 +427,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
     else
       log_log(LOG_DEBUG,"ldap_sasl_interactive_bind_s(NULL,\"%s\") (uri=\"%s\")",
             nslcd_cfg->ldc_sasl_mech,uri);
-    return ldap_sasl_interactive_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,NULL,NULL,
+    return ldap_sasl_interactive_bind_s(ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,NULL,NULL,
                                         LDAP_SASL_QUIET,
                                         do_sasl_interact,(void *)nslcd_cfg);
 #else /* HAVE_SASL_INTERACT_T */
@@ -447,7 +449,7 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
       log_log(LOG_DEBUG,"ldap_sasl_bind_s(NULL,\"%s\",%s) (uri=\"%s\")",
             nslcd_cfg->ldc_sasl_mech,
             nslcd_cfg->ldc_bindpw?"\"***\"":"NULL",uri);
-    return ldap_sasl_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,&cred,NULL,NULL,NULL);
+    return ldap_sasl_bind_s(ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_sasl_mech,&cred,NULL,NULL,NULL);
 #endif /* not HAVE_SASL_INTERACT_T */
   }
 #endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
@@ -458,18 +460,19 @@ static int do_bind(MYLDAP_SESSION *session,const char *uri)
   else
     log_log(LOG_DEBUG,"ldap_simple_bind_s(NULL,%s) (uri=\"%s\")",
                       nslcd_cfg->ldc_bindpw?"\"***\"":"NULL",uri);
-  return ldap_simple_bind_s(session->ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_bindpw);
+  return ldap_simple_bind_s(ld,nslcd_cfg->ldc_binddn,nslcd_cfg->ldc_bindpw);
 }
 
 #ifdef HAVE_LDAP_SET_REBIND_PROC
 /* This function is called by the LDAP library when chasing referrals.
    It is configured with the ldap_set_rebind_proc() below. */
-static int do_rebind(LDAP UNUSED(*ld),LDAP_CONST char *url,
+static int do_rebind(LDAP *ld,LDAP_CONST char *url,
                      ber_tag_t UNUSED(request),
                      ber_int_t UNUSED(msgid),void *arg)
 {
+  MYLDAP_SESSION *session=(MYLDAP_SESSION *)arg;
   log_log(LOG_DEBUG,"rebinding to %s",url);
-  return do_bind((MYLDAP_SESSION *)arg,url);
+  return do_bind(ld,session->binddn,session->bindpw,url);
 }
 #endif /* HAVE_LDAP_SET_REBIND_PROC */
 
@@ -600,10 +603,7 @@ static void do_close(MYLDAP_SESSION *session)
   }
 }
 
-/* This checks the timeout value of the session and closes the connection
-   to the LDAP server if the timeout has expired and there are no pending
-   searches. */
-static void myldap_session_check(MYLDAP_SESSION *session)
+void myldap_session_check(MYLDAP_SESSION *session)
 {
   int i;
   time_t current_time;
@@ -673,7 +673,8 @@ static int do_open(MYLDAP_SESSION *session)
   }
   /* bind to the server */
   errno=0;
-  rc=do_bind(session,nslcd_cfg->ldc_uris[session->current_uri].uri);
+  rc=do_bind(session->ld,session->binddn,session->bindpw,
+             nslcd_cfg->ldc_uris[session->current_uri].uri);
   if (rc!=LDAP_SUCCESS)
   {
     /* log actual LDAP error code */
@@ -883,7 +884,7 @@ static int do_retry_search(MYLDAP_SEARCH *search)
         if ((rc==LDAP_INVALID_CREDENTIALS)||(rc==LDAP_INSUFFICIENT_ACCESS)||
             (rc==LDAP_AUTH_METHOD_NOT_SUPPORTED))
           dotry[search->session->current_uri]=0;
-        /* check whether we should try this URI again */
+        /* check when we should try this URI again */
         else if (t <= (current_uri->firstfail+nslcd_cfg->ldc_reconnect_retrytime))
         {
           t+=nslcd_cfg->ldc_reconnect_sleeptime;
@@ -902,8 +903,10 @@ static int do_retry_search(MYLDAP_SEARCH *search)
     if (nexttry>=endtime)
     {
       if (search->session->binddn[0]=='\0')
-        log_log(LOG_ERR,"no available LDAP server found");
-      return rc;
+      {
+        log_log(LOG_ERR,"no available LDAP server found: %s",ldap_err2string(rc));
+        return LDAP_UNAVAILABLE;
+      }
     }
     /* sleep between tries */
     sleeptime=nexttry-time(NULL);

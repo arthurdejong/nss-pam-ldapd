@@ -227,6 +227,7 @@ if test "x$NSS_LDAP_SONAME" = "xauto"
 then
   case "$target_os" in
     solaris*) NSS_LDAP_SONAME="nss_ldap.so.1" ;;
+    freebsd*) NSS_LDAP_SONAME="nss_ldap.so" ;;
     *)        NSS_LDAP_SONAME="libnss_ldap.so.2" ;;
   esac
 fi
@@ -438,7 +439,7 @@ then
     fi
     ;;
   *)
-    nss_ldap_so_LDFLAGS="-shared -Wl,-h,\$(NSS_LDAP_SONAME) -Wl,--version-script,\$(srcdir)/exports.glibc"
+    nss_ldap_so_LDFLAGS="-shared -Wl,-h,\$(NSS_LDAP_SONAME) -Wl,--version-script,\$(srcdir)/exports.$with_nss_flavour"
     ;;
   esac
   AC_SUBST(nss_ldap_so_LDFLAGS)

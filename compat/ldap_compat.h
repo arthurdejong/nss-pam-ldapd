@@ -57,5 +57,9 @@ int ldap_passwd_s(LDAP *ld,struct berval *user,struct berval *oldpw,
                   LDAPControl **sctrls,LDAPControl **cctrls);
 #endif /* not HAVE_LDAP_PASSWD_S */
 
+/* compatibility definition */
+#ifndef LDAP_SASL_QUIET
+#define LDAP_SASL_QUIET 2U
+#endif /* not LDAP_SASL_QUIET */
 
 #endif /* COMPAT__LDAP_COMPAT_H */
