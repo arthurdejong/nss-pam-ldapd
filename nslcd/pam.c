@@ -192,9 +192,9 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
       WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
       WRITE_STRING(fp,username);
       WRITE_STRING(fp,"");
-      WRITE_INT32(fp,NSLCD_PAM_AUTHINFO_UNAVAIL);  /* authc */
-      WRITE_INT32(fp,NSLCD_PAM_AUTHINFO_UNAVAIL);  /* authz */
-      WRITE_STRING(fp,"LDAP server unavaiable"); /* authzmsg */
+      WRITE_INT32(fp,NSLCD_PAM_AUTHINFO_UNAVAIL); /* authc */
+      WRITE_INT32(fp,NSLCD_PAM_SUCCESS);          /* authz */
+      WRITE_STRING(fp,"LDAP server unavaiable");  /* authzmsg */
     }
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
@@ -214,9 +214,9 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
   WRITE_STRING(fp,userdn);
-  WRITE_INT32(fp,rc);  /* authc */
-  WRITE_INT32(fp,rc);  /* authz */
-  WRITE_STRING(fp,""); /* authzmsg */
+  WRITE_INT32(fp,rc);                 /* authc */
+  WRITE_INT32(fp,NSLCD_PAM_SUCCESS);  /* authz */
+  WRITE_STRING(fp,"");                /* authzmsg */
   WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }
