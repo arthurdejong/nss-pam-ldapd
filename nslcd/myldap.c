@@ -880,7 +880,7 @@ static int do_retry_search(MYLDAP_SEARCH *search)
         if ((rc==LDAP_INVALID_CREDENTIALS)||(rc==LDAP_INSUFFICIENT_ACCESS)||
             (rc==LDAP_AUTH_METHOD_NOT_SUPPORTED))
           dotry[search->session->current_uri]=0;
-        /* check whether we should try this URI again */
+        /* check when we should try this URI again */
         else if (t <= (current_uri->firstfail+nslcd_cfg->ldc_reconnect_retrytime))
         {
           t+=nslcd_cfg->ldc_reconnect_sleeptime;
