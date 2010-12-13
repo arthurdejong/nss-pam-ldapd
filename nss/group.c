@@ -233,14 +233,14 @@ static nss_status_t read_groupstring(TFILE *fp,nss_XbyY_args_t *args)
 
 #endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
-static nss_status_t get_getgrnam_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t group_getgrnam(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,
              NSS_ARGS(args)->key.name,
              READ_RESULT(fp));
 }
 
-static nss_status_t get_getgrgid_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t group_getgrgid(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,
              NSS_ARGS(args)->key.gid,gid_t,
@@ -250,18 +250,18 @@ static nss_status_t get_getgrgid_r(nss_backend_t UNUSED(*be),void *args)
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *grentfp;
 
-static nss_status_t get_setgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t group_setgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(grentfp);
 }
 
-static nss_status_t get_getgrent_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t group_getgrent(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_GETENT(grentfp,NSLCD_ACTION_GROUP_ALL,
              READ_RESULT(grentfp));
 }
 
-static nss_status_t get_endgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t group_endgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(grentfp);
 }
@@ -271,7 +271,7 @@ static nss_status_t get_initgroups_dyn(
         const char *user,gid_t skipgroup,long int *start,
         gid_t **groupsp,long int limit,int *errnop)
 */
-static nss_status_t get_getgroupsbymember_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t group_getgroupsbymember(nss_backend_t UNUSED(*be),void *args)
 {
   struct nss_groupsbymem *argp=(struct nss_groupsbymem *)args;
   long int start=(long int)argp->numgids;
@@ -282,24 +282,24 @@ static nss_status_t get_getgroupsbymember_r(nss_backend_t UNUSED(*be),void *args
              argp->numgids=(int)start;);
 }
 
-static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t group_destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t group_ops[]={
-  destructor,
-  get_endgrent,
-  get_setgrent,
-  get_getgrent_r,
-  get_getgrnam_r,
-  get_getgrgid_r,
-  get_getgroupsbymember_r
+  group_destructor,
+  group_endgrent,
+  group_setgrent,
+  group_getgrent,
+  group_getgrnam,
+  group_getgrgid,
+  group_getgroupsbymember
 };
 
 nss_backend_t *_nss_ldap_group_constr(const char UNUSED(*db_name),
-                        const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

@@ -142,14 +142,14 @@ static nss_status_t read_protostring(TFILE *fp,nss_XbyY_args_t *args)
 
 #endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
-static nss_status_t get_getprotobyname(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t protocols_getprotobyname(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_PROTOCOL_BYNAME,
              NSS_ARGS(args)->key.name,
              READ_RESULT(fp));
 }
 
-static nss_status_t get_getprotobynumber(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t protocols_getprotobynumber(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYINT32(NSLCD_ACTION_PROTOCOL_BYNUMBER,
               NSS_ARGS(args)->key.number,
@@ -159,39 +159,39 @@ static nss_status_t get_getprotobynumber(nss_backend_t UNUSED(*be),void *args)
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *protoentfp;
 
-static nss_status_t get_setprotoent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t protocols_setprotoent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(protoentfp);
 }
 
-static nss_status_t get_getprotoent(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t protocols_getprotoent(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_GETENT(protoentfp,NSLCD_ACTION_PROTOCOL_ALL,
              READ_RESULT(protoentfp));
 }
 
-static nss_status_t get_endprotoent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t protocols_endprotoent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(protoentfp);
 }
 
-static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t protocols_destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t proto_ops[]={
-  destructor,
-  get_endprotoent,
-  get_setprotoent,
-  get_getprotoent,
-  get_getprotobyname,
-  get_getprotobynumber
+  protocols_destructor,
+  protocols_endprotoent,
+  protocols_setprotoent,
+  protocols_getprotoent,
+  protocols_getprotobyname,
+  protocols_getprotobynumber
 };
 
 nss_backend_t *_nss_ldap_protocols_constr(const char UNUSED(*db_name),
-        const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   be=(nss_backend_t *)malloc(sizeof(*be));

@@ -216,14 +216,14 @@ static nss_status_t read_netentstring(TFILE *fp,nss_XbyY_args_t *args)
 /* more of a dirty hack */
 #define h_errnop (&(NSS_ARGS(args)->h_errno))
 
-static nss_status_t _xnss_ldap_getnetbyname_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t networks_getnetbyname(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,
              NSS_ARGS(args)->key.name,
              READ_RESULT(fp));
 }
 
-static nss_status_t _xnss_ldap_getnetbyaddr_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t networks_getnetbyaddr(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,
             WRITE_ADDRESS(fp,NSS_ARGS(args)->key.netaddr.net),
@@ -233,39 +233,39 @@ static nss_status_t _xnss_ldap_getnetbyaddr_r(nss_backend_t UNUSED(*be),void *ar
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *netentfp;
 
-static nss_status_t _xnss_ldap_setnetent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t networks_setnetent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(netentfp);
 }
 
-static nss_status_t _xnss_ldap_getnetent_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t networks_getnetent(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_GETENT(netentfp,NSLCD_ACTION_NETWORK_ALL,
              READ_RESULT(netentfp));
 }
 
-static nss_status_t _xnss_ldap_endnetent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t networks_endnetent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(netentfp);
 }
 
-static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t networks_destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t net_ops[]={
-  destructor,
-  _xnss_ldap_endnetent,
-  _xnss_ldap_setnetent,
-  _xnss_ldap_getnetent_r,
-  _xnss_ldap_getnetbyname_r,
-  _xnss_ldap_getnetbyaddr_r
+  networks_destructor,
+  networks_endnetent,
+  networks_setnetent,
+  networks_getnetent,
+  networks_getnetbyname,
+  networks_getnetbyaddr
 };
 
 nss_backend_t *_nss_ldap_networks_constr(const char UNUSED(*db_name),
-                           const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

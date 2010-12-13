@@ -327,14 +327,14 @@ static nss_status_t read_hoststring(TFILE *fp,nss_XbyY_args_t *args,int erronemp
 /* hack to set the correct errno and h_errno */
 #define h_errnop &(NSS_ARGS(args)->h_errno)
 
-static nss_status_t get_gethostbyname(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t hosts_gethostbyname(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,
              NSS_ARGS(args)->key.name,
              READ_RESULT_ERRONEMPTY(fp));
 }
 
-static nss_status_t get_gethostbyaddr(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t hosts_gethostbyaddr(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
             WRITE_ADDRESS(fp,NSS_ARGS(args)->key.hostaddr.type,NSS_ARGS(args)->key.hostaddr.len,NSS_ARGS(args)->key.hostaddr.addr),
@@ -344,39 +344,39 @@ static nss_status_t get_gethostbyaddr(nss_backend_t UNUSED(*be),void *args)
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *hostentfp;
 
-static nss_status_t get_sethostent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t hosts_sethostent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(hostentfp);
 }
 
-static nss_status_t get_gethostent(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t hosts_gethostent(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_GETENT(hostentfp,NSLCD_ACTION_HOST_ALL,
              READ_RESULT_NEXTONEMPTY(hostentfp));
 }
 
-static nss_status_t get_endhostent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t hosts_endhostent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(hostentfp);
 }
 
-static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t hosts_destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t host_ops[]={
-  destructor,
-  get_endhostent,
-  get_sethostent,
-  get_gethostent,
-  get_gethostbyname,
-  get_gethostbyaddr
+  hosts_destructor,
+  hosts_endhostent,
+  hosts_sethostent,
+  hosts_gethostent,
+  hosts_gethostbyname,
+  hosts_gethostbyaddr
 };
 
 nss_backend_t *_nss_ldap_hosts_constr(const char UNUSED(*db_name),
-                        const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

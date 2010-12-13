@@ -146,7 +146,7 @@ static nss_status_t read_servstring(TFILE *fp,nss_XbyY_args_t *args)
 
 #endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
-static nss_status_t get_getservbyname_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t services_getservbyname(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,
             WRITE_STRING(fp,NSS_ARGS(args)->key.serv.serv.name);
@@ -154,7 +154,7 @@ static nss_status_t get_getservbyname_r(nss_backend_t UNUSED(*be),void *args)
             READ_RESULT(fp));
 }
 
-static nss_status_t get_getservbyport_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t services_getservbyport(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,
             WRITE_INT32(fp,ntohs(NSS_ARGS(args)->key.serv.serv.port));
@@ -165,39 +165,39 @@ static nss_status_t get_getservbyport_r(nss_backend_t UNUSED(*be),void *args)
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *serventfp;
 
-static nss_status_t get_setservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t services_setservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(serventfp);
 }
 
-static nss_status_t get_getservent_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t services_getservent(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_GETENT(serventfp,NSLCD_ACTION_SERVICE_ALL,
              READ_RESULT(serventfp));
 }
 
-static nss_status_t get_endservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t services_endservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(serventfp);
 }
 
-static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t services_destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t services_ops[]={
-  destructor,
-  get_endservent,
-  get_setservent,
-  get_getservent_r,
-  get_getservbyname_r,
-  get_getservbyport_r
+  services_destructor,
+  services_endservent,
+  services_setservent,
+  services_getservent,
+  services_getservbyname,
+  services_getservbyport
 };
 
 nss_backend_t *_nss_ldap_services_constr(const char UNUSED(*db_name),
-                           const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

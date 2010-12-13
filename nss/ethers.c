@@ -144,7 +144,7 @@ static nss_status_t read_etherstring(TFILE *fp,nss_XbyY_args_t *args)
 #endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 /* map a hostname to the corresponding ethernet address */
-static nss_status_t get_gethostton(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t ethers_gethostton(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,
              NSS_ARGS(args)->key.name,
@@ -152,7 +152,7 @@ static nss_status_t get_gethostton(nss_backend_t UNUSED(*be),void *args)
 }
 
 /* map an ethernet address to the corresponding hostname */
-static nss_status_t get_getntohost(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t ethers_getntohost(nss_backend_t UNUSED(*be),void *args)
 {
   struct ether_addr *addr=(struct ether_addr *)(NSS_ARGS(args)->key.ether);
   NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,
@@ -160,20 +160,20 @@ static nss_status_t get_getntohost(nss_backend_t UNUSED(*be),void *args)
              READ_RESULT(fp));
 }
 
-static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t ethers_destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t ethers_ops[]={
-  destructor,
-  get_gethostton,
-  get_getntohost
+  ethers_destructor,
+  ethers_gethostton,
+  ethers_getntohost
 };
 
 nss_backend_t *_nss_ldap_ethers_constr(const char UNUSED(*db_name),
-      const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

@@ -142,14 +142,14 @@ static nss_status_t read_rpcstring(TFILE *fp,nss_XbyY_args_t *args)
 
 #endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
-static nss_status_t get_getrpcbyname_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t rpc_getrpcbyname(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,
              NSS_ARGS(args)->key.name,
              READ_RESULT(fp));
 }
 
-static nss_status_t get_getrpcbynumber_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t rpc_getrpcbynumber(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,
               NSS_ARGS(args)->key.number,
@@ -159,39 +159,39 @@ static nss_status_t get_getrpcbynumber_r(nss_backend_t UNUSED(*be),void *args)
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *rpcentfp;
 
-static nss_status_t get_setrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t rpc_setrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(rpcentfp);
 }
 
-static nss_status_t get_getrpcent_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t rpc_getrpcent(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_GETENT(rpcentfp,NSLCD_ACTION_RPC_ALL,
              READ_RESULT(rpcentfp));
 }
 
-static nss_status_t get_endrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t rpc_endrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(rpcentfp);
 }
 
-static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t rpc_destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t rpc_ops[]={
-  destructor,
-  get_endrpcent,
-  get_setrpcent,
-  get_getrpcent_r,
-  get_getrpcbyname_r,
-  get_getrpcbynumber_r
+  rpc_destructor,
+  rpc_endrpcent,
+  rpc_setrpcent,
+  rpc_getrpcent,
+  rpc_getrpcbyname,
+  rpc_getrpcbynumber
 };
 
 nss_backend_t *_nss_ldap_rpc_constr(const char UNUSED(*db_name),
-                      const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

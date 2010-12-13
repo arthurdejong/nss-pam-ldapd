@@ -167,7 +167,7 @@ static nss_status_t read_spwdstring(TFILE *fp,nss_XbyY_args_t *args)
 
 #endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
-static nss_status_t get_getspnam_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t shadow_getspnam(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,
              NSS_ARGS(args)->key.name,
@@ -177,38 +177,38 @@ static nss_status_t get_getspnam_r(nss_backend_t UNUSED(*be),void *args)
 /* thread-local file pointer to an ongoing request */
 static __thread TFILE *spentfp;
 
-static nss_status_t get_setspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t shadow_setspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(spentfp);
 }
 
-static nss_status_t get_getspent_r(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t shadow_getspent(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,
              READ_RESULT(spentfp));
 }
 
-static nss_status_t get_endspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t shadow_endspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(spentfp);
 }
 
-static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t shadow_destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t shadow_ops[]={
-  destructor,
-  get_endspent,         /* NSS_DBOP_ENDENT */
-  get_setspent,         /* NSS_DBOP_SETENT */
-  get_getspent_r,       /* NSS_DBOP_GETENT */
-  get_getspnam_r        /* NSS_DBOP_SHADOW_BYNAME */
+  shadow_destructor,
+  shadow_endspent,
+  shadow_setspent,
+  shadow_getspent,
+  shadow_getspnam
 };
 
 nss_backend_t *_nss_ldap_shadow_constr(const char UNUSED(*db_name),
-                         const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

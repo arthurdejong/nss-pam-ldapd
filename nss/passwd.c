@@ -141,14 +141,14 @@ static nss_status_t read_passwdstring(TFILE *fp,nss_XbyY_args_t *args)
 
 #endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
-static nss_status_t get_getpwnam(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t passwd_getpwnam(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_PASSWD_BYNAME,
              NSS_ARGS(args)->key.name,
              READ_RESULT(fp));
 }
 
-static nss_status_t get_getpwuid(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t passwd_getpwuid(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYTYPE(NSLCD_ACTION_PASSWD_BYUID,
              NSS_ARGS(args)->key.uid,uid_t,
@@ -159,41 +159,41 @@ static nss_status_t get_getpwuid(nss_backend_t UNUSED(*be),void *args)
 static __thread TFILE *pwentfp;
 
 /* open a connection to the nslcd and write the request */
-static nss_status_t get_setpwent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t passwd_setpwent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_SETENT(pwentfp);
 }
 
 /* read password data from an opened stream */
-static nss_status_t get_getpwent(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t passwd_getpwent(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_GETENT(pwentfp,NSLCD_ACTION_PASSWD_ALL,
              READ_RESULT(pwentfp));
 }
 
 /* close the stream opened with setpwent() above */
-static nss_status_t get_endpwent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t passwd_endpwent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(pwentfp);
 }
 
-static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t passwd_destructor(nss_backend_t *be,void UNUSED(*args))
 {
   free(be);
   return NSS_STATUS_SUCCESS;
 }
 
 static nss_backend_op_t passwd_ops[]={
-  destructor,
-  get_endpwent,       /* NSS_DBOP_ENDENT */
-  get_setpwent,       /* NSS_DBOP_SETENT */
-  get_getpwent,       /* NSS_DBOP_GETENT */
-  get_getpwnam,       /* NSS_DBOP_PASSWD_BYNAME */
-  get_getpwuid        /* NSS_DBOP_PASSWD_BYUID */
+  passwd_destructor,
+  passwd_endpwent,
+  passwd_setpwent,
+  passwd_getpwent,
+  passwd_getpwnam,
+  passwd_getpwuid
 };
 
 nss_backend_t *_nss_ldap_passwd_constr(const char UNUSED(*db_name),
-                         const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_backend_t *be;
   if (!(be=(nss_backend_t *)malloc(sizeof(*be))))

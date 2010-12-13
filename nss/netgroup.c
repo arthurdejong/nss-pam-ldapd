@@ -152,7 +152,7 @@ struct nss_ldap_netgr_backend
 };
 typedef struct nss_ldap_netgr_backend nss_ldap_netgr_backend_t;
 
-static nss_status_t _xnss_ldap_setnetgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t netgroup_setnetgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   return NSS_STATUS_SUCCESS;
 }
@@ -200,7 +200,7 @@ static nss_status_t _nss_nslcd_getnetgrent_r(struct __netgrent *result,char *buf
              read_netgrent(netgrentfp,result,buffer,buflen,errnop));
 }
 
-static nss_status_t _xnss_ldap_getnetgrent_r(nss_backend_t *_be,void *_args)
+static nss_status_t netgroup_getnetgrent(nss_backend_t *_be,void *_args)
 {
   nss_ldap_netgr_backend_t *ngbe=(nss_ldap_netgr_backend_t *)_be;
   struct nss_getnetgrent_args *args=(struct nss_getnetgrent_args *)_args;
@@ -271,12 +271,12 @@ static nss_status_t _xnss_ldap_getnetgrent_r(nss_backend_t *_be,void *_args)
   return status;
 }
 
-static nss_status_t _xnss_ldap_endnetgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t netgroup_endnetgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
   NSS_ENDENT(netgrentfp);
 }
 
-static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t netgroup_destructor(nss_backend_t *be,void UNUSED(*args))
 {
   nss_ldap_netgr_backend_t *ngbe=(nss_ldap_netgr_backend_t *)be;
   /* free list of nested netgroups */
@@ -286,18 +286,18 @@ static nss_status_t destructor(nss_backend_t *be,void UNUSED(*args))
   return NSS_STATUS_SUCCESS;
 }
 
-static nss_status_t _xnss_ldap_netgr_set(nss_backend_t *be,void *_args);
+static nss_status_t netgroup_set(nss_backend_t *be,void *_args);
 
 static nss_backend_op_t netgroup_ops[]={
-  destructor,          /* NSS_DBOP_DESTRUCTOR */
-  _xnss_ldap_endnetgrent,             /* NSS_DBOP_ENDENT */
-  _xnss_ldap_setnetgrent,             /* NSS_DBOP_SETNET */
-  _xnss_ldap_getnetgrent_r,           /* NSS_DBOP_GETENT */
-  NULL,/* TODO:_nss_ldap_netgr_in,*/ /* NSS_DBOP_NETGROUP_IN */
-  _xnss_ldap_netgr_set                /* NSS_DBOP_NETGROUP_SET */
+  netgroup_destructor,
+  netgroup_endnetgrent,
+  netgroup_setnetgrent,
+  netgroup_getnetgrent,
+  NULL,/* TODO:_nss_ldap_netgr_in,*/
+  netgroup_set
 };
 
-static nss_status_t _xnss_ldap_netgr_set(nss_backend_t *be,void *_args)
+static nss_status_t netgroup_set(nss_backend_t *be,void *_args)
 {
   nss_status_t stat;
   struct nss_setnetgrent_args *args;
@@ -326,7 +326,7 @@ static nss_status_t _xnss_ldap_netgr_set(nss_backend_t *be,void *_args)
 }
 
 nss_backend_t *_nss_ldap_netgroup_constr(const char UNUSED(*db_name),
-                           const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
   nss_ldap_netgr_backend_t *be;
   if (!(be=(nss_ldap_netgr_backend_t *)malloc(sizeof(*be))))
