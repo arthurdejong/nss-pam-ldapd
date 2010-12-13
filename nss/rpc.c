@@ -130,14 +130,14 @@ static nss_status_t read_rpcstring(TFILE *fp,nss_XbyY_args_t *args)
   NSS_ARGS(args)->buf.result? \
     read_rpcent(fp,(struct rpcent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
     read_rpcstring(fp,args); \
-  if ((NSS_ARGS(args)->buf.result)&&(retv=NSS_STATUS_SUCCESS)) \
+  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
 
 #else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 #define READ_RESULT(fp) \
   read_rpcent(fp,(struct rpcent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno); \
-  if (retv=NSS_STATUS_SUCCESS) \
+  if (retv==NSS_STATUS_SUCCESS) \
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
 
 #endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
