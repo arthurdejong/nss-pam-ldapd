@@ -91,7 +91,17 @@ NSS MODULE
 ==========
 
 The NSS module is implemented in the nss directory. The functions are split
-into files according to the database they support. Functions look like:
+into files according to the database they support. The files support multiple
+NSS implementations.
+
+The NSS interface is specific to the C library that is used. The original
+implementation was for the GNU C Library but now also includes an
+implementation for Solaris' C Library and has some support for FreeBSD.
+
+GNU C Library notes
+-------------------
+
+Function definitions for glibc look like:
 
 _nss_ldap_FUNCTION_r(...)
   This function opens the connection to the nslcd (with a time-out), builds
@@ -99,16 +109,40 @@ _nss_ldap_FUNCTION_r(...)
   waiting for an answer (again with a time-out)
 
 The complete list of exported functions can be found in exports.linux and
-prototypes.h. The NSS interface seems to be fairly libc-specific and is
-currently tuned towards GNU Libc, although FreeBSD has a port based on this
-code.
+prototypes.h.
 
 Currently a number of macros are used to build most of the function bodies for
 these functions. Part of this is defined in the common/nslcd-prot.h file and
 the NSS-specific stuff is in nss/common.h.
 
+For memory management, the general mechanism that is expected to be used is
+to return NSS_STATUS_TRYAGAIN and set errno to ERANGE. This causes glibc to
+retry the request with a larger buffer.
+
 Some useful links:
 http://www.gnu.org/software/libc/manual/html_node/index.html
+
+Solaris C Library notes
+-----------------------
+
+The Solaris C library uses a different mechanism. For each map a back-end
+object is allocated per thread which is used to do queries. The object is
+created with a constructor (e.g. _nss_ldap_passwd_constr()) that returns a
+back-end that contains a list of function pointer to lookup methods and a
+destructor.
+
+A buffer is passed with every request but a local buffer that is stored in the
+back-end can presumably also be created.
+
+Earlier versions of Solaris expected the NSS functions to return the binary
+representation of the lookups (e.g. struct passwd) but later versions expect a
+string representation of the data to be returned (just like a single line out
+of /etc/passwd was read).
+
+Source and documentation pointers for Solaris NSS:
+http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/lib/nsswitch/
+http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/head/nss_common.h
+http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/head/nss_dbdefs.h
 
 
 PAM MODULE
