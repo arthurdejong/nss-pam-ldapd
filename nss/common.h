@@ -104,6 +104,26 @@
       return NSS_STATUS_TRYAGAIN; \
   }
 
+/* this is the backend structure for Solaris */
+struct nss_ldap_backend
+{
+  nss_backend_op_t *ops; /* function-pointer table */
+  int n_ops; /* number of function pointers */
+  TFILE *fp; /* the file pointer for {set,get,end}ent() functions */
+};
+
+/* constructor for LDAP backends */
+nss_backend_t *nss_ldap_constructor(nss_backend_op_t *ops,size_t sizeofops);
+
+/* destructor for LDAP backends */
+nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args));
+
+extern TFILE *xxfp;
+
+/* easy way to get fp from back-end */
+/* #define LDAP_GET_FP(be) (((struct nss_ldap_backend*)(be))->fp) */
+#define LDAP_BE(be) ((struct nss_ldap_backend*)(be))
+
 #endif /* NSS_FLAVOUR_SOLARIS */
 
 /* The following macros to automatically generate get..byname(),

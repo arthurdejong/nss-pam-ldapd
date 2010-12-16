@@ -155,36 +155,27 @@ static nss_status_t passwd_getpwuid(nss_backend_t UNUSED(*be),void *args)
              READ_RESULT(fp));
 }
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *pwentfp;
-
 /* open a connection to the nslcd and write the request */
-static nss_status_t passwd_setpwent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t passwd_setpwent(nss_backend_t *be,void UNUSED(*args))
 {
-  NSS_SETENT(pwentfp);
+  NSS_SETENT(LDAP_BE(be)->fp);
 }
 
 /* read password data from an opened stream */
-static nss_status_t passwd_getpwent(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t passwd_getpwent(nss_backend_t *be,void *args)
 {
-  NSS_GETENT(pwentfp,NSLCD_ACTION_PASSWD_ALL,
-             READ_RESULT(pwentfp));
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_PASSWD_ALL,
+             READ_RESULT(LDAP_BE(be)->fp));
 }
 
 /* close the stream opened with setpwent() above */
-static nss_status_t passwd_endpwent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t passwd_endpwent(nss_backend_t *be,void UNUSED(*args))
 {
-  NSS_ENDENT(pwentfp);
-}
-
-static nss_status_t passwd_destructor(nss_backend_t *be,void UNUSED(*args))
-{
-  free(be);
-  return NSS_STATUS_SUCCESS;
+  NSS_ENDENT(LDAP_BE(be)->fp);
 }
 
 static nss_backend_op_t passwd_ops[]={
-  passwd_destructor,
+  nss_ldap_destructor,
   passwd_endpwent,
   passwd_setpwent,
   passwd_getpwent,
@@ -195,12 +186,7 @@ static nss_backend_op_t passwd_ops[]={
 nss_backend_t *_nss_ldap_passwd_constr(const char UNUSED(*db_name),
                   const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
-  nss_backend_t *be;
-  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
-    return NULL;
-  be->ops=passwd_ops;
-  be->n_ops=sizeof(passwd_ops)/sizeof(nss_backend_op_t);
-  return (nss_backend_t *)be;
+  return nss_ldap_constructor(passwd_ops,sizeof(passwd_ops));
 }
 
 #endif /* NSS_FLAVOUR_SOLARIS */

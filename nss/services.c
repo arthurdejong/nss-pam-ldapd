@@ -162,33 +162,24 @@ static nss_status_t services_getservbyport(nss_backend_t UNUSED(*be),void *args)
             READ_RESULT(fp));
 }
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *serventfp;
-
-static nss_status_t services_setservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t services_setservent(nss_backend_t *be,void UNUSED(*args))
 {
-  NSS_SETENT(serventfp);
+  NSS_SETENT(LDAP_BE(be)->fp);
 }
 
-static nss_status_t services_getservent(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t services_getservent(nss_backend_t *be,void *args)
 {
-  NSS_GETENT(serventfp,NSLCD_ACTION_SERVICE_ALL,
-             READ_RESULT(serventfp));
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_SERVICE_ALL,
+             READ_RESULT(LDAP_BE(be)->fp));
 }
 
-static nss_status_t services_endservent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t services_endservent(nss_backend_t *be,void UNUSED(*args))
 {
-  NSS_ENDENT(serventfp);
-}
-
-static nss_status_t services_destructor(nss_backend_t *be,void UNUSED(*args))
-{
-  free(be);
-  return NSS_STATUS_SUCCESS;
+  NSS_ENDENT(LDAP_BE(be)->fp);
 }
 
 static nss_backend_op_t services_ops[]={
-  services_destructor,
+  nss_ldap_destructor,
   services_endservent,
   services_setservent,
   services_getservent,
@@ -199,12 +190,7 @@ static nss_backend_op_t services_ops[]={
 nss_backend_t *_nss_ldap_services_constr(const char UNUSED(*db_name),
                   const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
-  nss_backend_t *be;
-  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
-    return NULL;
-  be->ops=services_ops;
-  be->n_ops=sizeof(services_ops)/sizeof(nss_backend_op_t);
-  return (nss_backend_t *)be;
+  return nss_ldap_constructor(services_ops,sizeof(services_ops));
 }
 
 #endif /* NSS_FLAVOUR_SOLARIS */

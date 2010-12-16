@@ -156,33 +156,24 @@ static nss_status_t protocols_getprotobynumber(nss_backend_t UNUSED(*be),void *a
               READ_RESULT(fp));
 }
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *protoentfp;
-
-static nss_status_t protocols_setprotoent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t protocols_setprotoent(nss_backend_t *be,void UNUSED(*args))
 {
-  NSS_SETENT(protoentfp);
+  NSS_SETENT(LDAP_BE(be)->fp);
 }
 
-static nss_status_t protocols_getprotoent(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t protocols_getprotoent(nss_backend_t *be,void *args)
 {
-  NSS_GETENT(protoentfp,NSLCD_ACTION_PROTOCOL_ALL,
-             READ_RESULT(protoentfp));
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_PROTOCOL_ALL,
+             READ_RESULT(LDAP_BE(be)->fp));
 }
 
-static nss_status_t protocols_endprotoent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t protocols_endprotoent(nss_backend_t *be,void UNUSED(*args))
 {
-  NSS_ENDENT(protoentfp);
+  NSS_ENDENT(LDAP_BE(be)->fp);
 }
 
-static nss_status_t protocols_destructor(nss_backend_t *be,void UNUSED(*args))
-{
-  free(be);
-  return NSS_STATUS_SUCCESS;
-}
-
-static nss_backend_op_t proto_ops[]={
-  protocols_destructor,
+static nss_backend_op_t protocols_ops[]={
+  nss_ldap_destructor,
   protocols_endprotoent,
   protocols_setprotoent,
   protocols_getprotoent,
@@ -193,13 +184,7 @@ static nss_backend_op_t proto_ops[]={
 nss_backend_t *_nss_ldap_protocols_constr(const char UNUSED(*db_name),
                   const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
-  nss_backend_t *be;
-  be=(nss_backend_t *)malloc(sizeof(*be));
-  if (be==NULL)
-    return NULL;
-  be->ops=proto_ops;
-  be->n_ops=sizeof(proto_ops)/sizeof(nss_backend_op_t);
-  return (nss_backend_t *)be;
+  return nss_ldap_constructor(protocols_ops,sizeof(protocols_ops));
 }
 
 #endif /* NSS_FLAVOUR_SOLARIS */

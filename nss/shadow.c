@@ -174,33 +174,24 @@ static nss_status_t shadow_getspnam(nss_backend_t UNUSED(*be),void *args)
              READ_RESULT(fp));
 }
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *spentfp;
-
-static nss_status_t shadow_setspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t shadow_setspent(nss_backend_t *be,void UNUSED(*args))
 {
-  NSS_SETENT(spentfp);
+  NSS_SETENT(LDAP_BE(be)->fp);
 }
 
-static nss_status_t shadow_getspent(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t shadow_getspent(nss_backend_t *be,void *args)
 {
-  NSS_GETENT(spentfp,NSLCD_ACTION_SHADOW_ALL,
-             READ_RESULT(spentfp));
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_SHADOW_ALL,
+             READ_RESULT(LDAP_BE(be)->fp));
 }
 
-static nss_status_t shadow_endspent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t shadow_endspent(nss_backend_t *be,void UNUSED(*args))
 {
-  NSS_ENDENT(spentfp);
-}
-
-static nss_status_t shadow_destructor(nss_backend_t *be,void UNUSED(*args))
-{
-  free(be);
-  return NSS_STATUS_SUCCESS;
+  NSS_ENDENT(LDAP_BE(be)->fp);
 }
 
 static nss_backend_op_t shadow_ops[]={
-  shadow_destructor,
+  nss_ldap_destructor,
   shadow_endspent,
   shadow_setspent,
   shadow_getspent,
@@ -210,12 +201,7 @@ static nss_backend_op_t shadow_ops[]={
 nss_backend_t *_nss_ldap_shadow_constr(const char UNUSED(*db_name),
                   const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
-  nss_backend_t *be;
-  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
-    return NULL;
-  be->ops=shadow_ops;
-  be->n_ops=sizeof(shadow_ops)/sizeof(nss_backend_op_t);
-  return (nss_backend_t *)be;
+  return nss_ldap_constructor(shadow_ops,sizeof(shadow_ops));
 }
 
 #endif /* NSS_FLAVOUR_SOLARIS */

@@ -19,4 +19,38 @@
    02110-1301 USA
 */
 
+#include "config.h"
+
+#include <errno.h>
+
+#include "prototypes.h"
+#include "common.h"
+#include "compat/attrs.h"
+
+/* global symbol to prevent NSS name lookups using this module */
 int _nss_ldap_enablelookups=1;
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+nss_backend_t *nss_ldap_constructor(nss_backend_op_t *ops,size_t sizeofops)
+{
+  struct nss_ldap_backend *ldapbe;
+  ldapbe=(struct nss_ldap_backend *)malloc(sizeof(struct nss_ldap_backend));
+  if (ldapbe==NULL)
+    return NULL;
+  ldapbe->ops=ops;
+  ldapbe->n_ops=sizeofops/sizeof(nss_backend_op_t);
+  ldapbe->fp=NULL;
+  return (nss_backend_t *)ldapbe;
+}
+
+nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args))
+{
+  struct nss_ldap_backend *ldapbe=(struct nss_ldap_backend *)be;
+  if (ldapbe->fp!=NULL)
+    (void)tio_close(ldapbe->fp);
+  free(ldapbe);
+  return NSS_STATUS_SUCCESS;
+}
+
+#endif /* NSS_FLAVOUR_SOLARIS */

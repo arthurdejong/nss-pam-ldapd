@@ -156,33 +156,24 @@ static nss_status_t rpc_getrpcbynumber(nss_backend_t UNUSED(*be),void *args)
               READ_RESULT(fp));
 }
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *rpcentfp;
-
-static nss_status_t rpc_setrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t rpc_setrpcent(nss_backend_t *be,void UNUSED(*args))
 {
-  NSS_SETENT(rpcentfp);
+  NSS_SETENT(LDAP_BE(be)->fp);
 }
 
-static nss_status_t rpc_getrpcent(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t rpc_getrpcent(nss_backend_t *be,void *args)
 {
-  NSS_GETENT(rpcentfp,NSLCD_ACTION_RPC_ALL,
-             READ_RESULT(rpcentfp));
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_RPC_ALL,
+             READ_RESULT(LDAP_BE(be)->fp));
 }
 
-static nss_status_t rpc_endrpcent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t rpc_endrpcent(nss_backend_t *be,void UNUSED(*args))
 {
-  NSS_ENDENT(rpcentfp);
-}
-
-static nss_status_t rpc_destructor(nss_backend_t *be,void UNUSED(*args))
-{
-  free(be);
-  return NSS_STATUS_SUCCESS;
+  NSS_ENDENT(LDAP_BE(be)->fp);
 }
 
 static nss_backend_op_t rpc_ops[]={
-  rpc_destructor,
+  nss_ldap_destructor,
   rpc_endrpcent,
   rpc_setrpcent,
   rpc_getrpcent,
@@ -193,12 +184,7 @@ static nss_backend_op_t rpc_ops[]={
 nss_backend_t *_nss_ldap_rpc_constr(const char UNUSED(*db_name),
                   const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
-  nss_backend_t *be;
-  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
-    return NULL;
-  be->ops=rpc_ops;
-  be->n_ops=sizeof(rpc_ops)/sizeof(nss_backend_op_t);
-  return (nss_backend_t *)be;
+  return nss_ldap_constructor(rpc_ops,sizeof(rpc_ops));
 }
 
 #endif /* NSS_FLAVOUR_SOLARIS */
