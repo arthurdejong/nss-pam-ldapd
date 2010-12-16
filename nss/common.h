@@ -118,10 +118,7 @@ nss_backend_t *nss_ldap_constructor(nss_backend_op_t *ops,size_t sizeofops);
 /* destructor for LDAP backends */
 nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args));
 
-extern TFILE *xxfp;
-
 /* easy way to get fp from back-end */
-/* #define LDAP_GET_FP(be) (((struct nss_ldap_backend*)(be))->fp) */
 #define LDAP_BE(be) ((struct nss_ldap_backend*)(be))
 
 #endif /* NSS_FLAVOUR_SOLARIS */
