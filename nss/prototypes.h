@@ -123,7 +123,9 @@ nss_status_t _nss_ldap_endspent(void);
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
+/* helper marcos to do casts */
 #define NSS_ARGS(args) ((nss_XbyY_args_t *)args)
+#define LDAP_BE(be) ((struct nss_ldap_backend*)(be))
 
 /* these are the constructors we provide */
 nss_backend_t *_nss_ldap_ethers_constr(const char *db_name,const char *src_name,const char *cfg_args);
