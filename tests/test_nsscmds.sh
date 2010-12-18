@@ -420,7 +420,7 @@ ecordas:*::::7:2::0
 EOM
 
 check "getent shadow arthur" << EOM
-arthur:*::1000:200:7:2::0
+arthur:*:14302:::7:2::0
 EOM
 
 # check case-sensitivity
