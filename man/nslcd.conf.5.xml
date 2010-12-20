@@ -649,6 +649,17 @@
     </varlistentry>
 
     <varlistentry>
+     <term><option>nss_min_uid</option> <replaceable>UID</replaceable></term>
+     <listitem>
+      <para>
+       This option ensures that <acronym>LDAP</acronym> users with a numeric
+       user id lower than the specified value are ignored. Also requests for
+       users with a lower user id are ignored.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
      <term><option>pam_authz_search</option>
            <replaceable>FILTER</replaceable></term>
      <listitem>

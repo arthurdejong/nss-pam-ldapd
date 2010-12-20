@@ -69,7 +69,6 @@ const char *attmap_group_uniqueMember  = "uniqueMember";
 /* default values for attributes */
 static const char *default_group_userPassword     = "*"; /* unmatchable */
 
-
 /* the attribute list to request with searches */
 static const char *group_attrs[6];
 

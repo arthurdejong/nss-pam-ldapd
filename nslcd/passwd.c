@@ -138,13 +138,46 @@ struct dn2uid_cache_entry
 };
 #define DN2UID_CACHE_TIMEOUT (15*60)
 
+/* checks whether the entry has a valid uidNumber attribute
+   (>= nss_min_uid) */
+static int entry_has_valid_uid(MYLDAP_ENTRY *entry)
+{
+  int i;
+  const char **values;
+  char *tmp;
+  uid_t uid;
+  /* if min_uid is not set any entry should do */
+  if (nslcd_cfg->ldc_nss_min_uid==0)
+    return 1;
+  /* get all uidNumber attributes */
+  values=myldap_get_values(entry,attmap_passwd_uidNumber);
+  if ((values==NULL)||(values[0]==NULL))
+  {
+    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                        myldap_get_dn(entry),attmap_passwd_uidNumber);
+    return 0;
+  }
+  /* check if there is a uidNumber attributes >= min_uid */
+  for (i=0;values[i]!=NULL;i++)
+  {
+    uid=(uid_t)strtol(values[i],&tmp,0);
+    if ((*(values[i])=='\0')||(*tmp!='\0'))
+      log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+                          myldap_get_dn(entry),attmap_passwd_uidNumber);
+    else if (uid>=nslcd_cfg->ldc_nss_min_uid)
+      return 1;
+  }
+  /* nothing found */
+  return 0;
+}
+
 /* Perform an LDAP lookup to translate the DN into a uid.
    This function either returns NULL or a strdup()ed string. */
 char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp,char *buf,size_t buflen)
 {
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
-  static const char *attrs[2];
+  static const char *attrs[3];
   int rc=LDAP_SUCCESS;
   const char **values;
   char *uid=NULL;
@@ -152,7 +185,8 @@ char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp,char *buf,si
     rcp=&rc;
   /* we have to look up the entry */
   attrs[0]=attmap_passwd_uid;
-  attrs[1]=NULL;
+  attrs[1]=attmap_passwd_uidNumber;
+  attrs[2]=NULL;
   search=myldap_search(session,dn,LDAP_SCOPE_BASE,passwd_filter,attrs,rcp);
   if (search==NULL)
   {
@@ -166,13 +200,17 @@ char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp,char *buf,si
       log_log(LOG_WARNING,"lookup of user %s failed: %s",dn,ldap_err2string(*rcp));
     return NULL;
   }
-  /* get uid (just use first one) */
-  values=myldap_get_values(entry,attmap_passwd_uid);
-  /* check the result for presence and validity */
-  if ((values!=NULL)&&(values[0]!=NULL)&&isvalidname(values[0])&&(strlen(values[0])<buflen))
+  /* check the uidNumber attribute if min_uid is set */
+  if (entry_has_valid_uid(entry))
   {
-    strcpy(buf,values[0]);
-    uid=buf;
+    /* get uid (just use first one) */
+    values=myldap_get_values(entry,attmap_passwd_uid);
+    /* check the result for presence and validity */
+    if ((values!=NULL)&&(values[0]!=NULL)&&isvalidname(values[0])&&(strlen(values[0])<buflen))
+    {
+      strcpy(buf,values[0]);
+      uid=buf;
+    }
   }
   /* clean up and return */
   myldap_search_close(search);
@@ -258,14 +296,15 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid,int *rcp)
   MYLDAP_ENTRY *entry=NULL;
   const char *base;
   int i;
-  static const char *attrs[2];
+  static const char *attrs[3];
   char filter[1024];
   /* if it isn't a valid username, just bail out now */
   if (!isvalidname(uid))
     return NULL;
   /* set up attributes (we don't need much) */
   attrs[0]=attmap_passwd_uid;
-  attrs[1]=NULL;
+  attrs[1]=attmap_passwd_uidNumber;
+  attrs[2]=NULL;
   /* we have to look up the entry */
   mkfilter_passwd_byname(uid,filter,sizeof(filter));
   for (i=0;(i<NSS_LDAP_CONFIG_MAX_BASES)&&((base=passwd_bases[i])!=NULL);i++)
@@ -274,7 +313,7 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid,int *rcp)
     if (search==NULL)
       return NULL;
     entry=myldap_get_entry(search,NULL);
-    if (entry!=NULL)
+    if ((entry!=NULL)&&(entry_has_valid_uid(entry)))
       return entry;
   }
   return NULL;
@@ -393,14 +432,17 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
       {
         for (j=0;j<numuids;j++)
         {
-          WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-          WRITE_STRING(fp,usernames[i]);
-          WRITE_STRING(fp,passwd);
-          WRITE_TYPE(fp,uids[j],uid_t);
-          WRITE_TYPE(fp,gid,gid_t);
-          WRITE_STRING(fp,gecos);
-          WRITE_STRING(fp,homedir);
-          WRITE_STRING(fp,shell);
+          if (uids[j]>=nslcd_cfg->ldc_nss_min_uid)
+          {
+            WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+            WRITE_STRING(fp,usernames[i]);
+            WRITE_STRING(fp,passwd);
+            WRITE_TYPE(fp,uids[j],uid_t);
+            WRITE_TYPE(fp,gid,gid_t);
+            WRITE_STRING(fp,gecos);
+            WRITE_STRING(fp,homedir);
+            WRITE_STRING(fp,shell);
+          }
         }
       }
     }
@@ -427,7 +469,14 @@ NSLCD_HANDLE_UID(
   uid_t uid;
   char filter[1024];
   READ_TYPE(fp,uid,uid_t);
-  log_setrequest("passwd=%d",(int)uid);,
+  log_setrequest("passwd=%d",(int)uid);
+  if (uid<nslcd_cfg->ldc_nss_min_uid)
+  {
+    /* return an empty result */
+    WRITE_INT32(fp,NSLCD_VERSION);
+    WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);
+    WRITE_INT32(fp,NSLCD_RESULT_END);
+  },
   NSLCD_ACTION_PASSWD_BYUID,
   mkfilter_passwd_byuid(uid,filter,sizeof(filter)),
   write_passwd(fp,entry,NULL,&uid,calleruid)
