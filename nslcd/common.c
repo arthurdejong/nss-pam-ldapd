@@ -107,7 +107,7 @@ int isvalidname(const char *name)
          name[i]=='.' || name[i]=='_'  || name[i]=='$' )
       continue;
     /* characters that may be anywhere except as first character */
-    if ( i>0 && name[i]=='-' )
+    if ( i>0 && ( name[i]=='-' || name[i]=='~' ) )
       continue;
     /* characters that may not be the first or last character */
     if ( ( i>0 && name[i+1]!='\0' ) && ( name[i]=='\\' || name[i]==' ') )
