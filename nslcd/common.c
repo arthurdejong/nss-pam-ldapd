@@ -100,13 +100,20 @@ int isvalidname(const char *name)
     if (i>=LOGIN_NAME_MAX)
       return 0;
 #endif /* LOGIN_NAME_MAX */
-    if ( ! ( ( (i!=0) && (name[i]=='-') ) ||
-             ( (i!=0) && (name[i]=='\\') && name[i+1]!='\0' ) ||
-             (name[i]>='@' && name[i] <= 'Z') ||
-             (name[i]>='a' && name[i] <= 'z') ||
-             (name[i]>='0' && name[i] <= '9') ||
-             name[i]=='.' || name[i]=='_'  || name[i]=='$' || name[i]==' ') )
-      return 0;
+    /* characters supported everywhere in the name */
+    if ( (name[i]>='@' && name[i] <= 'Z') ||
+         (name[i]>='a' && name[i] <= 'z') ||
+         (name[i]>='0' && name[i] <= '9') ||
+         name[i]=='.' || name[i]=='_'  || name[i]=='$' )
+      continue;
+    /* characters that may be anywhere except as first character */
+    if ( i>0 && name[i]=='-' )
+      continue;
+    /* characters that may not be the first or last character */
+    if ( ( i>0 && name[i+1]!='\0' ) && ( name[i]=='\\' || name[i]==' ') )
+      continue;
+    /* anything else is bad */
+    return 0;
   }
   /* no test failed so it must be good */
   return -1;
