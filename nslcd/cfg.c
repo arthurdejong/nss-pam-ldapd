@@ -986,7 +986,8 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       LDAP_SET_OPTION(NULL,LDAP_OPT_X_TLS_CACERTDIR,value);
       free(value);
     }
-    else if (strcasecmp(keyword,"tls_cacertfile")==0)
+    else if ( (strcasecmp(keyword,"tls_cacertfile")==0) ||
+              (strcasecmp(keyword,"tls_cacert")==0) )
     {
       get_strdup(filename,lnr,keyword,&line,&value);
       get_eol(filename,lnr,keyword,&line);
