@@ -537,6 +537,8 @@
       <para>
        Specifies the directory containing X.509 certificates for peer
        authentication.
+       This parameter is ignored when using GnuTLS.
+       On Debian OpenLDAP is linked against GnuTLS.
       </para>
      </listitem>
     </varlistentry>
@@ -555,6 +557,8 @@
      <listitem>
       <para>
        Specifies the path to an entropy source.
+       This parameter is ignored when using GnuTLS.
+       On Debian OpenLDAP is linked against GnuTLS.
       </para>
      </listitem>
     </varlistentry>
