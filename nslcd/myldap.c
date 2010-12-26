@@ -1705,3 +1705,15 @@ int myldap_passwd(
   }
   return rc;
 }
+
+int myldap_modify(MYLDAP_SESSION *session,const char *dn,LDAPMod *mods[])
+{
+  int rc;
+  if (!is_valid_session(session)||(dn==NULL))
+  {
+    log_log(LOG_ERR,"myldap_passwd(): invalid parameter passed");
+    errno=EINVAL;
+    return LDAP_OTHER;
+  }
+  return ldap_modify_ext_s(session->ld,dn,mods,NULL,NULL);
+}

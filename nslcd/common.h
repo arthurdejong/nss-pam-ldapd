@@ -94,6 +94,9 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid,int *rcp);
 /* transforms the uid into a DN by doing an LDAP lookup */
 MUST_USE char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen);
 
+/* try to update the shadowLastChange attribute of the entry if possible */
+int update_lastchange(MYLDAP_SESSION *session,const char *userdn);
+
 /* these are the functions for initialising the database specific
    modules */
 void alias_init(void);

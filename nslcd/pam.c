@@ -457,6 +457,11 @@ static int try_pwmod(const char *binddn,const char *userdn,
       oldpassword=NULL;
     /* perform password modification */
     rc=myldap_passwd(session,userdn,oldpassword,newpassword);
+    if (rc==LDAP_SUCCESS)
+    {
+      /* try to update the shadowLastChange attribute */
+      (void)update_lastchange(session,userdn);
+    }
   }
   /* close the session */
   myldap_session_close(session);
