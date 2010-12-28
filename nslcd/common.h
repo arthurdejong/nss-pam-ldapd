@@ -59,7 +59,8 @@ int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
    /etc/group or /etc/shadow depending upon what is in the directory.
    This function will return NULL if no passwd is found and will return the
    literal value in the directory if conversion is not possible. */
-const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr);
+const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr,
+                             char *buffer,size_t buflen);
 
 /* write out an address, parsing the addr value */
 int write_address(TFILE *fp,const char *addr);

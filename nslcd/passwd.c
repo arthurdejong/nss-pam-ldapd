@@ -56,7 +56,7 @@ const char *passwd_filter = "(objectClass=posixAccount)";
 
 /* the attributes used in searches */
 const char *attmap_passwd_uid           = "uid";
-const char *attmap_passwd_userPassword  = "userPassword";
+const char *attmap_passwd_userPassword  = "\"*\"";
 const char *attmap_passwd_uidNumber     = "uidNumber";
 const char *attmap_passwd_gidNumber     = "gidNumber";
 const char *attmap_passwd_gecos         = "\"${gecos:-$cn}\"";
@@ -348,6 +348,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   char gecos[100];
   char homedir[100];
   char shell[100];
+  char passbuffer[80];
   int i,j;
   /* get the usernames for this entry */
   usernames=myldap_get_values(entry,attmap_passwd_uid);
@@ -365,7 +366,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   }
   else
   {
-    passwd=get_userpassword(entry,attmap_passwd_userPassword);
+    passwd=get_userpassword(entry,attmap_passwd_userPassword,passbuffer,sizeof(passbuffer));
     if ((passwd==NULL)||(calleruid!=0))
       passwd=default_passwd_userPassword;
   }

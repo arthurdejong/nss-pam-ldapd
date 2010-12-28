@@ -35,6 +35,7 @@
 #include "nslcd.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 /* simple wrapper around snptintf() to return non-0 in case
    of any failure (but always keep string 0-terminated) */
@@ -51,25 +52,21 @@ int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
   return ((res<0)||(((size_t)res)>=buflen));
 }
 
-const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr)
+const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr,char *buffer,size_t buflen)
 {
-  const char **values;
-  int i;
-  /* get the entries */
-  values=myldap_get_values(entry,attr);
-  if ((values==NULL)||(values[0]==NULL))
+  const char *tmpvalue;
+  /* get the value */
+  tmpvalue=attmap_get_value(entry,attr,buffer,buflen);
+  if (tmpvalue==NULL)
     return NULL;
   /* go over the entries and return the remainder of the value if it
      starts with {crypt} or crypt$ */
-  for (i=0;values[i]!=NULL;i++)
-  {
-    if (strncasecmp(values[i],"{crypt}",7)==0)
-      return values[i]+7;
-    if (strncasecmp(values[i],"crypt$",6)==0)
-      return values[i]+6;
-  }
+  if (strncasecmp(tmpvalue,"{crypt}",7)==0)
+    return tmpvalue+7;
+  if (strncasecmp(tmpvalue,"crypt$",6)==0)
+    return tmpvalue+6;
   /* just return the first value completely */
-  return values[0];
+  return tmpvalue;
   /* TODO: support more password formats e.g. SMD5
     (which is $1$ but in a different format)
     (any code for this is more than welcome) */

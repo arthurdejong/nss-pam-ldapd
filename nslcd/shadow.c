@@ -55,7 +55,7 @@ const char *shadow_filter = "(objectClass=shadowAccount)";
 
 /* the attributes to request with searches */
 const char *attmap_shadow_uid              = "uid";
-const char *attmap_shadow_userPassword     = "userPassword";
+const char *attmap_shadow_userPassword     = "\"*\"";
 const char *attmap_shadow_shadowLastChange = "\"${shadowLastChange:--1}\"";
 const char *attmap_shadow_shadowMin        = "\"${shadowMin:--1}\"";
 const char *attmap_shadow_shadowMax        = "\"${shadowMax:--1}\"";
@@ -251,6 +251,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   unsigned long flag;
   int i;
   char buffer[80];
+  char passbuffer[80];
   /* get username */
   usernames=myldap_get_values(entry,attmap_shadow_uid);
   if ((usernames==NULL)||(usernames[0]==NULL))
@@ -260,7 +261,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
     return 0;
   }
   /* get password */
-  passwd=get_userpassword(entry,attmap_shadow_userPassword);
+  passwd=get_userpassword(entry,attmap_shadow_userPassword,passbuffer,sizeof(passbuffer));
   if (passwd==NULL)
     passwd=default_shadow_userPassword;
   /* get lastchange date */
