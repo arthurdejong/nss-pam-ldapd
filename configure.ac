@@ -65,6 +65,7 @@ AC_PROG_INSTALL
 AC_PROG_RANLIB
 AM_PROG_CC_C_O
 AC_USE_SYSTEM_EXTENSIONS
+AC_PROG_LN_S
 
 # checks for tool to convert docbook to man
 AC_PATH_PROGS(DOCBOOK2X_MAN, docbook2x-man)
@@ -132,13 +133,26 @@ AC_MSG_RESULT($enable_pam)
 AM_CONDITIONAL([ENABLE_PAM], [test "x$enable_pam" = "xyes"])
 
 # check whether the nslcd daemon should be built
-AC_MSG_CHECKING([whether to build the nslcd server])
+AC_MSG_CHECKING([whether to build the nslcd daemon])
 AC_ARG_ENABLE(nslcd,
               AS_HELP_STRING([--disable-nslcd],
-                             [build the nslcd server [[default=enabled]]]),,
+                             [build the nslcd daemon [[default=enabled]]]),,
               [enable_nslcd="yes"])
 AC_MSG_RESULT($enable_nslcd)
 AM_CONDITIONAL([ENABLE_NSLCD], [test "x$enable_nslcd" = "xyes"])
+
+# check whether the Python version of the nslcd daemon should be built
+AC_MSG_CHECKING([whether to build the pynslcd daemon])
+AC_ARG_ENABLE(pynslcd,
+              AS_HELP_STRING([--enable-pynslcd],
+                             [build the pynslcd daemon [[default=disabled]]]),,
+              [enable_pynslcd="no"])
+AC_MSG_RESULT($enable_pynslcd)
+AM_CONDITIONAL([ENABLE_PYNSLCD], [test "x$enable_pynslcd" = "xyes"])
+if test "x$enable_pynslcd" = "xyes"
+then
+  AC_MSG_WARN([the pynslcd daemon is experimental])
+fi
 
 # check whether SASL support should be enabled
 AC_MSG_CHECKING([whether to enable SASL support])
@@ -169,6 +183,7 @@ AC_MSG_RESULT($configfile_checking)
 if test "x$configfile_checking" = "xyes"
 then
   AC_DEFINE(ENABLE_CONFIGFILE_CHECKING,1,[Whether to check configfile options.])
+  AC_SUBST(ENABLE_CONFIGFILE_CHECKING,1)
 fi
 
 # check the name of the configuration file
@@ -702,7 +717,15 @@ then
   AC_SUBST(nslcd_LIBS)
 fi
 
+# pynslcd daemon-specific tests
+if test "x$enable_pynslcd" = "xyes"
+then
+  # check Python interpreter
+  AM_PATH_PYTHON(2.5)
+fi
+
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile
-                 pam/Makefile nslcd/Makefile man/Makefile tests/Makefile])
+                 pam/Makefile nslcd/Makefile pynslcd/Makefile pynslcd/config.py
+                 man/Makefile tests/Makefile])
 AC_OUTPUT

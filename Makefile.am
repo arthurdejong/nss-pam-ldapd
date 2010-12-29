@@ -29,6 +29,9 @@ endif
 if ENABLE_NSLCD
   SUBDIRS += nslcd
 endif
+if ENABLE_PYNSLCD
+  SUBDIRS += pynslcd
+endif
 SUBDIRS += man tests
 
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
