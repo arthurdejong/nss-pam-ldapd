@@ -70,6 +70,9 @@ bind_timelimit 4
 reconnect_sleeptime 4
 reconnect_retrytime 10
 filter group (|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))
+base passwd ou=people,dc=test,dc=tld
+base shadow ou=people,dc=test,dc=tld
+base group ou=groups,dc=test,dc=tld
 
 
 OLD TESTS

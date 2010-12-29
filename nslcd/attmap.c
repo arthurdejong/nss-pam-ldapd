@@ -213,10 +213,13 @@ const char *attmap_set_mapping(const char **var,const char *value)
     /* these attributes may contain an expression
        (note that this needs to match the functionality in the specific
        lookup module) */
-    if ( (var!=&attmap_passwd_gidNumber) &&
+    if ( (var!=&attmap_group_userPassword) &&
+         (var!=&attmap_passwd_userPassword) &&
+         (var!=&attmap_passwd_gidNumber) &&
          (var!=&attmap_passwd_gecos) &&
          (var!=&attmap_passwd_homeDirectory) &&
          (var!=&attmap_passwd_loginShell) &&
+         (var!=&attmap_shadow_userPassword) &&
          (var!=&attmap_shadow_shadowLastChange) &&
          (var!=&attmap_shadow_shadowMin) &&
          (var!=&attmap_shadow_shadowMax) &&

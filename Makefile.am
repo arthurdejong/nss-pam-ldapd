@@ -29,6 +29,9 @@ endif
 if ENABLE_NSLCD
   SUBDIRS += nslcd
 endif
+if ENABLE_PYNSLCD
+  SUBDIRS += pynslcd
+endif
 SUBDIRS += man tests
 
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
@@ -64,7 +67,7 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
 EXTRA_DIST = nslcd.conf nslcd.h $(wildcard ChangeLog-20??) \
              $(wildcard m4/*.m4) HACKING $(DEBIAN_FILES)
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-warnings
+DISTCHECK_CONFIGURE_FLAGS = --enable-warnings --with-pam-seclib-dir="\$${libdir}/security"
 
 ACLOCAL_AMFLAGS = -I m4
 

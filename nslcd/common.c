@@ -35,6 +35,7 @@
 #include "nslcd.h"
 #include "common.h"
 #include "log.h"
+#include "attmap.h"
 
 /* simple wrapper around snptintf() to return non-0 in case
    of any failure (but always keep string 0-terminated) */
@@ -51,25 +52,21 @@ int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
   return ((res<0)||(((size_t)res)>=buflen));
 }
 
-const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr)
+const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr,char *buffer,size_t buflen)
 {
-  const char **values;
-  int i;
-  /* get the entries */
-  values=myldap_get_values(entry,attr);
-  if ((values==NULL)||(values[0]==NULL))
+  const char *tmpvalue;
+  /* get the value */
+  tmpvalue=attmap_get_value(entry,attr,buffer,buflen);
+  if (tmpvalue==NULL)
     return NULL;
   /* go over the entries and return the remainder of the value if it
      starts with {crypt} or crypt$ */
-  for (i=0;values[i]!=NULL;i++)
-  {
-    if (strncasecmp(values[i],"{crypt}",7)==0)
-      return values[i]+7;
-    if (strncasecmp(values[i],"crypt$",6)==0)
-      return values[i]+6;
-  }
+  if (strncasecmp(tmpvalue,"{crypt}",7)==0)
+    return tmpvalue+7;
+  if (strncasecmp(tmpvalue,"crypt$",6)==0)
+    return tmpvalue+6;
   /* just return the first value completely */
-  return values[0];
+  return tmpvalue;
   /* TODO: support more password formats e.g. SMD5
     (which is $1$ but in a different format)
     (any code for this is more than welcome) */
@@ -100,13 +97,20 @@ int isvalidname(const char *name)
     if (i>=LOGIN_NAME_MAX)
       return 0;
 #endif /* LOGIN_NAME_MAX */
-    if ( ! ( ( (i!=0) && (name[i]=='-') ) ||
-             ( (i!=0) && (name[i]=='\\') && name[i+1]!='\0' ) ||
-             (name[i]>='@' && name[i] <= 'Z') ||
-             (name[i]>='a' && name[i] <= 'z') ||
-             (name[i]>='0' && name[i] <= '9') ||
-             name[i]=='.' || name[i]=='_'  || name[i]=='$' || name[i]==' ') )
-      return 0;
+    /* characters supported everywhere in the name */
+    if ( (name[i]>='@' && name[i] <= 'Z') ||
+         (name[i]>='a' && name[i] <= 'z') ||
+         (name[i]>='0' && name[i] <= '9') ||
+         name[i]=='.' || name[i]=='_'  || name[i]=='$' )
+      continue;
+    /* characters that may be anywhere except as first character */
+    if ( i>0 && ( name[i]=='-' || name[i]=='~' ) )
+      continue;
+    /* characters that may not be the first or last character */
+    if ( ( i>0 && name[i+1]!='\0' ) && ( name[i]=='\\' || name[i]==' ') )
+      continue;
+    /* anything else is bad */
+    return 0;
   }
   /* no test failed so it must be good */
   return -1;

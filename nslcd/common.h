@@ -59,7 +59,8 @@ int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
    /etc/group or /etc/shadow depending upon what is in the directory.
    This function will return NULL if no passwd is found and will return the
    literal value in the directory if conversion is not possible. */
-const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr);
+const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr,
+                             char *buffer,size_t buflen);
 
 /* write out an address, parsing the addr value */
 int write_address(TFILE *fp,const char *addr);
@@ -93,6 +94,9 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid,int *rcp);
 
 /* transforms the uid into a DN by doing an LDAP lookup */
 MUST_USE char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen);
+
+/* try to update the shadowLastChange attribute of the entry if possible */
+int update_lastchange(MYLDAP_SESSION *session,const char *userdn);
 
 /* these are the functions for initialising the database specific
    modules */

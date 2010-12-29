@@ -137,6 +137,8 @@ struct ldap_config
   SET *ldc_nss_initgroups_ignoreusers;
   /* the search that should be performed to do autorisation checks */
   char *ldc_pam_authz_search;
+  /* minimum uid for users retreived from LDAP */
+  uid_t ldc_nss_min_uid;
 };
 
 /* this is a pointer to the global configuration, it should be available

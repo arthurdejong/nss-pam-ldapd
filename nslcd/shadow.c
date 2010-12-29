@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "common.h"
 #include "log.h"
@@ -54,7 +55,7 @@ const char *shadow_filter = "(objectClass=shadowAccount)";
 
 /* the attributes to request with searches */
 const char *attmap_shadow_uid              = "uid";
-const char *attmap_shadow_userPassword     = "userPassword";
+const char *attmap_shadow_userPassword     = "\"*\"";
 const char *attmap_shadow_shadowLastChange = "\"${shadowLastChange:--1}\"";
 const char *attmap_shadow_shadowMin        = "\"${shadowMin:--1}\"";
 const char *attmap_shadow_shadowMax        = "\"${shadowMax:--1}\"";
@@ -169,6 +170,71 @@ static long to_date(const char *date,const char *attr)
     tmpvalue=""; \
   var=to_date(tmpvalue,attmap_shadow_##att);
 
+/* try to update the shadowLastChange attribute of the entry if possible */
+int update_lastchange(MYLDAP_SESSION *session,const char *userdn)
+{
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  static const char *attrs[3];
+  const char *attr;
+  int rc;
+  const char **values;
+  LDAPMod mod,*mods[2];
+  char buffer[80],*strvals[2];
+  /* find the name of the attribute to use */
+  if ( (attmap_shadow_shadowLastChange==NULL) || (attmap_shadow_shadowLastChange[0]=='\0') )
+    return LDAP_LOCAL_ERROR; /* attribute not set at all */
+  else if (strcmp(attmap_shadow_shadowLastChange,"\"${shadowLastChange:--1}\"")==0)
+    attr="shadowLastChange";
+  else if (attmap_shadow_shadowLastChange[0]=='\"')
+    return LDAP_LOCAL_ERROR; /* other expressions not supported for now */
+  else
+    attr=attmap_shadow_shadowLastChange;
+  /* set up the attributes we need */
+  attrs[0]=attmap_shadow_uid;
+  attrs[1]=attr;
+  attrs[2]=NULL;
+  /* find the entry to see if the attribute is present */
+  search=myldap_search(session,userdn,LDAP_SCOPE_BASE,shadow_filter,attrs,&rc);
+  if (search==NULL)
+    return rc;
+  entry=myldap_get_entry(search,&rc);
+  if (entry==NULL)
+    return rc;
+  values=myldap_get_values(entry,attr);
+  if ((values==NULL)||(values[0]==NULL)||(values[0][0]=='\0'))
+    return LDAP_NO_SUCH_ATTRIBUTE;
+  /* build the value for the new attribute */
+  if (strcasecmp(attr,"pwdLastSet")==0)
+  {
+    /* for AD we use another timestamp */
+    if(mysnprintf(buffer,sizeof(buffer),"%ld000000000",((long int)time(NULL)/100L+(134774L*864L))))
+      return LDAP_LOCAL_ERROR;
+  }
+  else
+  {
+    /* time in days since Jan 1, 1970 */
+    if(mysnprintf(buffer,sizeof(buffer),"%ld",((long int)(time(NULL)/(long int)(60*60*24)))))
+      return LDAP_LOCAL_ERROR;
+  }
+  /* update the shadowLastChange attribute */
+  strvals[0]=buffer;
+  strvals[1]=NULL;
+  mod.mod_op=LDAP_MOD_REPLACE;
+  mod.mod_type=(char *)attr;
+  mod.mod_values=strvals;
+  mods[0]=&mod;
+  mods[1]=NULL;
+  rc=myldap_modify(session,userdn,mods);
+  if (rc!=LDAP_SUCCESS)
+    log_log(LOG_WARNING,"modification of %s attribute of %s failed: %s",
+                        attr,userdn,ldap_err2string(rc));
+  else
+    log_log(LOG_DEBUG,"modification of %s attribute of %s succeeded",
+                     attr,userdn);
+  return rc;
+}
+
 static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
 {
   int32_t tmpint32;
@@ -185,6 +251,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   unsigned long flag;
   int i;
   char buffer[80];
+  char passbuffer[80];
   /* get username */
   usernames=myldap_get_values(entry,attmap_shadow_uid);
   if ((usernames==NULL)||(usernames[0]==NULL))
@@ -194,7 +261,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
     return 0;
   }
   /* get password */
-  passwd=get_userpassword(entry,attmap_shadow_userPassword);
+  passwd=get_userpassword(entry,attmap_shadow_userPassword,passbuffer,sizeof(passbuffer));
   if (passwd==NULL)
     passwd=default_shadow_userPassword;
   /* get lastchange date */

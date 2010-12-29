@@ -399,17 +399,25 @@
        See the section on attribute mapping expressions below for more details.
       </para>
       <para>
-       Only some attributes for passwd and shadow entries may be mapped with
-       an expression (because other attributes may be used in search
+       Only some attributes for group, passwd and shadow entries may be mapped
+       with an expression (because other attributes may be used in search
        filters).
+       For group entries only the <literal>userPassword</literal> attribute
+       may be mapped with an expression.
        For passwd entries the following attributes may be mapped with an
-       expression: <literal>gidNumber</literal>, <literal>gecos</literal>,
-       <literal>homeDirectory</literal> and <literal>loginShell</literal>.
+       expression: <literal>userPassword</literal>, <literal>gidNumber</literal>,
+       <literal>gecos</literal>, <literal>homeDirectory</literal> and
+       <literal>loginShell</literal>.
        For shadow entries the following attributes may be mapped with an
-       expression: <literal>shadowLastChange</literal>, <literal>shadowMin</literal>,
-       <literal>shadowMax</literal>, <literal>shadowWarning</literal>,
-       <literal>shadowInactive</literal>, <literal>shadowExpire</literal> and
-       <literal>shadowFlag</literal>.
+       expression: <literal>userPassword</literal>, <literal>shadowLastChange</literal>,
+       <literal>shadowMin</literal>, <literal>shadowMax</literal>,
+       <literal>shadowWarning</literal>, <literal>shadowInactive</literal>,
+       <literal>shadowExpire</literal> and <literal>shadowFlag</literal>.
+      </para>
+      <para>
+       By default all <literal>userPassword</literal> attributes are mapped
+       to the unmatchable password ("*") to avoid accidentally leaking
+       password information.
       </para>
      </listitem>
     </varlistentry>
@@ -537,6 +545,8 @@
       <para>
        Specifies the directory containing X.509 certificates for peer
        authentication.
+       This parameter is ignored when using GnuTLS.
+       On Debian OpenLDAP is linked against GnuTLS.
       </para>
      </listitem>
     </varlistentry>
@@ -555,6 +565,8 @@
      <listitem>
       <para>
        Specifies the path to an entropy source.
+       This parameter is ignored when using GnuTLS.
+       On Debian OpenLDAP is linked against GnuTLS.
       </para>
      </listitem>
     </varlistentry>
@@ -644,6 +656,17 @@
        Alternatively, the value <literal>ALLLOCAL</literal> may be
        used. With that value nslcd builds a full list of
        non-<acronym>LDAP</acronym> users on startup.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><option>nss_min_uid</option> <replaceable>UID</replaceable></term>
+     <listitem>
+      <para>
+       This option ensures that <acronym>LDAP</acronym> users with a numeric
+       user id lower than the specified value are ignored. Also requests for
+       users with a lower user id are ignored.
       </para>
      </listitem>
     </varlistentry>

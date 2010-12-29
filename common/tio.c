@@ -295,7 +295,12 @@ int tio_read(TFILE *fp, void *buf, size_t count)
     /* read the input in the buffer */
     rv=read(fp->fd,fp->readbuffer.buffer+fp->readbuffer.start,fp->readbuffer.size-fp->readbuffer.start);
     /* check for errors */
-    if ((rv==0)||((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN)))
+    if (rv==0)
+    {
+      errno=ECONNRESET;
+      return -1;
+    }
+    else if ((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN))
       return -1; /* something went wrong with the read */
     /* skip the read part in the buffer */
     fp->readbuffer.len=rv;

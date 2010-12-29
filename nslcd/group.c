@@ -61,7 +61,7 @@ const char *group_filter = "(objectClass=posixGroup)";
 
 /* the attributes to request with searches */
 const char *attmap_group_cn            = "cn";
-const char *attmap_group_userPassword  = "userPassword";
+const char *attmap_group_userPassword  = "\"*\"";
 const char *attmap_group_gidNumber     = "gidNumber";
 const char *attmap_group_memberUid     = "memberUid";
 const char *attmap_group_uniqueMember  = "uniqueMember";
@@ -69,9 +69,8 @@ const char *attmap_group_uniqueMember  = "uniqueMember";
 /* default values for attributes */
 static const char *default_group_userPassword     = "*"; /* unmatchable */
 
-
 /* the attribute list to request with searches */
-static const char *group_attrs[6];
+static const char **group_attrs=NULL;
 
 /* create a search filter for searching a group entry
    by name, return -1 on errors */
@@ -132,6 +131,7 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
 void group_init(void)
 {
   int i;
+  SET *set;
   /* set up search bases */
   if (group_bases[0]==NULL)
     for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
@@ -140,12 +140,14 @@ void group_init(void)
   if (group_scope==LDAP_SCOPE_DEFAULT)
     group_scope=nslcd_cfg->ldc_scope;
   /* set up attribute list */
-  group_attrs[0]=attmap_group_cn;
-  group_attrs[1]=attmap_group_userPassword;
-  group_attrs[2]=attmap_group_memberUid;
-  group_attrs[3]=attmap_group_gidNumber;
-  group_attrs[4]=attmap_group_uniqueMember;
-  group_attrs[5]=NULL;
+  set=set_new();
+  attmap_add_attributes(set,attmap_group_cn);
+  attmap_add_attributes(set,attmap_group_userPassword);
+  attmap_add_attributes(set,attmap_group_memberUid);
+  attmap_add_attributes(set,attmap_group_gidNumber);
+  attmap_add_attributes(set,attmap_group_uniqueMember);
+  group_attrs=set_tolist(set);
+  set_free(set);
 }
 
 static int do_write_group(
@@ -224,6 +226,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   gid_t gids[MAXGIDS_PER_ENTRY];
   int numgids;
   char *tmp;
+  char passbuffer[80];
   int rc;
   /* get group name (cn) */
   names=myldap_get_values(entry,attmap_group_cn);
@@ -260,7 +263,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
     }
   }
   /* get group passwd (userPassword) (use only first entry) */
-  passwd=get_userpassword(entry,attmap_group_userPassword);
+  passwd=get_userpassword(entry,attmap_group_userPassword,passbuffer,sizeof(passbuffer));
   if (passwd==NULL)
     passwd=default_group_userPassword;
   /* get group memebers (memberUid&uniqueMember) */
