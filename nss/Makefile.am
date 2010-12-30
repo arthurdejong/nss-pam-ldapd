@@ -31,11 +31,12 @@ nss_ldap_so_SOURCES = common.c common.h prototypes.h \
 EXTRA_nss_ldap_so_SOURCES = aliases.c ethers.c group.c hosts.c netgroup.c \
                             networks.c passwd.c protocols.c rpc.c services.c \
                             shadow.c
-nss_ldap_so_DEPENDENCIES = $(NSS_MODULE_OBJS)
-nss_ldap_so_LDADD = $(NSS_MODULE_OBJS) ../common/libtio.a ../common/libprot.a
+nss_ldap_so_DEPENDENCIES = $(NSS_MODULE_OBJS) solnss.$(OBJEXT)
+nss_ldap_so_LDADD = $(NSS_MODULE_OBJS)
 if NSS_FLAVOUR_SOLARIS
-nss_ldap_so_LDADD += ../common/libdict.a
+nss_ldap_so_LDADD += solnss.$(OBJEXT) ../common/libdict.a
 endif
+nss_ldap_so_LDADD += ../common/libtio.a ../common/libprot.a
 
 EXTRA_DIST = exports.glibc exports.solaris
 
