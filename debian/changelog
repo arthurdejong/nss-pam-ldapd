@@ -1,3 +1,72 @@
+nss-pam-ldapd (0.8.0) experimental; urgency=low
+
+  * include Solaris support developed by Ted C. Cheng of Symas Corporation
+  * include an experimental partial implementation of nslcd in Python
+    (disabled by default, see --enable-pynslcd configure option)
+  * implement a nss_min_uid option to filter user entries returned by LDAP
+  * implement a rootpwmodpw option that allows the root user to change a
+    user's password without a password prompt
+  * try to update the shadowLastChange attribute on password change
+  * all log messages now include a description of the request to more easily
+    track problems when not running in debug mode
+  * allow attribute mapping expressions for the userPassword attribute for
+    passwd, group and shadow entries and by default map it to the unmatchable
+    password ("*") to avoid accidentally leaking password information
+  * numerous compatibility improvements
+  * add --with-pam-seclib-dir and --with-pam-ldap-soname configure options to
+    allow more control of hot to install the PAM module
+  * add --with-nss-flavour and --with-nss-maps configure options to support
+    other C libraries and limit which NSS modules to install
+  * allow tilde (~) in user and group names (closes: #607640)
+  * improvements to the timeout mechanism (connections are now actively timed
+    out using the idle_timelimit option)
+  * set socket timeouts on the LDAP connection to disconnect regardless of
+    LDAP and possibly TLS handling of connection
+  * better disconnect/reconnect handling of error conditions
+  * some code improvements and cleanups and several smaller bug fixes
+  * all internal string comparisons are now also case sensitive (e.g. for
+    providing DN to username lookups, etc)
+  * signal handling in the daemon was changed to behave more reliable across
+    different threading implementations
+  * nslcd will now always return a positive authorisation result during
+    authentication to avoid confusing the PAM module when it is only used for
+    authorisation (closes: #604147)
+  * implement configuring SASL authentication using Debconf, based on a patch
+    by Daniel Dehennin (closes: #586532) (not called for translations yet
+    because the English text is likely to change)
+
+ -- Arthur de Jong <adejong@debian.org>  Thu, 30 Dec 2010 20:00:00 +0100
+
+nss-pam-ldapd (0.7.13) unstable; urgency=low
+
+  * fix handling of idle_timelimit option
+  * fix error code for problem while doing password modification
+
+ -- Arthur de Jong <adejong@debian.org>  Sat, 11 Dec 2010 22:00:00 +0100
+
+nss-pam-ldapd (0.7.12) unstable; urgency=low
+
+  * set a short socket timeout when shutting down the connection to the LDAP
+    server to avoid disconnect problems when using TLS
+    (addresses part of #596983)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 29 Oct 2010 18:00:00 +0200
+
+nss-pam-ldapd (0.7.11) unstable; urgency=low
+
+  * updated Vietnamese debconf translation by Clytie Siddall (closes: #598500)
+  * grow the buffer for the PAM ruser to not reject logins for users with
+    a ruser including a domain part (closes: #600065)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 15 Oct 2010 15:30:00 +0200
+
+nss-pam-ldapd (0.7.10) unstable; urgency=low
+
+  * handle errors from ldap_result() better and disconnect (and reconnect)
+    in more cases (closes: #596983)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 24 Sep 2010 09:00:00 +0200
+
 nss-pam-ldapd (0.7.9) unstable; urgency=low
 
   * fix for --with-nss-ldap-soname configure option by Julien Cristau
