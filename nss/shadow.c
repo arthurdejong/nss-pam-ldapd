@@ -3,6 +3,7 @@
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -48,6 +49,8 @@ static nss_status_t read_spwd(
   return NSS_STATUS_SUCCESS;
 }
 
+#ifdef NSS_FLAVOUR_GLIBC
+
 /* get a shadow entry by name */
 nss_status_t _nss_ldap_getspnam_r(
         const char *name,struct spwd *result,
@@ -81,3 +84,124 @@ nss_status_t _nss_ldap_endspent(void)
 {
   NSS_ENDENT(spentfp);
 }
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+
+static nss_status_t read_spwdstring(TFILE *fp,nss_XbyY_args_t *args)
+{
+  struct spwd result;
+  nss_status_t retv;
+  char *buffer;
+  char field_buf[128];
+  size_t buflen;
+  /* read the spwd */
+  retv=read_spwd(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno);
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* allocate a temporary buffer */
+  buflen=args->buf.buflen;
+  buffer=(char *)malloc(buflen);
+  /* build the formatted string */
+  /* FIXME: implement proper buffer size checking */
+  sprintf(buffer,"%s:%s:",result.sp_namp,result.sp_pwdp);
+  if (result.sp_lstchg >= 0)
+    sprintf(field_buf,"%d:",result.sp_lstchg);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_min >= 0)
+    sprintf(field_buf,"%d:",result.sp_min);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_max >= 0)
+    sprintf(field_buf,"%d:",result.sp_max);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_warn >= 0)
+    sprintf(field_buf,"%d:",result.sp_warn);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_inact >= 0)
+    sprintf(field_buf,"%d:",result.sp_inact);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_expire >= 0)
+    sprintf(field_buf,"%d:",result.sp_expire);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  if (result.sp_flag >= 0)
+    sprintf(field_buf,"%x",result.sp_flag);
+  else
+    sprintf(field_buf,":");
+  strcat(buffer,field_buf);
+  /* copy the result back to the result buffer and free the temporary one */
+  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
+  free(buffer);
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
+}
+
+#define READ_RESULT(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_spwd(fp,(struct spwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
+    read_spwdstring(fp,args); \
+  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+#define READ_RESULT(fp) \
+  read_spwd(fp,(struct spwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno); \
+  if (retv==NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+static nss_status_t shadow_getspnam(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,
+             NSS_ARGS(args)->key.name,
+             READ_RESULT(fp));
+}
+
+static nss_status_t shadow_setspent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_SETENT(LDAP_BE(be)->fp);
+}
+
+static nss_status_t shadow_getspent(nss_backend_t *be,void *args)
+{
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_SHADOW_ALL,
+             READ_RESULT(LDAP_BE(be)->fp));
+}
+
+static nss_status_t shadow_endspent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_ENDENT(LDAP_BE(be)->fp);
+}
+
+static nss_backend_op_t shadow_ops[]={
+  nss_ldap_destructor,
+  shadow_endspent,
+  shadow_setspent,
+  shadow_getspent,
+  shadow_getspnam
+};
+
+nss_backend_t *_nss_ldap_shadow_constr(const char UNUSED(*db_name),
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+{
+  return nss_ldap_constructor(shadow_ops,sizeof(shadow_ops));
+}
+
+#endif /* NSS_FLAVOUR_SOLARIS */

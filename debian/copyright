@@ -7,6 +7,11 @@ http://www.padl.com/OSS/nss_ldap.html
 
 In 2006 Arthur de Jong of West Consuling forked the library to split it into a
 thin NSS part and a server part. Most of the code was rewritten.
+
+The software was renamed to nss-pam-ldapd when PAM code contributed by Howard
+Chu for the OpenLDAP nssov module was integrated. Solaris compatibility was
+developed by Ted C. Cheng of Symas Corporation.
+
 http://arthurdejong.org/nss-pam-ldapd/
 
 Arthur de Jong is both the upstream and Debian package maintainer, so there
@@ -20,6 +25,7 @@ Davide Puricelli (evo), Sami Haahtinen and Stephen Frost.
   Copyright (C) 2006-2007 West Consulting
   Copyright (C) 2006-2009 Arthur de Jong
   Copyright (C) 2009 Howard Chu
+  Copyright (C) 2010 Symas Corporation
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public

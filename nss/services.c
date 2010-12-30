@@ -3,6 +3,7 @@
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -45,6 +46,8 @@ static nss_status_t read_servent(
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }
+
+#ifdef NSS_FLAVOUR_GLIBC
 
 /* get a service entry by name and protocol */
 nss_status_t _nss_ldap_getservbyname_r(
@@ -89,3 +92,105 @@ nss_status_t _nss_ldap_endservent(void)
 {
   NSS_ENDENT(serventfp);
 }
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+
+static nss_status_t read_servstring(TFILE *fp,nss_XbyY_args_t *args)
+{
+  struct servent result;
+  nss_status_t retv;
+  char *buffer;
+  size_t buflen;
+  int i;
+  /* read the servent */
+  retv=read_servent(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno);
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* allocate a temporary buffer */
+  buflen=args->buf.buflen;
+  buffer=(char *)malloc(buflen);
+  /* build the formatted string */
+  /* FIXME: implement proper buffer size checking */
+  sprintf(buffer,"%s %d/%s",result.s_name,result.s_port,result.s_proto);
+  if (result.s_aliases)
+    for (i=0;result.s_aliases[i];i++)
+    {
+      strcat(buffer," ");
+      strcat(buffer,result.s_aliases[i]);
+    }
+  /* copy the result back to the result buffer and free the temporary one */
+  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
+  free(buffer);
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
+}
+
+#define READ_RESULT(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_servent(fp,(struct servent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
+    read_servstring(fp,args); \
+  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+#define READ_RESULT(fp) \
+  read_servent(fp,(struct servent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno); \
+  if (retv==NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+static nss_status_t services_getservbyname(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,
+            WRITE_STRING(fp,NSS_ARGS(args)->key.serv.serv.name);
+            WRITE_STRING(fp,NSS_ARGS(args)->key.serv.proto),
+            READ_RESULT(fp));
+}
+
+static nss_status_t services_getservbyport(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,
+            WRITE_INT32(fp,ntohs(NSS_ARGS(args)->key.serv.serv.port));
+            WRITE_STRING(fp,NSS_ARGS(args)->key.serv.proto),
+            READ_RESULT(fp));
+}
+
+static nss_status_t services_setservent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_SETENT(LDAP_BE(be)->fp);
+}
+
+static nss_status_t services_getservent(nss_backend_t *be,void *args)
+{
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_SERVICE_ALL,
+             READ_RESULT(LDAP_BE(be)->fp));
+}
+
+static nss_status_t services_endservent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_ENDENT(LDAP_BE(be)->fp);
+}
+
+static nss_backend_op_t services_ops[]={
+  nss_ldap_destructor,
+  services_endservent,
+  services_setservent,
+  services_getservent,
+  services_getservbyname,
+  services_getservbyport
+};
+
+nss_backend_t *_nss_ldap_services_constr(const char UNUSED(*db_name),
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+{
+  return nss_ldap_constructor(services_ops,sizeof(services_ops));
+}
+
+#endif /* NSS_FLAVOUR_SOLARIS */

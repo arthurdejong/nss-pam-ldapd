@@ -3,6 +3,7 @@
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -40,6 +41,8 @@ static nss_status_t read_etherent(
   READ_TYPE(fp,result->e_addr,uint8_t[6]);
   return NSS_STATUS_SUCCESS;
 }
+
+#ifdef NSS_FLAVOUR_GLIBC
 
 /* map a hostname to the corresponding ethernet address */
 nss_status_t _nss_ldap_gethostton_r(
@@ -84,3 +87,98 @@ nss_status_t _nss_ldap_endetherent(void)
 {
   NSS_ENDENT(etherentfp);
 }
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+#ifndef NSS_BUFLEN_ETHERS
+#define NSS_BUFLEN_ETHERS 1024
+#endif /* NSS_BUFLEN_ETHERS */
+
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+
+static nss_status_t read_etherstring(TFILE *fp,nss_XbyY_args_t *args)
+{
+  struct etherent result;
+  nss_status_t retv;
+  char *buffer;
+  int res;
+  /* read the etherent into a temporary buffer */
+  buffer=(char *)malloc(args->buf.buflen);
+  if (buffer==NULL)
+    return NSS_STATUS_UNAVAIL;
+  retv=read_etherent(fp,&result,buffer,args->buf.buflen,&errno);
+  if (retv!=NSS_STATUS_SUCCESS)
+  {
+    free(buffer);
+    return retv;
+  }
+  /* make a string representation */
+  res=snprintf(args->buf.buffer,args->buf.buflen,
+               "%s %s",ether_ntoa(&result.e_addr),result.e_name);
+  free(buffer);
+  if ((res<0)||(res>=args->buf.buflen))
+    return NSS_STATUS_TRYAGAIN;
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
+}
+
+#define READ_RESULT(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_etherent(fp,(struct etherent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
+    read_etherstring(fp,args); \
+  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+#define READ_RESULT(fp) \
+  read_etherent(fp,(struct etherent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno); \
+  if (retv==NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+/* map a hostname to the corresponding ethernet address */
+static nss_status_t ethers_gethostton(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,
+             NSS_ARGS(args)->key.name,
+             READ_RESULT(fp));
+}
+
+/* map an ethernet address to the corresponding hostname */
+static nss_status_t ethers_getntohost(nss_backend_t UNUSED(*be),void *args)
+{
+  struct ether_addr *addr=(struct ether_addr *)(NSS_ARGS(args)->key.ether);
+  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,
+             *addr,uint8_t[6],
+             READ_RESULT(fp));
+}
+
+static nss_status_t ethers_destructor(nss_backend_t *be,void UNUSED(*args))
+{
+  free(be);
+  return NSS_STATUS_SUCCESS;
+}
+
+static nss_backend_op_t ethers_ops[]={
+  ethers_destructor,
+  ethers_gethostton,
+  ethers_getntohost
+};
+
+nss_backend_t *_nss_ldap_ethers_constr(const char UNUSED(*db_name),
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+{
+  nss_backend_t *be;
+  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
+    return NULL;
+  be->ops=ethers_ops;
+  be->n_ops=sizeof(ethers_ops)/sizeof(nss_backend_op_t);
+  return be;
+}
+
+#endif /* NSS_FLAVOUR_SOLARIS */

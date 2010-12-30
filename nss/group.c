@@ -3,6 +3,7 @@
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -53,8 +54,10 @@ static nss_status_t read_gids(
   int32_t res=(int32_t)NSLCD_RESULT_BEGIN;
   int32_t tmpint32,tmp2int32,tmp3int32;
   gid_t gid;
+#ifdef NSS_FLAVOUR_GLIBC
   gid_t *newgroups;
   long int newsize;
+#endif /* NSS_FLAVOUR_GLIBC */
   /* loop over results */
   while (res==(int32_t)NSLCD_RESULT_BEGIN)
   {
@@ -73,6 +76,7 @@ static nss_status_t read_gids(
       if ( (limit>0) && (*start>=limit) )
         return NSS_STATUS_TRYAGAIN;
       /* check if our buffer is large enough */
+#ifdef NSS_FLAVOUR_GLIBC
       if ((*start)>=(*size))
       {
         /* for some reason Glibc expects us to grow the array (completely
@@ -88,6 +92,7 @@ static nss_status_t read_gids(
         *groupsp=newgroups;
         *size=newsize;
       }
+#endif /* NSS_FLAVOUR_GLIBC */
       /* add gid to list */
       (*groupsp)[(*start)++]=gid;
     }
@@ -99,6 +104,8 @@ static nss_status_t read_gids(
   /* return the proper status code */
   return NSS_STATUS_SUCCESS;
 }
+
+#ifdef NSS_FLAVOUR_GLIBC
 
 /* get a group entry by name */
 nss_status_t _nss_ldap_getgrnam_r(
@@ -171,3 +178,126 @@ nss_status_t _nss_ldap_initgroups_dyn(
 #undef buffer
 #undef buflen
 }
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+
+static nss_status_t read_groupstring(TFILE *fp,nss_XbyY_args_t *args)
+{
+  struct group result;
+  nss_status_t retv;
+  char *buffer;
+  size_t buflen;
+  int i;
+  /* read the group into a temporary buffer */
+  buffer=(char *)malloc(args->buf.buflen);
+  if (buffer==NULL)
+    return NSS_STATUS_UNAVAIL;
+  retv=read_group(fp,&result,buffer,args->buf.buflen,&errno);
+  if (retv!=NSS_STATUS_SUCCESS)
+  {
+    free(buffer);
+    return retv;
+  }
+  /* make a string representation */
+  snprintf(args->buf.buffer,args->buf.buflen,
+           "%s:%s:%d:",result.gr_name,result.gr_passwd,(int)result.gr_gid);
+  args->buf.buffer[args->buf.buflen-1]='\0';
+  if (result.gr_mem)
+    for (i=0;result.gr_mem[i];i++)
+    {
+      if (i)
+        strncat(args->buf.buffer,args->buf.buflen-strlen(args->buf.buffer)-1,",");
+      strncat(args->buf.buffer,args->buf.buflen-strlen(args->buf.buffer)-1,result.gr_mem[i]);
+    }
+  free(buffer);
+  /* check if buffer overflowed */
+  if (strlen(args->buf.buffer)>=args->buf.buffer-1)
+    return NSS_STATUS_TRYAGAIN;
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
+}
+
+#define READ_RESULT(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_group(fp,(struct group *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
+    read_groupstring(fp,args); \
+  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+#define READ_RESULT(fp) \
+  read_group(fp,(struct group *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno); \
+  if (retv==NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+static nss_status_t group_getgrnam(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,
+             NSS_ARGS(args)->key.name,
+             READ_RESULT(fp));
+}
+
+static nss_status_t group_getgrgid(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,
+             NSS_ARGS(args)->key.gid,gid_t,
+             READ_RESULT(fp));
+}
+
+static nss_status_t group_setgrent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_SETENT(LDAP_BE(be)->fp);
+}
+
+static nss_status_t group_getgrent(nss_backend_t *be,void *args)
+{
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_GROUP_ALL,
+             READ_RESULT((LDAP_BE(be)->fp)));
+}
+
+static nss_status_t group_endgrent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_ENDENT(LDAP_BE(be)->fp);
+}
+
+/*
+static nss_status_t get_initgroups_dyn(
+        const char *user,gid_t skipgroup,long int *start,
+        gid_t **groupsp,long int limit,int *errnop)
+*/
+static nss_status_t group_getgroupsbymember(nss_backend_t UNUSED(*be),void *args)
+{
+  struct nss_groupsbymem *argp=(struct nss_groupsbymem *)args;
+  long int start=(long int)argp->numgids;
+  gid_t skipgroup=(start>0)?argp->gid_array[0]:(gid_t)-1;
+  NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,
+             argp->username,
+             read_gids(fp,skipgroup,&start,NULL,(gid_t **)&argp->gid_array,argp->maxgids,&errno);
+             argp->numgids=(int)start;);
+}
+
+static nss_backend_op_t group_ops[]={
+  nss_ldap_destructor,
+  group_endgrent,
+  group_setgrent,
+  group_getgrent,
+  group_getgrnam,
+  group_getgrgid,
+  group_getgroupsbymember
+};
+
+nss_backend_t *_nss_ldap_group_constr(const char UNUSED(*db_name),
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+{
+  return nss_ldap_constructor(group_ops,sizeof(group_ops));
+}
+
+#endif /* NSS_FLAVOUR_SOLARIS */

@@ -3,6 +3,7 @@
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -24,6 +25,9 @@
 
 #include <string.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "prototypes.h"
 #include "common.h"
@@ -107,6 +111,8 @@ static nss_status_t read_netent(
   WRITE_INT32(fp,4); \
   WRITE_INT32(fp,htonl(addr));
 
+#ifdef NSS_FLAVOUR_GLIBC
+
 /* get a network entry by name */
 nss_status_t _nss_ldap_getnetbyname_r(
         const char *name,struct netent *result,
@@ -151,3 +157,108 @@ nss_status_t _nss_ldap_endnetent(void)
 {
   NSS_ENDENT(netentfp);
 }
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+
+static nss_status_t read_netentstring(TFILE *fp,nss_XbyY_args_t *args)
+{
+  struct netent result;
+  nss_status_t retv;
+  char *buffer;
+  size_t buflen;
+  int i;
+  struct in_addr priv_in_addr;
+  /* read the netent */
+  retv=read_netent(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno));
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* allocate a temporary buffer */
+  buflen=args->buf.buflen;
+  buffer=(char *)malloc(buflen);
+  /* build the formatted string */
+  /* FIXME: implement proper buffer size checking */
+  priv_in_addr.s_addr = result.n_net;
+  sprintf(buffer,"%s %s",result.n_name,inet_ntoa(priv_in_addr)); /* ipNetworkNumber */
+  if (result.n_aliases)
+    for (i=0;result.n_aliases[i];i++)
+    {
+      strcat(buffer," ");
+      strcat(buffer,result.n_aliases[i]);
+    }
+  /* copy the result back to the result buffer and free the temporary one */
+  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
+  free(buffer);
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
+}
+
+#define READ_RESULT(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_netent(fp,(struct netent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)): \
+    read_netentstring(fp,args); \
+  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+#define READ_RESULT(fp) \
+  read_netent(fp,(struct netent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)); \
+  if (retv==NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+/* more of a dirty hack */
+#define h_errnop (&(NSS_ARGS(args)->h_errno))
+
+static nss_status_t networks_getnetbyname(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,
+             NSS_ARGS(args)->key.name,
+             READ_RESULT(fp));
+}
+
+static nss_status_t networks_getnetbyaddr(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,
+            WRITE_ADDRESS(fp,NSS_ARGS(args)->key.netaddr.net),
+            READ_RESULT(fp));
+}
+
+static nss_status_t networks_setnetent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_SETENT(LDAP_BE(be)->fp);
+}
+
+static nss_status_t networks_getnetent(nss_backend_t *be,void *args)
+{
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_NETWORK_ALL,
+             READ_RESULT(LDAP_BE(be)->fp));
+}
+
+static nss_status_t networks_endnetent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_ENDENT(LDAP_BE(be)->fp);
+}
+
+static nss_backend_op_t networks_ops[]={
+  nss_ldap_destructor,
+  networks_endnetent,
+  networks_setnetent,
+  networks_getnetent,
+  networks_getnetbyname,
+  networks_getnetbyaddr
+};
+
+nss_backend_t *_nss_ldap_networks_constr(const char UNUSED(*db_name),
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+{
+  return nss_ldap_constructor(networks_ops,sizeof(networks_ops));
+}
+
+#endif /* NSS_FLAVOUR_SOLARIS */

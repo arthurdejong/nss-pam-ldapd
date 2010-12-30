@@ -75,13 +75,50 @@
   if (!_nss_ldap_enablelookups) \
     return NSS_STATUS_UNAVAIL;
 
-/* check validity of passed buffer */
+#ifdef NSS_FLAVOUR_GLIBC
+
+/* extra definitions we need (nothing for Glibc) */
+#define NSS_EXTRA_DEFS ;
+
+/* check validity of passed buffer (Glibc flavour) */
 #define NSS_BUFCHECK \
   if ((buffer==NULL)||(buflen<=0)) \
   { \
       *errnop=EINVAL; \
       return NSS_STATUS_UNAVAIL; \
   }
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+/* extra definitions we need (Solaris NSS functions don't pass errno) */
+#define NSS_EXTRA_DEFS \
+  int *errnop=&(errno);
+
+/* check validity of passed buffer (Solaris flavour) */
+#define NSS_BUFCHECK \
+  if ((NSS_ARGS(args)->buf.buffer==NULL)||(NSS_ARGS(args)->buf.buflen<=0)) \
+  { \
+      NSS_ARGS(args)->erange=1; \
+      return NSS_STATUS_TRYAGAIN; \
+  }
+
+/* this is the backend structure for Solaris */
+struct nss_ldap_backend
+{
+  nss_backend_op_t *ops; /* function-pointer table */
+  int n_ops; /* number of function pointers */
+  TFILE *fp; /* the file pointer for {set,get,end}ent() functions */
+};
+
+/* constructor for LDAP backends */
+nss_backend_t *nss_ldap_constructor(nss_backend_op_t *ops,size_t sizeofops);
+
+/* destructor for LDAP backends */
+nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args));
+
+#endif /* NSS_FLAVOUR_SOLARIS */
 
 /* The following macros to automatically generate get..byname(),
    get..bynumber(), setent(), getent() and endent() function
@@ -100,6 +137,7 @@
   TFILE *fp; \
   int32_t tmpint32; \
   nss_status_t retv; \
+  NSS_EXTRA_DEFS; \
   NSS_AVAILCHECK; \
   NSS_BUFCHECK; \
   /* open socket and write request */ \
@@ -144,6 +182,7 @@
 #define NSS_GETENT(fp,action,readfn) \
   int32_t tmpint32; \
   nss_status_t retv; \
+  NSS_EXTRA_DEFS; \
   NSS_AVAILCHECK; \
   NSS_BUFCHECK; \
   /* check that we have a valid file descriptor */ \

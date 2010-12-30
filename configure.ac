@@ -433,7 +433,10 @@ then
   AC_MSG_CHECKING([which NSS maps to build])
   if test "x$with_nss_maps" = "xall"
   then
-    with_nss_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow"
+    case "$with_nss_flavour" in
+      glibc)   with_nss_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow" ;;
+      solaris) with_nss_maps="ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow" ;;
+    esac
   fi
   AC_MSG_RESULT($with_nss_maps)
   NSS_MODULE_OBJS="`echo "$with_nss_maps " | sed 's/,/ /g;s/  */.$(OBJEXT) /g'`"
@@ -723,6 +726,9 @@ then
   # check Python interpreter
   AM_PATH_PYTHON(2.5)
 fi
+
+AM_CONDITIONAL([NSS_FLAVOUR_GLIBC], [test "x${with_nss_flavour}" = xglibc])
+AM_CONDITIONAL([NSS_FLAVOUR_SOLARIS], [test "x${with_nss_flavour}" = xsolaris])
 
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile

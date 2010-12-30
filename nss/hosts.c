@@ -3,6 +3,7 @@
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -24,6 +25,9 @@
 
 #include <string.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "prototypes.h"
 #include "common.h"
@@ -167,6 +171,8 @@ static nss_status_t read_hostent_nextonempty(
   WRITE_INT32(fp,len); \
   WRITE(fp,addr,len);
 
+#ifdef NSS_FLAVOUR_GLIBC
+
 /* this function looks up a single host entry and returns all the addresses
    associated with the host in a single address familiy
    name            - IN  - hostname to lookup
@@ -231,3 +237,146 @@ nss_status_t _nss_ldap_endhostent(void)
 {
   NSS_ENDENT(hostentfp);
 }
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+struct nss_ldap_hosts_backend
+{
+  nss_backend_op_t *ops;
+  int n_ops;
+  TFILE *fp;
+};
+
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+
+static nss_status_t read_hoststring(TFILE *fp,nss_XbyY_args_t *args,int erronempty)
+{
+  struct hostent result;
+  nss_status_t retv;
+  char *buffer;
+  size_t buflen;
+  int i;
+  /* read the hostent */
+  if (erronempty)
+    retv=read_hostent_erronempty(fp,NSS_ARGS(args)->key.hostaddr.type,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno));
+  else
+    retv=read_hostent_nextonempty(fp,NSS_ARGS(args)->key.hostaddr.type,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno));
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* allocate a temporary buffer */
+  buflen=args->buf.buflen;
+  buffer=(char *)malloc(buflen);
+  /* build the formatted string */
+  /* FIXME: implement proper buffer size checking */
+  if (result.h_addr_list)
+  {
+    struct in_addr in;
+    (void)memcpy(&in.s_addr,result.h_addr_list[0],sizeof(in.s_addr));
+    sprintf(buffer,"%s %s",inet_ntoa(in),result.h_name);
+    if (result.h_aliases)
+    {
+      int j;
+      for (j=0;result.h_aliases[j];j++)
+      {
+        strcat(buffer,"  ");
+        strcat(buffer,result.h_aliases[j]);
+      }
+    }
+    for (i=1;result.h_addr_list[i];i++)
+    {
+      (void)memcpy(&in.s_addr,result.h_addr_list[i],sizeof(in.s_addr));
+      strcat(buffer,"\n");
+      strcat(buffer,inet_ntoa(in));
+      strcat(buffer," ");
+      strcat(buffer,result.h_name);
+      /* TODO: aliases only supplied to the first address */
+      /* need review */
+    }
+  }
+  /* copy the result back to the result buffer and free the temporary one */
+  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
+  free(buffer);
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
+}
+
+#define READ_RESULT_ERRONEMPTY(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_hostent_erronempty(fp,NSS_ARGS(args)->key.hostaddr.type,(struct hostent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)): \
+    read_hoststring(fp,args,1); \
+  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#define READ_RESULT_NEXTONEMPTY(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_hostent_nextonempty(fp,NSS_ARGS(args)->key.hostaddr.type,(struct hostent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)): \
+    read_hoststring(fp,args,0); \
+  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+#define READ_RESULT_ERRONEMPTY(fp) \
+  read_hostent_erronempty(fp,NSS_ARGS(args)->key.hostaddr.type,(struct hostent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)); \
+  if (retv==NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#define READ_RESULT_NEXTONEMPTY(fp) \
+  read_hostent_nextonempty(fp,NSS_ARGS(args)->key.hostaddr.type,(struct hostent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno,&(NSS_ARGS(args)->h_errno)); \
+  if (retv==NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+/* hack to set the correct errno and h_errno */
+#define h_errnop &(NSS_ARGS(args)->h_errno)
+
+static nss_status_t hosts_gethostbyname(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,
+             NSS_ARGS(args)->key.name,
+             READ_RESULT_ERRONEMPTY(fp));
+}
+
+static nss_status_t hosts_gethostbyaddr(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
+            WRITE_ADDRESS(fp,NSS_ARGS(args)->key.hostaddr.type,NSS_ARGS(args)->key.hostaddr.len,NSS_ARGS(args)->key.hostaddr.addr),
+            READ_RESULT_ERRONEMPTY(fp));
+}
+
+static nss_status_t hosts_sethostent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_SETENT(LDAP_BE(be)->fp);
+}
+
+static nss_status_t hosts_gethostent(nss_backend_t *be,void *args)
+{
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_HOST_ALL,
+             READ_RESULT_NEXTONEMPTY(LDAP_BE(be)->fp));
+}
+
+static nss_status_t hosts_endhostent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_ENDENT(LDAP_BE(be)->fp);
+}
+
+static nss_backend_op_t hosts_ops[]={
+  nss_ldap_destructor,
+  hosts_endhostent,
+  hosts_sethostent,
+  hosts_gethostent,
+  hosts_gethostbyname,
+  hosts_gethostbyaddr
+};
+
+nss_backend_t *_nss_ldap_hosts_constr(const char UNUSED(*db_name),
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+{
+  return nss_ldap_constructor(hosts_ops,sizeof(hosts_ops));
+}
+
+#endif /* NSS_FLAVOUR_SOLARIS */

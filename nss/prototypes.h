@@ -29,6 +29,8 @@
    NSS_STATUS_UNAVAIL */
 extern int _nss_ldap_enablelookups;
 
+#ifdef NSS_FLAVOUR_GLIBC
+
 /*
    These are prototypes for functions exported from the ldap NSS module.
    For more complete definitions of these functions check the GLIBC
@@ -116,5 +118,27 @@ nss_status_t _nss_ldap_getspnam_r(const char *name,struct spwd *result,char *buf
 nss_status_t _nss_ldap_setspent(int stayopen);
 nss_status_t _nss_ldap_getspent_r(struct spwd *result,char *buffer,size_t buflen,int *errnop);
 nss_status_t _nss_ldap_endspent(void);
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+/* helper marcos to do casts */
+#define NSS_ARGS(args) ((nss_XbyY_args_t *)args)
+#define LDAP_BE(be) ((struct nss_ldap_backend*)(be))
+
+/* these are the constructors we provide */
+nss_backend_t *_nss_ldap_ethers_constr(const char *db_name,const char *src_name,const char *cfg_args);
+nss_backend_t *_nss_ldap_group_constr(const char *db_name,const char *src_name,const char *cfg_args);
+nss_backend_t *_nss_ldap_hosts_constr(const char *db_name,const char *src_name,const char *cfg_args);
+nss_backend_t *_nss_ldap_netgroup_constr(const char *db_name,const char *src_name,const char *cfg_args);
+nss_backend_t *_nss_ldap_networks_constr(const char *db_name,const char *src_name,const char *cfg_args);
+nss_backend_t *_nss_ldap_passwd_constr(const char *db_name,const char *src_name,const char *cfg_args);
+nss_backend_t *_nss_ldap_protocols_constr(const char *db_name,const char *src_name,const char *cfg_args);
+nss_backend_t *_nss_ldap_rpc_constr(const char *db_name,const char *src_name,const char *cfg_args);
+nss_backend_t *_nss_ldap_services_constr(const char *db_name,const char *src_name,const char *cfg_args);
+nss_backend_t *_nss_ldap_shadow_constr(const char *db_name,const char *src_name,const char *cfg_args);
+
+#endif /* NSS_FLAVOUR_SOLARIS */
 
 #endif /* not NSS__PROTOTYPES_H */

@@ -3,6 +3,7 @@
 
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -41,6 +42,8 @@ static nss_status_t read_rpcent(
   READ_INT32(fp,result->r_number);
   return NSS_STATUS_SUCCESS;
 }
+
+#ifdef NSS_FLAVOUR_GLIBC
 
 /* get a rpc entry by name */
 nss_status_t _nss_ldap_getrpcbyname_r(
@@ -85,3 +88,103 @@ nss_status_t _nss_ldap_endrpcent(void)
 {
   NSS_ENDENT(rpcentfp);
 }
+
+#endif /* NSS_FLAVOUR_GLIBC */
+
+#ifdef NSS_FLAVOUR_SOLARIS
+
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+
+static nss_status_t read_rpcstring(TFILE *fp,nss_XbyY_args_t *args)
+{
+  struct rpcent result;
+  nss_status_t retv;
+  char *buffer;
+  size_t buflen;
+  int i;
+  /* read the rpcent */
+  retv=read_rpcent(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno);
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  /* allocate a temporary buffer */
+  buflen=args->buf.buflen;
+  buffer=(char *)malloc(buflen);
+  /* build the formatted string */
+  /* FIXME: implement proper buffer size checking */
+  sprintf(buffer,"%s %d",result.r_name,result.r_number);
+  if (result.r_aliases)
+    for (i=0; result.r_aliases[i]; i++)
+    {
+      strcat(buffer," ");
+      strcat(buffer,result.r_aliases[i]);
+    }
+  /* copy the result back to the result buffer and free the temporary one */
+  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
+  free(buffer);
+  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  return NSS_STATUS_SUCCESS;
+}
+
+#define READ_RESULT(fp) \
+  NSS_ARGS(args)->buf.result? \
+    read_rpcent(fp,(struct rpcent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
+    read_rpcstring(fp,args); \
+  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+#define READ_RESULT(fp) \
+  read_rpcent(fp,(struct rpcent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno); \
+  if (retv==NSS_STATUS_SUCCESS) \
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+static nss_status_t rpc_getrpcbyname(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,
+             NSS_ARGS(args)->key.name,
+             READ_RESULT(fp));
+}
+
+static nss_status_t rpc_getrpcbynumber(nss_backend_t UNUSED(*be),void *args)
+{
+  NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,
+              NSS_ARGS(args)->key.number,
+              READ_RESULT(fp));
+}
+
+static nss_status_t rpc_setrpcent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_SETENT(LDAP_BE(be)->fp);
+}
+
+static nss_status_t rpc_getrpcent(nss_backend_t *be,void *args)
+{
+  NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_RPC_ALL,
+             READ_RESULT(LDAP_BE(be)->fp));
+}
+
+static nss_status_t rpc_endrpcent(nss_backend_t *be,void UNUSED(*args))
+{
+  NSS_ENDENT(LDAP_BE(be)->fp);
+}
+
+static nss_backend_op_t rpc_ops[]={
+  nss_ldap_destructor,
+  rpc_endrpcent,
+  rpc_setrpcent,
+  rpc_getrpcent,
+  rpc_getrpcbyname,
+  rpc_getrpcbynumber
+};
+
+nss_backend_t *_nss_ldap_rpc_constr(const char UNUSED(*db_name),
+                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+{
+  return nss_ldap_constructor(rpc_ops,sizeof(rpc_ops));
+}
+
+#endif /* NSS_FLAVOUR_SOLARIS */
