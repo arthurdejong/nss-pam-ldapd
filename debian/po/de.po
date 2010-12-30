@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-pam-ldapd 0.7.9\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2010-08-28 13:39+0200\n"
+"POT-Creation-Date: 2010-12-30 17:25+0100\n"
 "PO-Revision-Date: 2010-08-25 23:28+0200\n"
 "Last-Translator: Chris Leick <c.leick@vollbio.de>\n"
 "Language-Team: German <debian-l10n-german@lists.debian.org>\n"
@@ -81,53 +81,261 @@ msgstr ""
 "würde bei der Domäne »example.net« der DN »dc=example,dc=net« als Suchbasis "
 "verwendet werden."
 
+#. Type: select
+#. Choices
+#: ../nslcd.templates:3001
+msgid "none"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:3001
+msgid "simple"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:3001
+msgid "SASL"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:3002
+msgid "LDAP authentication to use:"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:3002
+msgid ""
+"If your LDAP database requires authentication you can choose which mechanism "
+"should be used. Please choose the mechanism by which authentication should "
+"be done:\n"
+" * none: no authentication;\n"
+" * simple: simple clear text binddn/password;\n"
+" * SASL: one of the Simple Authentication and Security Layer\n"
+"         mechanisms."
+msgstr ""
+
 #  Template: libnss-ldap/binddn
 #  ddtp-prioritize: 56
 #. Type: string
 #. Description
-#: ../nslcd.templates:3001
+#: ../nslcd.templates:4001
 msgid "LDAP database user:"
 msgstr "LDAP-Datenbank-Benutzer:"
 
 #. Type: string
 #. Description
-#: ../nslcd.templates:3001
+#: ../nslcd.templates:4001
+#, fuzzy
+#| msgid "This value should be specified as a DN (distinguished name)."
 msgid ""
-"If the LDAP database requires a login for normal lookups, enter the name of "
-"the account that will be used here. Leave it empty otherwise."
-msgstr ""
-"Wenn die LDAP-Datenbank für normale Anfragen eine Authentifizierung "
-"verlangt, geben Sie hier den Benutzernamen ein, der dafür verwendet werden "
-"soll. Andernfalls lassen Sie das Feld leer."
-
-#. Type: string
-#. Description
-#: ../nslcd.templates:3001
-msgid "This value should be specified as a DN (distinguished name)."
+"Enter the name of the account that will be used to log in to the LDAP "
+"database. This value should be specified as a DN (distinguished name)."
 msgstr "Dieser Wert sollte ein DN (distinguished name) sein."
 
 #. Type: password
 #. Description
-#: ../nslcd.templates:4001
+#: ../nslcd.templates:5001
 msgid "LDAP user password:"
 msgstr "Passwort des LDAP-Benutzers:"
 
 #
 #. Type: password
 #. Description
-#: ../nslcd.templates:4001
+#: ../nslcd.templates:5001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr "Geben Sie das Passwort für die Anmeldung an der LDAP-Datenbank ein."
 
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "auto"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "LOGIN"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "PLAIN"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "NTLM"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "CRAM-MD5"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "DIGEST-MD5"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "GSSAPI"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "OTP"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:6002
+msgid "SASL mechanism to use:"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:6002
+msgid ""
+"Choose the SASL mechanism that will be used to authenticate to the LDAP "
+"database:\n"
+" * auto: autonegociation;\n"
+" * LOGIN: deprecated in flavor of PLAIN;\n"
+" * PLAIN: simple cleartext password mechanism;\n"
+" * NTLM: NT LAN Manager authentication mechanism;\n"
+" * CRAM-MD5: challenge-response scheme based on HMAC-MD5;\n"
+" * DIGEST-MD5: HTTP Digest compatible challenge-response scheme;\n"
+" * GSSAPI: used for Kerberos;\n"
+" * OTP: a One Time Password mechanism."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+msgid "SASL realm:"
+msgstr ""
+
+#
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+#, fuzzy
+#| msgid "Enter the password that will be used to log in to the LDAP database."
+msgid ""
+"Enter the SASL realm that will be used to authenticate to the LDAP database."
+msgstr "Geben Sie das Passwort für die Anmeldung an der LDAP-Datenbank ein."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+msgid ""
+"If empty, the GSSAPI mechanism will use information from the Kerberos "
+"credential cache. Others mechanisms may need @<REALM> suffixing sasl_authcid "
+"and sasl_authzid."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+msgid "The realm is appended to authentication and authorisation identities."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:8001
+msgid "SASL authentication identity:"
+msgstr ""
+
+#
+#. Type: string
+#. Description
+#: ../nslcd.templates:8001
+#, fuzzy
+#| msgid "Enter the password that will be used to log in to the LDAP database."
+msgid ""
+"Enter the SASL authentication identity that will be used to authenticate to "
+"the LDAP database."
+msgstr "Geben Sie das Passwort für die Anmeldung an der LDAP-Datenbank ein."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:8001
+msgid ""
+"This is the login used in LOGIN, PLAIN, CRAM-MD5 and DIGEST-MD5 mechanisms."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:9001
+msgid "SASL proxy authorisation identity:"
+msgstr ""
+
+#
+#. Type: string
+#. Description
+#: ../nslcd.templates:9001
+#, fuzzy
+#| msgid "Enter the password that will be used to log in to the LDAP database."
+msgid ""
+"Enter the proxy authorisation identity that will be used to authenticate to "
+"the LDAP database."
+msgstr "Geben Sie das Passwort für die Anmeldung an der LDAP-Datenbank ein."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:9001
+#, fuzzy
+#| msgid "This value should be specified as a DN (distinguished name)."
+msgid ""
+"This is the object in the name of witch the LDAP request are done. This "
+"value should be specified as a DN (distinguished name)."
+msgstr "Dieser Wert sollte ein DN (distinguished name) sein."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:10001
+msgid "Cyrus SASL security properties:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:10001
+msgid ""
+"Enter the Cyrus  SASL  security properties. Allowed values are described in "
+"the ldap.conf(5) manual page in the SASL OPTIONS section."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:11001
+msgid "Kerberos credential cache file path:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:11001
+msgid "Enter the GSSAPI/Kerberos credential cache file name that will be used."
+msgstr ""
+
 #. Type: boolean
 #. Description
-#: ../nslcd.templates:5001
+#: ../nslcd.templates:12001
 msgid "Use StartTLS?"
 msgstr "StartTLS benutzen?"
 
 #. Type: boolean
 #. Description
-#: ../nslcd.templates:5001
+#: ../nslcd.templates:12001
 msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
@@ -137,37 +345,37 @@ msgstr ""
 
 #. Type: select
 #. Choices
-#: ../nslcd.templates:6001
+#: ../nslcd.templates:13001
 msgid "never"
 msgstr "nie"
 
 #. Type: select
 #. Choices
-#: ../nslcd.templates:6001
+#: ../nslcd.templates:13001
 msgid "allow"
 msgstr "erlauben"
 
 #. Type: select
 #. Choices
-#: ../nslcd.templates:6001
+#: ../nslcd.templates:13001
 msgid "try"
 msgstr "versuchen"
 
 #. Type: select
 #. Choices
-#: ../nslcd.templates:6001
+#: ../nslcd.templates:13001
 msgid "demand"
 msgstr "anfordern"
 
 #. Type: select
 #. Description
-#: ../nslcd.templates:6002
+#: ../nslcd.templates:13002
 msgid "Check server's SSL certificate:"
 msgstr "Das SSL-Zertifikat des Servers überprüfen:"
 
 #. Type: select
 #. Description
-#: ../nslcd.templates:6002
+#: ../nslcd.templates:13002
 msgid ""
 "When an encrypted connection is used, a server certificate can be requested "
 "and checked. Please choose whether lookups should be configured to require a "
@@ -301,3 +509,11 @@ msgstr ""
 "hinzugefügt werden soll (in diesem Fall sollte dies anschließend nochmals "
 "überprüft werden) oder ob das manuelle Bearbeiten dem Administrator "
 "überlassen werden soll."
+
+#~ msgid ""
+#~ "If the LDAP database requires a login for normal lookups, enter the name "
+#~ "of the account that will be used here. Leave it empty otherwise."
+#~ msgstr ""
+#~ "Wenn die LDAP-Datenbank für normale Anfragen eine Authentifizierung "
+#~ "verlangt, geben Sie hier den Benutzernamen ein, der dafür verwendet "
+#~ "werden soll. Andernfalls lassen Sie das Feld leer."

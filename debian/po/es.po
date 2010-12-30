@@ -32,7 +32,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nss-pam-ldapd 0.7.9\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
-"POT-Creation-Date: 2010-08-28 13:39+0200\n"
+"POT-Creation-Date: 2010-12-30 17:25+0100\n"
 "PO-Revision-Date: 2010-08-28 19:42+0100\n"
 "Last-Translator: Francisco Javier Cuadrado <fcocuadrado@gmail.com>\n"
 "Language-Team: Debian l10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
@@ -98,52 +98,334 @@ msgstr ""
 "propósito. Por ejemplo, el dominio «ejemplo.net» utilizaría «dc=ejemplo,"
 "dc=net» como nombre distintivo de la base de búsquedas."
 
+#. Type: select
+#. Choices
+#: ../nslcd.templates:3001
+msgid "none"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:3001
+msgid "simple"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:3001
+msgid "SASL"
+msgstr ""
+
+#  Template: libnss-ldap/dblogin
+#  ddtp-prioritize: 56
+#
+# msgid ""
+# "database requires login"
+# msgstr ""
+#
+# msgid ""
+# "Does the LDAP database require login?"
+# msgstr ""
+#
+# msgid ""
+# "Answer this question affirmatively only if you can't retreive entries from "
+# "the database without logging in."
+# msgstr ""
+#
+# msgid ""
+# "Note: Under a normal setup, this is not needed."
+# msgstr ""
+#  Template: libnss-ldap/override
+#  ddtp-prioritize: 56
+#
+# msgid ""
+# "enable automatic configuration updates by debconf"
+# msgstr ""
+#
+# msgid ""
+# "Should debconf automatically update libnss-ldap's configuration file?"
+# msgstr ""
+#
+# msgid ""
+# "libnss-ldap has been moved to use debconf for its configuration."
+# msgstr ""
+#
+# msgid ""
+# "The file will be prepended with \"###DEBCONF###\"; you can disable the "
+# "debconf updates by removing that line."
+# msgstr ""
+#
+# msgid ""
+# "All new installations will have this by default."
+# msgstr ""
+#  Template: libnss-ldap/binddn
+#  ddtp-prioritize: 56
+#
+# msgid ""
+# "unprivileged database user"
+# msgstr ""
+#
+# msgid ""
+# "Enter the name of the account that will be used to log in to the LDAP "
+# "database."
+# msgstr ""
+#  Template: libnss-ldap/bindpw
+#  ddtp-prioritize: 56
+#
+# msgid ""
+# "password for database login account"
+# msgstr ""
+#
+# msgid ""
+# "Enter the password that will be used to log in to the LDAP database."
+# msgstr ""
+#  Template: shared/ldapns/ldap_version
+#  ddtp-prioritize: 56
+#
+#. Type: select
+#. Description
+#: ../nslcd.templates:3002
+#, fuzzy
+msgid "LDAP authentication to use:"
+msgstr "Versión de LDAP a utilizar"
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:3002
+msgid ""
+"If your LDAP database requires authentication you can choose which mechanism "
+"should be used. Please choose the mechanism by which authentication should "
+"be done:\n"
+" * none: no authentication;\n"
+" * simple: simple clear text binddn/password;\n"
+" * SASL: one of the Simple Authentication and Security Layer\n"
+"         mechanisms."
+msgstr ""
+
 #. Type: string
 #. Description
-#: ../nslcd.templates:3001
+#: ../nslcd.templates:4001
 msgid "LDAP database user:"
 msgstr "Usuario de la base de datos LDAP:"
 
 #. Type: string
 #. Description
-#: ../nslcd.templates:3001
+#: ../nslcd.templates:4001
+#, fuzzy
+#| msgid ""
+#| "Enter the password that will be used to log in to the LDAP database when "
+#| "the root process does lookups."
 msgid ""
-"If the LDAP database requires a login for normal lookups, enter the name of "
-"the account that will be used here. Leave it empty otherwise."
+"Enter the name of the account that will be used to log in to the LDAP "
+"database. This value should be specified as a DN (distinguished name)."
 msgstr ""
-"Introduzca el nombre de la cuenta que utilizará, si la base de datos LDAP "
-"requiere una identificación para las búsquedas normales. En caso contrario, "
-"déjelo en blanco."
-
-#. Type: string
-#. Description
-#: ../nslcd.templates:3001
-msgid "This value should be specified as a DN (distinguished name)."
-msgstr "Debe introducir el valor en forma de DN (nombre distintivo)."
+"Introduzca la contraseña que se utilizará para acceder a la base de datos "
+"LDAP cuando un proceso de superusuario realice búsquedas."
 
 #. Type: password
 #. Description
-#: ../nslcd.templates:4001
+#: ../nslcd.templates:5001
 msgid "LDAP user password:"
 msgstr "Contraseña del usuario LDAP:"
 
 #. Type: password
 #. Description
-#: ../nslcd.templates:4001
+#: ../nslcd.templates:5001
 msgid "Enter the password that will be used to log in to the LDAP database."
 msgstr ""
 "Introduzca la contraseña que se utilizará para acceder a la base de datos "
 "LDAP."
 
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "auto"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "LOGIN"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "PLAIN"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "NTLM"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "CRAM-MD5"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "DIGEST-MD5"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "GSSAPI"
+msgstr ""
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:6001
+msgid "OTP"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:6002
+msgid "SASL mechanism to use:"
+msgstr ""
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:6002
+msgid ""
+"Choose the SASL mechanism that will be used to authenticate to the LDAP "
+"database:\n"
+" * auto: autonegociation;\n"
+" * LOGIN: deprecated in flavor of PLAIN;\n"
+" * PLAIN: simple cleartext password mechanism;\n"
+" * NTLM: NT LAN Manager authentication mechanism;\n"
+" * CRAM-MD5: challenge-response scheme based on HMAC-MD5;\n"
+" * DIGEST-MD5: HTTP Digest compatible challenge-response scheme;\n"
+" * GSSAPI: used for Kerberos;\n"
+" * OTP: a One Time Password mechanism."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+msgid "SASL realm:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+#, fuzzy
+#| msgid "Enter the password that will be used to log in to the LDAP database."
+msgid ""
+"Enter the SASL realm that will be used to authenticate to the LDAP database."
+msgstr ""
+"Introduzca la contraseña que se utilizará para acceder a la base de datos "
+"LDAP."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+msgid ""
+"If empty, the GSSAPI mechanism will use information from the Kerberos "
+"credential cache. Others mechanisms may need @<REALM> suffixing sasl_authcid "
+"and sasl_authzid."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+msgid "The realm is appended to authentication and authorisation identities."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:8001
+msgid "SASL authentication identity:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:8001
+#, fuzzy
+#| msgid "Enter the password that will be used to log in to the LDAP database."
+msgid ""
+"Enter the SASL authentication identity that will be used to authenticate to "
+"the LDAP database."
+msgstr ""
+"Introduzca la contraseña que se utilizará para acceder a la base de datos "
+"LDAP."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:8001
+msgid ""
+"This is the login used in LOGIN, PLAIN, CRAM-MD5 and DIGEST-MD5 mechanisms."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:9001
+msgid "SASL proxy authorisation identity:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:9001
+#, fuzzy
+#| msgid "Enter the password that will be used to log in to the LDAP database."
+msgid ""
+"Enter the proxy authorisation identity that will be used to authenticate to "
+"the LDAP database."
+msgstr ""
+"Introduzca la contraseña que se utilizará para acceder a la base de datos "
+"LDAP."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:9001
+#, fuzzy
+#| msgid "This value should be specified as a DN (distinguished name)."
+msgid ""
+"This is the object in the name of witch the LDAP request are done. This "
+"value should be specified as a DN (distinguished name)."
+msgstr "Debe introducir el valor en forma de DN (nombre distintivo)."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:10001
+msgid "Cyrus SASL security properties:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:10001
+msgid ""
+"Enter the Cyrus  SASL  security properties. Allowed values are described in "
+"the ldap.conf(5) manual page in the SASL OPTIONS section."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:11001
+msgid "Kerberos credential cache file path:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:11001
+msgid "Enter the GSSAPI/Kerberos credential cache file name that will be used."
+msgstr ""
+
 #. Type: boolean
 #. Description
-#: ../nslcd.templates:5001
+#: ../nslcd.templates:12001
 msgid "Use StartTLS?"
 msgstr "¿Desea utilizar StartTLS?"
 
 #. Type: boolean
 #. Description
-#: ../nslcd.templates:5001
+#: ../nslcd.templates:12001
 msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
@@ -153,37 +435,37 @@ msgstr ""
 
 #. Type: select
 #. Choices
-#: ../nslcd.templates:6001
+#: ../nslcd.templates:13001
 msgid "never"
 msgstr "nunca"
 
 #. Type: select
 #. Choices
-#: ../nslcd.templates:6001
+#: ../nslcd.templates:13001
 msgid "allow"
 msgstr "permitir"
 
 #. Type: select
 #. Choices
-#: ../nslcd.templates:6001
+#: ../nslcd.templates:13001
 msgid "try"
 msgstr "intentar"
 
 #. Type: select
 #. Choices
-#: ../nslcd.templates:6001
+#: ../nslcd.templates:13001
 msgid "demand"
 msgstr "exigir"
 
 #. Type: select
 #. Description
-#: ../nslcd.templates:6002
+#: ../nslcd.templates:13002
 msgid "Check server's SSL certificate:"
 msgstr "Comprobar el certificado SSL del servidor:"
 
 #. Type: select
 #. Description
-#: ../nslcd.templates:6002
+#: ../nslcd.templates:13002
 msgid ""
 "When an encrypted connection is used, a server certificate can be requested "
 "and checked. Please choose whether lookups should be configured to require a "
@@ -317,6 +599,14 @@ msgstr ""
 "automáticamente (en el caso de que se deba revisar después) o si se debería "
 "dejar al administrador editarla manualmente."
 
+#~ msgid ""
+#~ "If the LDAP database requires a login for normal lookups, enter the name "
+#~ "of the account that will be used here. Leave it empty otherwise."
+#~ msgstr ""
+#~ "Introduzca el nombre de la cuenta que utilizará, si la base de datos LDAP "
+#~ "requiere una identificación para las búsquedas normales. En caso "
+#~ "contrario, déjelo en blanco."
+
 #~| msgid ""
 #~| "You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
 #~| "automatically now. Be sure to review the changes to /etc/nsswitch.conf "
@@ -351,83 +641,6 @@ msgstr ""
 
 #~ msgid "LDAP root account password:"
 #~ msgstr "Contraseña de la cuenta de superusuario LDAP:"
-
-#~ msgid ""
-#~ "Enter the password that will be used to log in to the LDAP database when "
-#~ "the root process does lookups."
-#~ msgstr ""
-#~ "Introduzca la contraseña que se utilizará para acceder a la base de datos "
-#~ "LDAP cuando un proceso de superusuario realice búsquedas."
-
-#  Template: libnss-ldap/dblogin
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "database requires login"
-# msgstr ""
-#
-# msgid ""
-# "Does the LDAP database require login?"
-# msgstr ""
-#
-# msgid ""
-# "Answer this question affirmatively only if you can't retreive entries from "
-# "the database without logging in."
-# msgstr ""
-#
-# msgid ""
-# "Note: Under a normal setup, this is not needed."
-# msgstr ""
-#  Template: libnss-ldap/override
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "enable automatic configuration updates by debconf"
-# msgstr ""
-#
-# msgid ""
-# "Should debconf automatically update libnss-ldap's configuration file?"
-# msgstr ""
-#
-# msgid ""
-# "libnss-ldap has been moved to use debconf for its configuration."
-# msgstr ""
-#
-# msgid ""
-# "The file will be prepended with \"###DEBCONF###\"; you can disable the "
-# "debconf updates by removing that line."
-# msgstr ""
-#
-# msgid ""
-# "All new installations will have this by default."
-# msgstr ""
-#  Template: libnss-ldap/binddn
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "unprivileged database user"
-# msgstr ""
-#
-# msgid ""
-# "Enter the name of the account that will be used to log in to the LDAP "
-# "database."
-# msgstr ""
-#  Template: libnss-ldap/bindpw
-#  ddtp-prioritize: 56
-#
-# msgid ""
-# "password for database login account"
-# msgstr ""
-#
-# msgid ""
-# "Enter the password that will be used to log in to the LDAP database."
-# msgstr ""
-#  Template: shared/ldapns/ldap_version
-#  ddtp-prioritize: 56
-#
-#, fuzzy
-#~ msgid "LDAP version to use:"
-#~ msgstr "Versión de LDAP a utilizar"
 
 #
 #, fuzzy
