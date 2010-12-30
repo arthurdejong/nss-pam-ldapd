@@ -132,86 +132,79 @@ nss_status_t _nss_ldap_endnetgrent(struct __netgrent UNUSED(*result))
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
-/*
- *thread specific context: result chain,and state data
- */
-struct ent_context
+/* this is the backend structure for the {set,get,end}ent() functions */
+struct setnetgrent_backend
 {
-   void *first_entry;
-   void *curr_entry;
+  nss_backend_op_t *ops; /* function-pointer table */
+  int n_ops; /* number of function pointers */
+  TFILE *fp; /* the file pointer for {set,get,end}ent() functions */
+  SET *seen_groups; /* netgroups seen, for loop detection */
+  SET *unseen_groups; /* netgroups that need to be chased */
 };
-typedef struct ent_context ent_context_t;
 
-struct nss_ldap_netgr_backend
-{
-  nss_backend_op_t *ops;
-  int n_ops;
-  ent_context_t *state;
-  SET *known_groups; /* netgroups seen, for loop detection */
-  SET *needed_groups; /* nested netgroups to chase */
-};
-typedef struct nss_ldap_netgr_backend nss_ldap_netgr_backend_t;
+/* easy way to get sets from back-end */
+#define NETGROUP_BE(be) ((struct setnetgrent_backend*)(be))
 
-static nss_status_t netgroup_setnetgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
-{
-  return NSS_STATUS_SUCCESS;
-}
+/* access arguments */
+#define SETNETGRENT_ARGS(args) ((struct nss_setnetgrent_args *)(args))
+#define GETNETGRENT_ARGS(args) ((struct nss_getnetgrent_args *)(args))
 
-/* find a netgroup that has not been traversed */
-static char *find_unseen_netgroup(nss_ldap_netgr_backend_t *ngbe)
+/* return a netgroup that has not been traversed */
+static char *find_unseen_netgroup(nss_backend_t *be)
 {
   char *group;
   while (1)
   {
-    group=set_pop(ngbe->needed_groups);
+    group=set_pop(NETGROUP_BE(be)->unseen_groups);
     if (group==NULL)
       return NULL;
-    if (set_contains(ngbe->known_groups,group))
+    if (!set_contains(NETGROUP_BE(be)->seen_groups,group))
     {
-      set_add(ngbe->known_groups,group);
+      set_add(NETGROUP_BE(be)->seen_groups,group);
       return group;
     }
   }
 }
 
-/* thread-local file pointer to an ongoing request */
-static __thread TFILE *netgrentfp;
-
-static nss_status_t _nss_nslcd_setnetgrent(const char *group,struct __netgrent UNUSED(*result))
+static nss_status_t netgroup_nslcd_setnetgrent(nss_backend_t *be,const char *group)
 {
   /* we cannot use NSS_SETENT() here because we have a parameter that is only
      available in this function */
   int32_t tmpint32;
   int errnocp;
   int *errnop;
-  NSS_AVAILCHECK;
   errnop=&errnocp;
   /* check parameter */
   if ((group==NULL)||(group[0]=='\0'))
     return NSS_STATUS_UNAVAIL;
   /* open a new stream and write the request */
-  NSLCD_REQUEST(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,WRITE_STRING(netgrentfp,group));
+  NSLCD_REQUEST(NETGROUP_BE(be)->fp,NSLCD_ACTION_NETGROUP_BYNAME,
+                WRITE_STRING(NETGROUP_BE(be)->fp,group));
   return NSS_STATUS_SUCCESS;
 }
 
-static nss_status_t _nss_nslcd_getnetgrent_r(struct __netgrent *result,char *buffer,size_t buflen,void *args)
+static nss_status_t netgroup_nslcd_getnetgrent(nss_backend_t *be,struct __netgrent *result,char *buffer,size_t buflen,void *args)
 {
-  NSS_GETENT(netgrentfp,NSLCD_ACTION_NETGROUP_BYNAME,
-             read_netgrent(netgrentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(NETGROUP_BE(be)->fp,NSLCD_ACTION_NETGROUP_BYNAME,
+             read_netgrent(NETGROUP_BE(be)->fp,result,buffer,buflen,errnop));
 }
 
-static nss_status_t netgroup_getnetgrent(nss_backend_t *_be,void *_args)
+static nss_status_t netgroup_setnetgrent_setnetgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
-  nss_ldap_netgr_backend_t *ngbe=(nss_ldap_netgr_backend_t *)_be;
-  struct nss_getnetgrent_args *args=(struct nss_getnetgrent_args *)_args;
+  return NSS_STATUS_SUCCESS;
+}
+
+static nss_status_t netgroup_setnetgrent_getnetgrent(nss_backend_t *be,void *args)
+{
   struct __netgrent result;
   char *group=NULL;
   int done=0;
   nss_status_t status,rc;
-  args->status=NSS_NETGR_NO;
+  GETNETGRENT_ARGS(args)->status=NSS_NETGR_NO;
   while (!done)
   {
-    status=_nss_nslcd_getnetgrent_r(&result,args->buffer,args->buflen,args);
+    status=netgroup_nslcd_getnetgrent(be,&result,GETNETGRENT_ARGS(args)->buffer,
+                                         GETNETGRENT_ARGS(args)->buflen,args);
     if (status!=NSS_STATUS_SUCCESS)
     {
       if (errno==ENOENT)
@@ -222,16 +215,16 @@ static nss_status_t netgroup_getnetgrent(nss_backend_t *_be,void *_args)
         while (!found)
         {
           /* find a nested netgroup to pursue further */
-          group=find_unseen_netgroup(ngbe);
-          if (!group)
+          group=find_unseen_netgroup(be);
+          if (group==NULL)
           {
             /* no more netgroup */
-            found=1; done = 1;
+            found=1; done=1;
             errno=ENOENT;
           }
           else
           {
-            rc=_nss_nslcd_setnetgrent(group,&result);
+            rc=netgroup_nslcd_setnetgrent(be,group);
             if (rc==NSS_STATUS_SUCCESS)
               found=1;
             free(group);
@@ -249,14 +242,14 @@ static nss_status_t netgroup_getnetgrent(nss_backend_t *_be,void *_args)
       if (result.type==group_val)
       {
         /* a netgroup nested within the current netgroup */
-        set_add(ngbe->needed_groups,result.val.group);
+        set_add(NETGROUP_BE(be)->unseen_groups,result.val.group);
       }
       else if (result.type==triple_val)
       {
-        args->retp[NSS_NETGR_MACHINE]=result.val.triple.host;
-        args->retp[NSS_NETGR_USER]=result.val.triple.user;
-        args->retp[NSS_NETGR_DOMAIN]=result.val.triple.domain;
-        args->status=NSS_NETGR_FOUND;
+        GETNETGRENT_ARGS(args)->retp[NSS_NETGR_MACHINE]=result.val.triple.host;
+        GETNETGRENT_ARGS(args)->retp[NSS_NETGR_USER]=result.val.triple.user;
+        GETNETGRENT_ARGS(args)->retp[NSS_NETGR_DOMAIN]=result.val.triple.domain;
+        GETNETGRENT_ARGS(args)->status=NSS_NETGR_FOUND;
         done=1;
       }
       else
@@ -271,71 +264,69 @@ static nss_status_t netgroup_getnetgrent(nss_backend_t *_be,void *_args)
   return status;
 }
 
-static nss_status_t netgroup_endnetgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
+static nss_status_t netgroup_setnetgrent_endnetgrent(nss_backend_t UNUSED(*be),void UNUSED(*args))
 {
-  NSS_ENDENT(netgrentfp);
+  NSS_ENDENT(NETGROUP_BE(be)->fp);
 }
 
-static nss_status_t netgroup_destructor(nss_backend_t *be,void UNUSED(*args))
+static nss_status_t netgroup_setnetgrent_destructor(nss_backend_t *be,void *UNUSED(args))
 {
-  nss_ldap_netgr_backend_t *ngbe=(nss_ldap_netgr_backend_t *)be;
-  /* free list of nested netgroups */
-  set_free(ngbe->known_groups);
-  set_free(ngbe->needed_groups);
+  struct setnetgrent_backend *ngbe=(struct setnetgrent_backend *)be;
+  if (ngbe->fp!=NULL)
+    (void)tio_close(ngbe->fp);
+  set_free(ngbe->seen_groups);
+  set_free(ngbe->unseen_groups);
   free(ngbe);
   return NSS_STATUS_SUCCESS;
 }
 
-static nss_status_t netgroup_set(nss_backend_t *be,void *_args);
-
-static nss_backend_op_t netgroup_ops[]={
-  netgroup_destructor,
-  netgroup_endnetgrent,
-  netgroup_setnetgrent,
-  netgroup_getnetgrent,
-  NULL,/* TODO:_nss_ldap_netgr_in,*/
-  netgroup_set
+static nss_backend_op_t netgroup_setnetgrent_ops[]={
+  netgroup_setnetgrent_destructor,
+  netgroup_setnetgrent_endnetgrent,
+  netgroup_setnetgrent_setnetgrent,
+  netgroup_setnetgrent_getnetgrent,
 };
 
-static nss_status_t netgroup_set(nss_backend_t *be,void *_args)
+static nss_status_t netgroup_setnetgrent_constructor(nss_backend_t *be,void *args)
 {
-  nss_status_t stat;
-  struct nss_setnetgrent_args *args;
-  nss_ldap_netgr_backend_t *ngbe;
-  struct __netgrent result;
-  args=(struct nss_setnetgrent_args *)_args;
-  args->iterator=NULL;        /* initialize */
-  ngbe=(nss_ldap_netgr_backend_t *)malloc(sizeof(*ngbe));
+  struct setnetgrent_backend *ngbe;
+  nss_status_t retv;
+  NSS_AVAILCHECK;
+  SETNETGRENT_ARGS(args)->iterator=NULL;        /* initialize */
+  /* allocate a back-end specific to this request */
+  ngbe=(struct setnetgrent_backend *)malloc(sizeof(struct setnetgrent_backend));
   if (ngbe==NULL)
     return NSS_STATUS_UNAVAIL;
-  ngbe->ops=netgroup_ops;
-  ngbe->n_ops=6;
-  ngbe->state=NULL;
-  ngbe->known_groups=NULL;
-  ngbe->needed_groups=NULL;
-  stat=_nss_nslcd_setnetgrent(args->netgroup,&result);
-  if (stat!=NSS_STATUS_SUCCESS)
+  ngbe->ops=netgroup_setnetgrent_ops;
+  ngbe->n_ops=sizeof(netgroup_setnetgrent_ops)/sizeof(nss_backend_op_t);
+  ngbe->fp=NULL;
+  ngbe->seen_groups=set_new();
+  ngbe->unseen_groups=set_new();
+  /* start the first search */
+  retv=netgroup_nslcd_setnetgrent(be,SETNETGRENT_ARGS(args)->netgroup);
+  if (retv!=NSS_STATUS_SUCCESS)
   {
-    free(be);
-    return stat;
+    netgroup_setnetgrent_destructor(be,args);
+    return retv;
   }
-  /* place the group name in known list */
-  set_add(ngbe->known_groups,args->netgroup);
-  args->iterator=(nss_backend_t *)ngbe;
-  return stat;
+  /* return the new back-end */
+  SETNETGRENT_ARGS(args)->iterator=(nss_backend_t *)ngbe;
+  return NSS_STATUS_SUCCESS;
 }
+
+static nss_backend_op_t netgroup_ops[]={
+  nss_ldap_destructor,
+  NULL,
+  NULL,
+  NULL,
+  NULL,/* TODO:_nss_ldap_netgr_in,*/
+  netgroup_setnetgrent_constructor
+};
 
 nss_backend_t *_nss_ldap_netgroup_constr(const char UNUSED(*db_name),
                   const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
-  nss_ldap_netgr_backend_t *be;
-  if (!(be=(nss_ldap_netgr_backend_t *)malloc(sizeof(*be))))
-    return NULL;
-  be->ops=netgroup_ops;
-  be->n_ops=sizeof(netgroup_ops)/sizeof(nss_backend_op_t);
-  be->known_groups=set_new();
-  be->needed_groups=set_new();
-  return (nss_backend_t *)be;
+  return nss_ldap_constructor(netgroup_ops,sizeof(netgroup_ops));
 }
 
 #endif /* NSS_FLAVOUR_SOLARIS */
