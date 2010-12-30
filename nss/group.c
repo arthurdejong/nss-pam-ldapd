@@ -192,26 +192,31 @@ static nss_status_t read_groupstring(TFILE *fp,nss_XbyY_args_t *args)
   char *buffer;
   size_t buflen;
   int i;
-  /* read the groupent */
-  retv=read_group(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno);
+  /* read the group into a temporary buffer */
+  buffer=(char *)malloc(args->buf.buflen);
+  if (buffer==NULL)
+    return NSS_STATUS_UNAVAIL;
+  retv=read_group(fp,&result,buffer,args->buf.buflen,&errno);
   if (retv!=NSS_STATUS_SUCCESS)
+  {
+    free(buffer);
     return retv;
-  /* allocate a temporary buffer */
-  buflen=args->buf.buflen;
-  buffer=(char *)malloc(buflen);
-  /* build the formatted string */
-  /* FIXME: implement proper buffer size checking */
-  sprintf(buffer,"%s:%s:%d:",result.gr_name,result.gr_passwd,(int)result.gr_gid);
+  }
+  /* make a string representation */
+  snprintf(args->buf.buffer,args->buf.buflen,
+           "%s:%s:%d:",result.gr_name,result.gr_passwd,(int)result.gr_gid);
+  args->buf.buffer[args->buf.buflen-1]='\0';
   if (result.gr_mem)
     for (i=0;result.gr_mem[i];i++)
     {
       if (i)
-        strcat(buffer,",");
-      strcat(buffer,result.gr_mem[i]);
+        strncat(args->buf.buffer,args->buf.buflen-strlen(args->buf.buffer)-1,",");
+      strncat(args->buf.buffer,args->buf.buflen-strlen(args->buf.buffer)-1,result.gr_mem[i]);
     }
-  /* copy the result back to the result buffer and free the temporary one */
-  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
   free(buffer);
+  /* check if buffer overflowed */
+  if (strlen(args->buf.buffer)>=args->buf.buffer-1)
+    return NSS_STATUS_TRYAGAIN;
   NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
   NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
   return NSS_STATUS_SUCCESS;

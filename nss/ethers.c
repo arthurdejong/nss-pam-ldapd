@@ -100,28 +100,26 @@ nss_status_t _nss_ldap_endetherent(void)
 
 static nss_status_t read_etherstring(TFILE *fp,nss_XbyY_args_t *args)
 {
-  /* TODO: padl uses struct ether, verify */
   struct etherent result;
   nss_status_t retv;
   char *buffer;
-  size_t buflen;
-  /* read the etherent */
-  retv=read_etherent(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno);
+  int res;
+  /* read the etherent into a temporary buffer */
+  buffer=(char *)malloc(args->buf.buflen);
+  if (buffer==NULL)
+    return NSS_STATUS_UNAVAIL;
+  retv=read_etherent(fp,&result,buffer,args->buf.buflen,&errno);
   if (retv!=NSS_STATUS_SUCCESS)
+  {
+    free(buffer);
     return retv;
-  /* allocate a temporary buffer */
-  buflen=args->buf.buflen;
-  buffer=(char *)malloc(buflen);
-  /* build the formatted string */
-  /* FIXME: implement proper buffer size checking */
-  /* TODO: OpenSolaris expects "<macAddress> <host>" */
-  /* This output is handled correctly by NSCD,but not */
-  /* when NSCD is off. Not an issue with NSS_LDAP,but */
-  /* with the frontend. */
-  sprintf(buffer,"%s %s",ether_ntoa(&result.e_addr),result.e_name);
-  /* copy the result back to the result buffer and free the temporary one */
-  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
+  }
+  /* make a string representation */
+  res=snprintf(args->buf.buffer,args->buf.buflen,
+               "%s %s",ether_ntoa(&result.e_addr),result.e_name);
   free(buffer);
+  if ((res<0)||(res>=args->buf.buflen))
+    return NSS_STATUS_TRYAGAIN;
   NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
   NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
   return NSS_STATUS_SUCCESS;
