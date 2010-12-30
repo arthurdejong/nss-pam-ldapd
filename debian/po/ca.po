@@ -1,5 +1,7 @@
-# nss-pam-ldapd (debconf) translation to Catalan.
+# Translation of nss-pam-ldapd debconf templates to Catalan.
 # Copyright (C) 2004 Free Software Foundation, Inc.
+#
+# Translators:
 # Aleix Badia i Bosch <abadia@ica.es>, 2004.
 # Guillem Jover <guillem@debian.org>, 2004.
 #

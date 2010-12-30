@@ -1,7 +1,10 @@
-# Copyright (C) 2009
+# Translation of nss-pam-ldapd debconf templates to Finnish.
+# Copyright (C) 2009 Esko Arajärvi
 # This file is distributed under the same license as the nss-ldapd package.
 #
+# Translators:
 # Esko Arajärvi <edu@iki.fi>, 2009.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd\n"

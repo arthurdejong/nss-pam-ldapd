@@ -1,9 +1,10 @@
-# translation of nss-pam-ldapd debconf to Portuguese
+# Translation of nss-pam-ldapd debconf templates to Portuguese.
 # Copyright (C) 2007 the nss-pam-ldapd's copyright holder
-# Released under the same license as the nss-pam-ldapd package
+# This file is distributed under the same license as the nss-pam-ldapd package.
 #
-#
+# Translators:
 # Américo Monteiro <a_monteiro@netcabo.pt>, 2007, 2009, 2010.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-pam-ldapd 0.7.9\n"

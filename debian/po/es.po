@@ -1,4 +1,4 @@
-# nss-pam-ldapd po-debconf translation to Spanish
+# Translation of nss-pam-ldapd debconf templates to Spanish.
 # Copyright (C) 2007 Rudy Godoy Guillén <rudy@debian.org>
 # Copyright (C) 2009, 2010 Software in the Public Interest
 # This file is distributed under the same license as the nss-pam-ldapd package.
@@ -27,7 +27,6 @@
 #   - La guía de traducción de po's de debconf:
 #     /usr/share/doc/po-debconf/README-trans
 #     o http://www.debian.org/intl/l10n/po-debconf/README-trans
-#
 #
 msgid ""
 msgstr ""

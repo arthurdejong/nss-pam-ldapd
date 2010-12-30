@@ -1,9 +1,10 @@
-# Italian translation of nss-pam-ldapd's PO-Debconf file.
-# COPYRIGHT (C) 2009 THE NSS-LDAPD'S COPYRIGHT HOLDER
+# Translation of nss-pam-ldapd debconf templates to Italian.
+# Copyright (C) 2009 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the nss-pam-ldapd package.
 #
-#
+# Translators:
 # Vincenzo Campanella <vinz65@gmail.com>, 2009, 2010.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-pam-ldapd 0.7.9\n"

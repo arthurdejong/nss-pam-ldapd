@@ -1,18 +1,8 @@
-# translation of nss-pam-ldapd_sv.po to Swedish
+# Translation of nss-pam-ldapd debconf templates to Swedish.
 #
-#    Translators, if you are not familiar with the PO format, gettext
-#    documentation is worth reading, especially sections dedicated to
-#    this format, e.g. by running:
-#         info -n '(gettext)PO Files'
-#         info -n '(gettext)Header Entry'
-#
-#    Some information specific to po-debconf are available at
-#            /usr/share/doc/po-debconf/README-trans
-#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
-#
-#    Developers do not need to manually edit POT or PO files.
-#
+# Translators:
 # Martin Ågren <martin.agren@gmail.com>, 2008, 2009, 2010.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-pam-ldapd 0.7.9\n"

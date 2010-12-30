@@ -1,5 +1,7 @@
-# Vietnamese Translation for NSS PAM LDAPd.
-# Copyright © 2010 Free Software Foundation, Inc.
+# Translation of nss-pam-ldapd debconf templates to Vietnamese.
+# Copyright (C) 2010 Free Software Foundation, Inc.
+#
+# Translators:
 # Clytie Siddall <clytie@riverland.net.au>, 2005-2010.
 #
 msgid ""

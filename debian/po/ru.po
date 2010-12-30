@@ -1,13 +1,10 @@
-# translation of 1.po to Russian
-# Ilgiz Kalmetev <translator@ilgiz.pp.ru>
+# Translation of nss-pam-ldapd debconf templates to Russian.
 #
-# This file is from the DDTP, the Debian Description Translation Project
-#
-# See http://ddtp.debian.org/ for more information.
-#
+# Translators:
 # Debian Description Translation Project <debconf@ddtp.debian.org>, 2003.
 # Ilgiz Kalmetev <translator@ilgiz.pp.ru>, 2003.
 # Yuri Kozlov <yuray@komyakino.ru>, 2009, 2010.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-pam-ldapd 0.7.9\n"

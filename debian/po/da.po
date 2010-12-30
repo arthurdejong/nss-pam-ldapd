@@ -1,6 +1,9 @@
-# Danish translations for nss-pam-ldapd package.
-# Copyright (C) 2010 nss-pam-ldapd & nedenstående oversættere.
+# Translation of nss-pam-ldapd debconf templates to Danish.
+# Copyright (C) 2008 Jonas Smedegaard
+# Copyright (C) 2010 Joe Hansen
 # This file is distributed under the same license as the nss-pam-ldapd package.
+#
+# Translators:
 # Jonas Smedegaard <dr@jones.dk>, 2008.
 # Joe Hansen <joedalton2@yahoo.dk>, 2010.
 #

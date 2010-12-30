@@ -1,3 +1,5 @@
+# Translation of nss-pam-ldapd debconf templates to Simplified Chinese.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-pam-ldapd 0.7.9\n"
