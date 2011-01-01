@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -439,7 +439,7 @@ then
     esac
   fi
   AC_MSG_RESULT($with_nss_maps)
-  NSS_MODULE_OBJS="`echo "$with_nss_maps " | sed 's/,/ /g;s/  */.$(OBJEXT) /g'`"
+  NSS_MODULE_OBJS="$(echo "$with_nss_maps " | sed 's/,/ /g;s/  */.$(OBJEXT) /g')"
   AC_SUBST(NSS_MODULE_OBJS)
 
   # find out how to link the library
