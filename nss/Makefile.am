@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
+# Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
 # Copyright (C) 2010 Symas Corporation
 #
 # This library is free software; you can redistribute it and/or
@@ -38,7 +38,7 @@ endif
 nss_ldap_so_LDADD += ../common/libtio.a ../common/libprot.a
 nss_ldap_so_DEPENDENCIES = $(nss_ldap_so_LDADD)
 
-EXTRA_DIST = exports.glibc exports.solaris
+EXTRA_DIST = exports.glibc exports.solaris solnss.c
 
 install-exec-local: install-nss_ldap_so
 uninstall-local: uninstall-nss_ldap_so
