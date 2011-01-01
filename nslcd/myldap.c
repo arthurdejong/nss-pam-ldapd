@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006, 2007 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -377,9 +377,7 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
    code. */
 static int do_bind(LDAP *ld,const char *binddn,const char *bindpw,const char *uri)
 {
-#ifdef LDAP_OPT_X_TLS
   int rc;
-#endif /* LDAP_OPT_X_TLS */
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
 #ifndef HAVE_SASL_INTERACT_T
   struct berval cred;
