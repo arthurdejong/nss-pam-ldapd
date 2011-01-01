@@ -76,7 +76,7 @@
   <para>
   <command>nslcd</command> accepts the following options:</para>
   <variablelist remap="TP">
-   <varlistentry>
+   <varlistentry id="check">
     <term>
      <option>-c, --check</option>
     </term>
@@ -87,7 +87,7 @@
      </para>
     </listitem>
     </varlistentry>
-    <varlistentry>
+    <varlistentry id="debug">
     <term>
      <option>-d, --debug</option>
     </term>
@@ -103,7 +103,7 @@
      </para>
     </listitem>
    </varlistentry>
-   <varlistentry>
+   <varlistentry id="help">
     <term>
      <option>--help</option>
     </term>
@@ -111,7 +111,7 @@
      <para>Display short help and exit.</para>
     </listitem>
    </varlistentry>
-   <varlistentry>
+   <varlistentry id="version">
     <term>
      <option>-V, --version</option>
     </term>

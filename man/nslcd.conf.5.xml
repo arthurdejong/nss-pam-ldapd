@@ -72,7 +72,7 @@
    <title>Runtime options</title>
    <variablelist>
 
-    <varlistentry>
+    <varlistentry id="threads">
      <term><option>threads</option> <replaceable>NUM</replaceable></term>
      <listitem>
       <para>
@@ -83,7 +83,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="uid">
      <term><option>uid</option> <replaceable>UID</replaceable></term>
      <listitem>
       <para>
@@ -96,7 +96,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="gid">
      <term><option>gid</option> <replaceable>GID</replaceable></term>
      <listitem>
       <para>
@@ -116,7 +116,7 @@
    <title>General connection options</title>
    <variablelist>
 
-    <varlistentry>
+    <varlistentry id="uri">
      <term><option>uri</option> <replaceable>URI</replaceable></term>
      <listitem>
       <para>
@@ -149,7 +149,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="ldap_version">
      <term><option>ldap_version</option> <replaceable>VERSION</replaceable></term>
      <listitem>
       <para>
@@ -159,7 +159,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="binddn">
      <term><option>binddn</option> <replaceable>DN</replaceable></term>
      <listitem>
       <para>
@@ -170,7 +170,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="bindpw">
      <term><option>bindpw</option> <replaceable>PASSWORD</replaceable></term>
      <listitem>
       <para>
@@ -187,7 +187,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="rootpwmoddn">
      <term><option>rootpwmoddn</option> <replaceable>DN</replaceable></term>
      <listitem>
       <para>
@@ -197,7 +197,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="rootpwmodpw">
      <term><option>rootpwmodpw</option> <replaceable>PASSWORD</replaceable></term>
      <listitem>
       <para>
@@ -221,7 +221,7 @@
    <title><acronym>SASL</acronym> authentication options</title>
    <variablelist>
 
-    <varlistentry>
+    <varlistentry id="sasl_mech">
      <term><option>sasl_mech</option> <replaceable>MECHANISM</replaceable></term>
      <listitem>
       <para>
@@ -231,7 +231,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="sasl_realm">
      <term><option>sasl_realm</option> <replaceable>REALM</replaceable></term>
      <listitem>
       <para>
@@ -241,7 +241,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="sasl_authcid">
      <term><option>sasl_authcid</option> <replaceable>AUTHCID</replaceable></term>
      <listitem>
       <para>
@@ -251,7 +251,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="sasl_authzid">
      <term><option>sasl_authzid</option> <replaceable>AUTHZID</replaceable></term>
      <listitem>
       <para>
@@ -263,7 +263,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="sasl_secprops">
      <term><option>sasl_secprops</option> <replaceable>PROPERTIES</replaceable></term>
      <listitem>
       <para>
@@ -282,7 +282,7 @@
    <title>Kerberos authentication options</title>
    <variablelist>
 
-    <varlistentry>
+    <varlistentry id="krb5_ccname">
      <term><option>krb5_ccname</option> <replaceable>NAME</replaceable></term>
      <listitem>
       <para>
@@ -298,7 +298,7 @@
    <title>Search/mapping options</title>
    <variablelist>
 
-    <varlistentry>
+    <varlistentry id="base">
      <term><option>base</option>
            <optional><replaceable>MAP</replaceable></optional>
            <replaceable>DN</replaceable></term>
@@ -327,7 +327,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="scope">
      <term><option>scope</option>
            <optional><replaceable>MAP</replaceable></optional>
            sub<optional>tree</optional>|one<optional>level</optional>|base</term>
@@ -340,7 +340,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="deref">
      <term><option>deref</option> never|searching|finding|always</term>
      <listitem>
       <para>
@@ -350,7 +350,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="referrals">
      <term><option>referrals</option> yes|no</term>
      <listitem>
       <para>
@@ -360,7 +360,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="filter">
      <term><option>filter</option>
            <replaceable>MAP</replaceable>
            <replaceable>FILTER</replaceable></term>
@@ -375,7 +375,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="map">
      <term><option>map</option>
            <replaceable>MAP</replaceable>
            <replaceable>ATTRIBUTE</replaceable>
@@ -429,7 +429,7 @@
    <title>Timing/reconnect options</title>
    <variablelist>
 
-    <varlistentry>
+    <varlistentry id="bind_timelimit">
      <term><option>bind_timelimit</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
@@ -444,7 +444,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="timelimit">
      <term><option>timelimit</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
@@ -456,7 +456,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="idle_timelimit">
      <term><option>idle_timelimit</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
@@ -467,7 +467,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="reconnect_sleeptime">
      <term><option>reconnect_sleeptime</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
@@ -479,7 +479,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="reconnect_retrytime">
      <term><option>reconnect_retrytime</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
@@ -511,7 +511,7 @@
    <title><acronym>SSL</acronym>/<acronym>TLS</acronym> options</title>
    <variablelist>
 
-    <varlistentry>
+    <varlistentry id="ssl">
      <term><option>ssl</option> on|off|start_tls</term>
      <listitem>
       <para>
@@ -524,7 +524,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="tls_reqcert">
      <term><option>tls_reqcert</option> never|allow|try|demand|hard</term>
      <listitem>
       <para>
@@ -539,7 +539,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="tls_cacertdir">
      <term><option>tls_cacertdir</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
@@ -551,7 +551,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="tls_cacertfile">
      <term><option>tls_cacertfile</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
@@ -560,7 +560,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="tls_randfile">
      <term><option>tls_randfile</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
@@ -571,7 +571,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="tls_ciphers">
      <term><option>tls_ciphers</option> <replaceable>CIPHERS</replaceable></term>
      <listitem>
       <para>
@@ -582,7 +582,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="tls_cert">
      <term><option>tls_cert</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
@@ -592,7 +592,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="tls_key">
      <term><option>tls_key</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
@@ -610,7 +610,7 @@
    <variablelist>
 
 <!-- do not document this option for now as support it is not finalized
-    <varlistentry>
+    <varlistentry id="restart">
      <term><option>restart</option> yes|no</term>
      <listitem>
       <para>
@@ -624,7 +624,7 @@
     </varlistentry>
 -->
 
-    <varlistentry>
+    <varlistentry id="pagesize">
      <term><option>pagesize</option> <replaceable>NUMBER</replaceable></term>
      <listitem>
       <para>
@@ -643,7 +643,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="nss_initgroups_ignoreusers">
      <term><option>nss_initgroups_ignoreusers</option> user1,user2,...</term>
      <listitem>
       <para>
@@ -660,7 +660,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="nss_min_uid">
      <term><option>nss_min_uid</option> <replaceable>UID</replaceable></term>
      <listitem>
       <para>
@@ -671,7 +671,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry>
+    <varlistentry id="pam_authz_search">
      <term><option>pam_authz_search</option>
            <replaceable>FILTER</replaceable></term>
      <listitem>

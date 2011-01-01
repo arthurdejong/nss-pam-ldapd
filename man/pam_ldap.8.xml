@@ -64,7 +64,7 @@
  <refsect1 id="options">
   <title>Options</title>
   <variablelist remap="TP">
-   <varlistentry>
+   <varlistentry id="use_first_pass">
     <term>
      <option>use_first_pass</option>
     </term>
@@ -76,7 +76,7 @@
      </para>
     </listitem>
    </varlistentry>
-   <varlistentry>
+   <varlistentry id="try_first_pass">
     <term>
      <option>try_first_pass</option>
     </term>
@@ -88,7 +88,7 @@
      </para>
     </listitem>
    </varlistentry>
-   <varlistentry>
+   <varlistentry id="nullok">
     <term>
      <option>nullok</option>
     </term>
@@ -99,7 +99,7 @@
      </para>
     </listitem>
    </varlistentry>
-   <varlistentry>
+   <varlistentry id="ignore_unknown_user">
     <term>
      <option>ignore_unknown_user</option>
     </term>
@@ -112,7 +112,7 @@
      </para>
     </listitem>
    </varlistentry>
-   <varlistentry>
+   <varlistentry id="ignore_authinfo_unavail">
     <term>
      <option>ignore_authinfo_unavail</option>
     </term>
@@ -124,7 +124,7 @@
      </para>
     </listitem>
    </varlistentry>
-   <varlistentry>
+   <varlistentry id="no_warn">
     <term>
      <option>no_warn</option>
     </term>
@@ -135,7 +135,7 @@
      </para>
     </listitem>
    </varlistentry>
-   <varlistentry>
+   <varlistentry id="use_authtok">
     <term>
      <option>use_authtok</option>
     </term>
@@ -148,7 +148,7 @@
      </para>
     </listitem>
    </varlistentry>
-   <varlistentry>
+   <varlistentry id="debug">
     <term>
      <option>debug</option>
     </term>
@@ -160,7 +160,7 @@
      </para>
     </listitem>
    </varlistentry>
-   <varlistentry>
+   <varlistentry id="minimum_uid">
     <term>
      <option>minimum_uid=<replaceable>UID</replaceable></option>
     </term>
