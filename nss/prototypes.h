@@ -29,6 +29,18 @@
    NSS_STATUS_UNAVAIL */
 extern int _nss_ldap_enablelookups;
 
+#ifdef NSS_FLAVOUR_FREEBSD
+
+/* for FreeBSD we want the GlibC prototypes and functions to be built
+   (we provide some wrappers in bsdnss.c) */
+#define NSS_FLAVOUR_GLIBC 1
+
+/* FreeBSD specific register function */
+ns_mtab *nss_module_register(const char *source, unsigned int *mtabsize,
+                             nss_module_unregister_fn *unreg);
+
+#endif /* NSS_FLAVOUR_FREEBSD */
+
 #ifdef NSS_FLAVOUR_GLIBC
 
 /*

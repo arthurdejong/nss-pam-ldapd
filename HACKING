@@ -144,6 +144,18 @@ http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/lib/nsswitch/
 http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/head/nss_common.h
 http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/head/nss_dbdefs.h
 
+FreeBSD C Libarary notes
+------------------------
+
+The FreeBSD C library seems to have support for exposing GNU C Library NSS
+module functions through a wrapper function. This makes it very easy to
+implement NSS support on FreeBSD.
+
+Pointers for more documentation on this is welcome. Some information is
+available here:
+http://nixdoc.net/man-pages/FreeBSD/man3/nsdispatch.3.html
+ftp://ftp8.tw.freebsd.org/pub/branches/-current/src/include/nss.h
+
 
 PAM MODULE
 ==========

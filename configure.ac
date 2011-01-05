@@ -412,7 +412,7 @@ then
   # check which NSS flavour to build
   AC_MSG_CHECKING([which NSS flavour to build])
   AC_ARG_WITH(nss-flavour,
-              AS_HELP_STRING([--with-nss-flavour=auto|glibc|solaris],
+              AS_HELP_STRING([--with-nss-flavour=auto|glibc|solaris|freebsd],
                              [the libc flavour to build our NSS module for @<:@auto@:>@]),,
               with_nss_flavour=auto)
   if test "x$with_nss_flavour" = "xauto"
@@ -420,6 +420,7 @@ then
     # do the guessing game
     case "$target_os" in
       solaris*) with_nss_flavour=solaris ;;
+      freebsd*) with_nss_flavour=freebsd ;;
       *)        with_nss_flavour=glibc ;;
     esac
   fi
@@ -427,6 +428,7 @@ then
   case "$with_nss_flavour" in
     glibc)   AC_DEFINE(NSS_FLAVOUR_GLIBC,1,[Whether to use the Glibc NSS interface flavour.]) ;;
     solaris) AC_DEFINE(NSS_FLAVOUR_SOLARIS,1,[Whether to use the Solaris NSS interface flavour.]) ;;
+    freebsd) AC_DEFINE(NSS_FLAVOUR_FREEBSD,1,[Whether to use the FreeBSD NSS interface flavour.]) ;;
   esac
 
   # check which module source files to use
@@ -436,6 +438,7 @@ then
     case "$with_nss_flavour" in
       glibc)   with_nss_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow" ;;
       solaris) with_nss_maps="ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow" ;;
+      freebsd) with_nss_maps="group,hosts,passwd" ;;
     esac
   fi
   AC_MSG_RESULT($with_nss_maps)
@@ -729,6 +732,7 @@ fi
 
 AM_CONDITIONAL([NSS_FLAVOUR_GLIBC], [test "x${with_nss_flavour}" = xglibc])
 AM_CONDITIONAL([NSS_FLAVOUR_SOLARIS], [test "x${with_nss_flavour}" = xsolaris])
+AM_CONDITIONAL([NSS_FLAVOUR_FREEBSD], [test "x${with_nss_flavour}" = xfreebsd])
 
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile
