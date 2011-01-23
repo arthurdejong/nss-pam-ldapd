@@ -691,10 +691,14 @@
        expressions below.
       </para>
       <para>
-       For example, to check that the user has a proper authorizedService
-       value if the attribute is present:
-       <literal>(&amp;(objectClass=posixAccount)(uid=$username)
-       (|(authorizedService=$service)(!(authorizedService=*))))</literal>
+       For example, to check that the user has a proper <literal>authorizedService</literal>
+       value if the attribute is present (this emulates the
+       <option>pam_check_service_attr</option> option in PADL's pam_ldap):
+       <literallayout><literal>(&amp;(objectClass=posixAccount)(uid=$username)(|(authorizedService=$service)(!(authorizedService=*))))</literal></literallayout>
+      </para>
+      <para>
+       The <option>pam_check_host_attr</option> option can be emulated with:
+       <literallayout><literal>(&amp;(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(!(host=*))))</literal></literallayout>
       </para>
       <para>
        The default behaviour is not to do this extra search and always
