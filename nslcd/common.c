@@ -31,6 +31,8 @@
 #include <arpa/inet.h>
 #include <strings.h>
 #include <limits.h>
+#include <netdb.h>
+#include <string.h>
 
 #include "nslcd.h"
 #include "common.h"
@@ -50,6 +52,76 @@ int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
   buffer[buflen-1]='\0';
   /* check if the string was completely written */
   return ((res<0)||(((size_t)res)>=buflen));
+}
+
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 255
+#endif /* not HOST_NAME_MAX */
+
+/* return the fully qualified domain name of the current host */
+const char *getfqdn(void)
+{
+  static char *fqdn=NULL;
+  char hostname[HOST_NAME_MAX+1];
+  int hostnamelen;
+  int i;
+  struct hostent *host=NULL;
+  /* if we already have a fqdn return that */
+  if (fqdn!=NULL)
+    return fqdn;
+  /* get system hostname */
+  if (gethostname(hostname,sizeof(hostname))<0)
+  {
+    log_log(LOG_ERR,"gethostname() failed: %s",strerror(errno));
+    return NULL;
+  }
+  hostnamelen=strlen(hostname);
+  /* lookup hostent */
+  host=gethostbyname(hostname);
+  if (host==NULL)
+  {
+    log_log(LOG_ERR,"gethostbyname(%s): %s",hostname,hstrerror(h_errno));
+    /* fall back to hostname */
+    fqdn=strdup(hostname);
+    return fqdn;
+  }
+  /* check h_name for fqdn starting with our hostname */
+  if ((strncasecmp(hostname,host->h_name,hostnamelen)==0)&&
+      (host->h_name[hostnamelen]=='.')&&
+      (host->h_name[hostnamelen+1]!='\0'))
+  {
+    fqdn=strdup(host->h_name);
+    return fqdn;
+  }
+  /* also check h_aliases */
+  for (i=0;host->h_aliases[i]!=NULL;i++)
+  {
+    if ((strncasecmp(hostname,host->h_aliases[i],hostnamelen)==0)&&
+        (host->h_aliases[i][hostnamelen]=='.')&&
+        (host->h_aliases[i][hostnamelen+1]!='\0'))
+    {
+      fqdn=host->h_aliases[i];
+      return fqdn;
+    }
+  }
+  /* fall back to h_name if it has a dot in it */
+  if (strchr(host->h_name,'.')!=NULL)
+  {
+    fqdn=strdup(host->h_name);
+    return fqdn;
+  }
+  /* also check h_aliases */
+  for (i=0;host->h_aliases[i]!=NULL;i++)
+  {
+    if (strchr(host->h_aliases[i],'.')!=NULL)
+    {
+      fqdn=strdup(host->h_aliases[i]);
+      return fqdn;
+    }
+  }
+  /* nothing found, fall back to hostname */
+  fqdn=strdup(hostname);
+  return fqdn;
 }
 
 const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr,char *buffer,size_t buflen)

@@ -160,60 +160,17 @@ static void add_uri(const char *filename,int lnr,
   cfg->ldc_uris[i].uri=xstrdup(uri);
 }
 
-#ifndef HOST_NAME_MAX
-#define HOST_NAME_MAX 255
-#endif /* not HOST_NAME_MAX */
-
 #ifdef HAVE_LDAP_DOMAIN2HOSTLIST
 /* return the domain name of the current host
    the returned string must be freed by caller */
 static char *cfg_getdomainname(const char *filename,int lnr)
 {
-  char hostname[HOST_NAME_MAX+1],*domain;
-  int hostnamelen;
-  int i;
-  struct hostent *host=NULL;
-  /* get system hostname */
-  if (gethostname(hostname,sizeof(hostname))<0)
-  {
-    log_log(LOG_ERR,"%s:%d: gethostname() failed: %s",filename,lnr,strerror(errno));
-    exit (EXIT_FAILURE);
-  }
-  hostnamelen=strlen(hostname);
-  /* lookup hostent */
-  host=gethostbyname(hostname);
-  if (host==NULL)
-  {
-    log_log(LOG_ERR,"%s:%d: gethostbyname(%s): %s",filename,lnr,hostname,hstrerror(h_errno));
-    exit(EXIT_FAILURE);
-  }
-  /* check h_name for fqdn starting with our hostname */
-  if ((strncasecmp(hostname,host->h_name,hostnamelen)==0)&&
-      (host->h_name[hostnamelen]=='.')&&
-      (host->h_name[hostnamelen+1]!='\0'))
-    return strdup(host->h_name+hostnamelen+1);
-  /* also check h_aliases */
-  for (i=0;host->h_aliases[i]!=NULL;i++)
-  {
-    if ((strncasecmp(hostname,host->h_aliases[i],hostnamelen)==0)&&
-        (host->h_aliases[i][hostnamelen]=='.')&&
-        (host->h_aliases[i][hostnamelen+1]!='\0'))
-      return strdup(host->h_aliases[i]+hostnamelen+1);
-  }
-  /* fall back to any domain part in h_name */
-  if (((domain=strchr(host->h_name,'.'))!=NULL)&&
-      (domain[1]!='\0'))
-    return strdup(domain+1);
-  /* also check h_aliases */
-  for (i=0;host->h_aliases[i]!=NULL;i++)
-  {
-    if (((domain=strchr(host->h_aliases[i],'.'))!=NULL)&&
-        (domain[1]!='\0'))
-      return strdup(domain+1);
-  }
-  /* we've tried everything now */
-  log_log(LOG_ERR,"%s:%d: unable to determinate a domainname for hostname %s",
-          filename,lnr,hostname);
+  char *fqdn,*domain;
+  fqdn=getfqdn();
+  if ((fqdn!=NULL)&&((domain=strchr(fqdn,'.'))!=NULL)&&(domain[1]!='\0'))
+    return domain+1;
+  log_log(LOG_ERR,"%s:%d: unable to determinate a domain name",
+          filename,lnr);
   exit(EXIT_FAILURE);
 }
 
@@ -251,7 +208,6 @@ static void add_uris_from_dns(const char *filename,int lnr,
     /* get next entry from list */
     hostlist=nxt;
   }
-  free(domain);
 }
 #endif /* HAVE_LDAP_DOMAIN2HOSTLIST */
 

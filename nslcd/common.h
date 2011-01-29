@@ -54,6 +54,11 @@
 int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
   LIKE_PRINTF(3,4);
 
+/* return the fully qualified domain name of the current host
+   the returned value does not need to be freed but is re-used for every
+   call */
+MUST_USE const char *getfqdn(void);
+
 /* This tries to get the user password attribute from the entry.
    It will try to return an encrypted password as it is used in /etc/passwd,
    /etc/group or /etc/shadow depending upon what is in the directory.

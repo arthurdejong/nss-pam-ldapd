@@ -685,6 +685,7 @@
          <literal>$username</literal>, <literal>$service</literal>,
          <literal>$ruser</literal>, <literal>$rhost</literal>,
          <literal>$tty</literal>, <literal>$hostname</literal>,
+         <literal>$fqdn</literal>,
          <literal>$dn</literal>, and <literal>$uid</literal>.
        These references are substituted in the search filter using the
        same syntax as described in the section on attribute mapping

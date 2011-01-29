@@ -318,7 +318,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   char userdn[256];
   char servicename[64];
   char ruser[256],rhost[HOST_NAME_MAX+1],tty[64];
-  char hostname[HOST_NAME_MAX+1];
+  char hostname[HOST_NAME_MAX+1],*fqdn;
   DICT *dict;
   /* read request parameters */
   READ_STRING(fp,username);
@@ -351,7 +351,8 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     autzsearch_var_add(dict,"tty",tty);
     if (gethostname(hostname,sizeof(hostname))==0)
       autzsearch_var_add(dict,"hostname",hostname);
-    /* TODO: fqdn */
+    if ((fqdn=getfqdn())!=NULL)
+      autzsearch_var_add(dict,"fqdn",fqdn);
     autzsearch_var_add(dict,"dn",userdn);
     autzsearch_var_add(dict,"uid",username);
     if (try_autzsearch(session,dict,nslcd_cfg->ldc_pam_authz_search)!=LDAP_SUCCESS)
