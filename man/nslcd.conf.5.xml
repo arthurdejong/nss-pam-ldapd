@@ -693,13 +693,13 @@
       </para>
       <para>
        For example, to check that the user has a proper <literal>authorizedService</literal>
-       value if the attribute is present (this emulates the
+       value if the attribute is present (this almost emulates the
        <option>pam_check_service_attr</option> option in PADL's pam_ldap):
        <literallayout><literal>(&amp;(objectClass=posixAccount)(uid=$username)(|(authorizedService=$service)(!(authorizedService=*))))</literal></literallayout>
       </para>
       <para>
        The <option>pam_check_host_attr</option> option can be emulated with:
-       <literallayout><literal>(&amp;(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(!(host=*))))</literal></literallayout>
+       <literallayout><literal>(&amp;(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(host=$fqdn)(host=\\*)))</literal></literallayout>
       </para>
       <para>
        The default behaviour is not to do this extra search and always
@@ -776,10 +776,7 @@
   <title>Attribute mapping expressions</title>
   <para>
    For some attributes a mapping expression may be used to construct the
-   resulting value. This is currently only possible for attributes that do
-   not need to be used in search filters.
-  </para>
-  <para>
+   resulting value.
    The expressions are a subset of the double quoted string expressions in the
    Bourne (POSIX) shell.
    Instead of variable substitution, attribute lookups are done on the current
@@ -808,6 +805,11 @@
     </para></listitem>
    </varlistentry>
   </variablelist>
+  <para>
+   Quote (<literal>"</literal>), dollar (<literal>$</literal>) or
+   backslash (<literal>\</literal>) characters should be escaped with a
+   backslash (<literal>\</literal>).
+  </para>
   <para>
    The <command>nslcd</command> daemon checks the expressions to figure
    out which attributes to fetch from <acronym>LDAP</acronym>.
