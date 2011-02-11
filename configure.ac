@@ -242,7 +242,7 @@ if test "x$NSS_LDAP_SONAME" = "xauto"
 then
   case "$target_os" in
     solaris*) NSS_LDAP_SONAME="nss_ldap.so.1" ;;
-    freebsd*) NSS_LDAP_SONAME="nss_ldap.so" ;;
+    freebsd*) NSS_LDAP_SONAME="nss_ldap.so.1" ;;
     *)        NSS_LDAP_SONAME="libnss_ldap.so.2" ;;
   esac
 fi
