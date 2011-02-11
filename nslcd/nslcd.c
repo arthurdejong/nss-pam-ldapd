@@ -2,7 +2,7 @@
    nslcd.c - ldap local connection daemon
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -56,6 +56,7 @@
 #include "compat/daemon.h"
 #endif /* not HAVE_DAEMON */
 #include <dlfcn.h>
+#include <libgen.h>
 
 #include "nslcd.h"
 #include "log.h"
@@ -106,7 +107,7 @@ static void display_version(FILE *fp)
 {
   fprintf(fp,"%s\n",PACKAGE_STRING);
   fprintf(fp,"Written by Luke Howard and Arthur de Jong.\n\n");
-  fprintf(fp,"Copyright (C) 1997-2009 Luke Howard, Arthur de Jong and West Consulting\n"
+  fprintf(fp,"Copyright (C) 1997-2011 Luke Howard, Arthur de Jong and West Consulting\n"
              "This is free software; see the source for copying conditions.  There is NO\n"
              "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
@@ -273,9 +274,19 @@ static void exithandler(void)
   log_log(LOG_INFO,"version %s bailing out",VERSION);
 }
 
+/* create the directory for the specified file to reside in */
+static void mkdirname(const char *filename)
+{
+  char *tmpname;
+  tmpname=strdup(filename);
+  if (tmpname==NULL) return;
+  (void)mkdir(dirname(tmpname),(mode_t)0755);
+  free(tmpname);
+}
+
 /* returns a socket ready to answer requests from the client,
    exit()s on error */
-static int create_socket(void)
+static int create_socket(const char *filename)
 {
   int sock;
   int i;
@@ -287,10 +298,10 @@ static int create_socket(void)
     exit(EXIT_FAILURE);
   }
   /* remove existing named socket */
-  if (unlink(NSLCD_SOCKET)<0)
+  if (unlink(filename)<0)
   {
-    log_log(LOG_DEBUG,"unlink() of "NSLCD_SOCKET" failed (ignored): %s",
-            strerror(errno));
+    log_log(LOG_DEBUG,"unlink() of %s failed (ignored): %s",
+            filename,strerror(errno));
   }
   /* do not block on accept() */
   if ((i=fcntl(sock,F_GETFL,0))<0)
@@ -307,16 +318,17 @@ static int create_socket(void)
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     exit(1);
   }
+  /* create the directory if needed */
+  mkdirname(filename);
   /* create socket address structure */
   memset(&addr,0,sizeof(struct sockaddr_un));
   addr.sun_family=AF_UNIX;
-  strncpy(addr.sun_path,NSLCD_SOCKET,sizeof(addr.sun_path));
+  strncpy(addr.sun_path,filename,sizeof(addr.sun_path));
   addr.sun_path[sizeof(addr.sun_path)-1]='\0';
   /* bind to the named socket */
   if (bind(sock,(struct sockaddr *)&addr,(sizeof(addr.sun_family)+strlen(addr.sun_path))))
   {
-    log_log(LOG_ERR,"bind() to "NSLCD_SOCKET" failed: %s",
-            strerror(errno));
+    log_log(LOG_ERR,"bind() to %s failed: %s",filename,strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     exit(EXIT_FAILURE);
@@ -334,7 +346,7 @@ static int create_socket(void)
      fchmod does not work on sockets
      http://www.opengroup.org/onlinepubs/009695399/functions/fchmod.html
      http://lkml.org/lkml/2005/5/16/11 */
-  if (chmod(NSLCD_SOCKET,(mode_t)0666))
+  if (chmod(filename,(mode_t)0666))
   {
     log_log(LOG_ERR,"chmod(0666) failed: %s",strerror(errno));
     if (close(sock))
@@ -487,6 +499,7 @@ static void create_pidfile(const char *filename)
   char buffer[20];
   if (filename!=NULL)
   {
+    mkdirname(filename);
     if ((fd=open(filename,O_RDWR|O_CREAT,0644))<0)
     {
       log_log(LOG_ERR,"cannot create pid file (%s): %s",filename,strerror(errno));
@@ -718,7 +731,7 @@ int main(int argc,char *argv[])
     exit(EXIT_FAILURE);
   }
   /* create socket */
-  nslcd_serversocket=create_socket();
+  nslcd_serversocket=create_socket(NSLCD_SOCKET);
 #ifdef HAVE_SETGROUPS
   /* drop all supplemental groups */
   if (setgroups(0,NULL)<0)
