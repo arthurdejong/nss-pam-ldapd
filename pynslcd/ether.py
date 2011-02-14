@@ -47,7 +47,7 @@ class EtherRequest(common.Request):
 
     def write(self, entry):
         dn, attributes = entry
-        # get name and check against requested user name
+        # get name and check against requested name
         names = attributes.get(self.attmap_cn, [])
         if not names:
             print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn)
