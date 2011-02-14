@@ -141,6 +141,7 @@ handlers = {}
 handlers.update(common.get_handlers('alias'))
 handlers.update(common.get_handlers('ether'))
 handlers.update(common.get_handlers('group'))
+handlers.update(common.get_handlers('host'))
 handlers.update(common.get_handlers('pam'))
 handlers.update(common.get_handlers('passwd'))
 handlers.update(common.get_handlers('shadow'))

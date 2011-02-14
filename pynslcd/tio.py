@@ -66,6 +66,12 @@ class TIOStream(object):
             raise TIOStreamError()
         return self.read(len)
 
+    def read_address(self):
+        """Read an address (usually IPv4 or IPv6) from the stream and return
+        the address as a string representation."""
+        af = self.read_int32()
+        return socket.inet_ntop(af, self.read_string(maxsize=64))
+
     def write(self, value):
         self.fp.write(value)
 
@@ -87,6 +93,24 @@ class TIOStream(object):
         self.write_int32(len(lst))
         for string in lst:
             self.write_string(string)
+
+    @staticmethod
+    def _to_address(value):
+        # try IPv4 first
+        try:
+            return socket.AF_INET, socket.inet_pton(socket.AF_INET, value)
+        except socket.error:
+            pass # try the next one
+        # fall back to IPv6
+        return socket.AF_INET6, socket.inet_pton(socket.AF_INET6, value)
+
+    def write_address(self, value):
+        """Write an address (usually IPv4 or IPv6) in a string representation
+        to the stream."""
+        # first try to make it into an IPv6 address
+        af, address = TIOStream._to_address(value)
+        self.write_int32(af)
+        self.write_string(address)
 
     def close(self):
         try:
