@@ -2,7 +2,7 @@
 
 # test.sh - simple test script to check output of name lookup commands
 #
-# Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
+# Copyright (C) 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -182,7 +182,7 @@ testgroup:*:6100:arthur,test,testuser4
 EOM
 
 check "groups arthur | sed 's/^.*://'" << EOM
-users testgroup testgroup2
+users testgroup testgroup2 grp4 grp5 grp6 grp7 grp8 grp9 grp10 grp11 grp12 grp13 grp14 grp15 grp16 grp17 grp18
 EOM
 
 check "groups testuser4 | sed 's/^.*://'" << EOM
@@ -196,7 +196,7 @@ users:*:100:arthur,test
 EOM
 
 check "getent group | wc -l" << EOM
-`grep -c : /etc/group | awk '{print $1 + 5}'`
+`grep -c : /etc/group | awk '{print $1 + 20}'`
 EOM
 
 check "getent group | grep ^largegroup | sortgroup" << EOM
