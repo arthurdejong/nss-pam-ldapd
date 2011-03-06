@@ -1,7 +1,7 @@
 /*
    log.c - logging funtions
 
-   Copyright (C) 2002, 2003, 2008, 2010 Arthur de Jong
+   Copyright (C) 2002, 2003, 2008, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -134,6 +134,18 @@ void log_startlogging(void)
 }
 
 
+/* indicate that we should clear any session identifiers set by
+   log_newsession */
+void log_clearsession(void)
+{
+  /* set the session id to empty */
+  if (sessionid!=NULL)
+    sessionid[0]='\0';
+  /* set the request id to empty */
+  if (requestid!=NULL)
+    requestid[0]='\0';
+}
+
 /* indicate that a session id should be included in the output
    and set it to a new value */
 void log_newsession(void)
@@ -207,7 +219,7 @@ void log_log(int pri,const char *format, ...)
     {
       if ((requestid!=NULL)&&(requestid[0]!='\0'))
         fprintf(stderr,"%s: [%s] <%s> %s%s\n",PACKAGE,sessionid,requestid,pri==LOG_DEBUG?"DEBUG: ":"",buffer);
-      else if (sessionid)
+      else if ((sessionid!=NULL)&&(sessionid[0]!='\0'))
         fprintf(stderr,"%s: [%s] %s%s\n",PACKAGE,sessionid,pri==LOG_DEBUG?"DEBUG: ":"",buffer);
       else
         fprintf(stderr,"%s: %s%s\n",PACKAGE,pri==LOG_DEBUG?"DEBUG: ":"",buffer);
@@ -223,7 +235,7 @@ void log_log(int pri,const char *format, ...)
         {
           if ((requestid!=NULL)&&(requestid[0]!='\0'))
             syslog(pri,"[%s] <%s> %s",sessionid,requestid,buffer);
-          else if (sessionid)
+          else if ((sessionid!=NULL)&&(sessionid[0]!='\0'))
             syslog(pri,"[%s] %s",sessionid,buffer);
           else
             syslog(pri,"%s",buffer);
@@ -232,7 +244,7 @@ void log_log(int pri,const char *format, ...)
         {
           if ((requestid!=NULL)&&(requestid[0]!='\0'))
             fprintf(lst->fp,"%s: [%s] <%s> %s\n",sessionid,requestid,PACKAGE,buffer);
-          else if (sessionid)
+          else if ((sessionid!=NULL)&&(sessionid[0]!='\0'))
             fprintf(lst->fp,"%s: [%s] %s\n",sessionid,PACKAGE,buffer);
           else
             fprintf(lst->fp,"%s: %s\n",PACKAGE,buffer);

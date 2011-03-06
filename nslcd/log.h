@@ -1,7 +1,7 @@
 /*
    log.h - definitions of logging funtions
 
-   Copyright (C) 2002, 2003, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2002, 2003, 2007, 2008, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -52,6 +52,11 @@ void log_startlogging(void);
 /* indicate that a session id should be included in the output
    and set it to a new value */
 void log_newsession(void);
+
+
+/* indicate that we should clear any session identifiers set by
+   log_newsession */
+void log_clearsession(void);
 
 
 /* indicate that a request identifier should be included in the output
