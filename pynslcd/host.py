@@ -1,5 +1,5 @@
 
-# host.py - lookup functions for hostnet addresses
+# host.py - lookup functions for host names and addresses
 #
 # Copyright (C) 2011 Arthur de Jong
 #
@@ -28,7 +28,7 @@ import socket
 
 class HostRequest(common.Request):
 
-    filter = '(objectClass=ieee802Device)'
+    filter = '(objectClass=ipHost)'
 
     attmap_cn           = 'cn'
     attmap_ipHostNumber = 'ipHostNumber'
