@@ -26,6 +26,10 @@ CLEANFILES = $(nodist_pynslcd_PYTHON)
 
 all-local: $(nodist_pynslcd_PYTHON)
 
+# clean up locally created compiled Python files
+clean:
+	rm -f *.pyc *.pyo
+
 # create a symbolic link for the pynslcd daemon and fix permissions
 install-data-hook:
 	chmod a+rx $(DESTDIR)$(pynslcddir)/pynslcd.py
