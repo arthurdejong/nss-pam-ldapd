@@ -67,7 +67,8 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
 EXTRA_DIST = nslcd.conf nslcd.h $(wildcard ChangeLog-20??) \
              $(wildcard m4/*.m4) HACKING $(DEBIAN_FILES)
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-warnings --with-pam-seclib-dir="\$${libdir}/security"
+DISTCHECK_CONFIGURE_FLAGS = --enable-warnings --with-pam-seclib-dir="\$${libdir}/security" \
+                            --enable-pynslcd
 
 ACLOCAL_AMFLAGS = -I m4
 
