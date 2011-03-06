@@ -2,7 +2,7 @@
 
 # pynslcd.py - main daemon module
 #
-# Copyright (C) 2010 Arthur de Jong
+# Copyright (C) 2010, 2011 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -142,6 +142,7 @@ handlers.update(common.get_handlers('alias'))
 handlers.update(common.get_handlers('ether'))
 handlers.update(common.get_handlers('group'))
 handlers.update(common.get_handlers('host'))
+handlers.update(common.get_handlers('network'))
 handlers.update(common.get_handlers('pam'))
 handlers.update(common.get_handlers('passwd'))
 handlers.update(common.get_handlers('shadow'))
