@@ -777,6 +777,8 @@
   <para>
    For some attributes a mapping expression may be used to construct the
    resulting value.
+   This is currently only possible for attributes that do
+   not need to be used in search filters.
    The expressions are a subset of the double quoted string expressions in the
    Bourne (POSIX) shell.
    Instead of variable substitution, attribute lookups are done on the current
