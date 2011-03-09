@@ -320,7 +320,8 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   char userdn[256];
   char servicename[64];
   char ruser[256],rhost[HOST_NAME_MAX+1],tty[64];
-  char hostname[HOST_NAME_MAX+1],*fqdn;
+  char hostname[HOST_NAME_MAX+1];
+  const char *fqdn;
   DICT *dict;
   /* read request parameters */
   READ_STRING(fp,username);
