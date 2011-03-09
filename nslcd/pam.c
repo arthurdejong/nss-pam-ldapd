@@ -2,7 +2,7 @@
    pam.c - pam processing routines
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009, 2010 Arthur de Jong
+   Copyright (C) 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -105,6 +105,8 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
     entry=uid2entry(session,username,&rc);
     if (entry==NULL)
     {
+      if (rc==LDAP_SUCCESS)
+        rc=LDAP_NO_SUCH_OBJECT;
       log_log(LOG_WARNING,"\"%s\": user not found: %s",username,ldap_err2string(rc));
       return rc;
     }
