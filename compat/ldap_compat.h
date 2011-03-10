@@ -1,7 +1,7 @@
 /*
    ldap_compat.h - provide a replacement definitions for some ldap functions
 
-   Copyright (C) 2009 Arthur de Jong
+   Copyright (C) 2009, 2010 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public

@@ -1,7 +1,7 @@
 /*
    pam_get_authtok.c - replacement function for pam_get_authtok()
 
-   Copyright (C) 2009 Arthur de Jong
+   Copyright (C) 2009, 2010 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or

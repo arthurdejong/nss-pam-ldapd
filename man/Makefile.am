@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2007, 2009 Arthur de Jong
+# Copyright (C) 2007, 2009, 2010 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public

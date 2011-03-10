@@ -3,7 +3,7 @@
    This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
