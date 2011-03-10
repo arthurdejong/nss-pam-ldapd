@@ -24,7 +24,6 @@
   (perhaps even extend the filtering to other data)
 * implement requesting and handling password policy information when binding
   as a user
-* integrate the FreeBSD code
 * implement nested groups
 * implement other services in nslcd: sudo and autofs are candidates
 * restart unscd on postinst, just like nscd (or perhaps do nscd -i <MAP>)
@@ -32,3 +31,5 @@
 * properly test Solaris support
 * fix buffer handling in read_**string() functions (Solaris support)
 * complete pynslcd implementation
+* in nslcd/pam.c check shadow properties if present
+* write test cases for the PAM code

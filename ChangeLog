@@ -1,3 +1,141 @@
+2011-03-10 20:35  arthur
+
+	* [r1384] Makefile.am, common/tio.c, compat/Makefile.am,
+	  compat/ether.h, compat/ldap_compat.h, compat/pam_get_authtok.c,
+	  man/Makefile.am, nslcd/attmap.c, nslcd/attmap.h, nslcd/common.c,
+	  nslcd/common.h, nss/prototypes.h, pam/common.h, pynslcd/ether.py,
+	  pynslcd/pynslcd.py, pynslcd/tio.py: update copyright headers to
+	  add missing years
+
+2011-03-09 22:33  arthur
+
+	* [r1383] nslcd/pam.c: fix compiler warning
+
+2011-03-09 22:32  arthur
+
+	* [r1382] nslcd/pam.c, nslcd/passwd.c: properly handle
+	  user-not-found errors when doing authentication (CVE-2011-0438)
+
+2011-03-06 15:58  arthur
+
+	* [r1381] pynslcd/Makefile.am, pynslcd/netgroup.py,
+	  pynslcd/pynslcd.py: implement module for netgroup lookups
+
+2011-03-06 15:09  arthur
+
+	* [r1380] pynslcd/Makefile.am, pynslcd/network.py,
+	  pynslcd/pynslcd.py: add network name lookups
+
+2011-03-06 15:06  arthur
+
+	* [r1379] tests/test.ldif.gz, tests/test_nsscmds.sh: add some test
+	  groups and add the arthur user to them to test whether all are
+	  returned correctly
+
+2011-03-06 14:52  arthur
+
+	* [r1378] Makefile.am: pass --enable-pynslcd with distcheck
+
+2011-03-06 14:52  arthur
+
+	* [r1377] pynslcd/Makefile.am: clean up compiled python files
+
+2011-03-06 14:49  arthur
+
+	* [r1376] pynslcd/host.py: fix search filter objectClass for hosts
+
+2011-03-06 14:23  arthur
+
+	* [r1375] nslcd/log.c, nslcd/log.h, nslcd/nslcd.c: ensure that
+	  session id is only logged while handling a connection
+
+2011-03-06 13:01  arthur
+
+	* [r1374] man/nslcd.conf.5.xml: note that attribute mapping
+	  expressions cannot be used for all attributes
+
+2011-02-14 21:12  arthur
+
+	* [r1373] pynslcd/Makefile.am, pynslcd/host.py, pynslcd/pynslcd.py,
+	  pynslcd/tio.py: implement module for hostname lookups
+
+2011-02-14 21:11  arthur
+
+	* [r1372] pynslcd/ether.py: fix comment
+
+2011-02-14 21:08  arthur
+
+	* [r1371] pynslcd/Makefile.am, pynslcd/debugio.py: clean up and add
+	  missing files to installation
+
+2011-02-11 22:18  arthur
+
+	* [r1370] configure.ac: fix FreeBSD nss_ldap soname (as seen in
+	  current FreeBSD packaging)
+
+2011-02-11 22:16  arthur
+
+	* [r1369] nslcd/nslcd.c: create the directory for the socket and
+	  pidfile
+
+2011-01-29 20:19  arthur
+
+	* [r1368] man/nslcd.conf.5.xml: document a proper replacement for
+	  pam_check_host_attr (thanks Luca Capello) and add a section on
+	  quoting
+
+2011-01-29 20:15  arthur
+
+	* [r1367] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/common.c,
+	  nslcd/common.h, nslcd/pam.c: implement a fqdn variable that can
+	  be used inside pam_authz_search filters
+
+2011-01-23 20:59  arthur
+
+	* [r1366] man/nslcd.conf.5.xml: name pam_check_service_attr and
+	  pam_check_host_attr options in manual page and indicate how
+	  pam_authz_search replaces them
+
+2011-01-05 19:39  arthur
+
+	* [r1365] AUTHORS, HACKING, configure.ac, debian/copyright,
+	  nss/Makefile.am, nss/bsdnss.c, nss/exports.freebsd,
+	  nss/prototypes.h: add FreeBSD support, partially imported from
+	  the FreeBSD port (thanks to Jacques Vidrine, Artem Kazakov and
+	  Alexander V. Chernikov)
+
+2011-01-01 14:46  arthur
+
+	* [r1364] nss/Makefile.am: put solnss.c under
+	  EXTRA_nss_ldap_so_SOURCES
+
+2011-01-01 14:25  arthur
+
+	* [r1363] man/nslcd.8.xml, man/nslcd.conf.5.xml,
+	  man/pam_ldap.8.xml: add ids to options so we can more easily
+	  reference them from elsewhere (especially useful for generated
+	  HTML)
+
+2011-01-01 14:12  arthur
+
+	* [r1362] nslcd/myldap.c: include definition of rc in all code
+	  paths because it's used most of the time
+
+2011-01-01 14:10  arthur
+
+	* [r1361] configure.ac: fix quoting of NSS_MODULE_OBJS expression
+	  to one that is supported by more shells
+
+2011-01-01 14:07  arthur
+
+	* [r1360] nss/Makefile.am: ensure that solnss.c ends up in tarball
+
+2010-12-30 21:28  arthur
+
+	* [r1358] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.8.0 release
+
 2010-12-30 16:43  arthur
 
 	* [r1357] README, debian/copyright: update copyright information
