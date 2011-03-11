@@ -103,6 +103,11 @@ MUST_USE char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t b
 /* try to update the shadowLastChange attribute of the entry if possible */
 int update_lastchange(MYLDAP_SESSION *session,const char *userdn);
 
+/* fallback definition of HOST_NAME_MAX */
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 255
+#endif /* not HOST_NAME_MAX */
+
 /* these are the functions for initialising the database specific
    modules */
 void alias_init(void);

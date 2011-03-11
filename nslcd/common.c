@@ -54,10 +54,6 @@ int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
   return ((res<0)||(((size_t)res)>=buflen));
 }
 
-#ifndef HOST_NAME_MAX
-#define HOST_NAME_MAX 255
-#endif /* not HOST_NAME_MAX */
-
 /* return the fully qualified domain name of the current host */
 const char *getfqdn(void)
 {
