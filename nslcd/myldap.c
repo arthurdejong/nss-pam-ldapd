@@ -901,10 +901,8 @@ static int do_retry_search(MYLDAP_SEARCH *search)
     if (nexttry>=endtime)
     {
       if (search->session->binddn[0]=='\0')
-      {
         log_log(LOG_ERR,"no available LDAP server found: %s",ldap_err2string(rc));
-        return LDAP_UNAVAILABLE;
-      }
+      return rc;
     }
     /* sleep between tries */
     sleeptime=nexttry-time(NULL);
@@ -1706,7 +1704,6 @@ int myldap_passwd(
 
 int myldap_modify(MYLDAP_SESSION *session,const char *dn,LDAPMod *mods[])
 {
-  int rc;
   if (!is_valid_session(session)||(dn==NULL))
   {
     log_log(LOG_ERR,"myldap_passwd(): invalid parameter passed");
