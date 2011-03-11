@@ -87,6 +87,10 @@ install-nslcd_conf:
 uninstall-nslcd_conf:
 	-rm -f $(DESTDIR)$(NSLCD_CONF_PATH)
 
+# fix permissions before distributing
+dist-hook:
+	chmod -R a+rX $(distdir)
+
 # target for easily creating a Debian package
 # the find is an ugly hack to fix a bug if being built on an nfs filesystem
 deb: distdir
