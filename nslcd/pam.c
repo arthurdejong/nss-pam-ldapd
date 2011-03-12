@@ -38,10 +38,6 @@
 #include "common/dict.h"
 #include "common/expr.h"
 
-#ifndef HOST_NAME_MAX
-#define HOST_NAME_MAX 255
-#endif /* not HOST_NAME_MAX */
-
 /* set up a connection and try to bind with the specified DN and password,
    returns an LDAP result code */
 static int try_bind(const char *userdn,const char *password)
