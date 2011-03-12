@@ -551,6 +551,7 @@ then
 
   # checks for availability of system libraries for nslcd
   AC_SEARCH_LIBS(gethostbyname,nsl socket)
+  AC_SEARCH_LIBS(hstrerror,resolv)
   AC_SEARCH_LIBS(socket,socket)
   AC_SEARCH_LIBS(dlopen,dl)
 
