@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# test.sh - simple test script to check output of name lookup commands
+# test_nsscmds.sh - simple test script to check output of name lookup commands
 #
 # Copyright (C) 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 #
