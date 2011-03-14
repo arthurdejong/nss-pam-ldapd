@@ -117,7 +117,7 @@ static inline int tio_tv_remaining(struct timeval *tv, const struct timeval *dea
     return -1;
   /* update tv */
   tv->tv_sec=deadline->tv_sec-tv->tv_sec;
-  if (tv->tv_usec<deadline->tv_usec)
+  if (tv->tv_usec<=deadline->tv_usec)
     tv->tv_usec=deadline->tv_usec-tv->tv_usec;
   else
   {
