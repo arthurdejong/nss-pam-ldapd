@@ -246,6 +246,28 @@ static int nslcd2pam_rc(int rc)
   }
 }
 
+/* check whether the specified user is handled by nslcd */
+static int nslcd_request_exists(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,
+                                const char *username)
+{
+  uid_t dummy_uid;
+  gid_t dummy_gid;
+  PAM_REQUEST(NSLCD_ACTION_PASSWD_BYNAME,
+    /* log debug message */
+    pam_syslog(pamh,LOG_DEBUG,"nslcd authentication; user=%s",username),
+    /* write the request parameters */
+    WRITE_STRING(fp,username),
+    /* read the result entry */
+    SKIP_STRING(fp); /* user name */
+    SKIP_STRING(fp); /* passwd entry */
+    READ_TYPE(fp,dummy_uid,uid_t);
+    READ_TYPE(fp,dummy_gid,gid_t);
+    SKIP_STRING(fp); /* gecos */
+    SKIP_STRING(fp); /* home dir */
+    SKIP_STRING(fp); /* shell */
+  )
+}
+
 /* perform an authentication call over nslcd */
 static int nslcd_request_authc(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,
                                const char *username,const char *service,
@@ -523,6 +545,13 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
     return rc;
+  /* see if we are dealing with an LDAP user first */
+  if (ctx->dn==NULL)
+  {
+    rc=nslcd_request_exists(pamh,ctx,&cfg,username);
+    if (rc!=PAM_SUCCESS)
+      return remap_pam_rc(rc,&cfg);
+  }
   /* prelimenary check, just see if we can connect to the LDAP server
      and authenticate with the current password */
   if (flags&PAM_PRELIM_CHECK)
