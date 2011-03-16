@@ -1,7 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,11 +23,6 @@ TESTS = test_dict test_set test_tio test_cfg test_myldap.sh test_nsscmds.sh \
 
 check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap \
                  test_getpeercred test_common test_expr
-
-EXTRA_PROGRAMS = test_aliases test_ethers test_group test_hosts \
-                 test_netgroup test_networks test_passwd test_protocols \
-                 test_rpc test_services test_shadow \
-                 test_nslcd_group
 
 EXTRA_DIST = nslcd-test.conf test_myldap.sh test_nsscmds.sh usernames.txt
 
@@ -84,28 +79,3 @@ test_common_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
                     ../nslcd/service.o ../nslcd/shadow.o \
                     ../nslcd/myldap.o @nslcd_LIBS@ ../common/libtio.a \
                     ../common/libdict.a ../compat/libcompat.a
-
-common_SOURCES = ../common/nslcd-prot.c ../nslcd.h ../nss/prototypes.h \
-                 ../common/tio.c ../common/tio.h ../nss/common.c
-
-test_aliases_SOURCES = test_aliases.c ../nss/aliases.c $(common_SOURCES)
-test_ethers_SOURCES = test_ethers.c ../nss/ethers.c $(common_SOURCES)
-test_group_SOURCES = test_group.c ../nss/group.c $(common_SOURCES)
-test_hosts_SOURCES = test_hosts.c ../nss/hosts.c $(common_SOURCES)
-test_netgroup_SOURCES = test_netgroup.c ../nss/netgroup.c $(common_SOURCES)
-test_networks_SOURCES = test_networks.c ../nss/networks.c $(common_SOURCES)
-test_passwd_SOURCES = test_passwd.c ../nss/passwd.c $(common_SOURCES)
-test_protocols_SOURCES = test_protocols.c ../nss/protocols.c $(common_SOURCES)
-test_rpc_SOURCES = test_rpc.c ../nss/rpc.c $(common_SOURCES)
-test_services_SOURCES = test_services.c ../nss/services.c $(common_SOURCES)
-test_shadow_SOURCES = test_shadow.c ../nss/shadow.c $(common_SOURCES)
-
-test_nslcd_group_SOURCES = test_nslcd_group.c
-test_nslcd_group_LDADD = ../nslcd/log.o ../nslcd/attmap.o ../common/dict.o \
-                         ../nslcd/common.o ../nslcd/myldap.o \
-                         ../nslcd/alias.o ../nslcd/ether.o \
-                         ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
-                         ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
-                         ../nslcd/service.o ../nslcd/shadow.o \
-                         @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a \
-                         ../compat/libcompat.a ../nslcd/cfg.o
