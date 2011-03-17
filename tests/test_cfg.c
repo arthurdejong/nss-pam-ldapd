@@ -2,7 +2,7 @@
    test_cfg.c - simple test for the cfg module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2009 Arthur de Jong
+   Copyright (C) 2007, 2009, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -26,28 +26,10 @@
 #include <string.h>
 #include <assert.h>
 
+#include "common.h"
+
 /* we include cfg.c because we want to test the static methods */
 #include "nslcd/cfg.c"
-
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION ""
-#endif /* not __ASSERT_FUNCTION */
-
-#define assertstreq(str1,str2) \
-  (assertstreq_impl(str1,str2,"strcmp(" __STRING(str1) "," __STRING(str2) ")==0", \
-                    __FILE__, __LINE__, __ASSERT_FUNCTION))
-
-/* for Solaris: */
-#define __assert_fail(assertion,file,line,function) __assert(assertion,file,line)
-
-/* method for determening string equalness */
-static void assertstreq_impl(const char *str1,const char *str2,
-                             const char *assertion,const char *file,
-                             int line,const char *function)
-{
-  if (strcmp(str1,str2)!=0)
-    __assert_fail(assertion,file,line,function);
-}
 
 static void test_xstrdup(void)
 {

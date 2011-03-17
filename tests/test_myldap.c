@@ -2,7 +2,7 @@
    test_myldap.c - simple test for the myldap module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,29 +29,11 @@
 #include <assert.h>
 #include <signal.h>
 
+#include "common.h"
+
 #include "nslcd/log.h"
 #include "nslcd/cfg.h"
 #include "nslcd/myldap.h"
-
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION ""
-#endif /* not __ASSERT_FUNCTION */
-
-#define assertstreq(str1,str2) \
-  (assertstreq_impl(str1,str2,"strcmp(" __STRING(str1) "," __STRING(str2) ")==0", \
-                    __FILE__, __LINE__, __ASSERT_FUNCTION))
-
-/* for Solaris: */
-#define __assert_fail(assertion,file,line,function) __assert(assertion,file,line)
-
-/* method for determening string equalness */
-static void assertstreq_impl(const char *str1,const char *str2,
-                             const char *assertion,const char *file,
-                             int line,const char *function)
-{
-  if (strcmp(str1,str2)!=0)
-    __assert_fail(assertion,file,line,function);
-}
 
 struct worker_args {
   int id;

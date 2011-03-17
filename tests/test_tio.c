@@ -2,7 +2,7 @@
    test_tio.c - simple test for the tio module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008 Arthur de Jong
+   Copyright (C) 2007, 2008, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -33,25 +33,12 @@
 #endif /* HAVE_STDINT_H */
 #include <stdlib.h>
 #include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include "common.h"
 
 #include "common/tio.h"
-
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION ""
-#endif /* not __ASSERT_FUNCTION */
-
-#define assertok(expr) \
-  ((expr) \
-   ? (void) (0) \
-   : __assertok_fail(__STRING(expr),__FILE__,__LINE__,__ASSERT_FUNCTION))
-
-static void __assertok_fail(const char *expr,const char *file,
-                          int line,const char *function)
-{
-  char msg[120];
-  snprintf(msg,sizeof(msg),"%s (errno=\"%s\")",expr,strerror(errno));
-  __assert_fail(msg,file,line,function);
-}
 
 /* structure for passing arguments to helper (is a thread) */
 struct helper_args {

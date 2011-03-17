@@ -292,6 +292,7 @@ AC_SEARCH_LIBS(socket,socket)
 AC_CHECK_FUNCS([strcasecmp strncasecmp strchr strcspn strspn strtol])
 AC_CHECK_FUNCS([malloc realloc])
 AC_FUNC_FORK
+AC_CHECK_FUNCS(__assert_fail)
 
 # checks for types
 AC_TYPE_MODE_T

@@ -76,6 +76,6 @@ test_common_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
                     ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
                     ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
                     ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
-                    ../nslcd/service.o ../nslcd/shadow.o \
+                    ../nslcd/service.o ../nslcd/shadow.o ../nslcd/attmap.o \
                     ../nslcd/myldap.o @nslcd_LIBS@ ../common/libtio.a \
-                    ../common/libdict.a ../compat/libcompat.a
+                    ../common/libdict.a ../common/libexpr.a ../compat/libcompat.a

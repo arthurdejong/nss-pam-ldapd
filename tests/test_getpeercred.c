@@ -2,7 +2,7 @@
    test_getpeercred.c - simple test for the peercred module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008 Arthur de Jong
+   Copyright (C) 2008, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -35,25 +35,10 @@
 #endif /* HAVE_GRP_H */
 #include <errno.h>
 
+#include "common.h"
+
 #include "compat/attrs.h"
 #include "compat/getpeercred.h"
-
-#ifndef __ASSERT_FUNCTION
-#define __ASSERT_FUNCTION ""
-#endif /* not __ASSERT_FUNCTION */
-
-#define assertok(expr) \
-  ((expr) \
-   ? (void) (0) \
-   : __assertok_fail(__STRING(expr),__FILE__,__LINE__,__ASSERT_FUNCTION))
-
-static void __assertok_fail(const char *expr,const char *file,
-                          int line,const char *function)
-{
-  char msg[120];
-  snprintf(msg,sizeof(msg),"%s (errno=\"%s\")",expr,strerror(errno));
-  __assert_fail(msg,file,line,function);
-}
 
 /* create a named socket */
 static int create_socket(const char *name)
