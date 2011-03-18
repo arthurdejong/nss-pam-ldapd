@@ -1,0 +1,201 @@
+#!/usr/bin/expect --
+
+# test_pamcmds.expect - test script to check output of PAM commands
+#
+# Copyright (C) 2011 Arthur de Jong
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301 USA
+
+# basic configuration
+set timeout 5
+log_file -a -noappend test_pamcmds.log
+log_user 0
+
+# basic error handling
+proc abort {} {
+  global expect_out
+  send_user "\n\ntest_pamcmds.expect: ERROR found:\n"
+  send_user "$expect_out(buffer)\n"
+  exit 1
+}
+
+# function for resetting the password
+proc reset_password {} {
+  global expect_out
+  send_user "test_pamcmds.expect: resetting passwd...\n"
+  spawn passwd arthur
+  expect {
+    "LDAP administrator password" { send "test\r"; exp_continue }
+    -regexp "(New|Retype new) password:" { send "test\r"; exp_continue }
+    "password updated successfully" {}
+    "Invalid credentials" abort
+    "Authentication token manipulation error" abort
+    default abort
+  }
+  #close
+}
+
+# ensure that we are running as root
+if { [exec id -u] != "0" } {
+  send_user "test_pamcmds.expect: not running as root\n"
+  exit 77
+}
+# ensure that we are running in the test environment
+spawn ./in_testenv.sh
+expect {
+  "in_testenv.sh: using LDAP server" { expect eof }
+  eof {
+    send_user "test_pamcmds.expect: not running in test environment\n"
+    exit 77
+  }
+}
+
+# ensure that a correct password is set
+reset_password
+
+# start a shell as nobody
+send_user "test_pamcmds.expect: start shell...\n"
+spawn su - nobody -s /bin/sh
+expect "\$ "
+
+# function to do login, expecting OK result
+proc test_login_ok {uid passwd} {
+  send "su - $uid -s /bin/sh\r"
+  expect "Password:"
+  send "$passwd\r"
+  expect {
+    "\$ " {}
+    "su: " abort
+    default abort
+  }
+  # test whether we are really logged in
+  send "id\r"
+  expect {
+    -regexp "uid=\[0-9\]*\\($uid\\)" {}
+    "\$ " abort
+    default abort
+  }
+  expect "\$ "
+}
+
+# function to do login, expecting FAIL result
+proc test_login_authfail {uid passwd} {
+  send "su - $uid -s /bin/sh\r"
+  expect "Password:"
+  send "$passwd\r"
+  expect {
+    "su: Authentication failure" {}
+    "\$ " abort
+    default abort
+  }
+  expect "\$ "
+}
+
+# function to do login, expecting FAIL result
+proc test_login_unknown {uid passwd} {
+  send "su - $uid -s /bin/sh\r"
+  expect "Password:"
+  send "$passwd\r"
+  expect {
+    "Unknown id" {}
+    "\$ " abort
+    default abort
+  }
+  expect "\$ "
+}
+
+# test incorrect password
+send_user "test_pamcmds.expect: testing incorrect password...\n"
+test_login_authfail arthur wrongpassword
+
+# test correct password
+send_user "test_pamcmds.expect: testing correct password...\n"
+test_login_ok arthur test
+
+# change password using incorrect old password
+send_user "test_pamcmds.expect: testing password change with incorrect password...\n"
+send "passwd\r"
+expect {
+  -nocase "password:" { send "wrongpassword\r" }
+  "\$ " abort
+  default abort
+}
+expect {
+  -regexp "(New|Retype new) password:" { send "newpassword\r"; exp_continue }
+  "password changed" abort
+  "Invalid credentials" {}
+  "Authentication token manipulation error" {}
+  "\$ " abort
+}
+expect "\$ "
+
+# change the password using the correct old password
+send_user "test_pamcmds.expect: testing password change with correct password...\n"
+send "passwd\r"
+expect {
+  -nocase "password:" { send "test\r" }
+  "\$ " abort
+  default abort
+}
+expect {
+  -regexp "(New|Retype new) password:" { send "newpassword\r"; exp_continue }
+  "password updated successfully" {}
+  "Invalid credentials" abort
+  "Authentication token manipulation error" abort
+  "\$ " abort
+}
+expect "\$ "
+
+# exist shell (back to nobody)
+send "exit\r"
+expect "\$ "
+
+# logging in with the old password should fail now
+send_user "test_pamcmds.expect: testing old password...\n"
+test_login_authfail arthur test
+
+# test correct password
+send_user "test_pamcmds.expect: testing new password...\n"
+test_login_ok arthur newpassword
+
+# test invalid username
+send_user "test_pamcmds.expect: testing with unknown username...\n"
+test_login_unknown foo anypassword
+
+# test login as root with incorrect password
+send_user "test_pamcmds.expect: testing with root...\n"
+test_login_authfail root anypassword
+
+# test login as nobody with incorrect password
+send_user "test_pamcmds.expect: testing with nobody...\n"
+test_login_authfail nobody anypassword
+
+# close the shell (first log of arthur)
+send "exit\r"
+expect "\$ "
+send "exit\r"
+expect {
+  eof {}
+  "\$ " abort
+  timeout abort
+}
+
+# ensure that a correct password is set
+reset_password
+
+send_user "test_pamcmds.expect: everyting OK\n"
+
+exit 0

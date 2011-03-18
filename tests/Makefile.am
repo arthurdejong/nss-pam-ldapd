@@ -19,12 +19,13 @@
 # 02110-1301 USA
 
 TESTS = test_dict test_set test_tio test_cfg test_myldap.sh test_nsscmds.sh \
-        test_getpeercred test_common test_expr
+        test_pamcmds.sh test_getpeercred test_common test_expr
 
 check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap \
                  test_getpeercred test_common test_expr
 
-EXTRA_DIST = nslcd-test.conf test_myldap.sh test_nsscmds.sh usernames.txt
+EXTRA_DIST = nslcd-test.conf test_myldap.sh test_nsscmds.sh test_pamcmds.sh \
+             in_testenv.sh test_pamcmds.expect usernames.txt
 
 CLEANFILES = $(EXTRA_PROGRAMS)
 

@@ -26,41 +26,8 @@
 
 set -e
 
-# check if LDAP is configured correctly
-cfgfile="/etc/nslcd.conf"
-if [ -r "$cfgfile" ]
-then
-  :
-else
-  echo "test_nsscmds.sh: $cfgfile: not found"
-  exit 77
-fi
-
-uri=`sed -n 's/^uri *//p' "$cfgfile" | head -n 1`
-base="dc=test,dc=tld"
-
-# try to fetch the base DN (fail with exit 77 to indicate problem)
-ldapsearch -b "$base" -s base -x -H "$uri" > /dev/null 2>&1 || {
-  echo "test_nsscmds.sh: LDAP server $uri not available for $base"
-  exit 77
-}
-
-# basic check to see if nslcd is running
-if [ -S /var/run/nslcd/socket ] && \
-   [ -f /var/run/nslcd/nslcd.pid ] && \
-   kill -s 0 `cat /var/run/nslcd/nslcd.pid` > /dev/null 2>&1
-then
-  :
-else
-  echo "test_nsscmds.sh: nslcd not running"
-  exit 77
-fi
-
-# TODO: check if nscd is running
-
-# TODO: check if /etc/nsswitch.conf is correct
-
-echo "test_nsscmds.sh: using LDAP server $uri"
+# ensure that we are running in the test environment
+. ./in_testenv.sh
 
 # preload our own NSS module
 srcdir="${srcdir-"."}"
