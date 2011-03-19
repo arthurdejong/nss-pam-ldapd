@@ -275,6 +275,67 @@ static void test_reset(void)
   assertok(pthread_join(wthread,NULL)==0);
 }
 
+/* this test starts a reader and writer and does not write for a while */
+static void test_timeout_reader(void)
+{
+  int sp[2];
+  TFILE *rfp;
+  FILE *wfp;
+  struct timeval timeout;
+  uint8_t buf[20];
+  time_t start,end;
+  /* set up the socket pair */
+  assertok(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
+  /* open the writer */
+  assertok((wfp=fdopen(sp[0],"wb"))!=NULL);
+  /* open the reader */
+  timeout.tv_sec=1;
+  timeout.tv_usec=100000;
+  assertok((rfp=tio_fdopen(sp[1],&timeout,&timeout,2*1024,4*1024,2*1024,4*1024))!=NULL);
+  /* perform a read */
+  start=time(NULL);
+  assertok(tio_read(rfp,buf,sizeof(buf))!=0);
+  end=time(NULL);
+  assert(end>start);
+  /* close the files */
+  assertok(tio_close(rfp)==0);
+  assertok(fclose(wfp)==0);
+}
+
+/* this test starts a writer and an idle reader */
+static void test_timeout_writer(void)
+{
+  int sp[2];
+  FILE *rfp;
+  TFILE *wfp;
+  int i;
+  struct timeval timeout;
+  uint8_t buf[20];
+  time_t start,end;
+  /* set up the socket pair */
+  assertok(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
+  /* open the reader */
+  assertok((rfp=fdopen(sp[0],"rb"))!=NULL);
+  /* open the writer */
+  timeout.tv_sec=1;
+  timeout.tv_usec=100000;
+  assertok((wfp=tio_fdopen(sp[1],&timeout,&timeout,2*1024,4*1024,2*20,4*20+1))!=NULL);
+  /* perform a few write (these should be OK because they fill the buffer) */
+  assertok(tio_write(wfp,buf,sizeof(buf))==0);
+  assertok(tio_write(wfp,buf,sizeof(buf))==0);
+  assertok(tio_write(wfp,buf,sizeof(buf))==0);
+  assertok(tio_write(wfp,buf,sizeof(buf))==0);
+  /* one of these should fail but it depends on OS buffers */
+  start=time(NULL);
+  for (i=0;(i<10000)&&(tio_write(wfp,buf,sizeof(buf))==0);i++);
+  assert(i<10000);
+  end=time(NULL);
+  assert(end>start);
+  /* close the files */
+  assertok(tio_close(wfp)!=0); /* fails because of bufferred data */
+  assertok(fclose(rfp)==0);
+}
+
 /* the main program... */
 int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
@@ -290,5 +351,8 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
 /*  test_blocks(10,9,10,10); */
   /* set tio_mark() and tio_reset() functions */
   test_reset();
+  /* test timeout functionality */
+  test_timeout_reader();
+  test_timeout_writer();
   return 0;
 }

@@ -59,8 +59,12 @@ static void test_expr_parse(void)
   char buffer[1024];
   assert(expr_parse("$test1",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);
   assertstreq(buffer,"foobar");
+  assert(expr_parse("\\$test1",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);
+  assertstreq(buffer,"$test1");
   assert(expr_parse("$empty",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);
   assertstreq(buffer,"");
+  assert(expr_parse("$foo1$empty-$foo2",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);
+  assertstreq(buffer,"foobar-foobar");
   assert(expr_parse("${test1}\\$",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);
   assertstreq(buffer,"foobar$");
   assert(expr_parse("${test1:-default}",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);
@@ -83,6 +87,9 @@ static void test_expr_parse(void)
   assertstreq(buffer,"afoobarbfoobarec");
   assert(expr_parse("a${test1}b${test2:+${empty:-d$test4}e}c",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);
   assertstreq(buffer,"afoobarbdfoobarec");
+  /* these are errors */
+  assert(expr_parse("$&",buffer,sizeof(buffer),expanderfn,NULL)==NULL);
+  assert(expr_parse("${a",buffer,sizeof(buffer),expanderfn,NULL)==NULL);
 }
 
 static void test_buffer_overflow(void)

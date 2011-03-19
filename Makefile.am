@@ -114,7 +114,7 @@ rats.html:
 splint.txt:
 	-env LARCH_PATH=/usr/share/splint/lib/ \
 	    LCLIMPORTDIR=/usr/share/splint/imports/ \
-	    splint -checks \
+	    splint -checks -mustfreefresh \
 	           -warnposix +showsummary +showalluses +hints -namechecks \
 	           -globstate -predboolint -mustfreeonly -temptrans -kepttrans \
 	           -I. -I$(srcdir) -I$(top_builddir) $(DEFS) -D_REENTRANT -DDEBUG \
