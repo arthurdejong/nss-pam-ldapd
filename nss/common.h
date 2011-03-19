@@ -2,7 +2,7 @@
    common.h - common functions for NSS lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -82,7 +82,7 @@
 
 /* check validity of passed buffer (Glibc flavour) */
 #define NSS_BUFCHECK \
-  if ((buffer==NULL)||(buflen<=0)) \
+  if ((buffer==NULL)||(buflen==0)) \
   { \
       *errnop=EINVAL; \
       return NSS_STATUS_UNAVAIL; \

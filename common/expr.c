@@ -2,7 +2,7 @@
    expr.c - limited shell-like expression parsing functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2009, 2010 Arthur de Jong
+   Copyright (C) 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -221,6 +221,7 @@ SET *expr_vars(const char *str,SET *set)
         break;
       case '\\': /* escaped character, unescape */
         i++;
+        /* no break needed here */
       default: /* just skip */
         i++;
     }

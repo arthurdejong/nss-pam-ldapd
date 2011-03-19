@@ -309,14 +309,14 @@ static int create_socket(const char *filename)
     log_log(LOG_ERR,"fctnl(F_GETFL) failed: %s",strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   if (fcntl(sock,F_SETFL,i|O_NONBLOCK)<0)
   {
     log_log(LOG_ERR,"fctnl(F_SETFL,O_NONBLOCK) failed: %s",strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   /* create the directory if needed */
   mkdirname(filename);

@@ -72,7 +72,7 @@ nss_status_t _nss_ldap_endetherent(void);
 /* group - groups of users */
 nss_status_t _nss_ldap_getgrnam_r(const char *name,struct group *result,char *buffer,size_t buflen,int *errnop);
 nss_status_t _nss_ldap_getgrgid_r(gid_t gid,struct group *result,char *buffer,size_t buflen,int *errnop);
-nss_status_t _nss_ldap_initgroups_dyn(const char *user,gid_t group,long int *start,long int *size,gid_t **groupsp,long int limit,int *errnop);
+nss_status_t _nss_ldap_initgroups_dyn(const char *user,gid_t skipgroup,long int *start,long int *size,gid_t **groupsp,long int limit,int *errnop);
 nss_status_t _nss_ldap_setgrent(int stayopen);
 nss_status_t _nss_ldap_getgrent_r(struct group *result,char *buffer,size_t buflen,int *errnop);
 nss_status_t _nss_ldap_endgrent(void);

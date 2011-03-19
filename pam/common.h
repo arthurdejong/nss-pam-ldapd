@@ -1,7 +1,7 @@
 /*
    common.h - common functions for PAM lookups
 
-   Copyright (C) 2009, 2010 Arthur de Jong
+   Copyright (C) 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -95,6 +95,6 @@
    status code */
 #define READ_PAM_CODE(fp,i) \
   READ_TYPE(fp,tmpint32,int32_t); \
-  i=nslcd2pam_rc(tmpint32);
+  i=nslcd2pam_rc(pamh,tmpint32);
 
 #endif /* not PAM__COMMON_H */

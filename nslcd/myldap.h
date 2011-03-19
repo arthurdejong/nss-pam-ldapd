@@ -2,7 +2,7 @@
    myldap.h - simple interface to do LDAP requests
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -137,7 +137,7 @@ MUST_USE const char *myldap_cpy_rdn_value(const char *dn,const char *attr,
 MUST_USE int myldap_escape(const char *src,char *buffer,size_t buflen);
 
 /* Set the debug level globally. Returns an LDAP status code. */
-int myldap_set_debuglevel(int i);
+int myldap_set_debuglevel(int level);
 
 /* Perform an EXOP password modification call. Returns an LDAP status code. */
 int myldap_passwd(

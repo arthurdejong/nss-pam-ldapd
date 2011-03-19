@@ -2,7 +2,7 @@
    pam.c - pam module functions
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009, 2010 Arthur de Jong
+   Copyright (C) 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -225,7 +225,7 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
 }
 
 /* map a NSLCD PAM status code to a PAM status code */
-static int nslcd2pam_rc(int rc)
+static int nslcd2pam_rc(pam_handle_t *pamh,int rc)
 {
 #define map(i) case NSLCD_##i: return i;
   switch(rc) {
@@ -242,7 +242,9 @@ static int nslcd2pam_rc(int rc)
     map(PAM_AUTHTOK_DISABLE_AGING);
     map(PAM_IGNORE);
     map(PAM_ABORT);
-    default: return PAM_ABORT;
+    default:
+      pam_syslog(pamh,LOG_ERR,"unknown NSLCD_PAM_* code returned: %d",rc);
+      return PAM_ABORT;
   }
 }
 
