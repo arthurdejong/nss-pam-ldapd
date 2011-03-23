@@ -48,7 +48,7 @@ struct ether_addr *ether_aton_r(const char *asc,struct ether_addr *addr);
 #ifdef HAVE_ETHER_NTOA
 #if !HAVE_DECL_ETHER_NTOA
 /* we define ether_ntoa() here because on some platforms the function is
-   underfined */
+   undefined */
 extern char *ether_ntoa(const struct ether_addr *e);
 #endif /* not HAVE_DECL_ETHER_NTOA */
 #endif /* HAVE_ETHER_NTOA */
@@ -56,7 +56,7 @@ extern char *ether_ntoa(const struct ether_addr *e);
 #ifdef HAVE_ETHER_ATON
 #if !HAVE_DECL_ETHER_ATON
 /* we define ether_aton() here because on some platforms the function is
-   underfined */
+   undefined */
 extern struct ether_addr *ether_aton(const char *s);
 #endif /* not HAVE_DECL_ETHER_ATON */
 #endif /* HAVE_ETHER_ATON */
