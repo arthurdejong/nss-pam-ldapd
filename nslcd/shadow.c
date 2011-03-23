@@ -1,5 +1,5 @@
 /*
-   shadow.c - service entry lookup routines
+   shadow.c - shadow entry lookup routines
    Parts of this file were part of the nss_ldap library (as ldap-spwd.c)
    which has been forked into the nss-pam-ldapd library.
 

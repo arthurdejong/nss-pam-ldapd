@@ -1,5 +1,5 @@
 /*
-   protocol.c - network address entry lookup routines
+   protocol.c - protocol name and number lookup routines
    Parts of this file were part of the nss_ldap library (as ldap-proto.c)
    which has been forked into the nss-pam-ldapd library.
 
