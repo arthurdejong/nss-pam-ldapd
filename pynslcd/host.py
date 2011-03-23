@@ -40,14 +40,14 @@ class HostRequest(common.Request):
         hostname = common.get_rdn_value(entry, self.attmap_cn)
         hostnames = attributes.get(self.attmap_cn, [])
         if not hostnames:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn)
+            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn )
         if not hostname:
             hostname = hostnames.pop(0)
         else:
             hostnames.remove(hostname)
         addresses = attributes.get(self.attmap_ipHostNumber, [])
         if not addresses:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_ipHostNumber)
+            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_ipHostNumber )
         # write result
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
         self.fp.write_string(hostname)
