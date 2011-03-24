@@ -43,7 +43,7 @@ class HostRequest(common.Request):
             print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn )
         if not hostname:
             hostname = hostnames.pop(0)
-        else:
+        elif hostname in hostnames:
             hostnames.remove(hostname)
         addresses = attributes.get(self.attmap_ipHostNumber, [])
         if not addresses:

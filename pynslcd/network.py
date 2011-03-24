@@ -43,7 +43,7 @@ class NetworkRequest(common.Request):
             print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn)
         if not networkname:
             networkname = networknames.pop(0)
-        else:
+        elif networkname in networknames:
             networknames.remove(networkname)
         addresses = attributes.get(self.attmap_ipNetworkNumber, [])
         if not addresses:
