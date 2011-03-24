@@ -96,9 +96,9 @@ class PAMAuthenticationRequest(PAMRequest):
     def handle_request(self):
         # if the username is blank and rootpwmoddn is configured, try to
         # authenticate as administrator, otherwise validate request as usual
-        if not self.username and cfg.ldc_rootpwmoddn:
+        if not self.username and cfg.rootpwmoddn:
             # authenticate as rootpwmoddn
-            self.userdn = cfg.ldc_rootpwmoddn
+            self.userdn = cfg.rootpwmoddn
             # if the caller is root we will allow the use of rootpwmodpw
             if not self.password and self.calleruid == 0 and cfg.rootpwmodpw:
                 self.password = cfg.rootpwmodpw
