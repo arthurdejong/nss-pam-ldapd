@@ -146,6 +146,9 @@ handlers.update(common.get_handlers('netgroup'))
 handlers.update(common.get_handlers('network'))
 handlers.update(common.get_handlers('pam'))
 handlers.update(common.get_handlers('passwd'))
+handlers.update(common.get_handlers('protocol'))
+handlers.update(common.get_handlers('rpc'))
+handlers.update(common.get_handlers('service'))
 handlers.update(common.get_handlers('shadow'))
 
 def acceptconnection(session):
