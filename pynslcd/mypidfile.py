@@ -1,7 +1,7 @@
 
 # mypidfile.py - functions for properly locking a PIDFile
 #
-# Copyright (C) 2010 Arthur de Jong
+# Copyright (C) 2010, 2011 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,7 @@ class MyPIDLockFile(object):
             os.close(fd)
             raise
         pidfile.write('%d\n' % os.getpid())
+        pidfile.truncate()
         pidfile.flush()
         self.pidfile = pidfile
         return self
