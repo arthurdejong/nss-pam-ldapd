@@ -73,7 +73,7 @@ test_getpeercred_SOURCES = test_getpeercred.c
 test_getpeercred_LDADD = ../compat/libcompat.a
 
 test_common_SOURCES = test_common.c
-test_common_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
+test_common_LDADD = ../nslcd/log.o ../nslcd/common.o \
                     ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
                     ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
                     ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \

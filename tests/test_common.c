@@ -26,6 +26,11 @@
 #include <assert.h>
 
 #include "nslcd/common.h"
+#include "nslcd/cfg.h"
+
+/* we include nslcd/cfg.c here to use cfg_defaults() to set the default
+   regular expression used in test_isvalidname() */
+#include "nslcd/cfg.c"
 
 static void test_isvalidname(void)
 {
@@ -41,6 +46,8 @@ static void test_isvalidname(void)
 /* the main program... */
 int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
+  nslcd_cfg=(struct ldap_config *)malloc(sizeof(struct ldap_config));
+  cfg_defaults(nslcd_cfg);
   test_isvalidname();
   return 0;
 }

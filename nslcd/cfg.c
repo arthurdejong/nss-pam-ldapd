@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -75,6 +75,11 @@ struct ldap_config *nslcd_cfg=NULL;
     exit(EXIT_FAILURE); \
   }
 
+/* prototype for parse_validnames_statement() because it is used in
+   cfg_defaults() */
+static void parse_validnames_statement(const char *filename,int lnr,
+                   const char *keyword,char *line,struct ldap_config *cfg);
+
 /* set the configuration information to the defaults */
 static void cfg_defaults(struct ldap_config *cfg)
 {
@@ -121,6 +126,8 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_nss_initgroups_ignoreusers=NULL;
   cfg->ldc_pam_authz_search=NULL;
   cfg->ldc_nss_min_uid=0;
+  parse_validnames_statement(__FILE__,__LINE__,"",
+                "/^[a-z0-9._@$][a-z0-9._@$ \\~-]+[a-z0-9._@$~-]$/i",cfg);
 }
 
 /* simple strdup wrapper */
@@ -568,6 +575,52 @@ static void set_base(const char *filename,int lnr,
   *var=xstrdup(value);
 }
 
+/* parse the validnames statement */
+static void parse_validnames_statement(const char *filename,int lnr,
+                   const char *keyword,char *line,struct ldap_config *cfg)
+{
+  char *value=NULL;
+  int i,l;
+  int flags=REG_EXTENDED|REG_NOSUB;
+  /* the rest of the line should be a regular expression */
+  get_restdup(filename,lnr,keyword,&line,&value);
+  /* check formatting and update flags */
+  if (value[0]!='/')
+  {
+    log_log(LOG_ERR,"%s:%d: regular expression incorrectly delimited",filename,lnr);
+    exit(EXIT_FAILURE);
+  }
+  l=strlen(value);
+  if (value[l-1]=='i')
+  {
+    value[l-1]='\0';
+    l--;
+    flags|=REG_ICASE;
+  }
+  if (value[l-1]!='/')
+  {
+    log_log(LOG_ERR,"%s:%d: regular expression incorrectly delimited",filename,lnr);
+    exit(EXIT_FAILURE);
+  }
+  value[l-1]='\0';
+  /* compile the regular expression */
+  if ((i=regcomp(&cfg->validnames,value+1,flags))!= 0)
+  {
+    /* get the error message */
+    l=regerror(i,&cfg->validnames,NULL,0);
+    value=malloc(l);
+    if (value==NULL)
+      log_log(LOG_ERR,"%s:%d: invalid regular expression",filename,lnr);
+    else
+    {
+      regerror(i,&cfg->validnames,value,l);
+      log_log(LOG_ERR,"%s:%d: invalid regular expression: %s",filename,lnr,
+              value);
+    }
+    exit(EXIT_FAILURE);
+  }
+}
+
 static void parse_base_statement(const char *filename,int lnr,
                                  const char *keyword,char *line,
                                  struct ldap_config *cfg)
@@ -1012,6 +1065,10 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     {
       get_uid(filename,lnr,keyword,&line,&cfg->ldc_nss_min_uid);
       get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"validnames")==0)
+    {
+      parse_validnames_statement(filename,lnr,keyword,line,cfg);
     }
 #ifdef ENABLE_CONFIGFILE_CHECKING
     /* fallthrough */

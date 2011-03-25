@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <lber.h>
 #include <ldap.h>
+#include <regex.h>
 
 #include "compat/attrs.h"
 #include "common/set.h"
@@ -139,6 +140,8 @@ struct ldap_config
   char *ldc_pam_authz_search;
   /* minimum uid for users retreived from LDAP */
   uid_t ldc_nss_min_uid;
+  /* the regular expression to determine valid names */
+  regex_t validnames;
 };
 
 /* this is a pointer to the global configuration, it should be available

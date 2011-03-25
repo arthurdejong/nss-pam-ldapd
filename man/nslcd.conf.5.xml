@@ -671,6 +671,25 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="validnames">
+     <term><option>validnames</option> <replaceable>REGEX</replaceable></term>
+     <listitem>
+      <para>
+       This option can be used to specify how user and group names are
+       verified within the system. This pattern is used to check all user and
+       group names that are requested and returned from <acronym>LDAP</acronym>.
+      </para>
+      <para>
+       The regular expression should be specified as a POSIX extended regular
+       expression. The expression itself needs to be separated by slash (/)
+       characters and the 'i' flag may be appended at the end to indicate
+       that the match should be case-insensetive.
+       The default value is
+       <literal>/^[a-z0-9._@$][a-z0-9._@$ \\~-]+[a-z0-9._@$~-]$/i</literal>
+      </para>
+     </listitem>
+    </varlistentry>
+
     <varlistentry id="pam_authz_search">
      <term><option>pam_authz_search</option>
            <replaceable>FILTER</replaceable></term>

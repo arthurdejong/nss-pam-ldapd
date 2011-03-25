@@ -549,6 +549,7 @@ then
   then
     AC_CHECK_HEADERS(gssapi/gssapi.h gssapi/gssapi_generic.h gssapi/gssapi_krb5.h gssapi.h)
   fi
+  AC_CHECK_HEADERS(regex.h)
 
   # checks for availability of system libraries for nslcd
   AC_SEARCH_LIBS(gethostbyname,nsl socket)
@@ -563,6 +564,7 @@ then
   AC_CHECK_FUNCS(__nss_configure_lookup)
   AC_CHECK_FUNCS(getenv putenv clearenv)
   AC_CHECK_FUNCS(dlopen dlsym dlerror)
+  AC_CHECK_FUNCS(regcomp regexec regerror)
 
   # replace getopt_long() function if it is not on the system
   AC_REPLACE_FUNCS(getopt_long)

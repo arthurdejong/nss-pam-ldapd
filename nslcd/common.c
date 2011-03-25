@@ -33,11 +33,13 @@
 #include <limits.h>
 #include <netdb.h>
 #include <string.h>
+#include <regex.h>
 
 #include "nslcd.h"
 #include "common.h"
 #include "log.h"
 #include "attmap.h"
+#include "cfg.h"
 
 /* simple wrapper around snptintf() to return non-0 in case
    of any failure (but always keep string 0-terminated) */
@@ -140,48 +142,10 @@ const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr,char *buffer,s
     (any code for this is more than welcome) */
 }
 
-/*
-   Checks to see if the specified name seems to be a valid user or group name.
-
-   This test is based on the definition from POSIX (IEEE Std 1003.1, 2004,
-   3.426 User Name, 3.189 Group Name and 3.276 Portable Filename Character Set):
-   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_426
-   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_189
-   http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_276
-
-   The standard defines user names valid if they contain characters from
-   the set [A-Za-z0-9._-] where the hyphen should not be used as first
-   character. As an extension this test allows some more characters.
-*/
+/* Checks if the specified name seems to be a valid user or group name. */
 int isvalidname(const char *name)
 {
-  int i;
-  if ((name==NULL)||(name[0]=='\0'))
-    return 0;
-  /* check characters */
-  for (i=0;name[i]!='\0';i++)
-  {
-#ifdef LOGIN_NAME_MAX
-    if (i>=LOGIN_NAME_MAX)
-      return 0;
-#endif /* LOGIN_NAME_MAX */
-    /* characters supported everywhere in the name */
-    if ( (name[i]>='@' && name[i] <= 'Z') ||
-         (name[i]>='a' && name[i] <= 'z') ||
-         (name[i]>='0' && name[i] <= '9') ||
-         name[i]=='.' || name[i]=='_'  || name[i]=='$' )
-      continue;
-    /* characters that may be anywhere except as first character */
-    if ( i>0 && ( name[i]=='-' || name[i]=='~' ) )
-      continue;
-    /* characters that may not be the first or last character */
-    if ( ( i>0 && name[i+1]!='\0' ) && ( name[i]=='\\' || name[i]==' ') )
-      continue;
-    /* anything else is bad */
-    return 0;
-  }
-  /* no test failed so it must be good */
-  return -1;
+  return regexec(&nslcd_cfg->validnames,name,0,NULL,0)==0;
 }
 
 /* this writes a single address to the stream */
