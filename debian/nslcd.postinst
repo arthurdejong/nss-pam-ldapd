@@ -41,22 +41,24 @@ cfg_set()
   return 0
 }
 
-# disable an option in the configuration file by commenting it out
+# disable options in the configuration file by commenting them out
 cfg_disable()
 {
-  parameter="$1"
-  # handle bindpw option specially by removing value from config first
-  if [ "$parameter" = "bindpw" ] && grep -i -q "^bindpw " $CONFFILE
-  then
-    cfg_set bindpw "*removed*"
-  fi
-  # make matching of spaces better in parameter
-  param_re=`echo "$parameter" | sed 's#^#[[:space:]]*#;s#[[:space:]][[:space:]]*#[[:space:]][[:space:]]*#g'`
-  # lines to not match
-  nomatch_re="^$param_re[[:space:]][[:space:]]*\(aliases\|ethers\|group\|hosts\|netgroup\|networks\|passwd\|protocols\|rpc\|services\|shadow\)"
-  # comment out the option
-  sed -i '/'"$nomatch_re"'/n;s/^'"$param_re"'[[:space:]].*$/#&/i' "$CONFFILE"
-  # we're done
+  for parameter in $@
+  do
+    # handle bindpw option specially by removing value from config first
+    if [ "$parameter" = "bindpw" ] && grep -i -q "^bindpw " $CONFFILE
+    then
+      cfg_set bindpw "*removed*"
+    fi
+    # make matching of spaces better in parameter
+    param_re=`echo "$parameter" | sed 's#^#[[:space:]]*#;s#[[:space:]][[:space:]]*#[[:space:]][[:space:]]*#g'`
+    # lines to not match
+    nomatch_re="^$param_re[[:space:]][[:space:]]*\(aliases\|ethers\|group\|hosts\|netgroup\|networks\|passwd\|protocols\|rpc\|services\|shadow\)"
+    # comment out the option
+    sed -i '/'"$nomatch_re"'/n;s/^'"$param_re"'[[:space:]].*$/#&/i' "$CONFFILE"
+    # we're done
+  done
   return 0
 }
 
@@ -199,14 +201,39 @@ then
   cfg_uris "$RET"
   # update some options
   update_config nslcd/ldap-base base
-  update_config nslcd/ldap-binddn binddn
-  update_config nslcd/ldap-bindpw bindpw
-  update_config nslcd/ldap-sasl-mech sasl_mech
-  update_config nslcd/ldap-sasl-realm sasl_realm
-  update_config nslcd/ldap-sasl-authcid sasl_authcid
-  update_config nslcd/ldap-sasl-authzid sasl_authzid
-  update_config nslcd/ldap-sasl-secprops sasl_secprops
-  update_config nslcd/ldap-sasl-krb5-ccname krb5_ccname
+  db_get nslcd/ldap-auth-type
+  authtype="$RET"
+  case "$authtype" in
+  simple)
+    update_config nslcd/ldap-binddn binddn
+    update_config nslcd/ldap-bindpw bindpw
+    cfg_disable sasl_mech sasl_realm sasl_authcid sasl_authzid sasl_secprops krb5_ccname
+    ;;
+  SASL)
+    update_config nslcd/ldap-sasl-mech sasl_mech
+    update_config nslcd/ldap-sasl-realm sasl_realm
+    # RFC4313 if SASL, binddn should be disabled
+    cfg_disable binddn
+    db_get nslcd/ldap-sasl-mech
+    saslmech="$RET"
+    case "$saslmech" in
+    GSSAPI)
+      update_config nslcd/ldap-sasl-krb5-ccname krb5_ccname
+      cfg_disable sasl_authcid
+      ;;
+    *)
+      update_config nslcd/ldap-sasl-authcid sasl_authcid
+      update_config nslcd/ldap-bindpw bindpw
+      cfg_disable krb5_ccname
+      ;;
+    esac
+    update_config nslcd/ldap-sasl-authzid sasl_authzid
+    update_config nslcd/ldap-sasl-secprops sasl_secprops
+    ;;
+  none)
+    cfg_disable binddn bindpw
+    cfg_disable sasl_mech sasl_realm sasl_authcid sasl_authzid sasl_secprops krb5_ccname
+  esac
   update_config nslcd/ldap-reqcert tls_reqcert
   # remove password from database
   db_set nslcd/ldap-bindpw ""
