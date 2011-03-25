@@ -27,10 +27,7 @@
 
 #include "nslcd/common.h"
 #include "nslcd/cfg.h"
-
-/* we include nslcd/cfg.c here to use cfg_defaults() to set the default
-   regular expression used in test_isvalidname() */
-#include "nslcd/cfg.c"
+#include "nslcd/log.h"
 
 static void test_isvalidname(void)
 {
@@ -46,8 +43,19 @@ static void test_isvalidname(void)
 /* the main program... */
 int main(int UNUSED(argc),char UNUSED(*argv[]))
 {
-  nslcd_cfg=(struct ldap_config *)malloc(sizeof(struct ldap_config));
-  cfg_defaults(nslcd_cfg);
+  char *srcdir;
+  char fname[100];
+  /* build the name of the file */
+  srcdir=getenv("srcdir");
+  if (srcdir==NULL)
+    srcdir=".";
+  snprintf(fname,sizeof(fname),"%s/nslcd-test.conf",srcdir);
+  fname[sizeof(fname)-1]='\0';
+  /* initialize configuration */
+  cfg_init(fname);
+  /* partially initialize logging */
+  log_setdefaultloglevel(LOG_DEBUG);
+  /* run the tests */
   test_isvalidname();
   return 0;
 }

@@ -39,18 +39,6 @@ struct worker_args {
   int id;
 };
 
-static const char *foo="";
-
-/* this is a simple way to get this into an executable,
-   we should probably read a valid config instead */
-const char **base_get_var(int UNUSED(map)) {return NULL;}
-int *scope_get_var(int UNUSED(map)) {return NULL;}
-const char **filter_get_var(int UNUSED(map)) {return &foo;}
-const char **attmap_get_var(int UNUSED(map),const char UNUSED(*name)) {return &foo;}
-const char *attmap_get_value(MYLDAP_ENTRY UNUSED(*entry),const char UNUSED(*attr),char UNUSED(*buffer),size_t UNUSED(buflen)) {return "";}
-void *attmap_add_attributes(void UNUSED(*set),const char UNUSED(*attr)) {return NULL;}
-const char *attmap_set_mapping(const char UNUSED(**var),const char UNUSED(*value)) {return NULL;}
-
 /* the maxium number of results to print (all results are retrieved) */
 #define MAXRESULTS 10
 

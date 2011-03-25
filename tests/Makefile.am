@@ -18,11 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-TESTS = test_dict test_set test_tio test_cfg test_myldap.sh test_nsscmds.sh \
-        test_pamcmds.sh test_getpeercred test_common test_expr
+TESTS = test_dict test_set test_tio test_expr test_getpeercred test_cfg \
+        test_myldap.sh test_common test_nsscmds.sh test_pamcmds.sh
 
-check_PROGRAMS = test_dict test_set test_tio test_cfg test_myldap \
-                 test_getpeercred test_common test_expr
+check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
+                 test_cfg test_myldap test_common
 
 EXTRA_DIST = nslcd-test.conf test_myldap.sh test_nsscmds.sh test_pamcmds.sh \
              in_testenv.sh test_pamcmds.expect usernames.txt
@@ -47,36 +47,28 @@ test_set_LDADD = ../common/libdict.a
 test_tio_SOURCES = test_tio.c ../common/tio.h ../common/tio.c
 test_tio_LDFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
-test_cfg_SOURCES = test_cfg.c
-test_cfg_LDADD = ../nslcd/log.o ../nslcd/attmap.o  \
-                 ../nslcd/common.o ../nslcd/myldap.o \
-                 ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
-                 ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
-                 ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
-                 ../nslcd/service.o ../nslcd/shadow.o \
-                 @nslcd_LIBS@ ../common/libtio.a ../common/libdict.a \
-                 ../common/libexpr.a ../compat/libcompat.a
-
 test_expr_SOURCES = test_expr.c
 test_expr_LDADD = ../common/set.o ../common/dict.o
-
-test_myldap_SOURCES = test_myldap.c
-test_myldap_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/cfg.o \
-                    ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
-                    ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
-                    ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
-                    ../nslcd/service.o ../nslcd/shadow.o \
-                    ../nslcd/myldap.o @nslcd_LIBS@ ../common/libtio.a \
-                    ../common/libdict.a ../compat/libcompat.a
 
 test_getpeercred_SOURCES = test_getpeercred.c
 test_getpeercred_LDADD = ../compat/libcompat.a
 
+# common objects that are included for the tests of nslcd functionality
+common_nslcd_LDADD = ../nslcd/log.o ../nslcd/common.o \
+                     ../nslcd/myldap.o ../nslcd/attmap.o \
+                     ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
+                     ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
+                     ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
+                     ../nslcd/service.o ../nslcd/shadow.o ../nslcd/pam.o \
+                     @nslcd_LIBS@ @PTHREAD_LIBS@ ../common/libtio.a \
+                     ../common/libdict.a ../common/libexpr.a \
+                     ../compat/libcompat.a
+
+test_cfg_SOURCES = test_cfg.c
+test_cfg_LDADD = $(common_nslcd_LDADD)
+
+test_myldap_SOURCES = test_myldap.c
+test_myldap_LDADD = ../nslcd/cfg.o $(common_nslcd_LDADD)
+
 test_common_SOURCES = test_common.c
-test_common_LDADD = ../nslcd/log.o ../nslcd/common.o \
-                    ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
-                    ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
-                    ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
-                    ../nslcd/service.o ../nslcd/shadow.o ../nslcd/attmap.o \
-                    ../nslcd/myldap.o @nslcd_LIBS@ ../common/libtio.a \
-                    ../common/libdict.a ../common/libexpr.a ../compat/libcompat.a
+test_common_LDADD = ../nslcd/cfg.o $(common_nslcd_LDADD)

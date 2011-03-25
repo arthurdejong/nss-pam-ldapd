@@ -83,7 +83,6 @@ static void test_parse_boolean(void)
   assert(parse_boolean(__FILE__,__LINE__,"Foo")==0); */
 }
 
-
 static void test_parse_scope(void)
 {
   assert(parse_scope(__FILE__,__LINE__,"sUb")==LDAP_SCOPE_SUBTREE);
