@@ -592,7 +592,13 @@ then
 
   # check threading stuff
   AX_PTHREAD(,AC_MSG_ERROR([no support for pthreads]))
-  AC_CHECK_FUNCS(pthread_mutex_lock)
+  pthread_save_CFLAGS="$CFLAGS"
+  pthread_save_LIBS="$LIBS"
+  CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+  LIBS="$LIBS $PTHREAD_LIBS"
+  AC_CHECK_FUNCS([pthread_mutex_lock pthread_join pthread_timedjoin_np])
+  CFLAGS="$pthread_save_CFLAGS"
+  LIBS="$pthread_save_LIBS"
 
   # search for an LDAP library (only OpenLDAP is tested)
   AC_ARG_WITH(ldap-lib,

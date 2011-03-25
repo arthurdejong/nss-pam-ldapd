@@ -55,6 +55,7 @@
 #include "compat/daemon.h"
 #include <dlfcn.h>
 #include <libgen.h>
+#include <limits.h>
 
 #include "nslcd.h"
 #include "log.h"
@@ -232,19 +233,8 @@ static const char *signame(int signum)
 /* signal handler for closing down */
 static void sigexit_handler(int signum)
 {
-  int i;
-  /* indicate that we're stopping */
+  /* just save the signal to indicate that we're stopping */
   nslcd_exitsignal=signum;
-  /* close server socket to trigger failures in threads waiting on accept() */
-  close(nslcd_serversocket);
-  nslcd_serversocket=-1;
-  /* cancel all running threads */
-  for (i=0;i<nslcd_cfg->ldc_threads;i++)
-    if (pthread_cancel(nslcd_threads[i]))
-    {
-      /* TODO: figure out if we can actually log from within a signal handler */
-      log_log(LOG_WARNING,"failed to stop thread %d (ignored): %s",i,strerror(errno));
-    }
 }
 
 /* do some cleaning up before terminating */
@@ -564,9 +554,6 @@ static void *worker(void UNUSED(*arg))
     tv.tv_usec=0;
     /* wait for a new connection */
     j=select(nslcd_serversocket+1,&fds,NULL,NULL,nslcd_cfg->ldc_idle_timelimit>0?&tv:NULL);
-    /* see if we should exit before doing anything else */
-    if (nslcd_exitsignal!=0)
-      return NULL;
     /* check result of select() */
     if (j<0)
     {
@@ -657,6 +644,9 @@ int main(int argc,char *argv[])
 {
   int i;
   sigset_t signalmask,oldmask;
+#ifdef HAVE_PTHREAD_TIMEDJOIN_NP
+  struct timespec ts;
+#endif /* HAVE_PTHREAD_TIMEDJOIN_NP */
   /* parse the command line */
   parse_cmdline(argc,argv);
   /* clean the environment */
@@ -798,27 +788,34 @@ int main(int argc,char *argv[])
   install_sighandler(SIGTERM,sigexit_handler);
   install_sighandler(SIGUSR1,sigexit_handler);
   install_sighandler(SIGUSR2,sigexit_handler);
-  /* wait for all threads to die */
-  /* BUG: this causes problems if for some reason we want to exit but one
-          of our threads hangs (e.g. has one of the LDAP locks)
-     Other than that it may be a good idea to keep this thread more or less alive
-     to do general house keeping things (e.g. checking signals etc) */
-  /* it is also better to always do thread_cancel() here instead of in the signal
-     handler */
+  /* wait until we received a signal */
+  while (nslcd_exitsignal==0)
+  {
+    sleep(INT_MAX); /* sleep as long as we can or until we receive a signal */
+  }
+  /* print something about received signal */
+  log_log(LOG_INFO,"caught signal %s (%d), shutting down",
+               signame(nslcd_exitsignal),nslcd_exitsignal);
+  /* cancel all running threads */
+  for (i=0;i<nslcd_cfg->ldc_threads;i++)
+    if (pthread_cancel(nslcd_threads[i]))
+      log_log(LOG_WARNING,"failed to stop thread %d (ignored): %s",i,strerror(errno));
+  /* close server socket to trigger failures in threads waiting on accept() */
+  close(nslcd_serversocket);
+  nslcd_serversocket=-1;
+  /* if we can, wait a few seconds for the threads to finish */
+#ifdef HAVE_PTHREAD_TIMEDJOIN_NP
+  ts.tv_sec=time(NULL)+3;
+  ts.tv_nsec=0;
+#endif /* HAVE_PTHREAD_TIMEDJOIN_NP */
   for (i=0;i<nslcd_cfg->ldc_threads;i++)
   {
-    if (pthread_join(nslcd_threads[i],NULL))
-    {
-      log_log(LOG_ERR,"unable to wait for worker thread %d: %s",i,strerror(errno));
-      exit(EXIT_FAILURE);
-    }
+#ifdef HAVE_PTHREAD_TIMEDJOIN_NP
+    pthread_timedjoin_np(nslcd_threads[i],NULL,&ts);
+#endif /* HAVE_PTHREAD_TIMEDJOIN_NP */
+    if (pthread_kill(nslcd_threads[i],0)==0)
+      log_log(LOG_ERR,"thread %d is still running, shutting down anyway",i);
   }
-  free(nslcd_threads);
-  /* print something about received signals */
-  if (nslcd_exitsignal!=0)
-  {
-    log_log(LOG_INFO,"caught signal %s (%d), shutting down",
-                 signame(nslcd_exitsignal),nslcd_exitsignal);
-  }
+  /* we're done */
   return EXIT_FAILURE;
 }
