@@ -25,7 +25,7 @@ import re
 import ldap
 import ldap.dn
 
-_validname_re = re.compile(r'^[A-Za-z0-9._@$][A-Za-z0-9._@$ \\~-]{0,98}[A-Za-z0-9._@$~-]$')
+_validname_re = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
 
 def isvalidname(name):
     """Checks to see if the specified name seems to be a valid user or group
