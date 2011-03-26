@@ -21,8 +21,11 @@
 
 set -e
 
+# find source directory
+srcdir="${srcdir-"."}"
+
 # ensure that we are running in the test environment
-. ./in_testenv.sh
+. "$srcdir/in_testenv.sh"
 
 # check if we have expect installed
 EXPECT="$(which expect 2> /dev/null || true)"

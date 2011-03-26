@@ -44,13 +44,13 @@ test_dict_SOURCES = test_dict.c ../common/dict.h ../common/dict.c
 test_set_SOURCES = test_set.c ../common/set.h
 test_set_LDADD = ../common/libdict.a
 
-test_tio_SOURCES = test_tio.c ../common/tio.h ../common/tio.c
+test_tio_SOURCES = test_tio.c common.h ../common/tio.h ../common/tio.c
 test_tio_LDFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
-test_expr_SOURCES = test_expr.c
+test_expr_SOURCES = test_expr.c common.h
 test_expr_LDADD = ../common/set.o ../common/dict.o
 
-test_getpeercred_SOURCES = test_getpeercred.c
+test_getpeercred_SOURCES = test_getpeercred.c common.h
 test_getpeercred_LDADD = ../compat/libcompat.a
 
 # common objects that are included for the tests of nslcd functionality
@@ -64,11 +64,11 @@ common_nslcd_LDADD = ../nslcd/log.o ../nslcd/common.o \
                      ../common/libdict.a ../common/libexpr.a \
                      ../compat/libcompat.a
 
-test_cfg_SOURCES = test_cfg.c
+test_cfg_SOURCES = test_cfg.c common.h
 test_cfg_LDADD = $(common_nslcd_LDADD)
 
-test_myldap_SOURCES = test_myldap.c
+test_myldap_SOURCES = test_myldap.c common.h
 test_myldap_LDADD = ../nslcd/cfg.o $(common_nslcd_LDADD)
 
-test_common_SOURCES = test_common.c
+test_common_SOURCES = test_common.c ../nslcd/common.h
 test_common_LDADD = ../nslcd/cfg.o $(common_nslcd_LDADD)

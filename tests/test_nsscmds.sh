@@ -26,11 +26,13 @@
 
 set -e
 
+# find source directory
+srcdir="${srcdir-"."}"
+
 # ensure that we are running in the test environment
-. ./in_testenv.sh
+. "$srcdir/in_testenv.sh"
 
 # preload our own NSS module
-srcdir="${srcdir-"."}"
 LD_PRELOAD="$srcdir/../nss/nss_ldap.so"
 export LD_PRELOAD
 
