@@ -1,11 +1,30 @@
+changes from 0.8.1 to 0.8.2
+---------------------------
+
+* fix problem with endless loop on incorrect password
+* fix a communication problem between nslcd and the NSS and PAM modules when
+  running on Solaris 10
+* fix a compilation issue on systems without HOST_NAME_MAX
+* link to the resolv library for hstrerror() on platforms that need it
+* ignore password change requests for users not in LDAP
+* many clean-ups to the tests and added some new tests including some
+  integration tests for the PAM functionality
+* some smaller code clean-ups and improvements
+* improvements to pynslcd, including implementations for service, protocol and
+  rpc lookups
+* implement a validnames option that can be used to filter valid user and
+  group names using a regular expression
+* improvements to the way nslcd shuts down with hanging worker threads
+
+
 changes from 0.8.0 to 0.8.1
 ---------------------------
 
 * SECURITY FIX: the PAM module will allow authentication for users that do not
                 exist in LDAP, this allows login to local users with an
                 incorrect password (CVE-2011-0438)
-                the explotability of the problem depends on the details of the
-                PAM stack and the use of the minimum_uid PAM option
+                the exploitability of the problem depends on the details of
+                the PAM stack and the use of the minimum_uid PAM option
 * include a file that was missing for Solaris support
 * add FreeBSD support, partially imported from the FreeBSD port (thanks to
   Jacques Vidrine, Artem Kazakov and Alexander V. Chernikov)

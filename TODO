@@ -19,9 +19,6 @@
 * make it possible to start nslcd real early in the boot process and have
   it become available when it determines it can (other timeout/retry mechanism
   on startup)
-* write a simple PAM test application
-* make user/group name filtering configurable (with regular expression)
-  (perhaps even extend the filtering to other data)
 * implement requesting and handling password policy information when binding
   as a user
 * implement nested groups
@@ -32,4 +29,3 @@
 * fix buffer handling in read_**string() functions (Solaris support)
 * complete pynslcd implementation
 * in nslcd/pam.c check shadow properties if present
-* write test cases for the PAM code

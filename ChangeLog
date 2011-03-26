@@ -1,3 +1,172 @@
+2011-03-26 16:16  arthur
+
+	* [r1416] tests/Makefile.am, tests/test_nsscmds.sh,
+	  tests/test_pamcmds.sh: ensure that all test source files are
+	  distibuted and can tests can be run when source directory differs
+	  from build directory
+
+2011-03-26 14:36  arthur
+
+	* [r1415] pynslcd/common.py: sync validname regular expression with
+	  nslcd
+
+2011-03-25 21:39  arthur
+
+	* [r1414] configure.ac, nslcd/nslcd.c: no longer indefinitely wait
+	  for all worker threads to finish before exiting (but wait a few
+	  seconds on platforms with pthread_timedjoin_np())
+
+2011-03-25 16:15  arthur
+
+	* [r1413] tests/Makefile.am, tests/test_cfg.c, tests/test_common.c,
+	  tests/test_myldap.c: re-organise tests somewhat making things
+	  more consistent
+
+2011-03-25 16:08  arthur
+
+	* [r1412] debian/nslcd.config, debian/nslcd.postinst: integrate
+	  patch by Daniel Dehennin to not loose debconf values of
+	  previously set options with dpkg-reconfigure
+
+2011-03-25 13:30  arthur
+
+	* [r1411] configure.ac, man/nslcd.conf.5.xml, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/common.c, tests/Makefile.am,
+	  tests/test_common.c: implement a validnames option that can be
+	  used to fine-tune the test for valid user and group names using a
+	  regular expression
+
+2011-03-24 22:19  arthur
+
+	* [r1410] pynslcd/protocol.py, pynslcd/pynslcd.py, pynslcd/rpc.py,
+	  pynslcd/service.py: implement service, protocol and rpc lookups
+
+2011-03-24 22:18  arthur
+
+	* [r1409] pynslcd/host.py, pynslcd/network.py: fix the case where
+	  the RDN is for some reason not in the cn
+
+2011-03-24 22:15  arthur
+
+	* [r1408] pynslcd/pam.py: fix configuration name
+
+2011-03-24 22:09  arthur
+
+	* [r1407] pynslcd/mypidfile.py: truncate pidfile to ensure remains
+	  of previous value is gone
+
+2011-03-23 21:55  arthur
+
+	* [r1406] pynslcd/host.py: fix use of spaces
+
+2011-03-23 21:43  arthur
+
+	* [r1405] nslcd/protocol.c, nslcd/shadow.c: fix descriptions of
+	  files
+
+2011-03-23 21:28  arthur
+
+	* [r1403] compat/daemon.h, configure.ac, nslcd/nslcd.c: provide a
+	  definition of daemon() for systems that lack it
+
+2011-03-23 20:30  arthur
+
+	* [r1402] compat/ether.h: typo fix in comment
+
+2011-03-19 15:14  arthur
+
+	* [r1401] Makefile.am, common, compat, nslcd, nss, pam, tests,
+	  tests/test_expr.c, tests/test_pamcmds.expect, tests/test_tio.c:
+	  more tests and general test improvements
+
+2011-03-19 15:14  arthur
+
+	* [r1400] common/expr.c, nslcd/myldap.h, nslcd/nslcd.c,
+	  nss/common.h, nss/prototypes.h, pam/common.h, pam/pam.c: small
+	  code improvements
+
+2011-03-19 15:13  arthur
+
+	* [r1399] nslcd/log.c, nslcd/log.h: remove logging functionality
+	  that isn't used
+
+2011-03-18 14:33  arthur
+
+	* [r1398] tests, tests/Makefile.am, tests/in_testenv.sh,
+	  tests/test_nsscmds.sh, tests/test_pamcmds.expect,
+	  tests/test_pamcmds.sh: implement test cases for some of the
+	  common PAM actions (test environment required for this)
+
+2011-03-17 21:02  arthur
+
+	* [r1397] configure.ac, tests/Makefile.am, tests/common.h,
+	  tests/test_cfg.c, tests/test_common.c, tests/test_expr.c,
+	  tests/test_getpeercred.c, tests/test_myldap.c, tests/test_tio.c:
+	  put all assertion functions and compatibility code into one
+	  header file
+
+2011-03-17 21:01  arthur
+
+	* [r1396] nslcd.conf: put idle_timelimit option in Active Directory
+	  example with low enough default
+
+2011-03-16 21:54  arthur
+
+	* [r1395] tests/Makefile.am, tests/test_aliases.c,
+	  tests/test_ethers.c, tests/test_group.c, tests/test_hosts.c,
+	  tests/test_netgroup.c, tests/test_networks.c,
+	  tests/test_nslcd_group.c, tests/test_passwd.c,
+	  tests/test_protocols.c, tests/test_rpc.c, tests/test_services.c,
+	  tests/test_shadow.c: remove legacy test code that is no longer
+	  used
+
+2011-03-14 21:42  arthur
+
+	* [r1394] pam/pam.c: check for user existence before trying
+	  password change
+
+2011-03-14 20:19  arthur
+
+	* [r1393] common/tio.c: fix a problem in the timeout paramater that
+	  was being passed to select() and could contain too many µsec
+	  (fixes Solaris runtime issue)
+
+2011-03-13 15:25  arthur
+
+	* [r1392] tests/test_nsscmds.sh: fix name of script in header
+
+2011-03-12 08:41  arthur
+
+	* [r1391] configure.ac: include the resolv library for hstrerror()
+	  on platforms that need it (thanks Peter Bray)
+
+2011-03-12 08:34  arthur
+
+	* [r1390] nslcd/common.h, nslcd/pam.c: put all HOST_NAME_MAX
+	  fallbacks in common.h and fall back to _POSIX_HOST_NAME_MAX
+	  (thanks Peter Bray)
+
+2011-03-11 20:37  arthur
+
+	* [r1389] Makefile.am: ensure that permissions are sane in the
+	  distributed tarball
+
+2011-03-11 18:02  arthur
+
+	* [r1388] nslcd/myldap.c: fix problem with endless loop on
+	  incorrect password
+
+2011-03-11 15:49  arthur
+
+	* [r1387] nslcd/common.c, nslcd/common.h: move HOST_NAME_MAX
+	  fallback definition to header file
+
+2011-03-10 21:45  arthur
+
+	* [r1385] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.8.1 release
+
 2011-03-10 20:35  arthur
 
 	* [r1384] Makefile.am, common/tio.c, compat/Makefile.am,
