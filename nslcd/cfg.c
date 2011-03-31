@@ -127,7 +127,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_pam_authz_search=NULL;
   cfg->ldc_nss_min_uid=0;
   parse_validnames_statement(__FILE__,__LINE__,"",
-                "/^[a-z0-9._@$][a-z0-9._@$ \\~-]+[a-z0-9._@$~-]$/i",cfg);
+                "/^[a-z0-9._@$][a-z0-9._@$ \\~-]*[a-z0-9._@$~-]$/i",cfg);
 }
 
 /* simple strdup wrapper */
