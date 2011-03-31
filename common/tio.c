@@ -78,7 +78,7 @@ static inline void tio_tv_add(struct timeval *tv1, const struct timeval *tv2)
 {
   /* BUG: we hope that this does not overflow */
   tv1->tv_usec+=tv2->tv_usec;
-  if (tv1->tv_usec>1000000)
+  if (tv1->tv_usec>=1000000)
   {
     tv1->tv_usec-=1000000;
     tv1->tv_sec+=1;
