@@ -436,7 +436,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
     {
       if (!isvalidname(usernames[i]))
       {
-        log_log(LOG_WARNING,"passwd entry %s contains invalid user name: \"%s\"",
+        log_log(LOG_WARNING,"passwd entry %s denied by validnames option: \"%s\"",
                             myldap_get_dn(entry),usernames[i]);
       }
       else
@@ -467,7 +467,7 @@ NSLCD_HANDLE_UID(
   READ_STRING(fp,name);
   log_setrequest("passwd=\"%s\"",name);
   if (!isvalidname(name)) {
-    log_log(LOG_WARNING,"\"%s\": invalid user name",name);
+    log_log(LOG_WARNING,"\"%s\": name denied by validnames option",name);
     return -1;
   },
   NSLCD_ACTION_PASSWD_BYNAME,

@@ -161,7 +161,7 @@ static int do_write_group(
   {
     if (!isvalidname(names[i]))
     {
-      log_log(LOG_WARNING,"group entry %s contains invalid group name: \"%s\"",
+      log_log(LOG_WARNING,"group entry %s name denied by validnames option: \"%s\"",
                           myldap_get_dn(entry),names[i]);
     }
     else if ((reqname==NULL)||(strcmp(reqname,names[i])==0))
@@ -287,7 +287,7 @@ NSLCD_HANDLE(
   READ_STRING(fp,name);
   log_setrequest("group=\"%s\"",name);
   if (!isvalidname(name)) {
-    log_log(LOG_WARNING,"\"%s\": invalid group name",name);
+    log_log(LOG_WARNING,"\"%s\": name denied by validnames option",name);
     return -1;
   },
   NSLCD_ACTION_GROUP_BYNAME,
@@ -314,7 +314,7 @@ NSLCD_HANDLE(
   log_setrequest("group/member=\"%s\"",name);
   if (!isvalidname(name))
   {
-    log_log(LOG_WARNING,"\"%s\": invalid user name",name);
+    log_log(LOG_WARNING,"\"%s\": name denied by validnames option",name);
     return -1;
   }
   if ((nslcd_cfg->ldc_nss_initgroups_ignoreusers!=NULL)&&

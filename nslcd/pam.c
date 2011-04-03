@@ -91,7 +91,7 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
   /* check username for validity */
   if (!isvalidname(username))
   {
-    log_log(LOG_WARNING,"\"%s\": invalid user name",username);
+    log_log(LOG_WARNING,"\"%s\": name denied by validnames option",username);
     return LDAP_NO_SUCH_OBJECT;
   }
   /* look up user DN if not known */
@@ -127,7 +127,8 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
     /* check the username */
     if ((value==NULL)||!isvalidname(value)||strlen(value)>=usernamesz)
     {
-      log_log(LOG_WARNING,"\"%s\": DN %s has invalid username",username,userdn);
+      log_log(LOG_WARNING,"passwd entry %s name denied by validnames option: \"%s\"",
+                          userdn,username);
       return LDAP_INVALID_SYNTAX;
     }
     /* check if the username is different and update it if needed */
