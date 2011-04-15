@@ -34,6 +34,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <regex.h>
+#include <stdlib.h>
 
 #include "nslcd.h"
 #include "common.h"
@@ -211,4 +212,60 @@ int read_address(TFILE *fp,char *addr,int *addrlen,int *af)
   READ(fp,addr,len);
   /* we're done */
   return 0;
+}
+
+/* convert the provided string representation of a sid
+   (e.g. S-1-5-21-1936905831-823966427-12391542-23578)
+   to a format that can be used to search the objectSid property with */
+char *sid2search(const char *sid)
+{
+  const char *tmpsid=sid;
+  char *res,*tmp;
+  int i=0;
+  long int l;
+  /* check the beginning of the string */
+  if (strncasecmp(sid,"S-",2)!=0)
+  {
+    log_log(LOG_ERR,"error in SID %s",sid);
+    exit(EXIT_FAILURE);
+  }
+  /* count the number of dashes in the sid */
+  while (tmpsid!=NULL)
+  {
+    i++;
+    tmpsid=strchr(tmpsid+1,'-');
+  }
+  i-=2; /* number of security ids plus one because we add the uid later */
+  /* allocate memory */
+  res=malloc(3+3+6*3+i*4*3+1);
+  if (res==NULL)
+  {
+    log_log(LOG_CRIT,"malloc() failed to allocate memory");
+    exit(1);
+  }
+  /* build the first part */
+  l=strtol(sid+2,&tmp,10);
+  sprintf(res,"\\%02x\\%02x",(int)l&0xff,(int)i);
+  /* build authority part (we only handle 32 of the 48 bits) */
+  l=strtol(tmp+1,&tmp,10);
+  sprintf(res+strlen(res),"\\00\\00\\%02x\\%02x\\%02x\\%02x",
+          (int)((l>>24)&0xff),(int)((l>>16)&0xff),(int)((l>>8)&0xff),(int)(l&0xff));
+  /* go over the rest of the bits */
+  while (*tmp!='\0')
+  {
+    l=strtol(tmp+1,&tmp,10);
+    sprintf(res+strlen(res),"\\%02x\\%02x\\%02x\\%02x",
+            (int)(l&0xff),(int)((l>>8)&0xff),(int)((l>>16)&0xff),(int)((l>>24)&0xff));
+  }
+  return res;
+}
+
+/* return the last security identifier of the binary sid */
+long int binsid2id(const char *binsid)
+{
+  int i;
+  /* find the position of the last security id */
+  i=2+6+((((int)binsid[1])&0xff)-1)*4;
+  return (((long int)binsid[i])&0xff)|((((long int)binsid[i+1])&0xff)<<8)|
+         ((((long int)binsid[i+2])&0xff)<<16)|((((long int)binsid[i+3])&0xff)<<24);
 }

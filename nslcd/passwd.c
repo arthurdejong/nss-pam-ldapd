@@ -63,6 +63,11 @@ const char *attmap_passwd_gecos         = "\"${gecos:-$cn}\"";
 const char *attmap_passwd_homeDirectory = "homeDirectory";
 const char *attmap_passwd_loginShell    = "loginShell";
 
+/* special properties for objectSid-based searches
+   (these are already LDAP-escaped strings) */
+static char *uidSid=NULL;
+static char *gidSid=NULL;
+
 /* default values for attributes */
 static const char *default_passwd_userPassword     = "*"; /* unmatchable */
 
@@ -97,10 +102,22 @@ static int mkfilter_passwd_byname(const char *name,
 static int mkfilter_passwd_byuid(uid_t uid,
                                  char *buffer,size_t buflen)
 {
-  return mysnprintf(buffer,buflen,
-                    "(&%s(%s=%d))",
-                    passwd_filter,
-                    attmap_passwd_uidNumber,(int)uid);
+  if (uidSid!=NULL)
+  {
+    return mysnprintf(buffer,buflen,
+                      "(&%s(%s=%s\\%02x\\%02x\\%02x\\%02x))",
+                      passwd_filter,
+                      attmap_passwd_uidNumber,uidSid,
+                      (int)(uid&0xff),(int)((uid>>8)&0xff),
+                      (int)((uid>>16)&0xff),(int)((uid>>24)&0xff));
+  }
+  else
+  {
+    return mysnprintf(buffer,buflen,
+                      "(&%s(%s=%d))",
+                      passwd_filter,
+                      attmap_passwd_uidNumber,(int)uid);
+  }
 }
 
 void passwd_init(void)
@@ -114,6 +131,17 @@ void passwd_init(void)
   /* set up scope */
   if (passwd_scope==LDAP_SCOPE_DEFAULT)
     passwd_scope=nslcd_cfg->ldc_scope;
+  /* special case when uidNumber or gidNumber reference objectSid */
+  if (strncasecmp(attmap_passwd_uidNumber,"objectSid:",10)==0)
+  {
+    uidSid=sid2search(attmap_passwd_uidNumber+10);
+    attmap_passwd_uidNumber=strndup(attmap_passwd_uidNumber,9);
+  }
+  if (strncasecmp(attmap_passwd_gidNumber,"objectSid:",10)==0)
+  {
+    gidSid=sid2search(attmap_passwd_gidNumber+10);
+    attmap_passwd_gidNumber=strndup(attmap_passwd_gidNumber,9);
+  }
   /* set up attribute list */
   set=set_new();
   attmap_add_attributes(set,"objectClass"); /* for testing shadowAccount */
@@ -160,11 +188,19 @@ static int entry_has_valid_uid(MYLDAP_ENTRY *entry)
   /* check if there is a uidNumber attributes >= min_uid */
   for (i=0;values[i]!=NULL;i++)
   {
-    uid=(uid_t)strtol(values[i],&tmp,0);
-    if ((*(values[i])=='\0')||(*tmp!='\0'))
-      log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
-                          myldap_get_dn(entry),attmap_passwd_uidNumber);
-    else if (uid>=nslcd_cfg->ldc_nss_min_uid)
+    if (uidSid!=NULL)
+      uid=(uid_t)binsid2id(values[i]);
+    else
+    {
+      uid=(uid_t)strtol(values[i],&tmp,0);
+      if ((*(values[i])=='\0')||(*tmp!='\0'))
+      {
+        log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+                            myldap_get_dn(entry),attmap_passwd_uidNumber);
+        continue;
+      }
+    }
+    if (uid>=nslcd_cfg->ldc_nss_min_uid)
       return 1;
   }
   /* nothing found */
@@ -397,29 +433,48 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
     }
     for (numuids=0;(numuids<MAXUIDS_PER_ENTRY)&&(tmpvalues[numuids]!=NULL);numuids++)
     {
-      uids[numuids]=(uid_t)strtol(tmpvalues[numuids],&tmp,0);
-      if ((*(tmpvalues[numuids])=='\0')||(*tmp!='\0'))
+      if (uidSid!=NULL)
+        uids[numuids]=(uid_t)binsid2id(tmpvalues[numuids]);
+      else
       {
-        log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
-                            myldap_get_dn(entry),attmap_passwd_uidNumber);
-        return 0;
+        uids[numuids]=(uid_t)strtol(tmpvalues[numuids],&tmp,0);
+        if ((*(tmpvalues[numuids])=='\0')||(*tmp!='\0'))
+        {
+          log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+                              myldap_get_dn(entry),attmap_passwd_uidNumber);
+          return 0;
+        }
       }
     }
   }
   /* get the gid for this entry */
-  attmap_get_value(entry,attmap_passwd_gidNumber,gidbuf,sizeof(gidbuf));
-  if (gidbuf[0]=='\0')
+  if (gidSid!=NULL)
   {
-    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
-                        myldap_get_dn(entry),attmap_passwd_gidNumber);
-    return 0;
+    tmpvalues=myldap_get_values(entry,attmap_passwd_gidNumber);
+    if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
+    {
+      log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_passwd_gidNumber);
+      return 0;
+    }
+    gid=(gid_t)binsid2id(tmpvalues[0]);
   }
-  gid=(gid_t)strtol(gidbuf,&tmp,0);
-  if ((gidbuf[0]=='\0')||(*tmp!='\0'))
+  else
   {
-    log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
-                        myldap_get_dn(entry),attmap_passwd_gidNumber);
-    return 0;
+    attmap_get_value(entry,attmap_passwd_gidNumber,gidbuf,sizeof(gidbuf));
+    if (gidbuf[0]=='\0')
+    {
+      log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+                          myldap_get_dn(entry),attmap_passwd_gidNumber);
+      return 0;
+    }
+    gid=(gid_t)strtol(gidbuf,&tmp,0);
+    if ((gidbuf[0]=='\0')||(*tmp!='\0'))
+    {
+      log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+                          myldap_get_dn(entry),attmap_passwd_gidNumber);
+      return 0;
+    }
   }
   /* get the gecos for this entry */
   attmap_get_value(entry,attmap_passwd_gecos,gecos,sizeof(gecos));

@@ -388,7 +388,7 @@
        the supported maps below.
        The <replaceable>ATTRIBUTE</replaceable> is the one as
        used in <acronym>RFC</acronym> 2307 (e.g. <literal>userPassword</literal>,
-       <literal>ipProtocolNumber</literal> or <literal>macAddress</literal>).
+       <literal>ipProtocolNumber</literal>, <literal>macAddress</literal>, etc.).
        The <replaceable>NEWATTRIBUTE</replaceable> may be any attribute
        as it is available in the directory.
       </para>
@@ -413,6 +413,13 @@
        <literal>shadowMin</literal>, <literal>shadowMax</literal>,
        <literal>shadowWarning</literal>, <literal>shadowInactive</literal>,
        <literal>shadowExpire</literal> and <literal>shadowFlag</literal>.
+      </para>
+      <para>
+       The <literal>uidNumber</literal> and <literal>gidNumber</literal>
+       attributes in the <literal>passwd</literal> and <literal>group</literal>
+       maps may be mapped to the <literal>objectSid</literal> followed by
+       the domain SID to derive numeric user and group ids from the SID
+       (e.g. <literal>objectSid:S-1-5-21-3623811015-3361044348-30300820</literal>).
       </para>
       <para>
        By default all <literal>userPassword</literal> attributes are mapped

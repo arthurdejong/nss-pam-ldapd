@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -66,6 +66,10 @@ const char *attmap_group_gidNumber     = "gidNumber";
 const char *attmap_group_memberUid     = "memberUid";
 const char *attmap_group_uniqueMember  = "uniqueMember";
 
+/* special property for objectSid-based searches
+   (these are already LDAP-escaped strings) */
+static char *gidSid=NULL;
+
 /* default values for attributes */
 static const char *default_group_userPassword     = "*"; /* unmatchable */
 
@@ -93,10 +97,22 @@ static int mkfilter_group_byname(const char *name,
 static int mkfilter_group_bygid(gid_t gid,
                                 char *buffer,size_t buflen)
 {
-  return mysnprintf(buffer,buflen,
-                    "(&%s(%s=%d))",
-                    group_filter,
-                    attmap_group_gidNumber,(int)gid);
+  if (gidSid!=NULL)
+  {
+    return mysnprintf(buffer,buflen,
+                      "(&%s(%s=%s\\%02x\\%02x\\%02x\\%02x))",
+                      group_filter,
+                      attmap_group_gidNumber,gidSid,
+                      (int)(gid&0xff),(int)((gid>>8)&0xff),
+                      (int)((gid>>16)&0xff),(int)((gid>>24)&0xff));
+  }
+  else
+  {
+    return mysnprintf(buffer,buflen,
+                      "(&%s(%s=%d))",
+                      group_filter,
+                      attmap_group_gidNumber,(int)gid);
+  }
 }
 
 /* create a search filter for searching a group entry
@@ -139,6 +155,12 @@ void group_init(void)
   /* set up scope */
   if (group_scope==LDAP_SCOPE_DEFAULT)
     group_scope=nslcd_cfg->ldc_scope;
+  /* special case when gidNumber references objectSid */
+  if (strncasecmp(attmap_group_gidNumber,"objectSid:",10)==0)
+  {
+    gidSid=sid2search(attmap_group_gidNumber+10);
+    attmap_group_gidNumber=strndup(attmap_group_gidNumber,9);
+  }
   /* set up attribute list */
   set=set_new();
   attmap_add_attributes(set,attmap_group_cn);
@@ -253,12 +275,17 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
     }
     for (numgids=0;(gidvalues[numgids]!=NULL)&&(numgids<MAXGIDS_PER_ENTRY);numgids++)
     {
-      gids[numgids]=(gid_t)strtol(gidvalues[numgids],&tmp,0);
-      if ((*(gidvalues[numgids])=='\0')||(*tmp!='\0'))
+      if (gidSid!=NULL)
+        gids[numgids]=(gid_t)binsid2id(gidvalues[numgids]);
+      else
       {
-        log_log(LOG_WARNING,"group entry %s contains non-numeric %s value",
-                            myldap_get_dn(entry),attmap_group_gidNumber);
-        return 0;
+        gids[numgids]=(gid_t)strtol(gidvalues[numgids],&tmp,0);
+        if ((*(gidvalues[numgids])=='\0')||(*tmp!='\0'))
+        {
+          log_log(LOG_WARNING,"group entry %s contains non-numeric %s value",
+                              myldap_get_dn(entry),attmap_group_gidNumber);
+          return 0;
+        }
       }
     }
   }

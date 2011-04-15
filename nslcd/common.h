@@ -84,6 +84,14 @@ int read_address(TFILE *fp,char *addr,int *addrlen,int *af);
   if (read_address(fp,addr,&(len),&(af))) \
     return -1;
 
+/* convert the provided string representation of a sid
+   (e.g. S-1-5-21-1936905831-823966427-12391542-23578)
+   to a format that can be used to search the objectSid property with */
+MUST_USE char *sid2search(const char *sid);
+
+/* return the last security identifier of the binary sid */
+MUST_USE long int binsid2id(const char *binsid);
+
 /* checks to see if the specified string is a valid user or group name */
 MUST_USE int isvalidname(const char *name);
 
