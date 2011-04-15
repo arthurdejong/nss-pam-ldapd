@@ -48,13 +48,17 @@ proc reset_password {} {
   #close
 }
 
+# find source directory
+if { ! [info exists ::env(srcdir) ] } {
+  set env(srcdir) "."
+}
 # ensure that we are running as root
 if { [exec id -u] != "0" } {
   send_user "test_pamcmds.expect: not running as root\n"
   exit 77
 }
 # ensure that we are running in the test environment
-spawn ./in_testenv.sh
+spawn $env(srcdir)/in_testenv.sh
 expect {
   "in_testenv.sh: using LDAP server" { expect eof }
   eof {

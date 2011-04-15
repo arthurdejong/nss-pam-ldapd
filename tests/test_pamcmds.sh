@@ -22,7 +22,7 @@
 set -e
 
 # find source directory
-srcdir="${srcdir-"."}"
+srcdir="${srcdir-`dirname "$0"`}"
 
 # ensure that we are running in the test environment
 . "$srcdir/in_testenv.sh"
@@ -35,4 +35,5 @@ then
   exit 77
 fi
 
-"$EXPECT" ./test_pamcmds.expect
+export srcdir
+"$EXPECT" "$srcdir/test_pamcmds.expect"
