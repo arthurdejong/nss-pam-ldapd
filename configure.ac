@@ -566,8 +566,9 @@ then
   AC_CHECK_FUNCS(dlopen dlsym dlerror)
   AC_CHECK_FUNCS(regcomp regexec regerror)
 
-  # replace getopt_long() function if it is not on the system
+  # replace some functions if they are not on the system
   AC_REPLACE_FUNCS(getopt_long)
+  AC_REPLACE_FUNCS(strndup)
 
   # replace daemon() function if it is not on the system
   AC_SEARCH_LIBS(daemon,bsd)

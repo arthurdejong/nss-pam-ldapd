@@ -38,6 +38,7 @@
 #include "cfg.h"
 #include "attmap.h"
 #include "common/dict.h"
+#include "compat/strndup.h"
 
 /* ( nisSchema.2.0 NAME 'posixAccount' SUP top AUXILIARY
  *   DESC 'Abstraction of an account with POSIX attributes'

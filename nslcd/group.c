@@ -37,6 +37,7 @@
 #include "myldap.h"
 #include "cfg.h"
 #include "attmap.h"
+#include "compat/strndup.h"
 
 /* ( nisSchema.2.2 NAME 'posixGroup' SUP top STRUCTURAL
  *   DESC 'Abstraction of a group of accounts'
