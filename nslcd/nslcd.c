@@ -614,7 +614,7 @@ static void disable_nss_ldap(void)
 #ifdef RTLD_NODELETE
   handle=dlopen(NSS_LDAP_SONAME,RTLD_LAZY|RTLD_NODELETE);
 #else /* not RTLD_NODELETE */
-  handle=dlopen(NSS_LDAP_SONAME,RTLD_LAZY|RTLD_NODELETE);
+  handle=dlopen(NSS_LDAP_SONAME,RTLD_LAZY);
 #endif /* RTLD_NODELETE */
   if (handle==NULL)
   {
