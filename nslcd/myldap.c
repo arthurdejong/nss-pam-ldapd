@@ -581,7 +581,7 @@ static void do_close(MYLDAP_SESSION *session)
           log_log(LOG_DEBUG,"ldap_abandon()");
           if (ldap_abandon(session->searches[i]->session->ld,session->searches[i]->msgid))
           {
-            if (ldap_get_option(session->ld,LDAP_OPT_ERROR_NUMBER,&rc)==LDAP_SUCCESS)
+            if (ldap_get_option(session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
               rc=LDAP_OTHER;
             log_log(LOG_WARNING,"ldap_abandon() failed to abandon search: %s",ldap_err2string(rc));
           }
