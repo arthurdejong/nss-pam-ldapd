@@ -111,9 +111,8 @@ proc test_login_authfail {uid passwd} {
 # function to do login, expecting FAIL result
 proc test_login_unknown {uid passwd} {
   send "su - $uid -s /bin/sh\r"
-  expect "Password:"
-  send "$passwd\r"
   expect {
+    "Password:" { send "$passwd\r"; exp_continue }
     "Unknown id" {}
     "\$ " abort
     default abort
