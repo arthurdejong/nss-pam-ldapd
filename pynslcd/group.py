@@ -1,7 +1,7 @@
 
 # group.py - group entry lookup routines
 #
-# Copyright (C) 2010 Arthur de Jong
+# Copyright (C) 2010, 2011 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,13 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import logging
+import ldap.filter
+
 import constants
 import common
-import cfg
-
-import logging
-import ldap
-import ldap.filter
 
 
 def clean(lst):

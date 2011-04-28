@@ -1,7 +1,7 @@
 
 # alias.py - lookup functions for aliasnet addresses
 #
-# Copyright (C) 2010 Arthur de Jong
+# Copyright (C) 2010, 2011 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import ldap.filter
+
 import constants
 import common
-
-import ldap
-import ldap.filter
 
 
 class AliasRequest(common.Request):

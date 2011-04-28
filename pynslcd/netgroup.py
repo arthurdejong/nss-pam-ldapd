@@ -18,13 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import ldap.filter
+import re
+
 import constants
 import common
-
-import struct
-import ldap.filter
-import socket
-import re
 
 
 _netgroup_triple_re = re.compile(r'^\s*\(\s*(?P<host>.*)\s*,\s*(?P<user>.*)\s*,\s*(?P<domain>.*)\s*\)\s*$')

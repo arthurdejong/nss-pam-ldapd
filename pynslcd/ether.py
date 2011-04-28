@@ -18,11 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import constants
-import common
-
 import struct
 import ldap.filter
+
+import constants
+import common
 
 
 def ether_aton(ether):

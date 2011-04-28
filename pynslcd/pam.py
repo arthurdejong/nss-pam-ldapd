@@ -1,7 +1,7 @@
 
 # pam.py - functions authentication, authorisation and session handling
 #
-# Copyright (C) 2010 Arthur de Jong
+# Copyright (C) 2010, 2011 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,14 +18,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import constants
-import common
-import cfg
-
 import logging
 import ldap
 
+import constants
+import common
+import cfg
 import passwd
+
 
 def try_bind(userdn, password):
     # open a new connection
