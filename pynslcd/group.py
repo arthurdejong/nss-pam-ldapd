@@ -48,39 +48,6 @@ class GroupRequest(common.Request):
 
     def write(self, entry):
         dn, attributes = entry
-        # get uid attribute and check against requested user name
-        names = attributes.get('uid', [])
-        if self.name:
-            if self.name not in names:
-                return
-            names = ( self.name, )
-        # get user password entry
-        passwd = '*'
-        # get numeric user and group ids
-        uids = ( self.uid, ) if self.uid else attributes.get(self.attmap_group_uidNumber, [])
-        uids = [ int(x) for x in uids ]
-        ( gid, ) = attributes[self.attmap_group_gidNumber]
-        gid = int(gid)
-        # FIXME: use expression here
-        gecos = attributes.get(self.attmap_group_gecos, [None])[0] or attributes.get(self.attmap_group_cn, [''])[0]
-        ( home, ) = attributes.get(self.attmap_group_homeDirectory, [''])
-        ( shell, ) = attributes.get(self.attmap_group_loginShell, [''])
-        for name in names:
-            if not common.isvalidname(name):
-                print 'Warning: group entry %s contains invalid user name: "%s"' % ( dn, name )
-            else:
-                for uid in uids:
-                    self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-                    self.fp.write_string(name)
-                    self.fp.write_string(passwd)
-                    self.fp.write_uid_t(uid)
-                    self.fp.write_gid_t(gid)
-                    self.fp.write_string(gecos)
-                    self.fp.write_string(home)
-                    self.fp.write_string(shell)
-
-    def write(self, entry):
-        dn, attributes = entry
         # get group names and check against requested group name
         names = attributes.get(self.attmap_group_cn, [])
         if self.name:
