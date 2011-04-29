@@ -239,9 +239,11 @@ static int nslcd2pam_rc(pam_handle_t *pamh,int rc)
     map(PAM_NEW_AUTHTOK_REQD);
     map(PAM_ACCT_EXPIRED);
     map(PAM_SESSION_ERR);
+    map(PAM_AUTHTOK_ERR);
     map(PAM_AUTHTOK_DISABLE_AGING);
     map(PAM_IGNORE);
     map(PAM_ABORT);
+    map(PAM_AUTHTOK_EXPIRED);
     default:
       pam_syslog(pamh,LOG_ERR,"unknown NSLCD_PAM_* code returned: %d",rc);
       return PAM_ABORT;

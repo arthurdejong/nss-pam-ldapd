@@ -252,8 +252,10 @@
 #define NSLCD_PAM_NEW_AUTHTOK_REQD   12 /* Password expired */
 #define NSLCD_PAM_ACCT_EXPIRED       13 /* Account expired */
 #define NSLCD_PAM_SESSION_ERR        14 /* Cannot make/remove session record */
+#define NSLCD_PAM_AUTHTOK_ERR        20 /* Authentication token manipulation error */
 #define NSLCD_PAM_AUTHTOK_DISABLE_AGING 23 /* Password aging disabled */
 #define NSLCD_PAM_IGNORE             25 /* Ignore module */
 #define NSLCD_PAM_ABORT              26 /* Fatal error */
+#define NSLCD_PAM_AUTHTOK_EXPIRED    27 /* authentication token has expired */
 
 #endif /* not _NSLCD_H */
