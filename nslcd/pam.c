@@ -268,18 +268,44 @@ static const char *autzsearch_var_get(const char *name,void *expander_attr)
 }
 
 /* perform an authorisation search, returns an LDAP status code */
-static int try_autzsearch(MYLDAP_SESSION *session,DICT *dict,const char *searchfilter)
+static int try_autzsearch(MYLDAP_SESSION *session,const char *username,
+                          const char *servicename,const char *ruser,
+                          const char *rhost,const char *tty)
 {
+  char hostname[HOST_NAME_MAX+1];
+  const char *fqdn;
+  DICT *dict;
   char filter_buffer[1024];
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   static const char *attrs[2];
   int rc;
+  const char *res;
+  /* check whether the search filter is configured at all */
+  if (!nslcd_cfg->ldc_pam_authz_search)
+    return LDAP_SUCCESS;
+  /* build the dictionary with variables */
+  dict=dict_new();
+  autzsearch_var_add(dict,"username",username);
+  autzsearch_var_add(dict,"service",servicename);
+  autzsearch_var_add(dict,"ruser",ruser);
+  autzsearch_var_add(dict,"rhost",rhost);
+  autzsearch_var_add(dict,"tty",tty);
+  if (gethostname(hostname,sizeof(hostname))==0)
+    autzsearch_var_add(dict,"hostname",hostname);
+  if ((fqdn=getfqdn())!=NULL)
+    autzsearch_var_add(dict,"fqdn",fqdn);
+  autzsearch_var_add(dict,"dn",myldap_get_dn(entry));
+  autzsearch_var_add(dict,"uid",username);
   /* build the search filter */
-  if (expr_parse(searchfilter,filter_buffer,sizeof(filter_buffer),
-                 autzsearch_var_get,(void *)dict)==NULL)
+  res=expr_parse(nslcd_cfg->ldc_pam_authz_search,
+                 filter_buffer,sizeof(filter_buffer),
+                 autzsearch_var_get,(void *)dict);
+  autzsearch_vars_free(dict);
+  dict_free(dict);
+  if (res==NULL)
   {
-    log_log(LOG_ERR,"pam_authz_search \"%s\" is invalid",searchfilter);
+    log_log(LOG_ERR,"pam_authz_search \"%s\" is invalid",nslcd_cfg->ldc_pam_authz_search);
     return LDAP_LOCAL_ERROR;
   }
   log_log(LOG_DEBUG,"trying pam_authz_search \"%s\"",filter_buffer);
@@ -315,9 +341,6 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   char username[256];
   char servicename[64];
   char ruser[256],rhost[HOST_NAME_MAX+1],tty[64];
-  char hostname[HOST_NAME_MAX+1];
-  const char *fqdn;
-  DICT *dict;
   MYLDAP_ENTRY *entry;
   /* read request parameters */
   READ_STRING(fp,username);
@@ -351,32 +374,16 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     return -1;
   }
   /* check authorisation search */
-  if (nslcd_cfg->ldc_pam_authz_search)
+  rc=try_autzsearch(session,username,servicename,ruser,rhost,tty);
+  if (rc!=LDAP_SUCCESS)
   {
-    /* TODO: perform any authorisation checks */
-    dict=dict_new();
-    autzsearch_var_add(dict,"username",username);
-    autzsearch_var_add(dict,"service",servicename);
-    autzsearch_var_add(dict,"ruser",ruser);
-    autzsearch_var_add(dict,"rhost",rhost);
-    autzsearch_var_add(dict,"tty",tty);
-    if (gethostname(hostname,sizeof(hostname))==0)
-      autzsearch_var_add(dict,"hostname",hostname);
-    if ((fqdn=getfqdn())!=NULL)
-      autzsearch_var_add(dict,"fqdn",fqdn);
-    autzsearch_var_add(dict,"dn",myldap_get_dn(entry));
-    autzsearch_var_add(dict,"uid",username);
-    if (try_autzsearch(session,dict,nslcd_cfg->ldc_pam_authz_search)!=LDAP_SUCCESS)
-    {
-      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-      WRITE_STRING(fp,username);
-      WRITE_STRING(fp,"");
-      WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);  /* authz */
-      WRITE_STRING(fp,"LDAP authorisation check failed"); /* authzmsg */
-      WRITE_INT32(fp,NSLCD_RESULT_END);
-    }
-    autzsearch_vars_free(dict);
-    dict_free(dict);
+    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+    WRITE_STRING(fp,username);
+    WRITE_STRING(fp,"");
+    WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);  /* authz */
+    WRITE_STRING(fp,"LDAP authorisation check failed"); /* authzmsg */
+    WRITE_INT32(fp,NSLCD_RESULT_END);
+    return 0;
   }
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
