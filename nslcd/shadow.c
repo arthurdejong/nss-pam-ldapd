@@ -282,7 +282,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   if (strcasecmp(attmap_shadow_shadowLastChange,"pwdLastSet")==0)
   {
     if (flag&UF_DONT_EXPIRE_PASSWD)
-      maxdays=99999;
+      maxdays=-1;
     flag=0;
   }
   /* write the entries */

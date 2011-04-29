@@ -83,7 +83,7 @@ class ShadowRequest(common.Request):
         flag = int(attributes.get(self.attmap_shadowFlag, [0])[0])
         if self.attmap_shadowFlag == 'pwdLastSet':
             if flag & 0x10000:
-                maxdays = 99999
+                maxdays = -1
             flag = 0
         # write results
         for name in names:
