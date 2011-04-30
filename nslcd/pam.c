@@ -268,9 +268,9 @@ static const char *autzsearch_var_get(const char *name,void *expander_attr)
 }
 
 /* perform an authorisation search, returns an LDAP status code */
-static int try_autzsearch(MYLDAP_SESSION *session,const char *username,
-                          const char *servicename,const char *ruser,
-                          const char *rhost,const char *tty)
+static int try_autzsearch(MYLDAP_SESSION *session,const char *dn,
+                          const char *username,const char *servicename,
+                          const char *ruser,const char *rhost,const char *tty)
 {
   char hostname[HOST_NAME_MAX+1];
   const char *fqdn;
@@ -295,7 +295,7 @@ static int try_autzsearch(MYLDAP_SESSION *session,const char *username,
     autzsearch_var_add(dict,"hostname",hostname);
   if ((fqdn=getfqdn())!=NULL)
     autzsearch_var_add(dict,"fqdn",fqdn);
-  autzsearch_var_add(dict,"dn",myldap_get_dn(entry));
+  autzsearch_var_add(dict,"dn",dn);
   autzsearch_var_add(dict,"uid",username);
   /* build the search filter */
   res=expr_parse(nslcd_cfg->ldc_pam_authz_search,
@@ -374,7 +374,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     return -1;
   }
   /* check authorisation search */
-  rc=try_autzsearch(session,username,servicename,ruser,rhost,tty);
+  rc=try_autzsearch(session,myldap_get_dn(entry),username,servicename,ruser,rhost,tty);
   if (rc!=LDAP_SUCCESS)
   {
     WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
