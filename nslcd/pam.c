@@ -29,6 +29,7 @@
 #include <stdint.h>
 #endif /* HAVE_STDINT_H */
 #include <unistd.h>
+#include <time.h>
 
 #include "common.h"
 #include "log.h"
@@ -136,6 +137,98 @@ static void update_username(MYLDAP_ENTRY *entry,char *username,size_t username_l
   }
 }
 
+static int check_shadow(MYLDAP_SESSION *session,const char *username,
+                        char *authzmsg,size_t authzmsgsz,
+                        int check_maxdays,int check_mindays)
+{
+  MYLDAP_ENTRY *entry=NULL;
+  long today,lastchangedate,mindays,maxdays,warndays,inactdays,expiredate;
+  unsigned long flag;
+  long daysleft,inactleft;
+  /* get the shadow entry */
+  entry=shadow_uid2entry(session,username,NULL);
+  if (entry==NULL)
+    return NSLCD_PAM_SUCCESS; /* no shadow entry found, nothing to check */
+  /* get today's date */
+  today=(long)(time(NULL)/(60*60*24));
+  /* get shadown information */
+  get_shadow_properties(entry,&lastchangedate,&mindays,&maxdays,&warndays,
+                        &inactdays,&expiredate,&flag);
+  /* check account expiry date */
+  if ((expiredate!=-1)&&(today>=expiredate))
+  {
+    daysleft=today-expiredate;
+    mysnprintf(authzmsg,authzmsgsz-1,"account expired %ld days ago",daysleft);
+    log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+    return NSLCD_PAM_ACCT_EXPIRED;
+  }
+  /* password expiration isn't interesting at this point because the user
+     may not have authenticated with a password and if he did that would be
+     checked in the authc phase */
+  if (check_maxdays)
+  {
+    /* check lastchanged */
+    if (lastchangedate==0)
+    {
+      mysnprintf(authzmsg,authzmsgsz-1,"need a new password");
+      log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+      return NSLCD_PAM_NEW_AUTHTOK_REQD;
+    }
+    else if (today<lastchangedate)
+      log_log(LOG_WARNING,"%s: password changed in the future",myldap_get_dn(entry));
+    else if (maxdays!=-1)
+    {
+      /* check maxdays */
+      daysleft=lastchangedate+maxdays-today;
+      if (daysleft==0)
+        mysnprintf(authzmsg,authzmsgsz-1,"password will expire today");
+      else if (daysleft<0)
+        mysnprintf(authzmsg,authzmsgsz-1,"password expired %ld days ago",-daysleft);
+      /* check inactdays */
+      if ((daysleft<=0)&&(inactdays!=-1))
+      {
+        inactleft=lastchangedate+maxdays+inactdays-today;
+        if (inactleft==0)
+          mysnprintf(authzmsg+strlen(authzmsg),authzmsgsz-strlen(authzmsg)-1,
+                     ", account will expire today");
+        else if (inactleft>0)
+          mysnprintf(authzmsg+strlen(authzmsg),authzmsgsz-strlen(authzmsg)-1,
+                     ", account will expire in %ld days",inactleft);
+        else
+        {
+          mysnprintf(authzmsg+strlen(authzmsg),authzmsgsz-strlen(authzmsg)-1,
+                     ", account expired %ld days ago",-inactleft);
+          log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+          return NSLCD_PAM_AUTHTOK_EXPIRED;
+        }
+      }
+      if (daysleft<=0)
+      {
+        /* log previously built message */
+        log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+        return NSLCD_PAM_NEW_AUTHTOK_REQD;
+      }
+      /* check warndays */
+      if ((warndays>0)&&(daysleft<=warndays))
+      {
+        mysnprintf(authzmsg,authzmsgsz-1,"password will expire in %ld days",daysleft);
+        log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+      }
+    }
+  }
+  if (check_mindays)
+  {
+    daysleft=lastchangedate+mindays-today;
+    if ((mindays!=-1)&&(daysleft>0))
+    {
+      mysnprintf(authzmsg,authzmsgsz-1,"password cannot be changed for another %ld days",daysleft);
+      log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+      return NSLCD_PAM_AUTHTOK_ERR;
+    }
+  }
+  return NSLCD_PAM_SUCCESS;
+}
+
 /* check authentication credentials of the user */
 int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
 {
@@ -146,6 +239,9 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   char password[64];
   const char *userdn;
   MYLDAP_ENTRY *entry;
+  int authzrc=NSLCD_PAM_SUCCESS;
+  char authzmsg[1024];
+  authzmsg[0]='\0';
   /* read request parameters */
   READ_STRING(fp,username);
   SKIP_STRING(fp);
@@ -207,13 +303,16 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
     case LDAP_INVALID_CREDENTIALS: rc=NSLCD_PAM_AUTH_ERR; break;
     default:                       rc=NSLCD_PAM_AUTH_ERR;
   }
+  /* perform shadow attribute checks */
+  if (*username!='\0')
+    authzrc=check_shadow(session,username,authzmsg,sizeof(authzmsg),0,0);
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
   WRITE_STRING(fp,userdn);
-  WRITE_INT32(fp,rc);                 /* authc */
-  WRITE_INT32(fp,NSLCD_PAM_SUCCESS);  /* authz */
-  WRITE_STRING(fp,"");                /* authzmsg */
+  WRITE_INT32(fp,rc);
+  WRITE_INT32(fp,authzrc);
+  WRITE_STRING(fp,authzmsg);
   WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }
@@ -344,6 +443,8 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   char servicename[64];
   char ruser[256],rhost[HOST_NAME_MAX+1],tty[64];
   MYLDAP_ENTRY *entry;
+  char authzmsg[1024];
+  authzmsg[0]='\0';
   /* read request parameters */
   READ_STRING(fp,username);
   SKIP_STRING(fp);
@@ -382,17 +483,19 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
     WRITE_STRING(fp,username);
     WRITE_STRING(fp,"");
-    WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);  /* authz */
-    WRITE_STRING(fp,"LDAP authorisation check failed"); /* authzmsg */
+    WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);
+    WRITE_STRING(fp,"LDAP authorisation check failed");
     WRITE_INT32(fp,NSLCD_RESULT_END);
     return 0;
   }
+  /* perform shadow attribute checks */
+  rc=check_shadow(session,username,authzmsg,sizeof(authzmsg),1,0);
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
   WRITE_STRING(fp,myldap_get_dn(entry));
-  WRITE_INT32(fp,NSLCD_PAM_SUCCESS);  /* authz */
-  WRITE_STRING(fp,""); /* authzmsg */
+  WRITE_INT32(fp,rc);
+  WRITE_STRING(fp,authzmsg);
   WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }
@@ -500,6 +603,8 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   char newpassword[64];
   const char *binddn=NULL; /* the user performing the modification */
   MYLDAP_ENTRY *entry;
+  char authzmsg[1024];
+  authzmsg[0]='\0';
   /* read request parameters */
   READ_STRING(fp,username);
   READ_STRING(fp,userdn); /* we can't ignore userdn for now here because we
@@ -539,7 +644,21 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
     }
   }
   else
+  {
     binddn=myldap_get_dn(entry);
+    /* check whether shadow properties allow password change */
+    rc=check_shadow(session,username,authzmsg,sizeof(authzmsg),0,1);
+    if (rc!=NSLCD_PAM_SUCCESS)
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+      WRITE_STRING(fp,username);
+      WRITE_STRING(fp,"");
+      WRITE_INT32(fp,rc);
+      WRITE_STRING(fp,authzmsg);
+      WRITE_INT32(fp,NSLCD_RESULT_END);
+      return 0;
+    }
+  }
   /* perform password modification */
   rc=try_pwmod(binddn,myldap_get_dn(entry),oldpassword,newpassword);
   /* write response */

@@ -164,9 +164,9 @@ static long to_date(const char *date,const char *attr)
     var=fallback; \
   }
 
-static void get_shadow_properties(MYLDAP_ENTRY *entry,long *lastchangedate,
-                                  long *mindays,long *maxdays,long *warndays,
-                                  long *inactdays,long *expiredate,unsigned long *flag)
+void get_shadow_properties(MYLDAP_ENTRY *entry,long *lastchangedate,
+                           long *mindays,long *maxdays,long *warndays,
+                           long *inactdays,long *expiredate,unsigned long *flag)
 {
   char buffer[80];
   const char *tmpvalue;
@@ -302,6 +302,40 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
       WRITE_INT32(fp,flag);
     }
   return 0;
+}
+
+MYLDAP_ENTRY *shadow_uid2entry(MYLDAP_SESSION *session,const char *username,int *rcp)
+{
+  MYLDAP_SEARCH *search=NULL;
+  MYLDAP_ENTRY *entry=NULL;
+  const char *base;
+  char filter[1024];
+  int i;
+  /* if it isn't a valid username, just bail out now */
+  if (!isvalidname(username))
+  {
+    if (rcp!=NULL)
+      *rcp=LDAP_INVALID_SYNTAX;
+    return NULL;
+  }
+  /* we have to look up the entry */
+  mkfilter_shadow_byname(username,filter,sizeof(filter));
+  for (i=0;(i<NSS_LDAP_CONFIG_MAX_BASES)&&((base=shadow_bases[i])!=NULL);i++)
+  {
+    search=myldap_search(session,base,shadow_scope,filter,shadow_attrs,rcp);
+    if (search==NULL)
+    {
+      if ((rcp!=NULL)&&(*rcp==LDAP_SUCCESS))
+        *rcp=LDAP_NO_SUCH_OBJECT;
+      return NULL;
+    }
+    entry=myldap_get_entry(search,rcp);
+    if (entry!=NULL)
+      return entry;
+  }
+  if ((rcp!=NULL)&&(*rcp==LDAP_SUCCESS))
+    *rcp=LDAP_NO_SUCH_OBJECT;
+  return NULL;
 }
 
 NSLCD_HANDLE(
