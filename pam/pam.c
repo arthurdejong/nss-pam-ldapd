@@ -563,7 +563,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
     /* see if the user is trying to modify another user's password */
     pwent=getpwnam(username);
     myuid=getuid();
-    if ((pwent!=NULL)&&(pwent->pw_uid!=myuid))
+    if ((pwent!=NULL)&&(pwent->pw_uid!=myuid)&&(!(flags&PAM_CHANGE_EXPIRED_AUTHTOK)))
     {
       /* we are root so we can test if nslcd will allow us to change the
          user's password without the admin password */
