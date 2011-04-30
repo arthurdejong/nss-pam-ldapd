@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -126,14 +126,14 @@ static long to_date(const char *date,const char *attr)
        last 9 digits from the string and going from there */
     l=strlen(date)-9;
     if (l>(sizeof(buffer)-1))
-      return 0; /* error */
+      return -1; /* error */
     strncpy(buffer,date,l);
     buffer[l]='\0';
     value=strtol(date,&tmp,0);
     if ((*date=='\0')||(*tmp!='\0'))
     {
       log_log(LOG_WARNING,"shadow entry contains non-numeric %s value",attr);
-      return 0;
+      return -1;
     }
     return value/864-134774;
     /* note that AD does not have expiry dates but a lastchangeddate
@@ -143,7 +143,7 @@ static long to_date(const char *date,const char *attr)
   if ((*date=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"shadow entry contains non-numeric %s value",attr);
-    return 0;
+    return -1;
   }
   return value;
 }
@@ -152,7 +152,7 @@ static long to_date(const char *date,const char *attr)
 #define UF_DONT_EXPIRE_PASSWD 0x10000
 #endif
 
-#define GET_OPTIONAL_LONG(var,att) \
+#define GET_OPTIONAL_LONG(var,att,fallback) \
   tmpvalue=attmap_get_value(entry,attmap_shadow_##att,buffer,sizeof(buffer)); \
   if (tmpvalue==NULL) \
     tmpvalue=""; \
@@ -161,14 +161,36 @@ static long to_date(const char *date,const char *attr)
   { \
     log_log(LOG_WARNING,"shadow entry %s contains non-numeric %s value", \
                         myldap_get_dn(entry),attmap_shadow_##att); \
-    return 0; \
+    var=fallback; \
   }
 
-#define GET_OPTIONAL_DATE(var,att) \
-  tmpvalue=attmap_get_value(entry,attmap_shadow_##att,buffer,sizeof(buffer)); \
-  if (tmpvalue==NULL) \
-    tmpvalue=""; \
-  var=to_date(tmpvalue,attmap_shadow_##att);
+static void get_shadow_properties(MYLDAP_ENTRY *entry,long *lastchangedate,
+                                  long *mindays,long *maxdays,long *warndays,
+                                  long *inactdays,long *expiredate,unsigned long *flag)
+{
+  char buffer[80];
+  const char *tmpvalue;
+  char *tmp;
+  /* get lastchange date */
+  tmpvalue=attmap_get_value(entry,attmap_shadow_shadowLastChange,buffer,sizeof(buffer));
+  if (tmpvalue==NULL)
+    tmpvalue="";
+  *lastchangedate=to_date(tmpvalue,attmap_shadow_shadowLastChange);
+  /* get other shadow properties */
+  GET_OPTIONAL_LONG(*mindays,shadowMin,-1);
+  GET_OPTIONAL_LONG(*maxdays,shadowMax,-1);
+  GET_OPTIONAL_LONG(*warndays,shadowWarning,-1);
+  GET_OPTIONAL_LONG(*inactdays,shadowInactive,-1);
+  GET_OPTIONAL_LONG(*expiredate,shadowExpire,-1);
+  GET_OPTIONAL_LONG(*flag,shadowFlag,0);
+  /* if we're using AD handle the flag specially */
+  if (strcasecmp(attmap_shadow_shadowLastChange,"pwdLastSet")==0)
+  {
+    if (*flag&UF_DONT_EXPIRE_PASSWD)
+      *maxdays=-1;
+    *flag=0;
+  }
+}
 
 /* try to update the shadowLastChange attribute of the entry if possible */
 int update_lastchange(MYLDAP_SESSION *session,const char *userdn)
@@ -183,7 +205,7 @@ int update_lastchange(MYLDAP_SESSION *session,const char *userdn)
   char buffer[80],*strvals[2];
   /* find the name of the attribute to use */
   if ( (attmap_shadow_shadowLastChange==NULL) || (attmap_shadow_shadowLastChange[0]=='\0') )
-    return LDAP_LOCAL_ERROR; /* attribute not set at all */
+    return LDAP_LOCAL_ERROR; /* attribute not mapped at all */
   else if (strcmp(attmap_shadow_shadowLastChange,"\"${shadowLastChange:--1}\"")==0)
     attr="shadowLastChange";
   else if (attmap_shadow_shadowLastChange[0]=='\"')
@@ -238,8 +260,6 @@ int update_lastchange(MYLDAP_SESSION *session,const char *userdn)
 static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
 {
   int32_t tmpint32;
-  const char *tmpvalue;
-  char *tmp;
   const char **usernames;
   const char *passwd;
   long lastchangedate;
@@ -250,7 +270,6 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   long expiredate;
   unsigned long flag;
   int i;
-  char buffer[80];
   char passbuffer[80];
   /* get username */
   usernames=myldap_get_values(entry,attmap_shadow_uid);
@@ -264,27 +283,9 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   passwd=get_userpassword(entry,attmap_shadow_userPassword,passbuffer,sizeof(passbuffer));
   if (passwd==NULL)
     passwd=default_shadow_userPassword;
-  /* get lastchange date */
-  GET_OPTIONAL_DATE(lastchangedate,shadowLastChange);
-  /* get mindays */
-  GET_OPTIONAL_LONG(mindays,shadowMin);
-  /* get maxdays */
-  GET_OPTIONAL_LONG(maxdays,shadowMax);
-  /* get warndays */
-  GET_OPTIONAL_LONG(warndays,shadowWarning);
-  /* get inactdays */
-  GET_OPTIONAL_LONG(inactdays,shadowInactive);
-  /* get expire date */
-  GET_OPTIONAL_LONG(expiredate,shadowExpire);
-  /* get flag */
-  GET_OPTIONAL_LONG(flag,shadowFlag);
-  /* if we're using AD handle the flag specially */
-  if (strcasecmp(attmap_shadow_shadowLastChange,"pwdLastSet")==0)
-  {
-    if (flag&UF_DONT_EXPIRE_PASSWD)
-      maxdays=-1;
-    flag=0;
-  }
+  /* get expiry properties */
+  get_shadow_properties(entry,&lastchangedate,&mindays,&maxdays,&warndays,
+                        &inactdays,&expiredate,&flag);
   /* write the entries */
   for (i=0;usernames[i]!=NULL;i++)
     if ((requser==NULL)||(strcmp(requser,usernames[i])==0))
