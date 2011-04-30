@@ -277,16 +277,10 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
     if (entry==NULL)
     {
       /* for user not found we just say no result */
-      if (rc!=LDAP_NO_SUCH_OBJECT)
+      if (rc==LDAP_NO_SUCH_OBJECT)
       {
-        WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-        WRITE_STRING(fp,username);
-        WRITE_STRING(fp,"");
-        WRITE_INT32(fp,NSLCD_PAM_AUTHINFO_UNAVAIL); /* authc */
-        WRITE_INT32(fp,NSLCD_PAM_SUCCESS);          /* authz */
-        WRITE_STRING(fp,"LDAP server unavaiable");  /* authzmsg */
+        WRITE_INT32(fp,NSLCD_RESULT_END);
       }
-      WRITE_INT32(fp,NSLCD_RESULT_END);
       return -1;
     }
     userdn=myldap_get_dn(entry);
@@ -464,16 +458,10 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   if (entry==NULL)
   {
     /* for user not found we just say no result */
-    if (rc!=LDAP_NO_SUCH_OBJECT)
+    if (rc==LDAP_NO_SUCH_OBJECT)
     {
-      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-      WRITE_STRING(fp,username);
-      WRITE_STRING(fp,"");
-      WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);
-      WRITE_STRING(fp,ldap_err2string(rc));
       WRITE_INT32(fp,NSLCD_RESULT_END);
     }
-    WRITE_INT32(fp,NSLCD_RESULT_END);
     return -1;
   }
   /* check authorisation search */
@@ -625,7 +613,11 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   entry=validate_user(session,username,&rc);
   if (entry==NULL)
   {
-    WRITE_INT32(fp,NSLCD_RESULT_END);
+    /* for user not found we just say no result */
+    if (rc==LDAP_NO_SUCH_OBJECT)
+    {
+      WRITE_INT32(fp,NSLCD_RESULT_END);
+    }
     return -1;
   }
   /* check if the the user passed the rootpwmoddn */
