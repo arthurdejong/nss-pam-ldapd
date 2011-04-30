@@ -146,13 +146,10 @@ struct pld_cfg {
   uid_t minimum_uid;
 };
 
-static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
-                struct pld_cfg *cfg,struct pld_ctx **ctx,const char **username,
-                const char **service)
+static void cfg_init(pam_handle_t *pamh,int flags,int argc,const char **argv,
+                     struct pld_cfg *cfg)
 {
   int i;
-  int rc;
-  struct passwd *pwent;
   /* initialise config with defaults */
   cfg->nullok=0;
   cfg->no_warn=0;
@@ -187,6 +184,13 @@ static int init(pam_handle_t *pamh,int flags,int argc,const char **argv,
   /* check flags */
   if (flags&PAM_SILENT)
     cfg->no_warn=1;
+}
+
+static int init(pam_handle_t *pamh,struct pld_cfg *cfg,struct pld_ctx **ctx,
+                const char **username,const char **service)
+{
+  int rc;
+  struct passwd *pwent;
   /* get user name */
   rc=pam_get_user(pamh,username,NULL);
   if (rc!=PAM_SUCCESS)
@@ -258,7 +262,7 @@ static int nslcd_request_exists(pam_handle_t *pamh,struct pld_ctx *ctx,struct pl
   gid_t dummy_gid;
   PAM_REQUEST(NSLCD_ACTION_PASSWD_BYNAME,
     /* log debug message */
-    pam_syslog(pamh,LOG_DEBUG,"nslcd authentication; user=%s",username),
+    pam_syslog(pamh,LOG_DEBUG,"nslcd account check; user=%s",username),
     /* write the request parameters */
     WRITE_STRING(fp,username),
     /* read the result entry */
@@ -378,9 +382,10 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
   const char *username,*service;
   char *passwd=NULL;
   /* set up configuration */
-  rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
+  cfg_init(pamh,flags,argc,argv,&cfg);
+  rc=init(pamh,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
-    return rc;
+    return remap_pam_rc(rc,&cfg);
   /* get the password */
   rc=pam_get_authtok(pamh,PAM_AUTHTOK,(const char **)&passwd,NULL);
   if (rc!=PAM_SUCCESS)
@@ -441,9 +446,10 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   const char *username,*service;
   const char *ruser=NULL,*rhost=NULL,*tty=NULL;
   /* set up configuration */
-  rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
+  cfg_init(pamh,flags,argc,argv,&cfg);
+  rc=init(pamh,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
-    return rc;
+    return remap_pam_rc(rc,&cfg);
   /* get more PAM information */
   pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
   pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
@@ -499,9 +505,10 @@ static int pam_sm_session(pam_handle_t *pamh,int flags,int argc,
   const char *username,*service;
   const char *tty=NULL,*rhost=NULL,*ruser=NULL;
   /* set up configuration */
-  rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
+  cfg_init(pamh,flags,argc,argv,&cfg);
+  rc=init(pamh,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
-    return rc;
+    return remap_pam_rc(rc,&cfg);
   /* get more PAM information */
   pam_get_item(pamh,PAM_TTY,(const void **)&tty);
   pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
@@ -546,9 +553,10 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   struct passwd *pwent;
   uid_t myuid;
   /* set up configuration */
-  rc=init(pamh,flags,argc,argv,&cfg,&ctx,&username,&service);
+  cfg_init(pamh,flags,argc,argv,&cfg);
+  rc=init(pamh,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
-    return rc;
+    return remap_pam_rc(rc,&cfg);
   /* see if we are dealing with an LDAP user first */
   if (ctx->dn==NULL)
   {
