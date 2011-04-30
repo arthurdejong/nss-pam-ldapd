@@ -661,20 +661,22 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   }
   /* perform password modification */
   rc=try_pwmod(binddn,myldap_get_dn(entry),oldpassword,newpassword);
+  if (rc!=LDAP_SUCCESS)
+  {
+    mysnprintf(authzmsg,sizeof(authzmsg)-1,"password change failed: %s",ldap_err2string(rc));
+    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+    WRITE_STRING(fp,username);
+    WRITE_STRING(fp,"");
+    WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);
+    WRITE_STRING(fp,authzmsg);
+    WRITE_INT32(fp,NSLCD_RESULT_END);
+  }
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
   WRITE_STRING(fp,myldap_get_dn(entry));
-  if (rc==LDAP_SUCCESS)
-  {
-    WRITE_INT32(fp,NSLCD_PAM_SUCCESS);
-    WRITE_STRING(fp,"");
-  }
-  else
-  {
-    WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);
-    WRITE_STRING(fp,ldap_err2string(rc));
-  }
+  WRITE_INT32(fp,NSLCD_PAM_SUCCESS);
+  WRITE_STRING(fp,"");
   WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }
