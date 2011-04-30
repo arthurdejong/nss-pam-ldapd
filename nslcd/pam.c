@@ -326,6 +326,8 @@ static int try_autzsearch(MYLDAP_SESSION *session,const char *dn,
   if (entry==NULL)
   {
     log_log(LOG_ERR,"pam_authz_search \"%s\" found no matches",filter_buffer);
+    if (rc==LDAP_SUCCESS)
+      rc=LDAP_NO_SUCH_OBJECT;
     return rc;
   }
   log_log(LOG_DEBUG,"pam_authz_search found \"%s\"",myldap_get_dn(entry));
