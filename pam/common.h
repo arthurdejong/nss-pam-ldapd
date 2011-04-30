@@ -62,7 +62,7 @@
 #define ERROR_OUT_NOSUCCESS(fp) \
   (void)tio_close(fp); \
   if (cfg->debug) \
-    pam_syslog(pamh,LOG_DEBUG,"request not handled by nslcd"); \
+    pam_syslog(pamh,LOG_DEBUG,"user not handled by nslcd"); \
   return PAM_USER_UNKNOWN;
 
 /* This is a generic PAM request generation macro. The action
