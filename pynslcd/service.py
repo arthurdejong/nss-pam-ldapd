@@ -38,10 +38,9 @@ class ServiceRequest(common.Request):
         super(ServiceRequest, self).__init__(*args)
         self.protocol = None
 
-    def write(self, entry):
-        dn, attributes = entry
+    def write(self, dn, attributes):
         # get name
-        name = common.get_rdn_value(entry, self.attmap_cn)
+        name = common.get_rdn_value(dn, self.attmap_cn)
         names = attributes.get(self.attmap_cn, [])
         if not names:
             print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn )

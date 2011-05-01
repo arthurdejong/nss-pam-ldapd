@@ -33,8 +33,7 @@ class AliasRequest(common.Request):
 
     attributes = ( 'cn', 'rfc822MailMember' )
 
-    def write(self, entry):
-        dn, attributes = entry
+    def write(self, dn, attributes):
         # get name and check against requested name
         names = attributes.get(self.attmap_cn, [])
         if not names:

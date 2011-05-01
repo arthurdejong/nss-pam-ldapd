@@ -38,8 +38,7 @@ class NetgroupRequest(common.Request):
 
     attributes = ( 'cn', 'nisNetgroupTriple', 'memberNisNetgroup' )
 
-    def write(self, entry):
-        dn, attributes = entry
+    def write(self, dn, attributes):
         # get names and check against requested user name
         names = attributes.get(self.attmap_cn, [])
         if self.name:

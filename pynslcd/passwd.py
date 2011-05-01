@@ -52,8 +52,7 @@ class PasswdRequest(common.Request):
 
     bases = ( 'ou=people,dc=test,dc=tld', )
 
-    def write(self, entry):
-        dn, attributes = entry
+    def write(self, dn, attributes):
         # get uid attribute and check against requested user name
         names = attributes.get('uid', [])
         if self.name:

@@ -45,8 +45,7 @@ class EtherRequest(common.Request):
         super(EtherRequest, self).__init__(*args)
         self.ether = None
 
-    def write(self, entry):
-        dn, attributes = entry
+    def write(self, dn, attributes):
         # get name and check against requested name
         names = attributes.get(self.attmap_cn, [])
         if not names:

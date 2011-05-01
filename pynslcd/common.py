@@ -95,7 +95,7 @@ class Request(object):
                 res = self.conn.search_s(base, self.scope, self.mk_filter(), self.attributes)
                 for entry in res:
                     if entry[0]:
-                        self.write(entry)
+                        self.write(entry[0], entry[1])
             except ldap.NO_SUCH_OBJECT:
                 # FIXME: log message
                 pass
@@ -121,6 +121,6 @@ def get_handlers(module):
             res[cls.action] = cls
     return res
 
-def get_rdn_value(entry, attribute):
+def get_rdn_value(dn, attribute):
     dn, attributes = entry
     return dict((x, y) for x, y, z in ldap.dn.str2dn(dn)[0])[attribute]

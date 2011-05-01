@@ -33,9 +33,8 @@ class NetworkRequest(common.Request):
 
     attributes = ( 'cn', 'ipNetworkNumber' )
 
-    def write(self, entry):
-        dn, attributes = entry
-        networkname = common.get_rdn_value(entry, self.attmap_cn)
+    def write(self, dn, attributes):
+        networkname = common.get_rdn_value(dn, self.attmap_cn)
         networknames = attributes.get(self.attmap_cn, [])
         if not networknames:
             print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn)

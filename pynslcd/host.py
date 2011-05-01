@@ -33,9 +33,8 @@ class HostRequest(common.Request):
 
     attributes = ( 'cn', 'ipHostNumber' )
 
-    def write(self, entry):
-        dn, attributes = entry
-        hostname = common.get_rdn_value(entry, self.attmap_cn)
+    def write(self, dn, attributes):
+        hostname = common.get_rdn_value(dn, self.attmap_cn)
         hostnames = attributes.get(self.attmap_cn, [])
         if not hostnames:
             print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn )

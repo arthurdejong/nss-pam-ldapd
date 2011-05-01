@@ -56,7 +56,7 @@ class PAMRequest(common.Request):
             # save the DN
             self.userdn = entry[0]
             # get the "real" username
-            value = common.get_rdn_value(entry, passwd.PasswdRequest.attmap_passwd_uid)
+            value = common.get_rdn_value(entry[0], passwd.PasswdRequest.attmap_passwd_uid)
             if not value:
                 # get the username from the uid attribute
                 values = myldap_get_values(entry, passwd.PasswdRequest.attmap_passwd_uid)

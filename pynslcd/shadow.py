@@ -44,8 +44,7 @@ class ShadowRequest(common.Request):
 
     bases = ( 'ou=people,dc=test,dc=tld', )
 
-    def write(self, entry):
-        dn, attributes = entry
+    def write(self, dn, attributes):
         # get name and check against requested name
         names = attributes.get(self.attmap_uid, [])
         if not names:
