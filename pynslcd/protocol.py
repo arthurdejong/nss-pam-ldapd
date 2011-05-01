@@ -18,27 +18,24 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import ldap.filter
+import logging
 
 import constants
 import common
 
 
+attmap = common.Attributes(cn='cn', ipProtocolNumber='ipProtocolNumber')
+filter = '(objectClass=ipProtocol)'
+
+
 class ProtocolRequest(common.Request):
-
-    filter = '(objectClass=ipProtocol)'
-
-    attmap_cn               = 'cn'
-    attmap_ipProtocolNumber = 'ipProtocolNumber'
-
-    attributes = ( 'cn', 'ipProtocolNumber' )
 
     def write(self, dn, attributes):
         # get name
-        name = common.get_rdn_value(dn, self.attmap_cn)
-        names = attributes.get(self.attmap_cn, [])
+        name = common.get_rdn_value(dn, attmap['cn'])
+        names = attributes['cn']
         if not names:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn )
+            print 'Error: entry %s does not contain %s value' % (dn, attmap['cn'])
         if self.name and self.name not in names:
             return # case of result entry did not match
         if not name:
@@ -46,9 +43,9 @@ class ProtocolRequest(common.Request):
         elif name in names:
             names.remove(name)
         # get number
-        ( number, ) = attributes.get(self.attmap_ipProtocolNumber, [])
+        ( number, ) = attributes['ipProtocolNumber']
         if not number:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_ipProtocolNumber)
+            print 'Error: entry %s does not contain %s value' % (dn, attmap['ipProtocolNumber'])
         number = int(number)
         # write result
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
@@ -60,25 +57,19 @@ class ProtocolRequest(common.Request):
 class ProtocolByNameRequest(ProtocolRequest):
 
     action = constants.NSLCD_ACTION_PROTOCOL_BYNAME
+    filter_attrs = dict(cn='name')
 
     def read_parameters(self):
         self.name = self.fp.read_string()
-
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_cn, ldap.filter.escape_filter_chars(self.name) )
 
 
 class ProtocolByNumberRequest(ProtocolRequest):
 
     action = constants.NSLCD_ACTION_PROTOCOL_BYNUMBER
+    filter_attrs = dict(ipProtocolNumber='number')
 
     def read_parameters(self):
         self.number = self.fp.read_int32()
-
-    def mk_filter(self):
-        return '(&%s(%s=%d))' % ( self.filter,
-                  self.attmap_ipProtocolNumber, self.number )
 
 
 class ProtocolAllRequest(ProtocolRequest):

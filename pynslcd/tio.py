@@ -21,7 +21,7 @@
 import struct
 import os
 import socket
-import errno
+
 
 # definition for reading and writing INT32 values
 _int32 = struct.Struct('i')

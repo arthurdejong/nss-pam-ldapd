@@ -25,60 +25,46 @@ import constants
 import common
 
 
+attmap = common.Attributes(uid='uid',
+                           userPassword='"*"',
+                           uidNumber='uidNumber',
+                           gidNumber='gidNumber',
+                           gecos='"${gecos:-$cn}"',
+                           homeDirectory='homeDirectory',
+                           loginShell='loginShell',
+                           objectClass='objectClass')
+filter = '(objectClass=posixAccount)'
+bases = ( 'ou=people,dc=test,dc=tld', )
+
+
 class PasswdRequest(common.Request):
-
-    attmap = { 'uid': 'uid', 'userPassword': 'userPassword',
-               'uidNumber': 'uidNumber', 'gidNumber': 'gidNumber',
-               'gecos': '"${gecos:-$cn}"', 'cn': 'cn',
-               'homeDirectory': 'homeDirectory',
-               'loginShell': 'loginShell',
-               'objectClass': 'objectClass' }
-    filter = '(objectClass=posixAccount)'
-
-    attmap_passwd_uid           = 'uid'
-    attmap_passwd_userPassword  = 'userPassword'
-    attmap_passwd_uidNumber     = 'uidNumber'
-    attmap_passwd_gidNumber     = 'gidNumber'
-    attmap_passwd_gecos         = '"${gecos:-$cn}"'
-    attmap_passwd_homeDirectory = 'homeDirectory'
-    attmap_passwd_loginShell    = 'loginShell'
-
-    # these should be removed
-    attmap_passwd_cn = 'cn'
-
-    attributes = ( 'uid', 'userPassword', 'uidNumber', 'gidNumber',
-                   'gecos', 'cn', 'homeDirectory', 'loginShell',
-                   'objectClass' )
-
-    bases = ( 'ou=people,dc=test,dc=tld', )
 
     def write(self, dn, attributes):
         # get uid attribute and check against requested user name
-        names = attributes.get('uid', [])
+        names = attributes['uid']
         if self.name:
             if self.name not in names:
                 return
             names = ( self.name, )
         # get user password entry
-        if 'shadowAccount' in attributes.get('objectClass', []):
+        if 'shadowAccount' in attributes['objectClass']:
             passwd = 'x'
         else:
-            passwd = '*';
+            passwd = attributes['userPassword'][0]
         # get numeric user and group ids
-        uids = ( self.uid, ) if self.uid else attributes.get(self.attmap_passwd_uidNumber, [])
+        uids = ( self.uid, ) if self.uid else attributes['uidNumber']
         uids = [ int(x) for x in uids ]
-        ( gid, ) = attributes[self.attmap_passwd_gidNumber]
-        gid = int(gid)
-        # FIXME: use expression here
-        gecos = attributes.get(self.attmap_passwd_gecos, [None])[0] or attributes.get(self.attmap_passwd_cn, [''])[0]
-        ( home, ) = attributes.get(self.attmap_passwd_homeDirectory, [''])
-        ( shell, ) = attributes.get(self.attmap_passwd_loginShell, [''])
+        # get other passwd properties
+        gid = int(attributes['gidNumber'][0])
+        gecos = attributes['gecos'][0]
+        home = attributes['homeDirectory'][0]
+        shell = attributes['loginShell'][0]
+        # write results
         for name in names:
             if not common.isvalidname(name):
                 print 'Warning: passwd entry %s contains invalid user name: "%s"' % ( dn, name )
             else:
                 for uid in uids:
-                    #print '%s:%s:%d:%d:%s:%s:%s' % ( name, passwd, uid, gid, gecos, home, shell )
                     self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
                     self.fp.write_string(name)
                     self.fp.write_string(passwd)
@@ -92,26 +78,20 @@ class PasswdRequest(common.Request):
 class PasswdByNameRequest(PasswdRequest):
 
     action = constants.NSLCD_ACTION_PASSWD_BYNAME
+    filter_attrs = dict(uid='name')
 
     def read_parameters(self):
         self.name = self.fp.read_string()
         common.validate_name(self.name)
 
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_passwd_uid, ldap.filter.escape_filter_chars(self.name) )
-
 
 class PasswdByUidRequest(PasswdRequest):
 
     action = constants.NSLCD_ACTION_PASSWD_BYUID
+    filter_attrs = dict(uidNumber='uid')
 
     def read_parameters(self):
         self.uid = self.fp.read_uid_t()
-
-    def mk_filter(self):
-        return '(&%s(%s=%d))' % ( self.filter,
-                  self.attmap_passwd_uidNumber, self.uid )
 
 
 class PasswdAllRequest(PasswdRequest):
@@ -119,14 +99,16 @@ class PasswdAllRequest(PasswdRequest):
     action = constants.NSLCD_ACTION_PASSWD_ALL
 
 
-def do_search(conn, filter=None, base=None):
-    mybases = ( base, ) if base else PasswdRequest.bases
-    filter = filter or PasswdRequest.filter
+def do_search(conn, flt=None, base=None):
+    mybases = ( base, ) if base else bases
+    flt = flt or filter
+    import cfg
     # perform a search for each search base
     for base in mybases:
         # do the LDAP search
         try:
-            res = conn.search_s(base, PasswdRequest.scope, filter, [PasswdRequest.attmap_passwd_uid])
+            scope = locals().get('scope', cfg.scope)
+            res = conn.search_s(base, scope, flt, [attmap['uid']])
             for entry in res:
                 if entry[0]:
                     yield entry
@@ -137,10 +119,10 @@ def do_search(conn, filter=None, base=None):
 def uid2entry(conn, uid):
     """Look up the user by uid and return the LDAP entry or None if the user
     was not found."""
-    myfilter = '(&%s(%s=%s))' % ( PasswdRequest.filter,
-                  PasswdRequest.attmap_passwd_uid, ldap.filter.escape_filter_chars(uid) )
+    myfilter = '(&%s(%s=%s))' % ( filter,
+                  attmap['uid'], ldap.filter.escape_filter_chars(uid) )
     for dn, attributes in do_search(conn, myfilter):
-        if uid in attributes[PasswdRequest.attmap_passwd_uid]:
+        if uid in attributes[attmap['uid']]:
             return dn, attributes
 
 def uid2dn(conn, uid):
@@ -150,11 +132,13 @@ def uid2dn(conn, uid):
     if x is not None:
         return x[0]
 
+# FIXME: use cache of dn2uid and try to use DN to get uid attribute
+
 def dn2uid(conn, dn):
     """Look up the user by dn and return a uid or None if the user was
     not found."""
     try:
         for dn, attributes in do_search(conn, base=dn):
-            return attributes[PasswdRequest.attmap_passwd_uid][0]
+            return attributes[attmap['uid']][0]
     except ldap.NO_SUCH_OBJECT:
         return None

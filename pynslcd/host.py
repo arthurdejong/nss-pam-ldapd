@@ -18,33 +18,30 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import ldap.filter
+import logging
 
 import constants
 import common
 
 
+attmap = common.Attributes(cn='cn', ipHostNumber='ipHostNumber')
+filter = '(objectClass=ipHost)'
+
+
 class HostRequest(common.Request):
 
-    filter = '(objectClass=ipHost)'
-
-    attmap_cn           = 'cn'
-    attmap_ipHostNumber = 'ipHostNumber'
-
-    attributes = ( 'cn', 'ipHostNumber' )
-
     def write(self, dn, attributes):
-        hostname = common.get_rdn_value(dn, self.attmap_cn)
-        hostnames = attributes.get(self.attmap_cn, [])
+        hostname = common.get_rdn_value(dn, attmap['cn'])
+        hostnames = attributes['cn']
         if not hostnames:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn )
+            print 'Error: entry %s does not contain %s value' % ( dn, attmap['cn'] )
         if not hostname:
             hostname = hostnames.pop(0)
         elif hostname in hostnames:
             hostnames.remove(hostname)
-        addresses = attributes.get(self.attmap_ipHostNumber, [])
+        addresses = attributes['ipHostNumber']
         if not addresses:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_ipHostNumber )
+            print 'Error: entry %s does not contain %s value' % ( dn, attmap['ipHostNumber'] )
         # write result
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
         self.fp.write_string(hostname)
@@ -57,26 +54,19 @@ class HostRequest(common.Request):
 class HostByNameRequest(HostRequest):
 
     action = constants.NSLCD_ACTION_HOST_BYNAME
+    filter_attrs = dict(cn='name')
 
     def read_parameters(self):
         self.name = self.fp.read_string()
-
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_cn, ldap.filter.escape_filter_chars(self.name) )
 
 
 class HostByAddressRequest(HostRequest):
 
     action = constants.NSLCD_ACTION_HOST_BYADDR
+    filter_attrs = dict(ipHostNumber='address')
 
     def read_parameters(self):
         self.address = self.fp.read_address()
-
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_ipHostNumber,
-                  ldap.filter.escape_filter_chars(self.address) )
 
 
 class HostAllRequest(HostRequest):

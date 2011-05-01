@@ -18,21 +18,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import logging
 import ldap.filter
 
 import constants
 import common
 
 
+attmap = common.Attributes(cn='cn',
+                           ipServicePort='ipServicePort',
+                           ipServiceProtocol='ipServiceProtocol')
+filter = '(objectClass=ipService)'
+
+
 class ServiceRequest(common.Request):
-
-    filter = '(objectClass=ipService)'
-
-    attmap_cn                = 'cn'
-    attmap_ipServicePort     = 'ipServicePort'
-    attmap_ipServiceProtocol = 'ipServiceProtocol'
-
-    attributes = ( 'cn', 'ipServicePort', 'ipServiceProtocol' )
 
     def __init__(self, *args):
         super(ServiceRequest, self).__init__(*args)
@@ -40,10 +39,10 @@ class ServiceRequest(common.Request):
 
     def write(self, dn, attributes):
         # get name
-        name = common.get_rdn_value(dn, self.attmap_cn)
-        names = attributes.get(self.attmap_cn, [])
+        name = common.get_rdn_value(dn, attmap['cn'])
+        names = attributes['cn']
         if not names:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn )
+            print 'Error: entry %s does not contain %s value' % (dn, attmap['cn'])
         if self.name and self.name not in names + [ name, ]:
             return # case of result entry did not match
         if not name:
@@ -51,12 +50,12 @@ class ServiceRequest(common.Request):
         elif name in names:
             names.remove(name)
         # get port number
-        ( port, ) = attributes.get(self.attmap_ipServicePort, [])
+        ( port, ) = attributes['ipServicePort']
         if not port:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_ipServicePort)
+            print 'Error: entry %s does not contain %s value' % (dn, attmap['ipServicePort'])
         port = int(port)
         # get protocol
-        protocols = attributes.get(self.attmap_ipServiceProtocol, [])
+        protocols = attributes['ipServiceProtocol']
         if self.protocol:
             if self.protocol not in protocols:
                 return
@@ -80,12 +79,12 @@ class ServiceByNameRequest(ServiceRequest):
 
     def mk_filter(self):
         if self.protocol:
-          return '(&%s(%s=%s)(%s=%s))' % ( self.filter,
-                    self.attmap_cn, ldap.filter.escape_filter_chars(self.name),
-                    self.attmap_ipServiceProtocol, ldap.filter.escape_filter_chars(self.protocol) )
+            return '(&%s(%s=%s)(%s=%s))' % ( self.filter,
+                      attmap['cn'], ldap.filter.escape_filter_chars(self.name),
+                      attmap['ipServiceProtocol'], ldap.filter.escape_filter_chars(self.protocol) )
         else:
-          return '(&%s(%s=%s))' % ( self.filter,
-                    self.attmap_cn, ldap.filter.escape_filter_chars(self.name) )
+            return '(&%s(%s=%s))' % ( self.filter,
+                      attmap['cn'], ldap.filter.escape_filter_chars(self.name) )
 
 
 class ServiceByNumberRequest(ServiceRequest):
@@ -98,12 +97,12 @@ class ServiceByNumberRequest(ServiceRequest):
 
     def mk_filter(self):
         if self.protocol:
-          return '(&%s(%s=%d)(%s=%s))' % ( self.filter,
-                    self.attmap_ipServicePort, self.number,
-                    self.attmap_ipServiceProtocol, ldap.filter.escape_filter_chars(self.protocol) )
+            return '(&%s(%s=%d)(%s=%s))' % ( self.filter,
+                      attmap['ipServicePort'], self.number,
+                      attmap['ipServiceProtocol'], ldap.filter.escape_filter_chars(self.protocol) )
         else:
-          return '(&%s(%s=%d))' % ( self.filter,
-                    self.attmap_ipServicePort, self.number )
+            return '(&%s(%s=%d))' % ( self.filter,
+                      attmap['ipServicePort'], self.number )
 
 
 class ServiceAllRequest(ServiceRequest):

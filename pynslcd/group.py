@@ -23,53 +23,50 @@ import ldap.filter
 
 import constants
 import common
+from passwd import dn2uid, uid2dn
 
 
 def clean(lst):
-    for i in lst:
-        yield i.replace('\0', '')
+    if lst:
+        for i in lst:
+            yield i.replace('\0', '')
+
+
+attmap = common.Attributes(cn='cn',
+                           userPassword='"*"',
+                           gidNumber='gidNumber',
+                           memberUid='memberUid',
+                           uniqueMember='uniqueMember')
+filter = '(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))'
 
 
 class GroupRequest(common.Request):
 
-    filter = '(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))'
-
-    attmap_group_cn           = 'cn'
-    attmap_group_userPassword = 'userPassword'
-    attmap_group_gidNumber    = 'gidNumber'
-    attmap_group_memberUid    = 'memberUid'
-    attmap_group_uniqueMember = 'uniqueMember'
-
-    attributes = ( 'cn', 'userPassword', 'gidNumber', 'memberUid',
-                   'uniqueMember' )
-
     wantmembers = True
 
-    def write(self, entry):
-        dn, attributes = entry
+    def write(self, dn, attributes):
         # get group names and check against requested group name
-        names = attributes.get(self.attmap_group_cn, [])
+        names = attributes['cn']
         if self.name:
             if self.name not in names:
                 return
             names = ( self.name, )
         # get group group password
-        ( passwd, ) = attributes.get(self.attmap_group_userPassword, ['*'])
+        passwd = attributes['userPassword'][0]
         # get group id(s)
-        gids = ( self.gid, ) if self.gid else attributes.get(self.attmap_group_gidNumber, [])
+        gids = ( self.gid, ) if self.gid else attributes['gidNumber']
         gids = [ int(x) for x in gids ]
         # build member list
         members = set()
         if self.wantmembers:
             # add the memberUid values
-            for member in clean(attributes.get(self.attmap_group_memberUid, [])):
+            for member in clean(attributes['memberUid']):
                 if common.isvalidname(member):
                     members.add(member)
             # translate and add the uniqueMember values
-            from passwd import dn2uid
-            for memberdn in clean(attributes.get(self.attmap_group_uniqueMember, [])):
+            for memberdn in clean(attributes['uniqueMember']):
                 member = dn2uid(self.conn, memberdn)
-                if member:
+                if member and common.isvalidname(member):
                     members.add(member)
         # actually return the results
         for name in names:
@@ -87,50 +84,50 @@ class GroupRequest(common.Request):
 class GroupByNameRequest(GroupRequest):
 
     action = constants.NSLCD_ACTION_GROUP_BYNAME
+    filter_attrs = dict(cn='name')
 
     def read_parameters(self):
         self.name = self.fp.read_string()
         common.validate_name(self.name)
 
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_group_cn, ldap.filter.escape_filter_chars(self.name) )
-
 
 class GroupByGidRequest(GroupRequest):
 
     action = constants.NSLCD_ACTION_GROUP_BYGID
+    filter_attrs = dict(gidNumber='gid')
 
     def read_parameters(self):
         self.gid = self.fp.read_gid_t()
-
-    def mk_filter(self):
-        return '(&%s(%s=%d))' % ( self.filter,
-                  self.attmap_group_gidNumber, self.gid )
 
 
 class GroupByMemberRequest(GroupRequest):
 
     action = constants.NSLCD_ACTION_GROUP_BYMEMBER
     wantmembers = False
-    attributes = ( 'cn', 'userPassword', 'gidNumber' )
+
+    def __init__(self, *args, **kwargs):
+        super(GroupByMemberRequest, self).__init__(*args, **kwargs)
+        # set up our own attributes that leave out membership attributes
+        self.attmap = common.Attributes(attmap)
+        del self.attmap['memberUid']
+        del self.attmap['uniqueMember']
 
     def read_parameters(self):
         self.memberuid = self.fp.read_string()
         common.validate_name(self.memberuid)
 
+    def attributes(self):
+        return self.attmap.attributes()
+
     def mk_filter(self):
-        # try to translate uid to DN
-        # TODO: only do this if memberuid attribute is mapped
-        import passwd
-        dn = passwd.uid2dn(self.conn, self.memberuid)
-        if dn:
-            return '(&%s(|(%s=%s)(%s=%s)))' % ( self.filter,
-                      self.attmap_group_memberUid, ldap.filter.escape_filter_chars(self.memberuid),
-                      self.attmap_group_uniqueMember, ldap.filter.escape_filter_chars(dn) )
-        else:
-            return '(&%s(%s=%s))' % ( self.filter,
-                      self.attmap_group_memberUid, ldap.filter.escape_filter_chars(self.memberuid) )
+        if attmap['uniqueMember']:
+            dn = uid2dn(self.conn, self.memberuid)
+            if dn:
+                return '(&%s(|(%s=%s)(%s=%s)))' % ( self.filter,
+                          attmap['memberUid'], ldap.filter.escape_filter_chars(self.memberuid),
+                          attmap['uniqueMember'], ldap.filter.escape_filter_chars(dn) )
+        return '(&%s(%s=%s))' % ( self.filter,
+                  attmap['memberUid'], ldap.filter.escape_filter_chars(self.memberuid) )
 
 
 class GroupAllRequest(GroupRequest):

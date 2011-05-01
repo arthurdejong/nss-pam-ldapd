@@ -18,33 +18,31 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import ldap.filter
+import logging
 
 import constants
 import common
 
 
+attmap = common.Attributes(cn='cn',
+                           ipNetworkNumber='ipNetworkNumber')
+filter = '(objectClass=ipNetwork)'
+
+
 class NetworkRequest(common.Request):
 
-    filter = '(objectClass=ipNetwork)'
-
-    attmap_cn           = 'cn'
-    attmap_ipNetworkNumber = 'ipNetworkNumber'
-
-    attributes = ( 'cn', 'ipNetworkNumber' )
-
     def write(self, dn, attributes):
-        networkname = common.get_rdn_value(dn, self.attmap_cn)
-        networknames = attributes.get(self.attmap_cn, [])
+        networkname = common.get_rdn_value(dn, attmap['cn'])
+        networknames = attributes['cn']
         if not networknames:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn)
+            print 'Error: entry %s does not contain %s value' % ( dn, attmap['cn'])
         if not networkname:
             networkname = networknames.pop(0)
         elif networkname in networknames:
             networknames.remove(networkname)
-        addresses = attributes.get(self.attmap_ipNetworkNumber, [])
+        addresses = attributes['ipNetworkNumber']
         if not addresses:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_ipNetworkNumber)
+            print 'Error: entry %s does not contain %s value' % ( dn, attmap['ipNetworkNumber'])
         # write result
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
         self.fp.write_string(networkname)
@@ -57,26 +55,19 @@ class NetworkRequest(common.Request):
 class NetworkByNameRequest(NetworkRequest):
 
     action = constants.NSLCD_ACTION_NETWORK_BYNAME
+    filter_attrs = dict(cn='name')
 
     def read_parameters(self):
         self.name = self.fp.read_string()
-
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_cn, ldap.filter.escape_filter_chars(self.name) )
 
 
 class NetworkByAddressRequest(NetworkRequest):
 
     action = constants.NSLCD_ACTION_NETWORK_BYADDR
+    filter_attrs = dict(ipNetworkNumber='address')
 
     def read_parameters(self):
         self.address = self.fp.read_address()
-
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_ipNetworkNumber,
-                  ldap.filter.escape_filter_chars(self.address) )
 
 
 class NetworkAllRequest(NetworkRequest):

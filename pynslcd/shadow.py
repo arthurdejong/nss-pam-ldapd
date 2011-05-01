@@ -18,46 +18,41 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import ldap.filter
+import logging
 
 import constants
 import common
 
 
+attmap = common.Attributes(uid='uid',
+                           userPassword='"*"',
+                           shadowLastChange='"${shadowLastChange:--1}"',
+                           shadowMin='"${shadowMin:--1}"',
+                           shadowMax='"${shadowMax:--1}"',
+                           shadowWarning='"${shadowWarning:--1}"',
+                           shadowInactive='"${shadowInactive:--1}"',
+                           shadowExpire='"${shadowExpire:--1}"',
+                           shadowFlag='"${shadowFlag:-0}"')
+filter = '(objectClass=shadowAccount)'
+bases = ( 'ou=people,dc=test,dc=tld', )
+
+
 class ShadowRequest(common.Request):
-
-    filter = '(objectClass=shadowAccount)'
-
-    attmap_uid              = 'uid'
-    attmap_userPassword     = 'userPassword'
-    attmap_shadowLastChange = 'shadowLastChange'
-    attmap_shadowMin        = 'shadowMin'
-    attmap_shadowMax        = 'shadowMax'
-    attmap_shadowWarning    = 'shadowWarning'
-    attmap_shadowInactive   = 'shadowInactive'
-    attmap_shadowExpire     = 'shadowExpire'
-    attmap_shadowFlag       = 'shadowFlag'
-
-    attributes = ( 'uid', 'userPassword', 'shadowLastChange', 'shadowMin',
-                   'shadowMax', 'shadowWarning', 'shadowInactive',
-                   'shadowExpire', 'shadowFlag' )
-
-    bases = ( 'ou=people,dc=test,dc=tld', )
 
     def write(self, dn, attributes):
         # get name and check against requested name
-        names = attributes.get(self.attmap_uid, [])
+        names = attributes['uid']
         if not names:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_uid)
+            print 'Error: entry %s does not contain %s value' % ( dn, attmap['uid'] )
             return
         if self.name:
             if self.name not in names:
                 return
             names = ( self.name, )
         # get password
-        (passwd, ) = attributes.get(self.attmap_userPassword, ['x'])
+        (passwd, ) = attributes['userPassword']
         if not passwd or self.calleruid != 0:
-            passwd = '*';
+            passwd = '*'
         # function for making an int
         def mk_int(attr):
             try:
@@ -65,22 +60,22 @@ class ShadowRequest(common.Request):
             except TypeError:
                 return None
         # get lastchange date
-        lastchangedate = int(attributes.get(self.attmap_shadowLastChange, [-1])[0])
+        lastchangedate = int(attributes.get('shadowLastChange', [0])[0])
         # we expect an AD 64-bit datetime value;
         # we should do date=date/864000000000-134774
         # but that causes problems on 32-bit platforms,
         # first we devide by 1000000000 by stripping the
         # last 9 digits from the string and going from there */
-        if self.attmap_shadowLastChange == 'pwdLastSet':
+        if attmap['shadowLastChange'] == 'pwdLastSet':
             lastchangedate = ( lastchangedate / 864000000000 ) - 134774
         # get longs
-        mindays = int(attributes.get(self.attmap_shadowMin, [-1])[0])
-        maxdays = int(attributes.get(self.attmap_shadowMax, [-1])[0])
-        warndays = int(attributes.get(self.attmap_shadowWarning, [-1])[0])
-        inactdays = int(attributes.get(self.attmap_shadowInactive, [-1])[0])
-        expiredate = int(attributes.get(self.attmap_shadowExpire, [-1])[0])
-        flag = int(attributes.get(self.attmap_shadowFlag, [0])[0])
-        if self.attmap_shadowFlag == 'pwdLastSet':
+        mindays = int(attributes.get('shadowMin', [-1])[0])
+        maxdays = int(attributes.get('shadowMax', [-1])[0])
+        warndays = int(attributes.get('shadowWarning', [-1])[0])
+        inactdays = int(attributes.get('shadowInactive', [-1])[0])
+        expiredate = int(attributes.get('shadowExpire', [-1])[0])
+        flag = int(attributes.get('shadowFlag', [0])[0])
+        if attmap['shadowFlag'] == 'pwdLastSet':
             if flag & 0x10000:
                 maxdays = -1
             flag = 0
@@ -101,13 +96,10 @@ class ShadowRequest(common.Request):
 class ShadowByNameRequest(ShadowRequest):
 
     action = constants.NSLCD_ACTION_SHADOW_BYNAME
+    filter_attrs = dict(uid='name')
 
     def read_parameters(self):
         self.name = self.fp.read_string()
-
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_uid, ldap.filter.escape_filter_chars(self.name) )
 
 
 class ShadowAllRequest(ShadowRequest):

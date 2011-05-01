@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import ldap.filter
+import logging
 import re
 
 import constants
@@ -28,30 +28,28 @@ import common
 _netgroup_triple_re = re.compile(r'^\s*\(\s*(?P<host>.*)\s*,\s*(?P<user>.*)\s*,\s*(?P<domain>.*)\s*\)\s*$')
 
 
+attmap = common.Attributes(cn='cn',
+                           nisNetgroupTriple='nisNetgroupTriple',
+                           memberNisNetgroup='memberNisNetgroup')
+filter = '(objectClass=nisNetgroup)'
+
+
 class NetgroupRequest(common.Request):
-
-    filter = '(objectClass=nisNetgroup)'
-
-    attmap_cn                = 'cn'
-    attmap_nisNetgroupTriple = 'nisNetgroupTriple'
-    attmap_memberNisNetgroup = 'memberNisNetgroup'
-
-    attributes = ( 'cn', 'nisNetgroupTriple', 'memberNisNetgroup' )
 
     def write(self, dn, attributes):
         # get names and check against requested user name
-        names = attributes.get(self.attmap_cn, [])
+        names = attributes['cn']
         if self.name:
             if self.name not in names:
                 return
             names = ( self.name, )
         if not names:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn)
+            print 'Error: entry %s does not contain %s value' % (dn, attmap['cn'])
         # write the netgroup triples
-        for triple in attributes.get(self.attmap_nisNetgroupTriple, []):
+        for triple in attributes['nisNetgroupTriple']:
             m = _netgroup_triple_re.match(triple)
             if not m:
-                print 'Warning: entry %s contains invalid %s value: %r' % ( dn, self.attmap_nisNetgroupTriple, triple)
+                print 'Warning: entry %s contains invalid %s value: %r' % ( dn, attmap['nisNetgroupTriple'], triple)
             else:
                 self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
                 self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_TRIPLE)
@@ -59,7 +57,7 @@ class NetgroupRequest(common.Request):
                 self.fp.write_string(m.group('user'))
                 self.fp.write_string(m.group('domain'))
         # write netgroup members
-        for member in attributes.get(self.attmap_memberNisNetgroup, []):
+        for member in attributes['memberNisNetgroup']:
             self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
             self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_NETGROUP)
             self.fp.write_string(member)
@@ -68,10 +66,7 @@ class NetgroupRequest(common.Request):
 class NetgroupByNameRequest(NetgroupRequest):
 
     action = constants.NSLCD_ACTION_NETGROUP_BYNAME
+    filter_attrs = dict(cn='name')
 
     def read_parameters(self):
         self.name = self.fp.read_string()
-
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_cn, ldap.filter.escape_filter_chars(self.name) )

@@ -19,27 +19,26 @@
 # 02110-1301 USA
 
 import struct
-import ldap.filter
 
 import constants
 import common
 
 
 def ether_aton(ether):
+    """Converst an ethernet address to binary form in network byte order."""
     return struct.pack('BBBBBB', *(int(x, 16) for x in ether.split(':')))
 
 def ether_ntoa(ether):
+    """Conversts an ethernet address in network byte order to the string
+    representation."""
     return ':'.join('%x' % x for x in struct.unpack('6B', ether))
 
 
+attmap = common.Attributes(cn='cn', macAddress='macAddress')
+filter = '(objectClass=ieee802Device)'
+
+
 class EtherRequest(common.Request):
-
-    filter = '(objectClass=ieee802Device)'
-
-    attmap_cn         = 'cn'
-    attmap_macAddress = 'macAddress'
-
-    attributes = ( 'cn', 'macAddress' )
 
     def __init__(self, *args):
         super(EtherRequest, self).__init__(*args)
@@ -47,17 +46,17 @@ class EtherRequest(common.Request):
 
     def write(self, dn, attributes):
         # get name and check against requested name
-        names = attributes.get(self.attmap_cn, [])
+        names = attributes['cn']
         if not names:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_cn)
+            print 'Error: entry %s does not contain %s value' % ( dn, attmap['cn'])
         if self.name:
             if self.name.lower() not in (x.lower() for x in names):
                 return # skip entry
             names = ( self.name, )
         # get addresses and convert to binary form
-        addresses = [ether_aton(x) for x in attributes.get(self.attmap_macAddress, [])]
+        addresses = [ether_aton(x) for x in attributes['macAddress']]
         if not addresses:
-            print 'Error: entry %s does not contain %s value' % ( dn, self.attmap_macAddress)
+            print 'Error: entry %s does not contain %s value' % ( dn, attmap['macAddress'])
         if self.ether:
             if self.ether not in addresses:
                 return
@@ -73,13 +72,10 @@ class EtherRequest(common.Request):
 class EtherByNameRequest(EtherRequest):
 
     action = constants.NSLCD_ACTION_ETHER_BYNAME
+    filter_attrs = dict(cn='name')
 
     def read_parameters(self):
         self.name = self.fp.read_string()
-
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_cn, ldap.filter.escape_filter_chars(self.name) )
 
 
 class EtherByEtherRequest(EtherRequest):
@@ -91,7 +87,7 @@ class EtherByEtherRequest(EtherRequest):
 
     def mk_filter(self):
         return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_macAddress, ether_ntoa(self.ether) )
+                  attmap['macAddress'], ether_ntoa(self.ether) )
 
 
 class EtherAllRequest(EtherRequest):

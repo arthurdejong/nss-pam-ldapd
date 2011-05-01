@@ -21,9 +21,11 @@
 import re
 import ldap
 import ldap.dn
+import sys
 
 import cfg
 import constants
+from attmap import Attributes
 
 
 _validname_re = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
@@ -63,9 +65,6 @@ class Request(object):
     write: function that writes a single LDAP entry to the result stream
     """
 
-    bases = cfg.bases
-    scope = cfg.scope
-
     def __init__(self, fp, conn, calleruid):
         self.fp = fp
         self.conn = conn
@@ -75,14 +74,28 @@ class Request(object):
         self.uid = None
         self.gid = None
         self.address = None
+        module = sys.modules[self.__module__]
+        self.attmap = module.attmap
+        self.filter = module.filter
+        self.bases = getattr(module, 'bases', cfg.bases)
+        self.scope = getattr(module, 'scope', cfg.scope)
 
     def read_parameters(self):
         """This method should read the parameters from ths stream and
         store them in self."""
         pass
 
+    def attributes(self):
+        """Return the attributes that should be used in the LDAP search."""
+        return self.attmap.attributes()
+
     def mk_filter(self):
         """Return the active search filter (based on the read parameters)."""
+        if hasattr(self, 'filter_attrs'):
+            return '(&%s(%s))' % ( self.filter,
+                ')('.join('%s=%s' % (self.attmap[attribute],
+                                     ldap.filter.escape_filter_chars(str(getattr(self, name))))
+                          for attribute, name in self.filter_attrs.items()) )
         return self.filter
 
     def handle_request(self):
@@ -92,10 +105,10 @@ class Request(object):
         for base in self.bases:
             # do the LDAP search
             try:
-                res = self.conn.search_s(base, self.scope, self.mk_filter(), self.attributes)
+                res = self.conn.search_s(base, self.scope, self.mk_filter(), self.attributes())
                 for entry in res:
                     if entry[0]:
-                        self.write(entry[0], entry[1])
+                        self.write(entry[0], self.attmap.mapped(entry[1]))
             except ldap.NO_SUCH_OBJECT:
                 # FIXME: log message
                 pass
@@ -122,5 +135,4 @@ def get_handlers(module):
     return res
 
 def get_rdn_value(dn, attribute):
-    dn, attributes = entry
     return dict((x, y) for x, y, z in ldap.dn.str2dn(dn)[0])[attribute]

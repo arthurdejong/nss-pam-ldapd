@@ -18,35 +18,32 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import ldap.filter
+import logging
 
 import constants
 import common
 
 
+attmap = common.Attributes(cn='cn', rfc822MailMember='rfc822MailMember')
+filter = '(objectClass=nisMailAlias)'
+
+
 class AliasRequest(common.Request):
-
-    filter = '(objectClass=nisMailAlias)'
-
-    attmap_cn         = 'cn'
-    attmap_rfc822MailMember = 'rfc822MailMember'
-
-    attributes = ( 'cn', 'rfc822MailMember' )
 
     def write(self, dn, attributes):
         # get name and check against requested name
-        names = attributes.get(self.attmap_cn, [])
+        names = attributes['cn']
         if not names:
-            logging.error('Error: entry %s does not contain %s value', dn, self.attmap_cn)
+            logging.error('Error: entry %s does not contain %s value', dn, attmap['cn'])
             return
         if self.name:
             if self.name.lower() not in (x.lower() for x in names):
                 return
             names = ( self.name, )
         # get the members of the alias
-        members = attributes.get(self.attmap_rfc822MailMember, [])
+        members = attributes['rfc822MailMember']
         if not members:
-            logging.error('Error: entry %s does not contain %s value', dn, self.attmap_rfc822MailMember)
+            logging.error('Error: entry %s does not contain %s value', dn, attmap['rfc822MailMember'])
             return
         # write results
         for name in names:
@@ -58,13 +55,10 @@ class AliasRequest(common.Request):
 class AliasByNameRequest(AliasRequest):
 
     action = constants.NSLCD_ACTION_ALIAS_BYNAME
+    filter_attrs = dict(cn='name')
 
     def read_parameters(self):
         self.name = self.fp.read_string()
-
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  self.attmap_cn, ldap.filter.escape_filter_chars(self.name) )
 
 
 class AliasAllRequest(AliasRequest):
