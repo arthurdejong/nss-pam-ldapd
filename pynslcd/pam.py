@@ -45,7 +45,6 @@ class PAMRequest(common.Request):
     def validate_request(self):
         """This method checks the provided username for validity and fills
         in the DN if needed."""
-        from passwd import PasswdRequest
         # check username for validity
         common.validate_name(self.username)
         # look up user DN if not known
