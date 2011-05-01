@@ -56,16 +56,16 @@ class PAMRequest(common.Request):
             # save the DN
             self.userdn = entry[0]
             # get the "real" username
-            value = common.get_rdn_value(entry, PasswdRequest.attmap_passwd_uid)
+            value = common.get_rdn_value(entry, passwd.PasswdRequest.attmap_passwd_uid)
             if not value:
                 # get the username from the uid attribute
-                values = myldap_get_values(entry, PasswdRequest.attmap_passwd_uid)
+                values = myldap_get_values(entry, passwd.PasswdRequest.attmap_passwd_uid)
                 if not values or not values[0]:
-                    logging.warn('%s: is missing a %s attribute', entry.dn, PasswdRequest.attmap_passwd_uid)
+                    logging.warn('%s: is missing a %s attribute', entry.dn, passwd.PasswdRequest.attmap_passwd_uid)
                 value = values[0]
             # check the username
             if value and not common.isvalidname(value):
-                raise ValueError('%s: has invalid %s attribute', entry.dn, PasswdRequest.attmap_passwd_uid)
+                raise ValueError('%s: has invalid %s attribute', entry.dn, passwd.PasswdRequest.attmap_passwd_uid)
             # check if the username is different and update it if needed
             if value != self.username:
                 logging.info('username changed from %r to %r', self.username, value)

@@ -68,7 +68,7 @@ def display_version(fp):
              'Copyright (C) 2010, 2011 Arthur de Jong\n'
              'This is free software; see the source for copying conditions.  There is NO\n'
              'warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n'
-             % { 'PACKAGE_STRING': config.PACKAGE_STRING, } );
+             % { 'PACKAGE_STRING': config.PACKAGE_STRING, } )
 
 def display_usage(fp):
     fp.write("Usage: %(program_name)s [OPTION]...\n"
@@ -249,10 +249,10 @@ if __name__ == '__main__':
     with daemon:
         # start normal logging
         if not cfg.debug:
-            log_startlogging();
+            log_startlogging()
         logging.info('version %s starting', config.VERSION)
         # create socket
-        nslcd_serversocket = create_socket();
+        nslcd_serversocket = create_socket()
         # drop all supplemental groups
         try:
             os.setgroups(())
@@ -275,7 +275,7 @@ if __name__ == '__main__':
             thread = threading.Thread(target=worker, name='thread%d' % i)
             thread.setDaemon(True)
             thread.start()
-            logging.debug('started thread %s' % thread.getName())
+            logging.debug('started thread %s', thread.getName())
             threads.append(thread)
         # wait for all threads to die
         for thread in threads:

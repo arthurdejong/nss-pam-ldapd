@@ -29,6 +29,7 @@ def clean(lst):
     for i in lst:
         yield i.replace('\0', '')
 
+
 class GroupRequest(common.Request):
 
     filter = '(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))'
@@ -62,14 +63,12 @@ class GroupRequest(common.Request):
         if self.wantmembers:
             # add the memberUid values
             for member in clean(attributes.get(self.attmap_group_memberUid, [])):
-                #print 'found member %r' % member
                 if common.isvalidname(member):
                     members.add(member)
             # translate and add the uniqueMember values
             from passwd import dn2uid
             for memberdn in clean(attributes.get(self.attmap_group_uniqueMember, [])):
                 member = dn2uid(self.conn, memberdn)
-                #print 'found memberdn %r, member=%r' % ( memberdn, member)
                 if member:
                     members.add(member)
         # actually return the results
