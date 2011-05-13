@@ -22,6 +22,8 @@ nss_enable()
       # append a new line
       printf '%-15s ldap\n' $name':' >> /etc/nsswitch.conf
     fi
+    # invalidate nscd cache
+    nscd -i "$name" > /dev/null 2>&1 || true
   fi
   # we're done
   return 0
@@ -46,6 +48,8 @@ nss_disable()
       # TODO: remove trailing space
       sed -i 's/^\('$name':.*\)ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*\(.*\)$/\1\3/' /etc/nsswitch.conf
     fi
+    # invalidate nscd cache
+    nscd -i "$name" > /dev/null 2>&1 || true
   fi
   # we're done
   return 0
@@ -70,17 +74,6 @@ then
   done
   # we're done
   db_stop
-  # restart nscd to pick up changes in nsswitch.conf
-  # (other processes will have to be restarted manually)
-  if [ -x /etc/init.d/nscd ] && [ `pidof -s nscd` ]
-  then
-    if which invoke-rc.d >/dev/null 2>&1
-    then
-      invoke-rc.d nscd restart
-    else
-      /etc/init.d/nscd restart
-    fi
-  fi
   # update the cache of the dynamic linker
   # (we don't use dh_makeshlibs because that also installs a shlibs file
   # which we don't need)
