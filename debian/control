@@ -12,7 +12,7 @@ Vcs-Browser: http://arthurdejong.org/viewvc/nss-pam-ldapd/nss-pam-ldapd/
 Package: nslcd
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, adduser
-Recommends: nscd, libnss-ldapd | libnss-ldap, libpam-ldapd | libpam-ldap | libpam-krb5 | libpam-heimdal | libpam-sss
+Recommends: nscd, libnss-ldapd | libnss-ldap, libpam-ldapd | libpam-ldap | libpam-krb5 | libpam-heimdal | libpam-sss, ldap-utils, bind9-host | host
 Suggests: kstart
 Replaces: libnss-ldapd (<< 0.7.0)
 Breaks: libnss-ldapd (<< 0.7.0)
