@@ -36,9 +36,9 @@
  <refmeta>
   <refentrytitle>nslcd</refentrytitle>
   <manvolnum>8</manvolnum>
-  <refmiscinfo class="version">Version 0.8.2</refmiscinfo>
+  <refmiscinfo class="version">Version 0.8.3</refmiscinfo>
   <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
-  <refmiscinfo class="date">Mar 2011</refmiscinfo>
+  <refmiscinfo class="date">May 2011</refmiscinfo>
  </refmeta>
 
  <refnamediv id="name">

@@ -1,3 +1,239 @@
+2011-05-13 13:02  arthur
+
+	* [r1461] debian/libnss-ldapd.postinst: don't unconditionally
+	  restart nscd but just try to invalidate the cache for the maps
+	  that change
+
+2011-05-13 13:01  arthur
+
+	* [r1460] debian/libnss-ldapd.config: correctly pick up current
+	  configuration of /etc/nsswitch.conf when running dpkg-reconfigure
+
+2011-05-13 12:41  arthur
+
+	* [r1459] debian/control: upgrade to standards-version 3.9.2
+
+2011-05-13 12:15  arthur
+
+	* [r1458] common/expr.c, common/expr.h: switch variable expander
+	  function type name because _t suffix is reserved
+
+2011-05-13 11:57  arthur
+
+	* [r1457] debian/control, debian/nslcd.config: search for LDAP
+	  server by looking for SRV _ldap._tcp DNS records and try to query
+	  LDAP server for base DN during package configuration (based on
+	  work by Petter Reinholdtsen for the sssd package)
+
+2011-05-13 07:48  arthur
+
+	* [r1456] debian/nslcd.config: fix domain to basedn expansion when
+	  having more than two domain parts (patch by Per Carlson)
+
+2011-05-13 07:04  arthur
+
+	* [r1455] pynslcd/alias.py, pynslcd/common.py, pynslcd/ether.py,
+	  pynslcd/group.py, pynslcd/host.py, pynslcd/netgroup.py,
+	  pynslcd/network.py, pynslcd/pam.py, pynslcd/passwd.py,
+	  pynslcd/protocol.py, pynslcd/rpc.py, pynslcd/service.py,
+	  pynslcd/shadow.py: simplify request handling by passing read
+	  parameters around in a dict instead of setting object properties
+	  (this mainly simplifies search filter building)
+
+2011-05-01 19:08  arthur
+
+	* [r1454] pynslcd/alias.py, pynslcd/attmap.py, pynslcd/common.py,
+	  pynslcd/ether.py, pynslcd/group.py, pynslcd/host.py,
+	  pynslcd/netgroup.py, pynslcd/network.py, pynslcd/pam.py,
+	  pynslcd/passwd.py, pynslcd/protocol.py, pynslcd/rpc.py,
+	  pynslcd/service.py, pynslcd/shadow.py, pynslcd/tio.py: implement
+	  attribute mapping functionality and do some refactoring
+
+2011-05-01 12:18  arthur
+
+	* [r1453] pynslcd/pam.py: remove unneeded import
+
+2011-05-01 12:14  arthur
+
+	* [r1452] pynslcd/alias.py, pynslcd/common.py, pynslcd/ether.py,
+	  pynslcd/host.py, pynslcd/netgroup.py, pynslcd/network.py,
+	  pynslcd/pam.py, pynslcd/passwd.py, pynslcd/protocol.py,
+	  pynslcd/rpc.py, pynslcd/service.py, pynslcd/shadow.py: pass dn
+	  and attributes to functions separately
+
+2011-05-01 12:06  arthur
+
+	* [r1451] pynslcd/group.py, pynslcd/pam.py, pynslcd/pynslcd.py:
+	  small code improvements
+
+2011-04-30 21:28  arthur
+
+	* [r1450] pam/common.h: make log message clearer when nslcd returns
+	  an empty response (user not handled)
+
+2011-04-30 21:26  arthur
+
+	* [r1449] nslcd/pam.c: close the nslcd connection to signal LDAP
+	  server unavailable to PAM module
+
+2011-04-30 21:01  arthur
+
+	* [r1448] pam/pam.c: split setting up of configuration into
+	  separate function
+
+2011-04-30 19:54  arthur
+
+	* [r1447] nslcd/pam.c: improve password change failed error message
+
+2011-04-30 14:37  arthur
+
+	* [r1446] nslcd/common.h, nslcd/pam.c, nslcd/shadow.c: check shadow
+	  properties (similarly to what pam_unix does) in the PAM handling
+	  code
+
+2011-04-30 09:15  arthur
+
+	* [r1445] pam/pam.c: do not attempt to change password as root when
+	  changing an expired password
+
+2011-04-30 08:39  arthur
+
+	* [r1444] nslcd/pam.c: fix return value of try_autzsearch() when no
+	  match found
+
+2011-04-30 08:12  arthur
+
+	* [r1443] nslcd/pam.c: use the right DN in the pam_authz_search
+	  option
+
+2011-04-30 08:00  arthur
+
+	* [r1442] nslcd/shadow.c: move code for getting shadow expiry
+	  properties to a separate function
+
+2011-04-29 21:06  arthur
+
+	* [r1441] nslcd/pam.c: move most of the code for building the
+	  authorisation search into the try_autzsearch() function
+
+2011-04-29 18:21  arthur
+
+	* [r1440] nslcd.h, pam/pam.c: support more PAM status codes over
+	  the nslcd protocol
+
+2011-04-29 18:19  arthur
+
+	* [r1439] nslcd/shadow.c, pynslcd/shadow.py: set maxdays to -1 to
+	  indicate no expiry (instead of a long time)
+
+2011-04-28 18:47  arthur
+
+	* [r1438] pynslcd/alias.py, pynslcd/common.py, pynslcd/ether.py,
+	  pynslcd/group.py, pynslcd/host.py, pynslcd/netgroup.py,
+	  pynslcd/network.py, pynslcd/pam.py, pynslcd/passwd.py,
+	  pynslcd/protocol.py, pynslcd/rpc.py, pynslcd/service.py,
+	  pynslcd/shadow.py: put standard library imports before
+	  application imports and remove some unused imports
+
+2011-04-28 18:32  arthur
+
+	* [r1437] pynslcd/group.py: remove duplicate and wrong write()
+	  method
+
+2011-04-24 21:01  arthur
+
+	* [r1436] nslcd/pam.c: make request indicator shorter
+
+2011-04-24 20:54  arthur
+
+	* [r1435] nslcd.h: document use of returned authorisation message
+
+2011-04-24 20:52  arthur
+
+	* [r1434] nslcd/pam.c: no longer use the userdn parameter passed
+	  along with each request (this may mean one or two more lookups
+	  when doing authentication but simplifies things)
+
+2011-04-24 20:26  arthur
+
+	* [r1433] tests/test_pamcmds.expect: improve handling of
+	  test_login_unknown
+
+2011-04-22 10:02  arthur
+
+	* [r1431] nslcd/myldap.c: report correct reported error from
+	  ldap_abandon()
+
+2011-04-18 21:30  arthur
+
+	* [r1430] nslcd/nslcd.c: fix r1429 to properly handle absence of
+	  RTLD_NODELETE
+
+2011-04-18 20:53  arthur
+
+	* [r1429] nslcd/nslcd.c: support systems without RTLD_NODELETE
+
+2011-04-16 14:00  arthur
+
+	* [r1428] nslcd.conf: add example configuration provided by Wesley
+	  Mason
+
+2011-04-15 21:20  arthur
+
+	* [r1427] compat/Makefile.am, compat/strndup.c, compat/strndup.h,
+	  configure.ac, nslcd/group.c, nslcd/passwd.c: provide replacement
+	  implementation for strndup() for systems that don't have it
+
+2011-04-15 21:20  arthur
+
+	* [r1426] AUTHORS: add Wesley Mason to AUTHOS file (was missing
+	  from r1425)
+
+2011-04-15 21:16  arthur
+
+	* [r1425] man/nslcd.conf.5.xml, nslcd/common.c, nslcd/common.h,
+	  nslcd/group.c, nslcd/passwd.c: support using the objectSid
+	  attribute to provide numeric user and group ids, based on a patch
+	  by Wesley Mason
+
+2011-04-15 19:10  arthur
+
+	* [r1424] tests/test_nsscmds.sh, tests/test_pamcmds.expect,
+	  tests/test_pamcmds.sh: allow running test_{nss,pam}cmds tests
+	  from another directory
+
+2011-04-03 21:10  arthur
+
+	* [r1423] nslcd/group.c, nslcd/pam.c, nslcd/passwd.c: make user and
+	  group name validation errors a little more informative
+
+2011-03-31 20:50  arthur
+
+	* [r1422] AUTHORS: add some people who seemed to be missing from
+	  the AUTHORS file
+
+2011-03-31 20:22  arthur
+
+	* [r1421] common/tio.c: tv_usec in struct timeval must be lower
+	  than 1000000 (patch by SATOH Fumiyasu)
+
+2011-03-31 20:16  arthur
+
+	* [r1420] AUTHORS, Makefile.am: use $(mkinstalldirs) instead of
+	  $(INSTALL_DATA) -D because -D is not supported on all operating
+	  systems (patch by SATOH Fumiyasu)
+
+2011-03-31 19:16  arthur
+
+	* [r1419] man/nslcd.conf.5.xml, nslcd/cfg.c: allow usernames of
+	  only two characters
+
+2011-03-26 20:51  arthur
+
+	* [r1417] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.8.2 release
+
 2011-03-26 16:16  arthur
 
 	* [r1416] tests/Makefile.am, tests/test_nsscmds.sh,

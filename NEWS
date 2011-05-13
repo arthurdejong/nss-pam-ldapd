@@ -1,3 +1,21 @@
+changes from 0.8.2 to 0.8.3
+---------------------------
+
+* support using the objectSid attribute to provide numeric user and group
+  ids, based on a patch by Wesley Mason
+* check shadow account and password expiry properties (similarly to what
+  pam_unix does) in the PAM handling code
+* implement attribute mapping functionality in pynslcd
+* relax default for validnames option to allow user names of only two
+  characters
+* make user and group name validation errors a little more informative
+* small portability improvements
+* general code improvements and refactoring in pynslcd
+* some simplifications in the protocol between the PAM module and nslcd
+  (without actual protocol changes so far)
+* Debian packaging improvements
+
+
 changes from 0.8.1 to 0.8.2
 ---------------------------
 

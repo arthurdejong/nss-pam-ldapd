@@ -2,20 +2,15 @@
 * add sanity checking code (e.g. not too large buffer allocation and checking
   that host, user, etc do not contain funky characters) in all server modules
 * log some statistics: "passwd=100 shadow=10 host=20 rpc=10" (10 req/minute)
-* in the server: once the request is done pass the flushing of the buffers to
-  a separate thread so our workers are available to handle new requests
-  (test whether this actually improves performace)
 * add an option to create an extra socket somewhere (so it may be used in
   chroot jails)
 * make I/O timeout between NSS lib and daemon configurable with configure
-* ethers: also look in ipHostNumber attribute to look up an IPv4 (IPv6)
-  address and return it as an alternative entry (investigate whether this is
-  sane)
 * protocols/rpc: the description attribute should be used as an alias?
 * review changes in nss_ldap and merge any useful changes
 * maybe rate-limit LDAP entry warnings
 * setnetgrent() may need to return an error if the netgroup is undefined
-* handle repeated calls to getent() better (see http://bugzilla.padl.com/show_bug.cgi?id=376)
+* handle repeated calls to getent() better
+  (see http://bugzilla.padl.com/show_bug.cgi?id=376)
 * make it possible to start nslcd real early in the boot process and have
   it become available when it determines it can (other timeout/retry mechanism
   on startup)
@@ -28,4 +23,8 @@
 * properly test Solaris support
 * fix buffer handling in read_**string() functions (Solaris support)
 * complete pynslcd implementation
-* in nslcd/pam.c check shadow properties if present
+* implement chsh and chfn in nslcd PAM code and make chsh.ldap and chfn.ldap
+  binaries
+* have nslcd flush the nscd caches when reconnecting to the LDAP server after
+  an error
+* have PAM code support password policy of server (see pam_ldap)

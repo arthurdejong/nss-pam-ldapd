@@ -1,3 +1,26 @@
+nss-pam-ldapd (0.8.3) experimental; urgency=low
+
+  * support using the objectSid attribute to provide numeric user and group
+    ids, based on a patch by Wesley Mason
+  * check shadow account and password expiry properties (similarly to what
+    pam_unix does) in the PAM handling code
+  * implement attribute mapping functionality in pynslcd
+  * relax default for validnames option to allow user names of only two
+    characters (closes: #620235)
+  * make user and group name validation errors a little more informative
+  * small portability improvements
+  * general code improvements and refactoring in pynslcd
+  * some simplifications in the protocol between the PAM module and nslcd
+    (without actual protocol changes so far)
+  * fix debconf LDAP search base suggestion when domain has more than two
+    parts (patch by Per Carlson) (closes: #626571)
+  * search for LDAP server by looking for SRV _ldap._tcp DNS records and
+    try to query LDAP server for base DN during package configuration
+    (based on work by Petter Reinholdtsen for the sssd package)
+  * upgrade to standards-version 3.9.2 (no changes needed)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 13 May 2011 15:00:00 +0200
+
 nss-pam-ldapd (0.8.2) experimental; urgency=low
 
   * fix problem with endless loop on incorrect password
