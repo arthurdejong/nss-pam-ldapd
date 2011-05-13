@@ -39,16 +39,16 @@ bases = ( 'ou=people,dc=test,dc=tld', )
 
 class ShadowRequest(common.Request):
 
-    def write(self, dn, attributes):
+    def write(self, dn, attributes, parameters):
         # get name and check against requested name
         names = attributes['uid']
         if not names:
             print 'Error: entry %s does not contain %s value' % ( dn, attmap['uid'] )
             return
-        if self.name:
-            if self.name not in names:
+        if 'uid' in parameters:
+            if parameters['uid'] not in names:
                 return
-            names = ( self.name, )
+            names = ( parameters['uid'], )
         # get password
         (passwd, ) = attributes['userPassword']
         if not passwd or self.calleruid != 0:
@@ -96,10 +96,9 @@ class ShadowRequest(common.Request):
 class ShadowByNameRequest(ShadowRequest):
 
     action = constants.NSLCD_ACTION_SHADOW_BYNAME
-    filter_attrs = dict(uid='name')
 
-    def read_parameters(self):
-        self.name = self.fp.read_string()
+    def read_parameters(self, fp):
+        return dict(uid=fp.read_string())
 
 
 class ShadowAllRequest(ShadowRequest):

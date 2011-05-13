@@ -40,27 +40,23 @@ filter = '(objectClass=ieee802Device)'
 
 class EtherRequest(common.Request):
 
-    def __init__(self, *args):
-        super(EtherRequest, self).__init__(*args)
-        self.ether = None
-
-    def write(self, dn, attributes):
+    def write(self, dn, attributes, parameters):
         # get name and check against requested name
         names = attributes['cn']
         if not names:
             print 'Error: entry %s does not contain %s value' % ( dn, attmap['cn'])
-        if self.name:
-            if self.name.lower() not in (x.lower() for x in names):
+        if 'cn' in parameters:
+            if parameters['cn'].lower() not in (x.lower() for x in names):
                 return # skip entry
-            names = ( self.name, )
+            names = ( parameters['cn'], )
         # get addresses and convert to binary form
         addresses = [ether_aton(x) for x in attributes['macAddress']]
         if not addresses:
             print 'Error: entry %s does not contain %s value' % ( dn, attmap['macAddress'])
-        if self.ether:
-            if self.ether not in addresses:
+        if 'macAddress' in parameters:
+            if ether_aton(parameters['macAddress']) not in addresses:
                 return
-            addresses = ( self.ether, )
+            addresses = ( ether_aton(parameters['macAddress']), )
         # write results
         for name in names:
             for ether in addresses:
@@ -72,22 +68,17 @@ class EtherRequest(common.Request):
 class EtherByNameRequest(EtherRequest):
 
     action = constants.NSLCD_ACTION_ETHER_BYNAME
-    filter_attrs = dict(cn='name')
 
-    def read_parameters(self):
-        self.name = self.fp.read_string()
+    def read_parameters(self, fp):
+        return dict(cn=fp.read_string())
 
 
 class EtherByEtherRequest(EtherRequest):
 
     action = constants.NSLCD_ACTION_ETHER_BYETHER
 
-    def read_parameters(self):
-        self.ether = self.fp.read(6)
-
-    def mk_filter(self):
-        return '(&%s(%s=%s))' % ( self.filter,
-                  attmap['macAddress'], ether_ntoa(self.ether) )
+    def read_parameters(self, fp):
+        return dict(macAddress=ether_ntoa(fp.read(6)))
 
 
 class EtherAllRequest(EtherRequest):

@@ -30,13 +30,13 @@ filter = '(objectClass=oncRpc)'
 
 class RpcRequest(common.Request):
 
-    def write(self, dn, attributes):
+    def write(self, dn, attributes, parameters):
         # get name
         name = common.get_rdn_value(dn, attmap['cn'])
         names = attributes['cn']
         if not names:
             print 'Error: entry %s does not contain %s value' % ( dn, attmap['cn'] )
-        if self.name and self.name not in names:
+        if 'cn' in parameters and parameters['cn'] not in names:
             return # case of result entry did not match
         if not name:
             name = names.pop(0)
@@ -57,19 +57,17 @@ class RpcRequest(common.Request):
 class RpcByNameRequest(RpcRequest):
 
     action = constants.NSLCD_ACTION_RPC_BYNAME
-    filter_attrs = dict(cn='name')
 
-    def read_parameters(self):
-        self.name = self.fp.read_string()
+    def read_parameters(self, fp):
+        return dict(cn=fp.read_string())
 
 
 class RpcByNumberRequest(RpcRequest):
 
     action = constants.NSLCD_ACTION_RPC_BYNUMBER
-    filter_attrs = dict(oncRpcNumber='number')
 
-    def read_parameters(self):
-        self.number = self.fp.read_int32()
+    def read_parameters(self, fp):
+        return dict(oncRpcNumber=fp.read_int32())
 
 
 class RpcAllRequest(RpcRequest):

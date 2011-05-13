@@ -36,13 +36,13 @@ filter = '(objectClass=nisNetgroup)'
 
 class NetgroupRequest(common.Request):
 
-    def write(self, dn, attributes):
+    def write(self, dn, attributes, parameters):
         # get names and check against requested user name
         names = attributes['cn']
-        if self.name:
-            if self.name not in names:
+        if 'cn' in parameters:
+            if parameters['cn'] not in names:
                 return
-            names = ( self.name, )
+            names = ( parameters['cn'], )
         if not names:
             print 'Error: entry %s does not contain %s value' % (dn, attmap['cn'])
         # write the netgroup triples
@@ -66,7 +66,6 @@ class NetgroupRequest(common.Request):
 class NetgroupByNameRequest(NetgroupRequest):
 
     action = constants.NSLCD_ACTION_NETGROUP_BYNAME
-    filter_attrs = dict(cn='name')
 
-    def read_parameters(self):
-        self.name = self.fp.read_string()
+    def read_parameters(self, fp):
+        return dict(cn=fp.read_string())

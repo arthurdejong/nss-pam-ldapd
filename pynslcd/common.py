@@ -69,18 +69,14 @@ class Request(object):
         self.fp = fp
         self.conn = conn
         self.calleruid = calleruid
-        # have default empty values for these
-        self.name = None
-        self.uid = None
-        self.gid = None
-        self.address = None
+        # load information from module that defines the class
         module = sys.modules[self.__module__]
-        self.attmap = module.attmap
-        self.filter = module.filter
+        self.attmap = getattr(module, 'attmap', None)
+        self.filter = getattr(module, 'filter', None)
         self.bases = getattr(module, 'bases', cfg.bases)
         self.scope = getattr(module, 'scope', cfg.scope)
 
-    def read_parameters(self):
+    def read_parameters(self, fp):
         """This method should read the parameters from ths stream and
         store them in self."""
         pass
@@ -89,26 +85,26 @@ class Request(object):
         """Return the attributes that should be used in the LDAP search."""
         return self.attmap.attributes()
 
-    def mk_filter(self):
+    def mk_filter(self, parameters):
         """Return the active search filter (based on the read parameters)."""
-        if hasattr(self, 'filter_attrs'):
+        if parameters:
             return '(&%s(%s))' % ( self.filter,
                 ')('.join('%s=%s' % (self.attmap[attribute],
-                                     ldap.filter.escape_filter_chars(str(getattr(self, name))))
-                          for attribute, name in self.filter_attrs.items()) )
+                                     ldap.filter.escape_filter_chars(str(value)))
+                          for attribute, value in parameters.items()) )
         return self.filter
 
-    def handle_request(self):
+    def handle_request(self, parameters):
         """This method handles the request based on the parameters read
         with read_parameters()."""
         # get search results
         for base in self.bases:
             # do the LDAP search
             try:
-                res = self.conn.search_s(base, self.scope, self.mk_filter(), self.attributes())
+                res = self.conn.search_s(base, self.scope, self.mk_filter(parameters), self.attributes())
                 for entry in res:
                     if entry[0]:
-                        self.write(entry[0], self.attmap.mapped(entry[1]))
+                        self.write(entry[0], self.attmap.mapped(entry[1]), parameters)
             except ldap.NO_SUCH_OBJECT:
                 # FIXME: log message
                 pass
@@ -116,11 +112,11 @@ class Request(object):
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 
     def __call__(self):
-        self.read_parameters()
+        parameters = self.read_parameters(self.fp) or {}
         # TODO: log call with parameters
         self.fp.write_int32(constants.NSLCD_VERSION)
         self.fp.write_int32(self.action)
-        self.handle_request()
+        self.handle_request(parameters)
 
 
 def get_handlers(module):

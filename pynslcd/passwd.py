@@ -39,20 +39,20 @@ bases = ( 'ou=people,dc=test,dc=tld', )
 
 class PasswdRequest(common.Request):
 
-    def write(self, dn, attributes):
+    def write(self, dn, attributes, parameters):
         # get uid attribute and check against requested user name
         names = attributes['uid']
-        if self.name:
-            if self.name not in names:
+        if 'uid' in parameters:
+            if parameters['uid'] not in names:
                 return
-            names = ( self.name, )
+            names = ( parameters['uid'], )
         # get user password entry
         if 'shadowAccount' in attributes['objectClass']:
             passwd = 'x'
         else:
             passwd = attributes['userPassword'][0]
         # get numeric user and group ids
-        uids = ( self.uid, ) if self.uid else attributes['uidNumber']
+        uids = ( parameters['uidNumber'], ) if 'uidNumber' in parameters else attributes['uidNumber']
         uids = [ int(x) for x in uids ]
         # get other passwd properties
         gid = int(attributes['gidNumber'][0])
@@ -78,20 +78,19 @@ class PasswdRequest(common.Request):
 class PasswdByNameRequest(PasswdRequest):
 
     action = constants.NSLCD_ACTION_PASSWD_BYNAME
-    filter_attrs = dict(uid='name')
 
-    def read_parameters(self):
-        self.name = self.fp.read_string()
-        common.validate_name(self.name)
+    def read_parameters(self, fp):
+        name = fp.read_string()
+        common.validate_name(name)
+        return dict(uid=name)
 
 
 class PasswdByUidRequest(PasswdRequest):
 
     action = constants.NSLCD_ACTION_PASSWD_BYUID
-    filter_attrs = dict(uidNumber='uid')
 
-    def read_parameters(self):
-        self.uid = self.fp.read_uid_t()
+    def read_parameters(self, fp):
+        return dict(uidNumber=fp.read_uid_t())
 
 
 class PasswdAllRequest(PasswdRequest):
@@ -99,6 +98,7 @@ class PasswdAllRequest(PasswdRequest):
     action = constants.NSLCD_ACTION_PASSWD_ALL
 
 
+# FIXME: have something in common that does this
 def do_search(conn, flt=None, base=None):
     mybases = ( base, ) if base else bases
     flt = flt or filter

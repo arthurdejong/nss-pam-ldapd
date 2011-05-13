@@ -44,17 +44,17 @@ class GroupRequest(common.Request):
 
     wantmembers = True
 
-    def write(self, dn, attributes):
+    def write(self, dn, attributes, parameters):
         # get group names and check against requested group name
         names = attributes['cn']
-        if self.name:
-            if self.name not in names:
+        if 'cn' in parameters:
+            if parameters['cn'] not in names:
                 return
-            names = ( self.name, )
+            names = ( parameters['cn'], )
         # get group group password
         passwd = attributes['userPassword'][0]
         # get group id(s)
-        gids = ( self.gid, ) if self.gid else attributes['gidNumber']
+        gids = (  parameters['gidNumber'], ) if 'gidNumber' in parameters else attributes['gidNumber']
         gids = [ int(x) for x in gids ]
         # build member list
         members = set()
@@ -84,20 +84,19 @@ class GroupRequest(common.Request):
 class GroupByNameRequest(GroupRequest):
 
     action = constants.NSLCD_ACTION_GROUP_BYNAME
-    filter_attrs = dict(cn='name')
 
-    def read_parameters(self):
-        self.name = self.fp.read_string()
-        common.validate_name(self.name)
+    def read_parameters(self, fp):
+        name = fp.read_string()
+        common.validate_name(name)
+        return dict(cn=name)
 
 
 class GroupByGidRequest(GroupRequest):
 
     action = constants.NSLCD_ACTION_GROUP_BYGID
-    filter_attrs = dict(gidNumber='gid')
 
-    def read_parameters(self):
-        self.gid = self.fp.read_gid_t()
+    def read_parameters(self, fp):
+        return dict(gidNumber=fp.read_gid_t())
 
 
 class GroupByMemberRequest(GroupRequest):
@@ -112,22 +111,25 @@ class GroupByMemberRequest(GroupRequest):
         del self.attmap['memberUid']
         del self.attmap['uniqueMember']
 
-    def read_parameters(self):
-        self.memberuid = self.fp.read_string()
-        common.validate_name(self.memberuid)
+    def read_parameters(self, fp):
+        memberuid = fp.read_string()
+        common.validate_name(memberuid)
+        return dict(memberUid=memberuid)
 
     def attributes(self):
         return self.attmap.attributes()
 
-    def mk_filter(self):
+    def mk_filter(self, parameters):
+        # we still need a custom mk_filter because this is an | query
+        memberuid = parameters['memberUid']
         if attmap['uniqueMember']:
-            dn = uid2dn(self.conn, self.memberuid)
+            dn = uid2dn(self.conn, memberuid)
             if dn:
                 return '(&%s(|(%s=%s)(%s=%s)))' % ( self.filter,
-                          attmap['memberUid'], ldap.filter.escape_filter_chars(self.memberuid),
+                          attmap['memberUid'], ldap.filter.escape_filter_chars(memberuid),
                           attmap['uniqueMember'], ldap.filter.escape_filter_chars(dn) )
         return '(&%s(%s=%s))' % ( self.filter,
-                  attmap['memberUid'], ldap.filter.escape_filter_chars(self.memberuid) )
+                  attmap['memberUid'], ldap.filter.escape_filter_chars(memberuid) )
 
 
 class GroupAllRequest(GroupRequest):

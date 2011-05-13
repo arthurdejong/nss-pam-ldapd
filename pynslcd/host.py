@@ -30,7 +30,7 @@ filter = '(objectClass=ipHost)'
 
 class HostRequest(common.Request):
 
-    def write(self, dn, attributes):
+    def write(self, dn, attributes, parameters):
         hostname = common.get_rdn_value(dn, attmap['cn'])
         hostnames = attributes['cn']
         if not hostnames:
@@ -54,19 +54,17 @@ class HostRequest(common.Request):
 class HostByNameRequest(HostRequest):
 
     action = constants.NSLCD_ACTION_HOST_BYNAME
-    filter_attrs = dict(cn='name')
 
-    def read_parameters(self):
-        self.name = self.fp.read_string()
+    def read_parameters(self, fp):
+        return dict(cn=fp.read_string())
 
 
 class HostByAddressRequest(HostRequest):
 
     action = constants.NSLCD_ACTION_HOST_BYADDR
-    filter_attrs = dict(ipHostNumber='address')
 
-    def read_parameters(self):
-        self.address = self.fp.read_address()
+    def read_parameters(self, fp):
+        return dict(ipHostNumber=fp.read_address())
 
 
 class HostAllRequest(HostRequest):

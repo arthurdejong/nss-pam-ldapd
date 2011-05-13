@@ -42,18 +42,18 @@ def try_bind(userdn, password):
 
 class PAMRequest(common.Request):
 
-    def validate_request(self):
+    def validate_request(self, parameters):
         """This method checks the provided username for validity and fills
         in the DN if needed."""
         # check username for validity
-        common.validate_name(self.username)
+        common.validate_name(parameters['username'])
         # look up user DN if not known
-        if not self.userdn:
-            entry = passwd.uid2entry(self.conn, self.username)
+        if not parameters['userdn']:
+            entry = passwd.uid2entry(self.conn, parameters['username'])
             if not entry:
-                raise ValueError('%r: user not found' % self.username)
+                raise ValueError('%r: user not found' % parameters['username'])
             # save the DN
-            self.userdn = entry[0]
+            parameters['userdn'] = entry[0]
             # get the "real" username
             value = common.get_rdn_value(entry[0], passwd.attmap['uid'])
             if not value:
@@ -66,55 +66,57 @@ class PAMRequest(common.Request):
             if value and not common.isvalidname(value):
                 raise ValueError('%s: has invalid %s attribute', dn, passwd.attmap['uid'])
             # check if the username is different and update it if needed
-            if value != self.username:
-                logging.info('username changed from %r to %r', self.username, value)
-                self.username = value
+            if value != parameters['username']:
+                logging.info('username changed from %r to %r', parameters['username'], value)
+                parameters['username'] = value
 
 
 class PAMAuthenticationRequest(PAMRequest):
 
     action = constants.NSLCD_ACTION_PAM_AUTHC
 
-    def read_parameters(self):
-        self.username = self.fp.read_string()
-        self.userdn = self.fp.read_string()
-        self.servicename = self.fp.read_string()
-        self.password = self.fp.read_string()
+    def read_parameters(self, fp):
+        return dict(username=fp.read_string(),
+                    userdn=fp.read_string(),
+                    servicename=fp.read_string(),
+                    password=fp.read_string())
         #self.validate_request()
         # TODO: log call with parameters
 
-    def write(self, code=constants.NSLCD_PAM_SUCCESS, msg=''):
+    def write(self, parameters, code=constants.NSLCD_PAM_SUCCESS, msg=''):
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-        self.fp.write_string(self.username)
-        self.fp.write_string(self.userdn)
+        self.fp.write_string(parameters['username'])
+        self.fp.write_string(parameters['userdn'])
         self.fp.write_int32(code)  # authc
         self.fp.write_int32(constants.NSLCD_PAM_SUCCESS)  # authz
         self.fp.write_string(msg) # authzmsg
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 
-    def handle_request(self):
+    def handle_request(self, parameters):
         # if the username is blank and rootpwmoddn is configured, try to
         # authenticate as administrator, otherwise validate request as usual
-        if not self.username and cfg.rootpwmoddn:
+        if not parameters['username'] and cfg.rootpwmoddn:
             # authenticate as rootpwmoddn
-            self.userdn = cfg.rootpwmoddn
+            userdn = cfg.rootpwmoddn
             # if the caller is root we will allow the use of rootpwmodpw
-            if not self.password and self.calleruid == 0 and cfg.rootpwmodpw:
-                self.password = cfg.rootpwmodpw
+            if not parameters['password'] and self.calleruid == 0 and cfg.rootpwmodpw:
+                password = cfg.rootpwmodpw
         else:
-            self.validate_request()
+            self.validate_request(parameters)
+            userdn = parameters['userdn']
+            password = parameters['password']
         # try authentication
         try:
-            try_bind(self.userdn, self.password)
+            try_bind(userdn, password)
             logging.debug('bind successful')
-            self.write()
+            self.write(parameters)
         except ldap.INVALID_CREDENTIALS, e:
             try:
                 msg = e[0]['desc']
             except:
                 msg = str(e)
             logging.debug('bind failed: %s', msg)
-            self.write(constants.NSLCD_PAM_AUTH_ERR, msg)
+            self.write(parameters, constants.NSLCD_PAM_AUTH_ERR, msg)
 
 #class PAMAuthorisationRequest(PAMRequest):
 

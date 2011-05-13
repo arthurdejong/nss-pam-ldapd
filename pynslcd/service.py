@@ -33,17 +33,13 @@ filter = '(objectClass=ipService)'
 
 class ServiceRequest(common.Request):
 
-    def __init__(self, *args):
-        super(ServiceRequest, self).__init__(*args)
-        self.protocol = None
-
-    def write(self, dn, attributes):
+    def write(self, dn, attributes, parameters):
         # get name
         name = common.get_rdn_value(dn, attmap['cn'])
         names = attributes['cn']
         if not names:
             print 'Error: entry %s does not contain %s value' % (dn, attmap['cn'])
-        if self.name and self.name not in names + [ name, ]:
+        if 'cn' in parameters and parameters['cn'] not in names + [ name, ]:
             return # case of result entry did not match
         if not name:
             name = names.pop(0)
@@ -56,10 +52,10 @@ class ServiceRequest(common.Request):
         port = int(port)
         # get protocol
         protocols = attributes['ipServiceProtocol']
-        if self.protocol:
-            if self.protocol not in protocols:
+        if 'ipServiceProtocol' in parameters:
+            if parameters['ipServiceProtocol'] not in protocols:
                 return
-            protocols = ( self.protocol, )
+            protocols = ( parameters['ipServiceProtocol'], )
         # write result
         for protocol in protocols:
             self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
@@ -73,36 +69,26 @@ class ServiceByNameRequest(ServiceRequest):
 
     action = constants.NSLCD_ACTION_SERVICE_BYNAME
 
-    def read_parameters(self):
-        self.name = self.fp.read_string()
-        self.protocol = self.fp.read_string()
-
-    def mk_filter(self):
-        if self.protocol:
-            return '(&%s(%s=%s)(%s=%s))' % ( self.filter,
-                      attmap['cn'], ldap.filter.escape_filter_chars(self.name),
-                      attmap['ipServiceProtocol'], ldap.filter.escape_filter_chars(self.protocol) )
+    def read_parameters(self, fp):
+        name = fp.read_string()
+        protocol = fp.read_string()
+        if protocol:
+            return dict(cn=name, ipServiceProtocol=protocol)
         else:
-            return '(&%s(%s=%s))' % ( self.filter,
-                      attmap['cn'], ldap.filter.escape_filter_chars(self.name) )
+            return dict(cn=name)
 
 
 class ServiceByNumberRequest(ServiceRequest):
 
     action = constants.NSLCD_ACTION_SERVICE_BYNUMBER
 
-    def read_parameters(self):
-        self.number = self.fp.read_int32()
-        self.protocol = self.fp.read_string()
-
-    def mk_filter(self):
-        if self.protocol:
-            return '(&%s(%s=%d)(%s=%s))' % ( self.filter,
-                      attmap['ipServicePort'], self.number,
-                      attmap['ipServiceProtocol'], ldap.filter.escape_filter_chars(self.protocol) )
+    def read_parameters(self, fp):
+        number = fp.read_int32()
+        protocol = fp.read_string()
+        if protocol:
+            return dict(ipServicePort=number, ipServiceProtocol=protocol)
         else:
-            return '(&%s(%s=%d))' % ( self.filter,
-                      attmap['ipServicePort'], self.number )
+            return dict(ipServicePort=number)
 
 
 class ServiceAllRequest(ServiceRequest):
