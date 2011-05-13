@@ -73,14 +73,14 @@ static const char *empty_expander(const char UNUSED(*name),void UNUSED(*expander
 /* definition of the parse functions (they call eachother) */
 MUST_USE static const char *parse_dollar_expression(
               const char *str,int *ptr,char *buffer,size_t buflen,
-              expander_t expander,void *expander_arg);
+              expr_expander_func expander,void *expander_arg);
 MUST_USE static const char *parse_expression(
               const char *str,int *ptr,int endat,char *buffer,size_t buflen,
-              expander_t expander,void *expander_arg);
+              expr_expander_func expander,void *expander_arg);
 
 MUST_USE static const char *parse_dollar_expression(
               const char *str,int *ptr,char *buffer,size_t buflen,
-              expander_t expander,void *expander_arg)
+              expr_expander_func expander,void *expander_arg)
 {
   char varname[MAXVARLENGTH];
   const char *varvalue;
@@ -157,7 +157,7 @@ MUST_USE static const char *parse_dollar_expression(
 
 MUST_USE static const char *parse_expression(
               const char *str,int *ptr,int endat,char *buffer,size_t buflen,
-              expander_t expander,void *expander_arg)
+              expr_expander_func expander,void *expander_arg)
 {
   int j=0;
   /* go over string */
@@ -190,7 +190,7 @@ MUST_USE static const char *parse_expression(
 }
 
 MUST_USE const char *expr_parse(const char *str,char *buffer,size_t buflen,
-                                expander_t expander,void *expander_arg)
+                                expr_expander_func expander,void *expander_arg)
 
 {
   int i=0;

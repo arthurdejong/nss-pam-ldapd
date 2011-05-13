@@ -26,13 +26,13 @@
 #include "compat/attrs.h"
 #include "common/set.h"
 
-typedef const char *(*expander_t)(const char *name,void *expander_arg);
+typedef const char *(*expr_expander_func)(const char *name,void *expander_arg);
 
 /* Parse the expression and store the result in buffer, using the
    expander function to expand variable names to values. If the expression
    is invalid or the result didn't fit in the buffer NULL is returned. */
 MUST_USE const char *expr_parse(const char *expr,char *buffer,size_t buflen,
-                                expander_t expander,void *expander_arg);
+                                expr_expander_func expander,void *expander_arg);
 
 /* Return the variable names that are used in expr. If set is NULL a new one
    is allocated, otherwise the passed set is added to. */
