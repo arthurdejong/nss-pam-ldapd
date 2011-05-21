@@ -1448,6 +1448,7 @@ static const char *find_rdn_value(char **exploded_rdn,const char *attr)
       /* nothing here */;
     /* ensure that we found an equals sign now */
     if (exploded_rdn[i][j]!='=')
+      continue;
     j++;
     /* skip more spaces */
     for (j++;isspace(exploded_rdn[i][j]);j++)
