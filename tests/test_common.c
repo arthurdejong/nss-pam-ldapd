@@ -38,6 +38,7 @@ static void test_isvalidname(void)
   assert(isvalidname("foo\\bar"));
   assert(!isvalidname("\\foo\\bar"));
   assert(!isvalidname("foo\\bar\\"));
+  assert(isvalidname("me")); /* try short name */
 }
 
 /* the main program... */
