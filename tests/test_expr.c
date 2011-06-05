@@ -50,6 +50,8 @@ static const char *expanderfn(const char *name,void UNUSED(*expander_attr))
 {
   if (strcmp(name,"empty")==0)
     return "";
+  if (strcmp(name,"null")==0)
+    return NULL;
   else
     return "foobar";
 }
@@ -65,6 +67,8 @@ static void test_expr_parse(void)
   assertstreq(buffer,"");
   assert(expr_parse("$foo1$empty-$foo2",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);
   assertstreq(buffer,"foobar-foobar");
+  assert(expr_parse("$foo1+$null+$foo2",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);
+  assertstreq(buffer,"foobar++foobar");
   assert(expr_parse("${test1}\\$",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);
   assertstreq(buffer,"foobar$");
   assert(expr_parse("${test1:-default}",buffer,sizeof(buffer),expanderfn,NULL)!=NULL);

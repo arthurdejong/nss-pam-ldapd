@@ -93,6 +93,8 @@ MUST_USE static const char *parse_dollar_expression(
     if (parse_name(str,ptr,varname,sizeof(varname))==NULL)
       return NULL;
     varvalue=expander(varname,expander_arg);
+    if (varvalue==NULL)
+      varvalue="";
     if (str[*ptr]=='}')
     {
       /* simple substitute */
@@ -148,6 +150,8 @@ MUST_USE static const char *parse_dollar_expression(
     if (parse_name(str,ptr,varname,sizeof(varname))==NULL)
       return NULL;
     varvalue=expander(varname,expander_arg);
+    if (varvalue==NULL)
+      varvalue="";
     if (strlen(varvalue)>=buflen)
       return NULL;
     strcpy(buffer,varvalue);
