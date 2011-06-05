@@ -1448,13 +1448,13 @@ static const char *find_rdn_value(char **exploded_rdn,const char *attr)
       continue;
     j=l;
     /* skip spaces */
-    while (isspace(exploded_rdn[i][j]) j++;
+    while (isspace(exploded_rdn[i][j])) j++;
     /* ensure that we found an equals sign now */
     if (exploded_rdn[i][j]!='=')
       continue;
     j++;
     /* skip more spaces */
-    while (isspace(exploded_rdn[i][j]) j++;
+    while (isspace(exploded_rdn[i][j])) j++;
     /* ensure that we're not at the end of the string */
     if (exploded_rdn[i][j]=='\0')
       continue;
