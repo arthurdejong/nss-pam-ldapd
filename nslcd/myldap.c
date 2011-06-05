@@ -1446,16 +1446,15 @@ static const char *find_rdn_value(char **exploded_rdn,const char *attr)
     /* check that RDN starts with attr */
     if (strncasecmp(exploded_rdn[i],attr,l)!=0)
       continue;
+    j=l;
     /* skip spaces */
-    for (j=l;isspace(exploded_rdn[i][j]);j++)
-      /* nothing here */;
+    while (isspace(exploded_rdn[i][j]) j++;
     /* ensure that we found an equals sign now */
     if (exploded_rdn[i][j]!='=')
       continue;
     j++;
     /* skip more spaces */
-    for (j++;isspace(exploded_rdn[i][j]);j++)
-      /* nothing here */;
+    while (isspace(exploded_rdn[i][j]) j++;
     /* ensure that we're not at the end of the string */
     if (exploded_rdn[i][j]=='\0')
       continue;
