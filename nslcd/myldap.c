@@ -1451,7 +1451,7 @@ static const char *find_rdn_value(char **exploded_rdn,const char *attr)
       continue;
     j++;
     /* skip more spaces */
-    for (j++;isspace(exploded_rdn[i][j]);j++)
+    for (;isspace(exploded_rdn[i][j]);j++)
       /* nothing here */;
     /* ensure that we're not at the end of the string */
     if (exploded_rdn[i][j]=='\0')
