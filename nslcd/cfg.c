@@ -170,9 +170,9 @@ static void add_uri(const char *filename,int lnr,
 #ifdef HAVE_LDAP_DOMAIN2HOSTLIST
 /* return the domain name of the current host
    the returned string must be freed by caller */
-static char *cfg_getdomainname(const char *filename,int lnr)
+static const char *cfg_getdomainname(const char *filename,int lnr)
 {
-  char *fqdn,*domain;
+  const char *fqdn,*domain;
   fqdn=getfqdn();
   if ((fqdn!=NULL)&&((domain=strchr(fqdn,'.'))!=NULL)&&(domain[1]!='\0'))
     return domain+1;
@@ -185,12 +185,12 @@ static char *cfg_getdomainname(const char *filename,int lnr)
 static void add_uris_from_dns(const char *filename,int lnr,
                               struct ldap_config *cfg)
 {
-  int ret=0;
-  char *domain;
+  int rc;
+  const char *domain;
   char *hostlist=NULL,*nxt;
   char buf[HOST_NAME_MAX+sizeof("ldap://")];
   domain=cfg_getdomainname(filename,lnr);
-  ret=ldap_domain2hostlist(domain,&hostlist);
+  rc=ldap_domain2hostlist(domain,&hostlist);
   /* FIXME: have better error handling */
   if ((hostlist==NULL)||(*hostlist=='\0'))
   {
@@ -554,7 +554,7 @@ static void set_base(const char *filename,int lnr,
                      const char *value,const char **var)
 {
 #ifdef HAVE_LDAP_DOMAIN2DN
-  char *domain = NULL;
+  const char *domain=NULL;
   char *domaindn=NULL;
 #endif /* HAVE_LDAP_DOMAIN2DN */
   /* if the base is "DOMAIN" use the domain name */
@@ -563,7 +563,6 @@ static void set_base(const char *filename,int lnr,
 #ifdef HAVE_LDAP_DOMAIN2DN
     domain=cfg_getdomainname(filename,lnr);
     ldap_domain2dn(domain,&domaindn);
-    free(domain);
     log_log(LOG_DEBUG,"set_base(): setting base to %s from domain",domaindn);
     value=domaindn;
 #else /* not HAVE_LDAP_DOMAIN2DN */

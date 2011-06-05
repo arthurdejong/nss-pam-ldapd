@@ -99,7 +99,7 @@ const char *getfqdn(void)
         (host->h_aliases[i][hostnamelen]=='.')&&
         (host->h_aliases[i][hostnamelen+1]!='\0'))
     {
-      fqdn=host->h_aliases[i];
+      fqdn=strdup(host->h_aliases[i]);
       return fqdn;
     }
   }
