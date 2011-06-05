@@ -244,7 +244,7 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   authzmsg[0]='\0';
   /* read request parameters */
   READ_STRING(fp,username);
-  SKIP_STRING(fp);
+  SKIP_STRING(fp); /* DN */
   READ_STRING(fp,servicename);
   READ_STRING(fp,password);
   /* log call */
@@ -377,7 +377,9 @@ static int try_autzsearch(MYLDAP_SESSION *session,const char *dn,
   /* check whether the search filter is configured at all */
   if (!nslcd_cfg->ldc_pam_authz_search)
     return LDAP_SUCCESS;
-  /* build the dictionary with variables */
+  /* build the dictionary with variables
+     NOTE: any variables added here also need to be added to
+           cfg.c:parse_pam_authz_search_statement() */
   dict=dict_new();
   autzsearch_var_add(dict,"username",username);
   autzsearch_var_add(dict,"service",servicename);
@@ -441,7 +443,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   authzmsg[0]='\0';
   /* read request parameters */
   READ_STRING(fp,username);
-  SKIP_STRING(fp);
+  SKIP_STRING(fp); /* DN */
   READ_STRING(fp,servicename);
   READ_STRING(fp,ruser);
   READ_STRING(fp,rhost);
@@ -497,7 +499,7 @@ int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session)
   int32_t sessionid;
   /* read request parameters */
   READ_STRING(fp,username);
-  SKIP_STRING(fp);
+  SKIP_STRING(fp); /* DN */
   READ_STRING(fp,servicename);
   READ_STRING(fp,tty);
   READ_STRING(fp,rhost);
@@ -526,7 +528,7 @@ int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session)
   int32_t sessionid;
   /* read request parameters */
   READ_STRING(fp,username);
-  SKIP_STRING(fp);
+  SKIP_STRING(fp); /* DN */
   READ_STRING(fp,servicename);
   READ_STRING(fp,tty);
   READ_STRING(fp,rhost);

@@ -57,6 +57,7 @@
 #include "log.h"
 #include "cfg.h"
 #include "attmap.h"
+#include "common/expr.h"
 
 struct ldap_config *nslcd_cfg=NULL;
 
@@ -756,6 +757,39 @@ static void parse_nss_initgroups_ignoreusers_statement(
   }
 }
 
+static void parse_pam_authz_search_statement(
+              const char *filename,int lnr,const char *keyword,
+              char *line,struct ldap_config *cfg)
+{
+  SET *set;
+  const char **list;
+  int i;
+  check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
+  cfg->ldc_pam_authz_search=xstrdup(line);
+  /* check the variables used in the expression */
+  set=expr_vars(cfg->ldc_pam_authz_search,NULL);
+  list=set_tolist(set);
+  for (i=0;list[i]!=NULL;i++)
+  {
+    if ((strcmp(list[i],"username")!=0)&&
+        (strcmp(list[i],"service")!=0)&&
+        (strcmp(list[i],"ruser")!=0)&&
+        (strcmp(list[i],"rhost")!=0)&&
+        (strcmp(list[i],"tty")!=0)&&
+        (strcmp(list[i],"hostname")!=0)&&
+        (strcmp(list[i],"fqdn")!=0)&&
+        (strcmp(list[i],"dn")!=0)&&
+        (strcmp(list[i],"uid")!=0))
+    {
+      log_log(LOG_ERR,"%s:%d: unknown variable $%s",filename,lnr,list[i]);
+      exit(EXIT_FAILURE);
+    }
+  }
+  /* free memory */
+  set_free(set);
+  free(list);
+}
+
 static void cfg_read(const char *filename,struct ldap_config *cfg)
 {
   FILE *fp;
@@ -1057,8 +1091,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"pam_authz_search")==0)
     {
-      check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
-      cfg->ldc_pam_authz_search=xstrdup(line);
+      parse_pam_authz_search_statement(filename,lnr,keyword,line,cfg);
     }
     else if (strcasecmp(keyword,"nss_min_uid")==0)
     {
