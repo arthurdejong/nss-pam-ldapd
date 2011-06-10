@@ -190,14 +190,14 @@ static int check_shadow(MYLDAP_SESSION *session,const char *username,
         inactleft=lastchangedate+maxdays+inactdays-today;
         if (inactleft==0)
           mysnprintf(authzmsg+strlen(authzmsg),authzmsgsz-strlen(authzmsg)-1,
-                     ", account will expire today");
+                     ", account will be locked today");
         else if (inactleft>0)
           mysnprintf(authzmsg+strlen(authzmsg),authzmsgsz-strlen(authzmsg)-1,
-                     ", account will expire in %ld days",inactleft);
+                     ", account will be locked in %ld days",inactleft);
         else
         {
           mysnprintf(authzmsg+strlen(authzmsg),authzmsgsz-strlen(authzmsg)-1,
-                     ", account expired %ld days ago",-inactleft);
+                     ", account locked %ld days ago",-inactleft);
           log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
           return NSLCD_PAM_AUTHTOK_EXPIRED;
         }
@@ -299,7 +299,7 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   }
   /* perform shadow attribute checks */
   if (*username!='\0')
-    authzrc=check_shadow(session,username,authzmsg,sizeof(authzmsg),0,0);
+    authzrc=check_shadow(session,username,authzmsg,sizeof(authzmsg),1,0);
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
@@ -479,7 +479,7 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     return 0;
   }
   /* perform shadow attribute checks */
-  rc=check_shadow(session,username,authzmsg,sizeof(authzmsg),1,0);
+  rc=check_shadow(session,username,authzmsg,sizeof(authzmsg),0,0);
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
