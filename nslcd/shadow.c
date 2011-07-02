@@ -112,7 +112,7 @@ void shadow_init(void)
 
 static long to_date(const char *date,const char *attr)
 {
-  char buffer[8];
+  char buffer[32];
   long value;
   char *tmp;
   size_t l;
@@ -168,7 +168,7 @@ void get_shadow_properties(MYLDAP_ENTRY *entry,long *lastchangedate,
                            long *mindays,long *maxdays,long *warndays,
                            long *inactdays,long *expiredate,unsigned long *flag)
 {
-  char buffer[80];
+  char buffer[64];
   const char *tmpvalue;
   char *tmp;
   /* get lastchange date */
@@ -202,7 +202,7 @@ int update_lastchange(MYLDAP_SESSION *session,const char *userdn)
   int rc;
   const char **values;
   LDAPMod mod,*mods[2];
-  char buffer[80],*strvals[2];
+  char buffer[64],*strvals[2];
   /* find the name of the attribute to use */
   if ( (attmap_shadow_shadowLastChange==NULL) || (attmap_shadow_shadowLastChange[0]=='\0') )
     return LDAP_LOCAL_ERROR; /* attribute not mapped at all */
@@ -270,7 +270,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   long expiredate;
   unsigned long flag;
   int i;
-  char passbuffer[80];
+  char passbuffer[64];
   /* get username */
   usernames=myldap_get_values(entry,attmap_shadow_uid);
   if ((usernames==NULL)||(usernames[0]==NULL))

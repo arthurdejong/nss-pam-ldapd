@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -78,18 +78,18 @@ static int mkfilter_host_byname(const char *name,
                     attmap_host_cn,safename);
 }
 
-static int mkfilter_host_byaddr(const char *name,
+static int mkfilter_host_byaddr(const char *addrname,
                                 char *buffer,size_t buflen)
 {
-  char safename[64];
+  char safeaddr[64];
   /* escape attribute */
-  if (myldap_escape(name,safename,sizeof(safename)))
+  if (myldap_escape(addrname,safeaddr,sizeof(safeaddr)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
                     "(&%s(%s=%s))",
                     host_filter,
-                    attmap_host_ipHostNumber,safename);
+                    attmap_host_ipHostNumber,safeaddr);
 }
 
 void host_init(void)
@@ -167,18 +167,18 @@ NSLCD_HANDLE(
   int af;
   char addr[64];
   int len=sizeof(addr);
-  char name[64];
+  char addrname[64];
   char filter[1024];
   READ_ADDRESS(fp,addr,len,af);
   /* translate the address to a string */
-  if (inet_ntop(af,addr,name,sizeof(name))==NULL)
+  if (inet_ntop(af,addr,addrname,sizeof(addrname))==NULL)
   {
     log_log(LOG_WARNING,"unable to convert address to string");
     return -1;
   }
-  log_setrequest("host=%s",name);,
+  log_setrequest("host=%s",addrname);,
   NSLCD_ACTION_HOST_BYADDR,
-  mkfilter_host_byaddr(name,filter,sizeof(filter)),
+  mkfilter_host_byaddr(addrname,filter,sizeof(filter)),
   write_host(fp,entry)
 )
 

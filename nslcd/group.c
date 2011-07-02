@@ -1,7 +1,7 @@
 /*
    group.c - group entry lookup routines
-   Parts of this file were part of the nss_ldap library (as ldap-grp.c) which
-   has been forked into the nss-pam-ldapd library.
+   Parts of this file were part of the nss_ldap library (as ldap-grp.c)
+   which has been forked into the nss-pam-ldapd library.
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
@@ -205,7 +205,7 @@ static int do_write_group(
 /* return the list of members */
 static const char **getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
 {
-  char buf[20];
+  char buf[256];
   int i;
   const char **values;
   SET *set;
@@ -249,7 +249,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   gid_t gids[MAXGIDS_PER_ENTRY];
   int numgids;
   char *tmp;
-  char passbuffer[80];
+  char passbuffer[64];
   int rc;
   /* get group name (cn) */
   names=myldap_get_values(entry,attmap_group_cn);
@@ -274,7 +274,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
                           myldap_get_dn(entry),attmap_group_gidNumber);
       return 0;
     }
-    for (numgids=0;(gidvalues[numgids]!=NULL)&&(numgids<MAXGIDS_PER_ENTRY);numgids++)
+    for (numgids=0;(numgids<MAXGIDS_PER_ENTRY)&&(gidvalues[numgids]!=NULL);numgids++)
     {
       if (gidSid!=NULL)
         gids[numgids]=(gid_t)binsid2id(gidvalues[numgids]);
