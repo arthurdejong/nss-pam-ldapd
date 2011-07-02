@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Arthur de Jong <adejong@debian.org>
 Uploaders: Richard A Nelson (Rick) <cowboy@debian.org>
 Standards-Version: 3.9.2
-Build-Depends: debhelper (>= 7), libkrb5-dev, libldap2-dev, libsasl2-dev, po-debconf (>= 0.5.0), docbook2x, docbook-xml, libpam0g-dev
+Build-Depends: debhelper (>= 8), libkrb5-dev, libldap2-dev, libsasl2-dev, po-debconf (>= 0.5.0), docbook2x, docbook-xml, libpam0g-dev
 Homepage: http://arthurdejong.org/nss-pam-ldapd/
 Vcs-Svn: http://arthurdejong.org/svn/nss-pam-ldapd/nss-pam-ldapd/
 Vcs-Browser: http://arthurdejong.org/viewvc/nss-pam-ldapd/nss-pam-ldapd/

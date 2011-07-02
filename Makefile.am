@@ -57,10 +57,10 @@ DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/libpam-ldapd.install \
                debian/libpam-ldapd.lintian-overrides \
                debian/libpam-ldapd.manpages \
-               debian/libpam-ldapd.pam-auth-update \
                debian/libpam-ldapd.postinst \
                debian/libpam-ldapd.prerm \
                debian/libpam-ldapd.templates \
+               debian/pam-configs/ldap \
                debian/po/POTFILES.in debian/po/templates.pot \
                $(wildcard debian/po/*.po)
 
