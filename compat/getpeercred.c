@@ -1,5 +1,5 @@
 /*
-   getpeercred.h - function for determining information about the
+   getpeercred.c - function for determining information about the
                    other end of a unix socket
    This file is part of the nss-pam-ldapd library.
 
