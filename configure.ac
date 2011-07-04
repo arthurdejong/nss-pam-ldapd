@@ -225,7 +225,7 @@ AC_SUBST(NSLCD_SOCKET)
 # the directory PAM librabries are expected to be placed into
 AC_ARG_WITH(pam-seclib-dir,
             AS_HELP_STRING([--with-pam-seclib-dir=PAM_SECLIB_DIR],
-                           [path to PAM security library]),
+                           [path to PAM security library @<:@/lib/security@:>@]),
             [ PAM_SECLIB_DIR="$with_pam_seclib_dir" ],
             [ PAM_SECLIB_DIR="/lib/security" ])
 AC_DEFINE_UNQUOTED(PAM_SECLIB_DIR,"$PAM_SECLIB_DIR",[path to PAM security library])
