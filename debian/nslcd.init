@@ -142,7 +142,6 @@ restart|force-reload)
   start-stop-daemon --stop --quiet --retry 10 \
                     --pidfile $NSLCD_PIDFILE \
                     --name nslcd
-  log_end_msg $?
   [ -n "$NSLCD_PIDFILE" ] && rm -f $NSLCD_PIDFILE
   k5start_stop
   k5start_start
