@@ -316,7 +316,6 @@ passwd (objectClass=posixAccount)
   uidNumber         - uid
   gidNumber         - gid
   gecos             - gecos
-  cn                - gecos (if gecos is unset)
   homeDirectory     - home directory
   loginShell        - shell
 protocols (objectClass=ipProtocol)
