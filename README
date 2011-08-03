@@ -299,7 +299,7 @@ group (objectClass=posixGroup)
   userPassword      - password
   gidNumber         - gid
   memberUid         - members (user names)
-  uniqueMember      - members (DN values)
+  member            - members (DN values)
 hosts (objectClass=ipHost)
   cn                - host name (and aliases)
   ipHostNumber      - addresses
@@ -355,7 +355,7 @@ by using the memberUid attribute, is the simplest and by far the fastest
 (takes the least number of lookups). This attribute maps to user names with
 the same values as the uid attribute would hold for posixAccount entries.
 
-The second method is to use DN values in the uniqueMember attribute (attribute
+The second method is to use DN values in the member attribute (attribute
 names can be changed by using the attribute mapping options as described in
 the manual page). This is potentially a lot slower because in the worst case
 every DN has to be looked up in the LDAP server to find the proper value for
@@ -368,9 +368,8 @@ maintained that saves the DN to uid translations for 15 minutes.
 In all cases, users that are specified as member multiple times are returned
 only once.
 
-Currently, having nested groups by uniqueMember values pointing to other
-groups, as well as the memberOf attribute in posixAccount entries are
-unsupported.
+Currently, having nested groups by member values pointing to other groups,
+as well as the memberOf attribute in posixAccount entries are unsupported.
 
 case sensitivity
 ----------------

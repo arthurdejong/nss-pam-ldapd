@@ -36,7 +36,7 @@ attmap = common.Attributes(cn='cn',
                            userPassword='"*"',
                            gidNumber='gidNumber',
                            memberUid='memberUid',
-                           uniqueMember='uniqueMember')
+                           member='member')
 filter = '(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))'
 
 
@@ -63,8 +63,8 @@ class GroupRequest(common.Request):
             for member in clean(attributes['memberUid']):
                 if common.isvalidname(member):
                     members.add(member)
-            # translate and add the uniqueMember values
-            for memberdn in clean(attributes['uniqueMember']):
+            # translate and add the member values
+            for memberdn in clean(attributes['member']):
                 member = dn2uid(self.conn, memberdn)
                 if member and common.isvalidname(member):
                     members.add(member)
@@ -109,7 +109,7 @@ class GroupByMemberRequest(GroupRequest):
         # set up our own attributes that leave out membership attributes
         self.attmap = common.Attributes(attmap)
         del self.attmap['memberUid']
-        del self.attmap['uniqueMember']
+        del self.attmap['member']
 
     def read_parameters(self, fp):
         memberuid = fp.read_string()
@@ -122,12 +122,12 @@ class GroupByMemberRequest(GroupRequest):
     def mk_filter(self, parameters):
         # we still need a custom mk_filter because this is an | query
         memberuid = parameters['memberUid']
-        if attmap['uniqueMember']:
+        if attmap['member']:
             dn = uid2dn(self.conn, memberuid)
             if dn:
                 return '(&%s(|(%s=%s)(%s=%s)))' % ( self.filter,
                           attmap['memberUid'], ldap.filter.escape_filter_chars(memberuid),
-                          attmap['uniqueMember'], ldap.filter.escape_filter_chars(dn) )
+                          attmap['member'], ldap.filter.escape_filter_chars(dn) )
         return '(&%s(%s=%s))' % ( self.filter,
                   attmap['memberUid'], ldap.filter.escape_filter_chars(memberuid) )
 

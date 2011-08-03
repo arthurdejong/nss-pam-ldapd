@@ -44,7 +44,7 @@
  *   MUST ( cn $ gidNumber )
  *   MAY ( userPassword $ memberUid $ description ) )
  *
- * apart from the above a uniqueMember attribute is also supported that
+ * apart from the above a member attribute is also supported that
  * may contains a DN of a user
  *
  * nested groups (groups that are member of a group) are currently
@@ -65,7 +65,7 @@ const char *attmap_group_cn            = "cn";
 const char *attmap_group_userPassword  = "\"*\"";
 const char *attmap_group_gidNumber     = "gidNumber";
 const char *attmap_group_memberUid     = "memberUid";
-const char *attmap_group_uniqueMember  = "uniqueMember";
+const char *attmap_group_member        = "member";
 
 /* special property for objectSid-based searches
    (these are already LDAP-escaped strings) */
@@ -142,7 +142,7 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
                     "(&%s(|(%s=%s)(%s=%s)))",
                     group_filter,
                     attmap_group_memberUid,safeuid,
-                    attmap_group_uniqueMember,safedn);
+                    attmap_group_member,safedn);
 }
 
 void group_init(void)
@@ -168,7 +168,7 @@ void group_init(void)
   attmap_add_attributes(set,attmap_group_userPassword);
   attmap_add_attributes(set,attmap_group_memberUid);
   attmap_add_attributes(set,attmap_group_gidNumber);
-  attmap_add_attributes(set,attmap_group_uniqueMember);
+  attmap_add_attributes(set,attmap_group_member);
   group_attrs=set_tolist(set);
   set_free(set);
 }
@@ -221,8 +221,8 @@ static const char **getmembers(MYLDAP_ENTRY *entry,MYLDAP_SESSION *session)
       if (isvalidname(values[i]))
         set_add(set,values[i]);
     }
-  /* add the uniqueMember values */
-  values=myldap_get_values(entry,attmap_group_uniqueMember);
+  /* add the member values */
+  values=myldap_get_values(entry,attmap_group_member);
   if (values!=NULL)
     for (i=0;values[i]!=NULL;i++)
     {
@@ -294,7 +294,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   passwd=get_userpassword(entry,attmap_group_userPassword,passbuffer,sizeof(passbuffer));
   if (passwd==NULL)
     passwd=default_group_userPassword;
-  /* get group memebers (memberUid&uniqueMember) */
+  /* get group memebers (memberUid&member) */
   if (wantmembers)
     members=getmembers(entry,session);
   else
