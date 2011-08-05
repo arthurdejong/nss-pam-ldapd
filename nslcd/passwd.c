@@ -377,6 +377,17 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
   return myldap_cpy_dn(entry,buf,buflen);
 }
 
+#define CACHED_UNKNOWN 22
+static int cached_shadow_uses_ldap=CACHED_UNKNOWN;
+
+/* check whether shadow lookups are configured to use ldap */
+static int shadow_uses_ldap(void)
+{
+  if (cached_shadow_uses_ldap==CACHED_UNKNOWN)
+    cached_shadow_uses_ldap=nsswitch_db_uses_ldap("/etc/nsswitch.conf","shadow");
+  return cached_shadow_uses_ldap;
+}
+
 /* the maximum number of uidNumber attributes per entry */
 #define MAXUIDS_PER_ENTRY 5
 
@@ -405,10 +416,10 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
                         myldap_get_dn(entry),attmap_passwd_uid);
     return 0;
   }
-  /* get the password for this entry */
-  if (myldap_has_objectclass(entry,"shadowAccount"))
+  /* if we are using shadow maps and this entry looks like it would return
+     shadow information, make the passwd entry indicate it */
+  if (myldap_has_objectclass(entry,"shadowAccount")&&shadow_uses_ldap())
   {
-    /* if the entry has a shadowAccount entry, point to that instead */
     passwd="x";
   }
   else
