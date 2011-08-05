@@ -64,15 +64,17 @@ uid nslcd
 gid nslcd
 uri ldapi:///
 base dc=test,dc=tld
-pagesize 100
+#pagesize 100 # paging and referrals don't mix
 timelimit 2
 bind_timelimit 4
 reconnect_sleeptime 4
 reconnect_retrytime 10
-filter group (|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))
+filter group (|(objectClass=posixGroup)(objectClass=groupOfNames))
 base passwd ou=people,dc=test,dc=tld
 base shadow ou=people,dc=test,dc=tld
 base group ou=groups,dc=test,dc=tld
+rootpwmoddn cn=admin,dc=test,dc=tld
+rootpwmodpw test
 
 
 OLD TESTS

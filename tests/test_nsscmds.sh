@@ -398,12 +398,12 @@ check "getent shadow ecordas" << EOM
 ecordas:*::::7:2::0
 EOM
 
-check "getent shadow arthur" << EOM
-arthur:*:14302:::7:2::0
+check "getent shadow adishaw" << EOM
+adishaw:*:12302:::7:2::0
 EOM
 
 # check case-sensitivity
-check "getent shadow ARTHUR" << EOM
+check "getent shadow ADISHAW" << EOM
 EOM
 
 # check if the number of passwd entries matches the number of shadow entries
