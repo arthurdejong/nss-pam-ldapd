@@ -179,7 +179,7 @@ static int entry_has_valid_uid(MYLDAP_ENTRY *entry)
   if (nslcd_cfg->ldc_nss_min_uid==0)
     return 1;
   /* get all uidNumber attributes */
-  values=myldap_get_values(entry,attmap_passwd_uidNumber);
+  values=myldap_get_values_len(entry,attmap_passwd_uidNumber);
   if ((values==NULL)||(values[0]==NULL))
   {
     log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
@@ -425,7 +425,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   }
   else
   {
-    tmpvalues=myldap_get_values(entry,attmap_passwd_uidNumber);
+    tmpvalues=myldap_get_values_len(entry,attmap_passwd_uidNumber);
     if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
     {
       log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
@@ -451,7 +451,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   /* get the gid for this entry */
   if (gidSid!=NULL)
   {
-    tmpvalues=myldap_get_values(entry,attmap_passwd_gidNumber);
+    tmpvalues=myldap_get_values_len(entry,attmap_passwd_gidNumber);
     if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
     {
       log_log(LOG_WARNING,"passwd entry %s does not contain %s value",

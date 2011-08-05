@@ -117,6 +117,10 @@ char *myldap_cpy_dn(MYLDAP_ENTRY *entry,char *buf,size_t buflen);
    May return NULL or an empty array. */
 MUST_USE const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr);
 
+/* Get the attribute values from a certain entry as a NULL terminated list.
+   May return NULL or an empty array. */
+MUST_USE const char **myldap_get_values_len(MYLDAP_ENTRY *entry,const char *attr);
+
 /* Checks to see if the entry has the specified object class. */
 MUST_USE int myldap_has_objectclass(MYLDAP_ENTRY *entry,const char *objectclass);
 

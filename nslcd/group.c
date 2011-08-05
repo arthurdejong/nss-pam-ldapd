@@ -267,7 +267,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   }
   else
   {
-    gidvalues=myldap_get_values(entry,attmap_group_gidNumber);
+    gidvalues=myldap_get_values_len(entry,attmap_group_gidNumber);
     if ((gidvalues==NULL)||(gidvalues[0]==NULL))
     {
       log_log(LOG_WARNING,"group entry %s does not contain %s value",

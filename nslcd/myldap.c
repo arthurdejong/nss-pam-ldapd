@@ -130,7 +130,7 @@ struct myldap_search
 
 /* The maximum number of ranged attribute values that may be stoted
    per entry. */
-#define MAX_RANGED_ATTRIBUTES_PER_ENTRY 2
+#define MAX_RANGED_ATTRIBUTES_PER_ENTRY 8
 
 /* A single entry from the LDAP database as returned by
    myldap_get_entry(). */
@@ -1427,6 +1427,109 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
   /* we found no room to store the entry */
   log_log(LOG_ERR,"ldap_get_values() couldn't store results, increase MAX_ATTRIBUTES_PER_ENTRY");
   ldap_value_free(values);
+  return NULL;
+}
+
+/* Convert the bervalues to a simple list of strings that can be freed
+   with one call to free(). */
+static const char **bervalues_to_values(struct berval **bvalues)
+{
+  int num_values;
+  int i;
+  size_t sz;
+  char *buf;
+  char **values;
+  /* figure out how much memory to allocate */
+  num_values=ldap_count_values_len(bvalues);
+  sz=(num_values+1)*sizeof(char *);
+  for (i=0;i<num_values;i++)
+    sz+=bvalues[i]->bv_len+1;
+  /* allocate the needed memory */
+  buf=(char *)malloc(sz);
+  if (buf==NULL)
+  {
+    log_log(LOG_CRIT,"myldap_get_values_len(): malloc() failed to allocate memory");
+    ldap_value_free_len(bvalues);
+    return NULL;
+  }
+  values=(char **)buf;
+  buf+=(num_values+1)*sizeof(char *);
+  /* copy from bvalues */
+  for (i=0;i<num_values;i++)
+  {
+    values[i]=buf;
+    memcpy(values[i],bvalues[i]->bv_val,bvalues[i]->bv_len);
+    values[i][bvalues[i]->bv_len]='\0';
+    buf+=bvalues[i]->bv_len+1;
+  }
+  values[i]=NULL;
+  return (const char **)values;
+}
+
+/* Simple wrapper around ldap_get_values(). */
+const char **myldap_get_values_len(MYLDAP_ENTRY *entry,const char *attr)
+{
+  const char **values;
+  struct berval **bvalues;
+  int rc;
+  int i;
+  SET *set;
+  /* check parameters */
+  if (!is_valid_entry(entry))
+  {
+    log_log(LOG_ERR,"myldap_get_values_len(): invalid result entry passed");
+    errno=EINVAL;
+    return NULL;
+  }
+  else if (attr==NULL)
+  {
+    log_log(LOG_ERR,"myldap_get_values_len(): invalid attribute name passed");
+    errno=EINVAL;
+    return NULL;
+  }
+  if (!entry->search->valid)
+    return NULL; /* search has been stopped */
+  /* get from LDAP */
+  bvalues=ldap_get_values_len(entry->search->session->ld,entry->search->msg,attr);
+  if (bvalues==NULL)
+  {
+    if (ldap_get_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
+      rc=LDAP_UNAVAILABLE;
+    /* ignore decoding errors as they are just nonexisting attribute values */
+    if (rc==LDAP_DECODING_ERROR)
+    {
+      rc=LDAP_SUCCESS;
+      ldap_set_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc);
+    }
+    else if (rc==LDAP_SUCCESS)
+    {
+      /* we have a success code but no values, let's try to get ranged
+         values */
+      set=myldap_get_ranged_values(entry,attr);
+      if (set==NULL)
+        return NULL;
+      values=set_tolist(set);
+    }
+    else
+      log_log(LOG_WARNING,"myldap_get_values_len() of attribute \"%s\" on entry \"%s\" returned NULL: %s",
+                          attr,myldap_get_dn(entry),ldap_err2string(rc));
+    return NULL;
+  }
+  else
+  {
+    values=bervalues_to_values(bvalues);
+    ldap_value_free_len(bvalues);
+  }
+  /* store values entry so we can free it later on */
+  for (i=0;i<MAX_RANGED_ATTRIBUTES_PER_ENTRY;i++)
+    if (entry->rangedattributevalues[i]==NULL)
+    {
+      entry->rangedattributevalues[i]=(char **)values;
+      return values;
+    }
+  /* we found no room to store the values */
+  log_log(LOG_ERR,"myldap_get_values_len() couldn't store results, increase MAX_RANGED_ATTRIBUTES_PER_ENTRY");
+  free(values);
   return NULL;
 }
 
