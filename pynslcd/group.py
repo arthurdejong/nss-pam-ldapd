@@ -37,7 +37,7 @@ attmap = common.Attributes(cn='cn',
                            gidNumber='gidNumber',
                            memberUid='memberUid',
                            member='member')
-filter = '(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))'
+filter = '(|(objectClass=posixGroup)(objectClass=groupOfNames))'
 
 
 class GroupRequest(common.Request):

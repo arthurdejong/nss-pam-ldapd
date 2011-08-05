@@ -113,7 +113,7 @@ static void test_get(void)
   printf("test_myldap: test_get(): doing search...\n");
   search1=myldap_search(session,nslcd_cfg->ldc_bases[0],
                         LDAP_SCOPE_SUBTREE,
-                        "(&(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))(cn=testgroup2))",
+                        "(&(|(objectClass=posixGroup)(objectClass=groupOfNames))(cn=testgroup2))",
                         attrs1,NULL);
   assert(search1!=NULL);
   /* get one entry */
