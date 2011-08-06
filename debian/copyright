@@ -69,6 +69,7 @@ with or without modifications. The code is
 The file m4/ax_pthread.m4 contains the following copyright statement:
 
   Copyright (c) 2008 Steven G. Johnson <stevenj@alum.mit.edu>
+  Copyright (c) 2011 Daniel Richard G. <skunk@iSKUNK.ORG>
 
   This program is free software: you can redistribute it and/or modify it
   under the terms of the GNU General Public License as published by the
