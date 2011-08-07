@@ -36,7 +36,7 @@ SUBDIRS += man tests
 
 DEBIAN_FILES = debian/changelog debian/compat debian/control \
                debian/copyright debian/rules debian/NEWS \
-               debian/source/format \
+               debian/source/format debian/source/lintian-overrides \
                debian/nslcd.conffile \
                debian/nslcd.config \
                debian/nslcd.default \

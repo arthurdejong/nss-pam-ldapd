@@ -1,2 +1,2 @@
-lib/security
+lib/*/security/pam_ldap.so
 debian/pam-configs/ldap usr/share/pam-configs

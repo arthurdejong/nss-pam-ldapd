@@ -2,17 +2,19 @@
 
 export DH_VERBOSE=1
 
+# multiarch support
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
 %:
 	dh $@
 
+# pass extra flags to configure
 override_dh_auto_configure:
 	dh_auto_configure -- \
-	            --libdir=/lib \
+	            --libdir=/lib/$(DEB_HOST_MULTIARCH) \
+	            --with-pam-seclib-dir=/lib/$(DEB_HOST_MULTIARCH)/security \
 	            --enable-warnings \
 	            --with-ldap-lib=openldap \
 	            --with-ldap-conf-file=/etc/nslcd.conf \
 	            --with-nslcd-pidfile=/var/run/nslcd/nslcd.pid \
 	            --with-nslcd-socket=/var/run/nslcd/socket
-
-override_dh_makeshlibs:
-	# do not generate shlibs (shared NSS library not meant to be linked)

@@ -1,1 +1,1 @@
-lib/libnss_ldap.so*
+lib/*/libnss_ldap.so*
