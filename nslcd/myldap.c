@@ -474,6 +474,61 @@ static int do_rebind(LDAP *ld,LDAP_CONST char *url,
 }
 #endif /* HAVE_LDAP_SET_REBIND_PROC */
 
+/* set a recieve and send timeout on a socket */
+static int set_socket_timeout(LDAP *ld,time_t sec,suseconds_t usec)
+{
+  struct timeval tv;
+  int rc=LDAP_SUCCESS;
+  int sd;
+  log_log(LOG_DEBUG,"set_socket_timeout(%lu,%lu)",sec,usec);
+  /* get the socket */
+  if ((rc=ldap_get_option(ld,LDAP_OPT_DESC,&sd))!=LDAP_SUCCESS)
+  {
+    log_log(LOG_ERR,"ldap_get_option(LDAP_OPT_DESC) failed: %s",ldap_err2string(rc));
+    return rc;
+  }
+  /* ignore invalid (probably closed) file descriptors */
+  if (sd<=0)
+    return LDAP_SUCCESS;
+  /* set timeouts */
+  memset(&tv,0,sizeof(tv));
+  tv.tv_sec=sec;
+  tv.tv_usec=usec;
+  if (setsockopt(sd,SOL_SOCKET,SO_RCVTIMEO,(void *)&tv,sizeof(tv)))
+  {
+    log_log(LOG_ERR,"setsockopt(%d,SO_RCVTIMEO) failed: %s",sd,strerror(errno));
+    rc=LDAP_LOCAL_ERROR;
+  }
+  if (setsockopt(sd,SOL_SOCKET,SO_SNDTIMEO,(void *)&tv,sizeof(tv)))
+  {
+    log_log(LOG_ERR,"setsockopt(%d,SO_RCVTIMEO) failed: %s",sd,strerror(errno));
+    rc=LDAP_LOCAL_ERROR;
+  }
+  return rc;
+}
+
+#ifdef LDAP_OPT_CONNECT_CB
+/* This function is called by the LDAP library once a connection was made to the server. We
+   set a timeout on the socket here, to catch netzwork timeouts during the ssl
+   handshake phase. It is configured with LDAP_OPT_CONNECT_CB. */
+static int connect_cb(LDAP *ld,Sockbuf UNUSED(*sb),LDAPURLDesc UNUSED(*srv),
+        struct sockaddr UNUSED(*addr),struct ldap_conncb UNUSED(*ctx))
+{
+  /* set timeout options on socket to avoid hang in some cases (a little
+     more than the normal timeout so this should only be triggered in cases
+     where the library behaves incorrectly) */
+  if (nslcd_cfg->ldc_timelimit)
+    set_socket_timeout(ld,nslcd_cfg->ldc_timelimit,500000);
+  return LDAP_SUCCESS;
+}
+
+/* We have an empty disconnect callback because LDAP_OPT_CONNECT_CB expects
+   both functions to be available. */
+static void disconnect_cb(LDAP UNUSED(*ld),Sockbuf UNUSED(*sb),struct ldap_conncb UNUSED(*ctx))
+{
+}
+#endif /* LDAP_OPT_CONNECT_CB */
+
 /* This function sets a number of properties on the connection, based
    what is configured in the configfile. This function returns an
    LDAP status code. */
@@ -482,6 +537,9 @@ static int do_set_options(MYLDAP_SESSION *session)
   /* FIXME: move this to a global initialisation routine */
   int rc;
   struct timeval tv;
+#ifdef LDAP_OPT_CONNECT_CB
+  struct ldap_conncb cb;
+#endif /* LDAP_OPT_CONNECT_CB */
 #ifdef LDAP_OPT_X_TLS
   int i;
 #endif /* LDAP_OPT_X_TLS */
@@ -528,6 +586,13 @@ static int do_set_options(MYLDAP_SESSION *session)
   LDAP_SET_OPTION(session->ld,LDAP_OPT_REFERRALS,nslcd_cfg->ldc_referrals?LDAP_OPT_ON:LDAP_OPT_OFF);
   log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_RESTART,%s)",nslcd_cfg->ldc_restart?"LDAP_OPT_ON":"LDAP_OPT_OFF");
   LDAP_SET_OPTION(session->ld,LDAP_OPT_RESTART,nslcd_cfg->ldc_restart?LDAP_OPT_ON:LDAP_OPT_OFF);
+#ifdef LDAP_OPT_CONNECT_CB
+  /* register a connection callback */
+  cb.lc_add=connect_cb;
+  cb.lc_del=disconnect_cb;
+  cb.lc_arg=NULL;
+  LDAP_SET_OPTION(session->ld,LDAP_OPT_CONNECT_CB,(void *)&cb);
+#endif /* LDAP_OPT_CONNECT_CB */
 #ifdef LDAP_OPT_X_TLS
   /* if SSL is desired, then enable it */
   if ( (nslcd_cfg->ldc_ssl_on==SSL_LDAPS) ||
@@ -548,23 +613,19 @@ static void do_close(MYLDAP_SESSION *session)
 {
   int i;
   int rc;
-  int sd=-1;
-  struct timeval tv;
-  /* set timeout options on socket to avoid hang in some cases
-     (we set a short timeout because we don't care too much about properly
-     shutting down the connection) */
-  if (ldap_get_option(session->ld,LDAP_OPT_DESC,&sd)==LDAP_SUCCESS)
-  {
-    /* ignore errors */
-    tv.tv_sec=nslcd_cfg->ldc_timelimit/2;
-    if (!tv.tv_sec) tv.tv_sec=1;
-    tv.tv_usec=0;
-    (void)setsockopt(sd,SOL_SOCKET,SO_RCVTIMEO,(void *)&tv,sizeof(tv));
-    (void)setsockopt(sd,SOL_SOCKET,SO_SNDTIMEO,(void *)&tv,sizeof(tv));
-  }
+  time_t sec;
   /* if we had reachability problems with the server close the connection */
   if (session->ld!=NULL)
   {
+    /* set timeout options on socket to avoid hang in some cases
+       (we set a short timeout because we don't care too much about properly
+       shutting down the connection) */
+    if (nslcd_cfg->ldc_timelimit)
+    {
+      sec=nslcd_cfg->ldc_timelimit/2;
+      if (!sec) sec=1;
+      set_socket_timeout(session->ld,sec,0);
+    }
     /* go over the other searches and partially close them */
     for (i=0;i<MAX_SEARCHES_IN_SESSION;i++)
     {
@@ -634,8 +695,6 @@ void myldap_session_check(MYLDAP_SESSION *session)
 static int do_open(MYLDAP_SESSION *session)
 {
   int rc;
-  int sd=-1;
-  struct timeval tv;
   /* if the connection is still there (ie. ldap_unbind() wasn't
      called) then we can return the cached connection */
   if (session->ld!=NULL)
@@ -683,17 +742,6 @@ static int do_open(MYLDAP_SESSION *session)
                         (errno==0)?"":strerror(errno));
     do_close(session);
     return rc;
-  }
-  /* set timeout options on socket to avoid hang in some cases
-     (twice the normal timeout so this should only be triggered in cases
-     where the library behaves incorrectly) */
-  if (ldap_get_option(session->ld,LDAP_OPT_DESC,&sd)==LDAP_SUCCESS)
-  {
-    /* ignore errors */
-    tv.tv_sec=nslcd_cfg->ldc_timelimit*2;
-    tv.tv_usec=0;
-    (void)setsockopt(sd,SOL_SOCKET,SO_RCVTIMEO,(void *)&tv,sizeof(tv));
-    (void)setsockopt(sd,SOL_SOCKET,SO_SNDTIMEO,(void *)&tv,sizeof(tv));
   }
   /* update last activity and finish off state */
   time(&(session->lastactivity));
