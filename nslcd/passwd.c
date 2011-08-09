@@ -27,8 +27,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <string.h>
 #include <pthread.h>
 
@@ -377,14 +378,45 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
   return myldap_cpy_dn(entry,buf,buflen);
 }
 
+/* the cached value of whether shadow lookups use LDAP in nsswitch.conf */
+#define NSSWITCH_FILE "/etc/nsswitch.conf"
 #define CACHED_UNKNOWN 22
 static int cached_shadow_uses_ldap=CACHED_UNKNOWN;
+static time_t cached_shadow_lastcheck=0;
+#define CACHED_SHADOW_TIMEOUT (60)
+static time_t nsswitch_mtime=0;
+
+/* check whether /etc/nsswitch.conf should be related to update
+   cached_shadow_uses_ldap */
+static inline void check_nsswitch_reload(void)
+{
+  struct stat buf;
+  time_t t;
+  if ((cached_shadow_uses_ldap!=CACHED_UNKNOWN)&&
+      ((t=time(NULL)) > (cached_shadow_lastcheck+CACHED_SHADOW_TIMEOUT)))
+  {
+    cached_shadow_lastcheck=t;
+    if (stat(NSSWITCH_FILE,&buf))
+    {
+      log_log(LOG_ERR,"stat(%s) failed: %s",NSSWITCH_FILE,strerror(errno));
+      /* trigger a recheck anyway */
+      cached_shadow_uses_ldap=CACHED_UNKNOWN;
+      return;
+    }
+    /* trigger a recheck if file changed */
+    if (buf.st_mtime!=nsswitch_mtime)
+    {
+      nsswitch_mtime=buf.st_mtime;
+      cached_shadow_uses_ldap=CACHED_UNKNOWN;
+    }
+  }
+}
 
 /* check whether shadow lookups are configured to use ldap */
-static int shadow_uses_ldap(void)
+static inline int shadow_uses_ldap(void)
 {
   if (cached_shadow_uses_ldap==CACHED_UNKNOWN)
-    cached_shadow_uses_ldap=nsswitch_db_uses_ldap("/etc/nsswitch.conf","shadow");
+    cached_shadow_uses_ldap=nsswitch_db_uses_ldap(NSSWITCH_FILE,"shadow");
   return cached_shadow_uses_ldap;
 }
 
@@ -536,7 +568,8 @@ NSLCD_HANDLE_UID(
   if (!isvalidname(name)) {
     log_log(LOG_WARNING,"\"%s\": name denied by validnames option",name);
     return -1;
-  },
+  }
+  check_nsswitch_reload();,
   NSLCD_ACTION_PASSWD_BYNAME,
   mkfilter_passwd_byname(name,filter,sizeof(filter)),
   write_passwd(fp,entry,name,NULL,calleruid)
@@ -554,7 +587,8 @@ NSLCD_HANDLE_UID(
     WRITE_INT32(fp,NSLCD_VERSION);
     WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);
     WRITE_INT32(fp,NSLCD_RESULT_END);
-  },
+  }
+  check_nsswitch_reload();,
   NSLCD_ACTION_PASSWD_BYUID,
   mkfilter_passwd_byuid(uid,filter,sizeof(filter)),
   write_passwd(fp,entry,NULL,&uid,calleruid)
@@ -563,7 +597,8 @@ NSLCD_HANDLE_UID(
 NSLCD_HANDLE_UID(
   passwd,all,
   const char *filter;
-  log_setrequest("passwd(all)");,
+  log_setrequest("passwd(all)");
+  check_nsswitch_reload();,
   NSLCD_ACTION_PASSWD_ALL,
   (filter=passwd_filter,0),
   write_passwd(fp,entry,NULL,NULL,calleruid)
