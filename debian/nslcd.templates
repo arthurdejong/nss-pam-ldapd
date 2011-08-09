@@ -27,7 +27,7 @@ _Description: LDAP authentication to use:
  require (if any):
  .
   * none: no authentication;
-  * simple: simple clear text binddn/password;
+  * simple: simple bind DN and password authentication;
   * SASL: any Simple Authentication and Security Layer mechanism.
 
 Template: nslcd/ldap-binddn
@@ -50,7 +50,7 @@ _Description: SASL mechanism to use:
  .
   * auto: auto-negotiation;
   * LOGIN: deprecated in favor of PLAIN;
-  * PLAIN: clear-text user/password mechanism;
+  * PLAIN: simple cleartext password mechanism;
   * NTLM: NT LAN Manager authentication mechanism;
   * CRAM-MD5: challenge-response scheme based on HMAC-MD5;
   * DIGEST-MD5: HTTP Digest compatible challenge-response scheme;

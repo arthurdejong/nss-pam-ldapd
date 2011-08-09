@@ -174,7 +174,7 @@
      <term><option>bindpw</option> <replaceable>PASSWORD</replaceable></term>
      <listitem>
       <para>
-       Specifies the clear text credentials with which to bind.
+       Specifies the credentials with which to bind.
        This option is only applicable when used with <option>binddn</option> above.
        If you set this option you should consider changing the permissions
        of the <filename>nslcd.conf</filename> file to only grant access to
@@ -201,7 +201,7 @@
      <term><option>rootpwmodpw</option> <replaceable>PASSWORD</replaceable></term>
      <listitem>
       <para>
-       Specifies the clear text credentials with which to bind if the root
+       Specifies the credentials with which to bind if the root
        user tries to change a user's password.
        This option is only applicable when used with
        <option>rootpwmoddn</option> above.
