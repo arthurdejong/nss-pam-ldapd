@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2009, 2010 Arthur de Jong
+# Copyright (C) 2009, 2010, 2011 Arthur de Jong
 # Copyright (C) 2010 Symas Corporation
 #
 # This library is free software; you can redistribute it and/or
@@ -25,8 +25,9 @@ AM_CFLAGS = -fPIC
 
 pam_ldap_so_SOURCES = ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h pam.c common.h
-pam_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a -lpam \
-                    ../compat/libcompat.a
+pam_ldap_so_LDADD = ../common/libtio.a ../common/libprot.a \
+                    ../compat/libcompat.a \
+                    -lpam
 
 EXTRA_DIST = pam_ldap.map
 

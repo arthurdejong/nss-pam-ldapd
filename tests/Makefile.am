@@ -60,9 +60,9 @@ common_nslcd_LDADD = ../nslcd/log.o ../nslcd/common.o \
                      ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \
                      ../nslcd/passwd.o ../nslcd/protocol.o ../nslcd/rpc.o \
                      ../nslcd/service.o ../nslcd/shadow.o ../nslcd/pam.o \
-                     @nslcd_LIBS@ @PTHREAD_LIBS@ ../common/libtio.a \
-                     ../common/libdict.a ../common/libexpr.a \
-                     ../compat/libcompat.a
+                     ../common/libtio.a ../common/libdict.a \
+                     ../common/libexpr.a ../compat/libcompat.a \
+                     @nslcd_LIBS@ @PTHREAD_LIBS@
 
 test_cfg_SOURCES = test_cfg.c common.h
 test_cfg_LDADD = $(common_nslcd_LDADD)
