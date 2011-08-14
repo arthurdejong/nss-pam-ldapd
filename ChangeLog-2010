@@ -1,0 +1,934 @@
+2010-12-30  arthur
+
+	* [r1358] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.8.0 release
+	* [r1357] README, debian/copyright: update copyright information
+	* [r1356] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fi.po,
+	  debian/po/fr.po, debian/po/gl.po, debian/po/it.po,
+	  debian/po/ja.po, debian/po/nb.po, debian/po/nl.po,
+	  debian/po/pt.po, debian/po/pt_BR.po, debian/po/ru.po,
+	  debian/po/sv.po, debian/po/templates.pot, debian/po/vi.po,
+	  debian/po/zh_CN.po: run debconf-updatepo (new and updated
+	  templates)
+	* [r1355] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fi.po,
+	  debian/po/fr.po, debian/po/gl.po, debian/po/it.po,
+	  debian/po/ja.po, debian/po/nb.po, debian/po/nl.po,
+	  debian/po/pt.po, debian/po/pt_BR.po, debian/po/ru.po,
+	  debian/po/sv.po, debian/po/vi.po, debian/po/zh_CN.po: put headers
+	  of .po files in a consistent format
+	* [r1354] ., AUTHORS, HACKING, README, configure.ac,
+	  debian/copyright, nss/Makefile.am, nss/common.h, nss/ethers.c,
+	  nss/exports.solaris, nss/group.c, nss/hosts.c, nss/netgroup.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/prototypes.h,
+	  nss/rpc.c, nss/services.c, nss/shadow.c, nss/solnss.c: integrate
+	  Solaris support developed by Ted C. Cheng of Symas Corporation
+	  that was developed on the -solaris branch
+
+2010-12-29  arthur
+
+	* [r1348] Makefile.am, pam/Makefile.am: fix distcheck by passing
+	  --with-pam-seclib-dir to configure and remove unneeded slashes
+	* [r1347] Makefile.am, configure.ac, py-compile, pynslcd,
+	  pynslcd/Makefile.am, pynslcd/alias.py, pynslcd/cfg.py,
+	  pynslcd/common.py, pynslcd/config.py.in, pynslcd/debugio.py,
+	  pynslcd/ether.py, pynslcd/group.py, pynslcd/mypidfile.py,
+	  pynslcd/pam.py, pynslcd/passwd.py, pynslcd/pynslcd.py,
+	  pynslcd/shadow.py, pynslcd/tio.py: add an experimental (currently
+	  partial) Python implementation of nslcd to see if we can get the
+	  same features with easier to maintain code
+
+2010-12-28  arthur
+
+	* [r1346] man/nslcd.conf.5.xml, nslcd/attmap.c, nslcd/common.c,
+	  nslcd/common.h, nslcd/group.c, nslcd/passwd.c, nslcd/shadow.c:
+	  allow attribute mapping with an expression for the userPassword
+	  attribute for passwd, group and shadow entries and by default map
+	  it to the unmatchable password ("*") to avoid accidentally
+	  leaking password information
+
+2010-12-26  arthur
+
+	* [r1345] nslcd/common.h, nslcd/myldap.c, nslcd/myldap.h,
+	  nslcd/pam.c, nslcd/shadow.c: try to update the shadowLastChange
+	  attribute of a user on password change (the update is only tried
+	  if the attribute is present to begin with)
+	* [r1344] common/tio.c: return connection reset when connection was
+	  closed by the other end
+	* [r1343] tests/nslcd-test.conf: paging isn't supported by OpenLDAP
+	  when chasing referrals
+	* [r1342] nslcd/cfg.c: also support the tls_cacert option as an
+	  alias for tls_cacertfile
+	* [r1341] man/nslcd.conf.5.xml: add notes on ignored options when
+	  using GnuTLS (based on #513270 which was reported against the
+	  openldap package by Peter Palfrader)
+
+2010-12-24  arthur
+
+	* [r1340] nslcd/common.c: also support tilde (~) in user and group
+	  names, except as first character
+	* [r1339] nslcd/common.c: make logic of character tests easier to
+	  read
+
+2010-12-20  arthur
+
+	* [r1338] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/group.c, nslcd/passwd.c: implement a nss_min_uid option to
+	  filter user entries returned by LDAP
+
+2010-12-18  arthur
+
+	* [r1337] tests/test_nsscmds.sh: sort group members by alphabet to
+	  not be dependant on the order of attributes returned and the
+	  internal softing of the set
+	* [r1336] tests/README, tests/test.ldif.gz, tests/test_nsscmds.sh:
+	  update tests with current test set-up (with chasing a referral
+	  and some other minor changes)
+
+2010-12-12  arthur
+
+	* [r1328] nslcd/myldap.c: pass the ld to do_bind() instead of the
+	  session to use the correct ld from do_rebind()
+	* [r1327] nslcd/pam.c: always return a positive authorisation
+	  result during authentication because we don't do any
+	  authorisation checks during authentication and this may confuse
+	  the PAM module if it's only used for authorisation
+	* [r1326] pam/pam.c: fallback to standard PAM error message if one
+	  wasn't returned by nslcd
+	* [r1325] nslcd/myldap.c: fix comment
+
+2010-12-11  arthur
+
+	* [r1322] tests/test_myldap.c: include extra assertion checks
+
+2010-12-08  arthur
+
+	* [r1319] nslcd/myldap.c, nslcd/myldap.h, nslcd/nslcd.c: in each
+	  worker wake up once in a while to check whether any existing LDAP
+	  connections should be closed
+
+2010-12-03  arthur
+
+	* [r1318] nslcd/pam.c: in try_bind(), perform the search ourselves
+	  instead of using lookup_dn2uid() to also be able to match
+	  administrator DNs (thanks to Thaddeus J. Kollar for spotting
+	  this)
+	* [r1317] nslcd/pam.c: fix handling of try_bind() result code in
+	  nslcd_pam_authc() (patch by Thaddeus J. Kollar)
+
+2010-11-26  arthur
+
+	* [r1316] nslcd/nslcd.c: close all open file descriptors on start
+
+2010-11-17  arthur
+
+	* [r1315] nslcd/common.h, nslcd/pam.c, nslcd/passwd.c: return
+	  correct PAM status code for when LDAP server is unavailable
+	  (based on a patch by Pierre Gambarotto)
+	* [r1314] nslcd/pam.c: switch all internal functions to return an
+	  LDAP status code
+	* [r1313] nslcd/pam.c: return correct kind of error code from
+	  try_pwmod() (bug)
+
+2010-11-10  arthur
+
+	* [r1312] debian/nslcd.config, debian/nslcd.postinst,
+	  debian/nslcd.templates: implement configuring SASL authentication
+	  using Debconf, based on a patch by Daniel Dehennin
+	* [r1311] debian/nslcd.config: fix for problem with undefined
+	  values in read_config() function
+
+2010-11-07  arthur
+
+	* [r1310] debian/nslcd.config: split reading values from a
+	  configfile into a separate function and also ensure that
+	  tls_reqcert is correctly read
+	* [r1309] debian/nslcd.postinst: add comment describing function
+	* [r1308] debian/nslcd.postinst: split updating configuration file
+	  based on debconf value to separate function and make config
+	  option renaming consistent
+	* [r1307] pam/Makefile.am: fix installation directory for PAM
+	  module (was broken in r1239)
+	* [r1306] debian/nslcd.postinst: move special casing of handling
+	  bindpw removal to cfg_disable() function
+	* [r1305] debian/nslcd.config, debian/nslcd.postinst: handle
+	  tls_reqcert option consistently with other options
+	* [r1304] debian/nslcd.config: remove extra slash character
+	* [r1303] configure.ac: guess NSS SONAME on freebsd
+	* [r1302] configure.ac: use NSS flavour to determine which exports
+	  file to use
+	* [r1301] nslcd/alias.c, nslcd/common.h, nslcd/ether.c,
+	  nslcd/group.c, nslcd/host.c, nslcd/log.c, nslcd/log.h,
+	  nslcd/netgroup.c, nslcd/network.c, nslcd/pam.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  log the request with any logged messages
+	* [r1300] compat/ldap_compat.h: SASL compatibility definition
+
+2010-11-04  arthur
+
+	* [r1298] nslcd/nslcd.c: move acceptconnection() function body
+	  inside the worker() so we can more easily break out of the
+	  connection handling thread, close the server socket inside the
+	  signal handler to cause all threads waiting on accept() to fail
+	  and ensure that signals are handled in the main thread by
+	  blocking them in the worker threads (r1290 from -solaris branch)
+	* [r1297] nslcd/common.h, nslcd/pam.c, nslcd/passwd.c: avoid
+	  unneeded strdup()s by using a passed buffer to lookup_dn2uid()
+	  and using strcmp() in dn2uid() to see if the existing cached
+	  value is ok
+	* [r1296] nslcd/passwd.c: fix race condition that could cause a
+	  memory leak
+	* [r1295] common/nslcd-prot.c, nslcd/nslcd.c: pass the actual size
+	  of the address family and the path length to bind() and connect()
+	  for named sockets
+
+2010-11-03  arthur
+
+	* [r1294] nslcd/myldap.c: call myldap_session_check() before adding
+	  a new search to the session so the connection actually gets
+	  closed on timeout (the connection isn't closed when there are
+	  active searches)
+
+2010-10-16  arthur
+
+	* [r1288] configure.ac: chage test for compiling with gcc to be
+	  simpler and not use deprecated ac_cv_prog_gcc
+	* [r1287] nslcd/nslcd.c: fix log message
+	* [r1286] nslcd/cfg.h: remove obsolete note
+
+2010-10-15  arthur
+
+	* [r1279] common/dict.c, common/dict.h, common/set.c, common/set.h,
+	  tests/test_set.c: implement dict_getany() and set_pop() functions
+	  to be able to pick and remove entries
+	* [r1278] common/dict.c, common/dict.h, common/set.h,
+	  tests/test_dict.c, tests/test_set.c: make DICTs and SETs
+	  case-sensitive
+	* [r1277] nss/common.h: split out checking of NSS module
+	  availability and buffer correctness to separate macros (taken
+	  from the -solaris branch)
+	* [r1276] nslcd/myldap.c: set a longer socket timout for the normal
+	  connection (just in case mostly) and a short one to use when
+	  shutting down the connection (also see
+	  http://www.openldap.org/its/index.cgi?selectid=6673)
+
+2010-10-14  arthur
+
+	* [r1274] configure.ac: set {nss,pam}_ldap_so_LINK from configure
+	  to allow custom linker properties for Solaris (r1261 and r1263
+	  from -solaris branch)
+	* [r1273] configure.ac: also include sys/types.h for
+	  ethernet-related tests (same as in compat/ether.h) (r1259 from
+	  -solaris branch)
+	* [r1272] nss/group.c: move _nss_ldap_initgroups_dyn() definition
+	  to the end to have more logical order
+	* [r1271] nslcd/myldap.c: simplify SASL includes
+
+2010-10-13  arthur
+
+	* [r1270] nss/Makefile.am: link local modules before .a files from
+	  common directory to pick symbols up in correct order
+	* [r1269] configure.ac: move ethernet function checks outside
+	  nslcd-specific tests to also compile without warnings when only
+	  compiling NSS module
+	* [r1267] nslcd/pam.c: make buffer sizes for PAM requests
+	  consistent (and large enough for most situations)
+	* [r1266] configure.ac: rename --with-nss-ldap-maps to
+	  --with-nss-maps
+	* [r1265] compat/ldap_passwd_s.c: small fix
+
+2010-10-12  arthur
+
+	* [r1264] nslcd/myldap.c: set timeout options on LDAP socket to
+	  avoid problems when the LDAP library hangs on a read() (e.g. at
+	  ldap_unbind())
+
+2010-10-10  arthur
+
+	* [r1256] nslcd/myldap.c, nss/netgroup.c, pam/pam.c: make use of
+	  UNUSED() consistent throughout the code
+	* [r1255] nss/rpc.c: correctly name shared file handle
+	* [r1254] ChangeLog: undo changes to ChangeLog accidentally checked
+	  in in r1253)
+	* [r1253] ChangeLog, configure.ac, nss/Makefile.am,
+	  nss/exports.glibc, nss/exports.solaris, nss/nss_ldap.map,
+	  pam/Makefile.am: put all logic on how to run linker for NSS and
+	  PAM components in configure script (remove stuff from
+	  Makefile.ams) and add Solaris version script (renaming version
+	  scripts as needed) (r1250 from -solaris branch)
+	* [r1252] compat/ether.c, compat/ether.h: move missing declarations
+	  of ether_ntoa() and ether_aton() to header file so they are
+	  available for other sources also (r1243 from -solaris branch)
+	* [r1251] configure.ac: fix test of returnlen struct member check
+	  (r1244 from -solaris branch)
+
+2010-10-08  arthur
+
+	* [r1245] nss/services.c: correctly name shared file handle
+
+2010-10-04  arthur
+
+	* [r1240] nss/Makefile.am, nss/aliases.c, nss/ethers.c,
+	  nss/group.c, nss/hosts.c, nss/netgroup.c, nss/networks.c,
+	  nss/passwd.c, nss/protocols.c, nss/rpc.c, nss/services.c,
+	  nss/shadow.c, pam/Makefile.am: improve consistency of code layout
+	* [r1239] compat/nss_compat.h, configure.ac, nss/Makefile.am,
+	  nss/common.h, nss/hosts.c, nss/networks.c, nss/prototypes.h,
+	  pam/Makefile.am: merge some of the changes for Solaris
+	  portability to ease merging, adding --with-pam-seclib-dir,
+	  --with-pam-ldap-soname and --with-nss-flavour options and having
+	  some auto-detection for SONAMEs and NSS flavour
+
+2010-10-02  arthur
+
+	* [r1235] .: ignore configure.lineno
+
+2010-10-01  arthur
+
+	* [r1233] compat/ether.c, compat/ldap_passwd_s.c, configure.ac: use
+	  AC_CHECK_DECLS to check for definitions of functions we provide a
+	  replacement definition for
+
+2010-09-30  arthur
+
+	* [r1229] debian/po/vi.po: updated Vietnamese (vi) translation of
+	  debconf templates by Clytie Siddall
+	* [r1228] configure.ac: fix test quoting
+
+2010-09-29  arthur
+
+	* [r1227] compat/ether.c, configure.ac: only provide definitions
+	  for ether_aton() and ether_ntoa() for platforms missing a
+	  definition
+	* [r1226] compat/ether.c: fix definitions of ether_aton() and
+	  ether_ntoa()
+
+2010-09-28  arthur
+
+	* [r1225] compat/nss_compat.h, compat/pam_get_authtok.c,
+	  configure.ac: begin merging some of the compatibility
+	  improvements from Ted C. Cheng of Symas Corporation
+	* [r1224] compat/nss_compat.h: no need to provide a enum nss_status
+	  replacement because we don't use it
+	* [r1223] tests/test_aliases.c, tests/test_ethers.c,
+	  tests/test_group.c, tests/test_hosts.c, tests/test_netgroup.c,
+	  tests/test_networks.c, tests/test_passwd.c,
+	  tests/test_protocols.c, tests/test_rpc.c, tests/test_services.c,
+	  tests/test_shadow.c: also switch to nss_status_t for test code
+	* [r1222] configure.ac: simplify appending OBJEXT sed expression
+
+2010-09-27  arthur
+
+	* [r1221] nslcd/myldap.c: remove variables which are no longer
+	  necessary due to r1220
+	* [r1220] nslcd/myldap.c: remove disabling keepalives since we
+	  handle SIGPIPE anyway
+
+2010-09-26  arthur
+
+	* [r1219] nslcd/myldap.c: remove ugly empty line
+	* [r1218] configure.ac: properly define PACKAGE_URL
+	* [r1217] nslcd/group.c: update description of group schema
+	  supported
+	* [r1216] Makefile.am: switch to nicer mechanism to specify
+	  subdirectories to build
+
+2010-09-25  arthur
+
+	* [r1215] configure.ac, nss/Makefile.am: have a way to limit which
+	  NSS maps should be built
+
+2010-09-24  arthur
+
+	* [r1214] compat/nss_compat.h, nss/aliases.c, nss/common.h,
+	  nss/ethers.c, nss/group.c, nss/hosts.c, nss/netgroup.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/prototypes.h,
+	  nss/rpc.c, nss/services.c, nss/shadow.c: switch to using
+	  nss_status_t throughout the code and provide compatibility code
+	  to use whatever nss_status type is used on the system
+
+2010-09-23  arthur
+
+	* [r1208] nslcd/myldap.c: add some more error cases which should
+	  trigger a disconnect
+
+2010-09-20  arthur
+
+	* [r1207] nslcd/myldap.c: handle errors from ldap_result()
+	  consistently and also retry in case it times out
+
+2010-09-05  arthur
+
+	* [r1206] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/common.h, nslcd/nslcd.c, nslcd/pam.c, pam/pam.c: implement
+	  a rootpwmodpw option that allows root users to change user
+	  passwords without a password prompt
+
+2010-08-28  arthur
+
+	* [r1204] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.9 release
+	* [r1203] debian/po/nl.po: unfuzzy a few Dutch translations and
+	  improve some others
+	* [r1202] debian/po/it.po: fix package name
+	* [r1201] debian/po/es.po: updated Spanish (es) translation of
+	  debconf templates by Francisco Javier Cuadrado
+	* [r1200] debian/libpam-ldapd.templates, debian/po/ca.po,
+	  debian/po/cs.po, debian/po/da.po, debian/po/de.po,
+	  debian/po/es.po, debian/po/fi.po, debian/po/fr.po,
+	  debian/po/gl.po, debian/po/it.po, debian/po/ja.po,
+	  debian/po/nb.po, debian/po/nl.po, debian/po/pt.po,
+	  debian/po/pt_BR.po, debian/po/ru.po, debian/po/sv.po,
+	  debian/po/templates.pot, debian/po/vi.po, debian/po/zh_CN.po: fix
+	  incorrect reference from /etc/nsswitch to /etc/nsswitch.conf
+	* [r1199] debian/po/da.po, debian/po/de.po, debian/po/it.po,
+	  debian/po/ja.po, debian/po/nb.po, debian/po/ru.po,
+	  debian/po/sv.po: fix wrapping of po files
+	* [r1198] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/fr.po, debian/po/it.po,
+	  debian/po/ja.po, debian/po/nb.po, debian/po/pt.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/zh_CN.po: correct
+	  references to package name for up-to-date translations
+	* [r1197] debian/po/es.po, debian/po/fr.po, debian/po/gl.po,
+	  debian/po/ja.po: fix translations that had a reference to the old
+	  location of the configuration file
+	* [r1196] debian/po/sv.po: updated Swedish (sv) translation of
+	  debconf templates by Martin Ågren
+	* [r1195] debian/po/ca.po: unfuzzy translated string (confirmed OK
+	  by Agustí Grau)
+
+2010-08-27  arthur
+
+	* [r1194] debian/po/ca.po: updated Catalan (ca) translation of
+	  debconf templates by Agusti Grau
+
+2010-08-26  arthur
+
+	* [r1193] debian/po/de.po: updated German (de) translation of
+	  debconf templates by Chris Leick
+
+2010-08-25  arthur
+
+	* [r1192] debian/po/fr.po: updated French (fr) translation of
+	  debconf templates by Christian Perrier
+
+2010-08-24  arthur
+
+	* [r1191] debian/po/da.po: updated Danish (da) translation of
+	  debconf templates by Joe Hansen
+
+2010-08-20  arthur
+
+	* [r1190] debian/po/ja.po: updated Japanese (ja) translation of
+	  debconf templates by Kenshi Muto
+
+2010-08-19  arthur
+
+	* [r1189] debian/nslcd.templates, debian/po/ca.po, debian/po/cs.po,
+	  debian/po/da.po, debian/po/de.po, debian/po/es.po,
+	  debian/po/fi.po, debian/po/fr.po, debian/po/gl.po,
+	  debian/po/it.po, debian/po/ja.po, debian/po/nb.po,
+	  debian/po/nl.po, debian/po/pt.po, debian/po/pt_BR.po,
+	  debian/po/ru.po, debian/po/sv.po, debian/po/templates.pot,
+	  debian/po/vi.po, debian/po/zh_CN.po: fix double "be" in English
+	  template thanks to Christian PERRIER
+	* [r1188] debian/po/it.po: updated Italian (it) translation of
+	  debconf templates by Vincenzo Campanella
+	* [r1187] debian/po/zh_CN.po: updated Simplified Chinese (zh_CN)
+	  translation of debconf templates by zym
+	* [r1186] debian/po/cs.po: updated Czech (cs) translation of
+	  debconf templates by Miroslav Kure
+	* [r1185] configure.ac: fix for --with-nss-ldap-soname option by
+	  Julien Cristau
+
+2010-08-18  arthur
+
+	* [r1183] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.8 release
+	* [r1182] debian/po/nb.po: added Norwegian Bokmål (nb) translation
+	  of debconf templates by Bjørn Steensrud
+	* [r1181] debian/po/ru.po: updated Russian (ru) translation of
+	  debconf templates by Yuri Kozlov
+	* [r1180] debian/po/pt.po: updated Portuguese (pt) translation of
+	  debconf templates by Américo Monteir
+
+2010-08-17  arthur
+
+	* [r1179] debian/po/da.po, debian/po/vi.po, debian/po/zh_CN.po:
+	  remove invalid and bouncing addresses
+	* [r1178] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fi.po,
+	  debian/po/fr.po, debian/po/gl.po, debian/po/it.po,
+	  debian/po/ja.po, debian/po/nl.po, debian/po/pt.po,
+	  debian/po/pt_BR.po, debian/po/ru.po, debian/po/sv.po,
+	  debian/po/templates.pot, debian/po/vi.po, debian/po/zh_CN.po:
+	  update debian/po files with modified template
+	* [r1177] debian/libpam-ldapd.postinst: only offer to fix
+	  nsswitch.conf if PAM has been converted with pam-auth-update
+	* [r1176] debian/libpam-ldapd.templates: updated debconf template
+	  thanks to Justin B Rye
+
+2010-08-15  arthur
+
+	* [r1175] debian/po/POTFILES.in, debian/po/ca.po, debian/po/cs.po,
+	  debian/po/da.po, debian/po/de.po, debian/po/es.po,
+	  debian/po/fi.po, debian/po/fr.po, debian/po/gl.po,
+	  debian/po/it.po, debian/po/ja.po, debian/po/nl.po,
+	  debian/po/pt.po, debian/po/pt_BR.po, debian/po/ru.po,
+	  debian/po/sv.po, debian/po/templates.pot, debian/po/vi.po,
+	  debian/po/zh_CN.po: update debian/po files with added template
+
+2010-08-14  arthur
+
+	* [r1174] debian/control: upgrade to standards-version 3.9.1
+	* [r1173] debian/control: add libpam-sss as an alternative to
+	  libpam-ldapd
+	* [r1172] debian/control: merge the recommends from libnss-ldapd
+	  and libpam-ldapd into those of nslcd so we can track all the PAM
+	  alternatives in one place
+	* [r1171] Makefile.am, debian/libnss-ldapd.postinst,
+	  debian/libnss-ldapd.postrm,
+	  debian/libpam-ldapd.lintian-overrides,
+	  debian/libpam-ldapd.postinst, debian/libpam-ldapd.templates:
+	  offer to add ldap to shadow in nsswitch.conf if a potential
+	  broken configuration is found
+	* [r1170] ChangeLog, ChangeLog-2006, ChangeLog-2007,
+	  ChangeLog-2008, Makefile.am: archive older ChangeLog entries in
+	  year files
+	* [r1169] common/expr.c: also don't expand variables in rest of
+	  ${var:+rest} expressions if var is not set or empty
+	* [r1168] common/expr.c: do not expand variables in rest of
+	  ${var:-rest} expressions if var is not blank or empty
+
+2010-07-27  arthur
+
+	* [r1167] nss/services.c: use htons() instead of ntohs() (thanks
+	  Ted C. Cheng)
+
+2010-07-18  arthur
+
+	* [r1166] compat/nss_compat.h, configure.ac: compatibility
+	  improvement: also check for nss_common.h and see if enum
+	  nss_status exists
+	* [r1165] nslcd/pam.c: fix comment
+	* [r1164] nss/Makefile.am: use -h linker flag instead of -soname
+	  which seems more portable
+	* [r1163] compat/pam_compat.h: define pam_info(), pam_error() and
+	  pam_syslog() compatibility macros to allow no arguments for
+	  format
+
+2010-07-17  arthur
+
+	* [r1162] debian/nslcd.config: only go back one step on Debconf
+	  back
+
+2010-07-07  arthur
+
+	* [r1161] configure.ac, nslcd/nslcd.c, nss/Makefile.am: allow
+	  configuring NSS module's SONAME from configure and use this in
+	  nslcd to dlopen() the correct library (thanks to Alexander V.
+	  Chernikov for the idea)
+
+2010-07-03  arthur
+
+	* [r1159] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.7 release
+	* [r1158] debian/control: upgrade to standards-version 3.9.0
+	* [r1157] debian/libnss-ldapd.config, debian/nslcd.config: don't
+	  use dh_title to set the Debconf title, the default should be fine
+	* [r1156] debian/control: use Replaces/Breaks instead of Conflicts
+	  for introduction of nslcd package (as per policy 3.9.0)
+
+2010-06-25  arthur
+
+	* [r1155] Makefile.am, debian/libpam-ldapd.manpages,
+	  debian/nslcd.install, debian/nslcd.manpages: make sure the
+	  pam_ldap manual page is in the libpam-ldapd package
+
+2010-06-19  arthur
+
+	* [r1154] nslcd/myldap.c: add logging to SASL interaction function
+	* [r1153] nslcd/myldap.c: improve debug logging of SASL bind calls
+	* [r1152] debian/nslcd.default: updated based on comments by Daniel
+	  Dehennin <daniel.dehennin@baby-gnu.org>
+
+2010-06-18  arthur
+
+	* [r1151] AUTHORS, Makefile.am, debian/control,
+	  debian/nslcd.conffile, debian/nslcd.default, debian/nslcd.init:
+	  start k5start from the init script to keep the Kerberos ticket
+	  active if nslcd is configured for SASL GSSAPI kerberos
+	  authentication, based on a patch by Daniel Dehennin
+	  <daniel.dehennin@baby-gnu.org>
+	* [r1150] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h: remove
+	  warning messages from parsing the sasl_* options and document
+	  them in the nslcd.conf(5) manual page (they should be functional)
+	* [r1149] nslcd/myldap.c: make SASL binding code a little earier to
+	  read
+	* [r1148] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/myldap.c: remove the use_sasl option and instead rely on
+	  sasl_mech being specified
+	* [r1147] debian/nslcd.init: group options more
+
+2010-06-17  arthur
+
+	* [r1146] compat/Makefile.am, compat/nss_compat.h, configure.ac,
+	  nss/common.h, nss/prototypes.h: have more compatibility code for
+	  NSS module and move compatibility code to compat directory
+
+2010-06-16  arthur
+
+	* [r1145] debian/nslcd.init: ensure that nslcd is started after
+	  hostname lookups are available so getting to the LDAP server via
+	  DNS lookups will work (patch by Petter Reinholdtsen)
+	* [r1144] nslcd/nslcd.c: use RTLD_NODELETE during dlopen() instead
+	  of not using dlclose()
+
+2010-06-15  arthur
+
+	* [r1143] configure.ac, nss/Makefile.am, nss/exports.linux,
+	  nss/nss_ldap.map, pam/Makefile.am, pam/exports.linux,
+	  pam/pam_ldap.map: rename symbol map files and check for the
+	  linker option to specify the file with
+	* [r1142] configure.ac, nslcd/Makefile.am: pass pthread flags
+	  correctly to nslcd Makefile and rename save_ vars to not conflict
+	  with AX_PTHREAD test
+
+2010-06-14  arthur
+
+	* [r1141] configure.ac, nslcd/nslcd.c, nss/Makefile.am,
+	  nss/common.c, nss/common.h, nss/exports.linux, nss/netgroup.c,
+	  nss/prototypes.h, tests/Makefile.am: implement a global symbol
+	  inside the NSS module to allow applications to disable NSS
+	  lookups over LDAP and use it in nslcd to avoid deadlocks
+	* [r1140] common/dict.h, common/expr.h, common/nslcd-prot.h,
+	  common/set.h, common/tio.h, compat/attrs.h, compat/daemon.h,
+	  compat/ether.h, compat/getopt_long.h, compat/getpeercred.h,
+	  compat/ldap_compat.h, compat/pam_compat.h, nslcd/attmap.h,
+	  nslcd/cfg.h, nslcd/common.h, nslcd/log.h, nslcd/myldap.h,
+	  nss/common.h, nss/prototypes.h, pam/common.h: make include guard
+	  names consistent throughout the source and avoid conflicts with
+	  system headers
+	* [r1139] nss/aliases.c, nss/ethers.c, nss/group.c, nss/hosts.c,
+	  nss/netgroup.c, nss/networks.c, nss/passwd.c, nss/protocols.c,
+	  nss/rpc.c, nss/services.c, nss/shadow.c: remove some unused
+	  include statements
+
+2010-06-12  arthur
+
+	* [r1138] README, common/tio.c, nslcd/attmap.c, nslcd/attmap.h,
+	  nslcd/group.c, nslcd/network.c: remove commented out memberOf and
+	  ipNetmaskNumber attributes and small cleanups
+	* [r1137] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fi.po,
+	  debian/po/fr.po, debian/po/gl.po, debian/po/it.po,
+	  debian/po/ja.po, debian/po/nl.po, debian/po/pt.po,
+	  debian/po/pt_BR.po, debian/po/ru.po, debian/po/sv.po,
+	  debian/po/vi.po, debian/po/zh_CN.po: run translations through
+	  debconf-updatepo -v
+
+2010-06-11  arthur
+
+	* [r1136] nslcd/nslcd.c: fix and remove source code comments
+
+2010-06-04  arthur
+
+	* [r1135] ChangeLog, debian/changelog: revert part of r1134 that
+	  was accidentally commited
+	* [r1134] ChangeLog, debian/changelog, pam/pam.c: fix nullok test
+	  for password modification
+
+2010-06-03  arthur
+
+	* [r1133] debian/libpam-ldapd.pam-auth-update: also ignore other
+	  ignorable PAM return codes
+
+2010-06-02  arthur
+
+	* [r1132] compat/pam_get_authtok.c: add a warning to the limitation
+	  of our pam_get_authtok() implementation
+	* [r1131] pam/pam.c: simplify PAM module splitting remapping for
+	  ignore_* options to a separate function, parsing of
+	  try_first_pass and use_first_pass is done by pam_get_authtok(),
+	  don't report session errors to the user and make error handling
+	  consistent
+
+2010-06-01  arthur
+
+	* [r1130] nslcd/pam.c: fix bug in test (r1127)
+	* [r1129] man/pam_ldap.8.xml, pam/pam.c: implement an nullok PAM
+	  option and disable empty passwords by default
+	* [r1128] pam/pam.c: don't log failure to do nslcd request to user
+	  and log authentication errors during password change
+	* [r1127] nslcd/pam.c: add a debug log message when user
+	  authentication was successful
+	* [r1126] debian/libpam-ldapd.pam-auth-update: don't use
+	  use_authtok for password modification by default
+
+2010-05-31  arthur
+
+	* [r1125] pam/pam.c: fix typo
+
+2010-05-27  arthur
+
+	* [r1123] AUTHORS, ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.6 release
+
+2010-05-26  arthur
+
+	* [r1122] debian/control: drop extra parts of package descriptions
+	  that should no longer be really relevant and update libpam-ldapd
+	  description
+
+2010-05-24  arthur
+
+	* [r1121] debian/libpam-ldapd.pam-auth-update: update
+	  pam-auth-update configuration to always perform LDAP
+	  autorisation, also pass use_authtok on password modification and
+	  spell out session result handling
+	* [r1120] pam/pam.c: make code more consistent
+	* [r1119] man/pam_ldap.8.xml: fix typo
+	* [r1118] pam/pam.c: don't store use_authtok because
+	  pam_get_authtok() looks at the arguments itself
+
+2010-05-23  arthur
+
+	* [r1117] HACKING, README, man/nslcd.8.xml, man/nslcd.conf.5.xml:
+	  update documentation
+	* [r1116] nslcd.conf: include uid and gid options in default
+	  configuration file
+	* [r1115] configure.ac, m4/acx_pthread.m4, m4/ax_pthread.m4: update
+	  AC?X_PTHREAD macro and update configure script to be simpler and
+	  add some more checks
+	* [r1114] debian/nslcd.init: use nslcd --check in init script's
+	  status command
+
+2010-05-22  arthur
+
+	* [r1113] nslcd/pam.c: make debug logging for pam_authz_search
+	  option a little more readable
+
+2010-05-20  arthur
+
+	* [r1112] debian/control: add libpam-heimdal as an alternative
+	  recommends for libnss-ldapd
+
+2010-05-15  arthur
+
+	* [r1111] nslcd/attmap.c, nslcd/attmap.h: always clear returned
+	  buffer when performing attribute mapping (based on a patch by
+	  Nalin Dahyabhai <nalin@redhat.com>)
+
+2010-05-14  arthur
+
+	* [r1109] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.5 release
+	* [r1108] Makefile.am, debian/source, debian/source/format: switch
+	  to source format 3.0 (native)
+	* [r1107] pam/pam.c: print uid as a long
+	* [r1106] compat/pam_compat.h, configure.ac, man/pam_ldap.8.xml,
+	  pam/common.h, pam/pam.c: perform logging from PAM module to
+	  syslog and support the debug option to log debugging information
+
+2010-05-13  arthur
+
+	* [r1105] pam/pam.c: centralise initialising functions needed for
+	  every PAM call into one function
+	* [r1104] common/nslcd-prot.h, nslcd/common.h: make logging of
+	  buffer checks consistent
+	* [r1103] pam/pam.c: also use PAM username instead of one from
+	  context for session open and close
+	* [r1102] pam/pam.c: replace my_pam_get_authtok() with standard
+	  pam_get_authtok() function, get rid of get_old_password() and
+	  general cleanups and simplifications
+
+2010-05-12  arthur
+
+	* [r1101] pam/pam.c: make parsing configuration options global,
+	  reorganise a bit and make code more consistent and easier to read
+	* [r1100] compat/pam_compat.h, nslcd/pam.c: small compatibility
+	  improvements
+
+2010-05-10  arthur
+
+	* [r1099] pam/pam.c: only log "LDAP session failed" if we actually
+	  tried
+	* [r1098] compat/Makefile.am, compat/pam_compat.h,
+	  compat/pam_get_authtok.c, compat/pam_prompt.c, configure.ac,
+	  pam/pam.c: replace my_pam_warn() with pam_info() and pam_error()
+	  and provide replacement for pam_prompt() also using it in our
+	  pam_get_authtok() replacement
+
+2010-05-09  arthur
+
+	* [r1096] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.4 release
+	* [r1095] nslcd/myldap.c: only log "connected to LDAP server" if
+	  the previous connect failed or we are failing over to a different
+	  server
+	* [r1094] debian/nslcd.postinst, man/nslcd.conf.5.xml, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/myldap.c, tests/README, tests/nslcd-test.conf:
+	  rename reconnect_maxsleeptime option to reconnect_retrytime
+	* [r1093] nslcd/myldap.c: don't log errno if it is not set (make
+	  error less confusing)
+	* [r1092] nslcd/myldap.c: handle authentication searches a little
+	  differently (only try once if an authentication error is
+	  returned)
+	* [r1091] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/myldap.c: refactor retry timing mechanism to use time
+	  between first and last error to determin when to rerty and only
+	  try once (and don't sleep) when we have been failing for a long
+	  time
+
+2010-05-08  arthur
+
+	* [r1090] man/nslcd.conf.5.xml: fix wrapping of long line (thanks
+	  lintian)
+	* [r1089] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/pam.c: rename authz_search option to pam_authz_search
+
+2010-05-07  arthur
+
+	* [r1088] man/nslcd.conf.5.xml, man/pam_ldap.8.xml, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/pam.c: implement an authz_search option to
+	  test whether the user is authorised
+	* [r1087] nslcd/alias.c, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/netgroup.c, nslcd/network.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  tune some buffer sizes and small cleanups
+	* [r1086] tests/test_myldap.c: implement test for buffer overflow
+	* [r1085] nslcd/myldap.c: fix buffer overflow
+	* [r1084] man, man/Makefile.am: have the possibility to generate
+	  HTML for manual pages (not done by default)
+	* [r1083] man/nslcd.conf.5.xml, man/pam_ldap.8.xml: use docbook
+	  elements where possible
+
+2010-05-06  arthur
+
+	* [r1082] compat/pam_compat.h, configure.ac,
+	  debian/libpam-ldapd.pam-auth-update, man/pam_ldap.8.xml,
+	  pam/pam.c: implement a minimum_uid option for the PAM module to
+	  ignore users that have a lower numeric user id
+
+2010-05-05  arthur
+
+	* [r1081] config.guess, config.sub: include updated files
+
+2010-05-03  arthur
+
+	* [r1080] debian/nslcd.config: also parse /etc/ldap.conf for
+	  systems that use that for NSS and PAM configuration
+
+2010-04-13  arthur
+
+	* [r1079] nslcd/myldap.c, nslcd/myldap.h, nslcd/pam.c: don't have
+	  myldap_set_credentials() try to open a connection but have the
+	  PAM code perform a search with the new credentials so we re-use
+	  the fail-over mechanism in myldap_search()
+	* [r1078] nslcd/cfg.c, nslcd/common.h, nslcd/myldap.c,
+	  nslcd/myldap.h, nslcd/passwd.c, tests/test_myldap.c: also have
+	  myldap_search() return an LDAP status code
+
+2010-04-01  arthur
+
+	* [r1077] tests/README, tests/test.ldif.gz, tests/test_nsscmds.sh:
+	  small improvements to the test setup
+
+2010-03-20  arthur
+
+	* [r1076] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/group.c: add an nss_initgroups_ignoreusers option to ignore
+	  username to group lookups for the specified users
+
+2010-03-13  arthur
+
+	* [r1075] man/nslcd.conf.5.xml: remove commented-oud default option
+	  because it is not implemented and we have a better mechanism now
+
+2010-02-28  arthur
+
+	* [r1074] nslcd/myldap.c: have less warnings when LDAP_OPT_X_TLS
+	  isn't defined
+	* [r1073] man/nslcd.conf.5.xml: document which attributes may be
+	  mapped with an expression
+
+2010-02-27  arthur
+
+	* [r1071] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.3 release
+	* [r1070] debian/NEWS: add blank line for apt-listchanges
+	* [r1069] debian/control: upgrade to standards-version 3.8.4 (no
+	  changes needed)
+	* [r1068] common/dict.h: fix typo
+	* [r1067] debian/nslcd.postinst, man/nslcd.conf.5.xml, nslcd.conf,
+	  nslcd.h, nslcd/cfg.c, nslcd/cfg.h, nslcd/pam.c: rename admindn
+	  option to rootpwmoddn
+	* [r1066] INSTALL, compile: update from latest automake
+	* [r1065] HACKING, tests/README: small updates to documentation
+
+2010-02-17  arthur
+
+	* [r1064] nslcd/myldap.c: first try password modification without
+	  the old password and if that fails with the old password
+	* [r1063] compat/ldap_passwd_s.c: add pointer to RFC 3062
+
+2010-01-28  arthur
+
+	* [r1062] man/nslcd.8.xml, nslcd/nslcd.c: patch by Jan Schampera to
+	  implement a --check option
+
+2010-01-25  arthur
+
+	* [r1061] nslcd/myldap.c: fix for type mismatch (thanks to Jan
+	  Schampera)
+
+2010-01-24  arthur
+
+	* [r1060] configure.ac, nslcd/cfg.c: add --with-bindpw-file
+	  configure option to enable reading the bindpw option from a file
+	* [r1059] debian/nslcd.postinst, man/nslcd.conf.5.xml, nslcd.conf,
+	  nslcd.h, nslcd/cfg.c, nslcd/cfg.h, nslcd/pam.c, pam/pam.c: add
+	  admindn configuration file option that is used when modifying
+	  another user's password
+	* [r1058] man/nslcd.conf.5.xml: fix example
+	* [r1057] nslcd/myldap.c: make logging of passwords consistent and
+	  support a NULL oldpassword value in myldap_passwd()
+	* [r1056] nslcd/myldap.c: free data returned from ldap_passwd_s()
+	  call if needed and add missing casts
+	* [r1055] HACKING: general updates and add PAM module information
+
+2010-01-23  arthur
+
+	* [r1054] nss/prototypes.h: simple improvement for FreeBSD
+	* [r1053] nslcd/nslcd.c: lock the pidfile at start-up to ensure
+	  only one nslcd process is running (based on a patch by Jan
+	  Schampera <jan.schampera@web.de>)
+
+2010-01-21  arthur
+
+	* [r1052] debian/nslcd.init: start nslcd before apache for systems
+	  that use LDAP users to run virtual hosts
+	* [r1051] HACKING, README, configure.ac: set contact address to
+	  mailing list
+	* [r1050] debian/NEWS: change format of NEWS entry based on
+	  Developer's Reference
+	* [r1049] debian/rules: install lintian overrides with dh_lintian
+
+2010-01-08  arthur
+
+	* [r1048] nslcd/cfg.c: improve getting of domain name by also
+	  checking hostname aliases (based on patch by Jan Schampera
+	  <jan.schampera@web.de>)
+	* [r1047] AUTHORS: improve getting of domain name by also checking
+	  hostname aliases (based on patch by Jan Schampera
+	  <jan.schampera@web.de>)
+

@@ -102,9 +102,7 @@ deb: distdir
 
 # target for generating the ChangeLog file
 changelog:
-	( svn2cl -i --stdout -r HEAD:981 ; \
-	  svn2cl -i --stdout -r 980:807 --strip-prefix='nss-ldapd' ; \
-	) > ChangeLog
+	svn2cl -i -r HEAD:1359
 
 flawfinder.html:
 	flawfinder --quiet --html --context --followdotdir . > $@
