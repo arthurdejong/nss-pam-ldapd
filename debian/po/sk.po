@@ -1,0 +1,488 @@
+# Slovak translations for nss-pam-ldapd package
+# Slovenské preklady pre balík nss-pam-ldapd.
+# Copyright (C) 2011 THE nss-pam-ldapd'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the nss-pam-ldapd package.
+#
+# Translators:
+#
+# Slavko <linux@slavino.sk>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: nss-pam-ldapd 0.8.4\n"
+"Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
+"POT-Creation-Date: 2011-08-09 11:04+0200\n"
+"PO-Revision-Date: 2011-08-14 09:38+0200\n"
+"Last-Translator: Slavko <linux@slavino.sk>\n"
+"Language-Team: Slovak <debian-l10n-slovak@lists.debian.org>\n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:1001
+msgid "LDAP server URI:"
+msgstr "URI servera LDAP:"
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:1001
+msgid ""
+"Please enter the Uniform Resource Identifier of the LDAP server. The format "
+"is \"ldap://<hostname_or_IP_address>:<port>/\". Alternatively, \"ldaps://\" "
+"or \"ldapi://\" can be used. The port number is optional."
+msgstr ""
+"Prosím, zadajte Jednotný identifikátor zdroja (URI) servera LDAP. Formát je "
+"„ldap://<hostname_alebo_IP_adresa>:<port>/”. Môže byť použité aj „ldaps://” "
+"alebo „ldapi://”. Číslo portu je voliteľné."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:1001
+msgid ""
+"When using an ldap or ldaps scheme it is recommended to use an IP address to "
+"avoid failures when domain name services are unavailable."
+msgstr ""
+"Pri použití schémy ldap alebo ldaps odporúčame použiť IP adresu, aby ste sa "
+"vyhli výpadkom, keď nie sú dostupné služby prekladu doménových mien."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:1001
+msgid "Multiple URIs can be specified by separating them with spaces."
+msgstr "Viacero URI možno zadať ich oddelením medzerami."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:2001
+msgid "LDAP server search base:"
+msgstr "Základ (base) hľadania servera LDAP:"
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:2001
+msgid ""
+"Please enter the distinguished name of the LDAP search base. Many sites use "
+"the components of their domain names for this purpose. For example, the "
+"domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
+"name of the search base."
+msgstr ""
+"Prosím zadajte distingvované meno (distinguished name) základu hľadania "
+"LDAP. Veľa stránok používa na tento účel časti svojho doménového mena. "
+"Napríklad, doména „example.net” by ako distingvované meno základu hľadania "
+"použila \"dc=example,dc=net\"."
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:3001
+msgid "none"
+msgstr "žiadna"
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:3001
+msgid "simple"
+msgstr "jednoduchá"
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:3001
+msgid "SASL"
+msgstr "SASL"
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:3002
+msgid "LDAP authentication to use:"
+msgstr "Použitá autentifikácia LDAP:"
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:3002
+msgid ""
+"Please choose what type of authentication the LDAP database should require "
+"(if any):"
+msgstr ""
+"Prosím, vyberte si ktorý typ autentifikácie má databáza LDAP vyžadovať (ak "
+"nejaký):"
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:3002
+msgid ""
+" * none: no authentication;\n"
+" * simple: simple bind DN and password authentication;\n"
+" * SASL: any Simple Authentication and Security Layer mechanism."
+msgstr ""
+" * žiadna: bez autentifikácie;\n"
+" * jednoduchá: autentifikácia jednoduchého zviazania DN a hesla;\n"
+" * SASL: Jednoduchá autentifikácia a mechanizmus Security Layer."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:4001
+msgid "LDAP database user:"
+msgstr "Používateľ databázy LDAP:"
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:4001
+msgid ""
+"Enter the name of the account that will be used to log in to the LDAP "
+"database. This value should be specified as a DN (distinguished name)."
+msgstr ""
+"Zadajte meno účtu, ktorý bude používaný na prihlásenie sa k databáze LDAP. "
+"Táto hodnota má byť zadaná ako DN (distinguished name)."
+
+#. Type: password
+#. Description
+#: ../nslcd.templates:5001
+msgid "LDAP user password:"
+msgstr "Heslo používateľa LDAP:"
+
+#. Type: password
+#. Description
+#: ../nslcd.templates:5001
+msgid "Enter the password that will be used to log in to the LDAP database."
+msgstr "Zadajte heslo, ktoré bude použité na prihlásenia k databáze LDAP."
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:6001
+msgid "SASL mechanism to use:"
+msgstr "Použitý mechanizmus SASL:"
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:6001
+msgid ""
+"Choose the SASL mechanism that will be used to authenticate to the LDAP "
+"database:"
+msgstr ""
+"Vyberte si mechanizmus SASL, ktorý bude použitý na autentifikáciu do "
+"databázy LDAP:"
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:6001
+msgid ""
+" * auto: auto-negotiation;\n"
+" * LOGIN: deprecated in favor of PLAIN;\n"
+" * PLAIN: simple cleartext password mechanism;\n"
+" * NTLM: NT LAN Manager authentication mechanism;\n"
+" * CRAM-MD5: challenge-response scheme based on HMAC-MD5;\n"
+" * DIGEST-MD5: HTTP Digest compatible challenge-response scheme;\n"
+" * GSSAPI: used for Kerberos;\n"
+" * OTP: a One Time Password mechanism."
+msgstr ""
+" * auto: automatické dohodnutie;\n"
+" * LOGIN: zastarané v prospech PLAIN;\n"
+" * PLAIN: jednoduchý mechanizmus hesla prostým textom;\n"
+" * NTLM: autentifikačný mechanizmus NT LAN Manager;\n"
+" * CRAM-MD5: schéma výzva-odpoveď, založená na HMAC-MD5;\n"
+" * DIGEST-MD5: HTTP schéma výzva-odpoveď, kompatibilná s Digest;\n"
+" * GSSAPI: použité pre Kerberos;\n"
+" * OTP: mechanizmus jednorázového hesla (One Time Password)."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+msgid "SASL realm:"
+msgstr "SASL realm:"
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+msgid ""
+"Enter the SASL realm that will be used to authenticate to the LDAP database."
+msgstr ""
+"Zadajte SASL realm, ktoré bude použité na autentifikáciu do databázy LDAP."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+msgid "The realm is appended to authentication and authorization identities."
+msgstr "realm je pripojený k autentifikačným a autorizačným identitám."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:7001
+msgid ""
+"For GSSAPI this can be left blank to use information from the Kerberos "
+"credential cache."
+msgstr ""
+"Pri GSSAPI môžete nechať toto pole prázdne a budú použité informácie z "
+"vyrovnávacej pamäte Kerberos credential."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:8001
+msgid "SASL authentication identity:"
+msgstr "Autentifikačná identita SASL:"
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:8001
+msgid ""
+"Enter the SASL authentication identity that will be used to authenticate to "
+"the LDAP database."
+msgstr ""
+"Zadajte autentifikačnú identitu SASL, ktorá bude použitá na autentifikáciu k "
+"databáze LDAP."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:8001
+msgid ""
+"This is the login used in LOGIN, PLAIN, CRAM-MD5, and DIGEST-MD5 mechanisms."
+msgstr ""
+"Toto je prihlasovacie meno, použité v mechanizmoch LOGIN, PLAIN, CRAM-MD5 a "
+"DIGEST-MD5."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:9001
+msgid "SASL proxy authorization identity:"
+msgstr "SASL proxy autorizačná identita:"
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:9001
+msgid ""
+"Enter the proxy authorization identity that will be used to authenticate to "
+"the LDAP database."
+msgstr ""
+"Zadajte proxy autorizačnú identitu, ktorá bude použitá na autentifikáciu do "
+"databázy LDAP."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:9001
+msgid ""
+"This is the object in the name of which the LDAP request is done. This value "
+"should be specified as a DN (distinguished name)."
+msgstr ""
+"Je to objekt, v ktorého mene je vykonaný požiadavok LDAP. Táto hodnota musí "
+"byť zadaná vo forme DN (distinguished name)."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:10001
+msgid "Cyrus SASL security properties:"
+msgstr "Bezpečnostné vlastnosti Cyrus SASL:"
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:10001
+msgid ""
+"Enter the Cyrus SASL security properties. Allowed values are described in "
+"the ldap.conf(5) manual page in the SASL OPTIONS section."
+msgstr ""
+"Zadajte bezpečnostné vlastnosti Cyrus SASL. Povolené hodnoty sú popísané v "
+"manuálovej stránke ldap.conf(5), v časti SASL OPTIONS."
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:11001
+msgid "Kerberos credential cache file path:"
+msgstr "Cesta k súboru vyrovnávacej pamäte Kerberos credential:"
+
+#. Type: string
+#. Description
+#: ../nslcd.templates:11001
+msgid "Enter the GSSAPI/Kerberos credential cache file name that will be used."
+msgstr ""
+"Zadajte meno súboru vyrovnávacej pamäte GSSAPI/Kerberos, ktorý bude použitý."
+
+#. Type: boolean
+#. Description
+#: ../nslcd.templates:12001
+msgid "Use StartTLS?"
+msgstr "Použiť StartTLS?"
+
+#. Type: boolean
+#. Description
+#: ../nslcd.templates:12001
+msgid ""
+"Please choose whether the connection to the LDAP server should use StartTLS "
+"to encrypt the connection."
+msgstr ""
+"Prosím, vyberte si, či pripojenie k serveru LDAP má na šifrovanie spojenia "
+"použiť StartTLS."
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:13001
+msgid "never"
+msgstr "nikdy"
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:13001
+msgid "allow"
+msgstr "povoliť"
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:13001
+msgid "try"
+msgstr "skúsiť"
+
+#. Type: select
+#. Choices
+#: ../nslcd.templates:13001
+msgid "demand"
+msgstr "žiadať"
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:13002
+msgid "Check server's SSL certificate:"
+msgstr "Kontrolovať SSL certifikát servera:"
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:13002
+msgid ""
+"When an encrypted connection is used, a server certificate can be requested "
+"and checked. Please choose whether lookups should be configured to require a "
+"certificate, and whether certificates should be checked for validity:"
+msgstr ""
+"Pri použití šifrovaného spojenia môže byť vyžiadaný a skontrolovaný "
+"certifikát servera. Prosím, vyberte či majú byť vyhľadávania nastavené na "
+"vyžadovanie certifikátu a či má byť skontrolovaná platnosť certifikátov:"
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:13002
+msgid ""
+" * never: no certificate will be requested or checked;\n"
+" * allow: a certificate will be requested, but it is not\n"
+"          required or checked;\n"
+" * try: a certificate will be requested and checked, but if no\n"
+"        certificate is provided it is ignored;\n"
+" * demand: a certificate will be requested, required, and checked."
+msgstr ""
+" * nikdy:   certifikát nebude vyžiadaný ani kontrolovaný;\n"
+" * povoliť: certifikát bude vyžiadaný, ale nie je \n"
+"            vyžadovaný ani kontrolovaný;\n"
+" * skúsiť:  certifikát bude vyžiadaný a skontrolovaný, ale ak nie je\n"
+"            certifikát poskytnutý, je ignorovaný;\n"
+" * žiadať:  certifikát bude vyžiadaný, vyžadovaný a skontrolovaný."
+
+#. Type: select
+#. Description
+#: ../nslcd.templates:13002
+msgid ""
+"If certificate checking is enabled, at least one of the tls_cacertdir or "
+"tls_cacertfile options must be put in /etc/nslcd.conf."
+msgstr ""
+"Ak je zapnutá kontrola certifikátu, musí byť v súbore /etc/nslcd.conf "
+"vložená aspoň jedna z volieb tls_cacertdir alebo tls_cacertfile."
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid "Name services to configure:"
+msgstr "Nastavovaná služba mien:"
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid ""
+"For this package to work, you need to modify your /etc/nsswitch.conf to use "
+"the ldap datasource."
+msgstr ""
+"Aby tento balík fungoval, musíte upraviť svoj /etc/nsswitch.conf tak, aby "
+"používal dátový zdroj ldap."
+
+#. Type: multiselect
+#. Description
+#: ../libnss-ldapd.templates:1001
+msgid ""
+"You can select the services that should have LDAP lookups enabled. The new "
+"LDAP lookups will be added as the last datasource. Be sure to review these "
+"changes."
+msgstr ""
+"Môžete si vybrať, ktoré služby majú mať zapnuté vyhľadávania LDAP. Nové "
+"vyhľadávania LDAP budú pridané ako posledný dátový zdroj. Nezabudnite "
+"skontrolovať tieto zmeny."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid "Remove LDAP from nsswitch.conf now?"
+msgstr "Odstrániť teraz LDAP z nsswitch.conf?"
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"The following services are still configured to use LDAP for lookups:\n"
+"  ${services}\n"
+"but the libnss-ldapd package is about to be removed."
+msgstr ""
+"Nasledujúce služby sú stále nastavené tak, aby na vyhľadávanie používali "
+"LDAP:\n"
+"  ${services}\n"
+"ale balík libnss-ldapd je odoberaný."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"You are advised to remove the entries if you don't plan on using LDAP for "
+"name resolution any more. Not removing ldap from nsswitch.conf should, for "
+"most services, not cause problems, but host name resolution could be "
+"affected in subtle ways."
+msgstr ""
+"Odporúčame odstrániť tieto položky, ak už viac neplánujete používať LDAP na "
+"preklad mien. Ponechanie ldap v nsswitch.conf by nemalo, pri väčšine "
+"služieb, spôsobovať problémy, ale preklad mien hostiteľov môže byť nejakým "
+"spôsobom dotknutý."
+
+#. Type: boolean
+#. Description
+#: ../libnss-ldapd.templates:2001
+msgid ""
+"You can edit /etc/nsswitch.conf by hand or choose to remove the entries "
+"automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
+"you choose to remove the entries now."
+msgstr ""
+"Súbor /etc/nsswitch.conf môžete upraviť manuálne alebo si zvoliť odstránenie "
+"položiek automaticky teraz. Ak si vyberiete odstránenie položiek teraz, "
+"nezabudnite si skontrolovať zmeny v /etc/nsswitch.conf."
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+msgid "Enable shadow lookups through NSS?"
+msgstr "Zapnúť tieňové vyhľadávanie cez NSS?"
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+msgid ""
+"To allow LDAP users to log in, the NSS module needs to be enabled to perform "
+"shadow password lookups. The shadow entries themselves may be empty - that "
+"is, there is no need for password hashes to be exposed. See http://bugs."
+"debian.org/583492 for background."
+msgstr ""
+"Aby sa mohli používatelia LDAP prihlásiť, musí mať modul NSS povolené "
+"vykonávanie tieňové (shadow) vyhľadávanie hesla. Samotné tieňové položky "
+"môžu byť prázdne - čo znamená, že nie je potrebné aby boli vystavené "
+"odtlačky hesiel. Podrobností hľadajte v http://bugs.debian.org/583492."
+
+#. Type: boolean
+#. Description
+#: ../libpam-ldapd.templates:1001
+msgid ""
+"Please choose whether /etc/nsswitch.conf should have the required entry "
+"added automatically (in which case it should be reviewed afterwards) or "
+"whether it should be left for an administrator to edit manually."
+msgstr ""
+"Prosím, vyberte či majú byť vyžadované polia do /etc/nsswitch.conf pridané "
+"automaticky (v tom prípade musia byť neskôr skontrolované) alebo či to má "
+"byť ponechané na manuálnu úpravu administrátorom."
