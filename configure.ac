@@ -652,15 +652,14 @@ then
         #elif defined(HAVE_SASL_H)
         #include <sasl.h>
         #endif])
-    AC_SEARCH_LIBS(sasl_client_init,sasl2)
-    AC_CHECK_FUNCS(sasl_auxprop_request ldap_sasl_interactive_bind_s)
+    AC_SEARCH_LIBS(ldap_sasl_interactive_bind_s,sasl2)
+    AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s)
   fi
 
   # check for extra Kerberos libraries
   if test "$enable_kerberos" = "yes"
   then
     AC_SEARCH_LIBS(gss_krb5_ccache_name,gssapi gssapi_krb5)
-    AC_SEARCH_LIBS(ldap_gss_bind,gssldap)
     AC_CHECK_FUNCS(gss_krb5_ccache_name)
   fi
 
