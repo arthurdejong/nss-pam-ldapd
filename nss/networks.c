@@ -2,7 +2,7 @@
    networks.c - NSS lookup functions for networks database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2011 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -68,7 +68,7 @@ static nss_status_t read_netent(
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
-  int32_t numaddr,i;
+  int32_t numaddr;
   int readaf;
   size_t bufptr=0;
   nss_status_t retv=NSS_STATUS_NOTFOUND;
@@ -79,12 +79,11 @@ static nss_status_t read_netent(
   /* read number of addresses to follow */
   READ_TYPE(fp,numaddr,int32_t);
   /* go through the address list and filter on af */
-  i=0;
   while (--numaddr>=0)
   {
     /* read address family and size */
     READ_INT32(fp,readaf);
-    READ_INT32(fp,tmp2int32);
+    READ_INT32(fp,tmp2int32); /* address length */
     if ((readaf==AF_INET)&&(tmp2int32==4))
     {
       /* read address and translate to host byte order */
