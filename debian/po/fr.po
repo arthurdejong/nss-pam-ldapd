@@ -10,7 +10,7 @@
 # Christian Perrier <bubulle@debian.org>, 2009, 2010, 2011.
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-pam-ldapd 0.7.9\n"
+"Project-Id-Version: nss-pam-ldapd 0.8.4\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2011-08-09 11:04+0200\n"
 "PO-Revision-Date: 2011-08-14 08:59+0200\n"
@@ -279,7 +279,7 @@ msgid ""
 msgstr ""
 "Il s'agit de l'objet au nom duquel les requêtes LDAP seront effectuées. "
 "Cette valeur doit être indiquée sous forme d'un nom distinctif (DN : "
-"« Distinguished Name x)."
+"« Distinguished Name »)."
 
 #. Type: string
 #. Description
