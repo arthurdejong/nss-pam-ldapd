@@ -190,7 +190,7 @@ static void add_uris_from_dns(const char *filename,int lnr,
   int rc;
   char *hostlist=NULL,*nxt;
   char buf[HOST_NAME_MAX+sizeof("ldap://")];
-  log_log(LOG_DEBUG,"query %s for SVN records",domain);
+  log_log(LOG_DEBUG,"query %s for SRV records",domain);
   rc=ldap_domain2hostlist(domain,&hostlist);
   /* FIXME: have better error handling */
   if ((hostlist==NULL)||(*hostlist=='\0'))
