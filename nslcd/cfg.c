@@ -403,12 +403,10 @@ static void get_restdup(const char *filename,int lnr,
                         char **var)
 {
   check_argumentcount(filename,lnr,keyword,(*line!=NULL)&&(**line!='\0'));
-  if ((*var==NULL)||(strcmp(*var,*line)!=0))
-  {
-    /* Note: we have a memory leak here if a single mapping is changed
-             multiple times in one config (deemed not a problem) */
-    *var=xstrdup(*line);
-  }
+  /* Note: we have a memory leak here if a single mapping is changed
+           multiple times in one config (deemed not a problem) */
+  *var=xstrdup(*line);
+  /* mark that we are at the end of the line */
   *line=NULL;
 }
 
@@ -579,7 +577,7 @@ static void set_base(const char *filename,int lnr,
 static void parse_validnames_statement(const char *filename,int lnr,
                    const char *keyword,char *line,struct ldap_config *cfg)
 {
-  char *value=NULL;
+  char *value;
   int i,l;
   int flags=REG_EXTENDED|REG_NOSUB;
   /* the rest of the line should be a regular expression */
