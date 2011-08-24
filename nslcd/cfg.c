@@ -184,13 +184,13 @@ static const char *cfg_getdomainname(const char *filename,int lnr)
 
 /* add URIs by doing DNS queries for SRV records */
 static void add_uris_from_dns(const char *filename,int lnr,
-                              struct ldap_config *cfg)
+                              struct ldap_config *cfg,
+                              const char *domain)
 {
   int rc;
-  const char *domain;
   char *hostlist=NULL,*nxt;
   char buf[HOST_NAME_MAX+sizeof("ldap://")];
-  domain=cfg_getdomainname(filename,lnr);
+  log_log(LOG_DEBUG,"query %s for SVN records",domain);
   rc=ldap_domain2hostlist(domain,&hostlist);
   /* FIXME: have better error handling */
   if ((hostlist==NULL)||(*hostlist=='\0'))
@@ -856,7 +856,16 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
         if (strcasecmp(token,"dns")==0)
         {
 #ifdef HAVE_LDAP_DOMAIN2HOSTLIST
-          add_uris_from_dns(filename,lnr,cfg);
+          add_uris_from_dns(filename,lnr,cfg,cfg_getdomainname(filename,lnr));
+#else /* not HAVE_LDAP_DOMAIN2HOSTLIST */
+          log_log(LOG_ERR,"%s:%d: value %s not supported on platform",filename,lnr,token);
+          exit(EXIT_FAILURE);
+#endif /* not HAVE_LDAP_DOMAIN2HOSTLIST */
+        }
+        else if (strncasecmp(token,"dns:",4)==0)
+        {
+#ifdef HAVE_LDAP_DOMAIN2HOSTLIST
+          add_uris_from_dns(filename,lnr,cfg,strdup(token+sizeof("dns")));
 #else /* not HAVE_LDAP_DOMAIN2HOSTLIST */
           log_log(LOG_ERR,"%s:%d: value %s not supported on platform",filename,lnr,token);
           exit(EXIT_FAILURE);

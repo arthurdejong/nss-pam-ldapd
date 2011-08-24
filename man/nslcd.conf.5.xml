@@ -127,9 +127,14 @@
        <acronym>LDAP</acronym> over <acronym>TCP</acronym>,
        <acronym>ICP</acronym> or <acronym>SSL</acronym> respectively (if
        supported by the <acronym>LDAP</acronym> library).
+      </para>
+      <para>
        Alternatively, the value <literal>DNS</literal> may be
        used to try to lookup the server using <acronym>DNS</acronym>
        <acronym>SRV</acronym> records.
+       By default the current domain is used but another domain can
+       be queried by using the
+       <literal>DNS:</literal><replaceable>DOMAIN</replaceable> syntax.
       </para>
       <para>
        When using the ldapi scheme, %2f should be used to escape slashes
