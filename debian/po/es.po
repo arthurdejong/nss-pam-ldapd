@@ -1,6 +1,6 @@
 # Translation of nss-pam-ldapd debconf templates to Spanish.
 # Copyright (C) 2007 Rudy Godoy Guillén <rudy@debian.org>
-# Copyright (C) 2009, 2010 Software in the Public Interest
+# Copyright (C) 2009, 2010, 2011 Software in the Public Interest
 # This file is distributed under the same license as the nss-pam-ldapd package.
 #
 # Changes:
@@ -8,7 +8,7 @@
 #       Rudy Godoy <rudy@stone-head.org>, 2008
 #
 #   - Updates
-#       Francisco Javier Cuadrado <fcocuadrado@gmail.com>, 2009, 2010
+#       Francisco Javier Cuadrado <fcocuadrado@gmail.com>, 2009, 2010, 2011
 #
 # Traductores, si no conocen el formato PO, merece la pena leer la
 # documentación de gettext, especialmente las secciones dedicadas a este
@@ -30,10 +30,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-pam-ldapd 0.7.9\n"
+"Project-Id-Version: nss-pam-ldapd 0.8.4\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2011-08-09 11:04+0200\n"
-"PO-Revision-Date: 2010-08-28 19:42+0100\n"
+"PO-Revision-Date: 2011-08-15 12:59+0100\n"
 "Last-Translator: Francisco Javier Cuadrado <fcocuadrado@gmail.com>\n"
 "Language-Team: Debian l10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
 "Language: es\n"
@@ -102,19 +102,19 @@ msgstr ""
 #. Choices
 #: ../nslcd.templates:3001
 msgid "none"
-msgstr ""
+msgstr "ninguna"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:3001
 msgid "simple"
-msgstr ""
+msgstr "sencilla"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:3001
 msgid "SASL"
-msgstr ""
+msgstr "SASL"
 
 #  Template: libnss-ldap/dblogin
 #  ddtp-prioritize: 56
@@ -185,9 +185,8 @@ msgstr ""
 #. Type: select
 #. Description
 #: ../nslcd.templates:3002
-#, fuzzy
 msgid "LDAP authentication to use:"
-msgstr "Versión de LDAP a utilizar"
+msgstr "Autenticación de LDAP a utilizar:"
 
 #. Type: select
 #. Description
@@ -196,6 +195,8 @@ msgid ""
 "Please choose what type of authentication the LDAP database should require "
 "(if any):"
 msgstr ""
+"Escoja qué tipo de autenticación (si es que la hay) se debería utilizar con "
+"la base de datos de LDAP:"
 
 #. Type: select
 #. Description
@@ -205,6 +206,11 @@ msgid ""
 " * simple: simple bind DN and password authentication;\n"
 " * SASL: any Simple Authentication and Security Layer mechanism."
 msgstr ""
+" * ninguna: sin autenticación.\n"
+" * sencilla: una autenticación sencilla que asocia el DN con una "
+"contraseña.\n"
+" * SASL: cualquier mecanismo «Simple Authentication and Security "
+"Layer» (SASL)."
 
 #. Type: string
 #. Description
@@ -215,16 +221,13 @@ msgstr "Usuario de la base de datos LDAP:"
 #. Type: string
 #. Description
 #: ../nslcd.templates:4001
-#, fuzzy
-#| msgid ""
-#| "Enter the password that will be used to log in to the LDAP database when "
-#| "the root process does lookups."
 msgid ""
 "Enter the name of the account that will be used to log in to the LDAP "
 "database. This value should be specified as a DN (distinguished name)."
 msgstr ""
-"Introduzca la contraseña que se utilizará para acceder a la base de datos "
-"LDAP cuando un proceso de superusuario realice búsquedas."
+"Introduzca el nombre de la cuenta que se utilizará para acceder a la base de "
+"datos de LDAP. Este valor se debería introducir como un DN (Nombre "
+"Distinguido)."
 
 #. Type: password
 #. Description
@@ -244,19 +247,17 @@ msgstr ""
 #. Description
 #: ../nslcd.templates:6001
 msgid "SASL mechanism to use:"
-msgstr ""
+msgstr "Mecanismo SASL a utilizar:"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:6001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Choose the SASL mechanism that will be used to authenticate to the LDAP "
 "database:"
 msgstr ""
-"Introduzca la contraseña que se utilizará para acceder a la base de datos "
-"LDAP."
+"Escoja el mecanismo SASL que se utilizará para autenticarse en la base de "
+"datos de LDAP:"
 
 #. Type: select
 #. Description
@@ -271,29 +272,35 @@ msgid ""
 " * GSSAPI: used for Kerberos;\n"
 " * OTP: a One Time Password mechanism."
 msgstr ""
+" * auto: negociación automática.\n"
+" * LOGIN: obsoleta, sustituida por PLAIN.\n"
+" * PLAIN: mecanismo sencillo con contraseñas en claro.\n"
+" * NTLM: mecanismo de autenticación mediante el gestor NT LAN.\n"
+" * CRAM-MD5: esquema desafío-respuesta basado en HMAC-MD5.\n"
+" * DIGEST-MD5: esquema desafío-respuesta compatible con HTTP Digest.\n"
+" * GSSAPI: utilizado por Kerberos.\n"
+" * OTP: mecanismo de contraseñas de un solo uso («One Time Password»)."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
 msgid "SASL realm:"
-msgstr ""
+msgstr "Reino SASL:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the SASL realm that will be used to authenticate to the LDAP database."
 msgstr ""
-"Introduzca la contraseña que se utilizará para acceder a la base de datos "
-"LDAP."
+"Introduzca el reino SASL que se utilizará para autenticarse con la base de "
+"datos de LDAP."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
 msgid "The realm is appended to authentication and authorization identities."
-msgstr ""
+msgstr "El reino se añade a las identidades de autenticación y autorización."
 
 #. Type: string
 #. Description
@@ -302,24 +309,24 @@ msgid ""
 "For GSSAPI this can be left blank to use information from the Kerberos "
 "credential cache."
 msgstr ""
+"Para GSSAPI esto se puede dejar vacío para utilizar la información de la "
+"caché de credenciales de Kerberos."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:8001
 msgid "SASL authentication identity:"
-msgstr ""
+msgstr "Identidad de autenticación de SASL:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:8001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the SASL authentication identity that will be used to authenticate to "
 "the LDAP database."
 msgstr ""
-"Introduzca la contraseña que se utilizará para acceder a la base de datos "
-"LDAP."
+"Introduzca la identidad de autenticación SASL que se utilizará para "
+"autenticarse con la base de datos de LDAP."
 
 #. Type: string
 #. Description
@@ -327,40 +334,40 @@ msgstr ""
 msgid ""
 "This is the login used in LOGIN, PLAIN, CRAM-MD5, and DIGEST-MD5 mechanisms."
 msgstr ""
+"Este es el usuario utilizado en los mecanismos LOGIN, PLAIN, CRAM-MDT y "
+"DIGEST-MD5."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
 msgid "SASL proxy authorization identity:"
-msgstr ""
+msgstr "Identidad de autorización del proxy SASL:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the proxy authorization identity that will be used to authenticate to "
 "the LDAP database."
 msgstr ""
-"Introduzca la contraseña que se utilizará para acceder a la base de datos "
-"LDAP."
+"Introduzca la identidad de autorización del proxy que se utilizará para "
+"autenticarse con la base de datos de LDAP."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
-#, fuzzy
-#| msgid "This value should be specified as a DN (distinguished name)."
 msgid ""
 "This is the object in the name of which the LDAP request is done. This value "
 "should be specified as a DN (distinguished name)."
-msgstr "Debe introducir el valor en forma de DN (nombre distintivo)."
+msgstr ""
+"Este es el objeto en el nombre de la petición LDAP realizada. Este valor se "
+"debería introducir como un DN (Nombre Distinguido)."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:10001
 msgid "Cyrus SASL security properties:"
-msgstr ""
+msgstr "Propiedades de seguridad de Cyrus SASL:"
 
 #. Type: string
 #. Description
@@ -369,18 +376,23 @@ msgid ""
 "Enter the Cyrus SASL security properties. Allowed values are described in "
 "the ldap.conf(5) manual page in the SASL OPTIONS section."
 msgstr ""
+"Introduzca las propiedades de seguridad de Cyrus SASL. Los valores "
+"permitidos se describen en la página del manual ldap.conf(5) en la sección "
+"«SASL OPTIONS»."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:11001
 msgid "Kerberos credential cache file path:"
-msgstr ""
+msgstr "Ruta a la caché de las credenciales de Kerberos:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:11001
 msgid "Enter the GSSAPI/Kerberos credential cache file name that will be used."
 msgstr ""
+"Introduzca el nombre del archivo de la caché de las credenciales de GSSAPI/"
+"Kerberos a utilizar."
 
 #. Type: boolean
 #. Description
@@ -618,13 +630,3 @@ msgstr ""
 
 #~ msgid "LDAP root account password:"
 #~ msgstr "Contraseña de la cuenta de superusuario LDAP:"
-
-#
-#, fuzzy
-#~ msgid ""
-#~ "Please enter which version of the LDAP protocol is to use. It is usually "
-#~ "a good idea to set this to highest available version number."
-#~ msgstr ""
-#~ "Por favor introduzca la versión del protocolo LDAP que usará ldapns. "
-#~ "Generalmente es una buena idea utilizar el número de versión más alto que "
-#~ "esté disponible."
