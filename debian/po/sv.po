@@ -1,8 +1,8 @@
 # Translation of nss-pam-ldapd debconf templates to Swedish.
 #
 # Translators:
-# Martin Ågren <martin.agren@gmail.com>, 2008, 2009, 2010.
 #
+# Martin Ågren <martin.agren@gmail.com>, 2008, 2009, 2010.
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-pam-ldapd 0.7.9\n"

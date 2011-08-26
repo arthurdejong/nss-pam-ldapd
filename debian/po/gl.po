@@ -3,9 +3,9 @@
 # This file is distributed under the same license as the nss-pam-ldapd package.
 #
 # Translators:
+#
 # marce villarino <mvillarino@users.sourceforge.net>, 2009.
 # Marce Villarino <mvillarino@gmail.com>, 2009.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-ldapd 0.6\n"

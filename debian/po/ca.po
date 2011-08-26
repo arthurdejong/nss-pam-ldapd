@@ -2,9 +2,9 @@
 # Copyright (C) 2004 Free Software Foundation, Inc.
 #
 # Translators:
+#
 # Aleix Badia i Bosch <abadia@ica.es>, 2004.
 # Guillem Jover <guillem@debian.org>, 2004.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: nss-pam-ldapd 0.7.9\n"
