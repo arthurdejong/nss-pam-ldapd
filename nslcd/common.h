@@ -133,6 +133,24 @@ int nsswitch_db_uses_ldap(const char *filename,const char *db);
 #endif /* _POSIX_HOST_NAME_MAX */
 #endif /* not HOST_NAME_MAX */
 
+/* provide strtouid() function alias */
+#if SIZEOF_UID_T == SIZEOF_UNSIGNED_LONG_INT
+#define strtouid (uid_t)strtoul
+#elif SIZEOF_UID_T == SIZEOF_UNSIGNED_LONG_LONG_INT
+#define strtouid (uid_t)strtoull
+#else
+#error unable to find implementation for strtouid()
+#endif
+
+/* provide strtouid() function alias */
+#if SIZEOF_GID_T == SIZEOF_UNSIGNED_LONG_INT
+#define strtogid (gid_t)strtoul
+#elif SIZEOF_GID_T == SIZEOF_UNSIGNED_LONG_LONG_INT
+#define strtogid (gid_t)strtoull
+#else
+#error unable to find implementation for strtogid()
+#endif
+
 /* these are the functions for initialising the database specific
    modules */
 void alias_init(void);

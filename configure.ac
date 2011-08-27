@@ -303,6 +303,10 @@ AC_TYPE_INT32_T
 AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
+AC_CHECK_SIZEOF(unsigned long int)
+AC_CHECK_SIZEOF(unsigned long long int)
+AC_CHECK_SIZEOF(uid_t)
+AC_CHECK_SIZEOF(gid_t)
 
 # check for support for the __thread keyword
 AC_CACHE_CHECK([whether $CC supports '__thread'], [mn_cv_c___thread_supported],

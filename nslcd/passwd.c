@@ -195,7 +195,7 @@ static int entry_has_valid_uid(MYLDAP_ENTRY *entry)
     else
     {
       errno=0;
-      uid=(uid_t)strtol(values[i],&tmp,0);
+      uid=strtouid(values[i],&tmp,0);
       if ((*(values[i])=='\0')||(*tmp!='\0'))
       {
         log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
@@ -489,7 +489,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
       else
       {
         errno=0;
-        uids[numuids]=(uid_t)strtol(tmpvalues[numuids],&tmp,0);
+        uids[numuids]=strtouid(tmpvalues[numuids],&tmp,0);
         if ((*(tmpvalues[numuids])=='\0')||(*tmp!='\0'))
         {
           log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
@@ -527,7 +527,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
       return 0;
     }
     errno=0;
-    gid=(gid_t)strtol(gidbuf,&tmp,0);
+    gid=strtogid(gidbuf,&tmp,0);
     if ((gidbuf[0]=='\0')||(*tmp!='\0'))
     {
       log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
