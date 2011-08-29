@@ -289,7 +289,7 @@ AC_C_CONST
 AC_CHECK_FUNCS([sigaction snprintf])
 AC_CHECK_FUNCS(gethostbyname)
 AC_SEARCH_LIBS(socket,socket)
-AC_CHECK_FUNCS([strcasecmp strncasecmp strchr strcspn strspn strtol])
+AC_CHECK_FUNCS([strcasecmp strncasecmp strchr strcspn strspn strtol strtoul strtoull])
 AC_CHECK_FUNCS([malloc realloc])
 AC_FUNC_FORK
 AC_CHECK_FUNCS(__assert_fail)
@@ -303,6 +303,7 @@ AC_TYPE_INT32_T
 AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
+AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long int)
 AC_CHECK_SIZEOF(unsigned long long int)
 AC_CHECK_SIZEOF(uid_t)

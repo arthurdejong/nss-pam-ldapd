@@ -138,6 +138,9 @@ int nsswitch_db_uses_ldap(const char *filename,const char *db);
 #define strtouid (uid_t)strtoul
 #elif SIZEOF_UID_T == SIZEOF_UNSIGNED_LONG_LONG_INT
 #define strtouid (uid_t)strtoull
+#elif SIZEOF_UID_T == SIZEOF_UNSIGNED_INT
+#define WANT_STRTOUI 1
+#define strtouid (uid_t)strtoui
 #else
 #error unable to find implementation for strtouid()
 #endif
@@ -147,9 +150,19 @@ int nsswitch_db_uses_ldap(const char *filename,const char *db);
 #define strtogid (gid_t)strtoul
 #elif SIZEOF_GID_T == SIZEOF_UNSIGNED_LONG_LONG_INT
 #define strtogid (gid_t)strtoull
+#elif SIZEOF_GID_T == SIZEOF_UNSIGNED_INT
+#ifndef WANT_STRTOUI
+#define WANT_STRTOUI 1
+#endif
+#define strtogid (uid_t)strtoui
 #else
 #error unable to find implementation for strtogid()
 #endif
+
+#ifdef WANT_STRTOUI
+/* provide a strtoui() if it is needed */
+unsigned int strtoui(const char *nptr,char **endptr,int base);
+#endif /* WANT_STRTOUI */
 
 /* these are the functions for initialising the database specific
    modules */

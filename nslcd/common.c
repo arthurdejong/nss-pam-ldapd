@@ -269,3 +269,20 @@ long int binsid2id(const char *binsid)
   return (((long int)binsid[i])&0xff)|((((long int)binsid[i+1])&0xff)<<8)|
          ((((long int)binsid[i+2])&0xff)<<16)|((((long int)binsid[i+3])&0xff)<<24);
 }
+
+#ifdef WANT_STRTOUI
+/* provide a strtoui() implementation, similar to strtoul() but returning
+   an range-checked unsigned int instead */
+unsigned int strtoui(const char *nptr,char **endptr,int base)
+{
+  unsigned long val;
+  val=strtoul(nptr,endptr,base);
+  if (val>UINT_MAX)
+  {
+    errno=ERANGE;
+    return UINT_MAX;
+  }
+  /* If errno was set by strtoull, we'll pass it back as-is */
+  return (unsigned int)val;
+}
+#endif /* WANT_STRTOUI */
