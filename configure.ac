@@ -93,7 +93,7 @@ AC_ARG_ENABLE(warnings,
                  DESIRED_CFLAGS="$DESIRED_CFLAGS -Wextra -Wdeclaration-after-statement -Werror-implicit-function-declaration"
                fi])
 test_gcc_flag() {
-  AC_LANG_CONFTEST([int main() {}])
+  AC_LANG_CONFTEST([AC_LANG_PROGRAM([int main() {}])])
   $CC -c conftest.c $CFLAGS $@ > /dev/null 2> /dev/null
   ret=$?
   rm -f conftest.o
@@ -310,7 +310,7 @@ AC_CHECK_SIZEOF(gid_t)
 
 # check for support for the __thread keyword
 AC_CACHE_CHECK([whether $CC supports '__thread'], [mn_cv_c___thread_supported],
-               [AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[static __thread i;]], []),
+               [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[static __thread i;]], [])],
                        [mn_cv_c___thread_supported=yes],
                        [mn_cv_c___thread_supported=no])])
 if test $mn_cv_c___thread_supported != yes
