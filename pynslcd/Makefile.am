@@ -28,7 +28,7 @@ CLEANFILES = $(nodist_pynslcd_PYTHON)
 all-local: $(nodist_pynslcd_PYTHON)
 
 # clean up locally created compiled Python files
-clean:
+clean-local:
 	rm -f *.pyc *.pyo
 
 # create a symbolic link for the pynslcd daemon and fix permissions
