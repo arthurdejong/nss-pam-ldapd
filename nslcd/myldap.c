@@ -35,12 +35,6 @@
 
 #include "config.h"
 
-/* also include deprecated LDAP functions for now */
-#define LDAP_DEPRECATED 1
-
-/* for compatibility on Solaris */
-#define LDAP_REFERRALS 1
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

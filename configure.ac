@@ -606,6 +606,11 @@ then
   CFLAGS="$pthread_save_CFLAGS"
   LIBS="$pthread_save_LIBS"
 
+  # also use deprecated LDAP functions
+  AC_DEFINE(LDAP_DEPRECATED, 1, Define to activate deprecated features in OpenLDAP)
+  # for compatibility on Solaris
+  AC_DEFINE(LDAP_REFERRALS, 1, Define to get some functions on Solaris)
+
   # search for an LDAP library (only OpenLDAP is tested)
   AC_ARG_WITH(ldap-lib,
               AS_HELP_STRING([--with-ldap-lib=TYPE],
