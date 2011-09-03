@@ -2,25 +2,46 @@
 
 set -e
 
+# find the names of services that are configured to use LDAP
+# Note: this function is in libnss-ldapd.config and libnss-ldapd.postrm
+nss_list_configured()
+{
+  sed -n \
+      's/^[[:space:]]*\([a-z]*\)[[:space:]]*:.*[[:space:]]ldap\([[:space:]].*\)\?/\1/p' \
+      /etc/nsswitch.conf
+}
+
+# check whether the name is configure to do lookups through
+# LDAP
+# Note: this function is in libnss-ldapd.postinst, libnss-ldapd.postrm
+#       and libpam-ldapd.postinst
+nss_is_enabled()
+{
+  name="$1"
+  grep -q '^[[:space:]]*'$name'[[:space:]]*:.*ldap.*' /etc/nsswitch.conf
+}
+
 # remove NSS lookups though LDAP for the specified service
-# Note: this function is in both libnss-ldapd.postinst and libnss-ldapd.postrm
+# Note: this function is in libnss-ldapd.postinst and libnss-ldapd.postrm
 nss_disable()
 {
   name="$1"
   # these functions also remove the lookup result handling part
   # of the ldap entry (see nsswitch.conf(5))
-  if grep -q '^'$name':.*ldap.*' /etc/nsswitch.conf
+  if nss_is_enabled "$name"
   then
     echo "/etc/nsswitch.conf: disable LDAP lookups for $name" >&2
-    if [ -n "`sed -n '/^'$name':[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/p' /etc/nsswitch.conf`" ]
+    if [ -n "`sed -n '/^[[:space:]]*'$name'[[:space:]]*:[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/p' /etc/nsswitch.conf`" ]
     then
       # the name service only maps to ldap, remove the whole line
-      sed -i '/^'$name':[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/d' /etc/nsswitch.conf
+      sed -i '/^[[:space:]]*'$name'[[:space:]]*:[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/d' /etc/nsswitch.conf
     else
       # remove ldap part from existing line, keeping other methods intact
       # TODO: remove trailing space
-      sed -i 's/^\('$name':.*\)ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*\(.*\)$/\1\3/' /etc/nsswitch.conf
+      sed -i 's/^\([[:space:]]*'$name'[[:space:]]*:.*\)ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*\(.*\)$/\1\3/' /etc/nsswitch.conf
     fi
+    # invalidate nscd cache
+    nscd -i "$name" > /dev/null 2>&1 || true
   fi
   # we're done
   return 0
@@ -30,7 +51,7 @@ nss_disable()
 if ( [ "$1" = "remove" ] || [ "$1" = "purge" ] )
 then
   # check which naming services are configured
-  configured=`sed -n 's/^\([a-z]*\):.*[[:space:]]ldap\([[:space:]].*\)\?/\1/p' /etc/nsswitch.conf`
+  configured=`nss_list_configured`
   if [ -n "$configured" ]
   then
     # if we have debconf, use debconf to ask, otherwise just shout
@@ -54,7 +75,7 @@ then
         fi
       fi
       # re-check which services are left enabled
-      configured=`sed -n 's/^\([a-z]*\):.*[[:space:]]ldap\([[:space:]].*\)\?/\1/p' /etc/nsswitch.conf`
+      configured=`nss_list_configured`
     fi
     # check if ldap is still configured
     if [ -n "$configured" ]

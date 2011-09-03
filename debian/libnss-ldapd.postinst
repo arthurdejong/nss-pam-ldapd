@@ -5,19 +5,29 @@ set -e
 # editing nsswitch.conf seems to be ok
 # http://lists.debian.org/debian-devel/2007/02/msg00076.html
 
+# check whether the name is configure to do lookups through
+# LDAP
+# Note: this function is in libnss-ldapd.postinst, libnss-ldapd.postrm
+#       and libpam-ldapd.postinst
+nss_is_enabled()
+{
+  name="$1"
+  grep -q '^[[:space:]]*'$name'[[:space:]]*:.*ldap.*' /etc/nsswitch.conf
+}
+
 # check to see if name is configured to do lookups through
 # LDAP and enable if not
-# Note: this function is in both libnss-ldapd.postinst and libpam-ldapd.postinst
+# Note: this function is in libnss-ldapd.postinst and libpam-ldapd.postinst
 nss_enable()
 {
   name="$1"
-  if ! grep -q '^'$name':.*ldap.*' /etc/nsswitch.conf
+  if ! nss_is_enabled "$name"
   then
     echo "/etc/nsswitch.conf: enable LDAP lookups for $name" >&2
-    if grep -q '^'$name':' /etc/nsswitch.conf
+    if grep -q '^[[:space:]]*'$name'[[:space:]]*:' /etc/nsswitch.conf
     then
       # modify an existing entry by just adding ldap to the end
-      sed -i 's/^\('$name':.*[^[:space:]]\)[[:space:]]*$/\1 ldap/' /etc/nsswitch.conf
+      sed -i 's/^\([[:space:]]*'$name'[[:space:]]*:.*[^[:space:]]\)[[:space:]]*$/\1 ldap/' /etc/nsswitch.conf
     else
       # append a new line
       printf '%-15s ldap\n' $name':' >> /etc/nsswitch.conf
@@ -30,23 +40,23 @@ nss_enable()
 }
 
 # remove NSS lookups though LDAP for the specified service
-# Note: this function is in both libnss-ldapd.postinst and libnss-ldapd.postrm
+# Note: this function is in libnss-ldapd.postinst and libnss-ldapd.postrm
 nss_disable()
 {
   name="$1"
   # these functions also remove the lookup result handling part
   # of the ldap entry (see nsswitch.conf(5))
-  if grep -q '^'$name':.*ldap.*' /etc/nsswitch.conf
+  if nss_is_enabled "$name"
   then
     echo "/etc/nsswitch.conf: disable LDAP lookups for $name" >&2
-    if [ -n "`sed -n '/^'$name':[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/p' /etc/nsswitch.conf`" ]
+    if [ -n "`sed -n '/^[[:space:]]*'$name'[[:space:]]*:[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/p' /etc/nsswitch.conf`" ]
     then
       # the name service only maps to ldap, remove the whole line
-      sed -i '/^'$name':[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/d' /etc/nsswitch.conf
+      sed -i '/^[[:space:]]*'$name'[[:space:]]*:[[:space:]]*ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*$/d' /etc/nsswitch.conf
     else
       # remove ldap part from existing line, keeping other methods intact
       # TODO: remove trailing space
-      sed -i 's/^\('$name':.*\)ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*\(.*\)$/\1\3/' /etc/nsswitch.conf
+      sed -i 's/^\([[:space:]]*'$name'[[:space:]]*:.*\)ldap[[:space:]]*\(\[[^]]*\]\)*[[:space:]]*\(.*\)$/\1\3/' /etc/nsswitch.conf
     fi
     # invalidate nscd cache
     nscd -i "$name" > /dev/null 2>&1 || true
