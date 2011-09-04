@@ -28,3 +28,4 @@
 * have nslcd flush the nscd caches when reconnecting to the LDAP server after
   an error
 * have PAM code support password policy of server (see pam_ldap)
+* also add a max uid option for PAM module

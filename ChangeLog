@@ -1,3 +1,371 @@
+2011-09-04 08:48  arthur
+
+	* [r1535] tests/test_getpeercred.c: warn when we couldn't get the
+	  gid or pid, the uid is the only really interesting bit
+
+2011-09-04 08:42  arthur
+
+	* [r1534] tests/test_tio.c: add casts from size_t to int for printf
+
+2011-09-04 08:40  arthur
+
+	* [r1533] debian/rules: ignore failures in tests
+
+2011-09-04 08:40  arthur
+
+	* [r1532] debian/rules: use auto-detection for LDAP library and
+	  defaults for config file, socket and pidfile (no changes)
+
+2011-09-03 15:57  arthur
+
+	* [r1531] debian/libnss-ldapd.config, debian/libnss-ldapd.postinst,
+	  debian/libnss-ldapd.postrm, debian/libpam-ldapd.postinst: support
+	  spaces before and after database name while parsing
+	  /etc/nsswitch.conf and reduce the number of places where parsing
+	  is done
+
+2011-08-30 18:58  arthur
+
+	* [r1530] debian/nslcd.postinst: correctly handle leading and
+	  trailing spaces in preseeded uri option (patch by Andreas B.
+	  Mundt)
+
+2011-08-30 18:47  arthur
+
+	* [r1529] configure.ac, nslcd/myldap.c: move LDAP_DEPRECATED and
+	  LDAP_REFERRALS to configure.ac to ensure that tests from
+	  configure see the same API
+
+2011-08-29 20:57  arthur
+
+	* [r1528] configure.ac, nslcd/common.c, nslcd/common.h: implement
+	  and use a strtoui() function if uid_t or gid_t is of size
+	  unsigned int (thanks Jakub Hrozek)
+
+2011-08-29 19:18  arthur
+
+	* [r1527] pynslcd/Makefile.am: get rid of automake warning
+
+2011-08-29 19:16  arthur
+
+	* [r1526] configure.ac: silence autoconf warnings, patch by Jakub
+	  Hrozek
+
+2011-08-29 19:01  arthur
+
+	* [r1525] debian/po/nl.po: some changes based on feedback by Jeroen
+	  Schot
+
+2011-08-27 21:22  arthur
+
+	* [r1524] configure.ac, nslcd/cfg.c, nslcd/common.h, nslcd/group.c,
+	  nslcd/passwd.c: provide strtouid() and strtogid() functions that
+	  use strtoul() or strtoull() (thanks Jakub Hrozek)
+
+2011-08-27 20:57  arthur
+
+	* [r1523] nslcd/cfg.c, nslcd/group.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  check errno after calls to strtol() to ensure that numbers that
+	  are too large for type will be reported (thanks Jakub Hrozek)
+
+2011-08-27 15:08  arthur
+
+	* [r1522] AUTHORS, nslcd/myldap.c: pass a statically allocated
+	  callback structure to OpenLDAP because it doesn't make it's own
+	  copy (thanks Jakub Hrozek)
+
+2011-08-27 14:48  arthur
+
+	* [r1521] debian/po/nl.po: some changes based on feedback by Paul
+	  Gevers
+
+2011-08-26 19:21  arthur
+
+	* [r1520] debian/po/nl.po: first attempt at Dutch (nl) translation
+
+2011-08-26 10:11  arthur
+
+	* [r1519] debian/po/ca.po, debian/po/fi.po, debian/po/gl.po,
+	  debian/po/it.po, debian/po/nb.po, debian/po/nl.po,
+	  debian/po/sv.po, debian/po/vi.po, debian/po/zh_CN.po: small
+	  formatting changes to header
+
+2011-08-25 20:05  arthur
+
+	* [r1518] debian/po/es.po: updated Spanish (es) translation of
+	  debconf templates by Francisco Javier Cuadrado
+
+2011-08-24 20:47  arthur
+
+	* [r1517] nslcd/cfg.c: fix typo (thanks Nalin Dahyabhai)
+
+2011-08-24 20:22  arthur
+
+	* [r1515] nslcd/cfg.c: fix a problem with uninitialised memory
+	  while parsing the tls_ciphers option (was broken in r853, similar
+	  problem was fixed in r910, reported by Isaac Freeman)
+
+2011-08-24 19:02  arthur
+
+	* [r1514] debian/po/de.po: updated German (de) translation of
+	  debconf templates by Chris Leick
+
+2011-08-24 18:51  arthur
+
+	* [r1513] AUTHORS, man/nslcd.conf.5.xml, nslcd/cfg.c: support
+	  querying DNS SRV records from a different domain than the current
+	  one (based on a patch by James M. Leddy)
+
+2011-08-23 20:03  arthur
+
+	* [r1512] debian/po/cs.po: updated Czech (cs) translation of
+	  debconf templates by Miroslav Kure
+
+2011-08-19 15:57  arthur
+
+	* [r1511] debian/po/fr.po: typo fix provided by Christian Perrier
+
+2011-08-17 19:38  arthur
+
+	* [r1510] AUTHORS: add new translators to AUTHORS file
+
+2011-08-17 19:04  arthur
+
+	* [r1509] debian/po/ja.po: updated Japanese (ja) translation of
+	  debconf templates by Kenshi Muto
+
+2011-08-17 18:44  arthur
+
+	* [r1508] debian/po/pt.po: updated Portuguese (pt) translation of
+	  debconf templates by Américo Monteiro
+
+2011-08-14 19:29  arthur
+
+	* [r1507] debian/po/pt_BR.po: updated Brazilian Portuguese (pt_BR)
+	  translation of debconf templates by Denis Doria
+
+2011-08-14 17:03  arthur
+
+	* [r1506] ChangeLog, ChangeLog-2009, ChangeLog-2010, Makefile.am:
+	  split 2009 and 2010 changes to separate ChangeLog files
+
+2011-08-14 15:39  arthur
+
+	* [r1505] nss/networks.c: remove unused variable
+
+2011-08-14 14:09  arthur
+
+	* [r1504] nslcd/Makefile.am, pam/Makefile.am, tests/Makefile.am:
+	  put external libraries at the end when linking
+
+2011-08-14 14:03  arthur
+
+	* [r1503] configure.ac: remove some tests for symbols we aren't
+	  using
+
+2011-08-14 14:02  arthur
+
+	* [r1502] debian/libnss-ldapd.lintian-overrides: add lintian
+	  override for SONAME check
+
+2011-08-14 12:54  arthur
+
+	* [r1501] debian/po/pt_BR.po: updated Brazilian Portuguese (pt_BR)
+	  translation of debconf templates by Denis Doria
+
+2011-08-14 10:34  arthur
+
+	* [r1500] debian/po/da.po: update Danish (da) translation of
+	  debconf templates by Joe Hansen
+
+2011-08-14 10:27  arthur
+
+	* [r1499] debian/po/sk.po: added Slovak (sk) translation of debconf
+	  templates by Slavko
+
+2011-08-14 10:18  arthur
+
+	* [r1498] debian/po/fr.po: updated French (fr) translation of
+	  debconf templates by Christian Perrier
+
+2011-08-14 10:04  arthur
+
+	* [r1497] debian/po/ru.po: updated Russian (ru) translation of
+	  debconf templates by Yuri Kozlov
+
+2011-08-10 20:02  arthur
+
+	* [r1496] AUTHORS: fix spelling of name (sorry about that)
+
+2011-08-09 15:36  arthur
+
+	* [r1495] nslcd/passwd.c: check nsswitch.conf mtime to see whether
+	  file should be reloaded
+
+2011-08-09 09:09  arthur
+
+	* [r1494] debian/po/ca.po, debian/po/cs.po, debian/po/da.po,
+	  debian/po/de.po, debian/po/es.po, debian/po/fi.po,
+	  debian/po/fr.po, debian/po/gl.po, debian/po/it.po,
+	  debian/po/ja.po, debian/po/nb.po, debian/po/nl.po,
+	  debian/po/pt.po, debian/po/pt_BR.po, debian/po/ru.po,
+	  debian/po/sv.po, debian/po/templates.pot, debian/po/vi.po,
+	  debian/po/zh_CN.po: run debconf-updatepo to update .pot and .po
+	  files
+
+2011-08-09 09:02  arthur
+
+	* [r1493] debian/nslcd.templates, man/nslcd.conf.5.xml: small
+	  language updates based on feedback by Justin B Rye
+
+2011-08-08 08:09  arthur
+
+	* [r1492] debian/nslcd.templates: incorporate feedback on debconf
+	  templates by debian-l10n-english@lists.debian.org (thanks Justin
+	  B Rye and Christian PERRIER)
+
+2011-08-07 16:40  arthur
+
+	* [r1491] Makefile.am, debian/compat, debian/control,
+	  debian/libnss-ldapd.install,
+	  debian/libnss-ldapd.lintian-overrides,
+	  debian/libnss-ldapd.postinst, debian/libpam-ldapd.install,
+	  debian/rules, debian/source/lintian-overrides: build Debian
+	  packages with multiarch support
+
+2011-08-07 13:10  arthur
+
+	* [r1490] AUTHORS, nslcd/myldap.c: set the socket timeout in a
+	  connection callback to avoid timeout issues during the SSL
+	  handshake (based on a patch by Stefan Völkel)
+
+2011-08-06 20:36  arthur
+
+	* [r1489] debian/copyright, m4/ax_pthread.m4: update AX_PTHREAD
+	  from http://www.gnu.org/software/autoconf-archive/ax_pthread.html
+
+2011-08-05 21:42  arthur
+
+	* [r1488] pynslcd/group.py, tests/test_myldap.c: replace last
+	  traces of groupOfUniqueNames
+
+2011-08-05 21:28  arthur
+
+	* [r1487] nslcd/Makefile.am, nslcd/common.h, nslcd/nsswitch.c,
+	  nslcd/passwd.c, tests/Makefile.am: check whether the NSS shadow
+	  map queries LDAP before returning x as a password has for shadow
+	  users
+
+2011-08-05 20:58  arthur
+
+	* [r1486] tests/README, tests/test.ldif.gz, tests/test_nsscmds.sh:
+	  update tests with change of member/uniqueMember default change
+	  (r1484)
+
+2011-08-05 11:52  arthur
+
+	* [r1485] nslcd/group.c, nslcd/myldap.c, nslcd/myldap.h,
+	  nslcd/passwd.c: implementation of myldap_get_values_len() to use
+	  ldap_get_values_len() instead of ldap_get_values() to fix some
+	  problems with binary data in returned attribute values (patch by
+	  Wesley Mason)
+
+2011-08-03 19:54  arthur
+
+	* [r1484] README, nslcd.conf, nslcd/attmap.c, nslcd/attmap.h,
+	  nslcd/group.c, pynslcd/group.py, tests/test_myldap.c: switch to
+	  using the member attribute by default instead of uniqueMember
+
+2011-07-21 20:41  arthur
+
+	* [r1483] README: remove obsolete attribute from documentation
+
+2011-07-15 20:13  arthur
+
+	* [r1482] debian/nslcd.init: on restart only log_end_msg once
+
+2011-07-04 21:18  arthur
+
+	* [r1481] configure.ac: show the default value for the
+	  pam-seclib-dir option
+
+2011-07-03 20:34  arthur
+
+	* [r1480] compat/getpeercred.c: fix header
+
+2011-07-03 20:34  arthur
+
+	* [r1479] compat/pam_compat.h: provide PAM_AUTHTOK_RECOVERY_ERR for
+	  systems with only PAM_AUTHTOK_RECOVER_ERR
+
+2011-07-02 21:50  arthur
+
+	* [r1478] Makefile.am, debian/compat, debian/control,
+	  debian/libpam-ldapd.install, debian/libpam-ldapd.pam-auth-update,
+	  debian/nslcd.install, debian/pam-configs,
+	  debian/pam-configs/ldap, debian/rules: switch to dh for
+	  debian/rules and bump debhelper compatibility to 8
+
+2011-07-02 21:20  arthur
+
+	* [r1476] nslcd/group.c, nslcd/host.c, nslcd/network.c,
+	  nslcd/passwd.c, nslcd/shadow.c: make buffer sizes consistent,
+	  grow gidNumber buffer to hold larger numbers and small
+	  consistency improvements
+
+2011-06-10 08:49  arthur
+
+	* [r1475] nslcd/pam.c: correctly only check password expiration
+	  when authenticating, only check account expiration when doing
+	  authorisation check
+
+2011-06-05 20:18  arthur
+
+	* [r1474] nslcd/cfg.c, nslcd/pam.c: check all variables in
+	  pam_authz_search to see if they exist
+
+2011-06-05 20:15  arthur
+
+	* [r1473] nslcd/cfg.c, nslcd/common.c: mark more strings as const
+	  and don't free() data returned by cfg_getdomainname()
+
+2011-06-05 09:14  arthur
+
+	* [r1471] common/expr.c, tests/test_expr.c: handle expressions
+	  where the expander function returns NULL (handle it as an empty
+	  string)
+
+2011-06-05 08:58  arthur
+
+	* [r1470] nslcd/myldap.c: fix r1468
+
+2011-06-05 08:54  arthur
+
+	* [r1468] nslcd/myldap.c: simplify and correct find_rdn_value() to
+	  handle splitting attribute and value correctly
+
+2011-06-05 08:03  arthur
+
+	* [r1467] config.guess, config.sub: include updated files
+
+2011-05-23 20:05  arthur
+
+	* [r1466] tests/test_common.c: add test case for two-character user
+	  name
+
+2011-05-21 14:52  arthur
+
+	* [r1464] nslcd/myldap.c: fix problem with partial attribute name
+	  matches in DN (e.g. uid vs. uidNumber) (thanks to Timothy White
+	  for the fix)
+
+2011-05-13 13:10  arthur
+
+	* [r1462] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.8.3 release
+
 2011-05-13 13:02  arthur
 
 	* [r1461] debian/libnss-ldapd.postinst: don't unconditionally
