@@ -1,30 +1,33 @@
 # Translation of nss-pam-ldapd debconf templates to Swedish.
+# Copyright (C) 2011 Martin Bagge <brother@bsnet.se>
+# This file is distributed under the same license as the nss-pam-ldapd package.
 #
 # Translators:
 #
-# Martin ≈gren <martin.agren@gmail.com>, 2008, 2009, 2010.
+# Martin √Ögren <martin.agren@gmail.com>, 2008, 2009, 2010.
+# Martin Bagge <brother@bsnet.se>, 2011
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-pam-ldapd 0.7.9\n"
+"Project-Id-Version: nss-pam-ldapd 0.8.4\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2011-08-09 11:04+0200\n"
-"PO-Revision-Date: 2010-08-28 12:21+0200\n"
-"Last-Translator: Martin ≈gren <martin.agren@gmail.com>\n"
+"PO-Revision-Date: 2011-09-05 23:40+0100\n"
+"Last-Translator: Martin Bagge / brother <brother@bsnet.se>\n"
 "Language-Team: Swedish <debian-l10n-swedish@lists.debian.org>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Language: sv\n"
-"X-Poedit-Country: sv\n"
+"X-Poedit-Language: Swedish\n"
+"X-Poedit-Country: Sweden\n"
 "X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:1001
 msgid "LDAP server URI:"
-msgstr "URI fˆr LDAP-server:"
+msgstr "URI f√∂r LDAP-server:"
 
 #. Type: string
 #. Description
@@ -35,8 +38,8 @@ msgid ""
 "or \"ldapi://\" can be used. The port number is optional."
 msgstr ""
 "Ange URI:n (eng. \"Uniform Resource Identifier\") till LDAP-servern. "
-"Formatet ‰r 'ldap://<v‰rdnamn_eller_IP>:<port>/'. Alternativt kan 'ldaps://' "
-"eller 'ldapi://' anv‰ndas. Portnumret behˆver inte anges."
+"Formatet √§r 'ldap://<v√§rdnamn_eller_IP>:<port>/'. Alternativt kan 'ldaps://' "
+"eller 'ldapi://' anv√§ndas. Portnumret beh√∂ver inte anges."
 
 #. Type: string
 #. Description
@@ -45,8 +48,8 @@ msgid ""
 "When using an ldap or ldaps scheme it is recommended to use an IP address to "
 "avoid failures when domain name services are unavailable."
 msgstr ""
-"N‰r ldap och ldaps anv‰nds ‰r det vanligtvis en bra idÈ att anv‰nda en IP-"
-"adress fˆr att undvika fel n‰r namntj‰nsten (DNS) ‰r otillg‰nglig."
+"N√§r ldap och ldaps anv√§nds √§r det vanligtvis en bra id√© att anv√§nda en IP-"
+"adress f√∂r att undvika fel n√§r namntj√§nsten (DNS) √§r otillg√§nglig."
 
 #. Type: string
 #. Description
@@ -58,7 +61,7 @@ msgstr "Flera URI:er kan anges separerade med blanksteg."
 #. Description
 #: ../nslcd.templates:2001
 msgid "LDAP server search base:"
-msgstr "Sˆkbas fˆr LDAP-server:"
+msgstr "S√∂kbas f√∂r LDAP-server:"
 
 #. Type: string
 #. Description
@@ -69,33 +72,33 @@ msgid ""
 "domain \"example.net\" would use \"dc=example,dc=net\" as the distinguished "
 "name of the search base."
 msgstr ""
-"Ange namnet (DN) fˆr LDAPs sˆkbas. MÂnga system anv‰nder komponenter av "
-"deras dom‰nnamn fˆr denna funktion. Till exempel att dom‰nen \"example.net\" "
-"skulle anv‰nda \"dc=example,dc=net\" som sitt DN-namn fˆr sˆkbasen."
+"Ange namnet (DN) f√∂r LDAPs s√∂kbas. M√•nga system anv√§nder komponenter av "
+"deras dom√§nnamn f√∂r denna funktion. Till exempel att dom√§nen \"example.net\" "
+"skulle anv√§nda \"dc=example,dc=net\" som sitt DN-namn f√∂r s√∂kbasen."
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:3001
 msgid "none"
-msgstr ""
+msgstr "ingen"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:3001
 msgid "simple"
-msgstr ""
+msgstr "enkel"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:3001
 msgid "SASL"
-msgstr ""
+msgstr "SASL"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:3002
 msgid "LDAP authentication to use:"
-msgstr ""
+msgstr "LDAP-identifiering som ska anv√§ndas:"
 
 #. Type: select
 #. Description
@@ -104,6 +107,8 @@ msgid ""
 "Please choose what type of authentication the LDAP database should require "
 "(if any):"
 msgstr ""
+"Ange vilken typ av autentisering som LDAP-databasen ska ha som krav (om "
+"n√•gon):"
 
 #. Type: select
 #. Description
@@ -113,50 +118,54 @@ msgid ""
 " * simple: simple bind DN and password authentication;\n"
 " * SASL: any Simple Authentication and Security Layer mechanism."
 msgstr ""
+" * ingen: ingen autentisering\n"
+" * enkel: enkel autentisering genom bind DN och l√∂senord\n"
+" * SASL: vilken SASL-metod (Simple Authentication and Security Layer) som "
+"helst."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:4001
 msgid "LDAP database user:"
-msgstr "LDAP-databasanv‰ndare:"
+msgstr "LDAP-databasanv√§ndare:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:4001
-#, fuzzy
-#| msgid "This value should be specified as a DN (distinguished name)."
 msgid ""
 "Enter the name of the account that will be used to log in to the LDAP "
 "database. This value should be specified as a DN (distinguished name)."
-msgstr "Detta v‰rde ska anges som ett DN (eng. \"distinguished name\")."
+msgstr ""
+"Ange namnet p√• kontot som ska anv√§ndas f√∂r att logga in i LDAP-databasen. "
+"Detta v√§rde ska specificeras som ett DN (eng. \"distinguished name\")."
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:5001
 msgid "LDAP user password:"
-msgstr "LDAP-anv‰ndarlˆsenord:"
+msgstr "LDAP-anv√§ndarl√∂senord:"
 
 #. Type: password
 #. Description
 #: ../nslcd.templates:5001
 msgid "Enter the password that will be used to log in to the LDAP database."
-msgstr "Ange lˆsenordet som ska anv‰ndas fˆr att logga in pÂ LDAP-databasen."
+msgstr "Ange l√∂senordet som ska anv√§ndas f√∂r att logga in p√• LDAP-databasen."
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:6001
 msgid "SASL mechanism to use:"
-msgstr ""
+msgstr "SASL-metod som ska anv√§ndas:"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:6001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Choose the SASL mechanism that will be used to authenticate to the LDAP "
 "database:"
-msgstr "Ange lˆsenordet som ska anv‰ndas fˆr att logga in pÂ LDAP-databasen."
+msgstr ""
+"Ange SASL-mekaniskmen som ska anv√§ndas f√∂r att autentisera mot LDAP-"
+"databasen:"
 
 #. Type: select
 #. Description
@@ -171,27 +180,36 @@ msgid ""
 " * GSSAPI: used for Kerberos;\n"
 " * OTP: a One Time Password mechanism."
 msgstr ""
+" * auto: automatisk f√∂rhandling\n"
+" * LOGIN: utfasas tillf√∂rm√•n f√∂r PLAIN\n"
+" * PLAIN: enkel l√∂senordsmekanism med l√∂senord i klartext\n"
+" * NTLM: NT LAN Manager autentiseringsmekanism\n"
+" * CRAM-MD5: challenge-response schema baserad p√• HMAC-MD5\n"
+" * DIGEST-MD5: HTTP Digest kompatible challenge-response schema\n"
+" * GSSAPI: anv√§nds f√∂r Kerberos\n"
+" * OTP: eng√•ngsl√∂senord (\"One Time Password\")."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
 msgid "SASL realm:"
-msgstr ""
+msgstr "SASL-realm:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the SASL realm that will be used to authenticate to the LDAP database."
-msgstr "Ange lˆsenordet som ska anv‰ndas fˆr att logga in pÂ LDAP-databasen."
+msgstr ""
+"Ange SASL-realm som ska anv√§ndas f√∂r att autentisera mot LDAP-databasen."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
 msgid "The realm is appended to authentication and authorization identities."
 msgstr ""
+"Inst√§llningen f√∂r realm l√§ggs till f√∂r identifiering och autentisering av "
+"identiteter."
 
 #. Type: string
 #. Description
@@ -200,22 +218,23 @@ msgid ""
 "For GSSAPI this can be left blank to use information from the Kerberos "
 "credential cache."
 msgstr ""
+"F√∂r GSSAPI kan detta l√§mnas tomt f√∂r att anv√§nda Kerberos identifieringscache"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:8001
 msgid "SASL authentication identity:"
-msgstr ""
+msgstr "Autentiseringsidentitet f√∂r SASL:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:8001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the SASL authentication identity that will be used to authenticate to "
 "the LDAP database."
-msgstr "Ange lˆsenordet som ska anv‰ndas fˆr att logga in pÂ LDAP-databasen."
+msgstr ""
+"Ange den autentiseringsidentitet som ska anv√§ndas f√∂r SASL-identifiering mot "
+"LDAP-databasen."
 
 #. Type: string
 #. Description
@@ -223,38 +242,40 @@ msgstr "Ange lˆsenordet som ska anv‰ndas fˆr att logga in pÂ LDAP-databasen."
 msgid ""
 "This is the login used in LOGIN, PLAIN, CRAM-MD5, and DIGEST-MD5 mechanisms."
 msgstr ""
+"Detta anv√§nds i inloggningsmekaniskerna LOGIN, PLAIN, CRAM-MD5 och DIGEST-"
+"MD5."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
 msgid "SASL proxy authorization identity:"
-msgstr ""
+msgstr "Autentiseringsidentitet f√∂r SASL-proxy:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the proxy authorization identity that will be used to authenticate to "
 "the LDAP database."
-msgstr "Ange lˆsenordet som ska anv‰ndas fˆr att logga in pÂ LDAP-databasen."
+msgstr ""
+"Ange den identitet f√∂r proxyautentisering som ska anv√§ndas f√∂r att "
+"autentisera mot LDAP-databasen."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
-#, fuzzy
-#| msgid "This value should be specified as a DN (distinguished name)."
 msgid ""
 "This is the object in the name of which the LDAP request is done. This value "
 "should be specified as a DN (distinguished name)."
-msgstr "Detta v‰rde ska anges som ett DN (eng. \"distinguished name\")."
+msgstr ""
+"Detta √§r namnet som anv√§nds f√∂r att g√∂ra LDAP-f√∂rfr√•gningen. V√§rde ska anges "
+"som ett DN (eng. \"distinguished name\")."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:10001
 msgid "Cyrus SASL security properties:"
-msgstr ""
+msgstr "S√§kerhetsalternativ f√∂r Cyrus SASL:"
 
 #. Type: string
 #. Description
@@ -263,24 +284,27 @@ msgid ""
 "Enter the Cyrus SASL security properties. Allowed values are described in "
 "the ldap.conf(5) manual page in the SASL OPTIONS section."
 msgstr ""
+"Ange s√§kerhetsalternativ f√∂r Cyrus SASL. Till√•tna v√§rden beskrivs i "
+"manualsidan ldap.conf(5) i avsnittet SASL OPTIONS."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:11001
 msgid "Kerberos credential cache file path:"
-msgstr ""
+msgstr "S√∂kv√§g till cachefil f√∂r Kerberosidentifiering:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:11001
 msgid "Enter the GSSAPI/Kerberos credential cache file name that will be used."
 msgstr ""
+"Ange filnamn f√∂r den GSSAPI/Kerberos identifieringcache som ska anv√§ndas."
 
 #. Type: boolean
 #. Description
 #: ../nslcd.templates:12001
 msgid "Use StartTLS?"
-msgstr "Anv‰nda StartTLS?"
+msgstr "Anv√§nda StartTLS?"
 
 #. Type: boolean
 #. Description
@@ -289,7 +313,7 @@ msgid ""
 "Please choose whether the connection to the LDAP server should use StartTLS "
 "to encrypt the connection."
 msgstr ""
-"V‰lj huruvida uppkopplingen till LDAP-servern ska anv‰nda StartTLS fˆr att "
+"V√§lj huruvida uppkopplingen till LDAP-servern ska anv√§nda StartTLS f√∂r att "
 "kryptera uppkopplingen."
 
 #. Type: select
@@ -302,19 +326,19 @@ msgstr "aldrig"
 #. Choices
 #: ../nslcd.templates:13001
 msgid "allow"
-msgstr "tillÂt"
+msgstr "till√•t"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:13001
 msgid "try"
-msgstr "fˆrsˆk"
+msgstr "f√∂rs√∂k"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:13001
 msgid "demand"
-msgstr "kr‰v"
+msgstr "kr√§v"
 
 #. Type: select
 #. Description
@@ -330,8 +354,8 @@ msgid ""
 "and checked. Please choose whether lookups should be configured to require a "
 "certificate, and whether certificates should be checked for validity:"
 msgstr ""
-"N‰r en krypterad uppkoppling anv‰nds, kan ett servercertifikat efterfrÂgas "
-"och kontrolleras. V‰lj huruvida uppslag ska konfigureras fˆr att kr‰va ett "
+"N√§r en krypterad uppkoppling anv√§nds, kan ett servercertifikat efterfr√•gas "
+"och kontrolleras. V√§lj huruvida uppslag ska konfigureras f√∂r att kr√§va ett "
 "certifikat och huruvida certifikatens giltighet ska kontrolleras:"
 
 #. Type: select
@@ -345,12 +369,12 @@ msgid ""
 "        certificate is provided it is ignored;\n"
 " * demand: a certificate will be requested, required, and checked."
 msgstr ""
-" * aldrig: inget certifikat kommer efterfrÂgas eller kontrolleras;\n"
-" * tillÂt: ett certifikat kommer efterfrÂgas, men det kr‰vs inget\n"
+" * aldrig: inget certifikat kommer efterfr√•gas eller kontrolleras;\n"
+" * till√•t: ett certifikat kommer efterfr√•gas, men det kr√§vs inget\n"
 "           och det kontrolleras inte;\n"
-" * fˆrsˆk: ett certifikat kommer efterfrÂgas och kontrolleras, men om\n"
-"           inget certifikat tillhandahÂlls kommer detta ignoreras;\n"
-" * kr‰v: ett certifikat kommer efterfrÂgas och kontrolleras."
+" * f√∂rs√∂k: ett certifikat kommer efterfr√•gas och kontrolleras, men om\n"
+"           inget certifikat tillhandah√•lls kommer detta ignoreras;\n"
+" * kr√§v: ett certifikat kommer efterfr√•gas och kontrolleras."
 
 #. Type: select
 #. Description
@@ -359,14 +383,14 @@ msgid ""
 "If certificate checking is enabled, at least one of the tls_cacertdir or "
 "tls_cacertfile options must be put in /etc/nslcd.conf."
 msgstr ""
-"Om certifikatkontroll ‰r aktiverad mÂste Âtminstone ett avtls_cacertdir- och "
-"tls_cacertfile-direktiven l‰ggas i /etc/nslcd.conf."
+"Om certifikatkontroll √§r aktiverad m√•ste √•tminstone ett avtls_cacertdir- och "
+"tls_cacertfile-direktiven l√§ggas i /etc/nslcd.conf."
 
 #. Type: multiselect
 #. Description
 #: ../libnss-ldapd.templates:1001
 msgid "Name services to configure:"
-msgstr "Namntj‰nster som ska konfigureras:"
+msgstr "Namntj√§nster som ska konfigureras:"
 
 #. Type: multiselect
 #. Description
@@ -375,8 +399,8 @@ msgid ""
 "For this package to work, you need to modify your /etc/nsswitch.conf to use "
 "the ldap datasource."
 msgstr ""
-"Fˆr att det h‰r paketet ska fungera, behˆver du modifiera /etc/nsswitch.conf "
-"sÂ att ldaps datak‰lla anv‰nds."
+"F√∂r att det h√§r paketet ska fungera, beh√∂ver du modifiera /etc/nsswitch.conf "
+"s√• att ldaps datak√§lla anv√§nds."
 
 #. Type: multiselect
 #. Description
@@ -386,15 +410,15 @@ msgid ""
 "LDAP lookups will be added as the last datasource. Be sure to review these "
 "changes."
 msgstr ""
-"Du kan v‰lja de tj‰nster som ska ha LDAP-uppslag aktiverade. De nya LDAP-"
-"uppslagen kommer att l‰ggas till som en sista datak‰lla. Se till att se ˆver "
-"dessa ‰ndringar."
+"Du kan v√§lja de tj√§nster som ska ha LDAP-uppslag aktiverade. De nya LDAP-"
+"uppslagen kommer att l√§ggas till som en sista datak√§lla. Se till att se √∂ver "
+"dessa √§ndringar."
 
 #. Type: boolean
 #. Description
 #: ../libnss-ldapd.templates:2001
 msgid "Remove LDAP from nsswitch.conf now?"
-msgstr "Ta bort LDAP frÂn nsswitch.conf nu?"
+msgstr "Ta bort LDAP fr√•n nsswitch.conf nu?"
 
 #. Type: boolean
 #. Description
@@ -404,7 +428,7 @@ msgid ""
 "  ${services}\n"
 "but the libnss-ldapd package is about to be removed."
 msgstr ""
-"Fˆljande tj‰nster ‰r fortfarande konfigurerade att anv‰nda LDAP fˆr "
+"F√∂ljande tj√§nster √§r fortfarande konfigurerade att anv√§nda LDAP f√∂r "
 "uppslag:\n"
 "  ${services}\n"
 "men libnss-ldapd-paketet kommer tas bort."
@@ -418,9 +442,9 @@ msgid ""
 "most services, not cause problems, but host name resolution could be "
 "affected in subtle ways."
 msgstr ""
-"Du bˆr ta bort uppgifterna om du inte t‰nker anv‰nda LDAP fˆr namnuppslag. "
-"Att inte ta bort ldap frÂn nsswitch.conf bˆr, fˆr de flesta tj‰nster, inte "
-"orsaka nÂgra problem, men v‰rdnamnsuppslag kan pÂverkas pÂ smÂ, subtila s‰tt."
+"Du b√∂r ta bort uppgifterna om du inte t√§nker anv√§nda LDAP f√∂r namnuppslag. "
+"Att inte ta bort ldap fr√•n nsswitch.conf b√∂r, f√∂r de flesta tj√§nster, inte "
+"orsaka n√•gra problem, men v√§rdnamnsuppslag kan p√•verkas p√• sm√•, subtila s√§tt."
 
 #. Type: boolean
 #. Description
@@ -430,8 +454,8 @@ msgid ""
 "automatically now. Be sure to review the changes to /etc/nsswitch.conf if "
 "you choose to remove the entries now."
 msgstr ""
-"Du kan ‰ndra /etc/nsswitch.conf fˆr hand eller v‰lja att ta bort posterna "
-"automatiskt nu. Se ˆver ‰ndringarna i /etc/nsswitch.conf om du v‰ljer att ta "
+"Du kan √§ndra /etc/nsswitch.conf f√∂r hand eller v√§lja att ta bort posterna "
+"automatiskt nu. Se √∂ver √§ndringarna i /etc/nsswitch.conf om du v√§ljer att ta "
 "bort posterna nu."
 
 #. Type: boolean
@@ -449,10 +473,10 @@ msgid ""
 "is, there is no need for password hashes to be exposed. See http://bugs."
 "debian.org/583492 for background."
 msgstr ""
-"Om LDAP-anv‰ndare ska kunna logga in, mÂste NSS-modulen ha mˆjlighet att "
-"utfˆra shadow-uppslag av lˆsenord. Sj‰lva shadow-posterna kan vara tomma, "
-"vilket inneb‰r att de hashade lˆsenorden inte mÂste gˆras tillg‰ngliga. Se "
-"http://bugs.debian.org/583492 fˆr bakgrundsinformation."
+"Om LDAP-anv√§ndare ska kunna logga in, m√•ste NSS-modulen ha m√∂jlighet att "
+"utf√∂ra shadow-uppslag av l√∂senord. Sj√§lva shadow-posterna kan vara tomma, "
+"vilket inneb√§r att de hashade l√∂senorden inte m√•ste g√∂ras tillg√§ngliga. Se "
+"http://bugs.debian.org/583492 f√∂r bakgrundsinformation."
 
 #. Type: boolean
 #. Description
@@ -462,13 +486,13 @@ msgid ""
 "added automatically (in which case it should be reviewed afterwards) or "
 "whether it should be left for an administrator to edit manually."
 msgstr ""
-"V‰lj huruvida den nˆdv‰ndiga posten ska l‰ggas till i /etc/nsswitch.conf "
-"automatiskt (det bˆr i sÂ fall kontrolleras i efterhand) eller om det ska "
-"l‰mnas Ât en administratˆr att redigera filen manuellt."
+"V√§lj huruvida den n√∂dv√§ndiga posten ska l√§ggas till i /etc/nsswitch.conf "
+"automatiskt (det b√∂r i s√• fall kontrolleras i efterhand) eller om det ska "
+"l√§mnas √•t en administrat√∂r att redigera filen manuellt."
 
 #~ msgid ""
 #~ "If the LDAP database requires a login for normal lookups, enter the name "
 #~ "of the account that will be used here. Leave it empty otherwise."
 #~ msgstr ""
-#~ "Om LDAP-databasen kr‰ver inloggning fˆr vanliga uppslag, ange namnet pÂ "
-#~ "det konto som ska anv‰ndas h‰r. L‰mna annars tomt."
+#~ "Om LDAP-databasen kr√§ver inloggning f√∂r vanliga uppslag, ange namnet p√• "
+#~ "det konto som ska anv√§ndas h√§r. L√§mna annars tomt."

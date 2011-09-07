@@ -53,6 +53,7 @@ debian/po/es.po:   Copyright (C) 2007 Rudy Godoy Guillén
 debian/po/es.po:   Copyright (C) 2009, 2010, 2011 Software in the Public Interest
 debian/po/fi.po:   Copyright (C) 2009 Esko Arajärvi
 debian/po/fr.po:   Copyright (C) 2007, 2009, 2010 Debian French l10n team
+debian/po/sv.po:   Copyright (C) 2011 Martin Bagge
 debian/po/vi.po:   Copyright (C) 2010 Free Software Foundation, Inc.
 nss/bsdnss.c:      Copyright (C) 2003 Jacques Vidrine
 nss/bsdnss.c:      Copyright (C) 2006 Artem Kazakov
