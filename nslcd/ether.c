@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -77,13 +77,9 @@ static int mkfilter_ether_byname(const char *name,
                    attmap_ether_cn,safename);
 }
 
-static int mkfilter_ether_byether(const struct ether_addr *addr,
+static int mkfilter_ether_byether(const char *addrstr,
                                   char *buffer,size_t buflen)
 {
-  char ethername[20];
-  /* transform into string */
-  if (ether_ntoa_r(addr,ethername)==NULL)
-    return -1;
   /* FIXME: this has a bug when the directory has 01:00:0e:...
             and we're looking for 1:0:e:... (leading zeros) */
   /* there should be no characters that need escaping */
@@ -91,7 +87,7 @@ static int mkfilter_ether_byether(const struct ether_addr *addr,
   return mysnprintf(buffer,buflen,
                    "(&%s(%s=%s))",
                    ether_filter,
-                   attmap_ether_macAddress,ethername);
+                   attmap_ether_macAddress,addrstr);
 }
 
 void ether_init(void)
@@ -175,15 +171,15 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   ether,byether,
   struct ether_addr addr;
-  char ether[20];
+  char addrstr[20];
   char filter[1024];
   READ_TYPE(fp,addr,uint8_t[6]);
-  if (ether_ntoa_r(&addr,ether)==NULL)
+  if (ether_ntoa_r(&addr,addrstr)==NULL)
     return -1;
-  log_setrequest("ether=%s",ether);,
+  log_setrequest("ether=%s",addrstr);,
   NSLCD_ACTION_ETHER_BYETHER,
-  mkfilter_ether_byether(&addr,filter,sizeof(filter)),
-  write_ether(fp,entry,NULL,ether)
+  mkfilter_ether_byether(addrstr,filter,sizeof(filter)),
+  write_ether(fp,entry,NULL,addrstr)
 )
 
 NSLCD_HANDLE(

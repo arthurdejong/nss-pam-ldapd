@@ -78,12 +78,12 @@ static int mkfilter_host_byname(const char *name,
                     attmap_host_cn,safename);
 }
 
-static int mkfilter_host_byaddr(const char *addrname,
+static int mkfilter_host_byaddr(const char *addrstr,
                                 char *buffer,size_t buflen)
 {
   char safeaddr[64];
   /* escape attribute */
-  if (myldap_escape(addrname,safeaddr,sizeof(safeaddr)))
+  if (myldap_escape(addrstr,safeaddr,sizeof(safeaddr)))
     return -1;
   /* build filter */
   return mysnprintf(buffer,buflen,
@@ -167,18 +167,18 @@ NSLCD_HANDLE(
   int af;
   char addr[64];
   int len=sizeof(addr);
-  char addrname[64];
+  char addrstr[64];
   char filter[1024];
   READ_ADDRESS(fp,addr,len,af);
   /* translate the address to a string */
-  if (inet_ntop(af,addr,addrname,sizeof(addrname))==NULL)
+  if (inet_ntop(af,addr,addrstr,sizeof(addrstr))==NULL)
   {
     log_log(LOG_WARNING,"unable to convert address to string");
     return -1;
   }
-  log_setrequest("host=%s",addrname);,
+  log_setrequest("host=%s",addrstr);,
   NSLCD_ACTION_HOST_BYADDR,
-  mkfilter_host_byaddr(addrname,filter,sizeof(filter)),
+  mkfilter_host_byaddr(addrstr,filter,sizeof(filter)),
   write_host(fp,entry)
 )
 
