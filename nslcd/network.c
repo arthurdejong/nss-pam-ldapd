@@ -120,7 +120,7 @@ static int write_network(TFILE *fp,MYLDAP_ENTRY *entry)
   networknames=myldap_get_values(entry,attmap_network_cn);
   if ((networknames==NULL)||(networknames[0]==NULL))
   {
-    log_log(LOG_WARNING,"network entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_network_cn);
     return 0;
   }
@@ -131,7 +131,7 @@ static int write_network(TFILE *fp,MYLDAP_ENTRY *entry)
   addresses=myldap_get_values(entry,attmap_network_ipNetworkNumber);
   if ((addresses==NULL)||(addresses[0]==NULL))
   {
-    log_log(LOG_WARNING,"network entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_network_ipNetworkNumber);
     return 0;
   }
@@ -144,7 +144,7 @@ static int write_network(TFILE *fp,MYLDAP_ENTRY *entry)
   WRITE_INT32(fp,numaddr);
   for (i=0;i<numaddr;i++)
   {
-    WRITE_ADDRESS(fp,addresses[i]);
+    WRITE_ADDRESS(fp,entry,attmap_network_ipNetworkNumber,addresses[i]);
   }
   return 0;
 }

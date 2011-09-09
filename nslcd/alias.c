@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -100,7 +100,7 @@ static int write_alias(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqalias)
   names=myldap_get_values(entry,attmap_alias_cn);
   if ((names==NULL)||(names[0]==NULL))
   {
-    log_log(LOG_WARNING,"alias entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_alias_cn);
     return 0;
   }

@@ -62,7 +62,7 @@ static int try_bind(const char *userdn,const char *password)
   {
     if (rc==LDAP_SUCCESS)
       rc=LDAP_LOCAL_ERROR;
-    log_log(LOG_WARNING,"lookup of %s failed: %s",userdn,ldap_err2string(rc));
+    log_log(LOG_WARNING,"%s: lookup failed: %s",userdn,ldap_err2string(rc));
   }
   else
   {
@@ -71,7 +71,7 @@ static int try_bind(const char *userdn,const char *password)
     {
       if (rc==LDAP_SUCCESS)
         rc=LDAP_NO_RESULTS_RETURNED;
-      log_log(LOG_WARNING,"lookup of %s failed: %s",userdn,ldap_err2string(rc));
+      log_log(LOG_WARNING,"%s: lookup failed: %s",userdn,ldap_err2string(rc));
     }
   }
   /* close the session */
@@ -90,7 +90,7 @@ static MYLDAP_ENTRY *validate_user(MYLDAP_SESSION *session,
   /* check username for validity */
   if (!isvalidname(username))
   {
-    log_log(LOG_WARNING,"\"%s\": name denied by validnames option",username);
+    log_log(LOG_WARNING,"request denied by validnames option");
     *rcp=LDAP_NO_SUCH_OBJECT;
     return NULL;
   }
@@ -118,15 +118,15 @@ static void update_username(MYLDAP_ENTRY *entry,char *username,size_t username_l
     /* get the username from the uid attribute */
     values=myldap_get_values(entry,attmap_passwd_uid);
     if ((values==NULL)||(values[0]==NULL))
-      log_log(LOG_WARNING,"\"%s\": DN %s is missing a %s attribute",
-                          username,myldap_get_dn(entry),attmap_passwd_uid);
+      log_log(LOG_WARNING,"%s: %s: missing",
+                          myldap_get_dn(entry),attmap_passwd_uid);
     value=values[0];
   }
   /* check the username */
   if ((value==NULL)||!isvalidname(value)||strlen(value)>=username_len)
   {
-    log_log(LOG_WARNING,"passwd entry %s name denied by validnames option: \"%s\"",
-                        myldap_get_dn(entry),username);
+    log_log(LOG_WARNING,"%s: %s: denied by validnames option",
+                        myldap_get_dn(entry),attmap_passwd_uid);
     return;
   }
   /* check if the username is different and update it if needed */
@@ -159,7 +159,8 @@ static int check_shadow(MYLDAP_SESSION *session,const char *username,
   {
     daysleft=today-expiredate;
     mysnprintf(authzmsg,authzmsgsz-1,"account expired %ld days ago",daysleft);
-    log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+    log_log(LOG_WARNING,"%s: %s: %s",
+                        myldap_get_dn(entry),attmap_shadow_shadowExpire,authzmsg);
     return NSLCD_PAM_ACCT_EXPIRED;
   }
   /* password expiration isn't interesting at this point because the user
@@ -171,11 +172,13 @@ static int check_shadow(MYLDAP_SESSION *session,const char *username,
     if (lastchangedate==0)
     {
       mysnprintf(authzmsg,authzmsgsz-1,"need a new password");
-      log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+      log_log(LOG_WARNING,"%s: %s: %s",
+                          myldap_get_dn(entry),attmap_shadow_shadowLastChange,authzmsg);
       return NSLCD_PAM_NEW_AUTHTOK_REQD;
     }
     else if (today<lastchangedate)
-      log_log(LOG_WARNING,"%s: password changed in the future",myldap_get_dn(entry));
+      log_log(LOG_WARNING,"%s: %s: password changed in the future",
+                          myldap_get_dn(entry),attmap_shadow_shadowLastChange);
     else if (maxdays!=-1)
     {
       /* check maxdays */
@@ -198,21 +201,24 @@ static int check_shadow(MYLDAP_SESSION *session,const char *username,
         {
           mysnprintf(authzmsg+strlen(authzmsg),authzmsgsz-strlen(authzmsg)-1,
                      ", account locked %ld days ago",-inactleft);
-          log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+          log_log(LOG_WARNING,"%s: %s: %s",
+                              myldap_get_dn(entry),attmap_shadow_shadowInactive,authzmsg);
           return NSLCD_PAM_AUTHTOK_EXPIRED;
         }
       }
       if (daysleft<=0)
       {
         /* log previously built message */
-        log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+        log_log(LOG_WARNING,"%s: %s: %s",
+                            myldap_get_dn(entry),attmap_shadow_shadowMax,authzmsg);
         return NSLCD_PAM_NEW_AUTHTOK_REQD;
       }
       /* check warndays */
       if ((warndays>0)&&(daysleft<=warndays))
       {
         mysnprintf(authzmsg,authzmsgsz-1,"password will expire in %ld days",daysleft);
-        log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+        log_log(LOG_WARNING,"%s: %s: %s",
+                            myldap_get_dn(entry),attmap_shadow_shadowWarning,authzmsg);
       }
     }
   }
@@ -222,7 +228,8 @@ static int check_shadow(MYLDAP_SESSION *session,const char *username,
     if ((mindays!=-1)&&(daysleft>0))
     {
       mysnprintf(authzmsg,authzmsgsz-1,"password cannot be changed for another %ld days",daysleft);
-      log_log(LOG_WARNING,"%s: %s",myldap_get_dn(entry),authzmsg);
+      log_log(LOG_WARNING,"%s: %s: %s",
+                          myldap_get_dn(entry),attmap_shadow_shadowMin,authzmsg);
       return NSLCD_PAM_AUTHTOK_ERR;
     }
   }

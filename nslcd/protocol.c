@@ -115,7 +115,7 @@ static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
   aliases=myldap_get_values(entry,attmap_protocol_cn);
   if ((aliases==NULL)||(aliases[0]==NULL))
   {
-    log_log(LOG_WARNING,"protocol entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_protocol_cn);
     return 0;
   }
@@ -134,26 +134,26 @@ static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
   protos=myldap_get_values(entry,attmap_protocol_ipProtocolNumber);
   if ((protos==NULL)||(protos[0]==NULL))
   {
-    log_log(LOG_WARNING,"protocol entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
     return 0;
   }
   else if (protos[1]!=NULL)
   {
-    log_log(LOG_WARNING,"protocol entry %s contains multiple %s values",
+    log_log(LOG_WARNING,"%s: %s: multiple values",
                         myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
   }
   errno=0;
   proto=(int)strtol(protos[0],&tmp,0);
   if ((*(protos[0])=='\0')||(*tmp!='\0'))
   {
-    log_log(LOG_WARNING,"protocol entry %s contains non-numeric %s value",
+    log_log(LOG_WARNING,"%s: %s: non-numeric",
                         myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
     return 0;
   }
   else if (errno!=0)
   {
-    log_log(LOG_WARNING,"protocol entry %s contains too large %s value",
+    log_log(LOG_WARNING,"%s: %s: too large",
                         myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
     return 0;
   }

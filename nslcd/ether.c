@@ -123,7 +123,7 @@ static int write_ether(TFILE *fp,MYLDAP_ENTRY *entry,
   names=myldap_get_values(entry,attmap_ether_cn);
   if ((names==NULL)||(names[0]==NULL))
   {
-    log_log(LOG_WARNING,"ether entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_ether_cn);
     return 0;
   }
@@ -139,7 +139,7 @@ static int write_ether(TFILE *fp,MYLDAP_ENTRY *entry,
     ethers=myldap_get_values(entry,attmap_ether_macAddress);
     if ((ethers==NULL)||(ethers[0]==NULL))
     {
-      log_log(LOG_WARNING,"ether entry %s does not contain %s value",
+      log_log(LOG_WARNING,"%s: %s: missing",
                           myldap_get_dn(entry),attmap_ether_macAddress);
       return 0;
     }

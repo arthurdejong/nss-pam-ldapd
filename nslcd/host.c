@@ -122,7 +122,7 @@ static int write_host(TFILE *fp,MYLDAP_ENTRY *entry)
   hostnames=myldap_get_values(entry,attmap_host_cn);
   if ((hostnames==NULL)||(hostnames[0]==NULL))
   {
-    log_log(LOG_WARNING,"host entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_host_cn);
     return 0;
   }
@@ -133,7 +133,7 @@ static int write_host(TFILE *fp,MYLDAP_ENTRY *entry)
   addresses=myldap_get_values(entry,attmap_host_ipHostNumber);
   if ((addresses==NULL)||(addresses[0]==NULL))
   {
-    log_log(LOG_WARNING,"host entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_host_ipHostNumber);
     return 0;
   }
@@ -146,7 +146,7 @@ static int write_host(TFILE *fp,MYLDAP_ENTRY *entry)
   WRITE_INT32(fp,numaddr);
   for (i=0;i<numaddr;i++)
   {
-    WRITE_ADDRESS(fp,addresses[i]);
+    WRITE_ADDRESS(fp,entry,attmap_host_ipHostNumber,addresses[i]);
   }
   return 0;
 }

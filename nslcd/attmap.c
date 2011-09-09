@@ -2,7 +2,7 @@
    attmap.c - attribute mapping values and functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -247,7 +247,7 @@ static const char *entry_expand(const char *name,void *expander_attr)
   /* TODO: handle userPassword attribute specially */
   if ((values[0]!=NULL)&&(values[1]!=NULL))
   {
-    log_log(LOG_WARNING,"entry %s contains multiple %s values",
+    log_log(LOG_WARNING,"%s: %s: multiple values",
                         myldap_get_dn(entry),name);
   }
   return values[0];

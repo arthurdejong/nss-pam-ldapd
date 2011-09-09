@@ -144,7 +144,7 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
   aliases=myldap_get_values(entry,attmap_service_cn);
   if ((aliases==NULL)||(aliases[0]==NULL))
   {
-    log_log(LOG_WARNING,"service entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_service_cn);
     return 0;
   }
@@ -163,26 +163,26 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
   ports=myldap_get_values(entry,attmap_service_ipServicePort);
   if ((ports==NULL)||(ports[0]==NULL))
   {
-    log_log(LOG_WARNING,"service entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_service_ipServicePort);
     return 0;
   }
   else if (ports[1]!=NULL)
   {
-    log_log(LOG_WARNING,"service entry %s contains multiple %s values",
+    log_log(LOG_WARNING,"%s: %s: multiple values",
                         myldap_get_dn(entry),attmap_service_ipServicePort);
   }
   errno=0;
   port=(int)strtol(ports[0],&tmp,0);
   if ((*(ports[0])=='\0')||(*tmp!='\0'))
   {
-    log_log(LOG_WARNING,"service entry %s contains non-numeric %s value",
+    log_log(LOG_WARNING,"%s: %s: non-numeric value",
                         myldap_get_dn(entry),attmap_service_ipServicePort);
     return 0;
   }
   else if (errno!=0)
   {
-    log_log(LOG_WARNING,"service entry %s contains too large %s value",
+    log_log(LOG_WARNING,"%s: %s: too large",
                         myldap_get_dn(entry),attmap_service_ipServicePort);
     return 0;
   }
@@ -190,7 +190,7 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
   protocols=myldap_get_values(entry,attmap_service_ipServiceProtocol);
   if ((protocols==NULL)||(protocols[0]==NULL))
   {
-    log_log(LOG_WARNING,"service entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_service_ipServiceProtocol);
     return 0;
   }

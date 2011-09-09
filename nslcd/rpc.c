@@ -116,7 +116,7 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
   aliases=myldap_get_values(entry,attmap_rpc_cn);
   if ((aliases==NULL)||(aliases[0]==NULL))
   {
-    log_log(LOG_WARNING,"rpc entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_rpc_cn);
     return 0;
   }
@@ -135,26 +135,26 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
   numbers=myldap_get_values(entry,attmap_rpc_oncRpcNumber);
   if ((numbers==NULL)||(numbers[0]==NULL))
   {
-    log_log(LOG_WARNING,"rpc entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
     return 0;
   }
   else if (numbers[1]!=NULL)
   {
-    log_log(LOG_WARNING,"rpc entry %s contains multiple %s values",
+    log_log(LOG_WARNING,"%s: %s: multiple values",
                         myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
   }
   errno=0;
   number=(int)strtol(numbers[0],&tmp,0);
   if ((*(numbers[0])=='\0')||(*tmp!='\0'))
   {
-    log_log(LOG_WARNING,"rpc entry %s contains non-numeric %s value",
+    log_log(LOG_WARNING,"%s: %s: non-numeric",
                         myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
     return 0;
   }
   else if (errno!=0)
   {
-    log_log(LOG_WARNING,"rpc entry %s contains too large %s value",
+    log_log(LOG_WARNING,"%s: %s: too large",
                         myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
     return 0;
   }

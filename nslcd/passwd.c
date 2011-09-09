@@ -183,7 +183,7 @@ static int entry_has_valid_uid(MYLDAP_ENTRY *entry)
   values=myldap_get_values_len(entry,attmap_passwd_uidNumber);
   if ((values==NULL)||(values[0]==NULL))
   {
-    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_passwd_uidNumber);
     return 0;
   }
@@ -198,13 +198,13 @@ static int entry_has_valid_uid(MYLDAP_ENTRY *entry)
       uid=strtouid(values[i],&tmp,0);
       if ((*(values[i])=='\0')||(*tmp!='\0'))
       {
-        log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+        log_log(LOG_WARNING,"%s: %s: non-numeric",
                             myldap_get_dn(entry),attmap_passwd_uidNumber);
         continue;
       }
       else if (errno!=0)
       {
-        log_log(LOG_WARNING,"passwd entry %s contains too large %s value",
+        log_log(LOG_WARNING,"%s: %s: too large",
                             myldap_get_dn(entry),attmap_passwd_uidNumber);
         continue;
       }
@@ -235,14 +235,14 @@ char *lookup_dn2uid(MYLDAP_SESSION *session,const char *dn,int *rcp,char *buf,si
   search=myldap_search(session,dn,LDAP_SCOPE_BASE,passwd_filter,attrs,rcp);
   if (search==NULL)
   {
-    log_log(LOG_WARNING,"lookup of user %s failed: %s",dn,ldap_err2string(*rcp));
+    log_log(LOG_WARNING,"%s: lookup error: %s",dn,ldap_err2string(*rcp));
     return NULL;
   }
   entry=myldap_get_entry(search,rcp);
   if (entry==NULL)
   {
     if (*rcp!=LDAP_SUCCESS)
-      log_log(LOG_WARNING,"lookup of user %s failed: %s",dn,ldap_err2string(*rcp));
+      log_log(LOG_WARNING,"%s: lookup error: %s",dn,ldap_err2string(*rcp));
     return NULL;
   }
   /* check the uidNumber attribute if min_uid is set */
@@ -423,7 +423,10 @@ static inline void check_nsswitch_reload(void)
 static inline int shadow_uses_ldap(void)
 {
   if (cached_shadow_uses_ldap==CACHED_UNKNOWN)
+  {
+    log_log(LOG_INFO,"(re)loading %s",NSSWITCH_FILE); /* FIXME: check if this is correct */
     cached_shadow_uses_ldap=nsswitch_db_uses_ldap(NSSWITCH_FILE,"shadow");
+  }
   return cached_shadow_uses_ldap;
 }
 
@@ -451,7 +454,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   usernames=myldap_get_values(entry,attmap_passwd_uid);
   if ((usernames==NULL)||(usernames[0]==NULL))
   {
-    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_passwd_uid);
     return 0;
   }
@@ -478,7 +481,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
     tmpvalues=myldap_get_values_len(entry,attmap_passwd_uidNumber);
     if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
     {
-      log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+      log_log(LOG_WARNING,"%s: %s: missing",
                           myldap_get_dn(entry),attmap_passwd_uidNumber);
       return 0;
     }
@@ -492,13 +495,13 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
         uids[numuids]=strtouid(tmpvalues[numuids],&tmp,0);
         if ((*(tmpvalues[numuids])=='\0')||(*tmp!='\0'))
         {
-          log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+          log_log(LOG_WARNING,"%s: %s: non-numeric",
                               myldap_get_dn(entry),attmap_passwd_uidNumber);
           return 0;
         }
         else if (errno!=0)
         {
-          log_log(LOG_WARNING,"passwd entry %s contains too large %s value",
+          log_log(LOG_WARNING,"%s: %s: too large",
                               myldap_get_dn(entry),attmap_passwd_uidNumber);
           return 0;
         }
@@ -511,7 +514,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
     tmpvalues=myldap_get_values_len(entry,attmap_passwd_gidNumber);
     if ((tmpvalues==NULL)||(tmpvalues[0]==NULL))
     {
-      log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+      log_log(LOG_WARNING,"%s: %s: missing",
                           myldap_get_dn(entry),attmap_passwd_gidNumber);
       return 0;
     }
@@ -522,7 +525,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
     attmap_get_value(entry,attmap_passwd_gidNumber,gidbuf,sizeof(gidbuf));
     if (gidbuf[0]=='\0')
     {
-      log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+      log_log(LOG_WARNING,"%s: %s: missing",
                           myldap_get_dn(entry),attmap_passwd_gidNumber);
       return 0;
     }
@@ -530,13 +533,13 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
     gid=strtogid(gidbuf,&tmp,0);
     if ((gidbuf[0]=='\0')||(*tmp!='\0'))
     {
-      log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+      log_log(LOG_WARNING,"%s: %s: non-numeric",
                           myldap_get_dn(entry),attmap_passwd_gidNumber);
       return 0;
     }
     else if (errno!=0)
     {
-      log_log(LOG_WARNING,"passwd entry %s contains too large %s value",
+      log_log(LOG_WARNING,"%s: %s: too large",
                           myldap_get_dn(entry),attmap_passwd_gidNumber);
       return 0;
     }
@@ -546,7 +549,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   /* get the home directory for this entry */
   attmap_get_value(entry,attmap_passwd_homeDirectory,homedir,sizeof(homedir));
   if (homedir[0]=='\0')
-    log_log(LOG_WARNING,"passwd entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_passwd_homeDirectory);
   /* get the shell for this entry */
   attmap_get_value(entry,attmap_passwd_loginShell,shell,sizeof(shell));
@@ -556,8 +559,8 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
     {
       if (!isvalidname(usernames[i]))
       {
-        log_log(LOG_WARNING,"passwd entry %s denied by validnames option: \"%s\"",
-                            myldap_get_dn(entry),usernames[i]);
+        log_log(LOG_WARNING,"%s: %s: denied by validnames option",
+                            myldap_get_dn(entry),attmap_passwd_uid);
       }
       else
       {
@@ -587,7 +590,7 @@ NSLCD_HANDLE_UID(
   READ_STRING(fp,name);
   log_setrequest("passwd=\"%s\"",name);
   if (!isvalidname(name)) {
-    log_log(LOG_WARNING,"\"%s\": name denied by validnames option",name);
+    log_log(LOG_WARNING,"request denied by validnames option");
     return -1;
   }
   check_nsswitch_reload();,

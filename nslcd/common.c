@@ -150,7 +150,8 @@ int isvalidname(const char *name)
 }
 
 /* this writes a single address to the stream */
-int write_address(TFILE *fp,const char *addr)
+int write_address(TFILE *fp,MYLDAP_ENTRY *entry,const char *attr,
+                  const char *addr)
 {
   int32_t tmpint32;
   struct in_addr ipv4addr;
@@ -179,7 +180,8 @@ int write_address(TFILE *fp,const char *addr)
     /* failure, log but write simple invalid address
        (otherwise the address list is messed up) */
     /* TODO: have error message in correct format */
-    log_log(LOG_WARNING,"unparseble address: %s",addr);
+    log_log(LOG_WARNING,"%s: %s: \"%s\" unparseble",
+                        myldap_get_dn(entry),attmap_ether_cn,addr);
     /* write an illegal address type */
     WRITE_INT32(fp,-1);
     /* write an emtpy address */

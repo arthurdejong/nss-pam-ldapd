@@ -110,7 +110,7 @@ void shadow_init(void)
   set_free(set);
 }
 
-static long to_date(const char *date,const char *attr)
+static long to_date(const char *dn,const char *date,const char *attr)
 {
   char buffer[32];
   long value;
@@ -133,12 +133,12 @@ static long to_date(const char *date,const char *attr)
     value=strtol(date,&tmp,0);
     if ((*date=='\0')||(*tmp!='\0'))
     {
-      log_log(LOG_WARNING,"shadow entry contains non-numeric %s value",attr);
+      log_log(LOG_WARNING,"%s: %s: non-numeric",dn,attr);
       return -1;
     }
     else if (errno!=0)
     {
-      log_log(LOG_WARNING,"shadow entry contains too large %s value",attr);
+      log_log(LOG_WARNING,"%s: %s: too large",dn,attr);
       return -1;
     }
     return value/864-134774;
@@ -149,12 +149,12 @@ static long to_date(const char *date,const char *attr)
   value=strtol(date,&tmp,0);
   if ((*date=='\0')||(*tmp!='\0'))
   {
-    log_log(LOG_WARNING,"shadow entry contains non-numeric %s value",attr);
+    log_log(LOG_WARNING,"%s: %s: non-numeric",dn,attr);
     return -1;
   }
   else if (errno!=0)
   {
-    log_log(LOG_WARNING,"shadow entry contains too large %s value",attr);
+    log_log(LOG_WARNING,"%s: %s: too large",dn,attr);
     return -1;
   }
   return value;
@@ -172,13 +172,13 @@ static long to_date(const char *date,const char *attr)
   var=strtol(tmpvalue,&tmp,0); \
   if ((*(tmpvalue)=='\0')||(*tmp!='\0')) \
   { \
-    log_log(LOG_WARNING,"shadow entry %s contains non-numeric %s value", \
+    log_log(LOG_WARNING,"%s: %s: non-numeric", \
                         myldap_get_dn(entry),attmap_shadow_##att); \
     var=fallback; \
   } \
   else if (errno!=0) \
   { \
-    log_log(LOG_WARNING,"shadow entry %s contains too large %s value", \
+    log_log(LOG_WARNING,"%s: %s: too large", \
                         myldap_get_dn(entry),attmap_shadow_##att); \
     var=fallback; \
   }
@@ -194,7 +194,7 @@ void get_shadow_properties(MYLDAP_ENTRY *entry,long *lastchangedate,
   tmpvalue=attmap_get_value(entry,attmap_shadow_shadowLastChange,buffer,sizeof(buffer));
   if (tmpvalue==NULL)
     tmpvalue="";
-  *lastchangedate=to_date(tmpvalue,attmap_shadow_shadowLastChange);
+  *lastchangedate=to_date(myldap_get_dn(entry),tmpvalue,attmap_shadow_shadowLastChange);
   /* get other shadow properties */
   GET_OPTIONAL_LONG(*mindays,shadowMin,-1);
   GET_OPTIONAL_LONG(*maxdays,shadowMax,-1);
@@ -268,11 +268,11 @@ int update_lastchange(MYLDAP_SESSION *session,const char *userdn)
   mods[1]=NULL;
   rc=myldap_modify(session,userdn,mods);
   if (rc!=LDAP_SUCCESS)
-    log_log(LOG_WARNING,"modification of %s attribute of %s failed: %s",
-                        attr,userdn,ldap_err2string(rc));
+    log_log(LOG_WARNING,"%s: %s: modification failed: %s",
+                        userdn,attr,ldap_err2string(rc));
   else
-    log_log(LOG_DEBUG,"modification of %s attribute of %s succeeded",
-                     attr,userdn);
+    log_log(LOG_DEBUG,"%s: %s: modification succeeded",
+                      userdn,attr);
   return rc;
 }
 
@@ -294,7 +294,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   usernames=myldap_get_values(entry,attmap_shadow_uid);
   if ((usernames==NULL)||(usernames[0]==NULL))
   {
-    log_log(LOG_WARNING,"shadow entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_shadow_uid);
     return 0;
   }

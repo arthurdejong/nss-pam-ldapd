@@ -68,11 +68,12 @@ const char *get_userpassword(MYLDAP_ENTRY *entry,const char *attr,
                              char *buffer,size_t buflen);
 
 /* write out an address, parsing the addr value */
-int write_address(TFILE *fp,const char *addr);
+int write_address(TFILE *fp,MYLDAP_ENTRY *entry,const char *attr,
+                  const char *addr);
 
 /* a helper macro to write out addresses and bail out on errors */
-#define WRITE_ADDRESS(fp,addr) \
-  if (write_address(fp,addr)) \
+#define WRITE_ADDRESS(fp,entry,attr,addr) \
+  if (write_address(fp,entry,attr,addr)) \
     return -1;
 
 /* read an address from the stream */

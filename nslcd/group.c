@@ -184,8 +184,8 @@ static int do_write_group(
   {
     if (!isvalidname(names[i]))
     {
-      log_log(LOG_WARNING,"group entry %s name denied by validnames option: \"%s\"",
-                          myldap_get_dn(entry),names[i]);
+      log_log(LOG_WARNING,"%s: %s: denied by validnames option",
+                          myldap_get_dn(entry),attmap_group_cn);
     }
     else if ((reqname==NULL)||(strcmp(reqname,names[i])==0))
     {
@@ -255,7 +255,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
   names=myldap_get_values(entry,attmap_group_cn);
   if ((names==NULL)||(names[0]==NULL))
   {
-    log_log(LOG_WARNING,"group entry %s does not contain %s value",
+    log_log(LOG_WARNING,"%s: %s: missing",
                         myldap_get_dn(entry),attmap_group_cn);
     return 0;
   }
@@ -270,7 +270,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
     gidvalues=myldap_get_values_len(entry,attmap_group_gidNumber);
     if ((gidvalues==NULL)||(gidvalues[0]==NULL))
     {
-      log_log(LOG_WARNING,"group entry %s does not contain %s value",
+      log_log(LOG_WARNING,"%s: %s: missing",
                           myldap_get_dn(entry),attmap_group_gidNumber);
       return 0;
     }
@@ -284,13 +284,13 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
         gids[numgids]=strtogid(gidvalues[numgids],&tmp,0);
         if ((*(gidvalues[numgids])=='\0')||(*tmp!='\0'))
         {
-          log_log(LOG_WARNING,"group entry %s contains non-numeric %s value",
+          log_log(LOG_WARNING,"%s: %s: non-numeric",
                               myldap_get_dn(entry),attmap_group_gidNumber);
           return 0;
         }
         else if (errno!=0)
         {
-          log_log(LOG_WARNING,"group entry %s contains too large %s value",
+          log_log(LOG_WARNING,"%s: %s: too large",
                               myldap_get_dn(entry),attmap_group_gidNumber);
           return 0;
         }
@@ -322,7 +322,7 @@ NSLCD_HANDLE(
   READ_STRING(fp,name);
   log_setrequest("group=\"%s\"",name);
   if (!isvalidname(name)) {
-    log_log(LOG_WARNING,"\"%s\": name denied by validnames option",name);
+    log_log(LOG_WARNING,"request denied by validnames option");
     return -1;
   },
   NSLCD_ACTION_GROUP_BYNAME,
@@ -349,7 +349,7 @@ NSLCD_HANDLE(
   log_setrequest("group/member=\"%s\"",name);
   if (!isvalidname(name))
   {
-    log_log(LOG_WARNING,"\"%s\": name denied by validnames option",name);
+    log_log(LOG_WARNING,"request denied by validnames option");
     return -1;
   }
   if ((nslcd_cfg->ldc_nss_initgroups_ignoreusers!=NULL)&&

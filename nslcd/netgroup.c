@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -129,7 +129,7 @@ static int write_string_stripspace_len(TFILE *fp,const char *str,int len)
 #define WRITE_STRING_STRIPSPACE(fp,str) \
   WRITE_STRING_STRIPSPACE_LEN(fp,str,strlen(str))
 
-static int write_netgroup_triple(TFILE *fp,const char *triple)
+static int write_netgroup_triple(TFILE *fp,MYLDAP_ENTRY *entry,const char *triple)
 {
   int32_t tmpint32;
   int i;
@@ -140,7 +140,8 @@ static int write_netgroup_triple(TFILE *fp,const char *triple)
   /* we should have a bracket now */
   if (triple[i]!='(')
   {
-    log_log(LOG_WARNING,"write_netgroup_triple(): entry does not begin with '(' (entry skipped)");
+    log_log(LOG_WARNING,"%s: %s: does not begin with '('",
+                        myldap_get_dn(entry),attmap_netgroup_nisNetgroupTriple);
     return 0;
   }
   i++;
@@ -150,7 +151,8 @@ static int write_netgroup_triple(TFILE *fp,const char *triple)
     /* nothing else to do */ ;
   if (triple[i]!=',')
   {
-    log_log(LOG_WARNING,"write_netgroup_triple(): missing ',' (entry skipped)");
+    log_log(LOG_WARNING,"%s: %s: missing ','",
+                        myldap_get_dn(entry),attmap_netgroup_nisNetgroupTriple);
     return 0;
   }
   hoste=i;
@@ -161,7 +163,8 @@ static int write_netgroup_triple(TFILE *fp,const char *triple)
     /* nothing else to do */ ;
   if (triple[i]!=',')
   {
-    log_log(LOG_WARNING,"write_netgroup_triple(): missing ',' (entry skipped)");
+    log_log(LOG_WARNING,"%s: %s: missing ','",
+                        myldap_get_dn(entry),attmap_netgroup_nisNetgroupTriple);
     return 0;
   }
   usere=i;
@@ -172,7 +175,8 @@ static int write_netgroup_triple(TFILE *fp,const char *triple)
     /* nothing else to do */ ;
   if (triple[i]!=')')
   {
-    log_log(LOG_WARNING,"write_netgroup_triple(): missing ')' (entry skipped)");
+    log_log(LOG_WARNING,"%s: %s: missing ')'",
+                        myldap_get_dn(entry),attmap_netgroup_nisNetgroupTriple);
     return 0;
   }
   domaine=i;
@@ -183,7 +187,8 @@ static int write_netgroup_triple(TFILE *fp,const char *triple)
   /* if anything is left in the string we have a problem */
   if (triple[i]!='\0')
   {
-    log_log(LOG_WARNING,"write_netgroup_triple(): string contains trailing data (entry skipped)");
+    log_log(LOG_WARNING,"%s: %s: contains trailing data",
+                        myldap_get_dn(entry),attmap_netgroup_nisNetgroupTriple);
     return 0;
   }
   /* write strings */
@@ -196,11 +201,11 @@ static int write_netgroup_triple(TFILE *fp,const char *triple)
   return 0;
 }
 
-#define WRITE_NETGROUP_TRIPLE(fp,triple) \
-  if (write_netgroup_triple(fp,triple)) \
+#define WRITE_NETGROUP_TRIPLE(fp,entry,triple) \
+  if (write_netgroup_triple(fp,entry,triple)) \
     return -1;
 
-static int write_netgroup(TFILE *fp,MYLDAP_ENTRY *entry, const char *reqname)
+static int write_netgroup(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
 {
   int32_t tmpint32;
   int i;
@@ -220,7 +225,7 @@ static int write_netgroup(TFILE *fp,MYLDAP_ENTRY *entry, const char *reqname)
   if (triples!=NULL)
     for (i=0;triples[i]!=NULL;i++)
     {
-      WRITE_NETGROUP_TRIPLE(fp,triples[i]);
+      WRITE_NETGROUP_TRIPLE(fp,entry,triples[i]);
     }
   /* write netgroup members */
   if (members!=NULL)
