@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <errno.h>
 
+#include "common.h"
 #include "log.h"
 
 /* the maximum line length supported of nsswitch.conf */
