@@ -60,7 +60,7 @@ then
       # ask with debconf
       . /usr/share/debconf/confmodule
       db_title "Removing libnss-ldapd"
-      db_subst libnss-ldapd/clean_nsswitch services "`echo $configured | sed 's/ /, /g'`"
+      db_subst libnss-ldapd/clean_nsswitch services "`echo $configured | sed 's/[[:space:]][[:space:]]*/, /g'`"
       db_fset libnss-ldapd/clean_nsswitch seen false
       if db_input high libnss-ldapd/clean_nsswitch
       then

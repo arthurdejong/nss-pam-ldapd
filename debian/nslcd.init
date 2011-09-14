@@ -49,18 +49,18 @@ K5START_BIN=/usr/bin/k5start
 K5START_DESC="Keep alive Kerberos ticket"
 K5START_START=""
 K5START_PIDFILE=$NSLCD_STATEDIR/k5start_nslcd.pid
-K5START_USER=$(sed -n 's/^uid *\([^ ]*\) *$/\1/ip' $NSLCD_CFG)
-K5START_GROUP=$(sed -n 's/^gid *\([^ ]*\) *$/\1/ip' $NSLCD_CFG)
+K5START_USER=$(sed -n 's/^uid[[:space:]]*\([^[:space:]]*\)[[:space:]]*$/\1/ip' $NSLCD_CFG)
+K5START_GROUP=$(sed -n 's/^gid[[:space:]]*\([^[:space:]]*\)[[:space:]]*$/\1/ip' $NSLCD_CFG)
 K5START_MODE=600
 K5START_KEYTAB=/etc/krb5.keytab
 K5START_CCREFRESH=60
 K5START_PRINCIPAL="host/$(hostname -f)"
-K5START_CCFILE=$(sed -n 's/^krb5_ccname *\(FILE:\)\?\([^: ]*\) *$/\2/ip' $NSLCD_CFG)
+K5START_CCFILE=$(sed -n 's/^krb5_ccname[[:space:]]*\(FILE:\)\?\([^:[:space:]]*\)[[:space:]]*$/\2/ip' $NSLCD_CFG)
 
 # check if we should use k5start by default (sasl_mech should be GSSAPI and
 # krb5_ccname should be found)
 if [ -x "$K5START_BIN" ] && \
-   grep -q '^sasl_mech *GSSAPI$' $NSLCD_CFG && \
+   grep -q '^sasl_mech[[:space:]]*GSSAPI[[:space:]]*$' $NSLCD_CFG && \
    [ -n "$K5START_CCFILE" ]
 then
   K5START_START="yes"

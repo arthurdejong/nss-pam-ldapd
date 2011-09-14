@@ -69,7 +69,7 @@ cfg_uris()
   # escape all uri directives
   sed -i 's/^uri /_uri_ /i' $CONFFILE
   # set the uri options
-  echo "$uris" | sed 's/^[ \t]*//;s/[ \t]*$//;s/  */\n/g' | while read uri
+  echo "$uris" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/[[:space:]][[:space:]]*/\n/g' | while read uri
   do
     if grep -qi '^_uri_ ' $CONFFILE
     then
