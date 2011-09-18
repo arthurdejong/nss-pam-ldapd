@@ -1,3 +1,16 @@
+nss-pam-ldapd (0.7.14) stable; urgency=low
+
+  * log correct error from ldap_abandon()
+  * fix problem with partial attribute name matches in DN (thanks Timothy
+    White)
+  * handle expressions where some variable would expand to NULL
+  * make buffer sizes consistent and grow all buffers holding string
+    representations of numbers to be able to hold 64-bit numbers
+  * fix a problem with uninitialised memory while parsing the tls_ciphers
+    option (closes: #638872)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 18 Sep 2011 20:00:00 +0200
+
 nss-pam-ldapd (0.7.13) unstable; urgency=low
 
   * fix handling of idle_timelimit option

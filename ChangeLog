@@ -1,3 +1,42 @@
+2011-08-24 20:45  arthur
+
+	* [r1516] ., nslcd/cfg.c: fix a problem with uninitialised memory
+	  while parsing the tls_ciphers option (r1471 from development)
+
+2011-07-02 21:28  arthur
+
+	* [r1477] ., nslcd/group.c, nslcd/passwd.c, nslcd/shadow.c: grow
+	  static buffers so that they should be large enough (part of r1476
+	  from trunk)
+
+2011-06-05 09:18  arthur
+
+	* [r1472] ., common/expr.c, tests/test_expr.c: handle expressions
+	  where the expander function returns NULL (handle it as an empty
+	  string) (r1471 from development)
+
+2011-06-05 08:55  arthur
+
+	* [r1469] nslcd/myldap.c: fix r1465 to split attribute/value at
+	  right place
+
+2011-05-21 14:54  arthur
+
+	* [r1465] ., nslcd/myldap.c: fix problem with partial attribute
+	  name matches in DN (e.g. uid vs. uidNumber) (thanks to Timothy
+	  White for the fix) (r1464 from trunk)
+
+2011-04-22 10:03  arthur
+
+	* [r1432] ., nslcd/myldap.c: report correct reported error from
+	  ldap_abandon() (merge r1431 from development)
+
+2010-12-11 21:57  arthur
+
+	* [r1323] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.13 release
+
 2010-12-11 20:11  arthur
 
 	* [r1321] ., nslcd/pam.c: return correct kind of error code from
