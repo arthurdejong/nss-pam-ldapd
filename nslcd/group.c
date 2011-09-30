@@ -281,7 +281,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
       else
       {
         errno=0;
-        gids[numgids]=strtogid(gidvalues[numgids],&tmp,0);
+        gids[numgids]=strtogid(gidvalues[numgids],&tmp,10);
         if ((*(gidvalues[numgids])=='\0')||(*tmp!='\0'))
         {
           log_log(LOG_WARNING,"%s: %s: non-numeric",

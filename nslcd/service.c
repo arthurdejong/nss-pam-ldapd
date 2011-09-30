@@ -173,7 +173,7 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
                         myldap_get_dn(entry),attmap_service_ipServicePort);
   }
   errno=0;
-  port=(int)strtol(ports[0],&tmp,0);
+  port=(int)strtol(ports[0],&tmp,10);
   if ((*(ports[0])=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"%s: %s: non-numeric value",

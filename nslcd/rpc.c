@@ -145,7 +145,7 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
                         myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
   }
   errno=0;
-  number=(int)strtol(numbers[0],&tmp,0);
+  number=(int)strtol(numbers[0],&tmp,10);
   if ((*(numbers[0])=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"%s: %s: non-numeric",

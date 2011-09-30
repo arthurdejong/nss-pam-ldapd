@@ -144,7 +144,7 @@ static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
                         myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
   }
   errno=0;
-  proto=(int)strtol(protos[0],&tmp,0);
+  proto=(int)strtol(protos[0],&tmp,10);
   if ((*(protos[0])=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"%s: %s: non-numeric",
