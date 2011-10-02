@@ -100,7 +100,7 @@ static MYLDAP_ENTRY *validate_user(MYLDAP_SESSION *session,
   {
     if (rc==LDAP_SUCCESS)
       rc=LDAP_NO_SUCH_OBJECT;
-    log_log(LOG_WARNING,"\"%s\": user not found: %s",username,ldap_err2string(rc));
+    log_log(LOG_DEBUG,"\"%s\": user not found: %s",username,ldap_err2string(rc));
     *rcp=rc;
   }
   return entry;
