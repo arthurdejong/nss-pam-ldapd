@@ -1,3 +1,10 @@
+nss-pam-ldapd (0.7.15) stable; urgency=low
+
+  * in debconf, treat the "hard" value for tls_reqcert as if it was "demand"
+    (closes: #642347)
+
+ -- Arthur de Jong <adejong@debian.org>  Sun, 02 Oct 2011 11:15:00 +0200
+
 nss-pam-ldapd (0.7.14) stable; urgency=low
 
   * log correct error from ldap_abandon()

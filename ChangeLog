@@ -1,3 +1,14 @@
+2011-10-02 09:09  arthur
+
+	* [r1548] ., debian/nslcd.config: treat the "hard" value for
+	  tls_reqcert as if it was "demand" (r1546 from trunk)
+
+2011-09-18 18:24  arthur
+
+	* [r1544] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  debian/copyright, man/nslcd.8.xml, man/nslcd.conf.5.xml,
+	  man/pam_ldap.8.xml: get files ready for 0.7.14 release
+
 2011-08-24 20:45  arthur
 
 	* [r1516] ., nslcd/cfg.c: fix a problem with uninitialised memory
