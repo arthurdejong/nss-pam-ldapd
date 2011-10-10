@@ -18,3 +18,7 @@ override_dh_auto_configure:
 # run the tests but ignore the results
 override_dh_auto_test:
 	-dh_auto_test
+
+# ensure that nslcd is not down during upgrades
+override_dh_installinit:
+	dh_installinit --restart-after-upgrade
