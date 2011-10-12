@@ -7,6 +7,7 @@
    Copyright (C) 2006 Artem Kazakov
    Copyright (C) 2009 Alexander V. Chernikov
    Copyright (C) 2011 Arthur de Jong
+   Copyright (C) 2011 Tom Judge
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -29,12 +30,10 @@
 #include <errno.h>
 #include <sys/param.h>
 #include <netinet/in.h>
-#include <pwd.h>
-#include <grp.h>
-#include <nss.h>
-#include <netdb.h>
 
 #include "prototypes.h"
+#include "common.h"
+#include "compat/attrs.h"
 
 #define BUFFER_SIZE 1024
 
@@ -43,6 +42,7 @@ NSS_METHOD_PROTOTYPE(__nss_compat_getgrgid_r);
 NSS_METHOD_PROTOTYPE(__nss_compat_getgrent_r);
 NSS_METHOD_PROTOTYPE(__nss_compat_setgrent);
 NSS_METHOD_PROTOTYPE(__nss_compat_endgrent);
+NSS_METHOD_PROTOTYPE(__freebsd_getgroupmembership);
 
 NSS_METHOD_PROTOTYPE(__nss_compat_getpwnam_r);
 NSS_METHOD_PROTOTYPE(__nss_compat_getpwuid_r);
@@ -60,6 +60,7 @@ static ns_mtab methods[]={
   { NSDB_GROUP, "getgrent_r", __nss_compat_getgrent_r, _nss_ldap_getgrent_r },
   { NSDB_GROUP, "setgrent",   __nss_compat_setgrent,   _nss_ldap_setgrent },
   { NSDB_GROUP, "endgrent",   __nss_compat_endgrent,   _nss_ldap_endgrent },
+  { NSDB_GROUP, "getgroupmembership", __freebsd_getgroupmembership, NULL },
 
   { NSDB_PASSWD, "getpwnam_r", __nss_compat_getpwnam_r, _nss_ldap_getpwnam_r },
   { NSDB_PASSWD, "getpwuid_r", __nss_compat_getpwuid_r, _nss_ldap_getpwuid_r },
@@ -144,6 +145,60 @@ int __nss_compat_gethostbyaddr(void *retval,void *mdata,va_list ap)
   status=__nss_compat_result(status,errnop);
   h_errno=h_errnop;
   return (status);
+}
+
+int __gr_addgid(gid_t gid,gid_t *groups,int maxgrp,int *groupc)
+{
+  int ret,dupc;
+  /* skip duplicates */
+  for (dupc=0;dupc<MIN(maxgrp,*groupc);dupc++)
+  {
+    if (groups[dupc]==gid)
+      return 1;
+  }
+  ret=1;
+  if (*groupc<maxgrp)  /* add this gid */
+    groups[*groupc]=gid;
+  else
+    ret=0;
+  (*groupc)++;
+  return ret;
+}
+
+static int __freebsd_getgroupmembership(void *retval,void *mdata,va_list ap)
+{
+  int err;
+  nss_status_t s;
+  gid_t group;
+  gid_t *tmpgroups;
+  size_t bufsize;
+  const char *user;
+  gid_t *groups;
+  gid_t agroup;
+  int maxgrp,*grpcnt;
+  int i,rv,ret_errno;
+  long int lstart,lsize;
+  user=va_arg(ap,const char *);
+  group=va_arg(ap,gid_t);
+  groups=va_arg(ap,gid_t *);
+  maxgrp=va_arg(ap,int);
+  grpcnt=va_arg(ap,int *);
+  tmpgroups=malloc(maxgrp*sizeof(gid_t));
+  if (tmpgroups==NULL)
+    return NSS_STATUS_UNAVAIL;
+  /* insert primary membership */
+  __gr_addgid(group,groups,maxgrp,grpcnt);
+  lstart=0;
+  lsize=maxgrp;
+  s=_nss_ldap_initgroups_dyn(user,group,&lstart,&lsize,&tmpgroups,0,&err);
+  if (s==NSS_STATUS_SUCCESS)
+  {
+    for (i=0;i<lstart;i++)
+      __gr_addgid(tmpgroups[i],groups,maxgrp,grpcnt)
+    s=NSS_STATUS_NOTFOUND;
+  }
+  free(tmpgroups);
+  return __nss_compat_result(s,0);
 }
 
 ns_mtab *nss_module_register(const char *source,unsigned int *mtabsize,
