@@ -424,8 +424,9 @@ static inline int shadow_uses_ldap(void)
 {
   if (cached_shadow_uses_ldap==CACHED_UNKNOWN)
   {
-    log_log(LOG_INFO,"(re)loading %s",NSSWITCH_FILE); /* FIXME: check if this is correct */
+    log_log(LOG_INFO,"(re)loading %s",NSSWITCH_FILE);
     cached_shadow_uses_ldap=nsswitch_db_uses_ldap(NSSWITCH_FILE,"shadow");
+    cached_shadow_lastcheck=time(NULL);
   }
   return cached_shadow_uses_ldap;
 }
