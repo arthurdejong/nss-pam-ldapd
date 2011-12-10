@@ -192,7 +192,12 @@ static void add_uris_from_dns(const char *filename,int lnr,
   char buf[HOST_NAME_MAX+sizeof("ldap://")];
   log_log(LOG_DEBUG,"query %s for SRV records",domain);
   rc=ldap_domain2hostlist(domain,&hostlist);
-  /* FIXME: have better error handling */
+  if (rc!=LDAP_SUCCESS)
+  {
+    log_log(LOG_ERR,"%s:%d: no servers found in DNS zone %s: %s",
+            filename,lnr,domain,ldap_err2string(rc));
+    exit(EXIT_FAILURE);
+  }
   if ((hostlist==NULL)||(*hostlist=='\0'))
   {
     log_log(LOG_ERR,"%s:%d: no servers found in DNS zone %s",filename,lnr,domain);
