@@ -5,6 +5,9 @@ export DH_VERBOSE=1
 # multiarch support
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
+# enable hardening options (we disable pie because it conflicts with -fPIC)
+export DEB_BUILD_MAINT_OPTIONS=hardening=+all,-pie
+
 %:
 	dh $@
 
