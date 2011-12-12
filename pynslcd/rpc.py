@@ -28,11 +28,14 @@ attmap = common.Attributes(cn='cn', oncRpcNumber='oncRpcNumber')
 filter = '(objectClass=oncRpc)'
 
 
-class RpcRequest(common.Request):
+class Search(common.Search):
 
     case_sensitive = ('cn', )
     canonical_first = ('cn', )
     required = ('cn', 'oncRpcNumber')
+
+
+class RpcRequest(common.Request):
 
     def write(self, dn, attributes, parameters):
         # get values

@@ -28,11 +28,14 @@ attmap = common.Attributes(cn='cn', ipProtocolNumber='ipProtocolNumber')
 filter = '(objectClass=ipProtocol)'
 
 
-class ProtocolRequest(common.Request):
+class Search(common.Search):
 
     case_sensitive = ('cn', )
     canonical_first = ('cn', )
     required = ('cn', 'ipProtocolNumber')
+
+
+class ProtocolRequest(common.Request):
 
     def write(self, dn, attributes, parameters):
         # get values

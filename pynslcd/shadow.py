@@ -37,11 +37,14 @@ filter = '(objectClass=shadowAccount)'
 bases = ( 'ou=people,dc=test,dc=tld', )
 
 
-class ShadowRequest(common.Request):
+class Search(common.Search):
 
     case_sensitive = ('uid', )
     limit_attributes = ('uid', )
     required = ('uid', )
+
+
+class ShadowRequest(common.Request):
 
     def write(self, dn, attributes, parameters):
         # get name and check against requested name

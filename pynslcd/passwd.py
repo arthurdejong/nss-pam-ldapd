@@ -37,12 +37,15 @@ filter = '(objectClass=posixAccount)'
 bases = ( 'ou=people,dc=test,dc=tld', )
 
 
-class PasswdRequest(common.Request):
+class Search(common.Search):
 
     case_sensitive = ('uid', 'uidNumber', )
     limit_attributes = ('uid', 'uidNumber', )
     required = ('uid', 'uidNumber', 'gidNumber', 'gecos', 'homeDirectory',
                 'loginShell')
+
+
+class PasswdRequest(common.Request):
 
     def write(self, dn, attributes, parameters):
         # get values
@@ -95,32 +98,12 @@ class PasswdAllRequest(PasswdRequest):
     action = constants.NSLCD_ACTION_PASSWD_ALL
 
 
-# FIXME: have something in common that does this
-def do_search(conn, flt=None, base=None):
-    mybases = ( base, ) if base else bases
-    flt = flt or filter
-    import cfg
-    # perform a search for each search base
-    for base in mybases:
-        # do the LDAP search
-        try:
-            scope = locals().get('scope', cfg.scope)
-            res = conn.search_s(base, scope, flt, [attmap['uid']])
-            for entry in res:
-                if entry[0]:
-                    yield entry
-        except ldap.NO_SUCH_OBJECT:
-            # FIXME: log message
-            pass
-
 def uid2entry(conn, uid):
     """Look up the user by uid and return the LDAP entry or None if the user
     was not found."""
-    myfilter = '(&%s(%s=%s))' % ( filter,
-                  attmap['uid'], ldap.filter.escape_filter_chars(uid) )
-    for dn, attributes in do_search(conn, myfilter):
-        if uid in attributes[attmap['uid']]:
-            return dn, attributes
+    for dn, attributes in Search(conn, parameters=dict(uid=uid)):
+        return dn, attributes
+
 
 def uid2dn(conn, uid):
     """Look up the user by uid and return the DN or None if the user was
@@ -131,11 +114,9 @@ def uid2dn(conn, uid):
 
 # FIXME: use cache of dn2uid and try to use DN to get uid attribute
 
+
 def dn2uid(conn, dn):
     """Look up the user by dn and return a uid or None if the user was
     not found."""
-    try:
-        for dn, attributes in do_search(conn, base=dn):
-            return attributes[attmap['uid']][0]
-    except ldap.NO_SUCH_OBJECT:
-        return None
+    for dn, attributes in Search(conn, base=dn):
+        return attributes['uid'][0]

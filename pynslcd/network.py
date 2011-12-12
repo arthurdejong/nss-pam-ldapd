@@ -29,10 +29,13 @@ attmap = common.Attributes(cn='cn',
 filter = '(objectClass=ipNetwork)'
 
 
-class NetworkRequest(common.Request):
+class Search(common.Search):
 
     canonical_first = ('cn', )
     required = ('cn', )
+
+
+class NetworkRequest(common.Request):
 
     def write(self, dn, attributes, parameters):
         # get values

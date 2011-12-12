@@ -31,12 +31,15 @@ attmap = common.Attributes(cn='cn',
 filter = '(objectClass=ipService)'
 
 
-class ServiceRequest(common.Request):
+class Search(common.Search):
 
     case_sensitive = ('cn', 'ipServiceProtocol')
     limit_attributes = ('ipServiceProtocol', )
     canonical_first = ('cn', )
     required = ('cn', 'ipServicePort', 'ipServiceProtocol')
+
+
+class ServiceRequest(common.Request):
 
     def write(self, dn, attributes, parameters):
         # get values

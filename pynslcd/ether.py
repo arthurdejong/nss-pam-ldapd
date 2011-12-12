@@ -38,23 +38,19 @@ attmap = common.Attributes(cn='cn', macAddress='macAddress')
 filter = '(objectClass=ieee802Device)'
 
 
-class EtherRequest(common.Request):
+class Search(common.Search):
 
     case_insensitive = ('cn', )
     limit_attributes = ('cn', 'macAddress')
     required = ('cn', 'macAddress')
 
+
+class EtherRequest(common.Request):
+
     def write(self, dn, attributes, parameters):
-        # get names
+        # get values
         names = attributes['cn']
-        # get addresses and convert to binary form
         addresses = [ether_aton(x) for x in attributes['macAddress']]
-        if 'macAddress' in parameters:
-            address = ether_aton(parameters['macAddress'])
-            if address not in addresses:
-                print 'value %r for attribute %s not found in %s' % (parameters['macAddress'], attmap['macAddress'], dn)
-                return
-            addresses = ( address, )
         # write results
         for name in names:
             for ether in addresses:

@@ -34,10 +34,13 @@ attmap = common.Attributes(cn='cn',
 filter = '(objectClass=nisNetgroup)'
 
 
-class NetgroupRequest(common.Request):
+class Search(common.Search):
 
     case_sensitive = ('cn', )
     required = ('cn', )
+
+
+class NetgroupRequest(common.Request):
 
     def write(self, dn, attributes, parameters):
         # write the netgroup triples

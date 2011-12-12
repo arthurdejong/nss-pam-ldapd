@@ -28,10 +28,13 @@ attmap = common.Attributes(cn='cn', ipHostNumber='ipHostNumber')
 filter = '(objectClass=ipHost)'
 
 
-class HostRequest(common.Request):
+class Search(common.Search):
 
     canonical_first = ('cn', )
     required = ('cn', )
+
+
+class HostRequest(common.Request):
 
     def write(self, dn, attributes, parameters):
         # get values

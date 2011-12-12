@@ -40,10 +40,33 @@ attmap = common.Attributes(cn='cn',
 filter = '(|(objectClass=posixGroup)(objectClass=groupOfNames))'
 
 
-class GroupRequest(common.Request):
+class Search(common.Search):
 
     case_sensitive = ('cn', )
     limit_attributes = ('cn', 'gidNumber')
+
+    def __init__(self, *args, **kwargs):
+        super(Search, self).__init__(*args, **kwargs)
+        if attmap['member'] and 'memberUid' in self.parameters:
+            # set up our own attributes that leave out membership attributes
+            self.attmap = common.Attributes(self.attmap)
+            del self.attmap['memberUid']
+            del self.attmap['member']
+
+    def mk_filter(self):
+        # we still need a custom mk_filter because this is an | query
+        if attmap['member'] and 'memberUid' in self.parameters:
+            memberuid = self.parameters['memberUid']
+            dn = uid2dn(self.conn, memberuid)
+            if dn:
+                return '(&%s(|(%s=%s)(%s=%s)))' % ( self.filter,
+                          attmap['memberUid'], ldap.filter.escape_filter_chars(memberuid),
+                          attmap['member'], ldap.filter.escape_filter_chars(dn) )
+        return super(Search, self).mk_filter()
+
+
+class GroupRequest(common.Request):
+
     wantmembers = True
 
     def write(self, dn, attributes, parameters):
@@ -96,6 +119,8 @@ class GroupByGidRequest(GroupRequest):
         return dict(gidNumber=fp.read_gid_t())
 
 
+
+
 class GroupByMemberRequest(GroupRequest):
 
     action = constants.NSLCD_ACTION_GROUP_BYMEMBER
@@ -112,18 +137,6 @@ class GroupByMemberRequest(GroupRequest):
         memberuid = fp.read_string()
         common.validate_name(memberuid)
         return dict(memberUid=memberuid)
-
-    def mk_filter(self, parameters):
-        # we still need a custom mk_filter because this is an | query
-        memberuid = parameters['memberUid']
-        if attmap['member']:
-            dn = uid2dn(self.conn, memberuid)
-            if dn:
-                return '(&%s(|(%s=%s)(%s=%s)))' % ( self.filter,
-                          attmap['memberUid'], ldap.filter.escape_filter_chars(memberuid),
-                          attmap['member'], ldap.filter.escape_filter_chars(dn) )
-        return '(&%s(%s=%s))' % ( self.filter,
-                  attmap['memberUid'], ldap.filter.escape_filter_chars(memberuid) )
 
 
 class GroupAllRequest(GroupRequest):

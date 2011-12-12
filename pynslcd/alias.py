@@ -28,11 +28,14 @@ attmap = common.Attributes(cn='cn', rfc822MailMember='rfc822MailMember')
 filter = '(objectClass=nisMailAlias)'
 
 
-class AliasRequest(common.Request):
+class Search(common.Search):
 
     case_insensitive = ('cn', )
     limit_attributes = ('cn', )
     required = ('cn', 'rfc822MailMember')
+
+
+class AliasRequest(common.Request):
 
     def write(self, dn, attributes, parameters):
         # get values

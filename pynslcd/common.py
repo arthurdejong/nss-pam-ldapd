@@ -54,12 +54,10 @@ def validate_name(name):
         raise ValueError('%r: invalid user name' % name)
 
 
-class Request(object):
+class Search(object):
     """
-    Request handler class. Subclasses are expected to handle actual requests
-    and should implement the following members:
-
-      action - the NSLCD_ACTION_* action that should trigger this handler
+    Class that performs a search. Subclasses are expected to define the actual
+    searches and should implement the following members:
 
       case_sensitive - check that these attributes are present in the response
                        if they were in the request
@@ -69,10 +67,7 @@ class Request(object):
       required - attributes that are required
       canonical_first - search the DN for these attributes and ensure that
                         they are listed first in the attribute values
-      read_parameters() - a function that reads the request parameters of the
-                          request stream
       mk_filter() (optional) - function that returns the LDAP search filter
-      write() - function that writes a single LDAP entry to the result stream
 
     The module that contains the Request class can also contain the following
     definitions:
@@ -84,38 +79,61 @@ class Request(object):
 
     """
 
-    def __init__(self, fp, conn, calleruid):
-        self.fp = fp
-        self.conn = conn
-        self.calleruid = calleruid
+    canonical_first = []
+    required = []
+    case_sensitive = []
+    case_insensitive = []
+    limit_attributes = []
+
+    def __init__(self, conn, base=None, scope=None, filter=None, attributes=None,
+                 parameters=None):
         # load information from module that defines the class
+        self.conn = conn
         module = sys.modules[self.__module__]
         self.attmap = getattr(module, 'attmap', None)
-        self.filter = getattr(module, 'filter', None)
-        self.bases = getattr(module, 'bases', cfg.bases)
-        self.scope = getattr(module, 'scope', cfg.scope)
+        self.filter = filter or getattr(module, 'filter', None)
+        self.parameters = parameters or {}
+        if base:
+            self.bases = [base]
+        else:
+            self.bases = getattr(module, 'bases', cfg.bases)
+        self.scope = scope or getattr(module, 'scope', cfg.scope)
+        self.attributes = attributes or self.attmap.attributes()
 
-    def read_parameters(self, fp):
-        """This method should read the parameters from ths stream and
-        store them in self."""
-        pass
+    def __iter__(self):
+        return self()
 
-    def mk_filter(self, parameters):
+    def __call__(self):
+        # get search results
+        filter = self.mk_filter()
+        for base in self.bases:
+            # do the LDAP search
+            try:
+                for entry in self.conn.search_s(base, self.scope, filter, self.attributes):
+                    if entry[0]:
+                        entry = self.handle_entry(entry[0], entry[1])
+                        if entry:
+                            yield entry
+            except ldap.NO_SUCH_OBJECT:
+                # FIXME: log message
+                pass
+
+    def mk_filter(self):
         """Return the active search filter (based on the read parameters)."""
-        if parameters:
+        if self.parameters:
             return '(&%s(%s))' % (self.filter,
                 ')('.join('%s=%s' % (self.attmap[attribute],
                                      ldap.filter.escape_filter_chars(str(value)))
-                          for attribute, value in parameters.items()))
+                          for attribute, value in self.parameters.items()))
         return self.filter
 
-    def handle_entry(self, dn, attributes, parameters):
+    def handle_entry(self, dn, attributes):
         """Handle an entry with the specified attributes, filtering it with
         the request parameters where needed."""
         # translate the attributes using the attribute mapping
         attributes = self.attmap.translate(attributes)
         # make sure value from DN is first value
-        for attr in getattr(self, 'canonical_first', []):
+        for attr in self.canonical_first:
             primary_value = get_rdn_value(dn, self.attmap[attr])
             if primary_value:
                 values = attributes[attr]
@@ -123,44 +141,60 @@ class Request(object):
                     values.remove(primary_value)
                 attributes[attr] = [primary_value] + values
         # check that these attributes have at least one value
-        for attr in getattr(self, 'required', []):
+        for attr in self.required:
             if not attributes.get(attr, None):
                 print '%s: attribute %s not found' % (dn, self.attmap[attr])
                 return
         # check that requested attribute is present (case sensitive)
-        for attr in getattr(self, 'case_sensitive', []):
-            value = parameters.get(attr, None)
+        for attr in self.case_sensitive:
+            value = self.parameters.get(attr, None)
             if value and str(value) not in attributes[attr]:
                 print '%s: attribute %s does not contain %r value' % (dn, self.attmap[attr], value)
                 return  # not found, skip entry
         # check that requested attribute is present (case insensitive)
-        for attr in getattr(self, 'case_insensitive', []):
-            value = parameters.get(attr, None)
+        for attr in self.case_insensitive:
+            value = self.parameters.get(attr, None)
             if value and str(value).lower() not in (x.lower() for x in attributes[attr]):
                 print '%s: attribute %s does not contain %r value' % (dn, self.attmap[attr], value)
                 return  # not found, skip entry
         # limit attribute values to requested value
-        for attr in getattr(self, 'limit_attributes', []):
-            if attr in parameters:
-                attributes[attr] = [parameters[attr]]
-        # write the result entry
-        self.write(dn, attributes, parameters)
+        for attr in self.limit_attributes:
+            if attr in self.parameters:
+                attributes[attr] = [self.parameters[attr]]
+        # return the entry
+        return dn, attributes
+
+
+class Request(object):
+    """
+    Request handler class. Subclasses are expected to handle actual requests
+    and should implement the following members:
+
+      action - the NSLCD_ACTION_* action that should trigger this handler
+
+      read_parameters() - a function that reads the request parameters of the
+                          request stream
+      write() - function that writes a single LDAP entry to the result stream
+
+    """
+
+    def __init__(self, fp, conn, calleruid):
+        self.fp = fp
+        self.conn = conn
+        self.calleruid = calleruid
+        module = sys.modules[self.__module__]
+        self.search = getattr(module, 'Search', None)
+
+    def read_parameters(self, fp):
+        """This method should read the parameters from ths stream and
+        store them in self."""
+        pass
 
     def handle_request(self, parameters):
         """This method handles the request based on the parameters read
         with read_parameters()."""
-        # get search results
-        for base in self.bases:
-            # do the LDAP search
-            try:
-                res = self.conn.search_s(base, self.scope, self.mk_filter(parameters),
-                                         self.attmap.attributes())
-                for entry in res:
-                    if entry[0]:
-                        self.handle_entry(entry[0], entry[1], parameters)
-            except ldap.NO_SUCH_OBJECT:
-                # FIXME: log message
-                pass
+        for dn, attributes in self.search(conn=self.conn, parameters=parameters):
+            self.write(dn, attributes, parameters)
         # write the final result code
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 
