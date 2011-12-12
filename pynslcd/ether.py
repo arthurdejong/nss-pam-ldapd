@@ -40,23 +40,21 @@ filter = '(objectClass=ieee802Device)'
 
 class EtherRequest(common.Request):
 
+    case_insensitive = ('cn', )
+    limit_attributes = ('cn', 'macAddress')
+    required = ('cn', 'macAddress')
+
     def write(self, dn, attributes, parameters):
-        # get name and check against requested name
+        # get names
         names = attributes['cn']
-        if not names:
-            print 'Error: entry %s does not contain %s value' % ( dn, attmap['cn'])
-        if 'cn' in parameters:
-            if parameters['cn'].lower() not in (x.lower() for x in names):
-                return # skip entry
-            names = ( parameters['cn'], )
         # get addresses and convert to binary form
         addresses = [ether_aton(x) for x in attributes['macAddress']]
-        if not addresses:
-            print 'Error: entry %s does not contain %s value' % ( dn, attmap['macAddress'])
         if 'macAddress' in parameters:
-            if ether_aton(parameters['macAddress']) not in addresses:
+            address = ether_aton(parameters['macAddress'])
+            if address not in addresses:
+                print 'value %r for attribute %s not found in %s' % (parameters['macAddress'], attmap['macAddress'], dn)
                 return
-            addresses = ( ether_aton(parameters['macAddress']), )
+            addresses = ( address, )
         # write results
         for name in names:
             for ether in addresses:

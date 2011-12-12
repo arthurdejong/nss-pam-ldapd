@@ -39,22 +39,19 @@ bases = ( 'ou=people,dc=test,dc=tld', )
 
 class PasswdRequest(common.Request):
 
+    case_sensitive = ('uid', 'uidNumber', )
+    limit_attributes = ('uid', 'uidNumber', )
+    required = ('uid', 'uidNumber', 'gidNumber', 'gecos', 'homeDirectory',
+                'loginShell')
+
     def write(self, dn, attributes, parameters):
-        # get uid attribute and check against requested user name
+        # get values
         names = attributes['uid']
-        if 'uid' in parameters:
-            if parameters['uid'] not in names:
-                return
-            names = ( parameters['uid'], )
-        # get user password entry
         if 'shadowAccount' in attributes['objectClass']:
             passwd = 'x'
         else:
             passwd = attributes['userPassword'][0]
-        # get numeric user and group ids
-        uids = ( parameters['uidNumber'], ) if 'uidNumber' in parameters else attributes['uidNumber']
-        uids = [ int(x) for x in uids ]
-        # get other passwd properties
+        uids = [ int(x) for x in attributes['uidNumber'] ]
         gid = int(attributes['gidNumber'][0])
         gecos = attributes['gecos'][0]
         home = attributes['homeDirectory'][0]

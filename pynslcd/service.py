@@ -33,29 +33,17 @@ filter = '(objectClass=ipService)'
 
 class ServiceRequest(common.Request):
 
+    case_sensitive = ('cn', 'ipServiceProtocol')
+    limit_attributes = ('ipServiceProtocol', )
+    canonical_first = ('cn', )
+    required = ('cn', 'ipServicePort', 'ipServiceProtocol')
+
     def write(self, dn, attributes, parameters):
-        # get name
-        name = common.get_rdn_value(dn, attmap['cn'])
+        # get values
         names = attributes['cn']
-        if not names:
-            print 'Error: entry %s does not contain %s value' % (dn, attmap['cn'])
-        if 'cn' in parameters and parameters['cn'] not in names + [ name, ]:
-            return # case of result entry did not match
-        if not name:
-            name = names.pop(0)
-        elif name in names:
-            names.remove(name)
-        # get port number
-        ( port, ) = attributes['ipServicePort']
-        if not port:
-            print 'Error: entry %s does not contain %s value' % (dn, attmap['ipServicePort'])
-        port = int(port)
-        # get protocol
+        name = names.pop(0)
+        port = int(attributes['ipServicePort'][0])
         protocols = attributes['ipServiceProtocol']
-        if 'ipServiceProtocol' in parameters:
-            if parameters['ipServiceProtocol'] not in protocols:
-                return
-            protocols = ( parameters['ipServiceProtocol'], )
         # write result
         for protocol in protocols:
             self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)

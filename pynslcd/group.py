@@ -42,20 +42,17 @@ filter = '(|(objectClass=posixGroup)(objectClass=groupOfNames))'
 
 class GroupRequest(common.Request):
 
+    case_sensitive = ('cn', )
+    limit_attributes = ('cn', 'gidNumber')
     wantmembers = True
 
     def write(self, dn, attributes, parameters):
         # get group names and check against requested group name
         names = attributes['cn']
-        if 'cn' in parameters:
-            if parameters['cn'] not in names:
-                return
-            names = ( parameters['cn'], )
         # get group group password
         passwd = attributes['userPassword'][0]
         # get group id(s)
-        gids = (  parameters['gidNumber'], ) if 'gidNumber' in parameters else attributes['gidNumber']
-        gids = [ int(x) for x in gids ]
+        gids = [ int(x) for x in attributes['gidNumber'] ]
         # build member list
         members = set()
         if self.wantmembers:
@@ -115,9 +112,6 @@ class GroupByMemberRequest(GroupRequest):
         memberuid = fp.read_string()
         common.validate_name(memberuid)
         return dict(memberUid=memberuid)
-
-    def attributes(self):
-        return self.attmap.attributes()
 
     def mk_filter(self, parameters):
         # we still need a custom mk_filter because this is an | query

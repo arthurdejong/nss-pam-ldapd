@@ -1,5 +1,5 @@
 
-# attributes.py - attribute mapping functions
+# attmap.py - attribute mapping class
 #
 # Copyright (C) 2011 Arthur de Jong
 #
@@ -27,19 +27,18 @@
 ...                    gecos='"${gecos:-$cn}"',
 ...                    homeDirectory='homeDirectory',
 ...                    loginShell='loginShell')
->>> attrs.attributes()
-('uid', 'userPassword', 'uidNumber', 'gidNumber', 'gecos', 'cn', 'homeDirectory', 'loginShell')
->>> attrs.value('gecos', {'cn': 'test'})
-['test']
->>> attrs.search('uidNumber', 100)
-'(uidNumber=100)'
->>> attrs['foo'] = '\"bar\"'
->>> attrs.get('foo', {})
-['bar']
+>>> 'cn' in attrs.attributes()
+True
+>>> attrs.translate({'uid': ['UIDVALUE', '2nduidvalue'], 'cn': ['COMMON NAME', ]})
+{'uid': ['UIDVALUE', '2nduidvalue'], 'loginShell': [], 'userPassword': [], 'uidNumber': [], 'gidNumber': [], 'gecos': ['COMMON NAME'], 'homeDirectory': []}
+>>> attrs['uidNumber']  # a representation fit for logging and filters
+'uidNumber'
+>>> attrs['gecos']
+'"${gecos:-$cn}"'
 """
 
 # exported names
-__all__ = ( 'Attributes', )
+__all__ = ('Attributes', )
 
 
 # FIXME: support multiple attribute values
@@ -57,7 +56,7 @@ class MyIter(object):
 
     def next(self):
         self.pos += 1
-        return self.value[self.pos-1]
+        return self.value[self.pos - 1]
 
     def back(self):
         self.pos -= 1
@@ -65,19 +64,20 @@ class MyIter(object):
     def __iter__(self):
         return self
 
+    def get_name(self):
+        """Read a variable name from the value iterator."""
+        name = ''
+        for c in self:
+            if not c.isalnum():
+                self.back()
+                return name
+            name += c
+        return name
+
 
 class DollarExpression(object):
     """Class for handling a variable $xxx ${xxx}, ${xxx:-yyy} or ${xxx:+yyy}
     expression."""
-
-    def _parse_varname(self, value):
-        """Read a variable name from the value iterator."""
-        name = ''
-        for c in value:
-            if not c.isalnum():
-                value.back()
-                return name
-            name += c
 
     def __init__(self, value):
         """Parse the expression as the start of a $-expression."""
@@ -85,7 +85,7 @@ class DollarExpression(object):
         self.expr = None
         c = value.next()
         if c == '{':
-            self.name = self._parse_varname(value)
+            self.name = value.get_name()
             c = value.next()
             if c == '}':
                 return
@@ -93,7 +93,7 @@ class DollarExpression(object):
             self.expr = Expression(value, endat='}')
         else:
             value.back()
-            self.name = self._parse_varname(value)
+            self.name = value.get_name()
 
     def value(self, variables):
         """Expand the expression using the variables specified."""
@@ -105,11 +105,11 @@ class DollarExpression(object):
             return self.expr.value(variables) if value else ''
         return value
 
-    def variables(self, results):
-        """Add the variables used in the expression to results."""
+    def attributes(self, results):
+        """Add the attributes used in the expression to results."""
         results.add(self.name)
         if self.expr:
-            self.expr.variables(results)
+            self.expr.attributes(results)
 
 
 class Expression(object):
@@ -118,9 +118,10 @@ class Expression(object):
     def __init__(self, value, endat=None):
         """Parse the expression as a string."""
         if not isinstance(value, MyIter):
+            self.expression = value
             value = MyIter(value)
         if not endat:
-            endat = value.next() # skip opening quote
+            endat = value.next()  # skip opening quote
         expr = []
         literal = ''
         c = value.next()
@@ -149,18 +150,24 @@ class Expression(object):
                 res += x
         return res
 
-    def variables(self, results=None):
-        """Return the variables defined in the expression."""
+    def attributes(self, results=None):
+        """Return the attributes defined in the expression."""
         if not results:
             results = set()
         for x in self.expr:
-            if hasattr(x, 'variables'):
-                x.variables(results)
+            if hasattr(x, 'attributes'):
+                x.attributes(results)
         return results
+
+    def __str__(self):
+        return self.expression
+
+    def __repr__(self):
+        return repr(str(self))
 
 
 class Attributes(dict):
-    """Dictionary-like class for handling a list of attributes."""
+    """Dictionary-like class for handling attribute mapping."""
 
     def _prepare(self):
         """Go over all values to parse any expressions."""
@@ -171,18 +178,18 @@ class Attributes(dict):
         self.update(updates)
 
     def attributes(self):
-        """Return a set of attributes that are referenced in this attribute
+        """Return the list of attributes that are referenced in this attribute
         mapping."""
         self._prepare()
-        results = set()
+        attributes = set()
         for value in self.itervalues():
-            if hasattr(value, 'variables'):
-                results.update(value.variables())
+            if hasattr(value, 'attributes'):
+                attributes.update(value.attributes())
             else:
-                results.add(value)
-        return list(results)
+                attributes.add(value)
+        return list(attributes)
 
-    def mapped(self, variables):
+    def translate(self, variables):
         """Return a dictionary with every attribute mapped to their value from
         the specified variables."""
         results = dict()

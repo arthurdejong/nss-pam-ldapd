@@ -30,21 +30,14 @@ filter = '(objectClass=nisMailAlias)'
 
 class AliasRequest(common.Request):
 
+    case_insensitive = ('cn', )
+    limit_attributes = ('cn', )
+    required = ('cn', 'rfc822MailMember')
+
     def write(self, dn, attributes, parameters):
-        # get name and check against requested name
+        # get values
         names = attributes['cn']
-        if not names:
-            logging.error('Error: entry %s does not contain %s value', dn, attmap['cn'])
-            return
-        if 'cn' in parameters:
-            if parameters['cn'].lower() not in (x.lower() for x in names):
-                return
-            names = ( parameters['cn'], )
-        # get the members of the alias
         members = attributes['rfc822MailMember']
-        if not members:
-            logging.error('Error: entry %s does not contain %s value', dn, attmap['rfc822MailMember'])
-            return
         # write results
         for name in names:
             self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)

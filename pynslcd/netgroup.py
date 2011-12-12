@@ -36,15 +36,10 @@ filter = '(objectClass=nisNetgroup)'
 
 class NetgroupRequest(common.Request):
 
+    case_sensitive = ('cn', )
+    required = ('cn', )
+
     def write(self, dn, attributes, parameters):
-        # get names and check against requested user name
-        names = attributes['cn']
-        if 'cn' in parameters:
-            if parameters['cn'] not in names:
-                return
-            names = ( parameters['cn'], )
-        if not names:
-            print 'Error: entry %s does not contain %s value' % (dn, attmap['cn'])
         # write the netgroup triples
         for triple in attributes['nisNetgroupTriple']:
             m = _netgroup_triple_re.match(triple)

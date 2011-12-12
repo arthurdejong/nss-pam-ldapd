@@ -30,23 +30,15 @@ filter = '(objectClass=ipProtocol)'
 
 class ProtocolRequest(common.Request):
 
+    case_sensitive = ('cn', )
+    canonical_first = ('cn', )
+    required = ('cn', 'ipProtocolNumber')
+
     def write(self, dn, attributes, parameters):
-        # get name
-        name = common.get_rdn_value(dn, attmap['cn'])
+        # get values
         names = attributes['cn']
-        if not names:
-            print 'Error: entry %s does not contain %s value' % (dn, attmap['cn'])
-        if 'cn' in parameters and parameters['cn'] not in names:
-            return # case of result entry did not match
-        if not name:
-            name = names.pop(0)
-        elif name in names:
-            names.remove(name)
-        # get number
-        ( number, ) = attributes['ipProtocolNumber']
-        if not number:
-            print 'Error: entry %s does not contain %s value' % (dn, attmap['ipProtocolNumber'])
-        number = int(number)
+        name = names.pop(0)
+        number = int(attributes['ipProtocolNumber'][0])
         # write result
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
         self.fp.write_string(name)

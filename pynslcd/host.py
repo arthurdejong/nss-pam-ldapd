@@ -30,18 +30,14 @@ filter = '(objectClass=ipHost)'
 
 class HostRequest(common.Request):
 
+    canonical_first = ('cn', )
+    required = ('cn', )
+
     def write(self, dn, attributes, parameters):
-        hostname = common.get_rdn_value(dn, attmap['cn'])
+        # get values
         hostnames = attributes['cn']
-        if not hostnames:
-            print 'Error: entry %s does not contain %s value' % ( dn, attmap['cn'] )
-        if not hostname:
-            hostname = hostnames.pop(0)
-        elif hostname in hostnames:
-            hostnames.remove(hostname)
+        hostname = hostnames.pop(0)
         addresses = attributes['ipHostNumber']
-        if not addresses:
-            print 'Error: entry %s does not contain %s value' % ( dn, attmap['ipHostNumber'] )
         # write result
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
         self.fp.write_string(hostname)

@@ -39,16 +39,13 @@ bases = ( 'ou=people,dc=test,dc=tld', )
 
 class ShadowRequest(common.Request):
 
+    case_sensitive = ('uid', )
+    limit_attributes = ('uid', )
+    required = ('uid', )
+
     def write(self, dn, attributes, parameters):
         # get name and check against requested name
         names = attributes['uid']
-        if not names:
-            print 'Error: entry %s does not contain %s value' % ( dn, attmap['uid'] )
-            return
-        if 'uid' in parameters:
-            if parameters['uid'] not in names:
-                return
-            names = ( parameters['uid'], )
         # get password
         (passwd, ) = attributes['userPassword']
         if not passwd or self.calleruid != 0:
@@ -56,11 +53,11 @@ class ShadowRequest(common.Request):
         # function for making an int
         def mk_int(attr):
             try:
-                return
+                return int(attr)
             except TypeError:
                 return None
         # get lastchange date
-        lastchangedate = int(attributes.get('shadowLastChange', [0])[0])
+        lastchangedate = mk_int(attributes.get('shadowLastChange', [0])[0])
         # we expect an AD 64-bit datetime value;
         # we should do date=date/864000000000-134774
         # but that causes problems on 32-bit platforms,
@@ -69,12 +66,12 @@ class ShadowRequest(common.Request):
         if attmap['shadowLastChange'] == 'pwdLastSet':
             lastchangedate = ( lastchangedate / 864000000000 ) - 134774
         # get longs
-        mindays = int(attributes.get('shadowMin', [-1])[0])
-        maxdays = int(attributes.get('shadowMax', [-1])[0])
-        warndays = int(attributes.get('shadowWarning', [-1])[0])
-        inactdays = int(attributes.get('shadowInactive', [-1])[0])
-        expiredate = int(attributes.get('shadowExpire', [-1])[0])
-        flag = int(attributes.get('shadowFlag', [0])[0])
+        mindays = mk_int(attributes.get('shadowMin', [-1])[0])
+        maxdays = mk_int(attributes.get('shadowMax', [-1])[0])
+        warndays = mk_int(attributes.get('shadowWarning', [-1])[0])
+        inactdays = mk_int(attributes.get('shadowInactive', [-1])[0])
+        expiredate = mk_int(attributes.get('shadowExpire', [-1])[0])
+        flag = mk_int(attributes.get('shadowFlag', [0])[0])
         if attmap['shadowFlag'] == 'pwdLastSet':
             if flag & 0x10000:
                 maxdays = -1
