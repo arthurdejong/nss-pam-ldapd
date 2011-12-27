@@ -58,6 +58,7 @@ debian/po/vi.po:   Copyright (C) 2010 Free Software Foundation, Inc.
 nss/bsdnss.c:      Copyright (C) 2003 Jacques Vidrine
 nss/bsdnss.c:      Copyright (C) 2006 Artem Kazakov
 nss/bsdnss.c:      Copyright (C) 2009 Alexander V. Chernikov
+nss/bsdnss.c:      Copyright (C) 2011 Tom Judge
 
 The distribution includes code from the Autoconf and Automake suites. This
 code is either licensed under the GNU General Public License with the extra
