@@ -44,7 +44,7 @@ ldap_uri = 'ldapi:///'
 scope = ldap.SCOPE_SUBTREE
 
 # LDAP search bases to search
-bases = ( 'dc=test, dc=tld', )
+bases = ('dc=test, dc=tld', )
 
 # the users for which no initgroups() searches should be done
 nss_initgroups_ignoreusers = []
@@ -52,6 +52,7 @@ nss_initgroups_ignoreusers = []
 # the DN to use to perform password modifications as root
 rootpwmoddn = 'cn=admin, dc=test, dc=tld'
 rootpwmodpw = 'test'
+
 
 # FIXME: implement reading configuration from file
 def read(cfgfile):

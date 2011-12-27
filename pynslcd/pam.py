@@ -33,7 +33,7 @@ def try_bind(userdn, password):
     # bind using the specified credentials
     conn.simple_bind_s(userdn, password)
     # perform search for own object (just to do any kind of search)
-    res = conn.search_s(userdn, ldap.SCOPE_BASE, '(objectClass=*)', [ 'dn', ])
+    res = conn.search_s(userdn, ldap.SCOPE_BASE, '(objectClass=*)', ['dn', ])
     for entry in res:
         if entry[0] == userdn:
             return
@@ -89,7 +89,7 @@ class PAMAuthenticationRequest(PAMRequest):
         self.fp.write_string(parameters['userdn'])
         self.fp.write_int32(code)  # authc
         self.fp.write_int32(constants.NSLCD_PAM_SUCCESS)  # authz
-        self.fp.write_string(msg) # authzmsg
+        self.fp.write_string(msg)  # authzmsg
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 
     def handle_request(self, parameters):

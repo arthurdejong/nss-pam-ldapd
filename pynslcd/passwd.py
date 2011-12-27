@@ -34,7 +34,7 @@ attmap = common.Attributes(uid='uid',
                            loginShell='loginShell',
                            objectClass='objectClass')
 filter = '(objectClass=posixAccount)'
-bases = ( 'ou=people,dc=test,dc=tld', )
+bases = ('ou=people,dc=test,dc=tld', )
 
 
 class Search(common.Search):
@@ -54,7 +54,7 @@ class PasswdRequest(common.Request):
             passwd = 'x'
         else:
             passwd = attributes['userPassword'][0]
-        uids = [ int(x) for x in attributes['uidNumber'] ]
+        uids = [int(x) for x in attributes['uidNumber']]
         gid = int(attributes['gidNumber'][0])
         gecos = attributes['gecos'][0]
         home = attributes['homeDirectory'][0]
@@ -62,7 +62,7 @@ class PasswdRequest(common.Request):
         # write results
         for name in names:
             if not common.isvalidname(name):
-                print 'Warning: passwd entry %s contains invalid user name: "%s"' % ( dn, name )
+                print 'Warning: passwd entry %s contains invalid user name: "%s"' % (dn, name)
             else:
                 for uid in uids:
                     self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)

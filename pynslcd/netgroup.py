@@ -47,7 +47,7 @@ class NetgroupRequest(common.Request):
         for triple in attributes['nisNetgroupTriple']:
             m = _netgroup_triple_re.match(triple)
             if not m:
-                print 'Warning: entry %s contains invalid %s value: %r' % ( dn, attmap['nisNetgroupTriple'], triple)
+                print 'Warning: entry %s contains invalid %s value: %r' % (dn, attmap['nisNetgroupTriple'], triple)
             else:
                 self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
                 self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_TRIPLE)

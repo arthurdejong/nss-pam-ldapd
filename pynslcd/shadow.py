@@ -34,7 +34,7 @@ attmap = common.Attributes(uid='uid',
                            shadowExpire='"${shadowExpire:--1}"',
                            shadowFlag='"${shadowFlag:-0}"')
 filter = '(objectClass=shadowAccount)'
-bases = ( 'ou=people,dc=test,dc=tld', )
+bases = ('ou=people,dc=test,dc=tld', )
 
 
 class Search(common.Search):
@@ -67,7 +67,7 @@ class ShadowRequest(common.Request):
         # first we devide by 1000000000 by stripping the
         # last 9 digits from the string and going from there */
         if attmap['shadowLastChange'] == 'pwdLastSet':
-            lastchangedate = ( lastchangedate / 864000000000 ) - 134774
+            lastchangedate = (lastchangedate / 864000000000) - 134774
         # get longs
         mindays = mk_int(attributes.get('shadowMin', [-1])[0])
         maxdays = mk_int(attributes.get('shadowMax', [-1])[0])

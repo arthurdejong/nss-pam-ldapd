@@ -28,6 +28,7 @@ def ether_aton(ether):
     """Converst an ethernet address to binary form in network byte order."""
     return struct.pack('BBBBBB', *(int(x, 16) for x in ether.split(':')))
 
+
 def ether_ntoa(ether):
     """Conversts an ethernet address in network byte order to the string
     representation."""

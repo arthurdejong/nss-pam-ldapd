@@ -35,8 +35,10 @@ _gid_t = struct.Struct('i')
 # FIXME: use something from config.py to determine the correct size
 _struct_timeval = struct.Struct('ll')
 
+
 class TIOStreamError(Exception):
     pass
+
 
 class TIOStream(object):
     """File-like object that allows reading and writing nslcd-protocol
@@ -46,7 +48,7 @@ class TIOStream(object):
         conn.setblocking(1)
         conn.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, _struct_timeval.pack(0, 500000))
         conn.setsockopt(socket.SOL_SOCKET, socket.SO_SNDTIMEO, _struct_timeval.pack(60, 0))
-        self.fp = os.fdopen(conn.fileno(), 'w+b', 1024*1024)
+        self.fp = os.fdopen(conn.fileno(), 'w+b', 1024 * 1024)
 
     def read(self, size):
         return self.fp.read(size)
@@ -100,7 +102,7 @@ class TIOStream(object):
         try:
             return socket.AF_INET, socket.inet_pton(socket.AF_INET, value)
         except socket.error:
-            pass # try the next one
+            pass  # try the next one
         # fall back to IPv6
         return socket.AF_INET6, socket.inet_pton(socket.AF_INET6, value)
 

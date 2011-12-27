@@ -59,9 +59,9 @@ class Search(common.Search):
             memberuid = self.parameters['memberUid']
             dn = uid2dn(self.conn, memberuid)
             if dn:
-                return '(&%s(|(%s=%s)(%s=%s)))' % ( self.filter,
+                return '(&%s(|(%s=%s)(%s=%s)))' % (self.filter,
                           attmap['memberUid'], ldap.filter.escape_filter_chars(memberuid),
-                          attmap['member'], ldap.filter.escape_filter_chars(dn) )
+                          attmap['member'], ldap.filter.escape_filter_chars(dn))
         return super(Search, self).mk_filter()
 
 
@@ -75,7 +75,7 @@ class GroupRequest(common.Request):
         # get group group password
         passwd = attributes['userPassword'][0]
         # get group id(s)
-        gids = [ int(x) for x in attributes['gidNumber'] ]
+        gids = [int(x) for x in attributes['gidNumber']]
         # build member list
         members = set()
         if self.wantmembers:
@@ -91,7 +91,7 @@ class GroupRequest(common.Request):
         # actually return the results
         for name in names:
             if not common.isvalidname(name):
-                print 'Warning: group entry %s contains invalid group name: "%s"' % ( dn, name )
+                print 'Warning: group entry %s contains invalid group name: "%s"' % (dn, name)
             else:
                 for gid in gids:
                     self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
@@ -117,8 +117,6 @@ class GroupByGidRequest(GroupRequest):
 
     def read_parameters(self, fp):
         return dict(gidNumber=fp.read_gid_t())
-
-
 
 
 class GroupByMemberRequest(GroupRequest):

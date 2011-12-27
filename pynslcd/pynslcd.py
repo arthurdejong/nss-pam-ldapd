@@ -61,6 +61,7 @@ logging.getLogger().addHandler(stderrhandler)
 #syslog.setFormatter(formatter)
 #logger.addHandler(syslog)
 
+
 def display_version(fp):
     fp.write('%(PACKAGE_STRING)s\n'
              'Written by Arthur de Jong.\n'
@@ -68,7 +69,8 @@ def display_version(fp):
              'Copyright (C) 2010, 2011 Arthur de Jong\n'
              'This is free software; see the source for copying conditions.  There is NO\n'
              'warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n'
-             % { 'PACKAGE_STRING': config.PACKAGE_STRING, } )
+             % {'PACKAGE_STRING': config.PACKAGE_STRING, })
+
 
 def display_usage(fp):
     fp.write("Usage: %(program_name)s [OPTION]...\n"
@@ -79,8 +81,9 @@ def display_usage(fp):
              "      --version      output version information and exit\n"
              "\n"
              "Report bugs to <%(PACKAGE_BUGREPORT)s>.\n"
-             % { 'program_name': cfg.program_name,
-                 'PACKAGE_BUGREPORT': config.PACKAGE_BUGREPORT, } )
+             % {'program_name': cfg.program_name,
+                'PACKAGE_BUGREPORT': config.PACKAGE_BUGREPORT, })
+
 
 def parse_cmdline():
     """Parse command-line arguments."""
@@ -105,9 +108,10 @@ def parse_cmdline():
     except getopt.GetoptError, reason:
         sys.stderr.write("%(program_name)s: %(reason)s\n"
                          "Try '%(program_name)s --help' for more information.\n"
-                          % { 'program_name': cfg.program_name,
-                              'reason': reason, })
+                          % {'program_name': cfg.program_name,
+                             'reason': reason, })
         sys.exit(1)
+
 
 def create_socket():
     """Returns a socket ready to answer requests from the client."""
@@ -118,7 +122,7 @@ def create_socket():
     try:
         os.unlink(config.NSLCD_SOCKET)
     except OSError:
-        pass # ignore any problems
+        pass  # ignore any problems
     # bind to named socket
     sock.bind((config.NSLCD_SOCKET))
     # close the file descriptor on exit
@@ -129,13 +133,16 @@ def create_socket():
     sock.listen(socket.SOMAXCONN)
     return sock
 
+
 def log_newsession():
     pass
     # FIXME: implement
 
+
 def getpeercred(fd):
     return (None, None, None)
     # FIXME: implement and return uid, gid, pid
+
 
 handlers = {}
 handlers.update(common.get_handlers('alias'))
@@ -151,6 +158,7 @@ handlers.update(common.get_handlers('rpc'))
 handlers.update(common.get_handlers('service'))
 handlers.update(common.get_handlers('shadow'))
 
+
 def acceptconnection(session):
     # accept a new connection
     conn, addr = nslcd_serversocket.accept()
@@ -165,7 +173,7 @@ def acceptconnection(session):
             uid, gid, pid = getpeercred(conn)
             logging.debug('connection from pid=%r uid=%r gid=%r', pid, uid, gid)
         except:
-            raise # FIXME: handle exception gracefully
+            raise  # FIXME: handle exception gracefully
         # create a stream object
         fp = TIOStream(conn)
         # read request
@@ -184,11 +192,13 @@ def acceptconnection(session):
         if fp:
             fp.close()
 
+
 def disable_nss_ldap():
     """Disable the nss_ldap module to avoid lookup loops."""
     import ctypes
     lib = ctypes.CDLL(config.NSS_LDAP_SONAME)
     ctypes.c_int.in_dll(lib, '_nss_ldap_enablelookups').value = 0
+
 
 def worker():
     # create a new LDAP session
@@ -199,6 +209,7 @@ def worker():
         # wait for a new connection
         acceptconnection(session)
         # FIXME: handle exceptions
+
 
 if __name__ == '__main__':
     # parse options
