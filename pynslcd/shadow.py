@@ -34,7 +34,6 @@ attmap = common.Attributes(uid='uid',
                            shadowExpire='"${shadowExpire:--1}"',
                            shadowFlag='"${shadowFlag:-0}"')
 filter = '(objectClass=shadowAccount)'
-bases = ('ou=people,dc=test,dc=tld', )
 
 
 class Search(common.Search):

@@ -85,6 +85,8 @@ class Search(object):
     case_insensitive = []
     limit_attributes = []
 
+# FIXME: figure out which of these arguments are actually needed
+
     def __init__(self, conn, base=None, scope=None, filter=None, attributes=None,
                  parameters=None):
         # load information from module that defines the class
@@ -143,19 +145,21 @@ class Search(object):
         # check that these attributes have at least one value
         for attr in self.required:
             if not attributes.get(attr, None):
-                print '%s: attribute %s not found' % (dn, self.attmap[attr])
+                print '%s: %s: missing' % (dn, self.attmap[attr])
                 return
         # check that requested attribute is present (case sensitive)
         for attr in self.case_sensitive:
             value = self.parameters.get(attr, None)
             if value and str(value) not in attributes[attr]:
-                print '%s: attribute %s does not contain %r value' % (dn, self.attmap[attr], value)
+                # TODO: log at debug level, this can happen in normal cases
+                print '%s: %s: does not contain %r value' % (dn, self.attmap[attr], value)
                 return  # not found, skip entry
         # check that requested attribute is present (case insensitive)
         for attr in self.case_insensitive:
             value = self.parameters.get(attr, None)
             if value and str(value).lower() not in (x.lower() for x in attributes[attr]):
-                print '%s: attribute %s does not contain %r value' % (dn, self.attmap[attr], value)
+                # TODO: log at debug level, this can happen in normal cases
+                print '%s: %s: does not contain %r value' % (dn, self.attmap[attr], value)
                 return  # not found, skip entry
         # limit attribute values to requested value
         for attr in self.limit_attributes:

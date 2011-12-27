@@ -91,7 +91,7 @@ class GroupRequest(common.Request):
         # actually return the results
         for name in names:
             if not common.isvalidname(name):
-                print 'Warning: group entry %s contains invalid group name: "%s"' % (dn, name)
+                print '%s: %s: denied by validnames option' % (dn, self.attmap['cn'])
             else:
                 for gid in gids:
                     self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
