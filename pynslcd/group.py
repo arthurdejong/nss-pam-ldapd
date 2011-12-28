@@ -49,9 +49,9 @@ class Search(common.Search):
         super(Search, self).__init__(*args, **kwargs)
         if attmap['member'] and 'memberUid' in self.parameters:
             # set up our own attributes that leave out membership attributes
-            self.attmap = common.Attributes(self.attmap)
-            del self.attmap['memberUid']
-            del self.attmap['member']
+            self.attributes = list(self.attributes)
+            self.attributes.remove(attmap['memberUid'])
+            self.attributes.remove(attmap['member'])
 
     def mk_filter(self):
         # we still need a custom mk_filter because this is an | query
