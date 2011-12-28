@@ -70,7 +70,7 @@
 #define WRITEBUFFER_MINSIZE 64
 #define WRITEBUFFER_MAXSIZE 1*1024*1024
 
-/* flag to indictate if we are in debugging mode */
+/* flag to indicate if we are in debugging mode */
 static int nslcd_debugging=0;
 
 /* flag to indicate user requested the --check option */
