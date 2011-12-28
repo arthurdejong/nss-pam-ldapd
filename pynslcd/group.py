@@ -47,7 +47,7 @@ class Search(common.Search):
 
     def __init__(self, *args, **kwargs):
         super(Search, self).__init__(*args, **kwargs)
-        if attmap['member'] and 'memberUid' in self.parameters:
+        if 'memberUid' in self.parameters:
             # set up our own attributes that leave out membership attributes
             self.attributes = list(self.attributes)
             self.attributes.remove(attmap['memberUid'])
