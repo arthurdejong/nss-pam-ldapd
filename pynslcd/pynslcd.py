@@ -37,6 +37,16 @@ import common
 from tio import TIOStream
 
 
+# the name of the program
+program_name = 'pynslcd'
+
+# flag to indicate whether we are in debugging mode
+debugging = 0
+
+# flag to indicate user requested the --check option
+checkonly = False
+
+
 # configure logging
 class MyFormatter(logging.Formatter):
     def format(self, record):
@@ -81,22 +91,25 @@ def display_usage(fp):
              "      --version      output version information and exit\n"
              "\n"
              "Report bugs to <%(PACKAGE_BUGREPORT)s>.\n"
-             % {'program_name': cfg.program_name,
+             % {'program_name': program_name,
                 'PACKAGE_BUGREPORT': config.PACKAGE_BUGREPORT, })
 
 
 def parse_cmdline():
     """Parse command-line arguments."""
     import getopt
-    cfg.program_name = sys.argv[0] or 'pynslcd'
+    global program_name
+    program_name = sys.argv[0] or program_name
     try:
         optlist, args = getopt.gnu_getopt(sys.argv[1:],
           'cdhV', ('check', 'debug', 'help', 'version', ))
         for flag, arg in optlist:
             if flag in ('-c', '--check'):
-                cfg.check = True
+                global checkonly
+                checkonly = True
             elif flag in ('-d', '--debug'):
-                cfg.debug += 1
+                global debugging
+                debugging += 1
             elif flag in ('-h', '--help'):
                 display_usage(sys.stdout)
                 sys.exit(0)
@@ -108,7 +121,7 @@ def parse_cmdline():
     except getopt.GetoptError, reason:
         sys.stderr.write("%(program_name)s: %(reason)s\n"
                          "Try '%(program_name)s --help' for more information.\n"
-                          % {'program_name': cfg.program_name,
+                          % {'program_name': program_name,
                              'reason': reason, })
         sys.exit(1)
 
@@ -222,7 +235,7 @@ if __name__ == '__main__':
     # disable ldap lookups of host names to avoid lookup loop
     disable_nss_ldap()
     # set log level
-    if cfg.debug:
+    if debugging:
         logging.getLogger().setLevel(logging.DEBUG)
     # FIXME: implement
     #if myldap_set_debuglevel(cfg.debug) != LDAP_SUCCESS:
@@ -234,7 +247,7 @@ if __name__ == '__main__':
     # see if someone already locked the pidfile
     pidfile = mypidfile.MyPIDLockFile(config.NSLCD_PIDFILE)
     # see if --check option was given
-    if cfg.check:
+    if checkonly:
         if pidfile.is_locked():
             logging.debug('pidfile (%s) is locked', config.NSLCD_PIDFILE)
             sys.exit(0)
@@ -246,7 +259,7 @@ if __name__ == '__main__':
         logging.error('daemon may already be active, cannot acquire lock (%s)', config.NSLCD_PIDFILE)
         sys.exit(1)
     # daemonize
-    if cfg.debug:
+    if debugging:
         daemon = pidfile
     else:
         daemon = daemon.DaemonContext(
@@ -259,7 +272,7 @@ if __name__ == '__main__':
     # start daemon
     with daemon:
         # start normal logging
-        if not cfg.debug:
+        if not debugging:
             log_startlogging()
         logging.info('version %s starting', config.VERSION)
         # create socket

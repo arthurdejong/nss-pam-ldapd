@@ -20,17 +20,9 @@
 
 import ldap
 
-# these values are defined here
 
-# the name of the program
-program_name = 'pynslcd'
-# the debugging level
-debug = 0
-# whether the --check option was passed
-check = False
 # the number of threads to start
 threads = 5
-
 # the user id nslcd should be run as
 uid = None
 # the group id nslcd should be run as
