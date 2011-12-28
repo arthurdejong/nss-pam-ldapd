@@ -30,20 +30,11 @@ PACKAGE_NAME = '''@PACKAGE_NAME@'''
 # Define to the full name and version of this package.
 PACKAGE_STRING = '''@PACKAGE_STRING@'''
 
-# Define to the one symbol short name of this package.
-PACKAGE_TARNAME = '''@PACKAGE_TARNAME@'''
-
 # Define to the home page for this package.
 PACKAGE_URL = '''@PACKAGE_URL@'''
 
-# Define to the version of this package.
-PACKAGE_VERSION = '''@PACKAGE_VERSION@'''
-
 # Version number of package
 VERSION = '''@VERSION@'''
-
-# Path to bindpw value.
-NSLCD_BINDPW_PATH = '''@NSLCD_BINDPW_PATH@'''
 
 # Path to nslcd configuration file.
 NSLCD_CONF_PATH = '''@NSLCD_CONF_PATH@'''
