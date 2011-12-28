@@ -61,7 +61,7 @@ class PasswdRequest(common.Request):
         # write results
         for name in names:
             if not common.isvalidname(name):
-                print '%s: %s: denied by validnames option' % (dn, self.attmap['uid'])
+                print '%s: %s: denied by validnames option' % (dn, attmap['uid'])
             else:
                 for uid in uids:
                     self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)

@@ -91,7 +91,7 @@ class GroupRequest(common.Request):
         # actually return the results
         for name in names:
             if not common.isvalidname(name):
-                print '%s: %s: denied by validnames option' % (dn, self.attmap['cn'])
+                print '%s: %s: denied by validnames option' % (dn, attmap['cn'])
             else:
                 for gid in gids:
                     self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
@@ -123,13 +123,6 @@ class GroupByMemberRequest(GroupRequest):
 
     action = constants.NSLCD_ACTION_GROUP_BYMEMBER
     wantmembers = False
-
-    def __init__(self, *args, **kwargs):
-        super(GroupByMemberRequest, self).__init__(*args, **kwargs)
-        # set up our own attributes that leave out membership attributes
-        self.attmap = common.Attributes(attmap)
-        del self.attmap['memberUid']
-        del self.attmap['member']
 
     def read_parameters(self, fp):
         memberuid = fp.read_string()
