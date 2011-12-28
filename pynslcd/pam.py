@@ -101,6 +101,10 @@ class PAMAuthenticationRequest(PAMRequest):
             # if the caller is root we will allow the use of rootpwmodpw
             if not parameters['password'] and self.calleruid == 0 and cfg.rootpwmodpw:
                 password = cfg.rootpwmodpw
+            elif parameters['password']:
+                password = parameters['password']
+            else:
+                raise ValueError('password missing')
         else:
             self.validate_request(parameters)
             userdn = parameters['userdn']
