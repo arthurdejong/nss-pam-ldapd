@@ -28,9 +28,6 @@ import constants
 from attmap import Attributes
 
 
-_validname_re = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
-
-
 def isvalidname(name):
     """Checks to see if the specified name seems to be a valid user or group
     name.
@@ -44,14 +41,14 @@ def isvalidname(name):
     The standard defines user names valid if they contain characters from
     the set [A-Za-z0-9._-] where the hyphen should not be used as first
     character. As an extension this test allows some more characters."""
-    return bool(_validname_re.match(name))
+    return bool(cfg.validnames.search(name))
 
 
 def validate_name(name):
     """Checks to see if the specified name seems to be a valid user or group
     name. See isvalidname()."""
-    if not _validname_re.match(name):
-        raise ValueError('%r: invalid user name' % name)
+    if not cfg.validnames.search(name):
+        raise ValueError('%r: denied by validnames option' % name)
 
 
 class Search(object):
@@ -109,6 +106,7 @@ class Search(object):
         # get search results
         filter = self.mk_filter()
         for base in self.bases:
+            print 'SEARCHING %s' % base
             # do the LDAP search
             try:
                 for entry in self.conn.search_s(base, self.scope, filter, self.attributes):

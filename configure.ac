@@ -183,7 +183,6 @@ AC_MSG_RESULT($configfile_checking)
 if test "x$configfile_checking" = "xyes"
 then
   AC_DEFINE(ENABLE_CONFIGFILE_CHECKING,1,[Whether to check configfile options.])
-  AC_SUBST(ENABLE_CONFIGFILE_CHECKING,1)
 fi
 
 # check the name of the configuration file

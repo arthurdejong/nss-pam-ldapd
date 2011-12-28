@@ -216,7 +216,7 @@ def disable_nss_ldap():
 def worker():
     # create a new LDAP session
     #session = myldap_create_session()
-    session = ldap.initialize(cfg.ldap_uri)
+    session = ldap.initialize(cfg.uri)
     # start waiting for incoming connections
     while True:
         # wait for a new connection
@@ -242,6 +242,7 @@ if __name__ == '__main__':
     #    sys.exit(1)
     # read configuration file
     cfg.read(config.NSLCD_CONF_PATH)
+    # FIXME: set tls_cacertdir, tls_cacertfile, tls_randfile, tls_ciphers, tls_cert, tls_key options immediately after parsing config
     # set a default umask for the pidfile and socket
     os.umask(0022)
     # see if someone already locked the pidfile
@@ -266,7 +267,7 @@ if __name__ == '__main__':
                       pidfile=pidfile,
                       signal_map={
                           signal.SIGTERM: 'terminate',
-                          signal.SIGINT:  'terminate',
+                          signal.SIGINT: 'terminate',
                           signal.SIGPIPE: None,
                       })
     # start daemon

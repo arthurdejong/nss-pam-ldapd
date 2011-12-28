@@ -42,9 +42,6 @@ PACKAGE_VERSION = '''@PACKAGE_VERSION@'''
 # Version number of package
 VERSION = '''@VERSION@'''
 
-# Whether to check configfile options.
-ENABLE_CONFIGFILE_CHECKING = '''@ENABLE_CONFIGFILE_CHECKING@'''
-
 # Path to bindpw value.
 NSLCD_BINDPW_PATH = '''@NSLCD_BINDPW_PATH@'''
 
