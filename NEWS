@@ -1,3 +1,20 @@
+changes from 0.8.4 to 0.8.5
+---------------------------
+
+* support larger gecos values
+* reduce loglevel of user not found messages to avoid spamming the logs
+  with useless information (thanks Wakko Warner)
+* other logging improvements
+* explicitly parse numbers as base 10 (thanks Jakub Hrozek)
+* implement FreeBSD group membership NSS function (thanks Tom Judge)
+* fix an issue with detecting the uid of the calling process and log
+  denied shadow requests in debug mode
+* fix a typo in the disconnect logic code (thanks Martin Poole)
+* implement configuration file handling in pynslcd and other pynslcd
+  improvements
+* Debian packaging improvements
+
+
 changes from 0.8.3 to 0.8.4
 ---------------------------
 

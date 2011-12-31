@@ -1,3 +1,211 @@
+2011-12-30 17:41  arthur
+
+	* [r1583] debian/control: fix versioned build dependency on
+	  debhelper
+
+2011-12-28 23:06  arthur
+
+	* [r1582] pynslcd/config.py.in: remove some information from config
+	  that we don't expect to use
+
+2011-12-28 22:52  arthur
+
+	* [r1581] configure.ac, pynslcd/cfg.py, pynslcd/common.py,
+	  pynslcd/config.py.in, pynslcd/group.py, pynslcd/pynslcd.py:
+	  support for reading the configuration file (not all options are
+	  used though)
+
+2011-12-28 22:44  arthur
+
+	* [r1580] pynslcd/cfg.py, pynslcd/pynslcd.py: move the state
+	  variables (from command line) from the configuration to the main
+	  module
+
+2011-12-28 22:29  arthur
+
+	* [r1579] pynslcd/pam.py: fall back to trying to authenticate with
+	  provided password (in case rootpwmodpw is not set or unusable)
+
+2011-12-28 22:10  arthur
+
+	* [r1578] pynslcd/group.py: never request group members for
+	  GroupByMemberRequest
+
+2011-12-28 22:09  arthur
+
+	* [r1577] pynslcd/group.py: instead of modifying attmap, modify
+	  attribute list
+
+2011-12-28 21:29  arthur
+
+	* [r1576] pynslcd/group.py, pynslcd/passwd.py: fix references to
+	  attmap (broken in r1571)
+
+2011-12-28 17:07  arthur
+
+	* [r1575] nslcd/nslcd.c: typo fix in comment
+
+2011-12-27 21:05  arthur
+
+	* [r1574] pynslcd/common.py, pynslcd/group.py, pynslcd/netgroup.py,
+	  pynslcd/passwd.py, pynslcd/shadow.py: make logging more
+	  consistent and remove test bases from shadow and passwd maps
+
+2011-12-27 18:04  arthur
+
+	* [r1573] pynslcd/cfg.py, pynslcd/ether.py, pynslcd/group.py,
+	  pynslcd/netgroup.py, pynslcd/pam.py, pynslcd/passwd.py,
+	  pynslcd/pynslcd.py, pynslcd/shadow.py, pynslcd/tio.py: PEP8 fixes
+
+2011-12-27 17:53  arthur
+
+	* [r1572] debian/copyright: update copyright information
+
+2011-12-12 22:59  arthur
+
+	* [r1571] pynslcd/alias.py, pynslcd/common.py, pynslcd/ether.py,
+	  pynslcd/group.py, pynslcd/host.py, pynslcd/netgroup.py,
+	  pynslcd/network.py, pynslcd/passwd.py, pynslcd/protocol.py,
+	  pynslcd/rpc.py, pynslcd/service.py, pynslcd/shadow.py: define the
+	  search separately from the request
+
+2011-12-12 21:53  arthur
+
+	* [r1570] pynslcd/alias.py, pynslcd/attmap.py, pynslcd/common.py,
+	  pynslcd/ether.py, pynslcd/group.py, pynslcd/host.py,
+	  pynslcd/netgroup.py, pynslcd/network.py, pynslcd/passwd.py,
+	  pynslcd/protocol.py, pynslcd/rpc.py, pynslcd/service.py,
+	  pynslcd/shadow.py: move check of required attributes and other
+	  common tests to the Request.handle_entry() method
+
+2011-12-10 22:17  arthur
+
+	* [r1569] nslcd/cfg.c: properly log failures to lookup DNS SRV
+	  records
+
+2011-12-10 22:17  arthur
+
+	* [r1568] nslcd/nslcd.c: properly handle failures to truncate the
+	  pid file
+
+2011-12-10 21:09  arthur
+
+	* [r1567] debian/nslcd.config: get the first configuration value
+	  instead of the last because tha one is also written
+
+2011-12-10 21:03  arthur
+
+	* [r1566] debian/nslcd.config: fix a deprecated use of head without
+	  the -n option
+
+2011-12-10 20:15  arthur
+
+	* [r1565] debian/rules: enable more hardening options (-fPIE
+	  doesn't work yet because we use -fPIC in some places)
+
+2011-12-10 13:29  arthur
+
+	* [r1564] debian/libnss-ldapd.config, debian/libnss-ldapd.postrm:
+	  ensure that the output of nss_list_configured() is space
+	  separated
+
+2011-12-10 11:45  arthur
+
+	* [r1563] m4/ax_pthread.m4: update macro from autoconf-archive
+
+2011-12-09 08:58  jhrozek
+
+	* [r1560] nslcd/myldap.c: Fix a typo in disconnect logic
+
+2011-12-01 21:43  arthur
+
+	* [r1558] nslcd/nslcd.c: ensure that uid, gid and pid vars are
+	  properly initialised and log denied requests
+
+2011-11-30 21:51  arthur
+
+	* [r1557] nslcd/passwd.c: ensure that /etc/nsswitch.conf is only
+	  loaded once after start-up
+
+2011-11-18 13:24  arthur
+
+	* [r1556] debian/libnss-ldapd.config: simplification of logic to
+	  overwrite list of enabled /etc/nsswitch.conf services in debconf
+	  (based on r1555 of 0.7 branch)
+
+2011-10-12 20:50  arthur
+
+	* [r1554] debian/control: add versioned dependency on libpam for
+	  mutiarch support
+
+2011-10-12 20:07  arthur
+
+	* [r1553] AUTHORS, nss/bsdnss.c: implement group membership NSS
+	  function by Tom Judge (taken from FreeBSD PR 154000)
+
+2011-10-10 19:05  arthur
+
+	* [r1552] debian/rules: keep nslcd running during package upgrades
+
+2011-10-02 11:17  arthur
+
+	* [r1551] nslcd/pam.c: reduce loglevel of user not found messages
+	  to avoid spamming the logs with useless information (thanks Wakko
+	  Warner)
+
+2011-09-30 11:48  jhrozek
+
+	* [r1547] nslcd/cfg.c, nslcd/group.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  Use an explicit base of 10 for strtouid()/strtogid()/strtol()
+	  calls
+
+2011-09-21 18:59  arthur
+
+	* [r1546] debian/nslcd.config: treat the "hard" value for
+	  tls_reqcert as if it was "demand"
+
+2011-09-14 19:13  arthur
+
+	* [r1543] debian/libnss-ldapd.config, debian/libnss-ldapd.postrm,
+	  debian/nslcd.config, debian/nslcd.init, debian/nslcd.postinst:
+	  make whitespace matching consistent in regular expressions
+	  (thanks Nick)
+
+2011-09-09 16:08  arthur
+
+	* [r1542] nslcd/alias.c, nslcd/attmap.c, nslcd/common.c,
+	  nslcd/common.h, nslcd/ether.c, nslcd/group.c, nslcd/host.c,
+	  nslcd/netgroup.c, nslcd/network.c, nslcd/pam.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  make validation log messages consistent
+
+2011-09-09 16:02  arthur
+
+	* [r1541] nslcd/nsswitch.c: add missing include
+
+2011-09-08 20:57  arthur
+
+	* [r1540] nslcd/network.c, nslcd/passwd.c: grow gecos buffer size
+	  and consistency improvements to other buffers
+
+2011-09-08 20:52  arthur
+
+	* [r1539] nslcd/ether.c, nslcd/host.c, nslcd/network.c: give string
+	  representations of addresses more logical names
+
+2011-09-07 20:04  arthur
+
+	* [r1538] debian/copyright, debian/po/sv.po: updated Swedish (sv)
+	  translation of debconf templates by Martin Bagge
+
+2011-09-04 19:19  arthur
+
+	* [r1536] AUTHORS, ChangeLog, NEWS, TODO, configure.ac,
+	  debian/changelog, debian/copyright, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.4 release
+
 2011-09-04 08:48  arthur
 
 	* [r1535] tests/test_getpeercred.c: warn when we couldn't get the
@@ -73,7 +281,7 @@
 
 	* [r1522] AUTHORS, nslcd/myldap.c: pass a statically allocated
 	  callback structure to OpenLDAP because it doesn't make it's own
-	  copy (thanks Jakub Hrozek)
+	  copy (thanks Jakub Hrozek) (fixes a problem in r1490)
 
 2011-08-27 14:48  arthur
 
