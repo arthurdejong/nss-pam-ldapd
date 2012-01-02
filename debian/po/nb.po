@@ -4,20 +4,20 @@
 #
 # Translators:
 #
-# Bjørn Steensrud <bjornst@skogkatt.homelinux.org>, 2010.
+# Bjørn Steensrud <bjornst@skogkatt.homelinux.org>, 2010, 2011, 2012.
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-pam-ldapd 0.6.9\n"
+"Project-Id-Version: nss-pam-ldapd 0.8.4\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2011-08-09 11:04+0200\n"
-"PO-Revision-Date: 2010-08-18 20:24+0200\n"
+"PO-Revision-Date: 2012-01-01 15:17+0100\n"
 "Last-Translator: Bjørn Steensrud <bjornst@skogkatt.homelinux.org>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
 "Language: nb\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Lokalize 1.0\n"
+"X-Generator: Lokalize 1.2\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #. Type: string
@@ -77,25 +77,25 @@ msgstr ""
 #. Choices
 #: ../nslcd.templates:3001
 msgid "none"
-msgstr ""
+msgstr "ingen"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:3001
 msgid "simple"
-msgstr ""
+msgstr "enkel"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:3001
 msgid "SASL"
-msgstr ""
+msgstr "SASL"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:3002
 msgid "LDAP authentication to use:"
-msgstr ""
+msgstr "LDAP-autentisering som skal brukes:"
 
 #. Type: select
 #. Description
@@ -104,6 +104,7 @@ msgid ""
 "Please choose what type of authentication the LDAP database should require "
 "(if any):"
 msgstr ""
+"Velg hvilken type autentisering som LDAP-databasen skal kreve (om noen):"
 
 #. Type: select
 #. Description
@@ -113,6 +114,9 @@ msgid ""
 " * simple: simple bind DN and password authentication;\n"
 " * SASL: any Simple Authentication and Security Layer mechanism."
 msgstr ""
+" * ingen: ingen autentisering,\n"
+" * enkel: enkel autentisering med bind DN og passord,\n"
+" * SASL: en eller annen Simple Authentication and Security Layer-mekanisme."
 
 #. Type: string
 #. Description
@@ -123,12 +127,12 @@ msgstr "LDAP databasebruker:"
 #. Type: string
 #. Description
 #: ../nslcd.templates:4001
-#, fuzzy
-#| msgid "This value should be specified as a DN (distinguished name)."
 msgid ""
 "Enter the name of the account that will be used to log in to the LDAP "
 "database. This value should be specified as a DN (distinguished name)."
-msgstr "Verdien må oppgis som et DN - entydig navn."
+msgstr ""
+"Skriv inn navnet på kontoen som skal brukes til å logge inn til LDAP-"
+"databasen. Verdien må oppgis som et DN - entydig navn."
 
 #. Type: password
 #. Description
@@ -146,17 +150,17 @@ msgstr "Oppgi passordet som vil bli brukt til å logge inn i LDAP-databasen."
 #. Description
 #: ../nslcd.templates:6001
 msgid "SASL mechanism to use:"
-msgstr ""
+msgstr "SASL-mekanisme som skal brukes:"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:6001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Choose the SASL mechanism that will be used to authenticate to the LDAP "
 "database:"
-msgstr "Oppgi passordet som vil bli brukt til å logge inn i LDAP-databasen."
+msgstr ""
+"Velg den SASL-mekanismen som vil bli brukt til å autentisere til LDAP-"
+"databasen:"
 
 #. Type: select
 #. Description
@@ -171,27 +175,35 @@ msgid ""
 " * GSSAPI: used for Kerberos;\n"
 " * OTP: a One Time Password mechanism."
 msgstr ""
+" * auto: auto-forhandling;\n"
+" * LOGIN: frarådes, bruk heller PLAIN;\n"
+" * PLAIN: enkel klartekst passordmekanisme;\n"
+" * NTLM: NT LAN Manager autentiseringsmekanisme;\n"
+" * CRAM-MD5: utfordring-svar basert på HMAC-MD5;\n"
+" * DIGEST-MD5: HTTP digest-kompatibel utfordring-svar mekanisme;\n"
+" * GSSAPI: brukt for Kerberos;\n"
+" * OTP: en mekanisme med engangspassord."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
 msgid "SASL realm:"
-msgstr ""
+msgstr "SASL-område:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the SASL realm that will be used to authenticate to the LDAP database."
-msgstr "Oppgi passordet som vil bli brukt til å logge inn i LDAP-databasen."
+msgstr ""
+"Skriv inn det SASL-området som vil bli brukt til å autentisere til LDAP-"
+"databasen."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
 msgid "The realm is appended to authentication and authorization identities."
-msgstr ""
+msgstr "Området legges til identitetene for autentisering og autorisering."
 
 #. Type: string
 #. Description
@@ -200,22 +212,24 @@ msgid ""
 "For GSSAPI this can be left blank to use information from the Kerberos "
 "credential cache."
 msgstr ""
+"For GSSAPI kan det utelates for å bruke opplysninger fra Kerberos' "
+"mellomlager."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:8001
 msgid "SASL authentication identity:"
-msgstr ""
+msgstr "Identitet for SASL-autentisering:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:8001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the SASL authentication identity that will be used to authenticate to "
 "the LDAP database."
-msgstr "Oppgi passordet som vil bli brukt til å logge inn i LDAP-databasen."
+msgstr ""
+"Skriv inn den SASL-autentiseringsidentiteten som vil bli brukt til å "
+"autentisere til LDAP-databasen."
 
 #. Type: string
 #. Description
@@ -223,38 +237,40 @@ msgstr "Oppgi passordet som vil bli brukt til å logge inn i LDAP-databasen."
 msgid ""
 "This is the login used in LOGIN, PLAIN, CRAM-MD5, and DIGEST-MD5 mechanisms."
 msgstr ""
+"Dette er innloggingsnavnet brukt i mekanismene LOGIN. PLAIN, CRAM-MDS og "
+"DIGEST-MD5."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
 msgid "SASL proxy authorization identity:"
-msgstr ""
+msgstr "Mellomtjener-autorisasjonsidentitet for SASL:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the proxy authorization identity that will be used to authenticate to "
 "the LDAP database."
-msgstr "Oppgi passordet som vil bli brukt til å logge inn i LDAP-databasen."
+msgstr ""
+"Skriv inn den mellomtjener-autoriseringsidentiteten som vil bli brukt til å "
+"autentisere til LDAP-databasen."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
-#, fuzzy
-#| msgid "This value should be specified as a DN (distinguished name)."
 msgid ""
 "This is the object in the name of which the LDAP request is done. This value "
 "should be specified as a DN (distinguished name)."
-msgstr "Verdien må oppgis som et DN - entydig navn."
+msgstr ""
+"LDAP-forespørsel gjøres med navnet til dette objektet. Verdien må oppgis som "
+"et DN - entydig navn."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:10001
 msgid "Cyrus SASL security properties:"
-msgstr ""
+msgstr "Cyrus SASL sikkerhetsegenskaper:"
 
 #. Type: string
 #. Description
@@ -263,18 +279,20 @@ msgid ""
 "Enter the Cyrus SASL security properties. Allowed values are described in "
 "the ldap.conf(5) manual page in the SASL OPTIONS section."
 msgstr ""
+"Skriv inn Cyrus SASL sikkerhetsegenskaper. Tillatte verdier beskrives i man-"
+"sida ldap.config(5) i avsnittet SASL OPTONS."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:11001
 msgid "Kerberos credential cache file path:"
-msgstr ""
+msgstr "Filsti til mellomlager for Kerberos-akkreditiver:"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:11001
 msgid "Enter the GSSAPI/Kerberos credential cache file name that will be used."
-msgstr ""
+msgstr "Skriv inn navnet på GSSAP/Kerberos mellomlagerfil for akkreditiver."
 
 #. Type: boolean
 #. Description
