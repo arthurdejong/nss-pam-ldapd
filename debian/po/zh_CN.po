@@ -2,7 +2,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: nss-pam-ldapd 0.7.9\n"
+"Project-Id-Version: nss-pam-ldapd 0.8.4\n"
 "Report-Msgid-Bugs-To: nss-pam-ldapd@packages.debian.org\n"
 "POT-Creation-Date: 2011-08-09 11:04+0200\n"
 "PO-Revision-Date: \n"
@@ -69,25 +69,25 @@ msgstr ""
 #. Choices
 #: ../nslcd.templates:3001
 msgid "none"
-msgstr ""
+msgstr "none"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:3001
 msgid "simple"
-msgstr ""
+msgstr "simple"
 
 #. Type: select
 #. Choices
 #: ../nslcd.templates:3001
 msgid "SASL"
-msgstr ""
+msgstr "SASL"
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:3002
 msgid "LDAP authentication to use:"
-msgstr ""
+msgstr "LDAP认证方式："
 
 #. Type: select
 #. Description
@@ -95,7 +95,7 @@ msgstr ""
 msgid ""
 "Please choose what type of authentication the LDAP database should require "
 "(if any):"
-msgstr ""
+msgstr "请选择LDAP数据库需要的认证方式（如有）:"
 
 #. Type: select
 #. Description
@@ -105,6 +105,9 @@ msgid ""
 " * simple: simple bind DN and password authentication;\n"
 " * SASL: any Simple Authentication and Security Layer mechanism."
 msgstr ""
+"* none: 没有认证；\n"
+"* simple: 简易的bind DN + 密码认证；\n"
+"* SASL: 使用SASL机制认证。"
 
 #. Type: string
 #. Description
@@ -115,12 +118,12 @@ msgstr "LDAP数据库用户名："
 #. Type: string
 #. Description
 #: ../nslcd.templates:4001
-#, fuzzy
-#| msgid "This value should be specified as a DN (distinguished name)."
 msgid ""
 "Enter the name of the account that will be used to log in to the LDAP "
 "database. This value should be specified as a DN (distinguished name)."
-msgstr "这个值应该设置为一个DN (distinguished name)。"
+msgstr ""
+"请输入登录LDAP数据库的账户名字，这个值应该是LDAP DN (distinguished name)的格"
+"式。"
 
 #. Type: password
 #. Description
@@ -138,17 +141,15 @@ msgstr "输入登录LDAP数据库的的密码："
 #. Description
 #: ../nslcd.templates:6001
 msgid "SASL mechanism to use:"
-msgstr ""
+msgstr "SASL可用机制："
 
 #. Type: select
 #. Description
 #: ../nslcd.templates:6001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Choose the SASL mechanism that will be used to authenticate to the LDAP "
 "database:"
-msgstr "输入登录LDAP数据库的的密码："
+msgstr "请选择连接LDAP数据库的SASL机制："
 
 #. Type: select
 #. Description
@@ -163,27 +164,33 @@ msgid ""
 " * GSSAPI: used for Kerberos;\n"
 " * OTP: a One Time Password mechanism."
 msgstr ""
+" * auto: 自动选择;\n"
+" * LOGIN: 不推荐，建议使用PLAIN;\n"
+" * PLAIN: 明文密码;\n"
+" * NTLM: 使用Windows NTLM方式;\n"
+" * CRAM-MD5: 基于HMAC-MD5发展出来的应答验证方式;\n"
+" * DIGEST-MD5: HTTP Digest兼容的应答验证方式;\n"
+" * GSSAPI: Kerberos方式;\n"
+" * OTP: 一次性密码方式."
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
 msgid "SASL realm:"
-msgstr ""
+msgstr "SASL区域："
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the SASL realm that will be used to authenticate to the LDAP database."
-msgstr "输入登录LDAP数据库的的密码："
+msgstr "输入连接LDAP数据库的SASL区域名："
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:7001
 msgid "The realm is appended to authentication and authorization identities."
-msgstr ""
+msgstr "区域名将会自动加到认证ID信息后."
 
 #. Type: string
 #. Description
@@ -191,62 +198,57 @@ msgstr ""
 msgid ""
 "For GSSAPI this can be left blank to use information from the Kerberos "
 "credential cache."
-msgstr ""
+msgstr "如选用GSSAPI，这里可以留空，那将会自动使用Kerberos缓存的凭证数据。"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:8001
 msgid "SASL authentication identity:"
-msgstr ""
+msgstr "SASL认证信息："
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:8001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the SASL authentication identity that will be used to authenticate to "
 "the LDAP database."
-msgstr "输入登录LDAP数据库的的密码："
+msgstr "输入连接LDAP数据库的SASL认证信息："
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:8001
 msgid ""
 "This is the login used in LOGIN, PLAIN, CRAM-MD5, and DIGEST-MD5 mechanisms."
-msgstr ""
+msgstr "在LOGIN, PLAIN, CRAM-MD5, 和 DIGEST-MD5中使用的登录信息。"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
 msgid "SASL proxy authorization identity:"
-msgstr ""
+msgstr "SASL代理认证信息："
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
-#, fuzzy
-#| msgid "Enter the password that will be used to log in to the LDAP database."
 msgid ""
 "Enter the proxy authorization identity that will be used to authenticate to "
 "the LDAP database."
-msgstr "输入登录LDAP数据库的的密码："
+msgstr "输入登录LDAP数据库的代理认证信息："
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:9001
-#, fuzzy
-#| msgid "This value should be specified as a DN (distinguished name)."
 msgid ""
 "This is the object in the name of which the LDAP request is done. This value "
 "should be specified as a DN (distinguished name)."
-msgstr "这个值应该设置为一个DN (distinguished name)。"
+msgstr ""
+"请输入LDAP请求发起者的名字，这个值应该是LDAP DN (distinguished name)的格式。"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:10001
 msgid "Cyrus SASL security properties:"
-msgstr ""
+msgstr "Cyrus SASL 安全信息："
 
 #. Type: string
 #. Description
@@ -255,18 +257,20 @@ msgid ""
 "Enter the Cyrus SASL security properties. Allowed values are described in "
 "the ldap.conf(5) manual page in the SASL OPTIONS section."
 msgstr ""
+"输入 Cyrus SASL安全信息。可以使用的值请参考ldap.conf(5)的手册中SASL OPTIONS段"
+"的说明。"
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:11001
 msgid "Kerberos credential cache file path:"
-msgstr ""
+msgstr "Kerberos 凭证缓存文件的目录："
 
 #. Type: string
 #. Description
 #: ../nslcd.templates:11001
 msgid "Enter the GSSAPI/Kerberos credential cache file name that will be used."
-msgstr ""
+msgstr "输入要使用的GSSAPI/Kerberos凭证缓存文件名。"
 
 #. Type: boolean
 #. Description
