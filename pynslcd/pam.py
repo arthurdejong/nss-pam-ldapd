@@ -1,7 +1,7 @@
 
 # pam.py - functions authentication, authorisation and session handling
 #
-# Copyright (C) 2010, 2011 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,17 +19,18 @@
 # 02110-1301 USA
 
 import logging
+
 import ldap
 
-import constants
-import common
 import cfg
+import common
+import constants
 import passwd
 
 
 def try_bind(userdn, password):
     # open a new connection
-    conn = ldap.initialize(cfg.ldap_uri)
+    conn = ldap.initialize(cfg.uri)
     # bind using the specified credentials
     conn.simple_bind_s(userdn, password)
     # perform search for own object (just to do any kind of search)
@@ -60,7 +61,7 @@ class PAMRequest(common.Request):
                 # get the username from the uid attribute
                 values = myldap_get_values(entry, passwd.attmap['uid'])
                 if not values or not values[0]:
-                    logging.warn('%s: is missing a %s attribute', dn, passwd.attmap['uid'])
+                    logging.warning('%s: is missing a %s attribute', dn, passwd.attmap['uid'])
                 value = values[0]
             # check the username
             if value and not common.isvalidname(value):

@@ -1,7 +1,7 @@
 
 # common.py - functions that are used by different modules
 #
-# Copyright (C) 2010, 2011 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,14 +18,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import re
-import ldap
-import ldap.dn
+import logging
 import sys
 
+import ldap
+import ldap.dn
+
+from attmap import Attributes
 import cfg
 import constants
-from attmap import Attributes
 
 
 def isvalidname(name):
@@ -106,7 +107,7 @@ class Search(object):
         # get search results
         filter = self.mk_filter()
         for base in self.bases:
-            print 'SEARCHING %s' % base
+            logging.debug('SEARCHING %s', base)
             # do the LDAP search
             try:
                 for entry in self.conn.search_s(base, self.scope, filter, self.attributes):
@@ -118,12 +119,15 @@ class Search(object):
                 # FIXME: log message
                 pass
 
+    def escape(self, value):
+        """Escape the provided value so it may be used in a search filter."""
+        return ldap.filter.escape_filter_chars(str(value))
+
     def mk_filter(self):
         """Return the active search filter (based on the read parameters)."""
         if self.parameters:
             return '(&%s(%s))' % (self.filter,
-                ')('.join('%s=%s' % (self.attmap[attribute],
-                                     ldap.filter.escape_filter_chars(str(value)))
+                ')('.join('%s=%s' % (self.attmap[attribute], self.escape(value))
                           for attribute, value in self.parameters.items()))
         return self.filter
 
@@ -143,21 +147,19 @@ class Search(object):
         # check that these attributes have at least one value
         for attr in self.required:
             if not attributes.get(attr, None):
-                print '%s: %s: missing' % (dn, self.attmap[attr])
+                logging.warning('%s: %s: missing', dn, self.attmap[attr])
                 return
         # check that requested attribute is present (case sensitive)
         for attr in self.case_sensitive:
             value = self.parameters.get(attr, None)
             if value and str(value) not in attributes[attr]:
-                # TODO: log at debug level, this can happen in normal cases
-                print '%s: %s: does not contain %r value' % (dn, self.attmap[attr], value)
+                logging.debug('%s: %s: does not contain %r value', dn, self.attmap[attr], value)
                 return  # not found, skip entry
         # check that requested attribute is present (case insensitive)
         for attr in self.case_insensitive:
             value = self.parameters.get(attr, None)
             if value and str(value).lower() not in (x.lower() for x in attributes[attr]):
-                # TODO: log at debug level, this can happen in normal cases
-                print '%s: %s: does not contain %r value' % (dn, self.attmap[attr], value)
+                logging.debug('%s: %s: does not contain %r value', dn, self.attmap[attr], value)
                 return  # not found, skip entry
         # limit attribute values to requested value
         for attr in self.limit_attributes:

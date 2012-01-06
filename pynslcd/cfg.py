@@ -1,7 +1,7 @@
 
 # cfg.py - module for accessing configuration information
 #
-# Copyright (C) 2010 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import logging
 import re
 import sys
 
@@ -207,7 +208,6 @@ def read(filename):
                          '|'.join(_scope_options.keys())),
                      line, re.IGNORECASE)
         if m:
-            keyword = m.group('keyword').lower()
             mod = maps[str(m.group('map')).lower()]
             mod.scope = _scope_options[m.group('keyword').lower()]
             continue
@@ -234,7 +234,6 @@ def read(filename):
         m = re.match('nss_initgroups_ignoreusers\s+(?P<value>\S.*)',
                      line, re.IGNORECASE)
         if m:
-            global nss_initgroups_ignoreusers
             users = m.group('value')
             if users.lower() == 'alllocal':
                 # get all users known to the system currently (since nslcd isn't yet
@@ -283,4 +282,4 @@ def read(filename):
     # dump config (debugging code)
     for k, v in globals().items():
         if not k.startswith('_'):
-            print '%s=%r' % (k, v)
+            logging.debug('%s=%r', k, v)

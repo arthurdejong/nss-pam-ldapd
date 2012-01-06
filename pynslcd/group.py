@@ -1,7 +1,7 @@
 
 # group.py - group entry lookup routines
 #
-# Copyright (C) 2010, 2011 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,11 +19,10 @@
 # 02110-1301 USA
 
 import logging
-import ldap.filter
 
-import constants
-import common
 from passwd import dn2uid, uid2dn
+import common
+import constants
 
 
 def clean(lst):
@@ -60,8 +59,8 @@ class Search(common.Search):
             dn = uid2dn(self.conn, memberuid)
             if dn:
                 return '(&%s(|(%s=%s)(%s=%s)))' % (self.filter,
-                          attmap['memberUid'], ldap.filter.escape_filter_chars(memberuid),
-                          attmap['member'], ldap.filter.escape_filter_chars(dn))
+                          attmap['memberUid'], self.escape(memberuid),
+                          attmap['member'], self.escape(dn))
         return super(Search, self).mk_filter()
 
 
@@ -91,7 +90,7 @@ class GroupRequest(common.Request):
         # actually return the results
         for name in names:
             if not common.isvalidname(name):
-                print '%s: %s: denied by validnames option' % (dn, attmap['cn'])
+                logging.warning('%s: %s: denied by validnames option', dn, attmap['cn'])
             else:
                 for gid in gids:
                     self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)

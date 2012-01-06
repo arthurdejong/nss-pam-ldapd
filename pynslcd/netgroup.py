@@ -1,7 +1,7 @@
 
 # netgroup.py - lookup functions for netgroups
 #
-# Copyright (C) 2011 Arthur de Jong
+# Copyright (C) 2011, 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,8 @@
 import logging
 import re
 
-import constants
 import common
+import constants
 
 
 _netgroup_triple_re = re.compile(r'^\s*\(\s*(?P<host>.*)\s*,\s*(?P<user>.*)\s*,\s*(?P<domain>.*)\s*\)\s*$')
@@ -47,7 +47,7 @@ class NetgroupRequest(common.Request):
         for triple in attributes['nisNetgroupTriple']:
             m = _netgroup_triple_re.match(triple)
             if not m:
-                print '%s: %s: invalid value: %r' % (dn, attmap['nisNetgroupTriple'], triple)
+                logging.warning('%s: %s: invalid value: %r', dn, attmap['nisNetgroupTriple'], triple)
             else:
                 self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
                 self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_TRIPLE)

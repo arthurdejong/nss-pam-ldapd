@@ -2,7 +2,7 @@
 
 # pynslcd.py - main daemon module
 #
-# Copyright (C) 2010, 2011 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,22 +19,23 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import os
-import sys
 import daemon
-import mypidfile
-import threading
 import logging
 import logging.handlers
+import os
 import signal
+import sys
+import syslog
+import threading
+
 import ldap
 
-import constants  # from nslcd.h
-import config     # from configure
+from tio import TIOStream
 import cfg        # from nslcd.conf
 import common
-
-from tio import TIOStream
+import config     # from configure
+import constants  # from nslcd.h
+import mypidfile
 
 
 # the name of the program
@@ -47,36 +48,51 @@ debugging = 0
 checkonly = False
 
 
-# configure logging
 class MyFormatter(logging.Formatter):
+
     def format(self, record):
-        msg = logging.Formatter.format(self, record)
+        msg = super(MyFormatter, self).format(record)
         if record.levelno == logging.DEBUG:
             msg = 'DEBUG: %s' % msg
         return msg
-#logging.basicConfig(level=logging.INFO)
-# , format='%(message)s'
+
+
+class MySysLogHandler(logging.Handler):
+
+    mapping = {
+        logging.DEBUG: syslog.LOG_DEBUG,
+        logging.INFO: syslog.LOG_INFO,
+        logging.WARNING: syslog.LOG_WARNING,
+        logging.ERROR: syslog.LOG_ERR,
+        logging.CRITICAL: syslog.LOG_CRIT,
+    }
+
+    def __init__(self):
+        super(MySysLogHandler, self).__init__()
+        syslog.openlog(program_name, syslog.LOG_PID, syslog.LOG_DAEMON)
+
+    def emit(self, record):
+        priority = self.mapping.get(record.levelno, syslog.LOG_WARNING)
+        msg = self.format(record)
+        for l in msg.splitlines():
+            syslog.syslog(priority, l)
+
+
+# configure logging
 formatter = MyFormatter('%(message)s')
 stderrhandler = logging.StreamHandler(sys.stderr)
 stderrhandler.setFormatter(formatter)
-##sysloghandler = logging.handlers.SysLogHandler(address='/dev/log')
-##sysloghandler.setFormatter(formatter)
-#logging.getLogger().setFormatter(MyFormatter())
+sysloghandler = MySysLogHandler()
+sysloghandler.setFormatter(formatter)
 logging.getLogger().addHandler(stderrhandler)
-
-#logger = logging.getLogger()
-#logger.setLevel(logging.INFO)
-#syslog = logging.handlers.SysLogHandler(address='/dev/log')
-#formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
-#syslog.setFormatter(formatter)
-#logger.addHandler(syslog)
+logging.getLogger().setLevel(logging.INFO)
 
 
 def display_version(fp):
     fp.write('%(PACKAGE_STRING)s\n'
              'Written by Arthur de Jong.\n'
              '\n'
-             'Copyright (C) 2010, 2011 Arthur de Jong\n'
+             'Copyright (C) 2010-2012 Arthur de Jong\n'
              'This is free software; see the source for copying conditions.  There is NO\n'
              'warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n'
              % {'PACKAGE_STRING': config.PACKAGE_STRING, })
@@ -198,7 +214,7 @@ def acceptconnection(session):
         try:
             handler = handlers[action]
         except KeyError:
-            logging.warn('invalid action id: %r', action)
+            logging.warning('invalid action id: %r', action)
             return
         handler(fp, session, uid)()
     finally:
@@ -214,14 +230,13 @@ def disable_nss_ldap():
 
 
 def worker():
-    # create a new LDAP session
-    #session = myldap_create_session()
     session = ldap.initialize(cfg.uri)
-    # start waiting for incoming connections
     while True:
-        # wait for a new connection
-        acceptconnection(session)
-        # FIXME: handle exceptions
+        try:
+            acceptconnection(session)
+        except:
+            logging.exception('exception in worker')
+            # ignore all exceptions, just keep going
 
 
 if __name__ == '__main__':
@@ -237,7 +252,7 @@ if __name__ == '__main__':
     # set log level
     if debugging:
         logging.getLogger().setLevel(logging.DEBUG)
-    # FIXME: implement
+    # TODO: implement
     #if myldap_set_debuglevel(cfg.debug) != LDAP_SUCCESS:
     #    sys.exit(1)
     # read configuration file
@@ -272,36 +287,40 @@ if __name__ == '__main__':
                       })
     # start daemon
     with daemon:
-        # start normal logging
+        # start normal logging to syslog
         if not debugging:
-            log_startlogging()
+            logging.getLogger().addHandler(sysloghandler)
         logging.info('version %s starting', config.VERSION)
-        # create socket
-        nslcd_serversocket = create_socket()
-        # drop all supplemental groups
         try:
-            os.setgroups(())
-        except OSError, e:
-            logging.warn('cannot setgroups(()) (ignored): %s', e)
-        # change to nslcd gid
-        if cfg.gid is not None:
-            import grp
-            os.setgid(grp.getgrnam(cfg.gid).gr_gid)
-        # change to nslcd uid
-        if cfg.uid is not None:
-            import pwd
-            u = pwd.getpwnam(cfg.uid)
-            os.setuid(u.pw_uid)
-            os.environ['HOME'] = u.pw_dir
-        logging.info('accepting connections')
-        # start worker threads
-        threads = []
-        for i in range(cfg.threads):
-            thread = threading.Thread(target=worker, name='thread%d' % i)
-            thread.setDaemon(True)
-            thread.start()
-            logging.debug('started thread %s', thread.getName())
-            threads.append(thread)
-        # wait for all threads to die
-        for thread in threads:
-            thread.join(10000)
+            # create socket
+            nslcd_serversocket = create_socket()
+            # drop all supplemental groups
+            try:
+                os.setgroups(())
+            except OSError, e:
+                logging.warning('cannot setgroups(()) (ignored): %s', e)
+            # change to nslcd gid
+            if cfg.gid is not None:
+                import grp
+                os.setgid(grp.getgrnam(cfg.gid).gr_gid)
+            # change to nslcd uid
+            if cfg.uid is not None:
+                import pwd
+                u = pwd.getpwnam(cfg.uid)
+                os.setuid(u.pw_uid)
+                os.environ['HOME'] = u.pw_dir
+            logging.info('accepting connections')
+            # start worker threads
+            threads = []
+            for i in range(cfg.threads):
+                thread = threading.Thread(target=worker, name='thread%d' % i)
+                thread.setDaemon(True)
+                thread.start()
+                logging.debug('started thread %s', thread.getName())
+                threads.append(thread)
+            # wait for all threads to die
+            for thread in threads:
+                thread.join(10000)
+        except:
+            logging.exception('main loop exit')
+            # no need to re-raise since we are exiting anyway

@@ -1,7 +1,7 @@
 
 # passwd.py - lookup functions for user account information
 #
-# Copyright (C) 2010, 2011 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import ldap
-import ldap.filter
+import logging
 
-import constants
 import common
+import constants
 
 
 attmap = common.Attributes(uid='uid',
@@ -61,7 +60,7 @@ class PasswdRequest(common.Request):
         # write results
         for name in names:
             if not common.isvalidname(name):
-                print '%s: %s: denied by validnames option' % (dn, attmap['uid'])
+                logging.warning('%s: %s: denied by validnames option', dn, attmap['uid'])
             else:
                 for uid in uids:
                     self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
