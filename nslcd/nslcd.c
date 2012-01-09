@@ -472,10 +472,12 @@ static int is_locked(const char* filename)
     }
     if (lockf(fd,F_TEST,0)<0)
     {
-      close(fd);
+      if (close(fd))
+        log_log(LOG_WARNING,"problem closing fd: %s",strerror(errno));
       return -1;
     }
-    close(fd);
+    if (close(fd))
+      log_log(LOG_WARNING,"problem closing fd: %s",strerror(errno));
   }
   return 0;
 }
