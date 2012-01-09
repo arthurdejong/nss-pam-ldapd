@@ -118,8 +118,11 @@ static void update_username(MYLDAP_ENTRY *entry,char *username,size_t username_l
     /* get the username from the uid attribute */
     values=myldap_get_values(entry,attmap_passwd_uid);
     if ((values==NULL)||(values[0]==NULL))
+    {
       log_log(LOG_WARNING,"%s: %s: missing",
                           myldap_get_dn(entry),attmap_passwd_uid);
+      return;
+    }
     value=values[0];
   }
   /* check the username */
