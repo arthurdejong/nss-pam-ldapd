@@ -51,6 +51,7 @@ int mysnprintf(char *buffer,size_t buflen,const char *format, ...)
   /* do snprintf */
   va_start(ap,format);
   res=vsnprintf(buffer,buflen,format,ap);
+  va_end(ap);
   /* NULL-terminate the string just to be on the safe side */
   buffer[buflen-1]='\0';
   /* check if the string was completely written */
