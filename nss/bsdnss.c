@@ -165,7 +165,7 @@ int __gr_addgid(gid_t gid,gid_t *groups,int maxgrp,int *groupc)
   return ret;
 }
 
-static int __freebsd_getgroupmembership(void *retval,void *mdata,va_list ap)
+int __freebsd_getgroupmembership(void *retval,void *mdata,va_list ap)
 {
   int err;
   nss_status_t s;
@@ -194,7 +194,7 @@ static int __freebsd_getgroupmembership(void *retval,void *mdata,va_list ap)
   if (s==NSS_STATUS_SUCCESS)
   {
     for (i=0;i<lstart;i++)
-      __gr_addgid(tmpgroups[i],groups,maxgrp,grpcnt)
+      __gr_addgid(tmpgroups[i],groups,maxgrp,grpcnt);
     s=NSS_STATUS_NOTFOUND;
   }
   free(tmpgroups);
