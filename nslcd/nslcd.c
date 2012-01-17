@@ -314,7 +314,7 @@ static int create_socket(const char *filename)
   strncpy(addr.sun_path,filename,sizeof(addr.sun_path));
   addr.sun_path[sizeof(addr.sun_path)-1]='\0';
   /* bind to the named socket */
-  if (bind(sock,(struct sockaddr *)&addr,(sizeof(addr.sun_family)+strlen(addr.sun_path))))
+  if (bind(sock,(struct sockaddr *)&addr,SUN_LEN(&addr)))
   {
     log_log(LOG_ERR,"bind() to %s failed: %s",filename,strerror(errno));
     if (close(sock))
