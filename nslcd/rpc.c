@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -144,10 +144,17 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
     log_log(LOG_WARNING,"rpc entry %s contains multiple %s values",
                         myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
   }
+  errno=0;
   number=(int)strtol(numbers[0],&tmp,0);
   if ((*(numbers[0])=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"rpc entry %s contains non-numeric %s value",
+                        myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
+    return 0;
+  }
+  else if (errno!=0)
+  {
+    log_log(LOG_WARNING,"rpc entry %s contains too large %s value",
                         myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
     return 0;
   }

@@ -3,7 +3,7 @@
    This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -93,6 +93,37 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid);
 
 /* transforms the uid into a DN by doing an LDAP lookup */
 MUST_USE char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen);
+
+/* provide strtouid() function alias */
+#if SIZEOF_UID_T == SIZEOF_UNSIGNED_LONG_INT
+#define strtouid (uid_t)strtoul
+#elif SIZEOF_UID_T == SIZEOF_UNSIGNED_LONG_LONG_INT
+#define strtouid (uid_t)strtoull
+#elif SIZEOF_UID_T == SIZEOF_UNSIGNED_INT
+#define WANT_STRTOUI 1
+#define strtouid (uid_t)strtoui
+#else
+#error unable to find implementation for strtouid()
+#endif
+
+/* provide strtouid() function alias */
+#if SIZEOF_GID_T == SIZEOF_UNSIGNED_LONG_INT
+#define strtogid (gid_t)strtoul
+#elif SIZEOF_GID_T == SIZEOF_UNSIGNED_LONG_LONG_INT
+#define strtogid (gid_t)strtoull
+#elif SIZEOF_GID_T == SIZEOF_UNSIGNED_INT
+#ifndef WANT_STRTOUI
+#define WANT_STRTOUI 1
+#endif
+#define strtogid (uid_t)strtoui
+#else
+#error unable to find implementation for strtogid()
+#endif
+
+#ifdef WANT_STRTOUI
+/* provide a strtoui() if it is needed */
+unsigned int strtoui(const char *nptr,char **endptr,int base);
+#endif /* WANT_STRTOUI */
 
 /* these are the functions for initialising the database specific
    modules */
