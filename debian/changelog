@@ -1,3 +1,13 @@
+nss-pam-ldapd (0.7.15+squeeze1) stable; urgency=low
+
+  * fix an issue where changes in /etc/nsswitch.conf were not correctly
+    picked up and could lead to lookups being disabled on upgrade
+    (closes: #645599)
+  * fix an issue with detecting the uid of the calling process
+  * fix a problem in the disconnect logic code
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 20 Jan 2012 15:30:00 +0100
+
 nss-pam-ldapd (0.7.15) stable; urgency=low
 
   * in debconf, treat the "hard" value for tls_reqcert as if it was "demand"
