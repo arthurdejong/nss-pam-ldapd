@@ -272,7 +272,8 @@ if __name__ == '__main__':
             sys.exit(1)
     # normal check for pidfile locked
     if pidfile.is_locked():
-        logging.error('daemon may already be active, cannot acquire lock (%s)', config.NSLCD_PIDFILE)
+        logging.error('daemon may already be active, cannot acquire lock (%s)',
+                      config.NSLCD_PIDFILE)
         sys.exit(1)
     # daemonize
     if debugging:
