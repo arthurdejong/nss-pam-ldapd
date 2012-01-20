@@ -324,7 +324,7 @@ static int create_socket(const char *filename)
   /* close the file descriptor on exit */
   if (fcntl(sock,F_SETFD,FD_CLOEXEC)<0)
   {
-    log_log(LOG_ERR,"fctnl(F_SETFL,FD_CLOEXEC) failed: %s",strerror(errno));
+    log_log(LOG_ERR,"fctnl(F_SETFL,FD_CLOEXEC) on %s failed: %s",filename,strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     exit(EXIT_FAILURE);
@@ -336,7 +336,7 @@ static int create_socket(const char *filename)
      http://lkml.org/lkml/2005/5/16/11 */
   if (chmod(filename,(mode_t)0666))
   {
-    log_log(LOG_ERR,"chmod(0666) failed: %s",strerror(errno));
+    log_log(LOG_ERR,"chmod(0666) of %s failed: %s",filename,strerror(errno));
     if (close(sock))
       log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
     exit(EXIT_FAILURE);
@@ -600,7 +600,7 @@ static void *worker(void UNUSED(*arg))
         log_log(LOG_WARNING,"problem closing socket: %s",strerror(errno));
       continue;
     }
-    /* indicate new connection to logging module (genrates unique id) */
+    /* indicate new connection to logging module (generates unique id) */
     log_newsession();
     /* handle the connection */
     handleconnection(csock,session);
