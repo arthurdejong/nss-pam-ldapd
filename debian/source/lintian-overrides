@@ -1,3 +1,0 @@
-# we are building with multiarch support which requires a compatibility level
-# that is still open for development
-source: package-needs-versioned-debhelper-build-depends 9

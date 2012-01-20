@@ -1,6 +1,0 @@
-# we ship a shared library that is used for the NSS system but providing
-# symbols files is no use because nobody should directly link to the library
-libnss-ldapd: no-symbols-control-file lib/*/libnss_ldap.so.2
-# since the shared library shouldn't be publically used the SONAME is only
-# used for internal purposes
-libnss-ldapd: package-name-doesnt-match-sonames libnss-ldap2
