@@ -31,38 +31,8 @@ endif
 
 SUBDIRS = compat common $(MAYBE_NSS) $(MAYBE_PAM) $(ENABLE_NSLCD) man tests
 
-DEBIAN_FILES = debian/changelog debian/compat debian/control \
-               debian/copyright debian/rules debian/NEWS \
-               debian/source/format \
-               debian/nslcd.conffile \
-               debian/nslcd.config \
-               debian/nslcd.default \
-               debian/nslcd.docs \
-               debian/nslcd.examples \
-               debian/nslcd.init \
-               debian/nslcd.install \
-               debian/nslcd.manpages \
-               debian/nslcd.postinst \
-               debian/nslcd.postrm \
-               debian/nslcd.templates \
-               debian/libnss-ldapd.config \
-               debian/libnss-ldapd.install \
-               debian/libnss-ldapd.lintian-overrides \
-               debian/libnss-ldapd.postinst \
-               debian/libnss-ldapd.postrm \
-               debian/libnss-ldapd.templates \
-               debian/libpam-ldapd.install \
-               debian/libpam-ldapd.lintian-overrides \
-               debian/libpam-ldapd.manpages \
-               debian/libpam-ldapd.pam-auth-update \
-               debian/libpam-ldapd.postinst \
-               debian/libpam-ldapd.prerm \
-               debian/libpam-ldapd.templates \
-               debian/po/POTFILES.in debian/po/templates.pot \
-               $(wildcard debian/po/*.po)
-
 EXTRA_DIST = nslcd.conf nslcd.h $(wildcard ChangeLog-20??) \
-             $(wildcard m4/*.m4) HACKING $(DEBIAN_FILES)
+             $(wildcard m4/*.m4) HACKING
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-warnings
 
@@ -82,14 +52,6 @@ install-nslcd_conf:
 	fi
 uninstall-nslcd_conf:
 	-rm -f $(DESTDIR)$(NSLCD_CONF_PATH)
-
-# target for easily creating a Debian package
-# the find is an ugly hack to fix a bug if being built on an nfs filesystem
-deb: distdir
-	find $(distdir) -type d | xargs touch
-	cd $(distdir) && \
-	  debuild
-	rm -rf $(distdir)
 
 # target for generating the ChangeLog file
 changelog:

@@ -1,5 +1,0 @@
-# we ship a shared library that is used for the NSS system
-# providing shlibs or symbols files is no use because nobody
-# should directly link to our library
-libnss-ldapd: no-shlibs-control-file lib/libnss_ldap.so.2
-libnss-ldapd: no-symbols-control-file lib/libnss_ldap.so.2
