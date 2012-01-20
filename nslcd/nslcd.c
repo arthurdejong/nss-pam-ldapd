@@ -357,9 +357,9 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
   TFILE *fp;
   int32_t action;
   struct timeval readtimeout,writetimeout;
-  uid_t uid;
-  gid_t gid;
-  pid_t pid;
+  uid_t uid=(uid_t)-1;
+  gid_t gid=(gid_t)-1;
+  pid_t pid=(pid_t)-1;
   /* indicate new connection to logging module (genrates unique id) */
   log_newsession();
   /* log connection */
