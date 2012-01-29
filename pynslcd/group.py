@@ -66,8 +66,6 @@ class Search(common.Search):
 
 class GroupRequest(common.Request):
 
-    wantmembers = True
-
     def write(self, name, passwd, gid, members):
         self.fp.write_string(name)
         self.fp.write_string(passwd)
@@ -83,16 +81,15 @@ class GroupRequest(common.Request):
         gids = [int(x) for x in attributes['gidNumber']]
         # build member list
         members = set()
-        if self.wantmembers:
-            # add the memberUid values
-            for member in clean(attributes['memberUid']):
-                if common.isvalidname(member):
-                    members.add(member)
-            # translate and add the member values
-            for memberdn in clean(attributes['member']):
-                member = dn2uid(self.conn, memberdn)
-                if member and common.isvalidname(member):
-                    members.add(member)
+        # add the memberUid values
+        for member in clean(attributes['memberUid']):
+            if common.isvalidname(member):
+                members.add(member)
+        # translate and add the member values
+        for memberdn in clean(attributes['member']):
+            member = dn2uid(self.conn, memberdn)
+            if member and common.isvalidname(member):
+                members.add(member)
         # actually return the results
         for name in names:
             if not common.isvalidname(name):
@@ -124,7 +121,6 @@ class GroupByGidRequest(GroupRequest):
 class GroupByMemberRequest(GroupRequest):
 
     action = constants.NSLCD_ACTION_GROUP_BYMEMBER
-    wantmembers = False
 
     def read_parameters(self, fp):
         memberuid = fp.read_string()
