@@ -68,7 +68,13 @@ class GroupRequest(common.Request):
 
     wantmembers = True
 
-    def write(self, dn, attributes, parameters):
+    def write(self, name, passwd, gid, members):
+        self.fp.write_string(name)
+        self.fp.write_string(passwd)
+        self.fp.write_gid_t(gid)
+        self.fp.write_stringlist(members)
+
+    def convert(self, dn, attributes, parameters):
         # get group names and check against requested group name
         names = attributes['cn']
         # get group group password
@@ -90,14 +96,11 @@ class GroupRequest(common.Request):
         # actually return the results
         for name in names:
             if not common.isvalidname(name):
-                logging.warning('%s: %s: denied by validnames option', dn, attmap['cn'])
+                logging.warning('%s: %s: denied by validnames option', dn,
+                                attmap['cn'])
             else:
                 for gid in gids:
-                    self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-                    self.fp.write_string(name)
-                    self.fp.write_string(passwd)
-                    self.fp.write_gid_t(gid)
-                    self.fp.write_stringlist(members)
+                    yield (name, passwd, gid, members)
 
 
 class GroupByNameRequest(GroupRequest):

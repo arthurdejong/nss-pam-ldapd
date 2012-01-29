@@ -18,8 +18,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import constants
 import common
+import constants
 
 
 attmap = common.Attributes(cn='cn', oncRpcNumber='oncRpcNumber')
@@ -35,16 +35,14 @@ class Search(common.Search):
 
 class RpcRequest(common.Request):
 
-    def write(self, dn, attributes, parameters):
-        # get values
-        names = attributes['cn']
-        name = names.pop(0)
-        number = int(attributes['oncRpcNumber'][0])
-        # write result
-        self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+    def write(self, name, aliases, number):
         self.fp.write_string(name)
-        self.fp.write_stringlist(names)
+        self.fp.write_stringlist(aliases)
         self.fp.write_int32(number)
+
+    def convert(self, dn, attributes, parameters):
+        names = attributes['cn']
+        yield (names[0], names[1:], int(attributes['oncRpcNumber'][0]))
 
 
 class RpcByNameRequest(RpcRequest):

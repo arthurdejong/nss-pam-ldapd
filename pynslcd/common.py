@@ -101,14 +101,13 @@ class Search(object):
         self.attributes = attributes or self.attmap.attributes()
 
     def __iter__(self):
-        return self()
+        return self.items()
 
-    def __call__(self):
-        # get search results
+    def items(self):
+        """Return the results from the search."""
         filter = self.mk_filter()
         for base in self.bases:
             logging.debug('SEARCHING %s', base)
-            # do the LDAP search
             try:
                 for entry in self.conn.search_s(base, self.scope, filter, self.attributes):
                     if entry[0]:
@@ -198,13 +197,15 @@ class Request(object):
         """This method handles the request based on the parameters read
         with read_parameters()."""
         for dn, attributes in self.search(conn=self.conn, parameters=parameters):
-            self.write(dn, attributes, parameters)
+            for values in self.convert(dn, attributes, parameters):
+                self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+                self.write(*values)
         # write the final result code
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 
     def __call__(self):
         parameters = self.read_parameters(self.fp) or {}
-        # TODO: log call with parameters
+        logging.debug('%s(%r)', self.__class__.__name__, parameters)
         self.fp.write_int32(constants.NSLCD_VERSION)
         self.fp.write_int32(self.action)
         self.handle_request(parameters)

@@ -45,8 +45,16 @@ class Search(common.Search):
 
 class PasswdRequest(common.Request):
 
-    def write(self, dn, attributes, parameters):
-        # get values
+    def write(self, name, passwd, uid, gid, gecos, home, shell):
+        self.fp.write_string(name)
+        self.fp.write_string(passwd)
+        self.fp.write_uid_t(uid)
+        self.fp.write_gid_t(gid)
+        self.fp.write_string(gecos)
+        self.fp.write_string(home)
+        self.fp.write_string(shell)
+
+    def convert(self, dn, attributes, parameters):
         names = attributes['uid']
         if 'shadowAccount' in attributes['objectClass']:
             passwd = 'x'
@@ -57,20 +65,12 @@ class PasswdRequest(common.Request):
         gecos = attributes['gecos'][0]
         home = attributes['homeDirectory'][0]
         shell = attributes['loginShell'][0]
-        # write results
         for name in names:
             if not common.isvalidname(name):
                 logging.warning('%s: %s: denied by validnames option', dn, attmap['uid'])
             else:
                 for uid in uids:
-                    self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-                    self.fp.write_string(name)
-                    self.fp.write_string(passwd)
-                    self.fp.write_uid_t(uid)
-                    self.fp.write_gid_t(gid)
-                    self.fp.write_string(gecos)
-                    self.fp.write_string(home)
-                    self.fp.write_string(shell)
+                    yield (name, passwd, uid, gid, gecos, home, shell)
 
 
 class PasswdByNameRequest(PasswdRequest):

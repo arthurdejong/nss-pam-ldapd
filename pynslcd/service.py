@@ -1,7 +1,7 @@
 
 # service.py - service entry lookup routines
 #
-# Copyright (C) 2011 Arthur de Jong
+# Copyright (C) 2011, 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import logging
 import ldap.filter
+import logging
 
-import constants
 import common
+import constants
 
 
 attmap = common.Attributes(cn='cn',
@@ -41,19 +41,18 @@ class Search(common.Search):
 
 class ServiceRequest(common.Request):
 
-    def write(self, dn, attributes, parameters):
-        # get values
+    def write(self, name, aliases, port, protocol):
+        self.fp.write_string(name)
+        self.fp.write_stringlist(aliases)
+        self.fp.write_int32(port)
+        self.fp.write_string(protocol)
+
+    def convert(self, dn, attributes, parameters):
         names = attributes['cn']
-        name = names.pop(0)
         port = int(attributes['ipServicePort'][0])
         protocols = attributes['ipServiceProtocol']
-        # write result
         for protocol in protocols:
-            self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-            self.fp.write_string(name)
-            self.fp.write_stringlist(names)
-            self.fp.write_int32(port)
-            self.fp.write_string(protocol)
+            yield (names[0], names[1:], port, protocol)
 
 
 class ServiceByNameRequest(ServiceRequest):

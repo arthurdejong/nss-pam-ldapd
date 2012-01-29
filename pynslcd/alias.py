@@ -35,15 +35,15 @@ class Search(common.Search):
 
 class AliasRequest(common.Request):
 
-    def write(self, dn, attributes, parameters):
-        # get values
+    def write(self, name, members):
+        self.fp.write_string(name)
+        self.fp.write_stringlist(members)
+
+    def convert(self, dn, attributes, parameters):
         names = attributes['cn']
         members = attributes['rfc822MailMember']
-        # write results
         for name in names:
-            self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-            self.fp.write_string(name)
-            self.fp.write_stringlist(members)
+            yield (name, members)
 
 
 class AliasByNameRequest(AliasRequest):

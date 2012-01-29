@@ -35,16 +35,14 @@ class Search(common.Search):
 
 class ProtocolRequest(common.Request):
 
-    def write(self, dn, attributes, parameters):
-        # get values
-        names = attributes['cn']
-        name = names.pop(0)
-        number = int(attributes['ipProtocolNumber'][0])
-        # write result
-        self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+    def write(self, name, names, number):
         self.fp.write_string(name)
         self.fp.write_stringlist(names)
         self.fp.write_int32(number)
+
+    def convert(self, dn, attributes, parameters):
+        names = attributes['cn']
+        yield (names[0], names[1:], int(attributes['ipProtocolNumber'][0]))
 
 
 class ProtocolByNameRequest(ProtocolRequest):

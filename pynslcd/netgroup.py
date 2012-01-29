@@ -42,23 +42,25 @@ class Search(common.Search):
 
 class NetgroupRequest(common.Request):
 
-    def write(self, dn, attributes, parameters):
-        # write the netgroup triples
-        for triple in attributes['nisNetgroupTriple']:
-            m = _netgroup_triple_re.match(triple)
-            if not m:
-                logging.warning('%s: %s: invalid value: %r', dn, attmap['nisNetgroupTriple'], triple)
-            else:
-                self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-                self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_TRIPLE)
-                self.fp.write_string(m.group('host'))
-                self.fp.write_string(m.group('user'))
-                self.fp.write_string(m.group('domain'))
-        # write netgroup members
-        for member in attributes['memberNisNetgroup']:
-            self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+    def write(self, name, member):
+        m = _netgroup_triple_re.match(member)
+        if m:
+            self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_TRIPLE)
+            self.fp.write_string(m.group('host'))
+            self.fp.write_string(m.group('user'))
+            self.fp.write_string(m.group('domain'))
+        else:
             self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_NETGROUP)
             self.fp.write_string(member)
+
+    def convert(self, dn, attributes, parameters):
+        # write the netgroup triples
+        name = attributes['cn'][0]
+        for triple in attributes['nisNetgroupTriple']:
+            yield (name, triple)
+        # write netgroup members
+        for member in attributes['memberNisNetgroup']:
+            yield (name, member)
 
 
 class NetgroupByNameRequest(NetgroupRequest):

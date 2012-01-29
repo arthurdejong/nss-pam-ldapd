@@ -35,18 +35,16 @@ class Search(common.Search):
 
 class NetworkRequest(common.Request):
 
-    def write(self, dn, attributes, parameters):
-        # get values
-        networknames = attributes['cn']
-        networkname = networknames.pop(0)
-        addresses = attributes['ipNetworkNumber']
-        # write result
-        self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+    def write(self, networkname, aliases, addresses):
         self.fp.write_string(networkname)
-        self.fp.write_stringlist(networknames)
+        self.fp.write_stringlist(aliases)
         self.fp.write_int32(len(addresses))
         for address in addresses:
             self.fp.write_address(address)
+
+    def convert(self, dn, attributes, parameters):
+        netnames = attributes['cn']
+        yield (netnames[0], netnames[1:], attributes['ipNetworkNumber'])
 
 
 class NetworkByNameRequest(NetworkRequest):

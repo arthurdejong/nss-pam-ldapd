@@ -34,18 +34,16 @@ class Search(common.Search):
 
 class HostRequest(common.Request):
 
-    def write(self, dn, attributes, parameters):
-        # get values
-        hostnames = attributes['cn']
-        hostname = hostnames.pop(0)
-        addresses = attributes['ipHostNumber']
-        # write result
-        self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+    def write(self, hostname, aliases, addresses):
         self.fp.write_string(hostname)
-        self.fp.write_stringlist(hostnames)
+        self.fp.write_stringlist(aliases)
         self.fp.write_int32(len(addresses))
         for address in addresses:
             self.fp.write_address(address)
+
+    def convert(self, dn, attributes, parameters):
+        hostnames = attributes['cn']
+        yield (hostnames[0], hostnames[1:], attributes['ipHostNumber'])
 
 
 class HostByNameRequest(HostRequest):

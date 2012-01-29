@@ -1,7 +1,7 @@
 
 # shadow.py - lookup functions for shadownet addresses
 #
-# Copyright (C) 2010, 2011 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,8 @@
 
 import logging
 
-import constants
 import common
+import constants
 
 
 attmap = common.Attributes(uid='uid',
@@ -45,11 +45,21 @@ class Search(common.Search):
 
 class ShadowRequest(common.Request):
 
-    def write(self, dn, attributes, parameters):
-        # get name and check against requested name
+    def write(self, name, passwd, lastchangedate, mindays, maxdays, warndays,
+              inactdays, expiredate, flag):
+        self.fp.write_string(name)
+        self.fp.write_string(passwd)
+        self.fp.write_int32(lastchangedate)
+        self.fp.write_int32(mindays)
+        self.fp.write_int32(maxdays)
+        self.fp.write_int32(warndays)
+        self.fp.write_int32(inactdays)
+        self.fp.write_int32(expiredate)
+        self.fp.write_int32(flag)
+
+    def convert(self, dn, attributes, parameters):
         names = attributes['uid']
-        # get password
-        (passwd, ) = attributes['userPassword']
+        passwd = attributes['userPassword'][0]
         if not passwd or self.calleruid != 0:
             passwd = '*'
         # function for making an int
@@ -78,18 +88,10 @@ class ShadowRequest(common.Request):
             if flag & 0x10000:
                 maxdays = -1
             flag = 0
-        # write results
+        # return results
         for name in names:
-            self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-            self.fp.write_string(name)
-            self.fp.write_string(passwd)
-            self.fp.write_int32(lastchangedate)
-            self.fp.write_int32(mindays)
-            self.fp.write_int32(maxdays)
-            self.fp.write_int32(warndays)
-            self.fp.write_int32(inactdays)
-            self.fp.write_int32(expiredate)
-            self.fp.write_int32(flag)
+            yield (name, passwd, lastchangedate, mindays, maxdays, warndays,
+                    inactdays, expiredate, flag)
 
 
 class ShadowByNameRequest(ShadowRequest):

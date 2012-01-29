@@ -48,16 +48,14 @@ class Search(common.Search):
 
 class EtherRequest(common.Request):
 
-    def write(self, dn, attributes, parameters):
-        # get values
-        names = attributes['cn']
-        addresses = [ether_aton(x) for x in attributes['macAddress']]
-        # write results
-        for name in names:
-            for ether in addresses:
-                self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-                self.fp.write_string(name)
-                self.fp.write(ether)
+    def write(self, name, ether):
+        self.fp.write_string(name)
+        self.fp.write(ether_aton(ether))
+
+    def convert(self, dn, attributes, parameters):
+        for name in attributes['cn']:
+            for ether in attributes['macAddress']:
+                yield (name, ether)
 
 
 class EtherByNameRequest(EtherRequest):
