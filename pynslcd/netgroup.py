@@ -21,6 +21,7 @@
 import logging
 import re
 
+import cache
 import common
 import constants
 
@@ -38,6 +39,10 @@ class Search(common.Search):
 
     case_sensitive = ('cn', )
     required = ('cn', )
+
+
+class Cache(cache.Cache):
+    pass
 
 
 class NetgroupRequest(common.Request):

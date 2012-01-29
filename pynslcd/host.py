@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import cache
 import common
 import constants
 
@@ -30,6 +31,31 @@ class Search(common.Search):
 
     canonical_first = ('cn', )
     required = ('cn', )
+
+
+class HostQuery(cache.CnAliasedQuery):
+
+    sql = '''
+        SELECT `host_cache`.`cn` AS `cn`,
+               `host_1_cache`.`cn` AS `alias`,
+               `host_2_cache`.`ipHostNumber` AS `ipHostNumber`
+        FROM `host_cache`
+        LEFT JOIN `host_1_cache`
+          ON `host_1_cache`.`host` = `host_cache`.`cn`
+        LEFT JOIN `host_2_cache`
+          ON `host_2_cache`.`host` = `host_cache`.`cn`
+        '''
+
+    def __init__(self, parameters):
+        super(HostQuery, self).__init__('host', parameters)
+
+
+class Cache(cache.Cache):
+
+    def retrieve(self, parameters):
+        query = HostQuery(parameters)
+        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', 'ipHostNumber', )):
+            yield row['cn'], row['alias'], row['ipHostNumber']
 
 
 class HostRequest(common.Request):

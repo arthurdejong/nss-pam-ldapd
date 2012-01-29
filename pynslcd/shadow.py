@@ -20,6 +20,7 @@
 
 import logging
 
+import cache
 import common
 import constants
 
@@ -41,6 +42,10 @@ class Search(common.Search):
     case_sensitive = ('uid', )
     limit_attributes = ('uid', )
     required = ('uid', )
+
+
+class Cache(cache.Cache):
+    pass
 
 
 class ShadowRequest(common.Request):

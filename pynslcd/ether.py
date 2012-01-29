@@ -20,6 +20,7 @@
 
 import struct
 
+import cache
 import common
 import constants
 
@@ -44,6 +45,10 @@ class Search(common.Search):
     case_insensitive = ('cn', )
     limit_attributes = ('cn', 'macAddress')
     required = ('cn', 'macAddress')
+
+
+class Cache(cache.Cache):
+    pass
 
 
 class EtherRequest(common.Request):

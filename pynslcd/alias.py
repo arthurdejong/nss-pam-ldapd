@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import cache
 import common
 import constants
 
@@ -31,6 +32,23 @@ class Search(common.Search):
     case_insensitive = ('cn', )
     limit_attributes = ('cn', )
     required = ('cn', 'rfc822MailMember')
+
+
+class Cache(cache.Cache):
+
+    retrieve_sql = '''
+        SELECT `alias_cache`.`cn` AS `cn`,
+               `alias_1_cache`.`rfc822MailMember` AS `rfc822MailMember`
+        FROM `alias_cache`
+        LEFT JOIN `alias_1_cache`
+          ON `alias_1_cache`.`alias` = `alias_cache`.`cn`
+        '''
+
+    def retrieve(self, parameters):
+        query = cache.Query(self.retrieve_sql, parameters)
+        # return results, returning the members as a list
+        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('rfc822MailMember', )):
+            yield row['cn'], row['rfc822MailMember']
 
 
 class AliasRequest(common.Request):

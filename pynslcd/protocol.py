@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import cache
 import common
 import constants
 
@@ -31,6 +32,14 @@ class Search(common.Search):
     case_sensitive = ('cn', )
     canonical_first = ('cn', )
     required = ('cn', 'ipProtocolNumber')
+
+
+class Cache(cache.Cache):
+
+    def retrieve(self, parameters):
+        query = cache.CnAliasedQuery('protocol', parameters)
+        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', )):
+            yield row['cn'], row['alias'], row['ipProtocolNumber']
 
 
 class ProtocolRequest(common.Request):

@@ -25,6 +25,7 @@ import ldap
 import ldap.dn
 
 from attmap import Attributes
+import cache
 import cfg
 import constants
 
@@ -187,6 +188,10 @@ class Request(object):
         self.calleruid = calleruid
         module = sys.modules[self.__module__]
         self.search = getattr(module, 'Search', None)
+        if not hasattr(module, 'cache_obj'):
+            cache_cls = getattr(module, 'Cache', None)
+            module.cache_obj = cache_cls() if cache_cls else None
+        self.cache = module.cache_obj
 
     def read_parameters(self, fp):
         """This method should read the parameters from ths stream and
@@ -196,10 +201,23 @@ class Request(object):
     def handle_request(self, parameters):
         """This method handles the request based on the parameters read
         with read_parameters()."""
-        for dn, attributes in self.search(conn=self.conn, parameters=parameters):
-            for values in self.convert(dn, attributes, parameters):
-                self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-                self.write(*values)
+        try:
+            with cache.con:
+                for dn, attributes in self.search(conn=self.conn, parameters=parameters):
+                    for values in self.convert(dn, attributes, parameters):
+                        self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+                        self.write(*values)
+                        if self.cache:
+                            self.cache.store(*values)
+        except ldap.SERVER_DOWN:
+            if self.cache:
+                logging.debug('read from cache')
+                # we assume server went down before writing any entries
+                for values in self.cache.retrieve(parameters):
+                    self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+                    self.write(*values)
+            else:
+                raise
         # write the final result code
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 

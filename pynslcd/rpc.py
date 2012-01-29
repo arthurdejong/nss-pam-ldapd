@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import cache
 import common
 import constants
 
@@ -31,6 +32,14 @@ class Search(common.Search):
     case_sensitive = ('cn', )
     canonical_first = ('cn', )
     required = ('cn', 'oncRpcNumber')
+
+
+class Cache(cache.Cache):
+
+    def retrieve(self, parameters):
+        query = cache.CnAliasedQuery('rpc', parameters)
+        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', )):
+            yield row['cn'], row['alias'], row['oncRpcNumber']
 
 
 class RpcRequest(common.Request):

@@ -18,9 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import datetime
 import ldap.filter
 import logging
 
+import cache
 import common
 import constants
 
@@ -37,6 +39,58 @@ class Search(common.Search):
     limit_attributes = ('ipServiceProtocol', )
     canonical_first = ('cn', )
     required = ('cn', 'ipServicePort', 'ipServiceProtocol')
+
+
+class ServiceQuery(cache.CnAliasedQuery):
+
+    sql = '''
+        SELECT `service_cache`.*,
+               `service_1_cache`.`cn` AS `alias`
+        FROM `service_cache`
+        LEFT JOIN `service_1_cache`
+          ON `service_1_cache`.`ipServicePort` = `service_cache`.`ipServicePort`
+          AND `service_1_cache`.`ipServiceProtocol` = `service_cache`.`ipServiceProtocol`
+        '''
+
+    cn_join = '''
+        LEFT JOIN `service_1_cache` `cn_alias`
+          ON `cn_alias`.`ipServicePort` = `service_cache`.`ipServicePort`
+          AND `cn_alias`.`ipServiceProtocol` = `service_cache`.`ipServiceProtocol`
+        '''
+
+    def __init__(self, parameters):
+        super(ServiceQuery, self).__init__('service', {})
+        for k, v in parameters.items():
+            if k == 'cn':
+                self.add_query(self.cn_join)
+                self.add_where('(`service_cache`.`cn` = ? OR `cn_alias`.`cn` = ?)', [v, v])
+            else:
+                self.add_where('`service_cache`.`%s` = ?' % k, [v])
+
+
+class Cache(cache.Cache):
+
+    def store(self, name, aliases, port, protocol):
+        self.con.execute('''
+            INSERT OR REPLACE INTO `service_cache`
+            VALUES
+              (?, ?, ?, ?)
+            ''', (name, port, protocol, datetime.datetime.now()))
+        self.con.execute('''
+            DELETE FROM `service_1_cache`
+            WHERE `ipServicePort` = ?
+              AND `ipServiceProtocol` = ?
+            ''', (port, protocol))
+        self.con.executemany('''
+            INSERT INTO `service_1_cache`
+            VALUES
+              (?, ?, ?)
+            ''', ((port, protocol, alias) for alias in aliases))
+
+    def retrieve(self, parameters):
+        query = ServiceQuery(parameters)
+        for row in cache.RowGrouper(query.execute(self.con), ('cn', 'ipServicePort', 'ipServiceProtocol'), ('alias', )):
+            yield row['cn'], row['alias'], row['ipServicePort'], row['ipServiceProtocol']
 
 
 class ServiceRequest(common.Request):

@@ -18,9 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import itertools
 import logging
 
 from passwd import dn2uid, uid2dn
+import cache
 import common
 import constants
 
@@ -62,6 +64,24 @@ class Search(common.Search):
                           attmap['memberUid'], self.escape(memberuid),
                           attmap['member'], self.escape(dn))
         return super(Search, self).mk_filter()
+
+
+class Cache(cache.Cache):
+
+    retrieve_sql = '''
+        SELECT `cn`, `userPassword`, `gidNumber`, `memberUid`
+        FROM `group_cache`
+        LEFT JOIN `group_3_cache`
+          ON `group_3_cache`.`group` = `group_cache`.`cn`
+        '''
+
+    def retrieve(self, parameters):
+        query = cache.Query(self.retrieve_sql, parameters)
+        # return results returning the members as a set
+        q = itertools.groupby(query.execute(self.con),
+                key=lambda x: (x['cn'], x['userPassword'], x['gidNumber']))
+        for k, v in q:
+            yield k + (set(x['memberUid'] for x in v if x['memberUid'] is not None), )
 
 
 class GroupRequest(common.Request):

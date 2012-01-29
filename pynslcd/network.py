@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import cache
 import common
 import constants
 
@@ -31,6 +32,31 @@ class Search(common.Search):
 
     canonical_first = ('cn', )
     required = ('cn', )
+
+
+class NetworkQuery(cache.CnAliasedQuery):
+
+    sql = '''
+        SELECT `network_cache`.`cn` AS `cn`,
+               `network_1_cache`.`cn` AS `alias`,
+               `network_2_cache`.`ipNetworkNumber` AS `ipNetworkNumber`
+        FROM `network_cache`
+        LEFT JOIN `network_1_cache`
+          ON `network_1_cache`.`network` = `network_cache`.`cn`
+        LEFT JOIN `network_2_cache`
+          ON `network_2_cache`.`network` = `network_cache`.`cn`
+        '''
+
+    def __init__(self, parameters):
+        super(NetworkQuery, self).__init__('network', parameters)
+
+
+class Cache(cache.Cache):
+
+    def retrieve(self, parameters):
+        query = NetworkQuery(parameters)
+        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', 'ipNetworkNumber', )):
+            yield row['cn'], row['alias'], row['ipNetworkNumber']
 
 
 class NetworkRequest(common.Request):

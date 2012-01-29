@@ -20,6 +20,7 @@
 
 import logging
 
+import cache
 import common
 import constants
 
@@ -41,6 +42,10 @@ class Search(common.Search):
     limit_attributes = ('uid', 'uidNumber', )
     required = ('uid', 'uidNumber', 'gidNumber', 'gecos', 'homeDirectory',
                 'loginShell')
+
+
+class Cache(cache.Cache):
+    pass
 
 
 class PasswdRequest(common.Request):
