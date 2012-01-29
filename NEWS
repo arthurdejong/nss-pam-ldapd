@@ -1,3 +1,14 @@
+changes from 0.8.5 to 0.8.6
+---------------------------
+
+* a number of code improvements by Jakub Hrozek
+* fixes for FreeBSD (thanks Maxim Vetrov)
+* include missing pynslcd files from tarball
+* improvements to the pynslcd implementation
+* implement an offline cache in pynslcd
+* the Debian packaging was split from the main source tree
+
+
 changes from 0.8.4 to 0.8.5
 ---------------------------
 

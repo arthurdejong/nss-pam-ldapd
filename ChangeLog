@@ -1,3 +1,115 @@
+2012-01-29 15:13  arthur
+
+	* [r1615] pynslcd/alias.py, pynslcd/cache.py, pynslcd/common.py,
+	  pynslcd/ether.py, pynslcd/group.py, pynslcd/host.py,
+	  pynslcd/netgroup.py, pynslcd/network.py, pynslcd/passwd.py,
+	  pynslcd/protocol.py, pynslcd/rpc.py, pynslcd/service.py,
+	  pynslcd/shadow.py: implement a naive offline cache
+
+2012-01-29 14:50  arthur
+
+	* [r1614] pynslcd/group.py: small simplification in group lookups
+	  (member attributes are not requested anyway)
+
+2012-01-29 14:39  arthur
+
+	* [r1613] pynslcd/alias.py, pynslcd/common.py, pynslcd/ether.py,
+	  pynslcd/group.py, pynslcd/host.py, pynslcd/netgroup.py,
+	  pynslcd/network.py, pynslcd/passwd.py, pynslcd/protocol.py,
+	  pynslcd/rpc.py, pynslcd/service.py, pynslcd/shadow.py: split the
+	  result handling into a convert() and write() step
+
+2012-01-20 20:08  arthur
+
+	* [r1611] nslcd/netgroup.c, pynslcd/pynslcd.py: formatting fixes
+
+2012-01-20 16:18  arthur
+
+	* [r1605] nslcd/nslcd.c: clarify error messages and fix typo in
+	  comment
+
+2012-01-20 16:01  arthur
+
+	* [r1604] Makefile.am, debian: separate the Debian packaging from
+	  main sources switching to non-native Debian package (using
+	  svn-buildpackage)
+
+2012-01-20 15:43  arthur
+
+	* [r1603] pynslcd/Makefile.am: add missing Python modules to
+	  tarball
+
+2012-01-17 19:41  arthur
+
+	* [r1597] AUTHORS, nss/bsdnss.c: FreeBSD compilation fixes by Maxim
+	  Vetrov
+
+2012-01-17 19:38  arthur
+
+	* [r1596] common/nslcd-prot.c, nslcd/nslcd.c: pass the correct size
+	  of named socket address (fixes FreeBSD issue, fixes r1295)
+
+2012-01-16 21:17  arthur
+
+	* [r1595] INSTALL, compile, depcomp, install-sh, py-compile: update
+	  files from recent automake
+
+2012-01-09 12:15  jhrozek
+
+	* [r1594] nslcd/common.c: Add a matching va_end() for va_start() in
+	  mysnprintf()
+
+2012-01-09 12:11  jhrozek
+
+	* [r1593] nslcd/myldap.c: Warn if ldap_set_option() fails for
+	  LDAP_OPT_ERROR_NUM
+
+2012-01-09 12:10  jhrozek
+
+	* [r1592] nslcd/nslcd.c: Warn if fd cannot be closed in is_locked()
+
+2012-01-09 12:07  jhrozek
+
+	* [r1591] nslcd/netgroup.c: Check NULL return in write_netgroup()
+
+2012-01-09 12:04  jhrozek
+
+	* [r1590] nslcd/pam.c: Do not leak memory if myldap_escape() fails
+
+2012-01-09 11:54  jhrozek
+
+	* [r1589] nslcd/pam.c: Return from update_username() if
+	  myldap_get_values() returns invalid value
+	  
+	  If myldap_get_values() failed for the attmap_passwd_uid,
+	  nss-pam-ldapd
+	  would dereference a NULL pointer.
+
+2012-01-06 13:59  arthur
+
+	* [r1588] pynslcd/alias.py, pynslcd/cfg.py, pynslcd/common.py,
+	  pynslcd/ether.py, pynslcd/group.py, pynslcd/host.py,
+	  pynslcd/mypidfile.py, pynslcd/netgroup.py, pynslcd/network.py,
+	  pynslcd/pam.py, pynslcd/passwd.py, pynslcd/protocol.py,
+	  pynslcd/pynslcd.py, pynslcd/rpc.py: user the logging framework,
+	  handle exceptions properly and some cleanups
+
+2012-01-05 21:30  arthur
+
+	* [r1587] debian/po/zh_CN.po: updated Simplified Chinese (zh_CN)
+	  translation of debconf templates by zym
+
+2012-01-02 20:46  arthur
+
+	* [r1586] debian/po/nb.po: updated Norwegian Bokmål (nb)
+	  translation of debconf templates by Bjørn Steensrud
+
+2011-12-31 12:40  arthur
+
+	* [r1584] ChangeLog, NEWS, TODO, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.8.5 release
+
 2011-12-30 17:41  arthur
 
 	* [r1583] debian/control: fix versioned build dependency on
