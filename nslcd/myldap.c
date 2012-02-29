@@ -75,6 +75,9 @@
 /* the maximum number of searches per session */
 #define MAX_SEARCHES_IN_SESSION 4
 
+/* the maximum number of dn's to log to the debug log for each search */
+#define MAX_DEBUG_LOG_DNS 10
+
 /* This refers to a current LDAP session that contains the connection
    information. */
 struct ldap_session
@@ -116,6 +119,8 @@ struct myldap_search
   struct berval *cookie;
   /* to indicate that we can retry the search from myldap_get_entry() */
   int may_retry_search;
+  /* the number of resutls returned so far */
+  int count;
 };
 
 /* The maximum number of calls to myldap_get_values() that may be
@@ -249,6 +254,7 @@ static MYLDAP_SEARCH *myldap_search_new(
   search->may_retry_search=1;
   /* clear result entry */
   search->entry=NULL;
+  search->count=0;
   /* return the new search struct */
   return search;
 }
@@ -1116,6 +1122,11 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         search->entry=myldap_entry_new(search);
         if (rcp!=NULL)
           *rcp=LDAP_SUCCESS;
+        /* log the first couple of dns in the result (but not all, to
+           prevent swamping the log) */
+        if (search->count<MAX_DEBUG_LOG_DNS)
+          log_log(LOG_DEBUG,"ldap_result(): %s",myldap_get_dn(search->entry));
+        search->count++;
         search->may_retry_search=0;
         return search->entry;
       case LDAP_RES_SEARCH_RESULT:
@@ -1178,7 +1189,11 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         /* check if there are more pages to come */
         if ((search->cookie==NULL)||(search->cookie->bv_len==0))
         {
-          log_log(LOG_DEBUG,"ldap_result(): end of results");
+          if (search->count>MAX_DEBUG_LOG_DNS)
+            log_log(LOG_DEBUG,"ldap_result(): ... %d more results",
+                              search->count-MAX_DEBUG_LOG_DNS);
+          log_log(LOG_DEBUG,"ldap_result(): end of results (%d total)",
+                            search->count);
           /* we are at the end of the search, no more results */
           myldap_search_close(search);
           if (rcp!=NULL)
