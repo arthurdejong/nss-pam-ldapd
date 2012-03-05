@@ -62,4 +62,12 @@ int ldap_passwd_s(LDAP *ld,struct berval *user,struct berval *oldpw,
 #define LDAP_SASL_QUIET 2U
 #endif /* not LDAP_SASL_QUIET */
 
+/* on some systems LDAP_OPT_DIAGNOSTIC_MESSAGE isn't there but
+   LDAP_OPT_ERROR_STRING is */
+#ifndef LDAP_OPT_DIAGNOSTIC_MESSAGE
+#ifdef LDAP_OPT_ERROR_STRING
+#define LDAP_OPT_DIAGNOSTIC_MESSAGE LDAP_OPT_ERROR_STRING
+#endif /* LDAP_OPT_ERROR_STRING */
+#endif /* not LDAP_OPT_DIAGNOSTIC_MESSAGE */
+
 #endif /* COMPAT__LDAP_COMPAT_H */

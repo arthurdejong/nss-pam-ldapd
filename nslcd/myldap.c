@@ -378,6 +378,7 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
 static int do_bind(LDAP *ld,const char *binddn,const char *bindpw,const char *uri)
 {
   int rc;
+  char *msg=NULL;
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
 #ifndef HAVE_SASL_INTERACT_T
   struct berval cred;
@@ -392,9 +393,16 @@ static int do_bind(LDAP *ld,const char *binddn,const char *bindpw,const char *ur
     rc=ldap_start_tls_s(ld,NULL,NULL);
     if (rc!=LDAP_SUCCESS)
     {
-      log_log(LOG_WARNING,"ldap_start_tls_s() failed: %s%s%s (uri=\"%s\")",
-                          ldap_err2string(rc),(errno==0)?"":": ",
-                          (errno==0)?"":strerror(errno),uri);
+#ifdef LDAP_OPT_DIAGNOSTIC_MESSAGE
+      ldap_get_option(ld,LDAP_OPT_DIAGNOSTIC_MESSAGE,&msg);
+#endif /* LDAP_OPT_DIAGNOSTIC_MESSAGE */
+      log_log(LOG_WARNING,"ldap_start_tls_s() failed: %s%s%s%s%s (uri=\"%s\")",
+                          ldap_err2string(rc),
+                          (msg==NULL)?"":": ",(msg==NULL)?"":msg,
+                          (errno==0)?"":": ",(errno==0)?"":strerror(errno),
+                          uri);
+      if (msg)
+        ldap_memfree(msg);
       return rc;
     }
   }
