@@ -794,7 +794,7 @@ static int do_try_search(MYLDAP_SEARCH *search)
       /* clear error flag */
       rc=LDAP_SUCCESS;
       if (ldap_set_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
-        log_log(LOG_WARNING,"failed to clear the error flag\n");
+        log_log(LOG_WARNING,"failed to clear the error flag");
       pServerCtrls=NULL;
     }
   }
@@ -1188,7 +1188,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
             /* clear error flag */
             rc=LDAP_SUCCESS;
             if (ldap_set_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
-              log_log(LOG_WARNING,"failed to clear the error flag\n");
+              log_log(LOG_WARNING,"failed to clear the error flag");
           }
           /* TODO: handle the above return code?? */
           ldap_controls_free(resultcontrols);
@@ -1459,7 +1459,7 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
     {
       rc=LDAP_SUCCESS;
       if (ldap_set_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
-        log_log(LOG_WARNING,"failed to clear the error flag\n");
+        log_log(LOG_WARNING,"failed to clear the error flag");
     }
     else if (rc==LDAP_SUCCESS)
     {
@@ -1569,7 +1569,7 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry,const char *attr)
     {
       rc=LDAP_SUCCESS;
       if (ldap_set_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
-        log_log(LOG_WARNING,"failed to clear the error flag\n");
+        log_log(LOG_WARNING,"failed to clear the error flag");
     }
     else if (rc==LDAP_SUCCESS)
     {
