@@ -219,13 +219,18 @@ static char *cfg_getdomainname(const char *filename,int lnr)
 static void add_uris_from_dns(const char *filename,int lnr,
                               struct ldap_config *cfg)
 {
-  int ret=0;
+  int rc;
   char *domain;
   char *hostlist=NULL,*nxt;
   char buf[HOST_NAME_MAX+sizeof("ldap://")];
   domain=cfg_getdomainname(filename,lnr);
-  ret=ldap_domain2hostlist(domain,&hostlist);
-  /* FIXME: have better error handling */
+  rc=ldap_domain2hostlist(domain,&hostlist);
+  if (rc!=LDAP_SUCCESS)
+  {
+    log_log(LOG_ERR,"%s:%d: no servers found in DNS zone %s: %s",
+            filename,lnr,domain,ldap_err2string(rc));
+    exit(EXIT_FAILURE);
+  }
   if ((hostlist==NULL)||(*hostlist=='\0'))
   {
     log_log(LOG_ERR,"%s:%d: no servers found in DNS zone %s",filename,lnr,domain);
