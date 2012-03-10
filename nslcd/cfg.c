@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -214,8 +214,19 @@ static void add_uris_from_dns(const char *filename,int lnr,
       *nxt='\0';
       nxt++;
     }
-    /* add the URI */
-    mysnprintf(buf,sizeof(buf),"ldap://%s",hostlist);
+    /* if port is 636, use ldaps:// URI */
+    if ((strlen(hostlist)>4)&&(strcmp(hostlist+strlen(hostlist)-4,":636")==0))
+    {
+      hostlist[strlen(hostlist)-4]='\0';
+      mysnprintf(buf,sizeof(buf),"ldaps://%s",hostlist);
+    }
+    else
+    {
+      /* strip default port number */
+      if ((strlen(hostlist)>4)&&(strcmp(hostlist+strlen(hostlist)-4,":389")==0))
+        hostlist[strlen(hostlist)-4]='\0';
+      mysnprintf(buf,sizeof(buf),"ldap://%s",hostlist);
+    }
     log_log(LOG_DEBUG,"add_uris_from_dns(): found uri: %s",buf);
     add_uri(filename,lnr,cfg,buf);
     /* get next entry from list */
