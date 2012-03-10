@@ -411,7 +411,7 @@ static int try_autzsearch(MYLDAP_SESSION *session,const char *dn,
   dict_free(dict);
   if (res==NULL)
   {
-    log_log(LOG_ERR,"pam_authz_search \"%s\" is invalid",nslcd_cfg->ldc_pam_authz_search);
+    log_log(LOG_ERR,"invalid pam_authz_search \"%s\"",nslcd_cfg->ldc_pam_authz_search);
     return LDAP_LOCAL_ERROR;
   }
   log_log(LOG_DEBUG,"trying pam_authz_search \"%s\"",filter_buffer);
