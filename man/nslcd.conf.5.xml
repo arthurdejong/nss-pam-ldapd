@@ -78,6 +78,8 @@
       <para>
        Specifies the number of threads to start that can handle requests
        and perform <acronym>LDAP</acronym> queries.
+       Each thread opens a separate connection to the <acronym>LDAP</acronym>
+       server.
        The default is to start 5 threads.
       </para>
      </listitem>
