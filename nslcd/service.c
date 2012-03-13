@@ -152,9 +152,9 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
   if (name==NULL)
     name=aliases[0];
   /* check case of returned servies entry */
-  if ((reqname!=NULL)&&(strcmp(reqname,name)!=0))
+  if ((reqname!=NULL)&&(STR_CMP(reqname,name)!=0))
   {
-    for (i=0;(aliases[i]!=NULL)&&(strcmp(reqname,aliases[i])!=0);i++)
+    for (i=0;(aliases[i]!=NULL)&&(STR_CMP(reqname,aliases[i])!=0);i++)
       /* nothing here */ ;
     if (aliases[i]==NULL)
       return 0; /* neither the name nor any of the aliases matched */
@@ -196,7 +196,7 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
   }
   /* write the entries */
   for (i=0;protocols[i]!=NULL;i++)
-    if ((reqprotocol==NULL)||(*reqprotocol=='\0')||(strcmp(reqprotocol,protocols[i])==0))
+    if ((reqprotocol==NULL)||(*reqprotocol=='\0')||(STR_CMP(reqprotocol,protocols[i])==0))
     {
       WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
       WRITE_STRING(fp,name);

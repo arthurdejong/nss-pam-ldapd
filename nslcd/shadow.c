@@ -307,7 +307,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
                         &inactdays,&expiredate,&flag);
   /* write the entries */
   for (i=0;usernames[i]!=NULL;i++)
-    if ((requser==NULL)||(strcmp(requser,usernames[i])==0))
+    if ((requser==NULL)||(STR_CMP(requser,usernames[i])==0))
     {
       WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
       WRITE_STRING(fp,usernames[i]);

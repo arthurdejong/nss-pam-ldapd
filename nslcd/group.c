@@ -187,7 +187,7 @@ static int do_write_group(
       log_log(LOG_WARNING,"%s: %s: denied by validnames option",
                           myldap_get_dn(entry),attmap_group_cn);
     }
-    else if ((reqname==NULL)||(strcmp(reqname,names[i])==0))
+    else if ((reqname==NULL)||(STR_CMP(reqname,names[i])==0))
     {
       for (j=0;j<numgids;j++)
       {

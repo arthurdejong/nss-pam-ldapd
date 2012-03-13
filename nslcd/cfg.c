@@ -89,6 +89,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_threads=5;
   cfg->ldc_uid=NOUID;
   cfg->ldc_gid=NOGID;
+  cfg->ldc_ignorecase=0;
   for (i=0;i<(NSS_LDAP_CONFIG_URI_MAX+1);i++)
   {
     cfg->ldc_uris[i].uri=NULL;
@@ -861,6 +862,11 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     else if (strcasecmp(keyword,"gid")==0)
     {
       get_gid(filename,lnr,keyword,&line,&cfg->ldc_gid);
+      get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"ignorecase")==0)
+    {
+      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_ignorecase);
       get_eol(filename,lnr,keyword,&line);
     }
     /* general connection options */

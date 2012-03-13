@@ -86,6 +86,8 @@ struct ldap_config
   uid_t ldc_uid;
   /* the group id nslcd should be run as */
   gid_t ldc_gid;
+  /* whether or not case should be ignored in lookups */
+  int ldc_ignorecase;
   /* NULL terminated list of URIs */
   struct myldap_uri ldc_uris[NSS_LDAP_CONFIG_URI_MAX+1];
   /* protocol version */

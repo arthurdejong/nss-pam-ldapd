@@ -220,7 +220,7 @@ static int write_netgroup(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
                         myldap_get_dn(entry),attmap_netgroup_cn);
     return 0;
   }
-  for (i=0;(names[i]!=NULL)&&(strcmp(reqname,names[i])!=0);i++)
+  for (i=0;(names[i]!=NULL)&&(STR_CMP(reqname,names[i])!=0);i++)
     /* nothing here */ ;
   if (names[i]==NULL)
     return 0; /* the name was not found */

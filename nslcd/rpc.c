@@ -124,9 +124,9 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
   if (name==NULL)
     name=aliases[0];
   /* check case of returned rpc entry */
-  if ((reqname!=NULL)&&(strcmp(reqname,name)!=0))
+  if ((reqname!=NULL)&&(STR_CMP(reqname,name)!=0))
   {
-    for (i=0;(aliases[i]!=NULL)&&(strcmp(reqname,aliases[i])!=0);i++)
+    for (i=0;(aliases[i]!=NULL)&&(STR_CMP(reqname,aliases[i])!=0);i++)
       /* nothing here */ ;
     if (aliases[i]==NULL)
       return 0; /* neither the name nor any of the aliases matched */

@@ -265,4 +265,10 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid);
     return 0; \
   }
 
+/* macro to compare strings
+   Use the ignorecase config option to determine whether or not to do a
+   case-sensitive match */
+#define STR_CMP(str1,str2) \
+  (nslcd_cfg->ldc_ignorecase == 1 ? strcasecmp(str1,str2) : strcmp(str1,str2))
+
 #endif /* not NSLCD__COMMON_H */

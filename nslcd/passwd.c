@@ -556,7 +556,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   attmap_get_value(entry,attmap_passwd_loginShell,shell,sizeof(shell));
   /* write the entries */
   for (i=0;usernames[i]!=NULL;i++)
-    if ((requser==NULL)||(strcmp(requser,usernames[i])==0))
+    if ((requser==NULL)||(STR_CMP(requser,usernames[i])==0))
     {
       if (!isvalidname(usernames[i]))
       {

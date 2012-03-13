@@ -702,6 +702,22 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="ignorecase">
+     <term><option>ignorecase</option> yes|no</term>
+     <listitem>
+      <para>
+       This specifies whether or not to perform searches for group,
+       netgroup, passwd, protocols, rpc, services and shadow maps using
+       case-insensitive matching.
+       Setting this to <literal>yes</literal> could open up the system
+       to authorisation vulnerabilities and introduce nscd cache poisoning
+       vulnerabilities which allow denial of service.
+       The default is to perform case-sensitve filtering of LDAP search
+       results for the above maps.
+      </para>
+     </listitem>
+    </varlistentry>
+
     <varlistentry id="pam_authz_search">
      <term><option>pam_authz_search</option>
            <replaceable>FILTER</replaceable></term>
