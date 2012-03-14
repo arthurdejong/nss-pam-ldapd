@@ -2,7 +2,7 @@
    common.h - common functions for NSS lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -147,6 +147,7 @@ nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args));
   retv=readfn; \
   /* close socket and we're done */ \
   if ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_TRYAGAIN)) \
+    (void)tio_skip(fp,0); /* read any buffered data */ \
     (void)tio_close(fp); \
   return retv;
 
@@ -213,12 +214,13 @@ nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args));
     fp=NULL; /* file should be closed by now */ \
   return retv;
 
-/* This macro generates a endent() function body. This just closes
+/* This macro generates an endent() function body. This just closes
    the stream. */
 #define NSS_ENDENT(fp) \
   NSS_AVAILCHECK; \
   if (fp!=NULL) \
   { \
+    (void)tio_skip(fp,0); /* read any buffered data */ \
     (void)tio_close(fp); \
     fp=NULL; \
   } \

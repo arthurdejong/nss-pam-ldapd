@@ -2,7 +2,7 @@
    tio.h - timed io functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008 Arthur de Jong
+   Copyright (C) 2007, 2008, 2010, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -56,7 +56,9 @@ TFILE *tio_fdopen(int fd,struct timeval *readtimeout,struct timeval *writetimeou
 /* Read the specified number of bytes from the stream. */
 int tio_read(TFILE *fp,void *buf,size_t count);
 
-/* Read and discard the specified number of bytes from the stream. */
+/* Read and discard the specified number of bytes from the stream.
+   If count is 0 reads and discards any data that can be read and empties
+   the read buffer. */
 int tio_skip(TFILE *fp,size_t count);
 
 /* Write the specified buffer to the stream. */

@@ -317,10 +317,39 @@ int tio_read(TFILE *fp, void *buf, size_t count)
   }
 }
 
-/* Read and discard the specified number of bytes from the stream. */
+/* Read and discard the specified number of bytes from the stream.
+   If count is 0 reads and discards any data that can be read and empties
+   the read buffer. */
 int tio_skip(TFILE *fp, size_t count)
 {
-  return tio_read(fp,NULL,count);
+  int rv;
+  size_t len;
+  /* for simple cases just read */
+  if (count>0)
+  {
+    return tio_read(fp,NULL,count);
+  }
+  /* clear the read buffer */
+  fp->readbuffer.start=0;
+  fp->readbuffer.len=0;
+  fp->read_resettable=0;
+  /* read until we can't read no more */
+  len=fp->readbuffer.size;
+#ifdef SSIZE_MAX
+  if (len>SSIZE_MAX)
+    len=SSIZE_MAX;
+#endif /* SSIZE_MAX */
+  while (1)
+  {
+    rv=read(fp->fd,fp->readbuffer.buffer,len);
+    /* check for errors */
+    if (rv==0)
+      return 0; /* end-of-file */
+    if ((rv<0)&&(errno==EWOULDBLOCK))
+      return 0; /* we've ready everything we can without blocking */
+    if ((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN))
+      return -1; /* something went wrong with the read */
+  }
 }
 
 /* the caller has assured us that we can write to the file descriptor
