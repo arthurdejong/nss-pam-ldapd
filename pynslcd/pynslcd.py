@@ -169,8 +169,13 @@ def log_newsession():
 
 
 def getpeercred(fd):
-    return (None, None, None)
-    # FIXME: implement and return uid, gid, pid
+    """Return uid, gid and pid of calling application."""
+    import struct
+    import socket
+    SO_PEERCRED = 17
+    creds = fd.getsockopt(socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i'))
+    pid, uid, gid = struct.unpack('3i',creds)
+    return uid, gid, pid
 
 
 handlers = {}
