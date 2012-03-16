@@ -56,10 +56,10 @@ class PAMRequest(common.Request):
             # save the DN
             parameters['userdn'] = entry[0]
             # get the "real" username
-            value = common.get_rdn_value(entry[0], passwd.attmap['uid'])
+            value = passwd.attmap.get_rdn_value(entry[0], 'uid')
             if not value:
                 # get the username from the uid attribute
-                values = myldap_get_values(entry, passwd.attmap['uid'])
+                values = entry[1]['uid']
                 if not values or not values[0]:
                     logging.warning('%s: is missing a %s attribute', dn, passwd.attmap['uid'])
                 value = values[0]

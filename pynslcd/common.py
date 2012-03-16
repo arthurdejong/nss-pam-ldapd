@@ -108,7 +108,7 @@ class Search(object):
         """Return the results from the search."""
         filter = self.mk_filter()
         for base in self.bases:
-            logging.debug('SEARCHING %s', base)
+            logging.debug('SEARCHING %s %s', base, filter)
             try:
                 for entry in self.conn.search_s(base, self.scope, filter, self.attributes):
                     if entry[0]:
@@ -126,9 +126,10 @@ class Search(object):
     def mk_filter(self):
         """Return the active search filter (based on the read parameters)."""
         if self.parameters:
-            return '(&%s(%s))' % (self.filter,
-                ')('.join('%s=%s' % (self.attmap[attribute], self.escape(value))
-                          for attribute, value in self.parameters.items()))
+            return '(&%s%s)' % (
+                self.filter,
+                ''.join(self.attmap.mk_filter(attribute, value)
+                        for attribute, value in self.parameters.items()))
         return self.filter
 
     def handle_entry(self, dn, attributes):
@@ -138,7 +139,7 @@ class Search(object):
         attributes = self.attmap.translate(attributes)
         # make sure value from DN is first value
         for attr in self.canonical_first:
-            primary_value = get_rdn_value(dn, self.attmap[attr])
+            primary_value = self.attmap.get_rdn_value(dn, attr)
             if primary_value:
                 values = attributes[attr]
                 if primary_value in values:
@@ -239,7 +240,3 @@ def get_handlers(module):
         if issubclass(cls, Request) and hasattr(cls, 'action'):
             res[cls.action] = cls
     return res
-
-
-def get_rdn_value(dn, attribute):
-    return dict((x, y) for x, y, z in ldap.dn.str2dn(dn)[0])[attribute]
