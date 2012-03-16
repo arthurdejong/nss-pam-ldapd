@@ -147,8 +147,10 @@ nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args));
   retv=readfn; \
   /* close socket and we're done */ \
   if ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_TRYAGAIN)) \
+  { \
     (void)tio_skip(fp,0); /* read any buffered data */ \
     (void)tio_close(fp); \
+  } \
   return retv;
 
 /* This macro can be used to generate a get..byname() function
@@ -203,9 +205,11 @@ nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args));
     /* if we have a full buffer try to reset the stream */ \
     if (tio_reset(fp)) \
     { \
+      /* reset failed, we close and give up with a permanent error \
+         because we cannot retry just the getent() call because it \
+         may not be only the first entry that failed */ \
       tio_close(fp); \
       fp=NULL; \
-      /* fail with permanent error to prevent retries */ \
       *errnop=EINVAL; \
       return NSS_STATUS_UNAVAIL; \
     } \
