@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006, 2007 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -64,6 +64,7 @@
 #endif
 #include <ctype.h>
 #include <pthread.h>
+#include <stdarg.h>
 
 #include "myldap.h"
 #include "common.h"
@@ -147,6 +148,40 @@ struct myldap_entry
   /* a reference to ranged attribute values so we can free() them later on */
   char **rangedattributevalues[MAX_RANGED_ATTRIBUTES_PER_ENTRY];
 };
+
+static void myldap_err(int pri,LDAP *ld,int rc,const char *format, ...)
+{
+  char message[200];
+  char *msg_ldap=NULL;
+  char *msg_diag=NULL;
+  char *msg_errno=NULL;
+  va_list ap;
+  /* make the message */
+  va_start(ap,format);
+  vsnprintf(message,sizeof(message),format,ap);
+  message[sizeof(message)-1]='\0';
+  va_end(ap);
+  /* get the various error message */
+  if (rc!=LDAP_SUCCESS)
+  {
+    msg_ldap=ldap_err2string(rc);
+    /* get the diagnostic information */
+#ifdef LDAP_OPT_DIAGNOSTIC_MESSAGE
+    if (ld!=NULL)
+      ldap_get_option(ld,LDAP_OPT_DIAGNOSTIC_MESSAGE,&msg_diag);
+#endif /* LDAP_OPT_DIAGNOSTIC_MESSAGE */
+  }
+  if (errno!=0)
+    msg_errno=strerror(errno);
+  /* log the message */
+  log_log(pri,"%s%s%s%s%s%s%s",message,
+          (msg_ldap==NULL)?"":": ",(msg_ldap==NULL)?"":msg_ldap,
+          (msg_diag==NULL)?"":": ",(msg_diag==NULL)?"":msg_diag,
+          (msg_errno==NULL)?"":": ",(msg_errno==NULL)?"":msg_errno);
+  /* free diagnostic message */
+  if (msg_diag!=NULL)
+    ldap_memfree(msg_diag);
+}
 
 static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search)
 {
@@ -367,7 +402,7 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
   rc=ldap_set_option(ld,option,invalue); \
   if (rc!=LDAP_SUCCESS) \
   { \
-    log_log(LOG_ERR,"ldap_set_option(" #option ") failed: %s",ldap_err2string(rc)); \
+    myldap_err(LOG_ERR,ld,rc,"ldap_set_option(" #option ") failed"); \
     return rc; \
   }
 
@@ -396,11 +431,7 @@ static int do_bind(LDAP *ld,const char *binddn,const char *bindpw,const char *ur
 #ifdef LDAP_OPT_DIAGNOSTIC_MESSAGE
       ldap_get_option(ld,LDAP_OPT_DIAGNOSTIC_MESSAGE,&msg);
 #endif /* LDAP_OPT_DIAGNOSTIC_MESSAGE */
-      log_log(LOG_WARNING,"ldap_start_tls_s() failed: %s%s%s%s%s (uri=\"%s\")",
-                          ldap_err2string(rc),
-                          (msg==NULL)?"":": ",(msg==NULL)?"":msg,
-                          (errno==0)?"":": ",(errno==0)?"":strerror(errno),
-                          uri);
+      myldap_err(LOG_WARNING,ld,rc,"ldap_start_tls_s() failed (uri=%s)",uri);
       if (msg)
         ldap_memfree(msg);
       return rc;
@@ -492,7 +523,7 @@ static int set_socket_timeout(LDAP *ld,time_t sec,suseconds_t usec)
   /* get the socket */
   if ((rc=ldap_get_option(ld,LDAP_OPT_DESC,&sd))!=LDAP_SUCCESS)
   {
-    log_log(LOG_ERR,"ldap_get_option(LDAP_OPT_DESC) failed: %s",ldap_err2string(rc));
+    myldap_err(LOG_ERR,ld,rc,"ldap_get_option(LDAP_OPT_DESC) failed");
     return rc;
   }
   /* ignore invalid (probably closed) file descriptors */
@@ -562,7 +593,7 @@ static int do_set_options(MYLDAP_SESSION *session)
   rc=ldap_set_rebind_proc(session->ld,do_rebind,session);
   if (rc!=LDAP_SUCCESS)
   {
-    log_log(LOG_ERR,"ldap_set_rebind_proc() failed: %s",ldap_err2string(rc));
+    myldap_err(LOG_ERR,session->ld,rc,"ldap_set_rebind_proc() failed");
     return rc;
   }
 #else /* ldap_set_rebind_proc() returns void */
@@ -654,7 +685,7 @@ static void do_close(MYLDAP_SESSION *session)
           {
             if (ldap_get_option(session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
               rc=LDAP_OTHER;
-            log_log(LOG_WARNING,"ldap_abandon() failed to abandon search: %s",ldap_err2string(rc));
+            myldap_err(LOG_WARNING,session->ld,rc,"ldap_abandon() failed to abandon search");
           }
           session->searches[i]->msgid=-1;
         }
@@ -667,7 +698,7 @@ static void do_close(MYLDAP_SESSION *session)
     rc=ldap_unbind(session->ld);
     session->ld=NULL;
     if (rc!=LDAP_SUCCESS)
-      log_log(LOG_WARNING,"ldap_unbind() failed: %s",ldap_err2string(rc));
+      myldap_err(LOG_WARNING,session->ld,rc,"ldap_unbind() failed");
   }
 }
 
@@ -717,10 +748,8 @@ static int do_open(MYLDAP_SESSION *session)
   rc=ldap_initialize(&(session->ld),nslcd_cfg->ldc_uris[session->current_uri].uri);
   if (rc!=LDAP_SUCCESS)
   {
-    log_log(LOG_WARNING,"ldap_initialize(%s) failed: %s%s%s",
-                        nslcd_cfg->ldc_uris[session->current_uri].uri,
-                        ldap_err2string(rc),(errno==0)?"":": ",
-                        (errno==0)?"":strerror(errno));
+    myldap_err(LOG_WARNING,session->ld,rc,"ldap_initialize(%s) failed",
+               nslcd_cfg->ldc_uris[session->current_uri].uri);
     if (session->ld!=NULL)
       do_close(session);
     return rc;
@@ -744,11 +773,9 @@ static int do_open(MYLDAP_SESSION *session)
   if (rc!=LDAP_SUCCESS)
   {
     /* log actual LDAP error code */
-    log_log((session->binddn[0]=='\0')?LOG_WARNING:LOG_DEBUG,
-                        "failed to bind to LDAP server %s: %s%s%s",
-                        nslcd_cfg->ldc_uris[session->current_uri].uri,
-                        ldap_err2string(rc),(errno==0)?"":": ",
-                        (errno==0)?"":strerror(errno));
+    myldap_err((session->binddn[0]=='\0')?LOG_WARNING:LOG_DEBUG,
+               session->ld,rc,"failed to bind to LDAP server %s",
+               nslcd_cfg->ldc_uris[session->current_uri].uri);
     do_close(session);
     return rc;
   }
@@ -790,7 +817,7 @@ static int do_try_search(MYLDAP_SEARCH *search)
     }
     else
     {
-      log_log(LOG_WARNING,"ldap_create_page_control() failed: %s",ldap_err2string(rc));
+      myldap_err(LOG_WARNING,search->session->ld,rc,"ldap_create_page_control() failed");
       /* clear error flag */
       rc=LDAP_SUCCESS;
       if (ldap_set_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
@@ -814,7 +841,7 @@ static int do_try_search(MYLDAP_SEARCH *search)
   /* handle errors */
   if (rc!=LDAP_SUCCESS)
   {
-    log_log(LOG_WARNING,"ldap_search_ext() failed: %s",ldap_err2string(rc));
+    myldap_err(LOG_WARNING,search->session->ld,rc,"ldap_search_ext() failed");
     return rc;
   }
   /* update the last activity on the connection */
@@ -959,7 +986,7 @@ static int do_retry_search(MYLDAP_SEARCH *search)
     if (nexttry>=endtime)
     {
       if (search->session->binddn[0]=='\0')
-        log_log(LOG_ERR,"no available LDAP server found: %s",ldap_err2string(rc));
+        myldap_err(LOG_ERR,search->session->ld,rc,"no available LDAP server found");
       return rc;
     }
     /* sleep between tries */
@@ -1154,7 +1181,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         {
           if (resultcontrols!=NULL)
             ldap_controls_free(resultcontrols);
-          log_log(LOG_ERR,"ldap_parse_result() failed: %s",ldap_err2string(parserc));
+          myldap_err(LOG_ERR,search->session->ld,parserc,"ldap_parse_result() failed");
           myldap_search_close(search);
           if (rcp!=NULL)
             *rcp=parserc;
@@ -1165,7 +1192,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         {
           if (resultcontrols!=NULL)
             ldap_controls_free(resultcontrols);
-          log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
+          myldap_err(LOG_ERR,search->session->ld,rc,"ldap_result() failed");
           /* close connection on connection problems */
           if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN))
             do_close(search->session);
@@ -1183,8 +1210,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
                                     &(search->cookie));
           if (rc!=LDAP_SUCCESS)
           {
-            log_log(LOG_WARNING,"ldap_parse_page_control() failed: %s",
-                                ldap_err2string(rc));
+            myldap_err(LOG_WARNING,search->session->ld,rc,"ldap_parse_page_control() failed");
             /* clear error flag */
             rc=LDAP_SUCCESS;
             if (ldap_set_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
@@ -1218,8 +1244,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         {
           if (serverctrls[0]!=NULL)
             ldap_control_free(serverctrls[0]);
-          log_log(LOG_WARNING,"ldap_create_page_control() failed: %s",
-                              ldap_err2string(rc));
+          myldap_err(LOG_WARNING,search->session->ld,rc,"ldap_create_page_control() failed");
           myldap_search_close(search);
           if (rcp!=NULL)
             *rcp=rc;
@@ -1233,8 +1258,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
         ldap_control_free(serverctrls[0]);
         if (rc!=LDAP_SUCCESS)
         {
-          log_log(LOG_WARNING,"ldap_search_ext() failed: %s",
-                              ldap_err2string(rc));
+          myldap_err(LOG_WARNING,search->session->ld,rc,"ldap_search_ext() failed");
           /* close connection on connection problems */
           if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN))
             do_close(search->session);
@@ -1256,7 +1280,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
             /* try to get error code */
             if (ldap_get_option(search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
               rc=LDAP_UNAVAILABLE;
-            log_log(LOG_ERR,"ldap_result() failed: %s",ldap_err2string(rc));
+            myldap_err(LOG_ERR,search->session->ld,rc,"ldap_result() failed");
             break;
           case 0:
             /* the timeout expired */
@@ -1313,7 +1337,7 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
     {
       if (ldap_get_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
         rc=LDAP_UNAVAILABLE;
-      log_log(LOG_WARNING,"ldap_get_dn() returned NULL: %s",ldap_err2string(rc));
+      myldap_err(LOG_WARNING,entry->search->session->ld,rc,"ldap_get_dn() returned NULL");
       /* close connection on connection problems */
       if ((rc==LDAP_UNAVAILABLE)||(rc==LDAP_SERVER_DOWN))
         do_close(entry->search->session);
@@ -1482,8 +1506,9 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry,const char *attr)
       return NULL;
     }
     else
-      log_log(LOG_WARNING,"ldap_get_values() of attribute \"%s\" on entry \"%s\" returned NULL: %s",
-                          attr,myldap_get_dn(entry),ldap_err2string(rc));
+      myldap_err(LOG_WARNING,entry->search->session->ld,rc,
+                 "ldap_get_values() of attribute \"%s\" on entry \"%s\" returned NULL",
+                 attr,myldap_get_dn(entry));
     return NULL;
   }
   /* store values entry so we can free it later on */
@@ -1581,8 +1606,9 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry,const char *attr)
       values=set_tolist(set);
     }
     else
-      log_log(LOG_WARNING,"myldap_get_values_len() of attribute \"%s\" on entry \"%s\" returned NULL: %s",
-                          attr,myldap_get_dn(entry),ldap_err2string(rc));
+      myldap_err(LOG_WARNING,entry->search->session->ld,rc,
+                 "myldap_get_values_len() of attribute \"%s\" on entry \"%s\" returned NULL",
+                 attr,myldap_get_dn(entry));
     return NULL;
   }
   else
@@ -1794,7 +1820,7 @@ int myldap_set_debuglevel(int level)
     rc=ber_set_option(NULL,LBER_OPT_LOG_PRINT_FILE,stderr);
     if (rc!=LDAP_SUCCESS)
     {
-      log_log(LOG_ERR,"ber_set_option(LBER_OPT_LOG_PRINT_FILE) failed: %s",ldap_err2string(rc));
+      myldap_err(LOG_ERR,NULL,rc,"ber_set_option(LBER_OPT_LOG_PRINT_FILE) failed");
       return rc;
     }
 #endif /* LBER_OPT_LOG_PRINT_FILE */
@@ -1806,7 +1832,7 @@ int myldap_set_debuglevel(int level)
       rc=ber_set_option(NULL,LBER_OPT_DEBUG_LEVEL,&i);
       if (rc!=LDAP_SUCCESS)
       {
-        log_log(LOG_ERR,"ber_set_option(LBER_OPT_DEBUG_LEVEL) failed: %s",ldap_err2string(rc));
+        myldap_err(LOG_ERR,NULL,rc,"ber_set_option(LBER_OPT_DEBUG_LEVEL) failed");
         return rc;
       }
     }
@@ -1817,7 +1843,7 @@ int myldap_set_debuglevel(int level)
     rc=ldap_set_option(NULL,LDAP_OPT_DEBUG_LEVEL,&i);
     if (rc!=LDAP_SUCCESS)
     {
-      log_log(LOG_ERR,"ldap_set_option(LDAP_OPT_DEBUG_LEVEL) failed: %s",ldap_err2string(rc));
+      myldap_err(LOG_ERR,NULL,rc,"ldap_set_option(LDAP_OPT_DEBUG_LEVEL) failed");
       return rc;
     }
 #endif /* LDAP_OPT_DEBUG_LEVEL */
@@ -1853,7 +1879,7 @@ int myldap_passwd(
   rc=ldap_passwd_s(session->ld,&ber_userdn,NULL,
                    &ber_newpassword,&ber_retpassword,NULL,NULL);
   if (rc!=LDAP_SUCCESS)
-    log_log(LOG_ERR,"ldap_passwd_s() without old password failed: %s",ldap_err2string(rc));
+    myldap_err(LOG_ERR,session->ld,rc,"ldap_passwd_s() without old password failed");
   /* free returned data if needed */
   if (ber_retpassword.bv_val!=NULL)
     ldap_memfree(ber_retpassword.bv_val);
@@ -1867,7 +1893,7 @@ int myldap_passwd(
     rc=ldap_passwd_s(session->ld,&ber_userdn,&ber_oldpassword,
                      &ber_newpassword,&ber_retpassword,NULL,NULL);
     if (rc!=LDAP_SUCCESS)
-      log_log(LOG_ERR,"ldap_passwd_s() with old password failed: %s",ldap_err2string(rc));
+      myldap_err(LOG_ERR,session->ld,rc,"ldap_passwd_s() with old password failed");
     /* free returned data if needed */
     if (ber_retpassword.bv_val!=NULL)
       ldap_memfree(ber_retpassword.bv_val);
