@@ -99,6 +99,16 @@ class DollarExpression(object):
                 return
             self.op = c + value.next()
             self.expr = Expression(value, endat='}')
+        elif c == '(':
+            self.name = None
+            self.op = value.get_name()
+            c = value.next()
+            if c != '(':
+                raise ValueError("Expecting '('")
+            self.expr = Expression(value, endat=')')
+            c = value.next()
+            if c != ')':
+                raise ValueError("Expecting ')'")
         else:
             value.back()
             self.name = value.get_name()
@@ -111,11 +121,16 @@ class DollarExpression(object):
             return value if value else self.expr.value(variables)
         elif self.op == ':+':
             return self.expr.value(variables) if value else ''
+        elif self.op == 'lower':
+            return self.expr.value(variables).lower()
+        elif self.op == 'upper':
+            return self.expr.value(variables).upper()
         return value
 
     def variables(self, results):
         """Add the variables used in the expression to results."""
-        results.add(self.name)
+        if self.name:
+            results.add(self.name)
         if self.expr:
             self.expr.variables(results)
 
@@ -159,7 +174,7 @@ class Expression(object):
         return res
 
     def variables(self, results=None):
-        """Return the attributes defined in the expression."""
+        """Return the variables defined in the expression."""
         if not results:
             results = set()
         for x in self.expr:
