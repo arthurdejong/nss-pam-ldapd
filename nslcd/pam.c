@@ -2,7 +2,7 @@
    pam.c - pam processing routines
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -379,7 +379,7 @@ static int try_autzsearch(MYLDAP_SESSION *session,const char *dn,
   char hostname[HOST_NAME_MAX+1];
   const char *fqdn;
   DICT *dict;
-  char filter_buffer[1024];
+  char filter_buffer[4096];
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   static const char *attrs[2];
