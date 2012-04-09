@@ -1,3 +1,63 @@
+2012-04-09 13:49  arthur
+
+	* [r1650] INSTALL, compile, config.guess, config.sub, depcomp,
+	  install-sh, missing: update files from recent automake
+
+2012-04-09 12:50  arthur
+
+	* [r1648] nslcd/pam.c: increase buffer for pam_authz_search as
+	  suggested by Chris J Arges (r1643 from 0.8 branch)
+
+2012-03-10 20:31  arthur
+
+	* [r1630] ., nslcd/cfg.c: properly log failures to lookup DNS SRV
+	  records (r1569 from 0.8 branch)
+
+2012-03-10 20:24  arthur
+
+	* [r1629] ., nslcd/pam.c: fix log message for invalid
+	  pam_authz_search as reported by Matt Rae (based on r1628 from 0.8
+	  branch)
+
+2012-01-20 17:19  arthur
+
+	* [r1610] Makefile.am, debian: split the Debian packaging from the
+	  main source tree
+
+2012-01-20 10:34  arthur
+
+	* [r1600] ., AUTHORS, configure.ac, nslcd/cfg.c, nslcd/common.c,
+	  nslcd/common.h, nslcd/group.c, nslcd/passwd.c, nslcd/protocol.c,
+	  nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c: implements proper
+	  range checking numeric values returned from LDAP (thanks Jakub
+	  Hrozek) (r1523, r1524 and r1528 from 0.8 branch)
+
+2011-12-09 13:58  arthur
+
+	* [r1562] config.guess, config.sub: revert changes to config.guess
+	  config.sub that were accidentaly part of r1561
+
+2011-12-09 13:54  arthur
+
+	* [r1561] ., config.guess, config.sub, nslcd/myldap.c: fix a typo
+	  in disconnect logic (r1560 from 0.8 branch)
+
+2011-12-08 21:34  arthur
+
+	* [r1559] nslcd/nslcd.c: ensure that uid, gid and pid vars are
+	  properly initialised (part of r1558 from trunk)
+
+2011-11-18 13:02  arthur
+
+	* [r1555] debian/libnss-ldapd.config: fix an issues where changes
+	  to /etc/nsswitch.conf outside of debconf were not picked up
+
+2011-10-02 09:47  arthur
+
+	* [r1549] ChangeLog, NEWS, configure.ac, debian/changelog,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get
+	  files ready for 0.7.15 release
+
 2011-10-02 09:09  arthur
 
 	* [r1548] ., debian/nslcd.config: treat the "hard" value for

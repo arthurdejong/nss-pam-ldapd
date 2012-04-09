@@ -1,3 +1,16 @@
+changes from 0.7.15 to 0.7.16
+-----------------------------
+
+* implement proper range checking of numeric values returned from LDAP
+  (thanks Jakub Hrozek)
+* fix an issue with detecting the uid of the calling process
+* fix a problem in the disconnect logic code
+* fix logging of invalid pam_authz_search value
+* properly log failures to lookup DNS SRV records
+* increase buffer for pam_authz_search as suggested by Chris J Arges
+* the Debian packaging was split from the main source tree
+
+
 changes from 0.7.14 to 0.7.15
 -----------------------------
 
