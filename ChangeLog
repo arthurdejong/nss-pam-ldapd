@@ -1,3 +1,109 @@
+2012-04-09 13:48  arthur
+
+	* [r1649] compile, depcomp: update files from recent automake
+
+2012-03-23 10:18  arthur
+
+	* [r1643] nslcd/pam.c: increase buffer for pam_authz_search as
+	  suggested by Chris J Arges
+
+2012-03-16 15:00  arthur
+
+	* [r1642] pynslcd/attmap.py: support the upper and lower functions
+	  in attribute mapping expressions
+
+2012-03-16 13:53  arthur
+
+	* [r1641] pynslcd/attmap.py, pynslcd/common.py, pynslcd/pam.py:
+	  refactor some of the attribute mapping code to introduce a
+	  mapping instance that does the hard work and support the lower()
+	  and upper() attribute mapping functions
+
+2012-03-16 12:48  arthur
+
+	* [r1640] pynslcd/pynslcd.py: implement a getpeercred() function
+
+2012-03-16 09:46  arthur
+
+	* [r1639] nslcd/myldap.c: always try to log the ldap error, the
+	  diagnostic message and errno if available in a consistent format
+
+2012-03-16 08:28  arthur
+
+	* [r1638] nss/common.h: put both tio_skip() and tio_close() within
+	  if (fixes r1637) and clarify documentation of one part of the
+	  code
+
+2012-03-14 20:31  arthur
+
+	* [r1637] common/tio.c, common/tio.h, nss/common.h: read any
+	  remaining available data from the stream when closing the
+	  connection in a normal way to prevent Broken pipe messages in
+	  nslcd
+
+2012-03-14 20:26  arthur
+
+	* [r1636] common/tio.c: ensure that we don't try to read more than
+	  SSIZE_MAX bytes
+
+2012-03-13 19:32  arthur
+
+	* [r1635] AUTHORS, man/nslcd.conf.5.xml: document the fact that
+	  each thread opens it's own connection (patch by Chris Hiestand)
+
+2012-03-13 18:29  arthur
+
+	* [r1634] AUTHORS, man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/common.h, nslcd/group.c, nslcd/netgroup.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  make whether or not to do case-sensitive filtering configurable
+	  (patch by Matthew L. Dailey)
+
+2012-03-13 18:03  arthur
+
+	* [r1633] compile, config.guess, config.sub, missing: update from
+	  latest automake
+
+2012-03-10 20:57  arthur
+
+	* [r1632] nslcd/cfg.c: when doing DNS queries for SRV records
+	  recognise default ldap and ldaps ports
+
+2012-03-10 20:41  arthur
+
+	* [r1631] nslcd/common.h: add missing include for
+	  _POSIX_HOST_NAME_MAX (thanks Mel Flynn)
+
+2012-03-10 20:17  arthur
+
+	* [r1628] nslcd/pam.c: fix log message for invalid pam_authz_search
+	  as reported by Matt Rae
+
+2012-03-05 22:27  arthur
+
+	* [r1627] nslcd/myldap.c: remove extra newline from log message
+
+2012-03-05 21:53  arthur
+
+	* [r1626] compat/ldap_compat.h, nslcd/myldap.c: provide more
+	  detailed logging information for ldap_start_tls_s() failures
+	  (based on a patch by Mel Flynn)
+
+2012-02-29 21:44  arthur
+
+	* [r1625] nslcd/myldap.c: log the first 10 search results in debug
+	  mode to make debugging easier (patch by Matthijs Kooijman)
+
+2012-02-29 21:26  arthur
+
+	* [r1624] README, nslcd/nslcd.c: update copyright years
+
+2012-01-29 15:37  arthur
+
+	* [r1616] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.6 release
+
 2012-01-29 15:13  arthur
 
 	* [r1615] pynslcd/alias.py, pynslcd/cache.py, pynslcd/common.py,

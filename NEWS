@@ -1,3 +1,25 @@
+changes from 0.8.6 to 0.8.7
+---------------------------
+
+* log the first 10 search results in debug mode to make debugging easier
+  (patch by Matthijs Kooijman)
+* provide more detailed logging information for LDAP errors, this should
+  especially help for TLS related problems (based on a patch by Mel Flynn)
+* fix logging of invalid pam_authz_search value
+* when doing DNS queries for SRV records recognise default ldap and ldaps
+  ports
+* make whether or not to do case-sensitive filtering configurable (patch by
+  Matthew L. Dailey)
+* document the fact that each thread opens it's own connection (patch by
+  Chris Hiestand)
+* some small portability improvements
+* try to prevent some of the Broken pipe messages in nslcd
+* increase buffer used for pam_authz_search as suggested by Chris J Arges
+* pynslcd now handles privileged requests correctly
+* pynslcd now supports attribute mapping using the lower() and upper()
+  functions
+
+
 changes from 0.8.5 to 0.8.6
 ---------------------------
 
