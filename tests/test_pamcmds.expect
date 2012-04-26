@@ -114,6 +114,7 @@ proc test_login_unknown {uid passwd} {
   expect {
     "Password:" { send "$passwd\r"; exp_continue }
     "Unknown id" {}
+    "No passwd entry for user" {}
     "\$ " abort
     default abort
   }
