@@ -56,10 +56,11 @@ TFILE *tio_fdopen(int fd,struct timeval *readtimeout,struct timeval *writetimeou
 /* Read the specified number of bytes from the stream. */
 int tio_read(TFILE *fp,void *buf,size_t count);
 
-/* Read and discard the specified number of bytes from the stream.
-   If count is 0 reads and discards any data that can be read and empties
-   the read buffer. */
+/* Read and discard the specified number of bytes from the stream. */
 int tio_skip(TFILE *fp,size_t count);
+
+/* Read all available data from the stream and empty the read buffer. */
+int tio_skipall(TFILE *fp);
 
 /* Write the specified buffer to the stream. */
 int tio_write(TFILE *fp,const void *buf,size_t count);

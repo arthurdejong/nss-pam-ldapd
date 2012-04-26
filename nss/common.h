@@ -148,7 +148,7 @@ nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args));
   /* close socket and we're done */ \
   if ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_TRYAGAIN)) \
   { \
-    (void)tio_skip(fp,0); /* read any buffered data */ \
+    (void)tio_skipall(fp); \
     (void)tio_close(fp); \
   } \
   return retv;
@@ -224,7 +224,7 @@ nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args));
   NSS_AVAILCHECK; \
   if (fp!=NULL) \
   { \
-    (void)tio_skip(fp,0); /* read any buffered data */ \
+    (void)tio_skipall(fp); \
     (void)tio_close(fp); \
     fp=NULL; \
   } \

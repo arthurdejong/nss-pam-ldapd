@@ -317,18 +317,19 @@ int tio_read(TFILE *fp, void *buf, size_t count)
   }
 }
 
-/* Read and discard the specified number of bytes from the stream.
-   If count is 0 reads and discards any data that can be read and empties
-   the read buffer. */
+/* Read and discard the specified number of bytes from the stream. */
 int tio_skip(TFILE *fp, size_t count)
 {
+  return tio_read(fp,NULL,count);
+}
+
+/* Read all available data from the stream and empty the read buffer. */
+int tio_skipall(TFILE *fp)
+{
+  struct timeval tv;
+  fd_set fdset;
   int rv;
   size_t len;
-  /* for simple cases just read */
-  if (count>0)
-  {
-    return tio_read(fp,NULL,count);
-  }
   /* clear the read buffer */
   fp->readbuffer.start=0;
   fp->readbuffer.len=0;
@@ -341,8 +342,22 @@ int tio_skip(TFILE *fp, size_t count)
 #endif /* SSIZE_MAX */
   while (1)
   {
+    /* prepare our file descriptor set */
+    FD_ZERO(&fdset);
+    FD_SET(fp->fd,&fdset);
+    /* prepare the time to wait */
+    tv.tv_sec=0;
+    tv.tv_usec=0;
+    /* see if any data is available */
+    rv=select(FD_SETSIZE,&fdset,NULL,NULL,&tv);
+    if (rv==0)
+      return 0; /* no file descriptor ready */
+    if ((rv<0)&&((errno==EINTR)||(errno==EAGAIN)))
+      continue; /* interrupted, try again */
+    if (rv<0)
+      return -1; /* something went wrong */
+    /* read data from the stream */
     rv=read(fp->fd,fp->readbuffer.buffer,len);
-    /* check for errors */
     if (rv==0)
       return 0; /* end-of-file */
     if ((rv<0)&&(errno==EWOULDBLOCK))
