@@ -1,3 +1,25 @@
+2012-04-27 07:37  arthur
+
+	* [r1660] Makefile.am, ldapns.schema: add a schema file that some
+	  people use for PAM
+
+2012-04-26 19:42  arthur
+
+	* [r1659] common/tio.c, common/tio.h, nss/common.h: split the
+	  functionality to read everything from the stream into a separate
+	  function and don't assume we use non-blocking IO (fix r1637)
+
+2012-04-26 19:39  arthur
+
+	* [r1658] tests/test_pamcmds.expect: support alternative unknown
+	  user response
+
+2012-04-22 19:28  arthur
+
+	* [r1653] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.7 release
+
 2012-04-09 13:48  arthur
 
 	* [r1649] compile, depcomp: update files from recent automake

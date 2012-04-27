@@ -1,3 +1,10 @@
+changes from 0.8.7 to 0.8.8
+---------------------------
+
+* fix a regression in the handling of PAM requests
+* add the ldapns.schema file from pam_ldap to the tarball
+
+
 changes from 0.8.6 to 0.8.7
 ---------------------------
 
