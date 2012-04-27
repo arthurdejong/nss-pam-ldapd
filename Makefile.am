@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -35,7 +35,7 @@ endif
 SUBDIRS += man tests
 
 EXTRA_DIST = nslcd.conf nslcd.h $(wildcard ChangeLog-20??) \
-             $(wildcard m4/*.m4) HACKING
+             $(wildcard m4/*.m4) HACKING ldapns.schema
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-warnings --with-pam-seclib-dir="\$${libdir}/security" \
                             --enable-pynslcd
