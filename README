@@ -1,10 +1,8 @@
-   nss-pam-ldapd - NSS and PAM library for name lookups and authentication
+   nss-pam-ldapd - NSS and PAM libraries for name lookups and authentication
                    using LDAP
 
    nss-pam-ldapd started as nss-ldapd which was a fork from nss_ldap which was
    originally written by Luke Howard of PADL Software Pty Ltd.
-
-   http://www.padl.com/OSS/nss_ldap.html
 
    In 2006 Arthur de Jong of West Consuling forked the library to split it
    into a thin NSS part and a server part. Most of the code was rewritten.
@@ -47,28 +45,29 @@ provided by Luke Howard of PADL Software Pty Ltd. The PAM module was mostly
 provided by Howard Chu of the OpenLDAP project.
 
 The NSS library allows distributing account, group, host and other
-configuration information from a central LDAP server throughout an
-organisation. Because LDAP is a hierarchical directory service, you can
-distribute the information in a manner which reflects an organisational
-structure. This contrasts with the flat, single domain policy of NIS. LDAP has
-many of the advantages of NIS+ (security and scalability) without the
-complexity. The system will work alongside your existing NIS, NIS+, DNS and
-flat file name services.
+configuration information from a central LDAP server. Because LDAP is a
+hierarchical directory service, information can be organised in a manner which
+reflects an organisational structure. This contrasts with the flat, single
+domain policy of NIS. LDAP has many of the advantages of NIS+ (security and
+scalability) without the complexity. The system will work alongside your
+existing NIS, NIS+, DNS and flat file name services.
 
 The PAM library (module) can be used to perform authentication based on
 information inside the LDAP directory.
 
-Both libraries consist of a thin NSS or PAM part that communicates with a
-local daemon (nslcd) that handles the LDAP lookups. This simplifies the
-architecture and fixes some scalability and locking problems in the original
-design of nss_ldap.
+Both libraries consist of a thin NSS or PAM part that proxies the requests to
+a local daemon (nslcd) that handles the LDAP lookups. This simplifies the
+software architecture and fixes some scalability and locking problems in the
+original design of nss_ldap.
 
-Also it is possible to use the thin NSS and PAM parts together with the nssov
-overlay in the OpenLDAP server (slapd).
+It is also possible to use the thin NSS and PAM modules together with the
+nssov overlay in the OpenLDAP server (slapd).
 
-The three parts (NSS module, PAM module, and nslcd server) can be build
-separately and are not tied together. This means that for instance you can
-still use pam_ldap and use the NSS module from nss-pam-ldapd.
+The three parts (NSS module, PAM module, and nslcd server) can be built
+separately and are not srtongly tied together. This means that for instance
+you can still use pam_ldap and use the NSS module from nss-pam-ldapd or use an
+alternative implementation of nslcd (for instance with the nssov slapd overlay
+or the pynslcd implementation).
 
 improvements over nss_ldap
 --------------------------
@@ -76,32 +75,26 @@ improvements over nss_ldap
 The fork from nss_ldap was done to implement some major design changes to fix
 some structural problems in the library.
 
-The biggest of those problems were host name lookups through LDAP which could
-cause deadlocks in most cases and some general name lookup problems during
-booting (when the LDAP server was not started or not yet reachable).
+One of those problems were host name lookups through LDAP which could cause
+deadlocks. Another is that nss_ldpa loaded an SSL library into an executable
+that may not be designed to load it (e.g. problem with suid applications).
 
 A number of refactoring steps were done to simplify the code and improve
 maintainability. Legacy code was removed and support for non-Linux operating
-systems was initially removed to make the code more readable. Portability will
-be re-added once the architecture stabilises.
+systems was initially removed to make the code more readable. Portability was
+re-added after the refactoring.
 
 The most practical improvements over nss_ldap are:
 - the LDAP library is not loaded for every process doing LDAP lookups
 - the number of connections to the LDAP server is limited, because not every
-  process will open it's own connection (this problem is also mitigated by
-  using nscd)
+  process will open it's own connection
 - hostname lookups should now be deadlock-free because the LDAP server name is
   no longer looked up using the ldap method
+- avoid problems with TLS connections in suid binaries and other process-local
+  configuration
 - the setup is easier to debug because logging on the server component can be
-  enabled without affecting "normal" processes
-
-This package runs a local daemon that will be enabled during the boot process.
-This daemon will handle connections to the LDAP server and accept requests
-through a named socket (/var/run/nslcd/socket). The thin NSS library will
-proxy requests to the daemon.
-
-Note that the package currently cannot be used on the same system alongside
-nss_ldap.
+  enabled without affecting running processes
+- unavailability timeouts are global instead of per-process
 
 comparison to pam_ldap
 ----------------------
@@ -115,9 +108,8 @@ implements session functionality.
 supported C libraries (for NSS module)
 --------------------------------------
 
-This library currently only supports the GNU C Library. Support for other C
-libraries has been removed in a refactoring step. Compatibility code and
-support for other C libraries will be added upon request.
+This library currently supports the GNU C Library, the Solaris C library and
+the FreeBSD C library.
 
 supported name databases
 ------------------------
@@ -140,9 +132,9 @@ supported because the NSS interface is not used for these. The common autofs
 implementation (on GNU/Linux) currently uses it's own method for getting the
 maps from LDAP.
 
-Although aliases are exposed through NSS, most mail servers parse /etc/aliases
-by themselves and getting aliases from LDAP requires some configuration in the
-mail server.
+Although mail aliases are exposed through NSS, most mail servers parse
+/etc/aliases by themselves and getting aliases from LDAP requires some
+configuration in the mail server.
 
 The publickey, bootparams and netmasks are currently unsupported. Some
 investigation should be done if these are needed for anything, which
@@ -172,6 +164,7 @@ with nss_ldap are available. The most important differences:
 For the PAM module some functionality is missing. Comparing it to pam_ldap:
 - only BIND authentication is supported
 - only LDAP password modify EXOP is supported as password changing mechanism
+- LDAP password policy is currently unsupported
 
 Some things work a little different in nss-pam-ldapd. For instance the
 attribute defaults and overrides of nss_ldap are implemented with mapping
@@ -189,23 +182,23 @@ nss-pam-ldapd should be as simple as:
   % make
   % make install
 
-That said, it is a good idea to go first through the options of configure by
-running:
+It is a good idea to first go through the options of configure by running:
 
   % ./configure --help
 
 The last step (make install) should install the libnss_ldap.so.* and
-pam_ldap.so files and the daemon (nslcd). The boot process needs to be
-manually modified to start the daemon at the right time.
+pam_ldap.so files and the daemon (nslcd). The proper location of the NSS and
+PAM modules are guessed. The boot process needs to be modified to start the
+nslcd daemon at the right time.
 
-Also, it is recommended to create a dedicated user for the nslcd daemon.
-Configure this user in /etc/nslcd.conf using the uid and gid options.
+It is recommended to create a dedicated user for the nslcd daemon. Configure
+this user in /etc/nslcd.conf using the uid and gid options.
 
 
 CONFIGURATION
 =============
 
-After installation the name service switch configuration file
+After installation, the name service switch configuration file
 (/etc/nsswitch.conf) needs to be modified to do name lookups using the new
 module. This consist mostly of adding ldap in the list of lookup methods in
 the right place. See the nsswitch.conf(5) manual page for details on the
@@ -230,23 +223,23 @@ format. As an example the file could look a little like this:
   # whether alias lookups really use NSS depends on the mail server
   aliases:        files ldap
 
-Configuring PAM differs a little from platform to platform but this is a basic
-set-up for files under /etc/pam.d:
+Configuring PAM differs a little from platform to platform but this is a
+minimal set-up for files under /etc/pam.d:
 
-auth   sufficient   pam_unix.so
-auth   sufficient   pam_ldap.so use_first_pass
-auth   required     pam_deny.so
+  auth   sufficient   pam_unix.so
+  auth   sufficient   pam_ldap.so use_first_pass
+  auth   required     pam_deny.so
 
-account   required     pam_unix.so
-account   sufficient   pam_ldap.so
-account   required     pam_permit.so
+  account   required     pam_unix.so
+  account   sufficient   pam_ldap.so
+  account   required     pam_permit.so
 
-session   required   pam_unix.so
-session   optional   pam_ldap.so
+  session   required   pam_unix.so
+  session   optional   pam_ldap.so
 
-password   sufficient   pam_unix.so nullok md5 shadow use_authtok
-password   sufficient   pam_ldap.so try_first_pass
-password   required     pam_deny.so
+  password   sufficient   pam_unix.so nullok md5 shadow use_authtok
+  password   sufficient   pam_ldap.so try_first_pass
+  password   required     pam_deny.so
 
 Lastly, a configuration file for nslcd (by default /etc/nslcd.conf) needs to
 be made. See the shipped manual page for details on the format and options. It
@@ -277,9 +270,8 @@ LDAP SCHEMA
 
 nss-pam-ldapd supports a wide range of possible LDAP schema configurations and
 it can be customized heavily. The LDAP schema used is described in RFC 2307.
-Groups with distinguished name members (instead of login names) (RFC 2307bis)
-are also supported, although use of memberUid has much better performance (see
-below for details).
+Groups using the member attribute that hold distinguished names (RFC 2307bis)
+are also supported (but see group membership below for more information).
 
 default attributes
 ------------------
@@ -296,7 +288,7 @@ ethers (objectClass=ieee802Device)
   macAddress        - ethernet address
 group (objectClass=posixGroup)
   cn                - group name
-  userPassword      - password
+  userPassword      - password (by default mapped to "*")
   gidNumber         - gid
   memberUid         - members (user names)
   member            - members (DN values)
@@ -312,7 +304,7 @@ networks (objectClass=ipNetwork)
   ipNetworkNumber   - network address
 passwd (objectClass=posixAccount)
   uid               - account name
-  userPassword      - password
+  userPassword      - password (by default mapped to "*")
   uidNumber         - uid
   gidNumber         - gid
   gecos             - gecos
@@ -342,10 +334,9 @@ shadow (objectClass=shadowAccount)
 using Microsoft Active Directory
 --------------------------------
 
-When using Microsoft Active Directory server (typically on Microsoft Windows
-2000) some changes need to be made to the nslcd.conf configuration file. The
-included sample configuration file has some commented out attribute mappings
-for such a set-up.
+When using Microsoft Active Directory server some changes need to be made to
+the nslcd.conf configuration file. The included sample configuration file has
+some commented out attribute mappings for such a set-up.
 
 group membership
 ----------------
@@ -365,31 +356,28 @@ If the DN value already contains a uid value (e.g. uid=arthur, dc=example,
 dc=com) the lookup is skipped and the value from the DN is used. A cache is
 maintained that saves the DN to uid translations for 15 minutes.
 
-In all cases, users that are specified as member multiple times are returned
-only once.
-
 Currently, having nested groups by member values pointing to other groups,
 as well as the memberOf attribute in posixAccount entries are unsupported.
 
 case sensitivity
 ----------------
 
-Most values in the NSS databases are considered case-sensitive (e.g. the user
+Most values in NSS databases are considered case-sensitive (e.g. the user
 "Foo" is a different user from the user "foo"). Most values in an LDAP
 database are however considered case-insensitive. nss-pam-ldapd tries to solve
-this problem by adding an extra filtering layer to ensure that e.g. when
-looking for the user "foo" it will not return a user "Foo" that is found in
-LDAP.
+this problem by adding an extra filtering layer to ensure that when looking
+for the user "foo" it will not consider a user "Foo" that is found in LDAP.
 
 For the group, netgroup, passwd, protocols, rpc, services and shadow maps the
 matches will be checked case-sensitively and for aliases, ethers, hosts and
 networks matches will be case-insensitive (this seems to be what Glibc is
-doing currently with flat files). Only searching for groups by user is done
+doing currently in flat files). Only searching for groups by user is done
 case-insensitive. In all cases the case-use in the LDAP directory is returned.
 
 Note that having entries that only differ in case is a bad idea and will
 likely get you in trouble. One example of such a problem is that the DN
-uid=test,dc=example,dc=com is the same as uid=TEST,dc=example,dc=com.
+uid=test,dc=example,dc=com is considered the same in LDAP as
+uid=TEST,dc=example,dc=com.
 
 
 REPORTING BUGS
