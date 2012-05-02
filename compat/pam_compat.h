@@ -37,12 +37,13 @@
 #include <security/pam_modutil.h>
 #endif /* HAVE_SECURITY_PAM_MODUTIL_H */
 
-/* some systems define PAM_AUTHTOK_RECOVER_ERR but not
-   PAM_AUTHTOK_RECOVERY_ERR */
+/* find value of PAM_AUTHTOK_RECOVERY_ERR */
 #ifndef PAM_AUTHTOK_RECOVERY_ERR
 #ifdef PAM_AUTHTOK_RECOVER_ERR
 #define PAM_AUTHTOK_RECOVERY_ERR PAM_AUTHTOK_RECOVER_ERR
-#endif /* PAM_AUTHTOK_RECOVER_ERR */
+#else
+#define PAM_AUTHTOK_RECOVERY_ERR 21 /* not defined anywhere */
+#endif
 #endif /* not PAM_AUTHTOK_RECOVERY_ERR */
 
 /* define our own replacement pam_get_authtok() if it wasn't found */

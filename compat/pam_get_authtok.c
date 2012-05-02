@@ -35,15 +35,6 @@
 
 /* warning: this version assumes that try_first_pass is specified */
 
-/* find value of PAM_AUTHTOK_RECOVERY_ERR */
-#ifndef PAM_AUTHTOK_RECOVERY_ERR
-#ifdef PAM_AUTHTOK_RECOVER_ERR
-#define PAM_AUTHTOK_RECOVERY_ERR PAM_AUTHTOK_RECOVER_ERR
-#else
-#define PAM_AUTHTOK_RECOVERY_ERR 21 /* not defined anywhere */
-#endif
-#endif
-
 int pam_get_authtok(pam_handle_t *pamh,int item,const char **authtok,const char *prompt)
 {
   int rc;
