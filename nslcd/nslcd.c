@@ -709,7 +709,7 @@ int main(int argc,char *argv[])
     exit(EXIT_FAILURE);
   }
   /* close all file descriptors (except stdin/out/err) */
-  i=sysconf(_SC_OPEN_MAX);
+  i=sysconf(_SC_OPEN_MAX)-1;
   /* if the system does not have OPEN_MAX just close the first 32 and
      hope we closed enough */
   if (i<0)
