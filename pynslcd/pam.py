@@ -19,7 +19,9 @@
 # 02110-1301 USA
 
 import logging
+import socket
 
+from ldap.filter import escape_filter_chars as escape
 import ldap
 
 import cfg
@@ -122,11 +124,63 @@ class PAMAuthenticationRequest(PAMRequest):
             logging.debug('bind failed: %s', msg)
             self.write(parameters, constants.NSLCD_PAM_AUTH_ERR, msg)
 
-#class PAMAuthorisationRequest(PAMRequest):
 
-#    action = constants.NSLCD_ACTION_PAM_AUTHZ
+class PAMAuthorisationRequest(PAMRequest):
 
-#    def handle_request(self):
+    action = constants.NSLCD_ACTION_PAM_AUTHZ
+
+    def read_parameters(self, fp):
+        return dict(username=fp.read_string(),
+                    ignore_userdn=fp.read_string(),
+                    service=fp.read_string(),
+                    ruser=fp.read_string(),
+                    rhost=fp.read_string(),
+                    tty=fp.read_string())
+        # TODO: log call with parameters
+
+    def write(self, parameters, code=constants.NSLCD_PAM_SUCCESS, msg=''):
+        self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+        self.fp.write_string(parameters['username'])
+        self.fp.write_string('')  # userdn
+        self.fp.write_int32(code)
+        self.fp.write_string(msg)
+        self.fp.write_int32(constants.NSLCD_RESULT_END)
+
+    def check_authzsearch(self, parameters):
+        if not cfg.pam_authz_search:
+            return
+        # escape all parameters
+        variables = dict((k, escape(v)) for k, v in parameters.items())
+        variables.update(
+                hostname=escape(socket.gethostname()),
+                fqdn=escape(socket.getfqdn()),
+                dn=variables['userdn'],
+                uid=variables['username'],
+            )
+        # go over all authz searches
+        for x in cfg.pam_authz_search:
+            filter = x.value(variables)
+            logging.debug('trying pam_authz_search "%s"', filter)
+            search = common.Search(self.conn, filter=filter, attributes=('dn', ))
+            try:
+                dn, values = search.items().next()
+            except StopIteration:
+                logging.error('pam_authz_search "%s" found no matches', filter)
+                raise
+            logging.debug('pam_authz_search found "%s"', dn)
+
+    def handle_request(self, parameters):
+        # fill in any missing userdn, etc.
+        self.validate_request(parameters)
+        # check authorisation search
+        try:
+            self.check_authzsearch(parameters)
+        except StopIteration:
+            self.write(parameters, constants.NSLCD_PAM_PERM_DENIED,
+                       'LDAP authorisation check failed')
+            return
+        # all tests passed, return OK response
+        self.write(parameters)
 
 
 #NSLCD_ACTION_PAM_SESS_O
