@@ -24,6 +24,8 @@ import sys
 
 import ldap
 
+from expr import Expression
+
 
 # the number of threads to start
 threads = 5
@@ -251,7 +253,6 @@ def read(filename):
         # pam_authz_search <FILTER>
         m = re.match('pam_authz_search\s+(?P<value>\S.*)', line, re.IGNORECASE)
         if m:
-            from attmap import Expression
             pam_authz_search.append(Expression(m.group('value')))
             # TODO: check pam_authz_search expression to only contain
             # username, service, ruser, rhost, tty, hostname, fqdn, dn or

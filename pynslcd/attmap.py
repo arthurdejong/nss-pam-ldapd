@@ -41,152 +41,18 @@ import ldap
 import re
 from ldap.filter import escape_filter_chars as escape
 
+from expr import Expression
+
 
 # exported names
 __all__ = ('Attributes', )
 
 
-# FIXME: support multiple attribute values
 # TODO: support objectSid attributes
-# TODO: do more expression validity checking
 
 
 # regular expression to match function attributes
 attribute_func_re = re.compile('^(?P<function>[a-z]+)\((?P<attribute>.*)\)$')
-
-
-class MyIter(object):
-    """Custom iterator-like class with a back() method."""
-
-    def __init__(self, value):
-        self.value = value
-        self.pos = 0
-
-    def next(self):
-        self.pos += 1
-        return self.value[self.pos - 1]
-
-    def back(self):
-        self.pos -= 1
-
-    def __iter__(self):
-        return self
-
-    def get_name(self):
-        """Read a variable name from the value iterator."""
-        name = ''
-        for c in self:
-            if not c.isalnum():
-                self.back()
-                return name
-            name += c
-        return name
-
-
-class DollarExpression(object):
-    """Class for handling a variable $xxx ${xxx}, ${xxx:-yyy} or ${xxx:+yyy}
-    expression."""
-
-    def __init__(self, value):
-        """Parse the expression as the start of a $-expression."""
-        self.op = None
-        self.expr = None
-        c = value.next()
-        if c == '{':
-            self.name = value.get_name()
-            c = value.next()
-            if c == '}':
-                return
-            self.op = c + value.next()
-            self.expr = Expression(value, endat='}')
-        elif c == '(':
-            self.name = None
-            self.op = value.get_name()
-            c = value.next()
-            if c != '(':
-                raise ValueError("Expecting '('")
-            self.expr = Expression(value, endat=')')
-            c = value.next()
-            if c != ')':
-                raise ValueError("Expecting ')'")
-        else:
-            value.back()
-            self.name = value.get_name()
-
-    def value(self, variables):
-        """Expand the expression using the variables specified."""
-        value = variables.get(self.name, [''])[0]
-        # FIXME: expand list
-        if self.op == ':-':
-            return value if value else self.expr.value(variables)
-        elif self.op == ':+':
-            return self.expr.value(variables) if value else ''
-        elif self.op == 'lower':
-            return self.expr.value(variables).lower()
-        elif self.op == 'upper':
-            return self.expr.value(variables).upper()
-        return value
-
-    def variables(self, results):
-        """Add the variables used in the expression to results."""
-        if self.name:
-            results.add(self.name)
-        if self.expr:
-            self.expr.variables(results)
-
-
-class Expression(object):
-    """Class for parsing and expanding an expression."""
-
-    def __init__(self, value, endat=None):
-        """Parse the expression as a string."""
-        if not isinstance(value, MyIter):
-            self.expression = value
-            value = MyIter(value)
-        if not endat:
-            endat = value.next()  # skip opening quote
-        expr = []
-        literal = ''
-        c = value.next()
-        while c != endat:
-            if c == '$':
-                if literal:
-                    expr.append(literal)
-                expr.append(DollarExpression(value))
-                literal = ''
-            elif c == '\\':
-                literal += value.next()
-            else:
-                literal += c
-            c = value.next()
-        if literal:
-            expr.append(literal)
-        self.expr = expr
-
-    def value(self, variables):
-        """Expand the expression using the variables specified."""
-        res = ''
-        for x in self.expr:
-            if hasattr(x, 'value'):
-                res += x.value(variables)
-            else:
-                res += x
-        return res
-
-    def variables(self, results=None):
-        """Return the variables defined in the expression."""
-        if not results:
-            results = set()
-        for x in self.expr:
-            if hasattr(x, 'variables'):
-                x.variables(results)
-        return results
-
-    def __str__(self):
-        return self.expression
-
-    def __repr__(self):
-        return repr(str(self))
 
 
 class SimpleMapping(str):
@@ -209,6 +75,7 @@ class ExpressionMapping(str):
     def __init__(self, value):
         """Parse the expression as a string."""
         self.expression = Expression(value)
+        super(ExpressionMapping, self).__init__(value)
 
     def values(self, variables):
         """Expand the expression using the variables specified."""
@@ -227,6 +94,7 @@ class FunctionMapping(str):
         m = attribute_func_re.match(mapping)
         self.attribute = m.group('attribute')
         self.function = getattr(self, m.group('function'))
+        super(FunctionMapping, self).__init__(mapping)
 
     def upper(self, value):
         return value.upper()
@@ -253,8 +121,8 @@ class Attributes(dict):
 
     def __setitem__(self, attribute, mapping):
         # translate the mapping into a mapping object
-        if mapping[0] == '"':
-            mapping = ExpressionMapping(mapping)
+        if mapping[0] == '"' and mapping[-1] == '"':
+            mapping = ExpressionMapping(mapping[1:-1])
         elif '(' in mapping:
             mapping = FunctionMapping(mapping)
         else:
