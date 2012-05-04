@@ -118,18 +118,20 @@ def _get_maps():
     # separate function as not to pollute the namespace and avoid import loops
     import alias, ether, group, host, netgroup, network, passwd
     import protocol, rpc, service, shadow
-    return dict(alias=alias, aliases=alias,
-                 ether=ether, ethers=ether,
-                 group=group,
-                 host=host, hosts=host,
-                 netgroup=netgroup,
-                 network=network, networks=network,
-                 passwd=passwd,
-                 protocol=protocol, protocols=protocol,
-                 rpc=rpc,
-                 service=service, services=service,
-                 shadow=shadow,
-                 none=sys.modules[__name__])
+    return dict(
+            alias=alias, aliases=alias,
+            ether=ether, ethers=ether,
+            group=group,
+            host=host, hosts=host,
+            netgroup=netgroup,
+            network=network, networks=network,
+            passwd=passwd,
+            protocol=protocol, protocols=protocol,
+            rpc=rpc,
+            service=service, services=service,
+            shadow=shadow,
+            none=sys.modules[__name__]
+        )
 
 
 class ParseError(Exception):
@@ -172,7 +174,8 @@ def read(filename):
             globals()[m.group('keyword').lower()] = m.group('value')
             continue
         # parse options with a single value that can contain spaces
-        m = re.match('(?P<keyword>binddn|rootpwmoddn|sasl_realm|sasl_authcid|sasl_authzid|sasl_secprops|krb5_ccname|tls_cacertdir|tls_cacertfile|tls_randfile|tls_ciphers|tls_cert|tls_key)\s+(?P<value>\S.*)', line, re.IGNORECASE)
+        m = re.match('(?P<keyword>binddn|rootpwmoddn|sasl_realm|sasl_authcid|sasl_authzid|sasl_secprops|krb5_ccname|tls_cacertdir|tls_cacertfile|tls_randfile|tls_ciphers|tls_cert|tls_key)\s+(?P<value>\S.*)',
+                     line, re.IGNORECASE)
         if m:
             globals()[m.group('keyword').lower()] = m.group('value')
             continue
@@ -236,8 +239,8 @@ def read(filename):
         if m:
             users = m.group('value')
             if users.lower() == 'alllocal':
-                # get all users known to the system currently (since nslcd isn't yet
-                # running, this should work)
+                # get all users known to the system currently (since nslcd
+                # isn't yet running, this should work)
                 import pwd
                 users = (x.pw_name for x in pwd.getpwall())
             else:
@@ -250,11 +253,12 @@ def read(filename):
         if m:
             from attmap import Expression
             pam_authz_search.append(Expression(m.group('value')))
-            # TODO: check pam_authz_search expression to only contain username, service, ruser, rhost, tty, hostname, fqdn, dn or uid variables
+            # TODO: check pam_authz_search expression to only contain
+            # username, service, ruser, rhost, tty, hostname, fqdn, dn or
+            # uid variables
             continue
         # ssl <on|off|start_tls>
-        m = re.match('ssl\s+(?P<value>%s)' %
-                         '|'.join(_ssl_options.keys()),
+        m = re.match('ssl\s+(?P<value>%s)' % '|'.join(_ssl_options.keys()),
                      line, re.IGNORECASE)
         if m:
             global ssl
