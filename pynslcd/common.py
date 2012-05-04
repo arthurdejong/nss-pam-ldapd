@@ -63,6 +63,7 @@ class Search(object):
       case_insensitive - check that these attributes are present in the
                          response if they were in the request
       limit_attributes - override response attributes with request attributes
+                         (ensure that only one copy of the value is returned)
       required - attributes that are required
       canonical_first - search the DN for these attributes and ensure that
                         they are listed first in the attribute values
@@ -136,7 +137,8 @@ class Search(object):
         """Handle an entry with the specified attributes, filtering it with
         the request parameters where needed."""
         # translate the attributes using the attribute mapping
-        attributes = self.attmap.translate(attributes)
+        if self.attmap:
+            attributes = self.attmap.translate(attributes)
         # make sure value from DN is first value
         for attr in self.canonical_first:
             primary_value = self.attmap.get_rdn_value(dn, attr)
