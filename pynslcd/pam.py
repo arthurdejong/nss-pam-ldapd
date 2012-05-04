@@ -48,28 +48,27 @@ class PAMRequest(common.Request):
         in the DN if needed."""
         # check username for validity
         common.validate_name(parameters['username'])
-        # look up user DN if not known
-        if not parameters['userdn']:
-            entry = passwd.uid2entry(self.conn, parameters['username'])
-            if not entry:
-                raise ValueError('%r: user not found' % parameters['username'])
-            # save the DN
-            parameters['userdn'] = entry[0]
-            # get the "real" username
-            value = passwd.attmap.get_rdn_value(entry[0], 'uid')
-            if not value:
-                # get the username from the uid attribute
-                values = entry[1]['uid']
-                if not values or not values[0]:
-                    logging.warning('%s: is missing a %s attribute', dn, passwd.attmap['uid'])
-                value = values[0]
-            # check the username
-            if value and not common.isvalidname(value):
-                raise ValueError('%s: has invalid %s attribute', dn, passwd.attmap['uid'])
-            # check if the username is different and update it if needed
-            if value != parameters['username']:
-                logging.info('username changed from %r to %r', parameters['username'], value)
-                parameters['username'] = value
+        # look up user DN
+        entry = passwd.uid2entry(self.conn, parameters['username'])
+        if not entry:
+            raise ValueError('%r: user not found' % parameters['username'])
+        # save the DN
+        parameters['userdn'] = entry[0]
+        # get the "real" username
+        value = passwd.attmap.get_rdn_value(entry[0], 'uid')
+        if not value:
+            # get the username from the uid attribute
+            values = entry[1]['uid']
+            if not values or not values[0]:
+                logging.warning('%s: is missing a %s attribute', dn, passwd.attmap['uid'])
+            value = values[0]
+        # check the username
+        if value and not common.isvalidname(value):
+            raise ValueError('%s: has invalid %s attribute', dn, passwd.attmap['uid'])
+        # check if the username is different and update it if needed
+        if value != parameters['username']:
+            logging.info('username changed from %r to %r', parameters['username'], value)
+            parameters['username'] = value
 
 
 class PAMAuthenticationRequest(PAMRequest):
@@ -78,8 +77,8 @@ class PAMAuthenticationRequest(PAMRequest):
 
     def read_parameters(self, fp):
         return dict(username=fp.read_string(),
-                    userdn=fp.read_string(),
-                    servicename=fp.read_string(),
+                    ignore_userdn=fp.read_string(),
+                    service=fp.read_string(),
                     password=fp.read_string())
         #self.validate_request()
         # TODO: log call with parameters
@@ -87,7 +86,7 @@ class PAMAuthenticationRequest(PAMRequest):
     def write(self, parameters, code=constants.NSLCD_PAM_SUCCESS, msg=''):
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
         self.fp.write_string(parameters['username'])
-        self.fp.write_string(parameters['userdn'])
+        self.fp.write_string('')  # userdn
         self.fp.write_int32(code)  # authc
         self.fp.write_int32(constants.NSLCD_PAM_SUCCESS)  # authz
         self.fp.write_string(msg)  # authzmsg
