@@ -751,8 +751,8 @@
        <literallayout><literal>(&amp;(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(host=$fqdn)(host=\\*)))</literal></literallayout>
       </para>
       <para>
-       The default behaviour is not to do this extra search and always
-       grant access.
+       This option may be specified multiple times and all specified searches
+       should at least return one entry for access to be granted.
       </para>
      </listitem>
     </varlistentry>

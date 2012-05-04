@@ -126,7 +126,8 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_restart=1;
   cfg->ldc_pagesize=0;
   cfg->ldc_nss_initgroups_ignoreusers=NULL;
-  cfg->ldc_pam_authz_search=NULL;
+  for (i=0;i<NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES;i++)
+    cfg->ldc_pam_authz_search[i]=NULL;
   cfg->ldc_nss_min_uid=0;
   parse_validnames_statement(__FILE__,__LINE__,"",
                 "/^[a-z0-9._@$][a-z0-9._@$ \\~-]*[a-z0-9._@$~-]$/i",cfg);
@@ -782,9 +783,17 @@ static void parse_pam_authz_search_statement(
   const char **list;
   int i;
   check_argumentcount(filename,lnr,keyword,(line!=NULL)&&(*line!='\0'));
-  cfg->ldc_pam_authz_search=xstrdup(line);
+  /* find free spot for search filter */
+  for (i=0;(i<NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES)&&(cfg->ldc_pam_authz_search[i]!=NULL);i++);
+  if (i>=NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES)
+  {
+    log_log(LOG_ERR,"%s:%d: maximum number of pam_authz_search options (%d) exceeded",
+            filename,lnr,NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES);
+    exit(EXIT_FAILURE);
+  }
+  cfg->ldc_pam_authz_search[i]=xstrdup(line);
   /* check the variables used in the expression */
-  set=expr_vars(cfg->ldc_pam_authz_search,NULL);
+  set=expr_vars(cfg->ldc_pam_authz_search[i],NULL);
   list=set_tolist(set);
   for (i=0;list[i]!=NULL;i++)
   {

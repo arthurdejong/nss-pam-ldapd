@@ -378,66 +378,80 @@ static int try_autzsearch(MYLDAP_SESSION *session,const char *dn,
 {
   char hostname[HOST_NAME_MAX+1];
   const char *fqdn;
-  DICT *dict;
+  DICT *dict=NULL;
   char filter_buffer[4096];
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   static const char *attrs[2];
   int rc;
   const char *res;
-  /* check whether the search filter is configured at all */
-  if (!nslcd_cfg->ldc_pam_authz_search)
-    return LDAP_SUCCESS;
-  /* build the dictionary with variables
-     NOTE: any variables added here also need to be added to
-           cfg.c:parse_pam_authz_search_statement() */
-  dict=dict_new();
-  autzsearch_var_add(dict,"username",username);
-  autzsearch_var_add(dict,"service",servicename);
-  autzsearch_var_add(dict,"ruser",ruser);
-  autzsearch_var_add(dict,"rhost",rhost);
-  autzsearch_var_add(dict,"tty",tty);
-  if (gethostname(hostname,sizeof(hostname))==0)
-    autzsearch_var_add(dict,"hostname",hostname);
-  if ((fqdn=getfqdn())!=NULL)
-    autzsearch_var_add(dict,"fqdn",fqdn);
-  autzsearch_var_add(dict,"dn",dn);
-  autzsearch_var_add(dict,"uid",username);
-  /* build the search filter */
-  res=expr_parse(nslcd_cfg->ldc_pam_authz_search,
-                 filter_buffer,sizeof(filter_buffer),
-                 autzsearch_var_get,(void *)dict);
-  autzsearch_vars_free(dict);
-  dict_free(dict);
-  if (res==NULL)
+  int i;
+  /* go over all pam_authz_search options */
+  for (i=0;(i<NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES)&&(nslcd_cfg->ldc_pam_authz_search[i]!=NULL);i++)
   {
-    log_log(LOG_ERR,"invalid pam_authz_search \"%s\"",nslcd_cfg->ldc_pam_authz_search);
-    return LDAP_LOCAL_ERROR;
+    if (dict==NULL)
+    {
+      /* build the dictionary with variables
+         NOTE: any variables added here also need to be added to
+               cfg.c:parse_pam_authz_search_statement() */
+      dict=dict_new();
+      autzsearch_var_add(dict,"username",username);
+      autzsearch_var_add(dict,"service",servicename);
+      autzsearch_var_add(dict,"ruser",ruser);
+      autzsearch_var_add(dict,"rhost",rhost);
+      autzsearch_var_add(dict,"tty",tty);
+      if (gethostname(hostname,sizeof(hostname))==0)
+        autzsearch_var_add(dict,"hostname",hostname);
+      if ((fqdn=getfqdn())!=NULL)
+        autzsearch_var_add(dict,"fqdn",fqdn);
+      autzsearch_var_add(dict,"dn",dn);
+      autzsearch_var_add(dict,"uid",username);
+    }
+    /* build the search filter */
+    res=expr_parse(nslcd_cfg->ldc_pam_authz_search[i],
+                   filter_buffer,sizeof(filter_buffer),
+                   autzsearch_var_get,(void *)dict);
+    if (res==NULL)
+    {
+      autzsearch_vars_free(dict);
+      dict_free(dict);
+      log_log(LOG_ERR,"invalid pam_authz_search \"%s\"",nslcd_cfg->ldc_pam_authz_search[i]);
+      return LDAP_LOCAL_ERROR;
+    }
+    log_log(LOG_DEBUG,"trying pam_authz_search \"%s\"",filter_buffer);
+    /* perform the search */
+    attrs[0]="dn";
+    attrs[1]=NULL;
+    /* FIXME: this only searches the first base */
+    search=myldap_search(session,nslcd_cfg->ldc_bases[0],LDAP_SCOPE_SUBTREE,
+                         filter_buffer,attrs,&rc);
+    if (search==NULL)
+    {
+      autzsearch_vars_free(dict);
+      dict_free(dict);
+      log_log(LOG_ERR,"pam_authz_search \"%s\" failed: %s",
+              filter_buffer,ldap_err2string(rc));
+      return rc;
+    }
+    /* try to get an entry */
+    entry=myldap_get_entry(search,&rc);
+    if (entry==NULL)
+    {
+      autzsearch_vars_free(dict);
+      dict_free(dict);
+      log_log(LOG_ERR,"pam_authz_search \"%s\" found no matches",filter_buffer);
+      if (rc==LDAP_SUCCESS)
+        rc=LDAP_NO_SUCH_OBJECT;
+      return rc;
+    }
+    log_log(LOG_DEBUG,"pam_authz_search found \"%s\"",myldap_get_dn(entry));
   }
-  log_log(LOG_DEBUG,"trying pam_authz_search \"%s\"",filter_buffer);
-  /* perform the search */
-  attrs[0]="dn";
-  attrs[1]=NULL;
-  /* FIXME: this only searches the first base */
-  search=myldap_search(session,nslcd_cfg->ldc_bases[0],LDAP_SCOPE_SUBTREE,
-                       filter_buffer,attrs,&rc);
-  if (search==NULL)
+  /* we went over all pam_authz_search entries */
+  if (dict!=NULL)
   {
-    log_log(LOG_ERR,"pam_authz_search \"%s\" failed: %s",
-            filter_buffer,ldap_err2string(rc));
-    return rc;
+    autzsearch_vars_free(dict);
+    dict_free(dict);
   }
-  /* try to get an entry */
-  entry=myldap_get_entry(search,&rc);
-  if (entry==NULL)
-  {
-    log_log(LOG_ERR,"pam_authz_search \"%s\" found no matches",filter_buffer);
-    if (rc==LDAP_SUCCESS)
-      rc=LDAP_NO_SUCH_OBJECT;
-    return rc;
-  }
-  log_log(LOG_DEBUG,"pam_authz_search found \"%s\"",myldap_get_dn(entry));
-  /* we've found an entry so it's OK */
   return LDAP_SUCCESS;
 }
 

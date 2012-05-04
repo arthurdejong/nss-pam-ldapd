@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -40,10 +40,13 @@
 #define NOGID ((gid_t)-1)
 
 /* maximum number of URIs */
-#define NSS_LDAP_CONFIG_URI_MAX         31
+#define NSS_LDAP_CONFIG_URI_MAX 31
 
-/* maximum number of 'passwd base's */
+/* maximum number of search bases */
 #define NSS_LDAP_CONFIG_MAX_BASES 7
+
+/* maximum number of pam_authz_search options */
+#define NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES 8
 
 enum ldap_ssl_options
 {
@@ -138,8 +141,8 @@ struct ldap_config
   int ldc_pagesize;
   /* the users for which no initgroups() searches should be done */
   SET *ldc_nss_initgroups_ignoreusers;
-  /* the search that should be performed to do autorisation checks */
-  char *ldc_pam_authz_search;
+  /* the searches that should be performed to do autorisation checks */
+  char *ldc_pam_authz_search[NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES];
   /* minimum uid for users retreived from LDAP */
   uid_t ldc_nss_min_uid;
   /* the regular expression to determine valid names */
