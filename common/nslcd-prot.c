@@ -2,7 +2,7 @@
    nslcd-prot.c - common functions for NSLCD lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,7 @@
 
 #include "nslcd.h"
 #include "nslcd-prot.h"
+#include "compat/socket.h"
 
 /* buffer sizes for I/O */
 #define READBUFFER_MINSIZE 1024

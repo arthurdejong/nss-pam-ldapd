@@ -21,7 +21,7 @@
 */
 
 #ifndef COMPAT__NSS_H
-#define COMPAT__NSS_H
+#define COMPAT__NSS_H 1
 
 #ifdef HAVE_NSS_H
 #include <nss.h>

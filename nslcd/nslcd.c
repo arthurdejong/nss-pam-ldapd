@@ -63,6 +63,7 @@
 #include "common.h"
 #include "compat/attrs.h"
 #include "compat/getpeercred.h"
+#include "compat/socket.h"
 
 /* buffer sizes for I/O */
 #define READBUFFER_MINSIZE 32
