@@ -566,7 +566,7 @@ static void *worker(void UNUSED(*arg))
     if (j<0)
     {
       if (errno==EINTR)
-        log_log(LOG_DEBUG,"debug: select() failed (ignored): %s",strerror(errno));
+        log_log(LOG_DEBUG,"select() failed (ignored): %s",strerror(errno));
       else
         log_log(LOG_ERR,"select() failed: %s",strerror(errno));
       continue;
