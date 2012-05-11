@@ -1,7 +1,7 @@
 /*
    nss_compat.h - compatibility definitions for NSS functions
 
-   Copyright (C) 2010 Arthur de Jong
+   Copyright (C) 2010, 2012 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -147,5 +147,20 @@ struct __netgrent
   struct name_list *needed_groups;
   void *nip; /* changed from `service_user *nip' */
 };
+
+/* Define struct spwd if it was not found on the system. */
+#ifndef HAVE_STRUCT_SPWD
+struct spwd {
+  char *sp_namp;
+  char *sp_pwdp;
+  long sp_lstchg;
+  long sp_min;
+  long sp_max;
+  long sp_warn;
+  long sp_inact;
+  long sp_expire;
+  unsigned long sp_flag;
+};
+#endif /* not HAVE_STRUCT_SPWD */
 
 #endif /* not COMPAT__NSS_H */

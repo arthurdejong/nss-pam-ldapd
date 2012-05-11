@@ -378,6 +378,19 @@ then
       #include <rpc/rpcent.h>
       #endif])
 
+  # check for a definition of struct spwd
+  AC_CHECK_TYPES(struct spwd,,,[
+      #ifdef HAVE_NSS_H
+      #include <nss.h>
+      #endif
+      #ifdef HAVE_NSS_COMMON_H
+      #include <nss_common.h>
+      #endif
+      #include <pwd.h>
+      #ifdef HAVE_SHADOW_H
+      #include <shadow.h>
+      #endif])
+
   # check for a definition of enum nss_status and nss_backend_t
   AC_CHECK_TYPES([enum nss_status,nss_backend_t],,,[
       #ifdef HAVE_NSS_H
