@@ -2,7 +2,7 @@
    tio.c - timed io functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008 Arthur de Jong
+   Copyright (C) 2007, 2008, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@
 #include <string.h>
 #include <signal.h>
 #include <stdio.h>
+#include <limits.h>
 
 #include "tio.h"
 
@@ -229,6 +230,7 @@ int tio_read(TFILE *fp, void *buf, size_t count)
   int rv;
   uint8_t *tmp;
   size_t newsz;
+  size_t len;
   /* have a more convenient storage type for the buffer */
   uint8_t *ptr=(uint8_t *)buf;
   /* build a time by which we should be finished */
@@ -293,7 +295,12 @@ int tio_read(TFILE *fp, void *buf, size_t count)
     if (tio_select(fp,1,&deadline))
       return -1;
     /* read the input in the buffer */
-    rv=read(fp->fd,fp->readbuffer.buffer+fp->readbuffer.start,fp->readbuffer.size-fp->readbuffer.start);
+    len=fp->readbuffer.size-fp->readbuffer.start;
+#ifdef SSIZE_MAX
+    if (len>SSIZE_MAX)
+      len=SSIZE_MAX;
+#endif /* SSIZE_MAX */
+    rv=read(fp->fd,fp->readbuffer.buffer+fp->readbuffer.start,len);
     /* check for errors */
     if ((rv==0)||((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN)))
       return -1; /* something went wrong with the read */
