@@ -28,7 +28,7 @@
 
 /* provide a definition for SUN_LEN for systems without it */
 #ifndef SUN_LEN
-#define SUN_LEN(addr) (sizeof((addr).sun_family)+strlen((addr).sun_path)+1)
+#define SUN_LEN(addr) (sizeof((addr)->sun_family)+strlen((addr)->sun_path)+1)
 #endif /* not SUN_LEN */
 
 #endif /* not COMPAT__SOCKET_H */
