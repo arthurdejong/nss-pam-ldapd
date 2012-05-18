@@ -49,6 +49,9 @@
 #include <nss.h>
 #endif /* HAVE_NSS_H */
 #include <pthread.h>
+#ifdef HAVE_PTHREAD_NP_H
+#include <pthread_np.h>
+#endif /* HAVE_PTHREAD_NP_H */
 #ifndef HAVE_GETOPT_LONG
 #include "compat/getopt_long.h"
 #endif /* not HAVE_GETOPT_LONG */

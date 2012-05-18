@@ -6,7 +6,7 @@
    Copyright (C) 2003 Jacques Vidrine
    Copyright (C) 2006 Artem Kazakov
    Copyright (C) 2009 Alexander V. Chernikov
-   Copyright (C) 2011 Arthur de Jong
+   Copyright (C) 2011, 2012 Arthur de Jong
    Copyright (C) 2011 Tom Judge
 
    This library is free software; you can redistribute it and/or
@@ -147,7 +147,7 @@ int __nss_compat_gethostbyaddr(void *retval,void *mdata,va_list ap)
   return (status);
 }
 
-int __gr_addgid(gid_t gid,gid_t *groups,int maxgrp,int *groupc)
+static int __gr_addgid(gid_t gid,gid_t *groups,int maxgrp,int *groupc)
 {
   int ret,dupc;
   /* skip duplicates */
@@ -171,12 +171,10 @@ int __freebsd_getgroupmembership(void *retval,void *mdata,va_list ap)
   nss_status_t s;
   gid_t group;
   gid_t *tmpgroups;
-  size_t bufsize;
   const char *user;
   gid_t *groups;
-  gid_t agroup;
   int maxgrp,*grpcnt;
-  int i,rv,ret_errno;
+  int i;
   long int lstart,lsize;
   user=va_arg(ap,const char *);
   group=va_arg(ap,gid_t);

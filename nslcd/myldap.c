@@ -519,7 +519,7 @@ static int set_socket_timeout(LDAP *ld,time_t sec,suseconds_t usec)
   struct timeval tv;
   int rc=LDAP_SUCCESS;
   int sd;
-  log_log(LOG_DEBUG,"set_socket_timeout(%lu,%lu)",sec,usec);
+  log_log(LOG_DEBUG,"set_socket_timeout(%lu,%lu)",(unsigned long)sec,(unsigned long)usec);
   /* get the socket */
   if ((rc=ldap_get_option(ld,LDAP_OPT_DESC,&sd))!=LDAP_SUCCESS)
   {

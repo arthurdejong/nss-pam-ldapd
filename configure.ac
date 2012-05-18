@@ -273,7 +273,7 @@ AC_ARG_WITH(nss-maps,
             ,[ with_nss_maps="all" ])
 
 # checks for availability of header files
-AC_CHECK_HEADERS([ctype.h strings.h pthread.h fcntl.h limits.h])
+AC_CHECK_HEADERS([ctype.h strings.h pthread.h pthread_np.h fcntl.h limits.h])
 AC_CHECK_HEADERS([nss.h nss_common.h grp.h shadow.h aliases.h netdb.h rpc/rpcent.h])
 AC_CHECK_HEADERS([netinet/ether.h arpa/inet.h netinet/in.h])
 AC_CHECK_HEADERS([nsswitch.h nss_dbdefs.h])
@@ -590,7 +590,9 @@ then
   # replace daemon() function if it is not on the system
   AC_SEARCH_LIBS(daemon,bsd)
   AC_REPLACE_FUNCS(daemon)
-  AC_CHECK_DECLS([daemon],,,[#include <unistd.h>])
+  AC_CHECK_DECLS([daemon],,,[
+      #include <unistd.h>
+      #include <stdlib.h>])
 
   # replace ether_aton_r() and ether_ntoa_r() if they are not found
   AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,,[AC_LIBOBJ(ether)])
