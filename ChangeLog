@@ -1,3 +1,86 @@
+2012-05-20 19:53  arthur
+
+	* [r1694] nslcd/cfg.c, nslcd/common.c, nslcd/group.c,
+	  nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c,
+	  nslcd/shadow.c: implement extra range checking of all numeric
+	  values
+
+2012-05-18 14:21  arthur
+
+	* [r1693] configure.ac, nslcd/myldap.c, nslcd/nslcd.c,
+	  nss/bsdnss.c: get rid of a few compiler warnings on FreeBSD
+
+2012-05-11 12:27  arthur
+
+	* [r1690] compat/nss_compat.h, configure.ac: provide a
+	  compatibility version of struct spwd for systems without it
+
+2012-05-11 09:28  arthur
+
+	* [r1688] compat/socket.h: fix fallback definition of SUN_LEN()
+	  (fixes r1686)
+
+2012-05-09 20:16  arthur
+
+	* [r1686] common/nslcd-prot.c, compat/Makefile.am,
+	  compat/nss_compat.h, compat/socket.h, nslcd/nslcd.c: provide a
+	  compatibility definition of SUN_LEN() for systems that lack it
+
+2012-05-09 19:47  arthur
+
+	* [r1685] nslcd/nslcd.c: remove duplicate debug from log message
+
+2012-05-04 21:24  arthur
+
+	* [r1684] pynslcd/pam.py: implement PAM authorisation check using
+	  pam_authz_search option
+
+2012-05-04 20:20  arthur
+
+	* [r1683] pynslcd/pam.py: ignore user-supplied DN for PAM requests
+	  and don't send it back
+
+2012-05-04 20:13  arthur
+
+	* [r1682] pynslcd/Makefile.am, pynslcd/attmap.py, pynslcd/cfg.py,
+	  pynslcd/expr.py: move expression handling to own module
+
+2012-05-04 20:10  arthur
+
+	* [r1681] pynslcd/common.py: ensure search also works without
+	  attribute map
+
+2012-05-04 20:06  arthur
+
+	* [r1680] pynslcd/cfg.py: small code style improvements
+
+2012-05-04 13:36  arthur
+
+	* [r1679] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/pam.c, pynslcd/cfg.py: allow the pam_authz_search option to
+	  be specified multiple times
+
+2012-05-04 13:31  arthur
+
+	* [r1678] nslcd/nslcd.c: don't try to close _SC_OPEN_MAX file
+	  descriptor
+
+2012-05-02 21:11  arthur
+
+	* [r1677] compat/pam_compat.h, compat/pam_get_authtok.c: move all
+	  PAM_AUTHTOK_RECOVERY_ERR compatibility definitions to
+	  compat/pam_compat.h
+
+2012-04-29 20:46  arthur
+
+	* [r1673] README: documentation touch-ups
+
+2012-04-27 07:56  arthur
+
+	* [r1662] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.8 release
+
 2012-04-27 07:37  arthur
 
 	* [r1660] Makefile.am, ldapns.schema: add a schema file that some

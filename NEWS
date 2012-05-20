@@ -1,3 +1,13 @@
+changes from 0.8.8 to 0.8.9
+---------------------------
+
+* allow the pam_authz_search option to be specified multiple times
+* improvements to pynslcd adding support for pam_authz_search
+* implement extra range checking of all numeric values
+* make documentation up-to-date
+* compatibility improvements, especially for FreeBSD
+
+
 changes from 0.8.7 to 0.8.8
 ---------------------------
 
