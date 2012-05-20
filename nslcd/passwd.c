@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -202,9 +202,9 @@ static int entry_has_valid_uid(MYLDAP_ENTRY *entry)
                             myldap_get_dn(entry),attmap_passwd_uidNumber);
         continue;
       }
-      else if (errno!=0)
+      else if ((errno!=0)||(strchr(values[i],'-')!=NULL))
       {
-        log_log(LOG_WARNING,"%s: %s: too large",
+        log_log(LOG_WARNING,"%s: %s: out of range",
                             myldap_get_dn(entry),attmap_passwd_uidNumber);
         continue;
       }
@@ -500,9 +500,9 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
                               myldap_get_dn(entry),attmap_passwd_uidNumber);
           return 0;
         }
-        else if (errno!=0)
+        else if ((errno!=0)||(strchr(tmpvalues[numuids],'-')!=NULL))
         {
-          log_log(LOG_WARNING,"%s: %s: too large",
+          log_log(LOG_WARNING,"%s: %s: out of range",
                               myldap_get_dn(entry),attmap_passwd_uidNumber);
           return 0;
         }
@@ -538,9 +538,9 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
                           myldap_get_dn(entry),attmap_passwd_gidNumber);
       return 0;
     }
-    else if (errno!=0)
+    else if ((errno!=0)||(strchr(gidbuf,'-')!=NULL))
     {
-      log_log(LOG_WARNING,"%s: %s: too large",
+      log_log(LOG_WARNING,"%s: %s: out of range",
                           myldap_get_dn(entry),attmap_passwd_gidNumber);
       return 0;
     }

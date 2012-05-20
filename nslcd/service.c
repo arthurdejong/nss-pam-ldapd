@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "common.h"
 #include "log.h"
@@ -136,7 +137,7 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
   const char **ports;
   const char **protocols;
   char *tmp;
-  int port;
+  long port;
   int i;
   /* get the most canonical name */
   name=myldap_get_rdn_value(entry,attmap_service_cn);
@@ -173,16 +174,16 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
                         myldap_get_dn(entry),attmap_service_ipServicePort);
   }
   errno=0;
-  port=(int)strtol(ports[0],&tmp,10);
+  port=strtol(ports[0],&tmp,10);
   if ((*(ports[0])=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"%s: %s: non-numeric value",
                         myldap_get_dn(entry),attmap_service_ipServicePort);
     return 0;
   }
-  else if (errno!=0)
+  else if ((errno!=0)||(port<=0)||(port>UINT16_MAX))
   {
-    log_log(LOG_WARNING,"%s: %s: too large",
+    log_log(LOG_WARNING,"%s: %s: out of range",
                         myldap_get_dn(entry),attmap_service_ipServicePort);
     return 0;
   }
@@ -201,6 +202,7 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
       WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
       WRITE_STRING(fp,name);
       WRITE_STRINGLIST_EXCEPT(fp,aliases,name);
+      /* port number is actually a 16-bit value but we write 32 bits anyway */
       WRITE_INT32(fp,port);
       WRITE_STRING(fp,protocols[i]);
     }

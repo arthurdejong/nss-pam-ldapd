@@ -3,7 +3,7 @@
    This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -285,7 +285,7 @@ unsigned int strtoui(const char *nptr,char **endptr,int base)
     errno=ERANGE;
     return UINT_MAX;
   }
-  /* If errno was set by strtoull, we'll pass it back as-is */
+  /* If errno was set by strtoul, we'll pass it back as-is */
   return (unsigned int)val;
 }
 #endif /* WANT_STRTOUI */

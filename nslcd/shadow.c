@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -138,7 +138,7 @@ static long to_date(const char *dn,const char *date,const char *attr)
     }
     else if (errno!=0)
     {
-      log_log(LOG_WARNING,"%s: %s: too large",dn,attr);
+      log_log(LOG_WARNING,"%s: %s: out of range",dn,attr);
       return -1;
     }
     return value/864-134774;
@@ -154,7 +154,7 @@ static long to_date(const char *dn,const char *date,const char *attr)
   }
   else if (errno!=0)
   {
-    log_log(LOG_WARNING,"%s: %s: too large",dn,attr);
+    log_log(LOG_WARNING,"%s: %s: out of range",dn,attr);
     return -1;
   }
   return value;
@@ -178,7 +178,7 @@ static long to_date(const char *dn,const char *date,const char *attr)
   } \
   else if (errno!=0) \
   { \
-    log_log(LOG_WARNING,"%s: %s: too large", \
+    log_log(LOG_WARNING,"%s: %s: out of range", \
                         myldap_get_dn(entry),attmap_shadow_##att); \
     var=fallback; \
   }

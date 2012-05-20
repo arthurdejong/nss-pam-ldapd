@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "common.h"
 #include "log.h"
@@ -107,7 +108,7 @@ static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
   const char **aliases;
   const char **protos;
   char *tmp;
-  int proto;
+  long proto;
   int i;
   /* get the most canonical name */
   name=myldap_get_rdn_value(entry,attmap_protocol_cn);
@@ -144,16 +145,16 @@ static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
                         myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
   }
   errno=0;
-  proto=(int)strtol(protos[0],&tmp,10);
+  proto=strtol(protos[0],&tmp,10);
   if ((*(protos[0])=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"%s: %s: non-numeric",
                         myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
     return 0;
   }
-  else if (errno!=0)
+  else if ((errno!=0)||(proto<0)||(proto>UINT8_MAX))
   {
-    log_log(LOG_WARNING,"%s: %s: too large",
+    log_log(LOG_WARNING,"%s: %s: out of range",
                         myldap_get_dn(entry),attmap_protocol_ipProtocolNumber);
     return 0;
   }
@@ -161,6 +162,7 @@ static int write_protocol(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,name);
   WRITE_STRINGLIST_EXCEPT(fp,aliases,name);
+  /* proto number is actually an 8-bit value but we write 32 bits anyway */
   WRITE_INT32(fp,proto);
   return 0;
 }

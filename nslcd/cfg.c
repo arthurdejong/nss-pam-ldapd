@@ -450,7 +450,7 @@ static void get_uid(const char *filename,int lnr,
   /* check if it is a valid numerical uid */
   errno=0;
   *var=strtouid(token,&tmp,10);
-  if ((*token!='\0')&&(*tmp=='\0')&&(errno==0))
+  if ((*token!='\0')&&(*tmp=='\0')&&(errno==0)&&(strchr(token,'-')==NULL))
     return;
   /* find by name */
   pwent=getpwnam(token);
@@ -476,7 +476,7 @@ static void get_gid(const char *filename,int lnr,
   /* check if it is a valid numerical gid */
   errno=0;
   *var=strtogid(token,&tmp,10);
-  if ((*token!='\0')&&(*tmp=='\0')&&(errno==0))
+  if ((*token!='\0')&&(*tmp=='\0')&&(errno==0)&&(strchr(token,'-')==NULL))
     return;
   /* find by name */
   grent=getgrnam(token);

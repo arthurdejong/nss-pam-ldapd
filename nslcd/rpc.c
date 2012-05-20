@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "common.h"
 #include "log.h"
@@ -108,7 +109,7 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
   const char **aliases;
   const char **numbers;
   char *tmp;
-  int number;
+  long number;
   int i;
   /* get the most canonical name */
   name=myldap_get_rdn_value(entry,attmap_rpc_cn);
@@ -145,16 +146,16 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
                         myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
   }
   errno=0;
-  number=(int)strtol(numbers[0],&tmp,10);
+  number=strtol(numbers[0],&tmp,10);
   if ((*(numbers[0])=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"%s: %s: non-numeric",
                         myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
     return 0;
   }
-  else if (errno!=0)
+  else if ((errno!=0)||(number>UINT32_MAX))
   {
-    log_log(LOG_WARNING,"%s: %s: too large",
+    log_log(LOG_WARNING,"%s: %s: out of range",
                         myldap_get_dn(entry),attmap_rpc_oncRpcNumber);
     return 0;
   }

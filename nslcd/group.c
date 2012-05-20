@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -288,9 +288,9 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
                               myldap_get_dn(entry),attmap_group_gidNumber);
           return 0;
         }
-        else if (errno!=0)
+        else if ((errno!=0)||(strchr(gidvalues[numgids],'-')!=NULL))
         {
-          log_log(LOG_WARNING,"%s: %s: too large",
+          log_log(LOG_WARNING,"%s: %s: out of range",
                               myldap_get_dn(entry),attmap_group_gidNumber);
           return 0;
         }
