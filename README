@@ -374,6 +374,9 @@ networks matches will be case-insensitive (this seems to be what Glibc is
 doing currently in flat files). Only searching for groups by user is done
 case-insensitive. In all cases the case-use in the LDAP directory is returned.
 
+This behaviour can be disabled with the ignorecase configuration option but
+may be a security risk.
+
 Note that having entries that only differ in case is a bad idea and will
 likely get you in trouble. One example of such a problem is that the DN
 uid=test,dc=example,dc=com is considered the same in LDAP as
@@ -385,7 +388,8 @@ REPORTING BUGS
 
 If you find any bugs or missing features please send email to
   nss-pam-ldapd-users@lists.arthurdejong.org
-If you are using the Debian package you are encouraged to use the BTS. Please
-include as much information as needed (platform, output of configure if
-compilation fails, output of the failure, etc). Patches are more than welcome
-(also see the file HACKING).
+If you are using a packaged version of nss-pam-ldapd you are encouraged to use
+the distributor's bug tracking system. Please include as much information as
+possible (platform, output of configure if compilation fails, error messages,
+output of nslcd -d, etc). Patches are more than welcome (also see the file
+HACKING).
