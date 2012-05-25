@@ -18,14 +18,13 @@ are considered:
 * please follow the existing coding conventions
 * please test the patch and include information on testing with the patch
   (platforms tested, etc)
-* contributions will be acknowledged in the AUTHORS file
 * include a copyright statement in the patched code if you feel the
   contribution is significant enough (e.g. more than a few lines)
 * when including third-party code, retain copyright information (copyright
   holder and license) and ensure that the license is LGPL compatible
 
 Please email nss-pam-ldapd-users@lists.arthurdejong.org if you want to
-contribute.
+contribute. All contributions will be acknowledged in the AUTHORS file.
 
 
 BUILD DEPENDENCIES
@@ -35,9 +34,11 @@ For building svn snapshots the following tools are needed:
 
 * autoconf (2.65 is used but 2.61 is minimal)
 * automake (1.11 is used)
-
-and of course the usual build tools (gcc/make/etc). Also see debian/control
-(Build-Depends field) for libraries you may need.
+* OpenLDAP libraries (2.4 is generally used)
+* PAM libraries
+* optionally a Kerberos library (MIT Kerberos is tested)
+* optionally a SASL library (only Cyrus SASL is tested)
+* docbook2x for generating the manual pages
 
 To build the svn snapshot run the autogen.sh shell script to build the
 configure script. When developing patches please use --enable-warnings with
