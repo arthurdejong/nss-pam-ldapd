@@ -2,7 +2,7 @@
    pam.c - pam module functions
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -615,8 +615,12 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
     else if (cfg.debug)
       pam_syslog(pamh,LOG_DEBUG,"authentication succeeded");
     /* store password (needed if oldpassword was retreived from context) */
-    if (rc==PAM_SUCCESS)
-      return pam_set_item(pamh,PAM_OLDAUTHTOK,oldpassword);
+    if (ctx->authok==PAM_SUCCESS)
+    {
+      rc=pam_set_item(pamh,PAM_OLDAUTHTOK,oldpassword);
+      if (rc!=PAM_SUCCESS)
+        return remap_pam_rc(rc,&cfg);
+    }
     /* remap error code */
     return remap_pam_rc(ctx->authok,&cfg);
   }
