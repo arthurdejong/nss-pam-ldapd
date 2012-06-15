@@ -689,8 +689,10 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
     WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);
     WRITE_STRING(fp,authzmsg);
     WRITE_INT32(fp,NSLCD_RESULT_END);
+    return 0;
   }
   /* write response */
+  log_log(LOG_NOTICE,"password changed for %s",myldap_get_dn(entry));
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
   WRITE_STRING(fp,username);
   WRITE_STRING(fp,myldap_get_dn(entry));
