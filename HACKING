@@ -18,8 +18,8 @@ are considered:
 * please follow the existing coding conventions
 * please test the patch and include information on testing with the patch
   (platforms tested, etc)
-* include a copyright statement in the patched code if you feel the
-  contribution is significant enough (e.g. more than a few lines)
+* add a copyright statement with the patch if you feel the contribution is
+  significant enough (e.g. more than a few lines)
 * when including third-party code, retain copyright information (copyright
   holder and license) and ensure that the license is LGPL compatible
 
@@ -42,17 +42,16 @@ For building svn snapshots the following tools are needed:
 
 To build the svn snapshot run the autogen.sh shell script to build the
 configure script. When developing patches please use --enable-warnings with
-configure and don't introduce too many new warnings. For building the manual
-pages docbook2x is used.
+configure and don't introduce too many new warnings.
 
 
 RELEASE VERSIONING
 ==================
 
-A new versioning scheme was chosen over the nss_ldap release scheme. The
-scheme is a simple major.minor.micro numbering. Until a 1.0 release is made
-the code will be considered work in progress. The interfaces may change and
-features may be added or removed.
+The versioning scheme of nss-pam-ldapd is a simple major.minor.micro
+numbering. The idea is to keep a stable (x.y) branch that only gets bug
+fixes and small enhancements while development goes in another branch.
+Backwards incompatible changes should be announced clearly.
 
 
 GENERAL DESIGN
