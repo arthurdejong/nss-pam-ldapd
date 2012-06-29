@@ -6,7 +6,6 @@
   chroot jails)
 * make I/O timeout between NSS lib and daemon configurable with configure
 * protocols/rpc: the description attribute should be used as an alias?
-* review changes in nss_ldap and merge any useful changes
 * maybe rate-limit LDAP entry warnings
 * setnetgrent() may need to return an error if the netgroup is undefined
 * handle repeated calls to getent() better

@@ -1,3 +1,44 @@
+2012-06-29 09:55  arthur
+
+	* [r1706] config.sub: update from latest automake
+
+2012-06-17 09:25  arthur
+
+	* [r1705] HACKING: minor documentation touch-ups
+
+2012-06-15 21:29  arthur
+
+	* [r1704] Makefile.am: install the default configuration file with
+	  reduced permissions (further protection for CVE-2009-1073)
+
+2012-06-15 21:15  arthur
+
+	* [r1703] nslcd/pam.c: log successful password change in nslcd and
+	  correctly terminate protocol on password change failure
+
+2012-06-15 21:04  arthur
+
+	* [r1702] pam/pam.c: fix problem with returning wrong error code
+	  when changing password with wrong old password (thanks Anton
+	  Helwart)
+
+2012-05-25 09:04  arthur
+
+	* [r1701] README: reword section on bug reporting and add a
+	  reference to the ignorecase option on the case sensitivity
+	  section
+
+2012-05-25 08:47  arthur
+
+	* [r1700] HACKING: include list of required libraries and do not
+	  put information on AUTHORS file on the patch requirements
+
+2012-05-20 20:35  arthur
+
+	* [r1695] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.9 release
+
 2012-05-20 19:53  arthur
 
 	* [r1694] nslcd/cfg.c, nslcd/common.c, nslcd/group.c,

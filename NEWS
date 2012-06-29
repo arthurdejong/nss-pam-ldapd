@@ -1,3 +1,14 @@
+changes from 0.8.9 to 0.8.10
+----------------------------
+
+* documentation improvements
+* fix a problem that causes the PAM module to prompt for a new password
+  even though the old one was wrong
+* log successful password change in nslcd
+* install default configuration file with reduced permissions (further
+  protection for CVE-2009-1073)
+
+
 changes from 0.8.8 to 0.8.9
 ---------------------------
 
