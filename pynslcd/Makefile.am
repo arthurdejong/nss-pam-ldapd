@@ -19,8 +19,8 @@
 
 pynslcddir = $(datadir)/pynslcd
 
-pynslcd_PYTHON = pynslcd.py cfg.py common.py tio.py mypidfile.py attmap.py \
-                 expr.py \
+pynslcd_PYTHON = pynslcd.py attmap.py cache.py cfg.py common.py expr.py \
+                 mypidfile.py tio.py \
                  alias.py ether.py group.py host.py netgroup.py network.py \
                  pam.py passwd.py protocol.py rpc.py service.py shadow.py
 nodist_pynslcd_PYTHON = constants.py config.py
