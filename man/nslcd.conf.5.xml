@@ -757,6 +757,19 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="pam_password_prohibit_message">
+     <term><option>pam_password_prohibit_message</option>
+           "<replaceable>MESSAGE</replaceable>"</term>
+     <listitem>
+      <para>
+       If this option is set password modification using pam_ldap will be
+       denied and the specified message will be presented to the user instead.
+       The message can be used to direct the user to an alternative means
+       of changing their password.
+      </para>
+     </listitem>
+    </varlistentry>
+
    </variablelist>
   </refsect2>
 

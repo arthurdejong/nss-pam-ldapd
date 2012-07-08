@@ -647,6 +647,18 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
     }
     return -1;
   }
+  /* check if pam_password_prohibit_message is set */
+  if (nslcd_cfg->pam_password_prohibit_message!=NULL)
+  {
+    log_log(LOG_NOTICE,"password change prohibited");
+    WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+    WRITE_STRING(fp,username);
+    WRITE_STRING(fp,"");
+    WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);
+    WRITE_STRING(fp,nslcd_cfg->pam_password_prohibit_message);
+    WRITE_INT32(fp,NSLCD_RESULT_END);
+    return 0;
+  }
   /* check if the the user passed the rootpwmoddn */
   if (asroot)
   {

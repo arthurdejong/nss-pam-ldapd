@@ -363,6 +363,18 @@ static int nslcd_request_pwmod(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld
     READ_BUF_STRING(fp,ctx->authzmsg);)
 }
 
+static int nslcd_request_config_get(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,
+                               int cfgopt,char **value)
+{
+  PAM_REQUEST(NSLCD_ACTION_CONFIG_GET,
+    /* log debug message */
+    pam_syslog(pamh,LOG_DEBUG,"nslcd request config (%d)",cfgopt),
+    /* write the request parameter */
+    WRITE_INT32(fp,cfgopt),
+    /* read the result entry */
+    READ_BUF_STRING(fp,*value);)
+}
+
 /* remap the return code based on the configuration */
 static int remap_pam_rc(int rc,struct pld_cfg *cfg)
 {
@@ -550,6 +562,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   struct pld_ctx *ctx;
   const char *username,*service;
   const char *oldpassword=NULL,*newpassword=NULL;
+  char *prohibit_message;
   struct passwd *pwent;
   uid_t myuid;
   /* set up configuration */
@@ -557,6 +570,16 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   rc=init(pamh,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
     return remap_pam_rc(rc,&cfg);
+  /* check if password modification is allowed */
+  rc=nslcd_request_config_get(pamh,ctx,&cfg,NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE,&prohibit_message);
+  if ((rc==PAM_SUCCESS)&&(prohibit_message!=NULL)&&(prohibit_message[0]!='\0'))
+  {
+    /* we silently ignore errors to get the configuration option */
+    pam_syslog(pamh,LOG_NOTICE,"password change prohibited: %s; user=%s",prohibit_message,username);
+    if (!cfg.no_warn)
+      pam_error(pamh,"%s",prohibit_message);
+    return remap_pam_rc(PAM_PERM_DENIED,&cfg);
+  }
   /* see if we are dealing with an LDAP user first */
   if (ctx->dn==NULL)
   {

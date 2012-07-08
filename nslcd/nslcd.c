@@ -413,6 +413,7 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
   /* handle request */
   switch (action)
   {
+    case NSLCD_ACTION_CONFIG_GET:       (void)nslcd_config_get(fp,session); break;
     case NSLCD_ACTION_ALIAS_BYNAME:     (void)nslcd_alias_byname(fp,session); break;
     case NSLCD_ACTION_ALIAS_ALL:        (void)nslcd_alias_all(fp,session); break;
     case NSLCD_ACTION_ETHER_BYNAME:     (void)nslcd_ether_byname(fp,session); break;

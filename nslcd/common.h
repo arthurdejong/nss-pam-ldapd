@@ -182,6 +182,7 @@ void shadow_init(void);
 
 /* these are the different functions that handle the database
    specific actions, see nslcd.h for the action descriptions */
+int nslcd_config_get(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_alias_byname(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_alias_all(TFILE *fp,MYLDAP_SESSION *session);
 int nslcd_ether_byname(TFILE *fp,MYLDAP_SESSION *session);

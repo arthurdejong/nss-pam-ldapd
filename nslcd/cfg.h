@@ -147,6 +147,9 @@ struct ldap_config
   uid_t ldc_nss_min_uid;
   /* the regular expression to determine valid names */
   regex_t validnames;
+  /* whether password changing should be denied and user prompted with
+     this message */
+  char *pam_password_prohibit_message;
 };
 
 /* this is a pointer to the global configuration, it should be available

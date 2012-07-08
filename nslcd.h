@@ -2,7 +2,7 @@
    nslcd.h - file describing client/server protocol
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -70,6 +70,16 @@
    is experimental and this version will be used until a
    1.0 release of nss-pam-ldapd is made. */
 #define NSLCD_VERSION 1
+
+/* Get a NSLCD configuration option. There is one request parameter:
+    INT32   NSLCD_CONFIG_*
+  the result value is:
+    STRING  value, interpretation depending on request */
+#define NSLCD_ACTION_CONFIG_GET        20006
+
+/* return the message, if any, that is presented to the user when password
+   modification through PAM is prohibited */
+#define NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE  852
 
 /* Email alias (/etc/aliases) NSS requests. The result values for a
    single entry are:

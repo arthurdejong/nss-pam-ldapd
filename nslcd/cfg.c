@@ -131,6 +131,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_nss_min_uid=0;
   parse_validnames_statement(__FILE__,__LINE__,"",
                 "/^[a-z0-9._@$][a-z0-9._@$ \\~-]*[a-z0-9._@$~-]$/i",cfg);
+  cfg->pam_password_prohibit_message=NULL;
 }
 
 /* simple strdup wrapper */
@@ -639,6 +640,23 @@ static void parse_validnames_statement(const char *filename,int lnr,
   }
 }
 
+static void parse_pam_password_prohibit_message_statement(const char *filename,int lnr,
+                   const char *keyword,char *line,struct ldap_config *cfg)
+{
+  char *value;
+  int l;
+  /* the rest of the line should be a message */
+  get_restdup(filename,lnr,keyword,&line,&value);
+  /* strip quotes if they are present */
+  l=strlen(value);
+  if ((value[0]=='\"')&&(value[l-1]=='\"'))
+  {
+    value[l-1]='\0';
+    value++;
+  }
+  cfg->pam_password_prohibit_message=value;
+}
+
 static void parse_base_statement(const char *filename,int lnr,
                                  const char *keyword,char *line,
                                  struct ldap_config *cfg)
@@ -1141,6 +1159,10 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     else if (strcasecmp(keyword,"validnames")==0)
     {
       parse_validnames_statement(filename,lnr,keyword,line,cfg);
+    }
+    else if (strcasecmp(keyword,"pam_password_prohibit_message")==0)
+    {
+      parse_pam_password_prohibit_message_statement(filename,lnr,keyword,line,cfg);
     }
 #ifdef ENABLE_CONFIGFILE_CHECKING
     /* fallthrough */
