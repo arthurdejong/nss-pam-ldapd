@@ -428,12 +428,7 @@ static int do_bind(LDAP *ld,const char *binddn,const char *bindpw,const char *ur
     rc=ldap_start_tls_s(ld,NULL,NULL);
     if (rc!=LDAP_SUCCESS)
     {
-#ifdef LDAP_OPT_DIAGNOSTIC_MESSAGE
-      ldap_get_option(ld,LDAP_OPT_DIAGNOSTIC_MESSAGE,&msg);
-#endif /* LDAP_OPT_DIAGNOSTIC_MESSAGE */
       myldap_err(LOG_WARNING,ld,rc,"ldap_start_tls_s() failed (uri=%s)",uri);
-      if (msg)
-        ldap_memfree(msg);
       return rc;
     }
   }
