@@ -392,12 +392,26 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
   struct pld_cfg cfg;
   struct pld_ctx *ctx;
   const char *username,*service;
+  char *prohibit_message;
   char *passwd=NULL;
   /* set up configuration */
   cfg_init(pamh,flags,argc,argv,&cfg);
   rc=init(pamh,&cfg,&ctx,&username,&service);
   if (rc!=PAM_SUCCESS)
     return remap_pam_rc(rc,&cfg);
+  /* if service is "passwd" and pwdmod is not allowed alert user */
+  if (!strcmp(service,"passwd"))
+  {
+    rc=nslcd_request_config_get(pamh,ctx,&cfg,NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE,&prohibit_message);
+    if ((rc==PAM_SUCCESS)&&(prohibit_message!=NULL)&&(prohibit_message[0]!='\0'))
+    {
+      /* we silently ignore errors to get the configuration option */
+      pam_syslog(pamh,LOG_NOTICE,"password change prohibited: %s; user=%s",prohibit_message,username);
+      if (!cfg.no_warn)
+        pam_error(pamh,"%s",prohibit_message);
+      return remap_pam_rc(PAM_PERM_DENIED,&cfg);
+    }
+  }
   /* get the password */
   rc=pam_get_authtok(pamh,PAM_AUTHTOK,(const char **)&passwd,NULL);
   if (rc!=PAM_SUCCESS)
