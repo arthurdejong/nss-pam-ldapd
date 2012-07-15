@@ -84,7 +84,7 @@ pagesize = 0
 nss_initgroups_ignoreusers = set()
 nss_min_uid = 0
 validnames = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
-pam_authz_search = []
+pam_authz_searches = []
 
 
 # allowed boolean values
@@ -253,7 +253,7 @@ def read(filename):
         # pam_authz_search <FILTER>
         m = re.match('pam_authz_search\s+(?P<value>\S.*)', line, re.IGNORECASE)
         if m:
-            pam_authz_search.append(Expression(m.group('value')))
+            pam_authz_searches.append(Expression(m.group('value')))
             # TODO: check pam_authz_search expression to only contain
             # username, service, ruser, rhost, tty, hostname, fqdn, dn or
             # uid variables

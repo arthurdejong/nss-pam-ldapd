@@ -147,7 +147,7 @@ class PAMAuthorisationRequest(PAMRequest):
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 
     def check_authzsearch(self, parameters):
-        if not cfg.pam_authz_search:
+        if not cfg.pam_authz_searches:
             return
         # escape all parameters
         variables = dict((k, escape(v)) for k, v in parameters.items())
@@ -158,7 +158,7 @@ class PAMAuthorisationRequest(PAMRequest):
                 uid=variables['username'],
             )
         # go over all authz searches
-        for x in cfg.pam_authz_search:
+        for x in cfg.pam_authz_searches:
             filter = x.value(variables)
             logging.debug('trying pam_authz_search "%s"', filter)
             search = common.Search(self.conn, filter=filter, attributes=('dn', ))
