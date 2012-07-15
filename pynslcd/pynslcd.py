@@ -283,7 +283,6 @@ if __name__ == '__main__':
     #    sys.exit(1)
     # read configuration file
     cfg.read(config.NSLCD_CONF_PATH)
-    # FIXME: set tls_cacertdir, tls_cacertfile, tls_randfile, tls_ciphers, tls_cert, tls_key options immediately after parsing config
     # set process title
     try:
         import setproctitle
@@ -350,8 +349,6 @@ if __name__ == '__main__':
                 ldap.set_option(ldap.OPT_X_TLS_CACERTDIR, cfg.tls_cacertdir)
             if cfg.tls_cacertfile:
                 ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, cfg.tls_cacertfile)
-            if cfg.tls_randfile:
-                ldap.set_option(ldap.OPT_X_TLS_RANDOM_FILE, cfg.tls_randfile)
             if cfg.tls_randfile:
                 ldap.set_option(ldap.OPT_X_TLS_RANDOM_FILE, cfg.tls_randfile)
             if cfg.tls_ciphers:
