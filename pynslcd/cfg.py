@@ -85,6 +85,7 @@ nss_initgroups_ignoreusers = set()
 nss_min_uid = 0
 validnames = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
 pam_authz_searches = []
+pam_password_prohibit_message = None
 
 
 # allowed boolean values
@@ -176,7 +177,7 @@ def read(filename):
             globals()[m.group('keyword').lower()] = m.group('value')
             continue
         # parse options with a single value that can contain spaces
-        m = re.match('(?P<keyword>binddn|rootpwmoddn|sasl_realm|sasl_authcid|sasl_authzid|sasl_secprops|krb5_ccname|tls_cacertdir|tls_cacertfile|tls_randfile|tls_ciphers|tls_cert|tls_key)\s+(?P<value>\S.*)',
+        m = re.match('(?P<keyword>binddn|rootpwmoddn|sasl_realm|sasl_authcid|sasl_authzid|sasl_secprops|krb5_ccname|tls_cacertdir|tls_cacertfile|tls_randfile|tls_ciphers|tls_cert|tls_key|pam_password_prohibit_message)\s+(?P<value>\S.*)',
                      line, re.IGNORECASE)
         if m:
             globals()[m.group('keyword').lower()] = m.group('value')
