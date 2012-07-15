@@ -284,6 +284,12 @@ if __name__ == '__main__':
     # read configuration file
     cfg.read(config.NSLCD_CONF_PATH)
     # FIXME: set tls_cacertdir, tls_cacertfile, tls_randfile, tls_ciphers, tls_cert, tls_key options immediately after parsing config
+    # set process title
+    try:
+        import setproctitle
+        setproctitle.setproctitle('pynslcd')
+    except ImportError:
+        pass
     # set a default umask for the pidfile and socket
     os.umask(0022)
     # see if someone already locked the pidfile
