@@ -174,7 +174,7 @@ def getpeercred(fd):
     import socket
     SO_PEERCRED = 17
     creds = fd.getsockopt(socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i'))
-    pid, uid, gid = struct.unpack('3i',creds)
+    pid, uid, gid = struct.unpack('3i', creds)
     return uid, gid, pid
 
 
@@ -234,8 +234,29 @@ def disable_nss_ldap():
     ctypes.c_int.in_dll(lib, '_nss_ldap_enablelookups').value = 0
 
 
-def worker():
+def get_connection():
+    """Return a connection to the LDAP server."""
     session = ldap.initialize(cfg.uri)
+    # set session-specific LDAP options
+    if cfg.ldap_version:
+        session.set_option(ldap.OPT_PROTOCOL_VERSION, cfg.ldap_version)
+    if cfg.deref:
+        session.set_option(ldap.OPT_DEREF, cfg.deref)
+    if cfg.timelimit:
+        session.set_option(ldap.OPT_TIMELIMIT, cfg.timelimit)
+        session.set_option(ldap.OPT_TIMEOUT, cfg.timelimit)
+        session.set_option(ldap.OPT_NETWORK_TIMEOUT, cfg.timelimit)
+    if cfg.referrals:
+        session.set_option(ldap.OPT_REFERRALS, cfg.referrals)
+    session.set_option(ldap.OPT_RESTART, True)
+    # TODO: register a connection callback (like dis?connect_cb() in myldap.c)
+    if cfg.ssl or cfg.uri.startswith('ldaps://'):
+        session.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_HARD)
+    return session
+
+
+def worker():
+    session = get_connection()
     while True:
         try:
             acceptconnection(session)
@@ -316,6 +337,23 @@ if __name__ == '__main__':
                 os.setuid(u.pw_uid)
                 os.environ['HOME'] = u.pw_dir
             logging.info('accepting connections')
+            # set global LDAP configuration
+            if cfg.tls_reqcert is not None:
+                ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cfg.tls_reqcert)
+            if cfg.tls_cacertdir:
+                ldap.set_option(ldap.OPT_X_TLS_CACERTDIR, cfg.tls_cacertdir)
+            if cfg.tls_cacertfile:
+                ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, cfg.tls_cacertfile)
+            if cfg.tls_randfile:
+                ldap.set_option(ldap.OPT_X_TLS_RANDOM_FILE, cfg.tls_randfile)
+            if cfg.tls_randfile:
+                ldap.set_option(ldap.OPT_X_TLS_RANDOM_FILE, cfg.tls_randfile)
+            if cfg.tls_ciphers:
+                ldap.set_option(ldap.OPT_X_TLS_CIPHER_SUITE, cfg.tls_ciphers)
+            if cfg.tls_cert:
+                ldap.set_option(ldap.OPT_X_TLS_CERTFILE, cfg.tls_cert)
+            if cfg.tls_key:
+                ldap.set_option(ldap.OPT_X_TLS_KEYFILE, cfg.tls_key)
             # start worker threads
             threads = []
             for i in range(cfg.threads):
