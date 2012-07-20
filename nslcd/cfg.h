@@ -85,6 +85,8 @@ struct ldap_config
 {
   /* the number of threads to start */
   int ldc_threads;
+  /* the user name specified in the uid option */
+  char *ldc_uidname;
   /* the user id nslcd should be run as */
   uid_t ldc_uid;
   /* the group id nslcd should be run as */

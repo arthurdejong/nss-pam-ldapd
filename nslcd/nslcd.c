@@ -42,9 +42,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#ifdef HAVE_GRP_H
 #include <grp.h>
-#endif /* HAVE_GRP_H */
 #ifdef HAVE_NSS_H
 #include <nss.h>
 #endif /* HAVE_NSS_H */
@@ -741,15 +739,28 @@ int main(int argc,char *argv[])
   }
   /* create socket */
   nslcd_serversocket=create_socket(NSLCD_SOCKET);
+  if ((nslcd_cfg->ldc_gid!=NOGID)&&(nslcd_cfg->ldc_uidname!=NULL))
+  {
+#ifdef HAVE_INITGROUPS
+    /* load supplementary groups */
+    if (initgroups(nslcd_cfg->ldc_uidname,nslcd_cfg->ldc_gid)<0)
+      log_log(LOG_WARNING,"cannot initgroups(\"%s\",%d) (ignored): %s",
+              nslcd_cfg->ldc_uidname,nslcd_cfg->ldc_gid,strerror(errno));
+    else
+      log_log(LOG_DEBUG,"initgroups(\"%s\",%d) done",
+              nslcd_cfg->ldc_uidname,nslcd_cfg->ldc_gid);
+#else /* not HAVE_INITGROUPS */
 #ifdef HAVE_SETGROUPS
-  /* drop all supplemental groups */
-  if (setgroups(0,NULL)<0)
-    log_log(LOG_WARNING,"cannot setgroups(0,NULL) (ignored): %s",strerror(errno));
-  else
-    log_log(LOG_DEBUG,"setgroups(0,NULL) done");
-#else /* HAVE_SETGROUPS */
-  log_log(LOG_DEBUG,"setgroups() not available");
+    /* just drop all supplemental groups */
+    if (setgroups(0,NULL)<0)
+      log_log(LOG_WARNING,"cannot setgroups(0,NULL) (ignored): %s",strerror(errno));
+    else
+      log_log(LOG_DEBUG,"setgroups(0,NULL) done");
+#else /* not HAVE_SETGROUPS */
+    log_log(LOG_DEBUG,"neither initgroups() or setgroups() available");
 #endif /* not HAVE_SETGROUPS */
+#endif /* not HAVE_INITGROUPS */
+  }
   /* change to nslcd gid */
   if (nslcd_cfg->ldc_gid!=NOGID)
   {

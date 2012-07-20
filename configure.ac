@@ -575,7 +575,7 @@ then
   AC_SEARCH_LIBS(dlopen,dl)
 
   # check for availability of functions
-  AC_CHECK_FUNCS(setgroups)
+  AC_CHECK_FUNCS(initgroups setgroups)
   AC_CHECK_FUNCS(getpeereid)
   AC_CHECK_FUNCS(getpeerucred)
   AC_CHECK_FUNCS(__nss_configure_lookup)

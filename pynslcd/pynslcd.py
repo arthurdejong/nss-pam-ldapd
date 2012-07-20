@@ -326,19 +326,18 @@ if __name__ == '__main__':
         try:
             # create socket
             nslcd_serversocket = create_socket()
-            # drop all supplemental groups
-            try:
-                os.setgroups(())
-            except OSError, e:
-                logging.warning('cannot setgroups(()) (ignored): %s', e)
-            # change to nslcd gid
-            if cfg.gid is not None:
-                import grp
-                os.setgid(grp.getgrnam(cfg.gid).gr_gid)
-            # change to nslcd uid
+            # load supplementary groups
             if cfg.uid is not None:
                 import pwd
+                import grp
                 u = pwd.getpwnam(cfg.uid)
+                if cfg.gid is None:
+                    gid = u.pw_gid
+                else:
+                    gid = grp.getgrnam(cfg.gid).gr_gid
+                # set supplementary groups, gid and uid
+                os.initgroups(u.pw_name, gid)
+                os.setgid(gid)
                 os.setuid(u.pw_uid)
                 os.environ['HOME'] = u.pw_dir
             logging.info('accepting connections')

@@ -87,6 +87,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   int i;
   memset(cfg,0,sizeof(struct ldap_config));
   cfg->ldc_threads=5;
+  cfg->ldc_uidname=NULL;
   cfg->ldc_uid=NOUID;
   cfg->ldc_gid=NOGID;
   cfg->ldc_ignorecase=0;
@@ -441,7 +442,7 @@ static void get_eol(const char *filename,int lnr,
 
 static void get_uid(const char *filename,int lnr,
                     const char *keyword,char **line,
-                    uid_t *var)
+                    uid_t *var,gid_t *gid,char **str)
 {
   /* TODO: refactor to have less overhead */
   char token[32];
@@ -452,12 +453,24 @@ static void get_uid(const char *filename,int lnr,
   errno=0;
   *var=strtouid(token,&tmp,10);
   if ((*token!='\0')&&(*tmp=='\0')&&(errno==0)&&(strchr(token,'-')==NULL))
+  {
+    /* get the name and gid from the passwd database */
+    pwent=getpwuid(*var);
+    if ((gid!=NULL)&&(*gid!=NOGID))
+      *gid=pwent->pw_gid;
+    if (str!=NULL)
+      *str=strdup(pwent->pw_name);
     return;
+  }
   /* find by name */
   pwent=getpwnam(token);
   if (pwent!=NULL)
   {
     *var=pwent->pw_uid;
+    if ((gid!=NULL)&&(*gid!=NOGID))
+      *gid=pwent->pw_gid;
+    if (str!=NULL)
+      *str=strdup(token);
     return;
   }
   /* log an error */
@@ -883,7 +896,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"uid")==0)
     {
-      get_uid(filename,lnr,keyword,&line,&cfg->ldc_uid);
+      get_uid(filename,lnr,keyword,&line,&cfg->ldc_uid,&cfg->ldc_gid,&cfg->ldc_uidname);
       get_eol(filename,lnr,keyword,&line);
     }
     else if (strcasecmp(keyword,"gid")==0)
@@ -1153,7 +1166,7 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"nss_min_uid")==0)
     {
-      get_uid(filename,lnr,keyword,&line,&cfg->ldc_nss_min_uid);
+      get_uid(filename,lnr,keyword,&line,&cfg->ldc_nss_min_uid,NULL,NULL);
       get_eol(filename,lnr,keyword,&line);
     }
     else if (strcasecmp(keyword,"validnames")==0)
