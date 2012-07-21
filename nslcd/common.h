@@ -26,6 +26,8 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 #include "nslcd.h"
 #include "common/nslcd-prot.h"
