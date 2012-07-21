@@ -25,6 +25,10 @@
 #define NSLCD__COMMON_H 1
 
 #include <errno.h>
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif /* HAVE_STDINT_H */
+#include <sys/types.h>
 
 #include "nslcd.h"
 #include "common/nslcd-prot.h"
