@@ -26,7 +26,9 @@
 
 #include <errno.h>
 #include <limits.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif /* HAVE_STDINT_H */
 #include <sys/types.h>
 
 #include "nslcd.h"
