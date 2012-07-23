@@ -209,6 +209,12 @@ static int write_netgroup(TFILE *fp,MYLDAP_ENTRY *entry, const char *reqname)
   const char **members;
   /* get the netgroup name */
   names=myldap_get_values(entry,attmap_netgroup_cn);
+  if ((names==NULL)||(names[0]==NULL))
+  {
+    log_log(LOG_WARNING,"%s: %s: missing",
+                        myldap_get_dn(entry),attmap_netgroup_cn);
+    return 0;
+  }
   for (i=0;(names[i]!=NULL)&&(strcmp(reqname,names[i])!=0);i++)
     /* nothing here */ ;
   if (names[i]==NULL)
