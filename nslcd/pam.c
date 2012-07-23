@@ -107,8 +107,11 @@ static int validate_user(MYLDAP_SESSION *session,char *userdn,size_t userdnsz,
       /* get the username from the uid attribute */
       values=myldap_get_values(entry,attmap_passwd_uid);
       if ((values==NULL)||(values[0]==NULL))
+      {
         log_log(LOG_WARNING,"\"%s\": DN %s is missing a %s attribute",
                             username,userdn,attmap_passwd_uid);
+        return -1;
+      }
       value=values[0];
     }
     /* check the username */
