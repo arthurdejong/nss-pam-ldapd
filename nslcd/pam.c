@@ -198,6 +198,7 @@ static void autzsearch_var_add(DICT *dict,const char *name,const char *value)
   if(myldap_escape(value,escaped_value,sz))
   {
     log_log(LOG_CRIT,"autzsearch_var_add(): myldap_escape() failed to fit in buffer");
+    free(escaped_value);
     return;
   }
   /* add to dict */
