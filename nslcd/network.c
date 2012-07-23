@@ -65,7 +65,7 @@ static const char *network_attrs[3];
 static int mkfilter_network_byname(const char *name,
                                    char *buffer,size_t buflen)
 {
-  char safename[1024];
+  char safename[300];
   /* escape attribute */
   if (myldap_escape(name,safename,sizeof(safename)))
     return -1;
