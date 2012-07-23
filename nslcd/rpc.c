@@ -28,7 +28,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif /* HAVE_STDINT_H */
 
 #include "common.h"
 #include "log.h"
