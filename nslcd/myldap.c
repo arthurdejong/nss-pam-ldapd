@@ -413,7 +413,6 @@ static int do_sasl_interact(LDAP UNUSED(*ld),unsigned UNUSED(flags),void *defaul
 static int do_bind(LDAP *ld,const char *binddn,const char *bindpw,const char *uri)
 {
   int rc;
-  char *msg=NULL;
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
 #ifndef HAVE_SASL_INTERACT_T
   struct berval cred;
