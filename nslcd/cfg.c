@@ -111,6 +111,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_sasl_authcid=NULL;
   cfg->ldc_sasl_authzid=NULL;
   cfg->ldc_sasl_secprops=NULL;
+  cfg->ldc_sasl_canonicalize=0;
   for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
     cfg->ldc_bases[i]=NULL;
   cfg->ldc_scope=LDAP_SCOPE_SUBTREE;
@@ -990,6 +991,22 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
       get_strdup(filename,lnr,keyword,&line,&cfg->ldc_sasl_secprops);
       get_eol(filename,lnr,keyword,&line);
     }
+#ifdef LDAP_OPT_X_SASL_NOCANON
+    else if ( (strcasecmp(keyword,"sasl_canonicalize")==0) ||
+              (strcasecmp(keyword,"sasl_canonicalise")==0) ||
+              (strcasecmp(keyword,"ldap_sasl_canonicalize")==0) ||
+              (strcasecmp(keyword,"sasl_canon")==0) )
+    {
+      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_sasl_canonicalize);
+      get_eol(filename,lnr,keyword,&line);
+    }
+    else if (strcasecmp(keyword,"sasl_nocanon")==0)
+    {
+      get_boolean(filename,lnr,keyword,&line,&cfg->ldc_sasl_canonicalize);
+      cfg->ldc_sasl_canonicalize=!cfg->ldc_sasl_canonicalize;
+      get_eol(filename,lnr,keyword,&line);
+    }
+#endif /* LDAP_OPT_X_SASL_NOCANON */
     /* Kerberos authentication options */
     else if (strcasecmp(keyword,"krb5_ccname")==0)
     {

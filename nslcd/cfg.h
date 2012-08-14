@@ -115,6 +115,10 @@ struct ldap_config
   char *ldc_sasl_authzid;
   /* sasl security */
   char *ldc_sasl_secprops;
+#ifdef LDAP_OPT_X_SASL_NOCANON
+  /* whether host name should be canonicalised */
+  int ldc_sasl_canonicalize;
+#endif /* LDAP_OPT_X_SASL_NOCANON */
   /* base DN, eg. dc=gnu,dc=org */
   const char *ldc_bases[NSS_LDAP_CONFIG_MAX_BASES];
   /* scope for searches */

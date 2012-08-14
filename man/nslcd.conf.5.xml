@@ -282,6 +282,18 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="sasl_canonicalize">
+     <term><option>sasl_canonicalize</option> yes|no</term>
+     <listitem>
+      <para>
+       Determines whether the <acronym>LDAP</acronym> server host name should
+       be canonicalised. If this is set to yes the <acronym>LDAP</acronym>
+       library will do a reverse host name lookup.
+       By default <command>nslcd</command> disables this extra lookup.
+      </para>
+     </listitem>
+    </varlistentry>
+
    </variablelist>
   </refsect2>
 

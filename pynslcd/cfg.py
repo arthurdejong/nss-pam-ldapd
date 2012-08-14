@@ -52,6 +52,7 @@ sasl_realm = None
 sasl_authcid = None
 sasl_authzid = None
 sasl_secprops = None
+sasl_canonicalize = False
 
 # LDAP bases to search
 bases = []
@@ -265,6 +266,16 @@ def read(filename):
         if m:
             global ssl
             ssl = _ssl_options[m.group('value').lower()]
+            continue
+        # sasl_canonicalize yes|no
+        m = re.match('(ldap_?)?sasl_(?P<no>no)?canon(icali[sz]e)?\s+(?P<value>%s)' %
+                         '|'.join(_boolean_options.keys()),
+                     line, re.IGNORECASE)
+        if m:
+            global sasl_canonicalize
+            sasl_canonicalize = _boolean_options[m.group('value').lower()]
+            if m.group('no'):
+                sasl_canonicalize = not sasl_canonicalize
             continue
         # tls_reqcert <demand|hard|yes...>
         m = re.match('tls_reqcert\s+(?P<value>%s)' %
