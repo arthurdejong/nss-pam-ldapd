@@ -52,7 +52,7 @@ sasl_realm = None
 sasl_authcid = None
 sasl_authzid = None
 sasl_secprops = None
-sasl_canonicalize = False
+sasl_canonicalize = True
 
 # LDAP bases to search
 bases = []
