@@ -497,6 +497,7 @@ static int do_bind(LDAP *ld,const char *binddn,const char *bindpw,const char *ur
 #ifdef HAVE_LDAP_SET_REBIND_PROC
 /* This function is called by the LDAP library when chasing referrals.
    It is configured with the ldap_set_rebind_proc() below. */
+#if defined(LDAP_API_FEATURE_X_OPENLDAP) && (LDAP_API_VERSION > 2000)
 static int do_rebind(LDAP *ld,LDAP_CONST char *url,
                      ber_tag_t UNUSED(request),
                      ber_int_t UNUSED(msgid),void *arg)
@@ -505,6 +506,34 @@ static int do_rebind(LDAP *ld,LDAP_CONST char *url,
   log_log(LOG_DEBUG,"rebinding to %s",url);
   return do_bind(ld,session->binddn,session->bindpw,url);
 }
+#else /* not recent OpenLDAP */
+static int do_rebind(LDAP *ld,char **dnp,char **passwdp,int *authmethodp,
+                     int freeit,void *arg)
+{
+  MYLDAP_SESSION *session=(MYLDAP_SESSION *)arg;
+  if (freeit)
+  {
+    free(*dnp);
+    memset(*passwdp,0,strlen(*passwdp));
+    free(*passwdp);
+  }
+  else
+  {
+    log_log(LOG_DEBUG,"rebinding");
+    *dnp=strdup(session->binddn);
+    *passwdp=strdup(session->bindpw);
+    *authmethodp=LDAP_AUTH_SIMPLE;
+    if ((*dnp==NULL)||(*passwdp==NULL))
+    {
+      if (*dnp!=NULL)
+        free(*dnp);
+      log_log(LOG_CRIT,"do_rebind(): strdup() failed to allocate memory");
+      return LDAP_NO_MEMORY;
+    }
+  }
+  return LDAP_SUCCESS;
+}
+#endif /* not recent OpenLDAP */
 #endif /* HAVE_LDAP_SET_REBIND_PROC */
 
 /* set a recieve and send timeout on a socket */
