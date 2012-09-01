@@ -52,7 +52,7 @@ int pam_get_authtok(pam_handle_t *pamh,int item,const char **authtok,const char 
     prompt=(prompt!=NULL)?prompt:"Old Password: ";
   else
   {
-    rc=pam_get_item(pamh,PAM_OLDAUTHTOK,&oldauthtok);
+    rc=pam_get_item(pamh,PAM_OLDAUTHTOK,(const void **)&oldauthtok);
     if ((rc==PAM_SUCCESS)&&(oldauthtok!=NULL))
     {
       prompt=(prompt!=NULL)?prompt:"New Password: ";
