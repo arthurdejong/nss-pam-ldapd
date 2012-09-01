@@ -745,10 +745,10 @@ int main(int argc,char *argv[])
     /* load supplementary groups */
     if (initgroups(nslcd_cfg->ldc_uidname,nslcd_cfg->ldc_gid)<0)
       log_log(LOG_WARNING,"cannot initgroups(\"%s\",%d) (ignored): %s",
-              nslcd_cfg->ldc_uidname,nslcd_cfg->ldc_gid,strerror(errno));
+              nslcd_cfg->ldc_uidname,(int)nslcd_cfg->ldc_gid,strerror(errno));
     else
       log_log(LOG_DEBUG,"initgroups(\"%s\",%d) done",
-              nslcd_cfg->ldc_uidname,nslcd_cfg->ldc_gid);
+              nslcd_cfg->ldc_uidname,(int)nslcd_cfg->ldc_gid);
 #else /* not HAVE_INITGROUPS */
 #ifdef HAVE_SETGROUPS
     /* just drop all supplemental groups */
