@@ -190,7 +190,6 @@ static nss_status_t read_groupstring(TFILE *fp,nss_XbyY_args_t *args)
   struct group result;
   nss_status_t retv;
   char *buffer;
-  size_t buflen;
   int i;
   /* read the group into a temporary buffer */
   buffer=(char *)malloc(args->buf.buflen);
@@ -210,12 +209,12 @@ static nss_status_t read_groupstring(TFILE *fp,nss_XbyY_args_t *args)
     for (i=0;result.gr_mem[i];i++)
     {
       if (i)
-        strncat(args->buf.buffer,args->buf.buflen-strlen(args->buf.buffer)-1,",");
-      strncat(args->buf.buffer,args->buf.buflen-strlen(args->buf.buffer)-1,result.gr_mem[i]);
+        strncat(args->buf.buffer,",",args->buf.buflen-strlen(args->buf.buffer)-1);
+      strncat(args->buf.buffer,result.gr_mem[i],args->buf.buflen-strlen(args->buf.buffer)-1);
     }
   free(buffer);
   /* check if buffer overflowed */
-  if (strlen(args->buf.buffer)>=args->buf.buffer-1)
+  if (strlen(args->buf.buffer)>=args->buf.buflen-1)
     return NSS_STATUS_TRYAGAIN;
   NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
   NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
