@@ -2,7 +2,7 @@
    shadow.c - NSS lookup functions for shadow database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2012 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -99,7 +99,7 @@ static nss_status_t read_spwdstring(TFILE *fp,nss_XbyY_args_t *args)
   char field_buf[128];
   size_t buflen;
   /* read the spwd */
-  retv=read_spwd(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&errno);
+  retv=read_spwd(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&NSS_ARGS(args)->erange);
   if (retv!=NSS_STATUS_SUCCESS)
     return retv;
   /* allocate a temporary buffer */
@@ -153,7 +153,7 @@ static nss_status_t read_spwdstring(TFILE *fp,nss_XbyY_args_t *args)
 
 #define READ_RESULT(fp) \
   NSS_ARGS(args)->buf.result? \
-    read_spwd(fp,(struct spwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno): \
+    read_spwd(fp,(struct spwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange): \
     read_spwdstring(fp,args); \
   if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
@@ -161,7 +161,7 @@ static nss_status_t read_spwdstring(TFILE *fp,nss_XbyY_args_t *args)
 #else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 #define READ_RESULT(fp) \
-  read_spwd(fp,(struct spwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&errno); \
+  read_spwd(fp,(struct spwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange); \
   if (retv==NSS_STATUS_SUCCESS) \
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
 

@@ -2,7 +2,7 @@
    netgroup.c - NSS lookup functions for netgroup entries
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2012 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -166,14 +166,11 @@ static char *find_unseen_netgroup(nss_backend_t *be)
   }
 }
 
-static nss_status_t netgroup_nslcd_setnetgrent(nss_backend_t *be,const char *group)
+static nss_status_t netgroup_nslcd_setnetgrent(nss_backend_t *be,const char *group,int *errnop)
 {
   /* we cannot use NSS_SETENT() here because we have a parameter that is only
      available in this function */
   int32_t tmpint32;
-  int errnocp;
-  int *errnop;
-  errnop=&errnocp;
   /* check parameter */
   if ((group==NULL)||(group[0]=='\0'))
     return NSS_STATUS_UNAVAIL;
@@ -224,7 +221,7 @@ static nss_status_t netgroup_setnetgrent_getnetgrent(nss_backend_t *be,void *arg
           }
           else
           {
-            rc=netgroup_nslcd_setnetgrent(be,group);
+            rc=netgroup_nslcd_setnetgrent(be,group,&NSS_ARGS(args)->erange);
             if (rc==NSS_STATUS_SUCCESS)
               found=1;
             free(group);
@@ -303,7 +300,7 @@ static nss_status_t netgroup_setnetgrent_constructor(nss_backend_t *be,void *arg
   ngbe->seen_groups=set_new();
   ngbe->unseen_groups=set_new();
   /* start the first search */
-  retv=netgroup_nslcd_setnetgrent(be,SETNETGRENT_ARGS(args)->netgroup);
+  retv=netgroup_nslcd_setnetgrent(be,SETNETGRENT_ARGS(args)->netgroup,&NSS_ARGS(args)->erange);
   if (retv!=NSS_STATUS_SUCCESS)
   {
     netgroup_setnetgrent_destructor(be,args);
