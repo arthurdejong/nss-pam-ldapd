@@ -114,7 +114,7 @@ static nss_status_t read_passwdstring(TFILE *fp,nss_XbyY_args_t *args)
   buffer=(char *)malloc(buflen);
   /* build the formatted string */
   /* FIXME: implement proper buffer size checking */
-   sprintf(buffer,"%s:%s:%d:%d:%s:%s:%s",
+  sprintf(buffer,"%s:%s:%d:%d:%s:%s:%s",
      result.pw_name,result.pw_passwd,(int)result.pw_uid,(int)result.pw_gid,result.pw_gecos,
      result.pw_dir,result.pw_shell);
   /* copy the result back to the result buffer and free the temporary one */

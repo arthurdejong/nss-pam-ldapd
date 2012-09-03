@@ -100,8 +100,8 @@
 #define NSS_BUFCHECK \
   if ((NSS_ARGS(args)->buf.buffer==NULL)||(NSS_ARGS(args)->buf.buflen<=0)) \
   { \
-      NSS_ARGS(args)->erange=1; \
-      return NSS_STATUS_TRYAGAIN; \
+    NSS_ARGS(args)->erange=1; \
+    return NSS_STATUS_TRYAGAIN; \
   }
 
 /* this is the backend structure for Solaris */
