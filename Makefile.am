@@ -64,7 +64,7 @@ dist-hook:
 
 # target for generating the ChangeLog file
 changelog:
-	svn2cl -i -r HEAD:1359
+	svn2cl -i -r HEAD:1586
 
 flawfinder.html:
 	flawfinder --quiet --html --context --followdotdir . > $@
