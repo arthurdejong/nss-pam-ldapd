@@ -297,9 +297,9 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   int numuids;
   char gidbuf[32];
   gid_t gid;
-  char gecos[100];
-  char homedir[100];
-  char shell[100];
+  char gecos[1024];
+  char homedir[256];
+  char shell[64];
   int i,j;
   /* get the usernames for this entry */
   usernames=myldap_get_values(entry,attmap_passwd_uid);
