@@ -48,7 +48,8 @@ install-nslcd_conf:
 	@if [ -f $(DESTDIR)$(NSLCD_CONF_PATH) ]; then \
 	  echo "$(DESTDIR)$(NSLCD_CONF_PATH) already exists, install will not overwrite"; \
 	else \
-	  $(INSTALL_DATA) -D $(srcdir)/nslcd.conf $(DESTDIR)$(NSLCD_CONF_PATH) || true; \
+	  $(mkinstalldirs) `dirname $(DESTDIR)$(NSLCD_CONF_PATH)`; \
+	  $(INSTALL_DATA) $(srcdir)/nslcd.conf $(DESTDIR)$(NSLCD_CONF_PATH); \
 	fi
 uninstall-nslcd_conf:
 	-rm -f $(DESTDIR)$(NSLCD_CONF_PATH)
