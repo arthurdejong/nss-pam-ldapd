@@ -1,3 +1,71 @@
+2012-09-08 16:08  arthur
+
+	* [r1757] ., nslcd/nslcd.c: properly handle failures to truncate
+	  the pid file (r1568 from 0.8)
+
+2012-09-08 16:00  arthur
+
+	* [r1756] ., Makefile.am: install the default configuration file
+	  with reduced permissions (further protection for CVE-2009-1073)
+	  (r1704 from 0.8)
+
+2012-09-08 15:53  arthur
+
+	* [r1755] ., AUTHORS, Makefile.am: use $(mkinstalldirs) instead of
+	  $(INSTALL_DATA) -D because -D is not supported on all operating
+	  systems (patch by SATOH Fumiyasu) (r1420 from 0.8)
+
+2012-09-08 15:47  arthur
+
+	* [r1754] config.sub: include updated files
+
+2012-08-31 09:09  arthur
+
+	* [r1737] ., depcomp: mark file as executable (r1736 from 0.8)
+
+2012-07-23 21:16  arthur
+
+	* [r1730] ., nslcd/netgroup.c: fix possible NULL pointer
+	  dereference (r1591 from 0.8)
+
+2012-07-23 21:13  arthur
+
+	* [r1729] ., nslcd/pam.c: do not leak memory if myldap_escape()
+	  fails (r1590 from 0.8)
+
+2012-07-23 21:11  arthur
+
+	* [r1728] ., nslcd/pam.c: fix possible NULL pointer dereference
+	  (r1589 from 0.8)
+
+2012-07-23 20:16  arthur
+
+	* [r1727] ., nslcd/network.c, nslcd/passwd.c: grow gecos buffer
+	  size and consistency improvements to other buffers (r1540 from
+	  0.8 branch)
+
+2012-07-21 21:33  arthur
+
+	* [r1726] ., nslcd/common.h: add missing includes to ensure all
+	  types are defined in header (r1724 and r1725 from development)
+
+2012-05-11 10:51  arthur
+
+	* [r1689] ., common/tio.c: ensure that we don't try to read more
+	  than SSIZE_MAX bytes (r1636 from 0.8 branch)
+
+2012-04-27 18:50  arthur
+
+	* [r1672] ., compat/nss_compat.h, compat/pam_get_authtok.c,
+	  configure.ac: some compatibility improvements by Ted C. Cheng of
+	  Symas Corporation (r1225 from 0.8 branch)
+
+2012-04-09 18:10  arthur
+
+	* [r1651] ChangeLog, Makefile.am, NEWS, configure.ac,
+	  man/nslcd.8.xml, man/nslcd.conf.5.xml, man/pam_ldap.8.xml,
+	  nslcd/nslcd.c: get files ready for 0.7.16 release
+
 2012-04-09 13:49  arthur
 
 	* [r1650] INSTALL, compile, config.guess, config.sub, depcomp,
