@@ -517,7 +517,11 @@ static void create_pidfile(const char *filename)
       log_log(LOG_ERR,"cannot lock pid file (%s): %s",filename,strerror(errno));
       exit(EXIT_FAILURE);
     }
-    ftruncate(fd,0);
+    if (ftruncate(fd,0)<0)
+    {
+      log_log(LOG_ERR,"cannot truncate pid file (%s): %s",filename,strerror(errno));
+      exit(EXIT_FAILURE);
+    }
     mysnprintf(buffer,sizeof(buffer),"%d\n",(int)getpid());
     if (write(fd,buffer,strlen(buffer))!=(int)strlen(buffer))
     {
