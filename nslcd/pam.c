@@ -379,7 +379,7 @@ static int try_autzsearch(MYLDAP_SESSION *session,const char *dn,
   char hostname[HOST_NAME_MAX+1];
   const char *fqdn;
   DICT *dict=NULL;
-  char filter_buffer[4096];
+  char filter[4096];
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   static const char *attrs[2];
@@ -409,7 +409,7 @@ static int try_autzsearch(MYLDAP_SESSION *session,const char *dn,
     }
     /* build the search filter */
     res=expr_parse(nslcd_cfg->ldc_pam_authz_search[i],
-                   filter_buffer,sizeof(filter_buffer),
+                   filter,sizeof(filter),
                    autzsearch_var_get,(void *)dict);
     if (res==NULL)
     {
@@ -418,19 +418,19 @@ static int try_autzsearch(MYLDAP_SESSION *session,const char *dn,
       log_log(LOG_ERR,"invalid pam_authz_search \"%s\"",nslcd_cfg->ldc_pam_authz_search[i]);
       return LDAP_LOCAL_ERROR;
     }
-    log_log(LOG_DEBUG,"trying pam_authz_search \"%s\"",filter_buffer);
+    log_log(LOG_DEBUG,"trying pam_authz_search \"%s\"",filter);
     /* perform the search */
     attrs[0]="dn";
     attrs[1]=NULL;
     /* FIXME: this only searches the first base */
     search=myldap_search(session,nslcd_cfg->ldc_bases[0],LDAP_SCOPE_SUBTREE,
-                         filter_buffer,attrs,&rc);
+                         filter,attrs,&rc);
     if (search==NULL)
     {
       autzsearch_vars_free(dict);
       dict_free(dict);
       log_log(LOG_ERR,"pam_authz_search \"%s\" failed: %s",
-              filter_buffer,ldap_err2string(rc));
+              filter,ldap_err2string(rc));
       return rc;
     }
     /* try to get an entry */
@@ -439,7 +439,7 @@ static int try_autzsearch(MYLDAP_SESSION *session,const char *dn,
     {
       autzsearch_vars_free(dict);
       dict_free(dict);
-      log_log(LOG_ERR,"pam_authz_search \"%s\" found no matches",filter_buffer);
+      log_log(LOG_ERR,"pam_authz_search \"%s\" found no matches",filter);
       if (rc==LDAP_SUCCESS)
         rc=LDAP_NO_SUCH_OBJECT;
       return rc;
