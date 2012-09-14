@@ -92,61 +92,61 @@ nss_status_t _nss_ldap_endetherent(void)
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
+/* we disable NSS_BUFCHECK because these functions do not use the buffer */
+#undef NSS_BUFCHECK
+#define NSS_BUFCHECK ;
+
+/* provide a fallback definition */
 #ifndef NSS_BUFLEN_ETHERS
-#define NSS_BUFLEN_ETHERS 1024
+#define NSS_BUFLEN_ETHERS HOST_NAME_MAX
 #endif /* NSS_BUFLEN_ETHERS */
 
-#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-
-static nss_status_t read_etherstring(TFILE *fp,nss_XbyY_args_t *args)
+static nss_status_t read_result(TFILE *fp,void *args,int wantname)
 {
   struct etherent result;
+  char buffer[NSS_BUFLEN_ETHERS];
   nss_status_t retv;
-  char *buffer;
   int res;
-  /* read the etherent into a temporary buffer */
-  buffer=(char *)malloc(args->buf.buflen);
-  if (buffer==NULL)
-    return NSS_STATUS_UNAVAIL;
-  retv=read_etherent(fp,&result,buffer,args->buf.buflen,&NSS_ARGS(args)->erange);
+  /* read the result entry from the stream */
+  retv=read_etherent(fp,&result,buffer,sizeof(buffer),&NSS_ARGS(args)->erange);
   if (retv!=NSS_STATUS_SUCCESS)
-  {
-    free(buffer);
     return retv;
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+  /* try to return in string format if requested */
+  if ((NSS_ARGS(args)->buf.buffer!=NULL)&&(NSS_ARGS(args)->buf.buflen>0))
+  {
+    res=snprintf(NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,
+                 "%s %s",ether_ntoa(&result.e_addr),result.e_name);
+    if ((res<0)||(res>=NSS_ARGS(args)->buf.buflen))
+      return NSS_STR_PARSE_PARSE;
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
+    NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->returnval);
+    NSS_ARGS(args)->buf.result=NULL;
+    return NSS_SUCCESS;
   }
-  /* make a string representation */
-  res=snprintf(args->buf.buffer,args->buf.buflen,
-               "%s %s",ether_ntoa(&result.e_addr),result.e_name);
-  free(buffer);
-  if ((res<0)||(res>=args->buf.buflen))
-    return NSS_STATUS_TRYAGAIN;
-  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
-  return NSS_STATUS_SUCCESS;
-}
-
-#define READ_RESULT(fp) \
-  NSS_ARGS(args)->buf.result? \
-    read_etherent(fp,(struct etherent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange): \
-    read_etherstring(fp,args); \
-  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
-#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-
-#define READ_RESULT(fp) \
-  read_etherent(fp,(struct etherent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange); \
-  if (retv==NSS_STATUS_SUCCESS) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
 #endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+  /* return the result entry */
+  if (wantname)
+  {
+    strcpy(NSS_ARGS(args)->buf.buffer,result.e_name);
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result=NSS_ARGS(args)->buf.buffer;
+    NSS_ARGS(args)->buf.buflen=strlen(NSS_ARGS(args)->returnval);
+  }
+  else /* address */
+  {
+    memcpy(NSS_ARGS(args)->buf.result,&result.e_addr,sizeof(result.e_addr));
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
+    NSS_ARGS(args)->buf.result=NULL;
+  }
+  return NSS_SUCCESS;
+}
 
 /* map a hostname to the corresponding ethernet address */
 static nss_status_t ethers_gethostton(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,
              NSS_ARGS(args)->key.name,
-             READ_RESULT(fp));
+             read_result(fp,args,0));
 }
 
 /* map an ethernet address to the corresponding hostname */
@@ -155,7 +155,7 @@ static nss_status_t ethers_getntohost(nss_backend_t UNUSED(*be),void *args)
   struct ether_addr *addr=(struct ether_addr *)(NSS_ARGS(args)->key.ether);
   NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,
              *addr,uint8_t[6],
-             READ_RESULT(fp));
+             read_result(fp,args,1));
 }
 
 static nss_status_t ethers_destructor(nss_backend_t *be,void UNUSED(*args))
