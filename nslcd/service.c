@@ -215,7 +215,7 @@ NSLCD_HANDLE(
   service,byname,
   char name[256];
   char protocol[256];
-  char filter[1024];
+  char filter[4096];
   READ_STRING(fp,name);
   READ_STRING(fp,protocol);
   log_setrequest("service=\"%s\"/%s",name,protocol);,
@@ -228,7 +228,7 @@ NSLCD_HANDLE(
   service,bynumber,
   int number;
   char protocol[256];
-  char filter[1024];
+  char filter[4096];
   READ_INT32(fp,number);
   READ_STRING(fp,protocol);
   log_setrequest("service=%d/%s",number,protocol);,

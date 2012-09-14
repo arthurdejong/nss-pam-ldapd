@@ -172,7 +172,7 @@ static int write_rpc(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname)
 NSLCD_HANDLE(
   rpc,byname,
   char name[256];
-  char filter[1024];
+  char filter[4096];
   READ_STRING(fp,name);
   log_setrequest("rpc=\"%s\"",name);,
   NSLCD_ACTION_RPC_BYNAME,
@@ -183,7 +183,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   rpc,bynumber,
   int number;
-  char filter[1024];
+  char filter[4096];
   READ_INT32(fp,number);
   log_setrequest("rpc=%d",number);,
   NSLCD_ACTION_RPC_BYNUMBER,

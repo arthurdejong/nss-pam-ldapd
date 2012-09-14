@@ -328,7 +328,7 @@ MYLDAP_ENTRY *shadow_uid2entry(MYLDAP_SESSION *session,const char *username,int 
   MYLDAP_SEARCH *search=NULL;
   MYLDAP_ENTRY *entry=NULL;
   const char *base;
-  char filter[1024];
+  char filter[4096];
   int i;
   /* if it isn't a valid username, just bail out now */
   if (!isvalidname(username))
@@ -360,7 +360,7 @@ MYLDAP_ENTRY *shadow_uid2entry(MYLDAP_SESSION *session,const char *username,int 
 NSLCD_HANDLE(
   shadow,byname,
   char name[256];
-  char filter[1024];
+  char filter[4096];
   READ_STRING(fp,name);
   log_setrequest("shadow=\"%s\"",name);,
   NSLCD_ACTION_SHADOW_BYNAME,

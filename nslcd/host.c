@@ -154,7 +154,7 @@ static int write_host(TFILE *fp,MYLDAP_ENTRY *entry)
 NSLCD_HANDLE(
   host,byname,
   char name[256];
-  char filter[1024];
+  char filter[4096];
   READ_STRING(fp,name);
   log_setrequest("host=\"%s\"",name);,
   NSLCD_ACTION_HOST_BYNAME,
@@ -168,7 +168,7 @@ NSLCD_HANDLE(
   char addr[64];
   int len=sizeof(addr);
   char addrstr[64];
-  char filter[1024];
+  char filter[4096];
   READ_ADDRESS(fp,addr,len,af);
   /* translate the address to a string */
   if (inet_ntop(af,addr,addrstr,sizeof(addrstr))==NULL)

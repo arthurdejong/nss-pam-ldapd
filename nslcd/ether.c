@@ -160,7 +160,7 @@ static int write_ether(TFILE *fp,MYLDAP_ENTRY *entry,
 NSLCD_HANDLE(
   ether,byname,
   char name[256];
-  char filter[1024];
+  char filter[4096];
   READ_STRING(fp,name);
   log_setrequest("ether=\"%s\"",name);,
   NSLCD_ACTION_ETHER_BYNAME,
@@ -172,7 +172,7 @@ NSLCD_HANDLE(
   ether,byether,
   struct ether_addr addr;
   char addrstr[20];
-  char filter[1024];
+  char filter[4096];
   READ_TYPE(fp,addr,uint8_t[6]);
   if (ether_ntoa_r(&addr,addrstr)==NULL)
     return -1;

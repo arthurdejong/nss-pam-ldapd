@@ -122,7 +122,7 @@ static int write_alias(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqalias)
 NSLCD_HANDLE(
   alias,byname,
   char name[256];
-  char filter[1024];
+  char filter[4096];
   READ_STRING(fp,name);
   log_setrequest("alias=\"%s\"",name);,
   NSLCD_ACTION_ALIAS_BYNAME,

@@ -342,7 +342,7 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session,const char *uid,int *rcp)
   const char *base;
   int i;
   static const char *attrs[3];
-  char filter[1024];
+  char filter[4096];
   /* if it isn't a valid username, just bail out now */
   if (!isvalidname(uid))
   {
@@ -587,7 +587,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
 NSLCD_HANDLE_UID(
   passwd,byname,
   char name[256];
-  char filter[1024];
+  char filter[4096];
   READ_STRING(fp,name);
   log_setrequest("passwd=\"%s\"",name);
   if (!isvalidname(name)) {
@@ -603,7 +603,7 @@ NSLCD_HANDLE_UID(
 NSLCD_HANDLE_UID(
   passwd,byuid,
   uid_t uid;
-  char filter[1024];
+  char filter[4096];
   READ_TYPE(fp,uid,uid_t);
   log_setrequest("passwd=%d",(int)uid);
   if (uid<nslcd_cfg->ldc_nss_min_uid)

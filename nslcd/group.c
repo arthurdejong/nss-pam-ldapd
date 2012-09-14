@@ -318,7 +318,7 @@ static int write_group(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqname,
 NSLCD_HANDLE(
   group,byname,
   char name[256];
-  char filter[1024];
+  char filter[4096];
   READ_STRING(fp,name);
   log_setrequest("group=\"%s\"",name);
   if (!isvalidname(name)) {
@@ -333,7 +333,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   group,bygid,
   gid_t gid;
-  char filter[1024];
+  char filter[4096];
   READ_TYPE(fp,gid,gid_t);
   log_setrequest("group=%d",(int)gid);,
   NSLCD_ACTION_GROUP_BYGID,
@@ -344,7 +344,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   group,bymember,
   char name[256];
-  char filter[1024];
+  char filter[4096];
   READ_STRING(fp,name);
   log_setrequest("group/member=\"%s\"",name);
   if (!isvalidname(name))
