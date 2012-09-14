@@ -158,14 +158,8 @@ static nss_status_t ethers_getntohost(nss_backend_t UNUSED(*be),void *args)
              read_result(fp,args,1));
 }
 
-static nss_status_t ethers_destructor(nss_backend_t *be,void UNUSED(*args))
-{
-  free(be);
-  return NSS_STATUS_SUCCESS;
-}
-
 static nss_backend_op_t ethers_ops[]={
-  ethers_destructor,
+  nss_ldap_destructor,
   ethers_gethostton,
   ethers_getntohost
 };
@@ -173,12 +167,7 @@ static nss_backend_op_t ethers_ops[]={
 nss_backend_t *_nss_ldap_ethers_constr(const char UNUSED(*db_name),
                   const char UNUSED(*src_name),const char UNUSED(*cfg_args))
 {
-  nss_backend_t *be;
-  if (!(be=(nss_backend_t *)malloc(sizeof(*be))))
-    return NULL;
-  be->ops=ethers_ops;
-  be->n_ops=sizeof(ethers_ops)/sizeof(nss_backend_op_t);
-  return be;
+  return nss_ldap_constructor(ethers_ops,sizeof(ethers_ops));
 }
 
 #endif /* NSS_FLAVOUR_SOLARIS */
