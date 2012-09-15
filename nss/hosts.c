@@ -74,6 +74,7 @@ static nss_status_t read_hostent(
   int i;
   int readaf;
   size_t bufptr=0;
+  memset(result,0,sizeof(struct hostent));
   /* read the host entry */
   READ_BUF_STRING(fp,result->h_name);
   READ_BUF_STRINGLIST(fp,result->h_aliases);

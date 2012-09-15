@@ -72,6 +72,7 @@ static nss_status_t read_netent(
   int readaf;
   size_t bufptr=0;
   nss_status_t retv=NSS_STATUS_NOTFOUND;
+  memset(result,0,sizeof(struct netent));
   /* read the network entry */
   READ_BUF_STRING(fp,result->n_name);
   READ_BUF_STRINGLIST(fp,result->n_aliases);

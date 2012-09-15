@@ -37,6 +37,7 @@ static nss_status_t read_spwd(
 {
   int32_t tmpint32;
   size_t bufptr=0;
+  memset(result,0,sizeof(struct spwd));
   READ_BUF_STRING(fp,result->sp_namp);
   READ_BUF_STRING(fp,result->sp_pwdp);
   READ_INT32(fp,result->sp_lstchg);

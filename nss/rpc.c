@@ -37,6 +37,7 @@ static nss_status_t read_rpcent(
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
+  memset(result,0,sizeof(struct rpcent));
   READ_BUF_STRING(fp,result->r_name);
   READ_BUF_STRINGLIST(fp,result->r_aliases);
   READ_INT32(fp,result->r_number);

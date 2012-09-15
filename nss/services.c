@@ -37,6 +37,7 @@ static nss_status_t read_servent(
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
+  memset(result,0,sizeof(struct servent));
   READ_BUF_STRING(fp,result->s_name);
   READ_BUF_STRINGLIST(fp,result->s_aliases);
   /* store port number in network byte order */

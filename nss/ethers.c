@@ -37,6 +37,7 @@ static nss_status_t read_etherent(
 {
   int32_t tmpint32;
   size_t bufptr=0;
+  memset(result,0,sizeof(struct etherent));
   READ_BUF_STRING(fp,result->e_name);
   READ_TYPE(fp,result->e_addr,uint8_t[6]);
   return NSS_STATUS_SUCCESS;

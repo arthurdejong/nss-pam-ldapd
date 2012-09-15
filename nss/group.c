@@ -38,6 +38,7 @@ static nss_status_t read_group(
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
+  memset(result,0,sizeof(struct group));
   READ_BUF_STRING(fp,result->gr_name);
   READ_BUF_STRING(fp,result->gr_passwd);
   READ_TYPE(fp,result->gr_gid,gid_t);

@@ -2,7 +2,7 @@
    aliases.c - NSS lookup functions for aliases database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,7 @@ static nss_status_t read_aliasent(
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   size_t bufptr=0;
+  memset(result,0,sizeof(struct aliasent));
   /* read the name of the alias */
   READ_BUF_STRING(fp,result->alias_name);
   /* read the members */
