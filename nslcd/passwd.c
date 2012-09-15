@@ -385,6 +385,14 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
   return myldap_cpy_dn(entry,buf,buflen);
 }
 
+#ifndef NSS_FLAVOUR_GLIBC
+
+/* only check nsswitch.conf for glibc */
+#define check_nsswitch_reload()
+#define shadow_uses_ldap() (1)
+
+#else /* NSS_FLAVOUR_GLIBC */
+
 /* the cached value of whether shadow lookups use LDAP in nsswitch.conf */
 #define NSSWITCH_FILE "/etc/nsswitch.conf"
 #define CACHED_UNKNOWN 22
@@ -430,6 +438,8 @@ static inline int shadow_uses_ldap(void)
   }
   return cached_shadow_uses_ldap;
 }
+
+#endif /* NSS_FLAVOUR_GLIBC */
 
 /* the maximum number of uidNumber attributes per entry */
 #define MAXUIDS_PER_ENTRY 5
