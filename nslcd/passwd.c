@@ -324,7 +324,7 @@ char *dn2uid(MYLDAP_SESSION *session,const char *dn,char *buf,size_t buflen)
     /* copy the uid if needed */
     if (cacheentry->uid==NULL)
       cacheentry->uid=uid!=NULL?strdup(uid):NULL;
-    else if (strcmp(cacheentry->uid,uid)!=0)
+    else if ((uid==NULL)||(strcmp(cacheentry->uid,uid)!=0))
     {
       free(cacheentry->uid);
       cacheentry->uid=uid!=NULL?strdup(uid):NULL;
