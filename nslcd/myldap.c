@@ -1566,14 +1566,14 @@ static const char **bervalues_to_values(struct berval **bvalues)
   for (i=0;i<num_values;i++)
     sz+=bvalues[i]->bv_len+1;
   /* allocate the needed memory */
-  buf=(char *)malloc(sz);
-  if (buf==NULL)
+  values=(char **)malloc(sz);
+  if (values==NULL)
   {
     log_log(LOG_CRIT,"myldap_get_values_len(): malloc() failed to allocate memory");
     ldap_value_free_len(bvalues);
     return NULL;
   }
-  values=(char **)buf;
+  buf=(char *)values;
   buf+=(num_values+1)*sizeof(char *);
   /* copy from bvalues */
   for (i=0;i<num_values;i++)
