@@ -1622,6 +1622,7 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry,const char *attr)
       rc=LDAP_SUCCESS;
       if (ldap_set_option(entry->search->session->ld,LDAP_OPT_ERROR_NUMBER,&rc)!=LDAP_SUCCESS)
         log_log(LOG_WARNING,"failed to clear the error flag");
+      return NULL;
     }
     else if (rc==LDAP_SUCCESS)
     {
@@ -1633,10 +1634,12 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry,const char *attr)
       values=set_tolist(set);
     }
     else
+    {
       myldap_err(LOG_WARNING,entry->search->session->ld,rc,
                  "myldap_get_values_len() of attribute \"%s\" on entry \"%s\" returned NULL",
                  attr,myldap_get_dn(entry));
-    return NULL;
+      return NULL;
+    }
   }
   else
   {
