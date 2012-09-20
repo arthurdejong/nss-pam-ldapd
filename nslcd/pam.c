@@ -242,7 +242,7 @@ static int try_autzsearch(MYLDAP_SESSION *session,DICT *dict,const char *searchf
   if (expr_parse(searchfilter,filter_buffer,sizeof(filter_buffer),
                  autzsearch_var_get,(void *)dict)==NULL)
   {
-    log_log(LOG_ERR,"pam_authz_search \"%s\" is invalid",searchfilter);
+    log_log(LOG_ERR,"invalid pam_authz_search \"%s\"",searchfilter);
     return -1;
   }
   log_log(LOG_DEBUG,"trying pam_authz_search \"%s\"",filter_buffer);
