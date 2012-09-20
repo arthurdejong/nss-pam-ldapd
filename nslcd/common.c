@@ -3,7 +3,7 @@
    This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2011 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -176,3 +176,20 @@ int read_address(TFILE *fp,char *addr,int *addrlen,int *af)
   /* we're done */
   return 0;
 }
+
+#ifdef WANT_STRTOUI
+/* provide a strtoui() implementation, similar to strtoul() but returning
+   an range-checked unsigned int instead */
+unsigned int strtoui(const char *nptr,char **endptr,int base)
+{
+  unsigned long val;
+  val=strtoul(nptr,endptr,base);
+  if (val>UINT_MAX)
+  {
+    errno=ERANGE;
+    return UINT_MAX;
+  }
+  /* If errno was set by strtoull, we'll pass it back as-is */
+  return (unsigned int)val;
+}
+#endif /* WANT_STRTOUI */

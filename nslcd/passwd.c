@@ -338,10 +338,17 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
     }
     for (numuids=0;(numuids<MAXUIDS_PER_ENTRY)&&(tmpvalues[numuids]!=NULL);numuids++)
     {
-      uids[numuids]=(uid_t)strtol(tmpvalues[numuids],&tmp,0);
+      errno=0;
+      uids[numuids]=strtouid(tmpvalues[numuids],&tmp,0);
       if ((*(tmpvalues[numuids])=='\0')||(*tmp!='\0'))
       {
         log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+                            myldap_get_dn(entry),attmap_passwd_uidNumber);
+        return 0;
+      }
+      else if (errno!=0)
+      {
+        log_log(LOG_WARNING,"passwd entry %s contains too large %s value",
                             myldap_get_dn(entry),attmap_passwd_uidNumber);
         return 0;
       }
@@ -355,10 +362,17 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
                         myldap_get_dn(entry),attmap_passwd_gidNumber);
     return 0;
   }
-  gid=(gid_t)strtol(gidbuf,&tmp,0);
+  errno=0;
+  gid=strtogid(gidbuf,&tmp,0);
   if ((gidbuf[0]=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"passwd entry %s contains non-numeric %s value",
+                        myldap_get_dn(entry),attmap_passwd_gidNumber);
+    return 0;
+  }
+  else if (errno!=0)
+  {
+    log_log(LOG_WARNING,"passwd entry %s contains too large %s value",
                         myldap_get_dn(entry),attmap_passwd_gidNumber);
     return 0;
   }

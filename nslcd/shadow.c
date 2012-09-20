@@ -128,21 +128,33 @@ static long to_date(const char *date,const char *attr)
       return 0; /* error */
     strncpy(buffer,date,l);
     buffer[l]='\0';
+    errno=0;
     value=strtol(date,&tmp,0);
     if ((*date=='\0')||(*tmp!='\0'))
     {
       log_log(LOG_WARNING,"shadow entry contains non-numeric %s value",attr);
       return 0;
     }
+    else if (errno!=0)
+    {
+      log_log(LOG_WARNING,"shadow entry contains too large %s value",attr);
+      return -1;
+    }
     return value/864-134774;
     /* note that AD does not have expiry dates but a lastchangeddate
        and some value that needs to be added */
   }
+  errno=0;
   value=strtol(date,&tmp,0);
   if ((*date=='\0')||(*tmp!='\0'))
   {
     log_log(LOG_WARNING,"shadow entry contains non-numeric %s value",attr);
     return 0;
+  }
+  else if (errno!=0)
+  {
+    log_log(LOG_WARNING,"shadow entry contains too large %s value",attr);
+    return -1;
   }
   return value;
 }
@@ -155,10 +167,17 @@ static long to_date(const char *date,const char *attr)
   tmpvalue=attmap_get_value(entry,attmap_shadow_##att,buffer,sizeof(buffer)); \
   if (tmpvalue==NULL) \
     tmpvalue=""; \
+  errno=0; \
   var=strtol(tmpvalue,&tmp,0); \
   if ((*(tmpvalue)=='\0')||(*tmp!='\0')) \
   { \
     log_log(LOG_WARNING,"shadow entry %s contains non-numeric %s value", \
+                        myldap_get_dn(entry),attmap_shadow_##att); \
+    return 0; \
+  } \
+  else if (errno!=0) \
+  { \
+    log_log(LOG_WARNING,"shadow entry %s contains too large %s value", \
                         myldap_get_dn(entry),attmap_shadow_##att); \
     return 0; \
   }
