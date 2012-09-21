@@ -1,3 +1,16 @@
+nss-pam-ldapd (0.7.15+squeeze2) stable; urgency=low
+
+  * support larger gecos values (closes: #640781) (backported from 0.7.17)
+  * fix two possible NULL pointer dereferences (backported from 0.7.17)
+  * increase buffer used for pam_authz_search as suggested by Chris J Arges
+    (backported from 0.7.16)
+  * fix logging of invalid pam_authz_search value (LP: #951343) (backported
+    from 0.7.16)
+  * implement proper range checking of numeric values returned from LDAP
+    (thanks Jakub Hrozek) (backported from 0.7.16)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 21 Sep 2012 10:00:00 +0200
+
 nss-pam-ldapd (0.7.15+squeeze1) stable; urgency=low
 
   * fix an issue where changes in /etc/nsswitch.conf were not correctly
