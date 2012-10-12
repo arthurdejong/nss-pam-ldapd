@@ -184,6 +184,11 @@ static int tio_select(TFILE *fp, int readfd, const struct timeval *deadline)
   while (1)
   {
     /* prepare our filedescriptorset */
+    if (fp->fd>=FD_SETSIZE)
+    {
+      errno=EBADFD;
+      return -1;
+    }
     FD_ZERO(&fdset);
     FD_SET(fp->fd,&fdset);
     /* figure out the time we need to wait */
@@ -343,6 +348,11 @@ int tio_skipall(TFILE *fp)
   while (1)
   {
     /* prepare our file descriptor set */
+    if (fp->fd>=FD_SETSIZE)
+    {
+      errno=EBADFD;
+      return -1;
+    }
     FD_ZERO(&fdset);
     FD_SET(fp->fd,&fdset);
     /* prepare the time to wait */
@@ -446,6 +456,11 @@ static int tio_flush_nonblock(TFILE *fp)
   fd_set fdset;
   int rv;
   /* prepare our filedescriptorset */
+  if (fp->fd>=FD_SETSIZE)
+  {
+    errno=EBADFD;
+    return -1;
+  }
   FD_ZERO(&fdset);
   FD_SET(fp->fd,&fdset);
   /* set the timeout to 0 to poll */
