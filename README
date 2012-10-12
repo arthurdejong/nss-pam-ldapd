@@ -323,12 +323,12 @@ services (objectClass=ipService)
 shadow (objectClass=shadowAccount)
   uid               - use name
   userPassword      - password
-  shadowLastChange  - last change of password
-  shadowMax         - days before password may be changed
-  shadowMin         - days after which password must be changed
-  shadowWarning     - expiry warning
-  shadowInactive    - account is disabled if no password is changed
-  shadowExpire      - account expiration
+  shadowLastChange  - date of last password change
+  shadowMin         - days before password may be changed again
+  shadowMax         - days after which password must be changed
+  shadowWarning     - days before max password age to present a warning
+  shadowInactive    - days after max password age that account is disabled
+  shadowExpire      - account expiration date
   shadowFlag        - reserved field
 
 using Microsoft Active Directory
