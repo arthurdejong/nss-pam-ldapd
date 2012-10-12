@@ -66,6 +66,12 @@
 #include "compat/getpeercred.h"
 #include "compat/socket.h"
 
+/* read timeout is half a second because clients should send their request
+   quickly, write timeout is 60 seconds because clients could be taking some
+   time to process the results */
+#define READ_TIMEOUT 500
+#define WRITE_TIMEOUT 60*1000
+
 /* buffer sizes for I/O */
 #define READBUFFER_MINSIZE 32
 #define READBUFFER_MAXSIZE 64
@@ -378,7 +384,6 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
 {
   TFILE *fp;
   int32_t action;
-  struct timeval readtimeout,writetimeout;
   uid_t uid=(uid_t)-1;
   gid_t gid=(gid_t)-1;
   pid_t pid=(pid_t)-1;
@@ -388,13 +393,8 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
   else
     log_log(LOG_DEBUG,"connection from pid=%d uid=%d gid=%d",
                       (int)pid,(int)uid,(int)gid);
-  /* set the timeouts */
-  readtimeout.tv_sec=0; /* clients should send their request quickly */
-  readtimeout.tv_usec=500000;
-  writetimeout.tv_sec=60; /* clients could be taking some time to process the results */
-  writetimeout.tv_usec=0;
   /* create a stream object */
-  if ((fp=tio_fdopen(sock,&readtimeout,&writetimeout,
+  if ((fp=tio_fdopen(sock,READ_TIMEOUT,WRITE_TIMEOUT,
                      READBUFFER_MINSIZE,READBUFFER_MAXSIZE,
                      WRITEBUFFER_MINSIZE,WRITEBUFFER_MAXSIZE))==NULL)
   {

@@ -46,9 +46,8 @@
 typedef struct tio_fileinfo TFILE;
 
 /* Open a new TFILE based on the file descriptor. The timeout is set for any
-   operation. The timeout value is copied so may be dereferenced after the
-   call. */
-TFILE *tio_fdopen(int fd,struct timeval *readtimeout,struct timeval *writetimeout,
+   operation (value in milliseconds). */
+TFILE *tio_fdopen(int fd,int readtimeout,int writetimeout,
                   size_t initreadsize,size_t maxreadsize,
                   size_t initwritesize,size_t maxwritesize)
   LIKE_MALLOC MUST_USE;

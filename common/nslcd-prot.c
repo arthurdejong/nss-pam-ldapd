@@ -38,6 +38,11 @@
 #include "nslcd-prot.h"
 #include "compat/socket.h"
 
+/* read timeout is 60 seconds because looking up stuff may take some time
+   write timeout is 10 secods because nslcd could be loaded with requests */
+#define READ_TIMEOUT 60*1000
+#define WRITE_TIMEOUT 10*1000
+
 /* buffer sizes for I/O */
 #define READBUFFER_MINSIZE 1024
 #define READBUFFER_MAXSIZE 2*1024*1024
@@ -56,7 +61,6 @@ TFILE *nslcd_client_open()
 {
   int sock;
   struct sockaddr_un addr;
-  struct timeval readtimeout,writetimeout;
   TFILE *fp;
   /* create a socket */
   if ( (sock=socket(PF_UNIX,SOCK_STREAM,0))<0 )
@@ -72,13 +76,8 @@ TFILE *nslcd_client_open()
     (void)close(sock);
     return NULL;
   }
-  /* set the timeouts */
-  readtimeout.tv_sec=60; /* looking up stuff may take some time */
-  readtimeout.tv_usec=0;
-  writetimeout.tv_sec=10; /* nslcd could be loaded with requests */
-  writetimeout.tv_usec=0;
   /* create a stream object */
-  if ((fp=tio_fdopen(sock,&readtimeout,&writetimeout,
+  if ((fp=tio_fdopen(sock,READ_TIMEOUT,WRITE_TIMEOUT,
                      READBUFFER_MINSIZE,READBUFFER_MAXSIZE,
                      WRITEBUFFER_MINSIZE,WRITEBUFFER_MAXSIZE))==NULL)
   {
