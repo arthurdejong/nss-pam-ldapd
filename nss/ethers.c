@@ -119,25 +119,26 @@ static nss_status_t read_result(TFILE *fp,void *args,int wantname)
     res=snprintf(NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,
                  "%s %s",ether_ntoa(&result.e_addr),result.e_name);
     if ((res<0)||(res>=NSS_ARGS(args)->buf.buflen))
-      return NSS_STR_PARSE_PARSE;
+    {
+      NSS_ARGS(args)->erange=1;
+      return NSS_NOTFOUND;
+    }
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
     NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->returnval);
-    NSS_ARGS(args)->buf.result=NULL;
     return NSS_SUCCESS;
   }
-#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
   /* return the result entry */
   if (wantname)
   {
+    /* we expect the buffer to have enough room for the name (buflen==0) */
     strcpy(NSS_ARGS(args)->buf.buffer,result.e_name);
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result=NSS_ARGS(args)->buf.buffer;
-    NSS_ARGS(args)->buf.buflen=strlen(NSS_ARGS(args)->returnval);
+    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
   }
   else /* address */
   {
     memcpy(NSS_ARGS(args)->buf.result,&result.e_addr,sizeof(result.e_addr));
     NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-    NSS_ARGS(args)->buf.result=NULL;
   }
   return NSS_SUCCESS;
 }

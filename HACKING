@@ -137,7 +137,9 @@ back-end can presumably also be created.
 Earlier versions of Solaris expected the NSS functions to return the binary
 representation of the lookups (e.g. struct passwd) but later versions expect a
 string representation of the data to be returned (just like a single line out
-of /etc/passwd was read).
+of /etc/passwd was read) but only if running from nscd. If args->buf.result
+is NULL a string representation is requested (except for ether by address
+lookup which is special).
 
 Source and documentation pointers for Solaris NSS:
 http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/lib/nsswitch/
