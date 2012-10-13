@@ -104,6 +104,7 @@ static nss_status_t read_passwdstring(TFILE *fp,nss_XbyY_args_t *args)
   struct passwd result;
   char buffer[NSS_BUFLEN_PASSWD];
   nss_status_t retv;
+  int res;
   /* read the passwd */
   retv=read_passwd(fp,&result,buffer,sizeof(buffer),&NSS_ARGS(args)->erange);
   if (retv!=NSS_STATUS_SUCCESS)
