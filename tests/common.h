@@ -2,7 +2,7 @@
    common.h - common test routines
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2011 Arthur de Jong
+   Copyright (C) 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,13 @@
 /* try to find the actual assert function */
 #ifndef HAVE___ASSERT_FAIL
 /* for Solaris: */
+#ifdef sun
 #define __assert_fail(assertion,file,line,function) __assert(assertion,file,line)
+#endif
+/* for FreeBSD: */
+#ifdef __FreeBSD__
+#define __assert_fail(assertion,file,line,function) __assert(assertion,file,line,function)
+#endif
 #endif /* not HAVE___ASSERT_FAIL */
 
 /* extra assertion function that epxects both strings to be the same
