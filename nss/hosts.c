@@ -279,7 +279,10 @@ static nss_status_t read_hoststring(TFILE *fp,int af,nss_XbyY_args_t *args,int e
     }
   }
   if (strlen(args->buf.buffer)>=args->buf.buflen-1)
-    return NSS_STR_PARSE_PARSE;
+  {
+    NSS_ARGS(args)->erange=1;
+    return NSS_NOTFOUND;
+  }
   args->returnval=args->buf.buffer;
   args->returnlen=strlen(args->returnval);
   return NSS_STATUS_SUCCESS;
