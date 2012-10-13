@@ -92,9 +92,22 @@
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
-/* extra definitions we need (Solaris NSS functions don't pass errno) */
+/* extra definitions we need (Solaris NSS functions don't pass errno)
+   also clear the output values */
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
 #define NSS_EXTRA_DEFS \
-  int *errnop=&(errno);
+  int *errnop=&(errno); \
+  NSS_ARGS(args)->returnval=NULL; \
+  NSS_ARGS(args)->returnlen=0; \
+  NSS_ARGS(args)->erange=0; \
+  NSS_ARGS(args)->h_errno=0;
+#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+#define NSS_EXTRA_DEFS \
+  int *errnop=&(errno); \
+  NSS_ARGS(args)->returnval=NULL; \
+  NSS_ARGS(args)->erange=0; \
+  NSS_ARGS(args)->h_errno=0;
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 /* check validity of passed buffer (Solaris flavour) */
 #define NSS_BUFCHECK \
