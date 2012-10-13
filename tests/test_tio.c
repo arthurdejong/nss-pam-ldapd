@@ -51,18 +51,14 @@ struct helper_args {
 static void *help_tiowriter(void *arg)
 {
   TFILE *fp;
-  struct timeval timeout;
   size_t i,j,k;
   uint8_t *buf;
   struct helper_args *hargs=(struct helper_args *)arg;
   /* allocate the buffer */
   buf=(uint8_t *)malloc(hargs->blocksize);
   assert(buf!=NULL);
-  /* set the timeout */
-  timeout.tv_sec=hargs->timeout;
-  timeout.tv_usec=0;
   /* open the file */
-  fp=tio_fdopen(hargs->fd,&timeout,&timeout,4*1024,8*1024,4*1024,8*1024);
+  fp=tio_fdopen(hargs->fd,hargs->timeout*1000,hargs->timeout*1000,4*1024,8*1024,4*1024,8*1024);
   assertok(fp!=NULL);
   /* write the blocks */
   i=0;
@@ -83,18 +79,14 @@ static void *help_tiowriter(void *arg)
 static void *help_tioreader(void *arg)
 {
   TFILE *fp;
-  struct timeval timeout;
   size_t i,j,k;
   uint8_t *buf;
   struct helper_args *hargs=(struct helper_args *)arg;
   /* allocate the buffer */
   buf=(uint8_t *)malloc(hargs->blocksize);
   assert(buf!=NULL);
-  /* set the timeout */
-  timeout.tv_sec=hargs->timeout;
-  timeout.tv_usec=0;
   /* open the file */
-  fp=tio_fdopen(hargs->fd,&timeout,&timeout,4*1024,8*1024,4*1024,8*1024);
+  fp=tio_fdopen(hargs->fd,hargs->timeout*1000,hargs->timeout*1000,4*1024,8*1024,4*1024,8*1024);
   assertok(fp!=NULL);
   /* read the blocks */
   i=0;
@@ -202,7 +194,6 @@ static void test_reset(void)
   pthread_t wthread;
   struct helper_args wargs;
   TFILE *fp;
-  struct timeval timeout;
   size_t i,j,k,save;
   uint8_t buf[20];
   /* set up the socket pair */
@@ -214,9 +205,7 @@ static void test_reset(void)
   wargs.timeout=2;
   assertok(pthread_create(&wthread,NULL,help_normwriter,&wargs)==0);
   /* set up read handle */
-  timeout.tv_sec=2;
-  timeout.tv_usec=0;
-  fp=tio_fdopen(sp[1],&timeout,&timeout,2*1024,4*1024,2*1024,4*1024);
+  fp=tio_fdopen(sp[1],2000,2000,2*1024,4*1024,2*1024,4*1024);
   assertok(fp!=NULL);
   /* perform 20 reads */
   i=0;
@@ -281,7 +270,6 @@ static void test_timeout_reader(void)
   int sp[2];
   TFILE *rfp;
   FILE *wfp;
-  struct timeval timeout;
   uint8_t buf[20];
   time_t start,end;
   /* set up the socket pair */
@@ -289,9 +277,7 @@ static void test_timeout_reader(void)
   /* open the writer */
   assertok((wfp=fdopen(sp[0],"wb"))!=NULL);
   /* open the reader */
-  timeout.tv_sec=1;
-  timeout.tv_usec=100000;
-  assertok((rfp=tio_fdopen(sp[1],&timeout,&timeout,2*1024,4*1024,2*1024,4*1024))!=NULL);
+  assertok((rfp=tio_fdopen(sp[1],1100,1100,2*1024,4*1024,2*1024,4*1024))!=NULL);
   /* perform a read */
   start=time(NULL);
   assertok(tio_read(rfp,buf,sizeof(buf))!=0);
@@ -309,7 +295,6 @@ static void test_timeout_writer(void)
   FILE *rfp;
   TFILE *wfp;
   int i;
-  struct timeval timeout;
   uint8_t buf[20];
   time_t start,end;
   /* set up the socket pair */
@@ -317,9 +302,7 @@ static void test_timeout_writer(void)
   /* open the reader */
   assertok((rfp=fdopen(sp[0],"rb"))!=NULL);
   /* open the writer */
-  timeout.tv_sec=1;
-  timeout.tv_usec=100000;
-  assertok((wfp=tio_fdopen(sp[1],&timeout,&timeout,2*1024,4*1024,2*20,4*20+1))!=NULL);
+  assertok((wfp=tio_fdopen(sp[1],1100,1100,2*1024,4*1024,2*20,4*20+1))!=NULL);
   /* perform a few write (these should be OK because they fill the buffer) */
   assertok(tio_write(wfp,buf,sizeof(buf))==0);
   assertok(tio_write(wfp,buf,sizeof(buf))==0);
