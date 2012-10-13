@@ -44,4 +44,4 @@ constants.py: $(top_srcdir)/nslcd.h Makefile
 	  echo "# See that file for details." ; \
 	  echo "" ; \
 	  sed -n 's| */\*.*\*/ *||;s/^.define  *\(NSLCD_[A-Z_]*\)  */\1 = /p' \
-	      $< ) > $@
+	      $(top_srcdir)/nslcd.h ) > $@
