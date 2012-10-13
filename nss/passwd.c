@@ -99,61 +99,59 @@ nss_status_t _nss_ldap_endpwent(void)
 #ifdef NSS_FLAVOUR_SOLARIS
 
 #ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-
 static nss_status_t read_passwdstring(TFILE *fp,nss_XbyY_args_t *args)
 {
   struct passwd result;
+  char buffer[NSS_BUFLEN_PASSWD];
   nss_status_t retv;
-  char *buffer;
-  size_t buflen;
   /* read the passwd */
-  retv=read_passwd(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&NSS_ARGS(args)->erange);
+  retv=read_passwd(fp,&result,buffer,sizeof(buffer),&NSS_ARGS(args)->erange);
   if (retv!=NSS_STATUS_SUCCESS)
     return retv;
-  /* allocate a temporary buffer */
-  buflen=args->buf.buflen;
-  buffer=(char *)malloc(buflen);
   /* build the formatted string */
-  /* FIXME: implement proper buffer size checking */
-  sprintf(buffer,"%s:%s:%d:%d:%s:%s:%s",
+  res=snprintf(args->buf.buffer,args->buf.buflen,"%s:%s:%d:%d:%s:%s:%s",
      result.pw_name,result.pw_passwd,(int)result.pw_uid,(int)result.pw_gid,result.pw_gecos,
      result.pw_dir,result.pw_shell);
-  /* copy the result back to the result buffer and free the temporary one */
-  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
-  free(buffer);
-  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  if ((res<0)||(res>=NSS_ARGS(args)->buf.buflen))
+  {
+    NSS_ARGS(args)->erange=1;
+    return NSS_NOTFOUND;
+  }
+  /* return the string as a result */
+  args->returnval=args->buf.buffer;
+  args->returnlen=strlen(args->returnval);
   return NSS_STATUS_SUCCESS;
 }
-
-#define READ_RESULT(fp) \
-  NSS_ARGS(args)->buf.result? \
-    read_passwd(fp,(struct passwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange): \
-    read_passwdstring(fp,args); \
-  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
-#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-
-#define READ_RESULT(fp) \
-  read_passwd(fp,(struct passwd *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange); \
-  if (retv==NSS_STATUS_SUCCESS) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
 #endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+static nss_status_t read_result(TFILE *fp,nss_XbyY_args_t *args)
+{
+  nss_status_t retv;
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+  /* try to return in string format if requested */
+  if (args->buf.result==NULL)
+    return read_passwdstring(fp,args);
+#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+  /* read the entry */
+  retv=read_passwd(fp,args->buf.result,args->buf.buffer,args->buf.buflen,&NSS_ARGS(args)->erange);
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  args->returnval=args->buf.result;
+  return NSS_STATUS_SUCCESS;
+}
 
 static nss_status_t passwd_getpwnam(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_PASSWD_BYNAME,
              NSS_ARGS(args)->key.name,
-             READ_RESULT(fp));
+             read_result(fp,args));
 }
 
 static nss_status_t passwd_getpwuid(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYTYPE(NSLCD_ACTION_PASSWD_BYUID,
              NSS_ARGS(args)->key.uid,uid_t,
-             READ_RESULT(fp));
+             read_result(fp,args));
 }
 
 /* open a connection to the nslcd and write the request */
