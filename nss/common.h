@@ -84,8 +84,8 @@
 #define NSS_BUFCHECK \
   if ((buffer==NULL)||(buflen==0)) \
   { \
-      *errnop=EINVAL; \
-      return NSS_STATUS_UNAVAIL; \
+    *errnop=EINVAL; \
+    return NSS_STATUS_UNAVAIL; \
   }
 
 #endif /* NSS_FLAVOUR_GLIBC */
