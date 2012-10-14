@@ -1,3 +1,25 @@
+changes from 0.8.10 to 0.8.11
+-----------------------------
+
+* add a pam_password_prohibit_message nslcd.conf option to deny password
+  change (thanks to Ted Cheng)
+* add a sasl_canonicalize option to allow disabling of hostname
+  canonicalisation in OpenLDAP
+* have the nslcd daemon load the nslcd user's supplementary groups to have
+  more flexibility with assigning group permissions
+* fix logic error when falling back to getting ranged attribute values for
+  possibly binary attributes (thanks scan-build)
+* fix a problem when storing negative hit to dn2uid cache (thanks scan-build)
+* use poll() instead of select() for checking file descriptor activity to also
+  correctly work if more than FD_SETSIZE files are already open
+* small portability improvements
+* improve support for using Netscape LDAP libraries
+* improvements and fixes to the Solaris NSS code
+* grow all search filter buffers to 4096 bytes
+* some improvements to the pynslcd implementation
+* add an LDIF version of the ldapns.schema schema file
+
+
 changes from 0.8.9 to 0.8.10
 ----------------------------
 
