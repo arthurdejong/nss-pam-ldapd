@@ -48,7 +48,6 @@ static nss_status_t read_netgrent(
   int32_t tmpint32;
   int type;
   size_t bufptr=0;
-  memset(result,0,sizeof(struct __netgrent));
   /* read netgroup type */
   READ_INT32(fp,type);
   if (type==NSLCD_NETGROUP_TYPE_NETGROUP)
