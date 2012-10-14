@@ -273,10 +273,16 @@ static void exithandler(void)
 /* create the directory for the specified file to reside in */
 static void mkdirname(const char *filename)
 {
-  char *tmpname;
+  char *tmpname,*path;
   tmpname=strdup(filename);
   if (tmpname==NULL) return;
-  (void)mkdir(dirname(tmpname),(mode_t)0755);
+  path=dirname(tmpname);
+  if (mkdir(path,(mode_t)0755)==0)
+  {
+    /* if directory was just created, set correct ownership */
+    if (lchown(path,nslcd_cfg->ldc_uid,nslcd_cfg->ldc_gid)<0)
+      log_log(LOG_WARNING,"problem setting permissions for %s: %s",path,strerror(errno));
+  }
   free(tmpname);
 }
 
