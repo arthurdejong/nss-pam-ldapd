@@ -126,6 +126,11 @@ static void test_expr_vars(void)
   assert(set_contains(set,"uidNumber"));
   assert(set_contains(set,"uid"));
   set_free(set);
+  /* a test with attribute options */
+  set=set_new();
+  assert(expr_vars("\"${homeDirectory;foo:-/home/something}\"",set)!=NULL);
+  assert(set_contains(set,"homeDirectory;foo"));
+  set_free(set);
 }
 
 /* the main program... */

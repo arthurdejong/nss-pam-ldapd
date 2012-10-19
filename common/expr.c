@@ -51,7 +51,7 @@ MUST_USE static const char *parse_name(const char *str,int *ptr,char *buffer,siz
   /* look for an alpha+alphanumeric* string */
   if (!my_isalpha(str[*ptr]))
     return NULL;
-  while (my_isalphanum(str[*ptr]))
+  while (my_isalphanum(str[*ptr])||(str[*ptr]==';'))
   {
     if ((size_t)i>=buflen)
       return NULL;
