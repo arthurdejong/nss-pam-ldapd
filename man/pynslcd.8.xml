@@ -3,10 +3,9 @@
                    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 
 <!--
-   nslcd.8.xml - docbook manual page for nslcd
+   pynslcd.8.xml - docbook manual page for pynslcd
 
-   Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -24,7 +23,7 @@
    02110-1301 USA
 -->
 
-<refentry id="nslcd8">
+<refentry id="pynslcd8">
 
  <refentryinfo>
   <author>
@@ -34,7 +33,7 @@
  </refentryinfo>
 
  <refmeta>
-  <refentrytitle>nslcd</refentrytitle>
+  <refentrytitle>pynslcd</refentrytitle>
   <manvolnum>8</manvolnum>
   <refmiscinfo class="version">Version 0.8.11</refmiscinfo>
   <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
@@ -42,13 +41,13 @@
  </refmeta>
 
  <refnamediv id="name">
-  <refname>nslcd</refname>
+  <refname>pynslcd</refname>
   <refpurpose>local LDAP name service daemon.</refpurpose>
  </refnamediv>
 
  <refsynopsisdiv id="synopsis">
   <cmdsynopsis>
-   <command>nslcd</command>
+   <command>pynslcd</command>
    <arg choice="opt">
     <replaceable>options</replaceable>
    </arg>
@@ -58,12 +57,12 @@
  <refsect1 id="description">
   <title>Description</title>
   <para>
-   <command>nslcd</command> is a daemon that will do LDAP queries for local
+   <command>pynslcd</command> is a daemon that will do LDAP queries for local
    processes that want to do user, group and other naming lookups (NSS) or do
    user authentication, authorisation or password modification (PAM).
   </para>
   <para>
-   <command>nslcd</command> is configured through a configuration file
+   <command>pynslcd</command> is configured through a configuration file
    (see <citerefentry><refentrytitle>nslcd.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>).
   </para>
   <para>
@@ -74,7 +73,7 @@
  <refsect1 id="options">
   <title>Options</title>
   <para>
-  <command>nslcd</command> accepts the following options:</para>
+  <command>pynslcd</command> accepts the following options:</para>
   <variablelist remap="TP">
    <varlistentry id="check">
     <term>
@@ -83,7 +82,7 @@
     <listitem>
      <para>
       Check if the daemon is running.
-      This causes <command>nslcd</command> to return 0 if the daemon is already running and 1 if it is not.
+      This causes <command>pynslcd</command> to return 0 if the daemon is already running and 1 if it is not.
      </para>
     </listitem>
     </varlistentry>
@@ -94,9 +93,9 @@
     <listitem>
      <para>
       Enable debugging mode.
-      <command>nslcd</command> will not put itself in the background and sends
+      <command>pynslcd</command> will not put itself in the background and sends
       verbose debugging info to stderr.
-      <command>nslcd</command> will handle connections as usual.
+      <command>pynslcd</command> will handle connections as usual.
       This option is for debugging purposes only.
       Specify this option multiple times to also include more detailed logging
       from the LDAP library.

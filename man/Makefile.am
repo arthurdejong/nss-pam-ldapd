@@ -19,7 +19,7 @@
 
 dist_man_MANS = nslcd.conf.5 nslcd.8
 
-EXTRA_DIST = nslcd.conf.5.xml nslcd.8.xml pam_ldap.8.xml
+EXTRA_DIST = nslcd.conf.5.xml nslcd.8.xml pam_ldap.8.xml pynslcd.8.xml
 
 # ensure that the pam_ldap manpage is always built but only installed
 # if the PAM module is built
@@ -28,6 +28,14 @@ dist_man_MANS += pam_ldap.8
 else
 EXTRA_DIST += pam_ldap.8
 noinst_DATA = pam_ldap.8
+endif
+
+# ensure that pynslcd manpage is installed when pynslcd is built
+if ENABLE_PYNSLCD
+dist_man_MANS += pynslcd.8
+else
+EXTRA_DIST += pynslcd.8
+noinst_DATA = pynslcd.8
 endif
 
 if GENMAN
