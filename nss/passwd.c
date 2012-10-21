@@ -165,7 +165,7 @@ static nss_status_t passwd_setpwent(nss_backend_t *be,void UNUSED(*args))
 static nss_status_t passwd_getpwent(nss_backend_t *be,void *args)
 {
   NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_PASSWD_ALL,
-             READ_RESULT(LDAP_BE(be)->fp));
+             read_result(LDAP_BE(be)->fp,args));
 }
 
 /* close the stream opened with setpwent() above */
