@@ -280,7 +280,6 @@ AC_C_CONST
 
 # checks for availability of common functions
 AC_CHECK_FUNCS([sigaction snprintf])
-AC_CHECK_FUNCS(gethostbyname)
 AC_SEARCH_LIBS(socket,socket)
 AC_CHECK_FUNCS([strcasecmp strncasecmp strchr strcspn strspn strtol strtoul strtoull])
 AC_CHECK_FUNCS([malloc realloc])
@@ -565,7 +564,6 @@ then
   # checks for availability of system libraries for nslcd
   AC_SEARCH_LIBS(gethostbyname,nsl socket)
   AC_SEARCH_LIBS(hstrerror,resolv)
-  AC_SEARCH_LIBS(socket,socket)
   AC_SEARCH_LIBS(dlopen,dl)
 
   # check for availability of functions
