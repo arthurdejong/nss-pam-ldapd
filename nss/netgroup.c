@@ -217,7 +217,7 @@ static nss_status_t netgroup_setnetgrent_getnetgrent(nss_backend_t *be,void *arg
           {
             /* no more netgroup */
             found=1; done=1;
-            errno=ENOENT;
+            errno=ENOENT;  /* TODO: probably don't do this */
           }
           else
           {

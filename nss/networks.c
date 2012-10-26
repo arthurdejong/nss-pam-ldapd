@@ -163,55 +163,63 @@ nss_status_t _nss_ldap_endnetent(void)
 #ifdef NSS_FLAVOUR_SOLARIS
 
 #ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-
-static nss_status_t read_netentstring(TFILE *fp,nss_XbyY_args_t *args)
+static char *netent2str(struct netent *result,char *buffer,size_t buflen)
 {
-  struct netent result;
-  nss_status_t retv;
-  char *buffer;
-  size_t buflen;
-  int i;
+  int i,res;
   struct in_addr priv_in_addr;
-  /* read the netent */
-  retv=read_netent(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&NSS_ARGS(args)->erange,&(NSS_ARGS(args)->h_errno));
+  priv_in_addr.s_addr=result->n_net;
+  res=snprintf(buffer,buflen,"%s %s",result->n_name,inet_ntoa(priv_in_addr));
+  if ((res<0)||(res>=buflen))
+    return NULL;
+  if (result->n_aliases)
+    for (i=0;result->n_aliases[i];i++)
+    {
+      strlcat(buffer," ",buflen);
+      strlcat(buffer,result->n_aliases[i],buflen);
+    }
+  if (strlen(buffer)>=buflen-1)
+    return NULL;
+  return buffer;
+}
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+static nss_status_t read_result(TFILE *fp,nss_XbyY_args_t *args)
+{
+  nss_status_t retv;
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+  struct netent result;
+  char *buffer;
+  /* try to return in string format if requested */
+  if (args->buf.result==NULL)
+  {
+    /* read the entry into a temporary buffer */
+    buffer=(char *)malloc(args->buf.buflen);
+    if (buffer==NULL)
+      return NSS_STATUS_UNAVAIL;
+    retv=read_netent(fp,&result,buffer,args->buf.buflen,&args->erange,&args->h_errno);
+    /* format to string */
+    if (retv==NSS_STATUS_SUCCESS)
+      if (netent2str(&result,args->buf.buffer,args->buf.buflen)==NULL)
+      {
+        args->erange=1;
+        retv=NSS_NOTFOUND;
+      }
+    /* clean up and return result */
+    free(buffer);
+    if (retv!=NSS_STATUS_SUCCESS)
+      return retv;
+    args->returnval=args->buf.buffer;
+    args->returnlen=strlen(args->returnval);
+    return NSS_STATUS_SUCCESS;
+  }
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+  /* read the entry */
+  retv=read_netent(fp,args->buf.result,args->buf.buffer,args->buf.buflen,&args->erange,&args->h_errno);
   if (retv!=NSS_STATUS_SUCCESS)
     return retv;
-  /* allocate a temporary buffer */
-  buflen=args->buf.buflen;
-  buffer=(char *)malloc(buflen);
-  /* build the formatted string */
-  /* FIXME: implement proper buffer size checking */
-  priv_in_addr.s_addr = result.n_net;
-  sprintf(buffer,"%s %s",result.n_name,inet_ntoa(priv_in_addr)); /* ipNetworkNumber */
-  if (result.n_aliases)
-    for (i=0;result.n_aliases[i];i++)
-    {
-      strcat(buffer," ");
-      strcat(buffer,result.n_aliases[i]);
-    }
-  /* copy the result back to the result buffer and free the temporary one */
-  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
-  free(buffer);
-  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  args->returnval=args->buf.result;
   return NSS_STATUS_SUCCESS;
 }
-
-#define READ_RESULT(fp) \
-  NSS_ARGS(args)->buf.result? \
-    read_netent(fp,(struct netent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange,&(NSS_ARGS(args)->h_errno)): \
-    read_netentstring(fp,args); \
-  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
-#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-
-#define READ_RESULT(fp) \
-  read_netent(fp,(struct netent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange,&(NSS_ARGS(args)->h_errno)); \
-  if (retv==NSS_STATUS_SUCCESS) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
-#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 /* more of a dirty hack */
 #define h_errnop (&(NSS_ARGS(args)->h_errno))
@@ -220,14 +228,14 @@ static nss_status_t networks_getnetbyname(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,
              NSS_ARGS(args)->key.name,
-             READ_RESULT(fp));
+             read_result(fp,args));
 }
 
 static nss_status_t networks_getnetbyaddr(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,
             WRITE_ADDRESS(fp,NSS_ARGS(args)->key.netaddr.net),
-            READ_RESULT(fp));
+            read_result(fp,args));
 }
 
 static nss_status_t networks_setnetent(nss_backend_t *be,void UNUSED(*args))
@@ -238,7 +246,7 @@ static nss_status_t networks_setnetent(nss_backend_t *be,void UNUSED(*args))
 static nss_status_t networks_getnetent(nss_backend_t *be,void *args)
 {
   NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_NETWORK_ALL,
-             READ_RESULT(LDAP_BE(be)->fp));
+             read_result(LDAP_BE(be)->fp,args));
 }
 
 static nss_status_t networks_endnetent(nss_backend_t *be,void UNUSED(*args))

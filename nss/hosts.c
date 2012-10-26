@@ -244,60 +244,73 @@ nss_status_t _nss_ldap_endhostent(void)
 #ifdef NSS_FLAVOUR_SOLARIS
 
 #ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-static nss_status_t read_hoststring(TFILE *fp,int af,nss_XbyY_args_t *args,int erronempty)
+static char *hostent2str(struct hostent *result,char *buffer,size_t buflen)
 {
-  struct hostent result;
-  char buffer[NSS_BUFLEN_HOSTS];
-  int retv;
   int i,j;
-  /* read the result entry */
-  if (erronempty)
-    retv=read_hostent_erronempty(fp,af,&result,buffer,sizeof(buffer),&args->erange,&args->h_errno);
-  else
-    retv=read_hostent_nextonempty(fp,af,&result,buffer,sizeof(buffer),&args->erange,&args->h_errno);
-  if (retv!=NSS_STATUS_SUCCESS)
-    return retv;
   /* build the formatted string, one line per address */
-  args->buf.buffer[0]='\0';
-  if (result.h_addr_list!=NULL)
+  buffer[0]='\0';
+  if (result->h_addr_list!=NULL)
   {
-    for (i=0;result.h_addr_list[i];i++)
+    for (i=0;result->h_addr_list[i];i++)
     {
       if (i>0)
-        strlcat(args->buf.buffer,"\n",args->buf.buflen);
-      snprintf(args->buf.buffer,args->buf.buflen-strlen(args->buf.buffer)-1,
-               "%s %s",inet_ntoa(*((struct in_addr *)result.h_addr_list[i])),result.h_name);
+        strlcat(buffer,"\n",buflen);
+      /* snprintf writes a terminating \0 on Solaris */
+      snprintf(buffer,buflen-strlen(buffer)-1,
+               "%s %s",inet_ntoa(*((struct in_addr *)result->h_addr_list[i])),result->h_name);
       /* add aliases for first line only */
-      if ((i==0)&&(result.h_aliases))
+      if ((i==0)&&(result->h_aliases))
       {
-        for (j=0;result.h_aliases[j];j++)
+        for (j=0;result->h_aliases[j];j++)
         {
-          strlcat(args->buf.buffer," ",args->buf.buflen);
-          strlcat(args->buf.buffer,result.h_aliases[j],args->buf.buflen);
+          strlcat(buffer," ",buflen);
+          strlcat(buffer,result->h_aliases[j],buflen);
         }
       }
     }
   }
-  if (strlen(args->buf.buffer)>=args->buf.buflen-1)
-  {
-    NSS_ARGS(args)->erange=1;
-    return NSS_NOTFOUND;
-  }
-  args->returnval=args->buf.buffer;
-  args->returnlen=strlen(args->returnval);
-  return NSS_STATUS_SUCCESS;
+  if (strlen(buffer)>=buflen-1)
+    return NULL;
+  return buffer;
 }
-#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 static nss_status_t read_result(TFILE *fp,int af,nss_XbyY_args_t *args,int erronempty)
 {
   nss_status_t retv;
 #ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+  struct hostent result;
+  char *buffer;
   /* try to return in string format if requested */
   if (args->buf.result==NULL)
-    return read_hoststring(fp,af,args,erronempty);
-#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-  /* read the hostent */
+  {
+    /* read the entry into a temporary buffer*/
+    buffer=(char *)malloc(args->buf.buflen);
+    if (buffer==NULL)
+      return NSS_STATUS_UNAVAIL;
+    if (erronempty)
+      retv=read_hostent_erronempty(fp,af,&result,buffer,args->buf.buflen,&args->erange,&args->h_errno);
+    else
+      retv=read_hostent_nextonempty(fp,af,&result,buffer,args->buf.buflen,&args->erange,&args->h_errno);
+    if (retv!=NSS_STATUS_SUCCESS)
+      return retv;
+    /* format to string */
+    if (retv==NSS_STATUS_SUCCESS)
+      if (hostent2str(&result,args->buf.buffer,args->buf.buflen)==NULL)
+      {
+        args->erange=1;
+        retv=NSS_NOTFOUND;
+      }
+    /* clean up and return result */
+    free(buffer);
+    if (retv!=NSS_STATUS_SUCCESS)
+      return retv;
+    args->returnval=args->buf.buffer;
+    args->returnlen=strlen(args->returnval);
+    return NSS_STATUS_SUCCESS;
+  }
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+  /* read the entry */
   if (erronempty)
     retv=read_hostent_erronempty(fp,af,
           args->buf.result,args->buf.buffer,args->buf.buflen,

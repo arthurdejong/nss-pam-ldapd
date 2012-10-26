@@ -99,60 +99,68 @@ nss_status_t _nss_ldap_endservent(void)
 #ifdef NSS_FLAVOUR_SOLARIS
 
 #ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-
-static nss_status_t read_servstring(TFILE *fp,nss_XbyY_args_t *args)
+static char *servent2str(struct servent *result,char *buffer,size_t buflen)
 {
-  struct servent result;
+  int res,i;
+  res=snprintf(buffer,buflen,"%s %d/%s",result->s_name,result->s_port,result->s_proto);
+  if ((res<0)||(res>=buflen))
+    return NULL;
+  if (result->s_aliases)
+    for (i=0;result->s_aliases[i];i++)
+    {
+      strlcat(buffer," ",buflen);
+      strlcat(buffer,result->s_aliases[i],buflen);
+    }
+  if (strlen(buffer)>=buflen-1)
+    return NULL;
+  return buffer;
+}
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+static nss_status_t read_result(TFILE *fp,nss_XbyY_args_t *args)
+{
   nss_status_t retv;
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+  struct servent result;
   char *buffer;
-  size_t buflen;
-  int i;
-  /* read the servent */
-  retv=read_servent(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&NSS_ARGS(args)->erange);
+  /* try to return in string format if requested */
+  if (args->buf.result==NULL)
+  {
+    /* read the entry into a temporary buffer */
+    buffer=(char *)malloc(args->buf.buflen);
+    if (buffer==NULL)
+      return NSS_STATUS_UNAVAIL;
+    retv=read_servent(fp,&result,buffer,args->buf.buflen,&args->erange);
+    /* format to string */
+    if (retv==NSS_STATUS_SUCCESS)
+      if (servent2str(&result,args->buf.buffer,args->buf.buflen)==NULL)
+      {
+        args->erange=1;
+        retv=NSS_NOTFOUND;
+      }
+    /* clean up and return result */
+    free(buffer);
+    if (retv!=NSS_STATUS_SUCCESS)
+      return retv;
+    args->returnval=args->buf.buffer;
+    args->returnlen=strlen(args->returnval);
+    return NSS_STATUS_SUCCESS;
+  }
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+  /* read the entry */
+  retv=read_servent(fp,args->buf.result,args->buf.buffer,args->buf.buflen,&args->erange);
   if (retv!=NSS_STATUS_SUCCESS)
     return retv;
-  /* allocate a temporary buffer */
-  buflen=args->buf.buflen;
-  buffer=(char *)malloc(buflen);
-  /* build the formatted string */
-  /* FIXME: implement proper buffer size checking */
-  sprintf(buffer,"%s %d/%s",result.s_name,result.s_port,result.s_proto);
-  if (result.s_aliases)
-    for (i=0;result.s_aliases[i];i++)
-    {
-      strcat(buffer," ");
-      strcat(buffer,result.s_aliases[i]);
-    }
-  /* copy the result back to the result buffer and free the temporary one */
-  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
-  free(buffer);
-  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  args->returnval=args->buf.result;
   return NSS_STATUS_SUCCESS;
 }
-
-#define READ_RESULT(fp) \
-  NSS_ARGS(args)->buf.result? \
-    read_servent(fp,(struct servent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange): \
-    read_servstring(fp,args); \
-  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
-#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-
-#define READ_RESULT(fp) \
-  read_servent(fp,(struct servent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange); \
-  if (retv==NSS_STATUS_SUCCESS) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
-#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 static nss_status_t services_getservbyname(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,
             WRITE_STRING(fp,NSS_ARGS(args)->key.serv.serv.name);
             WRITE_STRING(fp,NSS_ARGS(args)->key.serv.proto),
-            READ_RESULT(fp));
+            read_result(fp,args));
 }
 
 static nss_status_t services_getservbyport(nss_backend_t UNUSED(*be),void *args)
@@ -160,7 +168,7 @@ static nss_status_t services_getservbyport(nss_backend_t UNUSED(*be),void *args)
   NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,
             WRITE_INT32(fp,ntohs(NSS_ARGS(args)->key.serv.serv.port));
             WRITE_STRING(fp,NSS_ARGS(args)->key.serv.proto),
-            READ_RESULT(fp));
+            read_result(fp,args));
 }
 
 static nss_status_t services_setservent(nss_backend_t *be,void UNUSED(*args))
@@ -171,7 +179,7 @@ static nss_status_t services_setservent(nss_backend_t *be,void UNUSED(*args))
 static nss_status_t services_getservent(nss_backend_t *be,void *args)
 {
   NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_SERVICE_ALL,
-             READ_RESULT(LDAP_BE(be)->fp));
+             read_result(LDAP_BE(be)->fp,args));
 }
 
 static nss_status_t services_endservent(nss_backend_t *be,void UNUSED(*args))

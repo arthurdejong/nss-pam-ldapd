@@ -185,71 +185,76 @@ nss_status_t _nss_ldap_initgroups_dyn(
 #ifdef NSS_FLAVOUR_SOLARIS
 
 #ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-
-static nss_status_t read_groupstring(TFILE *fp,nss_XbyY_args_t *args)
+static char *group2str(struct group *result,char *buffer,size_t buflen)
 {
-  struct group result;
-  nss_status_t retv;
-  char *buffer;
-  int i;
-  /* read the group into a temporary buffer */
-  buffer=(char *)malloc(args->buf.buflen);
-  if (buffer==NULL)
-    return NSS_STATUS_UNAVAIL;
-  retv=read_group(fp,&result,buffer,args->buf.buflen,&NSS_ARGS(args)->erange);
-  if (retv!=NSS_STATUS_SUCCESS)
-  {
-    free(buffer);
-    return retv;
-  }
-  /* make a string representation */
-  snprintf(args->buf.buffer,args->buf.buflen,
-           "%s:%s:%d:",result.gr_name,result.gr_passwd,(int)result.gr_gid);
-  args->buf.buffer[args->buf.buflen-1]='\0';
-  if (result.gr_mem)
-    for (i=0;result.gr_mem[i];i++)
+  int res,i;
+  res=snprintf(buffer,buflen,"%s:%s:%d:",result->gr_name,result->gr_passwd,(int)result->gr_gid);
+  if ((res<0)||(res>=buflen))
+    return NULL;
+  if (result->gr_mem)
+    for (i=0;result->gr_mem[i];i++)
     {
       if (i)
-        strncat(args->buf.buffer,",",args->buf.buflen-strlen(args->buf.buffer)-1);
-      strncat(args->buf.buffer,result.gr_mem[i],args->buf.buflen-strlen(args->buf.buffer)-1);
+        strlcat(buffer,",",buflen);
+      strlcat(buffer,result->gr_mem[i],buflen);
     }
-  free(buffer);
   /* check if buffer overflowed */
-  if (strlen(args->buf.buffer)>=args->buf.buflen-1)
-    return NSS_STATUS_TRYAGAIN;
-  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  if (strlen(buffer)>=buflen-1)
+    return NULL;
+  return buffer;
+}
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+static nss_status_t read_result(TFILE *fp,nss_XbyY_args_t *args)
+{
+  nss_status_t retv;
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+  struct group result;
+  char *buffer;
+  /* try to return in string format if requested */
+  if (args->buf.result==NULL)
+  {
+    /* read the entry into a temporary buffer */
+    buffer=(char *)malloc(args->buf.buflen);
+    if (buffer==NULL)
+      return NSS_STATUS_UNAVAIL;
+    retv=read_group(fp,&result,buffer,args->buf.buflen,&args->erange);
+    /* format to string */
+    if (retv==NSS_STATUS_SUCCESS)
+      if (group2str(&result,args->buf.buffer,args->buf.buflen)==NULL)
+      {
+        args->erange=1;
+        retv=NSS_NOTFOUND;
+      }
+    /* clean up and return result */
+    free(buffer);
+    if (retv!=NSS_STATUS_SUCCESS)
+      return retv;
+    args->returnval=args->buf.buffer;
+    args->returnlen=strlen(args->returnval);
+    return NSS_STATUS_SUCCESS;
+  }
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+  /* read the entry */
+  retv=read_group(fp,args->buf.result,args->buf.buffer,args->buf.buflen,&args->erange);
+  if (retv!=NSS_STATUS_SUCCESS)
+    return retv;
+  args->returnval=args->buf.result;
   return NSS_STATUS_SUCCESS;
 }
-
-#define READ_RESULT(fp) \
-  NSS_ARGS(args)->buf.result? \
-    read_group(fp,(struct group *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange): \
-    read_groupstring(fp,args); \
-  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
-#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-
-#define READ_RESULT(fp) \
-  read_group(fp,(struct group *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange); \
-  if (retv==NSS_STATUS_SUCCESS) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
-#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 static nss_status_t group_getgrnam(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,
              NSS_ARGS(args)->key.name,
-             READ_RESULT(fp));
+             read_result(fp,args));
 }
 
 static nss_status_t group_getgrgid(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,
              NSS_ARGS(args)->key.gid,gid_t,
-             READ_RESULT(fp));
+             read_result(fp,args));
 }
 
 static nss_status_t group_setgrent(nss_backend_t *be,void UNUSED(*args))
@@ -260,7 +265,7 @@ static nss_status_t group_setgrent(nss_backend_t *be,void UNUSED(*args))
 static nss_status_t group_getgrent(nss_backend_t *be,void *args)
 {
   NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_GROUP_ALL,
-             READ_RESULT((LDAP_BE(be)->fp)));
+             read_result(LDAP_BE(be)->fp,args));
 }
 
 static nss_status_t group_endgrent(nss_backend_t *be,void UNUSED(*args))
@@ -268,11 +273,6 @@ static nss_status_t group_endgrent(nss_backend_t *be,void UNUSED(*args))
   NSS_ENDENT(LDAP_BE(be)->fp);
 }
 
-/*
-static nss_status_t get_initgroups_dyn(
-        const char *user,gid_t skipgroup,long int *start,
-        gid_t **groupsp,long int limit,int *errnop)
-*/
 static nss_status_t group_getgroupsbymember(nss_backend_t UNUSED(*be),void *args)
 {
   struct nss_groupsbymem *argp=(struct nss_groupsbymem *)args;

@@ -95,66 +95,74 @@ nss_status_t _nss_ldap_endprotoent(void)
 #ifdef NSS_FLAVOUR_SOLARIS
 
 #ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-
-static nss_status_t read_protostring(TFILE *fp,nss_XbyY_args_t *args)
+static char *protoent2str(struct protoent *result,char *buffer,size_t buflen)
 {
-  struct protoent result;
+  int res,i;
+  res=snprintf(buffer,buflen,"%s\t\t%d",result->p_name,result->p_proto);
+  if ((res<0)||(res>=buflen))
+    return NULL;
+  if (result->p_aliases)
+    for (i=0;result->p_aliases[i];i++)
+    {
+      strlcat(buffer," ",buflen);
+      strlcat(buffer,result->p_aliases[i],buflen);
+    }
+  if (strlen(buffer)>=buflen-1)
+    return NULL;
+  return buffer;
+}
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+
+static nss_status_t read_result(TFILE *fp,nss_XbyY_args_t *args)
+{
   nss_status_t retv;
+#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
+  struct protoent result;
   char *buffer;
-  size_t buflen;
-  int i;
-  /* read the protoent */
-  retv=read_protoent(fp,&result,NSS_ARGS(args)->buf.buffer,args->buf.buflen,&NSS_ARGS(args)->erange);
+  /* try to return in string format if requested */
+  if (args->buf.result==NULL)
+  {
+    /* read the entry into a temporary buffer */
+    buffer=(char *)malloc(args->buf.buflen);
+    if (buffer==NULL)
+      return NSS_STATUS_UNAVAIL;
+    retv=read_protoent(fp,&result,buffer,args->buf.buflen,&args->erange);
+    /* format to string */
+    if (retv==NSS_STATUS_SUCCESS)
+      if (protoent2str(&result,args->buf.buffer,args->buf.buflen)==NULL)
+      {
+        args->erange=1;
+        retv=NSS_NOTFOUND;
+      }
+    /* clean up and return result */
+    free(buffer);
+    if (retv!=NSS_STATUS_SUCCESS)
+      return retv;
+    args->returnval=args->buf.buffer;
+    args->returnlen=strlen(args->returnval);
+    return NSS_STATUS_SUCCESS;
+  }
+#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
+  /* read the entry */
+  retv=read_protoent(fp,args->buf.result,args->buf.buffer,args->buf.buflen,&args->erange);
   if (retv!=NSS_STATUS_SUCCESS)
     return retv;
-  /* allocate a temporary buffer */
-  buflen=args->buf.buflen;
-  buffer=(char *)malloc(buflen);
-  /* build the formatted string */
-  /* FIXME: implement proper buffer size checking */
-  sprintf(buffer,"%s\t\t%d",result.p_name,result.p_proto);
-  if (result.p_aliases)
-    for (i=0; result.p_aliases[i]; i++)
-    {
-      strcat(buffer," ");
-      strcat(buffer,result.p_aliases[i]);
-    }
-  /* copy the result back to the result buffer and free the temporary one */
-  strcpy(NSS_ARGS(args)->buf.buffer,buffer);
-  free(buffer);
-  NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.buffer;
-  NSS_ARGS(args)->returnlen=strlen(NSS_ARGS(args)->buf.buffer);
+  args->returnval=args->buf.result;
   return NSS_STATUS_SUCCESS;
 }
-
-#define READ_RESULT(fp) \
-  NSS_ARGS(args)->buf.result? \
-    read_protoent(fp,(struct protoent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange): \
-    read_protostring(fp,args); \
-  if ((NSS_ARGS(args)->buf.result)&&(retv==NSS_STATUS_SUCCESS)) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
-#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-
-#define READ_RESULT(fp) \
-  read_protoent(fp,(struct protoent *)NSS_ARGS(args)->buf.result,NSS_ARGS(args)->buf.buffer,NSS_ARGS(args)->buf.buflen,&NSS_ARGS(args)->erange); \
-  if (retv==NSS_STATUS_SUCCESS) \
-    NSS_ARGS(args)->returnval=NSS_ARGS(args)->buf.result;
-
-#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
 static nss_status_t protocols_getprotobyname(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_PROTOCOL_BYNAME,
              NSS_ARGS(args)->key.name,
-             READ_RESULT(fp));
+             read_result(fp,args));
 }
 
 static nss_status_t protocols_getprotobynumber(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYINT32(NSLCD_ACTION_PROTOCOL_BYNUMBER,
               NSS_ARGS(args)->key.number,
-              READ_RESULT(fp));
+              read_result(fp,args));
 }
 
 static nss_status_t protocols_setprotoent(nss_backend_t *be,void UNUSED(*args))
@@ -165,7 +173,7 @@ static nss_status_t protocols_setprotoent(nss_backend_t *be,void UNUSED(*args))
 static nss_status_t protocols_getprotoent(nss_backend_t *be,void *args)
 {
   NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_PROTOCOL_ALL,
-             READ_RESULT(LDAP_BE(be)->fp));
+             read_result(LDAP_BE(be)->fp,args));
 }
 
 static nss_status_t protocols_endprotoent(nss_backend_t *be,void UNUSED(*args))
