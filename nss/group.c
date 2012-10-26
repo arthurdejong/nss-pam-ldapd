@@ -73,11 +73,11 @@ static nss_status_t read_gids(
     /* only add the group to the list if it is not the specified group */
     if (gid!=skipgroup)
     {
+#ifdef NSS_FLAVOUR_GLIBC
       /* check if we reached the limit */
       if ( (limit>0) && (*start>=limit) )
         return NSS_STATUS_TRYAGAIN;
       /* check if our buffer is large enough */
-#ifdef NSS_FLAVOUR_GLIBC
       if ((*start)>=(*size))
       {
         /* for some reason Glibc expects us to grow the array (completely
@@ -94,6 +94,14 @@ static nss_status_t read_gids(
         *size=newsize;
       }
 #endif /* NSS_FLAVOUR_GLIBC */
+#ifdef NSS_FLAVOUR_SOLARIS
+      /* check if we reached the limit */
+      if ( (limit>0) && (*start>=limit) )
+      {
+        errnop=1; /* this is args->ergange */
+        return NSS_STATUS_NOTFOUND;
+      }
+#endif /* NSS_FLAVOUR_SOLARIS */
       /* add gid to list */
       (*groupsp)[(*start)++]=gid;
     }
