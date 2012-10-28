@@ -65,9 +65,9 @@
    specified address family, result is stored in result
    it will an empty entry if no addresses in the address family
    were available */
-static nss_status_t read_hostent(
-        TFILE *fp,int af,struct hostent *result,
-        char *buffer,size_t buflen,int *errnop,int *h_errnop)
+static nss_status_t read_one_hostent(
+        TFILE *fp,struct hostent *result,
+        char *buffer,size_t buflen,int *errnop,int *h_errnop,int af)
 {
   int32_t tmpint32,tmp2int32,tmp3int32;
   int32_t numaddr;
@@ -110,60 +110,33 @@ static nss_status_t read_hostent(
   return NSS_STATUS_SUCCESS;
 }
 
-/* this is a wrapper around read_hostent() that does error handling
-   if the read address list does not contain any addresses for the
-   specified address familiy */
-static nss_status_t read_hostent_erronempty(
-        TFILE *fp,int af,struct hostent *result,
-        char *buffer,size_t buflen,int *errnop,int *h_errnop)
-{
-  nss_status_t retv;
-  retv=read_hostent(fp,af,result,buffer,buflen,errnop,h_errnop);
-  /* check result */
-  if (retv!=NSS_STATUS_SUCCESS)
-    return retv;
-  /* check empty address list
-     (note that we cannot do this in the read_hostent() function as closing
-     the socket there will cause problems with the {set,get,end}ent() functions
-     below)
-  */
-  if (result->h_addr_list[0]==NULL)
-  {
-    *errnop=ENOENT;
-    *h_errnop=NO_ADDRESS;
-    (void)tio_close(fp);
-    return NSS_STATUS_NOTFOUND;
-  }
-  return NSS_STATUS_SUCCESS;
-}
-
-/* this is a wrapper around read_hostent() that skips to the
-   next address if the address list does not contain any addresses for the
-   specified address familiy */
-static nss_status_t read_hostent_nextonempty(
-        TFILE *fp,int af,struct hostent *result,
-        char *buffer,size_t buflen,int *errnop,int *h_errnop)
+/* this is a wrapper around read_one_hostent() that checks whether the read
+   address list is empty and tries the next result if available if
+   retry is set */
+static nss_status_t read_hostent(
+        TFILE *fp,struct hostent *result,
+        char *buffer,size_t buflen,int *errnop,int *h_errnop,int af,int retry)
 {
   int32_t tmpint32;
   nss_status_t retv;
-  /* check until we read an non-empty entry */
-  do
+  /* check until we read an non-empty entry, error or */
+  while (1)
   {
-    /* read a host entry */
-    retv=read_hostent(fp,af,result,buffer,buflen,errnop,h_errnop);
+    retv=read_one_hostent(fp,result,buffer,buflen,errnop,h_errnop,af);
     /* check result */
-    if (retv!=NSS_STATUS_SUCCESS)
+    if ((retv!=NSS_STATUS_SUCCESS)||(result->h_addr_list[0]!=NULL))
       return retv;
-    /* skip to the next entry if we read an empty address */
-    if (result->h_addr_list[0]==NULL)
+    /* error of if we are not retrying */
+    if (!retry)
     {
-      retv=NSS_STATUS_NOTFOUND;
-      READ_RESPONSE_CODE(fp);
+      *errnop=ENOENT;
+      *h_errnop=NO_ADDRESS;
+      (void)tio_close(fp);
+      return NSS_STATUS_NOTFOUND;
     }
-    /* do another loop run if we read an empty address */
+    /* skip to the next entry */
+    READ_RESPONSE_CODE(fp);
   }
-  while (retv!=NSS_STATUS_SUCCESS);
-  return NSS_STATUS_SUCCESS;
 }
 
 /* write an address value */
@@ -187,7 +160,7 @@ nss_status_t _nss_ldap_gethostbyname2_r(
 {
   NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,
              name,
-             read_hostent_erronempty(fp,af,result,buffer,buflen,errnop,h_errnop));
+             read_hostent(fp,result,buffer,buflen,errnop,h_errnop,af,0));
 }
 
 /* this function just calls the gethostbyname2() variant with the address
@@ -213,7 +186,7 @@ nss_status_t _nss_ldap_gethostbyaddr_r(
 {
   NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
             WRITE_ADDRESS(fp,af,len,addr),
-            read_hostent_erronempty(fp,af,result,buffer,buflen,errnop,h_errnop))
+            read_hostent(fp,result,buffer,buflen,errnop,h_errnop,af,0))
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -230,7 +203,7 @@ nss_status_t _nss_ldap_gethostent_r(
         char *buffer,size_t buflen,int *errnop,int *h_errnop)
 {
   NSS_GETENT(hostentfp,NSLCD_ACTION_HOST_ALL,
-             read_hostent_nextonempty(hostentfp,AF_INET,result,buffer,buflen,errnop,h_errnop));
+             read_hostent(hostentfp,result,buffer,buflen,errnop,h_errnop,AF_INET,1));
 }
 
 /* close the stream opened with sethostent() above */
@@ -275,7 +248,7 @@ static char *hostent2str(struct hostent *result,char *buffer,size_t buflen)
 }
 #endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
-static nss_status_t read_result(TFILE *fp,int af,nss_XbyY_args_t *args,int erronempty)
+static nss_status_t read_result(TFILE *fp,int af,int retry,nss_XbyY_args_t *args)
 {
   nss_status_t retv;
 #ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
@@ -288,10 +261,7 @@ static nss_status_t read_result(TFILE *fp,int af,nss_XbyY_args_t *args,int erron
     buffer=(char *)malloc(args->buf.buflen);
     if (buffer==NULL)
       return NSS_STATUS_UNAVAIL;
-    if (erronempty)
-      retv=read_hostent_erronempty(fp,af,&result,buffer,args->buf.buflen,&args->erange,&args->h_errno);
-    else
-      retv=read_hostent_nextonempty(fp,af,&result,buffer,args->buf.buflen,&args->erange,&args->h_errno);
+    retv=read_hostent(fp,&result,buffer,args->buf.buflen,&args->erange,&args->h_errno,af,retry);
     if (retv!=NSS_STATUS_SUCCESS)
       return retv;
     /* format to string */
@@ -311,14 +281,8 @@ static nss_status_t read_result(TFILE *fp,int af,nss_XbyY_args_t *args,int erron
   }
 #endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
   /* read the entry */
-  if (erronempty)
-    retv=read_hostent_erronempty(fp,af,
-          args->buf.result,args->buf.buffer,args->buf.buflen,
-          &args->erange,&args->h_errno);
-  else
-    retv=read_hostent_nextonempty(fp,af,
-          args->buf.result,args->buf.buffer,args->buf.buflen,
-          &args->erange,&args->h_errno);
+  retv=read_hostent(fp,args->buf.result,args->buf.buffer,args->buf.buflen,
+        &args->erange,&args->h_errno,af,retry);
   if (retv!=NSS_STATUS_SUCCESS)
     return retv;
   args->returnval=args->buf.result;
@@ -332,14 +296,14 @@ static nss_status_t hosts_gethostbyname(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,
              NSS_ARGS(args)->key.name,
-             read_result(fp,AF_INET,args,1));
+             read_result(fp,AF_INET,0,args));
 }
 
 static nss_status_t hosts_gethostbyaddr(nss_backend_t UNUSED(*be),void *args)
 {
   NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
             WRITE_ADDRESS(fp,NSS_ARGS(args)->key.hostaddr.type,NSS_ARGS(args)->key.hostaddr.len,NSS_ARGS(args)->key.hostaddr.addr),
-            read_result(fp,NSS_ARGS(args)->key.hostaddr.type,args,1));
+            read_result(fp,NSS_ARGS(args)->key.hostaddr.type,0,args));
 }
 
 static nss_status_t hosts_sethostent(nss_backend_t *be,void UNUSED(*args))
@@ -350,7 +314,7 @@ static nss_status_t hosts_sethostent(nss_backend_t *be,void UNUSED(*args))
 static nss_status_t hosts_gethostent(nss_backend_t *be,void *args)
 {
   NSS_GETENT(LDAP_BE(be)->fp,NSLCD_ACTION_HOST_ALL,
-             read_result(LDAP_BE(be)->fp,AF_INET,args,0));
+             read_result(LDAP_BE(be)->fp,AF_INET,1,args));
 }
 
 static nss_status_t hosts_endhostent(nss_backend_t *be,void UNUSED(*args))
