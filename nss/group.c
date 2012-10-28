@@ -98,7 +98,7 @@ static nss_status_t read_gids(
       /* check if we reached the limit */
       if ( (limit>0) && (*start>=limit) )
       {
-        errnop=1; /* this is args->ergange */
+        *errnop=1; /* this is args->erange */
         return NSS_STATUS_NOTFOUND;
       }
 #endif /* NSS_FLAVOUR_SOLARIS */
