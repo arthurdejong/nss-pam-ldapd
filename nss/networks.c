@@ -185,40 +185,7 @@ static char *netent2str(struct netent *result,char *buffer,size_t buflen)
 
 static nss_status_t read_result(TFILE *fp,nss_XbyY_args_t *args)
 {
-  nss_status_t retv;
-#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-  struct netent result;
-  char *buffer;
-  /* try to return in string format if requested */
-  if (args->buf.result==NULL)
-  {
-    /* read the entry into a temporary buffer */
-    buffer=(char *)malloc(args->buf.buflen);
-    if (buffer==NULL)
-      return NSS_STATUS_UNAVAIL;
-    retv=read_netent(fp,&result,buffer,args->buf.buflen,&args->erange,&args->h_errno);
-    /* format to string */
-    if (retv==NSS_STATUS_SUCCESS)
-      if (netent2str(&result,args->buf.buffer,args->buf.buflen)==NULL)
-      {
-        args->erange=1;
-        retv=NSS_NOTFOUND;
-      }
-    /* clean up and return result */
-    free(buffer);
-    if (retv!=NSS_STATUS_SUCCESS)
-      return retv;
-    args->returnval=args->buf.buffer;
-    args->returnlen=strlen(args->returnval);
-    return NSS_STATUS_SUCCESS;
-  }
-#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-  /* read the entry */
-  retv=read_netent(fp,args->buf.result,args->buf.buffer,args->buf.buflen,&args->erange,&args->h_errno);
-  if (retv!=NSS_STATUS_SUCCESS)
-    return retv;
-  args->returnval=args->buf.result;
-  return NSS_STATUS_SUCCESS;
+  READ_RESULT(netent,&args->erange,&args->h_errno);
 }
 
 /* more of a dirty hack */

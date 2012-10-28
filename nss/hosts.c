@@ -250,43 +250,7 @@ static char *hostent2str(struct hostent *result,char *buffer,size_t buflen)
 
 static nss_status_t read_result(TFILE *fp,int af,int retry,nss_XbyY_args_t *args)
 {
-  nss_status_t retv;
-#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-  struct hostent result;
-  char *buffer;
-  /* try to return in string format if requested */
-  if (args->buf.result==NULL)
-  {
-    /* read the entry into a temporary buffer*/
-    buffer=(char *)malloc(args->buf.buflen);
-    if (buffer==NULL)
-      return NSS_STATUS_UNAVAIL;
-    retv=read_hostent(fp,&result,buffer,args->buf.buflen,&args->erange,&args->h_errno,af,retry);
-    if (retv!=NSS_STATUS_SUCCESS)
-      return retv;
-    /* format to string */
-    if (retv==NSS_STATUS_SUCCESS)
-      if (hostent2str(&result,args->buf.buffer,args->buf.buflen)==NULL)
-      {
-        args->erange=1;
-        retv=NSS_NOTFOUND;
-      }
-    /* clean up and return result */
-    free(buffer);
-    if (retv!=NSS_STATUS_SUCCESS)
-      return retv;
-    args->returnval=args->buf.buffer;
-    args->returnlen=strlen(args->returnval);
-    return NSS_STATUS_SUCCESS;
-  }
-#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-  /* read the entry */
-  retv=read_hostent(fp,args->buf.result,args->buf.buffer,args->buf.buflen,
-        &args->erange,&args->h_errno,af,retry);
-  if (retv!=NSS_STATUS_SUCCESS)
-    return retv;
-  args->returnval=args->buf.result;
-  return NSS_STATUS_SUCCESS;
+  READ_RESULT(hostent,&args->erange,&args->h_errno,af,retry);
 }
 
 /* hack to set the correct h_errno */

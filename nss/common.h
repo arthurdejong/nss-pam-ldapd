@@ -31,6 +31,10 @@
 #include "compat/attrs.h"
 #include "compat/nss_compat.h"
 
+#ifdef NSS_FLAVOUR_SOLARIS
+#include "solnss.h"
+#endif /* NSS_FLAVOUR_SOLARIS */
+
 /* These are macros for handling read and write problems, they are
    NSS specific due to the return code so are defined here. They
    genrally close the open file, set an error code and return with
@@ -89,49 +93,6 @@
   }
 
 #endif /* NSS_FLAVOUR_GLIBC */
-
-#ifdef NSS_FLAVOUR_SOLARIS
-
-/* extra definitions we need (Solaris NSS functions don't pass errno)
-   also clear the output values */
-#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-#define NSS_EXTRA_DEFS \
-  int *errnop=&(errno); \
-  NSS_ARGS(args)->returnval=NULL; \
-  NSS_ARGS(args)->returnlen=0; \
-  NSS_ARGS(args)->erange=0; \
-  NSS_ARGS(args)->h_errno=0;
-#else /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-#define NSS_EXTRA_DEFS \
-  int *errnop=&(errno); \
-  NSS_ARGS(args)->returnval=NULL; \
-  NSS_ARGS(args)->erange=0; \
-  NSS_ARGS(args)->h_errno=0;
-#endif /* not HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-
-/* check validity of passed buffer (Solaris flavour) */
-#define NSS_BUFCHECK \
-  if ((NSS_ARGS(args)->buf.buffer==NULL)||(NSS_ARGS(args)->buf.buflen<=0)) \
-  { \
-    NSS_ARGS(args)->erange=1; \
-    return NSS_STATUS_TRYAGAIN; \
-  }
-
-/* this is the backend structure for Solaris */
-struct nss_ldap_backend
-{
-  nss_backend_op_t *ops; /* function-pointer table */
-  int n_ops; /* number of function pointers */
-  TFILE *fp; /* the file pointer for {set,get,end}ent() functions */
-};
-
-/* constructor for LDAP backends */
-nss_backend_t *nss_ldap_constructor(nss_backend_op_t *ops,size_t sizeofops);
-
-/* destructor for LDAP backends */
-nss_status_t nss_ldap_destructor(nss_backend_t *be,void UNUSED(*args));
-
-#endif /* NSS_FLAVOUR_SOLARIS */
 
 /* The following macros to automatically generate get..byname(),
    get..bynumber(), setent(), getent() and endent() function

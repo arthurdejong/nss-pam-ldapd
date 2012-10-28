@@ -25,7 +25,7 @@ noinst_PROGRAMS = nss_ldap.so
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = -fPIC
 
-nss_ldap_so_SOURCES = common.c common.h prototypes.h \
+nss_ldap_so_SOURCES = common.c common.h prototypes.h solnss.h \
                       ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h
 EXTRA_nss_ldap_so_SOURCES = aliases.c ethers.c group.c hosts.c netgroup.c \

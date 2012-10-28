@@ -119,40 +119,7 @@ static char *servent2str(struct servent *result,char *buffer,size_t buflen)
 
 static nss_status_t read_result(TFILE *fp,nss_XbyY_args_t *args)
 {
-  nss_status_t retv;
-#ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-  struct servent result;
-  char *buffer;
-  /* try to return in string format if requested */
-  if (args->buf.result==NULL)
-  {
-    /* read the entry into a temporary buffer */
-    buffer=(char *)malloc(args->buf.buflen);
-    if (buffer==NULL)
-      return NSS_STATUS_UNAVAIL;
-    retv=read_servent(fp,&result,buffer,args->buf.buflen,&args->erange);
-    /* format to string */
-    if (retv==NSS_STATUS_SUCCESS)
-      if (servent2str(&result,args->buf.buffer,args->buf.buflen)==NULL)
-      {
-        args->erange=1;
-        retv=NSS_NOTFOUND;
-      }
-    /* clean up and return result */
-    free(buffer);
-    if (retv!=NSS_STATUS_SUCCESS)
-      return retv;
-    args->returnval=args->buf.buffer;
-    args->returnlen=strlen(args->returnval);
-    return NSS_STATUS_SUCCESS;
-  }
-#endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
-  /* read the entry */
-  retv=read_servent(fp,args->buf.result,args->buf.buffer,args->buf.buflen,&args->erange);
-  if (retv!=NSS_STATUS_SUCCESS)
-    return retv;
-  args->returnval=args->buf.result;
-  return NSS_STATUS_SUCCESS;
+  READ_RESULT(servent,&args->erange);
 }
 
 static nss_status_t services_getservbyname(nss_backend_t UNUSED(*be),void *args)
