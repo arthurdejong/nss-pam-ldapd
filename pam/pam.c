@@ -493,8 +493,12 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
   {
     /* turn in to generic PAM error message if message is empty */
     if ((ctx2.authzmsg==NULL)||(ctx2.authzmsg[0]=='\0'))
+    {
       ctx2.authzmsg=(char *)pam_strerror(pamh,ctx2.authz);
-    pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",ctx2.authzmsg,username);
+      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",ctx2.authzmsg,username);
+    }
+    else
+      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s; err=%s",ctx2.authzmsg,username,pam_strerror(pamh,rc));
     rc=remap_pam_rc(ctx2.authz,&cfg);
     if ((rc!=PAM_IGNORE)&&(!cfg.no_warn))
       pam_error(pamh,"%s",ctx2.authzmsg);
