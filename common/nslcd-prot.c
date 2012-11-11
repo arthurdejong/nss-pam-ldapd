@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include "nslcd.h"
 #include "nslcd-prot.h"
@@ -62,6 +63,7 @@ TFILE *nslcd_client_open()
   int sock;
   struct sockaddr_un addr;
   TFILE *fp;
+  int flags;
   /* create a socket */
   if ( (sock=socket(PF_UNIX,SOCK_STREAM,0))<0 )
     return NULL;
@@ -70,6 +72,10 @@ TFILE *nslcd_client_open()
   addr.sun_family=AF_UNIX;
   strncpy(addr.sun_path,NSLCD_SOCKET,sizeof(addr.sun_path));
   addr.sun_path[sizeof(addr.sun_path)-1]='\0';
+  /* close the file descriptor on exec (ignore errors) */
+  flags=fcntl(sock,F_GETFL);
+  if (flags>=0)
+    (void)fcntl(sock,F_SETFD,flags|FD_CLOEXEC);
   /* connect to the socket */
   if (connect(sock,(struct sockaddr *)&addr,SUN_LEN(&addr))<0)
   {
