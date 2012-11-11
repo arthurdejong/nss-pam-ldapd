@@ -966,13 +966,13 @@ static int do_retry_search(MYLDAP_SEARCH *search)
         rc=do_try_search(search);
         if (rc==LDAP_SUCCESS)
         {
-          /* update ok time */
           pthread_mutex_lock(&uris_mutex);
-          current_uri->firstfail=0;
-          current_uri->lastfail=0;
           /* check if we are coming back from an error */
           if ((current_uri->lastfail>0)||(search->session->current_uri!=start_uri))
             log_log(LOG_INFO,"connected to LDAP server %s",current_uri->uri);
+          /* update ok time */
+          current_uri->firstfail=0;
+          current_uri->lastfail=0;
           pthread_mutex_unlock(&uris_mutex);
           /* flag the search as valid */
           search->valid=1;
