@@ -1,0 +1,66 @@
+# global
+*-stamp
+*.Po
+*.a
+*.bak
+*.gcda
+*.gcno
+*.o
+*.pyc
+*.pyo
+*.so
+*~
+.deps
+.nfs*
+Makefile
+Makefile.in
+core
+stamp-*
+
+# /
+/*.bfproject
+/aclocal.m4
+/autom4te.cache
+/confdefs.h
+/config.cache
+/config.h
+/config.h.in
+/config.log
+/config.status
+/configure
+/configure.lineno
+/conftest.tail
+/flawfinder.html
+/nss-ldapd-*.tar.gz
+/pscan.txt
+/rats.html
+/splint.txt
+
+# /man/
+/man/nslcd.8
+/man/nslcd.8.html
+/man/nslcd.conf.5
+/man/nslcd.conf.5.html
+/man/pam_ldap.8
+/man/pam_ldap.8.html
+/man/pynslcd.8
+/man/pynslcd.8.html
+
+# /nslcd/
+/nslcd/nslcd
+
+# /pynslcd/
+/pynslcd/config.py
+/pynslcd/constants.py
+
+# /tests/
+/tests/temp.cfg
+/tests/test_cfg
+/tests/test_common
+/tests/test_dict
+/tests/test_expr
+/tests/test_getpeercred
+/tests/test_myldap
+/tests/test_pamcmds.log
+/tests/test_set
+/tests/test_tio
