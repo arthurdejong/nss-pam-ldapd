@@ -112,7 +112,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->ldc_sasl_authzid=NULL;
   cfg->ldc_sasl_secprops=NULL;
 #ifdef LDAP_OPT_X_SASL_NOCANON
-  cfg->ldc_sasl_canonicalize=1;
+  cfg->ldc_sasl_canonicalize=-1;
 #endif /* LDAP_OPT_X_SASL_NOCANON */
   for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
     cfg->ldc_bases[i]=NULL;

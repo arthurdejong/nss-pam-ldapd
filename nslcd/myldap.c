@@ -668,8 +668,11 @@ static int do_set_options(MYLDAP_SESSION *session)
   }
 #endif /* LDAP_OPT_X_TLS */
 #ifdef LDAP_OPT_X_SASL_NOCANON
-  log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_SASL_NOCANON,%s)",nslcd_cfg->ldc_sasl_canonicalize?"LDAP_OPT_OFF":"LDAP_OPT_ON");
-  LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_NOCANON,nslcd_cfg->ldc_sasl_canonicalize?LDAP_OPT_OFF:LDAP_OPT_ON);
+  if (nslcd_cfg->ldc_sasl_canonicalize>=0)
+  {
+    log_log(LOG_DEBUG,"ldap_set_option(LDAP_OPT_X_SASL_NOCANON,%s)",nslcd_cfg->ldc_sasl_canonicalize?"LDAP_OPT_OFF":"LDAP_OPT_ON");
+    LDAP_SET_OPTION(session->ld,LDAP_OPT_X_SASL_NOCANON,nslcd_cfg->ldc_sasl_canonicalize?LDAP_OPT_OFF:LDAP_OPT_ON);
+  }
 #endif /* LDAP_OPT_X_SASL_NOCANON */
   /* if nothing above failed, everything should be fine */
   return LDAP_SUCCESS;

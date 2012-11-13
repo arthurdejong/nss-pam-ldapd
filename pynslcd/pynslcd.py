@@ -248,7 +248,8 @@ def get_connection():
         session.set_option(ldap.OPT_NETWORK_TIMEOUT, cfg.timelimit)
     if cfg.referrals:
         session.set_option(ldap.OPT_REFERRALS, cfg.referrals)
-    session.set_option(ldap.OPT_X_SASL_NOCANON, not cfg.sasl_canonicalize)
+    if cfg.sasl_canonicalize is not None:
+        session.set_option(ldap.OPT_X_SASL_NOCANON, not cfg.sasl_canonicalize)
     session.set_option(ldap.OPT_RESTART, True)
     # TODO: register a connection callback (like dis?connect_cb() in myldap.c)
     if cfg.ssl or cfg.uri.startswith('ldaps://'):

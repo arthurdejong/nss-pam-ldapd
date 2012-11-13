@@ -289,7 +289,8 @@
        Determines whether the <acronym>LDAP</acronym> server host name should
        be canonicalised. If this is set to yes the <acronym>LDAP</acronym>
        library will do a reverse host name lookup.
-       By default this extra lookup is performed.
+       By default, it is left up to the <acronym>LDAP</acronym> library
+       whether this check is performed or not.
       </para>
      </listitem>
     </varlistentry>
