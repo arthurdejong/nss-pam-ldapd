@@ -1,5 +1,5 @@
 /*
-   config.c - pam processing routines
+   config.c - routines for getting configuration information
 
    Copyright (C) 2012 Arthur de Jong
 
