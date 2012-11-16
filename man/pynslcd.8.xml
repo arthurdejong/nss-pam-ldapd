@@ -42,7 +42,7 @@
 
  <refnamediv id="name">
   <refname>pynslcd</refname>
-  <refpurpose>local LDAP name service daemon.</refpurpose>
+  <refpurpose>local LDAP name service daemon</refpurpose>
  </refnamediv>
 
  <refsynopsisdiv id="synopsis">
