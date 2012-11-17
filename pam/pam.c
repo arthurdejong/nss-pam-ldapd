@@ -610,7 +610,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   if (flags&PAM_PRELIM_CHECK)
   {
     /* see if the user is trying to modify another user's password */
-    pwent=getpwnam(username);
+    pwent=pam_modutil_getpwnam(args->pamh,username);
     myuid=getuid();
     if ((pwent!=NULL)&&(pwent->pw_uid!=myuid)&&(!(flags&PAM_CHANGE_EXPIRED_AUTHTOK)))
     {
