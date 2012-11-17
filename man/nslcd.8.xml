@@ -49,9 +49,7 @@
  <refsynopsisdiv id="synopsis">
   <cmdsynopsis>
    <command>nslcd</command>
-   <arg choice="opt">
-    <replaceable>options</replaceable>
-   </arg>
+   <arg choice="opt"><replaceable>options</replaceable></arg>
   </cmdsynopsis>
  </refsynopsisdiv>
 
@@ -76,9 +74,10 @@
   <para>
   <command>nslcd</command> accepts the following options:</para>
   <variablelist remap="TP">
+
    <varlistentry id="check">
     <term>
-     <option>-c, --check</option>
+     <option>-c</option>, <option>--check</option>
     </term>
     <listitem>
      <para>
@@ -86,10 +85,11 @@
       This causes <command>nslcd</command> to return 0 if the daemon is already running and 1 if it is not.
      </para>
     </listitem>
-    </varlistentry>
-    <varlistentry id="debug">
+   </varlistentry>
+
+   <varlistentry id="debug">
     <term>
-     <option>-d, --debug</option>
+     <option>-d</option>, <option>--debug</option>
     </term>
     <listitem>
      <para>
@@ -103,6 +103,7 @@
      </para>
     </listitem>
    </varlistentry>
+
    <varlistentry id="help">
     <term>
      <option>--help</option>
@@ -111,14 +112,16 @@
      <para>Display short help and exit.</para>
     </listitem>
    </varlistentry>
+
    <varlistentry id="version">
     <term>
-     <option>-V, --version</option>
+     <option>-V</option>, <option>--version</option>
     </term>
     <listitem>
      <para>Output version information and exit.</para>
     </listitem>
    </varlistentry>
+
   </variablelist>
  </refsect1>
 
