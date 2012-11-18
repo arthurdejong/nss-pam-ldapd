@@ -45,6 +45,10 @@ static nss_status_t read_passwd(
   READ_BUF_STRING(fp,result->pw_gecos);
   READ_BUF_STRING(fp,result->pw_dir);
   READ_BUF_STRING(fp,result->pw_shell);
+#ifdef HAVE_STRUCT_PASSWD_PW_CLASS
+  /* set the user access class to an empty string */
+  result->pw_class=result->pw_name+strlen(result->pw_name);
+#endif /* HAVE_STRUCT_PASSWD_PW_CLASS */
   return NSS_STATUS_SUCCESS;
 }
 

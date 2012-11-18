@@ -364,6 +364,10 @@ then
     #include <netinet/ether.h>
     #endif])
 
+  # check if struct passwd has a pw_class member
+  AC_CHECK_MEMBERS([struct passwd.pw_class],,,[
+      #include <pwd.h>])
+
   # check for a definition of struct rpcent
   AC_CHECK_TYPES(struct rpcent,,,[
       #include <netdb.h>
