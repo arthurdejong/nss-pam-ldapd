@@ -17,7 +17,6 @@
   as a user (see pam_ldap)
 * implement nested groups
 * implement other services in nslcd: sudo and autofs are candidates
-* fix buffer handling in read_**string() functions (Solaris support)
 * complete pynslcd implementation
 * implement chsh and chfn in nslcd PAM code and make chsh.ldap and chfn.ldap
   binaries

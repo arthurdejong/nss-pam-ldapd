@@ -1,3 +1,112 @@
+2012-11-17 16:40  arthur
+
+	* [r1832] pam/pam.c: use pam_modutil_getpwnam() instead of
+	  getpwnam() in PAM module
+
+2012-11-17 16:38  arthur
+
+	* [r1831] man/nslcd.8.xml, man/pynslcd.8.xml: fix formatting and
+	  improve consistency in manaual pages
+
+2012-11-16 19:56  arthur
+
+	* [r1828] man/nslcd.8.xml, man/pynslcd.8.xml: remove dots from
+	  short description in manual page
+
+2012-11-16 16:57  arthur
+
+	* [r1827] nslcd/config.c: fix comment in header
+
+2012-11-13 20:03  arthur
+
+	* [r1824] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/myldap.c,
+	  pynslcd/cfg.py, pynslcd/pynslcd.py: to only set
+	  LDAP_OPT_X_SASL_NOCANON if the sasl_canonicalize option is
+	  explicitly set in the configuration file
+
+2012-11-11 22:46  arthur
+
+	* [r1823] pam/pam.c: log the PAM error message along with the
+	  message from nslcd if it is available
+
+2012-11-11 16:44  arthur
+
+	* [r1822] .gitignore: add a .gitignore file for those working with
+	  git
+
+2012-11-11 16:40  arthur
+
+	* [r1821] common/nslcd-prot.c: set FD_CLOEXEC in NSS and PAM
+	  modules to ensure that nslcd file descriptor is not leaked to
+	  child processes
+
+2012-11-11 14:02  arthur
+
+	* [r1814] nslcd/myldap.c: log connection message before clearing
+	  error indicators to not hide these log messages in most
+	  configurations (fixes r1095)
+
+2012-10-28 20:13  arthur
+
+	* [r1812] nss/Makefile.am, nss/common.h, nss/group.c, nss/hosts.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/rpc.c,
+	  nss/services.c, nss/shadow.c, nss/solnss.h: refactor the
+	  read_result() functions into a common macro and move all the
+	  Solaris-specific definitions to solnss.h
+
+2012-10-28 19:14  arthur
+
+	* [r1811] nss/hosts.c: combine read_hostent_erronempty() and
+	  read_hostent_nextonempty() into a read_hostent() with a retry
+	  parameter
+
+2012-10-28 15:09  arthur
+
+	* [r1810] nss/group.c: fix typo (thanks Ted C. Cheng)
+
+2012-10-26 11:51  arthur
+
+	* [r1809] nss/group.c: fix buffer size checking in group by member
+	  NSS function on Solaris
+
+2012-10-26 11:48  arthur
+
+	* [r1808] nss/ethers.c, nss/group.c, nss/hosts.c, nss/netgroup.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/rpc.c,
+	  nss/services.c, nss/shadow.c: introduce ent2str() functions for
+	  each database (except ether and netgroup) and make buffer
+	  handling consistent (for Solaris)
+
+2012-10-21 14:36  arthur
+
+	* [r1807] configure.ac: remove duplicate checks from the configure
+	  script
+
+2012-10-21 14:26  arthur
+
+	* [r1806] man: ignore generated pynslcd manual pages
+
+2012-10-21 14:24  arthur
+
+	* [r1805] nss/passwd.c: fix a problem on Solaris (fixes r1793)
+
+2012-10-21 13:46  arthur
+
+	* [r1804] man/Makefile.am, man/nslcd.8.xml, man/pynslcd.8.xml: make
+	  a pynslcd manual page and install it if pynslcd is enabled (and
+	  small fix in nslcd manual page)
+
+2012-10-19 20:34  arthur
+
+	* [r1803] common/expr.c, tests/test_expr.c: allow attribute options
+	  in attribute mapping expressions
+
+2012-10-14 20:22  arthur
+
+	* [r1798] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.11 release
+
 2012-10-14 16:09  arthur
 
 	* [r1797] configure.ac: remove extra code that sets PACKAGE_URL

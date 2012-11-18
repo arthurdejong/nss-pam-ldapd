@@ -1,3 +1,21 @@
+changes from 0.8.11 to 0.8.12
+-----------------------------
+
+* fix a problem with the sasl_canonicalize option that would cause errors
+  on non-SASL enabled systems
+* ensure that the file descriptors in the NSS and PAM modules for connecting
+  to nslcd are closed on exec of the process
+* allow attribute options in attribute mapping expressions
+* show reconnect messages when failing over to a different LDAP server or
+  re-establishing the connection to an LDAP server (the message accidentally
+  got hidden in 0.7.4)
+* fix a problem with the pw_class attribute in FreeBSD (fixes 0.8.11)
+* more fixes and improvements for Solaris (running under nscd may still give
+  problems though)
+* small improvement to PAM error logging
+* provide a pynslcd manual if pynslcd is built
+
+
 changes from 0.8.10 to 0.8.11
 -----------------------------
 
