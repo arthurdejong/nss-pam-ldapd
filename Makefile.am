@@ -66,7 +66,9 @@ dist-hook:
 
 # target for generating the ChangeLog file
 changelog:
-	svn2cl -i -r HEAD:1586
+	( svn2cl -i --stdout -r HEAD:1835 ; \
+	  svn2cl -i --stdout -r 1835:1586 --strip-prefix='nss-pam-ldapd' ; \
+	) > ChangeLog
 
 flawfinder.html:
 	flawfinder --quiet --html --context --followdotdir . > $@
