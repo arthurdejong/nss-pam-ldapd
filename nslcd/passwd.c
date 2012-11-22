@@ -615,7 +615,7 @@ NSLCD_HANDLE_UID(
   uid_t uid;
   char filter[4096];
   READ_TYPE(fp,uid,uid_t);
-  log_setrequest("passwd=%d",(int)uid);
+  log_setrequest("passwd=%lu",(unsigned long int)uid);
   if (uid<nslcd_cfg->ldc_nss_min_uid)
   {
     /* return an empty result */

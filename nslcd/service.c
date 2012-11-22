@@ -231,7 +231,7 @@ NSLCD_HANDLE(
   char filter[4096];
   READ_INT32(fp,number);
   READ_STRING(fp,protocol);
-  log_setrequest("service=%d/%s",number,protocol);,
+  log_setrequest("service=%lu/%s",(unsigned long int)number,protocol);,
   NSLCD_ACTION_SERVICE_BYNUMBER,
   mkfilter_service_bynumber(number,protocol,filter,sizeof(filter)),
   write_service(fp,entry,NULL,protocol)

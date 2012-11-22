@@ -185,7 +185,7 @@ NSLCD_HANDLE(
   int number;
   char filter[4096];
   READ_INT32(fp,number);
-  log_setrequest("rpc=%d",number);,
+  log_setrequest("rpc=%lu",(unsigned long int)number);,
   NSLCD_ACTION_RPC_BYNUMBER,
   mkfilter_rpc_bynumber(number,filter,sizeof(filter)),
   write_rpc(fp,entry,NULL)

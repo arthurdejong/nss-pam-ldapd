@@ -335,7 +335,7 @@ NSLCD_HANDLE(
   gid_t gid;
   char filter[4096];
   READ_TYPE(fp,gid,gid_t);
-  log_setrequest("group=%d",(int)gid);,
+  log_setrequest("group=%lu",(unsigned long int)gid);,
   NSLCD_ACTION_GROUP_BYGID,
   mkfilter_group_bygid(gid,filter,sizeof(filter)),
   write_group(fp,entry,NULL,&gid,1,session)

@@ -185,7 +185,7 @@ NSLCD_HANDLE(
   int protocol;
   char filter[4096];
   READ_INT32(fp,protocol);
-  log_setrequest("protocol=%d",protocol);,
+  log_setrequest("protocol=%lu",(unsigned long int)protocol);,
   NSLCD_ACTION_PROTOCOL_BYNUMBER,
   mkfilter_protocol_bynumber(protocol,filter,sizeof(filter)),
   write_protocol(fp,entry,NULL)
