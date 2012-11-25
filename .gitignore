@@ -31,7 +31,7 @@ stamp-*
 /configure.lineno
 /conftest.tail
 /flawfinder.html
-/nss-ldapd-*.tar.gz
+/nss-pam-ldapd-*
 /pscan.txt
 /rats.html
 /splint.txt
