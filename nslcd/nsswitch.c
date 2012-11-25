@@ -128,6 +128,8 @@ static int shadow_uses_ldap(void)
   int lnr=0;
   char linebuf[MAX_LINE_LENGTH];
   const char *services;
+  int shadow_found=0;
+  int passwd_has_ldap=0;
   /* open config file */
   if ((fp=fopen(NSSWITCH_FILE,"r"))==NULL)
   {
@@ -138,15 +140,26 @@ static int shadow_uses_ldap(void)
   while (fgets(linebuf,sizeof(linebuf),fp)!=NULL)
   {
     lnr++;
+    /* see if we have a shadow line */
     services=find_db(linebuf,"shadow");
-    if ((services!=NULL)&&has_service(services,"ldap",NSSWITCH_FILE,lnr))
+    if (services!=NULL)
     {
-      fclose(fp);
-      return 1;
+      shadow_found=1;
+      if (has_service(services,"ldap",NSSWITCH_FILE,lnr))
+      {
+        fclose(fp);
+        return 1;
+      }
     }
+    /* see if we have a passwd line */
+    services=find_db(linebuf,"passwd");
+    if (services!=NULL)
+      passwd_has_ldap=has_service(services,"ldap",NSSWITCH_FILE,lnr);
   }
   fclose(fp);
-  return 0;
+  if (shadow_found)
+    return 0;
+  return passwd_has_ldap;
 }
 
 /* check whether shadow lookups are configured to use ldap */
