@@ -127,8 +127,11 @@ void get_shadow_properties(MYLDAP_ENTRY *entry,long *lastchangedate,
                            long *inactdays,long *expiredate,unsigned long *flag);
 
 
+/* check whether the nsswitch file should be reloaded */
+void nsswitch_check_reload(void);
+
 /* check whether the nsswitch.conf file has LDAP as a naming source for db */
-int nsswitch_db_uses_ldap(const char *filename,const char *db);
+int nsswitch_shadow_uses_ldap(void);
 
 /* fallback definition of HOST_NAME_MAX */
 #ifndef HOST_NAME_MAX

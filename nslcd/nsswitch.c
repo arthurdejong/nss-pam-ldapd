@@ -25,16 +25,49 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <time.h>
 
 #include "common.h"
 #include "log.h"
 
+/* the cached value of whether shadow lookups use LDAP in nsswitch.conf */
+#define NSSWITCH_FILE "/etc/nsswitch.conf"
+#define CACHED_UNKNOWN 22
+static int cached_shadow_uses_ldap=CACHED_UNKNOWN;
+static time_t cached_shadow_lastcheck=0;
+#define CACHED_SHADOW_TIMEOUT (60)
+static time_t nsswitch_mtime=0;
+
 /* the maximum line length supported of nsswitch.conf */
 #define MAX_LINE_LENGTH          4096
 
-
-/* TODO: store mtime of file and use it to check reparse */
-/* TODO: cache entries for x minutes */
+/* check whether /etc/nsswitch.conf should be related to update
+   cached_shadow_uses_ldap */
+void nsswitch_check_reload(void)
+{
+  struct stat buf;
+  time_t t;
+  if ((cached_shadow_uses_ldap!=CACHED_UNKNOWN)&&
+      ((t=time(NULL)) > (cached_shadow_lastcheck+CACHED_SHADOW_TIMEOUT)))
+  {
+    cached_shadow_lastcheck=t;
+    if (stat(NSSWITCH_FILE,&buf))
+    {
+      log_log(LOG_ERR,"stat(%s) failed: %s",NSSWITCH_FILE,strerror(errno));
+      /* trigger a recheck anyway */
+      cached_shadow_uses_ldap=CACHED_UNKNOWN;
+      return;
+    }
+    /* trigger a recheck if file changed */
+    if (buf.st_mtime!=nsswitch_mtime)
+    {
+      nsswitch_mtime=buf.st_mtime;
+      cached_shadow_uses_ldap=CACHED_UNKNOWN;
+    }
+  }
+}
 
 /* see if the line is a service definition for db and return a pointer to
    the beginning of the services list if it is */
@@ -89,24 +122,24 @@ static int has_service(const char *services,const char *service,
   return 0;
 }
 
-int nsswitch_db_uses_ldap(const char *filename,const char *db)
+static int shadow_uses_ldap(void)
 {
   FILE *fp;
   int lnr=0;
   char linebuf[MAX_LINE_LENGTH];
   const char *services;
   /* open config file */
-  if ((fp=fopen(filename,"r"))==NULL)
+  if ((fp=fopen(NSSWITCH_FILE,"r"))==NULL)
   {
-    log_log(LOG_ERR,"cannot open %s: %s",filename,strerror(errno));
+    log_log(LOG_ERR,"cannot open %s: %s",NSSWITCH_FILE,strerror(errno));
     return 0;
   }
   /* read file and parse lines */
   while (fgets(linebuf,sizeof(linebuf),fp)!=NULL)
   {
     lnr++;
-    services=find_db(linebuf,db);
-    if ((services!=NULL)&&has_service(services,"ldap",filename,lnr))
+    services=find_db(linebuf,"shadow");
+    if ((services!=NULL)&&has_service(services,"ldap",NSSWITCH_FILE,lnr))
     {
       fclose(fp);
       return 1;
@@ -114,4 +147,16 @@ int nsswitch_db_uses_ldap(const char *filename,const char *db)
   }
   fclose(fp);
   return 0;
+}
+
+/* check whether shadow lookups are configured to use ldap */
+inline int nsswitch_shadow_uses_ldap(void)
+{
+  if (cached_shadow_uses_ldap==CACHED_UNKNOWN)
+  {
+    log_log(LOG_INFO,"(re)loading %s",NSSWITCH_FILE);
+    cached_shadow_uses_ldap=shadow_uses_ldap();
+    cached_shadow_lastcheck=time(NULL);
+  }
+  return cached_shadow_uses_ldap;
 }

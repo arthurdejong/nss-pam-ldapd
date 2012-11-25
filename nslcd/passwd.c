@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
@@ -386,59 +385,9 @@ char *uid2dn(MYLDAP_SESSION *session,const char *uid,char *buf,size_t buflen)
 }
 
 #ifndef NSS_FLAVOUR_GLIBC
-
 /* only check nsswitch.conf for glibc */
 #define check_nsswitch_reload()
 #define shadow_uses_ldap() (1)
-
-#else /* NSS_FLAVOUR_GLIBC */
-
-/* the cached value of whether shadow lookups use LDAP in nsswitch.conf */
-#define NSSWITCH_FILE "/etc/nsswitch.conf"
-#define CACHED_UNKNOWN 22
-static int cached_shadow_uses_ldap=CACHED_UNKNOWN;
-static time_t cached_shadow_lastcheck=0;
-#define CACHED_SHADOW_TIMEOUT (60)
-static time_t nsswitch_mtime=0;
-
-/* check whether /etc/nsswitch.conf should be related to update
-   cached_shadow_uses_ldap */
-static inline void check_nsswitch_reload(void)
-{
-  struct stat buf;
-  time_t t;
-  if ((cached_shadow_uses_ldap!=CACHED_UNKNOWN)&&
-      ((t=time(NULL)) > (cached_shadow_lastcheck+CACHED_SHADOW_TIMEOUT)))
-  {
-    cached_shadow_lastcheck=t;
-    if (stat(NSSWITCH_FILE,&buf))
-    {
-      log_log(LOG_ERR,"stat(%s) failed: %s",NSSWITCH_FILE,strerror(errno));
-      /* trigger a recheck anyway */
-      cached_shadow_uses_ldap=CACHED_UNKNOWN;
-      return;
-    }
-    /* trigger a recheck if file changed */
-    if (buf.st_mtime!=nsswitch_mtime)
-    {
-      nsswitch_mtime=buf.st_mtime;
-      cached_shadow_uses_ldap=CACHED_UNKNOWN;
-    }
-  }
-}
-
-/* check whether shadow lookups are configured to use ldap */
-static inline int shadow_uses_ldap(void)
-{
-  if (cached_shadow_uses_ldap==CACHED_UNKNOWN)
-  {
-    log_log(LOG_INFO,"(re)loading %s",NSSWITCH_FILE);
-    cached_shadow_uses_ldap=nsswitch_db_uses_ldap(NSSWITCH_FILE,"shadow");
-    cached_shadow_lastcheck=time(NULL);
-  }
-  return cached_shadow_uses_ldap;
-}
-
 #endif /* NSS_FLAVOUR_GLIBC */
 
 /* the maximum number of uidNumber attributes per entry */
@@ -471,7 +420,7 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
   }
   /* if we are using shadow maps and this entry looks like it would return
      shadow information, make the passwd entry indicate it */
-  if (myldap_has_objectclass(entry,"shadowAccount")&&shadow_uses_ldap())
+  if (myldap_has_objectclass(entry,"shadowAccount")&&nsswitch_shadow_uses_ldap())
   {
     passwd="x";
   }
@@ -604,7 +553,7 @@ NSLCD_HANDLE_UID(
     log_log(LOG_WARNING,"request denied by validnames option");
     return -1;
   }
-  check_nsswitch_reload();,
+  nsswitch_check_reload();,
   NSLCD_ACTION_PASSWD_BYNAME,
   mkfilter_passwd_byname(name,filter,sizeof(filter)),
   write_passwd(fp,entry,name,NULL,calleruid)
@@ -623,7 +572,7 @@ NSLCD_HANDLE_UID(
     WRITE_INT32(fp,NSLCD_ACTION_PASSWD_BYUID);
     WRITE_INT32(fp,NSLCD_RESULT_END);
   }
-  check_nsswitch_reload();,
+  nsswitch_check_reload();,
   NSLCD_ACTION_PASSWD_BYUID,
   mkfilter_passwd_byuid(uid,filter,sizeof(filter)),
   write_passwd(fp,entry,NULL,&uid,calleruid)
@@ -633,7 +582,7 @@ NSLCD_HANDLE_UID(
   passwd,all,
   const char *filter;
   log_setrequest("passwd(all)");
-  check_nsswitch_reload();,
+  nsswitch_check_reload();,
   NSLCD_ACTION_PASSWD_ALL,
   (filter=passwd_filter,0),
   write_passwd(fp,entry,NULL,NULL,calleruid)
