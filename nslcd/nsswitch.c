@@ -163,7 +163,7 @@ static int shadow_uses_ldap(void)
 }
 
 /* check whether shadow lookups are configured to use ldap */
-inline int nsswitch_shadow_uses_ldap(void)
+int nsswitch_shadow_uses_ldap(void)
 {
   if (cached_shadow_uses_ldap==CACHED_UNKNOWN)
   {
