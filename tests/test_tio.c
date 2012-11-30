@@ -302,17 +302,22 @@ static void test_timeout_writer(void)
   /* open the reader */
   assertok((rfp=fdopen(sp[0],"rb"))!=NULL);
   /* open the writer */
-  assertok((wfp=tio_fdopen(sp[1],1100,1100,2*1024,4*1024,2*20,4*20+1))!=NULL);
-  /* perform a few write (these should be OK because they fill the buffer) */
-  assertok(tio_write(wfp,buf,sizeof(buf))==0);
-  assertok(tio_write(wfp,buf,sizeof(buf))==0);
-  assertok(tio_write(wfp,buf,sizeof(buf))==0);
-  assertok(tio_write(wfp,buf,sizeof(buf))==0);
-  /* one of these should fail but it depends on OS buffers */
+  assertok((wfp=tio_fdopen(sp[1],1100,1100, /* fd, readtimeout, writetimeout */
+      2*1024,4*1024, /* read buffer sizes */
+      2*sizeof(buf),4*sizeof(buf)+1 /* write buffer sizes */
+      ))!=NULL);
+  /* we perform a number of writes to the stream to see if they are buffered */
   start=time(NULL);
-  for (i=0;(i<10000)&&(tio_write(wfp,buf,sizeof(buf))==0);i++);
-  assert(i<10000);
+  for (i=0;(i<1000)&&(tio_write(wfp,buf,sizeof(buf))==0);i++);
   end=time(NULL);
+  printf("test_tio: test_timeout_writer: written %d blocks of %d bytes in %d second(s)\n",
+         i,(int)sizeof(buf),(int)(end-start));
+  /* at the very least 4 writes should be OK because they filled the tio buffer */
+  assert(i>=4);
+  /* but at a certain point the writes should have failed */
+  assert(i<1000);
+  /* since the write timeout is more than a second end time should be bigger
+     than start time */
   assert(end>start);
   /* close the files */
   assertok(tio_close(wfp)!=0); /* fails because of bufferred data */
