@@ -414,7 +414,7 @@ static int tio_flush_nonblock(TFILE *fp)
 {
   struct pollfd fds[1];
   int rv;
-  /* wait for activity */
+  /* see if we can write without blocking */
   fds[0].fd=fp->fd;
   fds[0].events=POLLOUT;
   rv=poll(fds,1,0);

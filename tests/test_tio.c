@@ -297,6 +297,7 @@ static void test_timeout_writer(void)
   int i;
   uint8_t buf[20];
   time_t start,end;
+  int numblocks=10000;
   /* set up the socket pair */
   assertok(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
   /* open the reader */
@@ -306,16 +307,19 @@ static void test_timeout_writer(void)
       2*1024,4*1024, /* read buffer sizes */
       2*sizeof(buf),4*sizeof(buf)+1 /* write buffer sizes */
       ))!=NULL);
+  printf("test_tio: test_timeout_writer: trying to write %d blocks of %d bytes\n",
+         numblocks,(int)sizeof(buf));
   /* we perform a number of writes to the stream to see if they are buffered */
+  errno=0;
   start=time(NULL);
-  for (i=0;(i<1000)&&(tio_write(wfp,buf,sizeof(buf))==0);i++);
+  for (i=0;(i<numblocks)&&(tio_write(wfp,buf,sizeof(buf))==0);i++);
   end=time(NULL);
-  printf("test_tio: test_timeout_writer: written %d blocks of %d bytes in %d second(s)\n",
-         i,(int)sizeof(buf),(int)(end-start));
+  printf("test_tio: test_timeout_writer: written %d blocks of %d bytes in %d second(s) (%s)\n",
+         i,(int)sizeof(buf),(int)(end-start),strerror(errno));
   /* at the very least 4 writes should be OK because they filled the tio buffer */
   assert(i>=4);
   /* but at a certain point the writes should have failed */
-  assert(i<1000);
+  assert(i<numblocks);
   /* since the write timeout is more than a second end time should be bigger
      than start time */
   assert(end>start);
