@@ -86,7 +86,7 @@ static inline void tio_get_deadline(struct timeval *deadline,int timeout)
     return;
   }
   deadline->tv_sec+=timeout/1000;
-  deadline->tv_sec+=(timeout%1000)*1000;
+  deadline->tv_usec+=(timeout%1000)*1000;
 }
 
 /* update the timeout to the value that is remaining before deadline
