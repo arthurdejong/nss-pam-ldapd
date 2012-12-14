@@ -153,7 +153,7 @@ def create_socket():
     except OSError:
         pass  # ignore any problems
     # bind to named socket
-    sock.bind((config.NSLCD_SOCKET))
+    sock.bind(config.NSLCD_SOCKET)
     # close the file descriptor on exit
     fcntl.fcntl(sock, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
     # set permissions of socket so anybody can do requests
