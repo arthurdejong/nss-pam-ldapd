@@ -1,3 +1,26 @@
+2012-12-14 16:36  arthur
+
+	* [r1860] ., common/nslcd-prot.c: set FD_CLOEXEC in NSS and PAM
+	  modules to ensure that nslcd file descriptor is not leaked to
+	  child processes (r1821 from 0.8)
+
+2012-10-12 15:29  arthur
+
+	* [r1782] ., common/tio.c: check if the file descriptor can be
+	  stored in the select() file descriptor set (r1781 from 0.8)
+
+2012-09-08 19:15  arthur
+
+	* [r1760] ChangeLog, ChangeLog-2009, ChangeLog-2010,
+	  ChangeLog-2011, Makefile.am: archive older ChangeLog entries in
+	  year files
+
+2012-09-08 16:23  arthur
+
+	* [r1758] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.7.17 release
+
 2012-09-08 16:08  arthur
 
 	* [r1757] ., nslcd/nslcd.c: properly handle failures to truncate

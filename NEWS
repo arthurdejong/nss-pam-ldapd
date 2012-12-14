@@ -1,3 +1,13 @@
+changes from 0.7.17 to 0.7.18
+-----------------------------
+
+* ensure that select() is not passed a too high file descriptor to avoid
+  issues when a large number of file descriptors are open (thanks Adrien
+  Urban)
+* use FD_CLOEXEC in NSS and PAM modules to ensure that nslcd file descriptor
+  is not leaked to child processes
+
+
 changes from 0.7.16 to 0.7.17
 -----------------------------
 
