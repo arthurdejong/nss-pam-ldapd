@@ -278,10 +278,14 @@ static void test_timeout_reader(void)
   assertok((wfp=fdopen(sp[0],"wb"))!=NULL);
   /* open the reader */
   assertok((rfp=tio_fdopen(sp[1],1100,1100,2*1024,4*1024,2*1024,4*1024))!=NULL);
+  printf("test_tio: test_timeout_reader: trying to read a block of %d bytes\n",
+         (int)sizeof(buf));
   /* perform a read */
   start=time(NULL);
   assertok(tio_read(rfp,buf,sizeof(buf))!=0);
   end=time(NULL);
+  printf("test_tio: test_timeout_reader: read 0 blocks of %d bytes in %d second(s) (%s)\n",
+         (int)sizeof(buf),(int)(end-start),strerror(errno));
   assert(end>start);
   /* close the files */
   assertok(tio_close(rfp)==0);
