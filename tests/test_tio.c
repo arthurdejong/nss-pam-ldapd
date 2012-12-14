@@ -272,6 +272,7 @@ static void test_timeout_reader(void)
   FILE *wfp;
   uint8_t buf[20];
   time_t start,end;
+  int saved_errno;
   /* set up the socket pair */
   assertok(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
   /* open the writer */
@@ -282,11 +283,17 @@ static void test_timeout_reader(void)
          (int)sizeof(buf));
   /* perform a read */
   start=time(NULL);
+  errno=0;
   assertok(tio_read(rfp,buf,sizeof(buf))!=0);
+  saved_errno=errno;
   end=time(NULL);
   printf("test_tio: test_timeout_reader: read 0 blocks of %d bytes in %d second(s) (%s)\n",
-         (int)sizeof(buf),(int)(end-start),strerror(errno));
+         (int)sizeof(buf),(int)(end-start),strerror(saved_errno));
+  /* since the read timeout is more than a second end time should be bigger
+     than start time */
   assert(end>start);
+  /* the error should be timeout */
+  assert(saved_errno==ETIME);
   /* close the files */
   assertok(tio_close(rfp)==0);
   assertok(fclose(wfp)==0);
@@ -302,6 +309,7 @@ static void test_timeout_writer(void)
   uint8_t buf[20];
   time_t start,end;
   int numblocks=10000;
+  int saved_errno;
   /* set up the socket pair */
   assertok(socketpair(AF_UNIX,SOCK_STREAM,0,sp)==0);
   /* open the reader */
@@ -314,12 +322,13 @@ static void test_timeout_writer(void)
   printf("test_tio: test_timeout_writer: trying to write %d blocks of %d bytes\n",
          numblocks,(int)sizeof(buf));
   /* we perform a number of writes to the stream to see if they are buffered */
-  errno=0;
   start=time(NULL);
+  errno=0;
   for (i=0;(i<numblocks)&&(tio_write(wfp,buf,sizeof(buf))==0);i++);
+  saved_errno=errno;
   end=time(NULL);
   printf("test_tio: test_timeout_writer: written %d blocks of %d bytes in %d second(s) (%s)\n",
-         i,(int)sizeof(buf),(int)(end-start),strerror(errno));
+         i,(int)sizeof(buf),(int)(end-start),strerror(saved_errno));
   /* at the very least 4 writes should be OK because they filled the tio buffer */
   assert(i>=4);
   /* but at a certain point the writes should have failed */
@@ -327,6 +336,8 @@ static void test_timeout_writer(void)
   /* since the write timeout is more than a second end time should be bigger
      than start time */
   assert(end>start);
+  /* the error should be timeout */
+  assert(saved_errno==ETIME);
   /* close the files */
   assertok(tio_close(wfp)!=0); /* fails because of bufferred data */
   assertok(fclose(rfp)==0);
