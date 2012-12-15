@@ -50,7 +50,6 @@ stamp-*
 /nslcd/nslcd
 
 # /pynslcd/
-/pynslcd/config.py
 /pynslcd/constants.py
 
 # /tests/

@@ -1,6 +1,8 @@
 
-# config.py.in - configured information, this file is processed by the
-#                configure script to produce config.py
+# constants.py - configured information and constants, this file is processed
+#                and extended by the configure script
+#
+# Copyright (C) 2012 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public

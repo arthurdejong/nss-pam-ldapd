@@ -767,6 +767,14 @@ AM_CONDITIONAL([NSS_FLAVOUR_FREEBSD], [test "x${with_nss_flavour}" = xfreebsd])
 
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile
-                 pam/Makefile nslcd/Makefile pynslcd/Makefile pynslcd/config.py
+                 pam/Makefile nslcd/Makefile pynslcd/Makefile
                  man/Makefile tests/Makefile])
+AC_CONFIG_FILES([pynslcd/constants.py], [[
+(
+  echo ''
+  echo '# The following is automatically generated from nslcd.h.'
+  echo '# See that file for details.'
+  echo ''
+  sed -n 's| */\*.*\*/ *||;s/^.define  *\(NSLCD_[A-Z_]*\)  */\1 = /p' "$srcdir"/nslcd.h
+) >> pynslcd/constants.py]])
 AC_OUTPUT

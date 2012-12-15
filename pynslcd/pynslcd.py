@@ -31,10 +31,9 @@ import threading
 import ldap
 
 from tio import TIOStream
-import cfg        # from nslcd.conf
+import cfg
 import common
-import config     # from configure
-import constants  # from nslcd.h
+import constants
 import mypidfile
 
 
@@ -95,7 +94,7 @@ def display_version(fp):
              'Copyright (C) 2010-2012 Arthur de Jong\n'
              'This is free software; see the source for copying conditions.  There is NO\n'
              'warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n'
-             % {'PACKAGE_STRING': config.PACKAGE_STRING, })
+             % {'PACKAGE_STRING': constants.PACKAGE_STRING, })
 
 
 def display_usage(fp):
@@ -108,7 +107,7 @@ def display_usage(fp):
              "\n"
              "Report bugs to <%(PACKAGE_BUGREPORT)s>.\n"
              % {'program_name': program_name,
-                'PACKAGE_BUGREPORT': config.PACKAGE_BUGREPORT, })
+                'PACKAGE_BUGREPORT': constants.PACKAGE_BUGREPORT, })
 
 
 def parse_cmdline():
@@ -149,15 +148,15 @@ def create_socket():
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     # remove existing named socket
     try:
-        os.unlink(config.NSLCD_SOCKET)
+        os.unlink(constants.NSLCD_SOCKET)
     except OSError:
         pass  # ignore any problems
     # bind to named socket
-    sock.bind(config.NSLCD_SOCKET)
+    sock.bind(constants.NSLCD_SOCKET)
     # close the file descriptor on exit
     fcntl.fcntl(sock, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
     # set permissions of socket so anybody can do requests
-    os.chmod(config.NSLCD_SOCKET, 0666)
+    os.chmod(constants.NSLCD_SOCKET, 0666)
     # start listening for connections
     sock.listen(socket.SOMAXCONN)
     return sock
@@ -230,7 +229,7 @@ def acceptconnection(session):
 def disable_nss_ldap():
     """Disable the nss_ldap module to avoid lookup loops."""
     import ctypes
-    lib = ctypes.CDLL(config.NSS_LDAP_SONAME)
+    lib = ctypes.CDLL(constants.NSS_LDAP_SONAME)
     ctypes.c_int.in_dll(lib, '_nss_ldap_enablelookups').value = 0
 
 
@@ -284,7 +283,7 @@ if __name__ == '__main__':
     #if myldap_set_debuglevel(cfg.debug) != LDAP_SUCCESS:
     #    sys.exit(1)
     # read configuration file
-    cfg.read(config.NSLCD_CONF_PATH)
+    cfg.read(constants.NSLCD_CONF_PATH)
     # set process title
     try:
         import setproctitle
@@ -294,19 +293,19 @@ if __name__ == '__main__':
     # set a default umask for the pidfile and socket
     os.umask(0022)
     # see if someone already locked the pidfile
-    pidfile = mypidfile.MyPIDLockFile(config.NSLCD_PIDFILE)
+    pidfile = mypidfile.MyPIDLockFile(constants.NSLCD_PIDFILE)
     # see if --check option was given
     if checkonly:
         if pidfile.is_locked():
-            logging.debug('pidfile (%s) is locked', config.NSLCD_PIDFILE)
+            logging.debug('pidfile (%s) is locked', constants.NSLCD_PIDFILE)
             sys.exit(0)
         else:
-            logging.debug('pidfile (%s) is not locked', config.NSLCD_PIDFILE)
+            logging.debug('pidfile (%s) is not locked', constants.NSLCD_PIDFILE)
             sys.exit(1)
     # normal check for pidfile locked
     if pidfile.is_locked():
         logging.error('daemon may already be active, cannot acquire lock (%s)',
-                      config.NSLCD_PIDFILE)
+                      constants.NSLCD_PIDFILE)
         sys.exit(1)
     # daemonize
     if debugging:
@@ -324,7 +323,7 @@ if __name__ == '__main__':
         # start normal logging to syslog
         if not debugging:
             logging.getLogger().addHandler(sysloghandler)
-        logging.info('version %s starting', config.VERSION)
+        logging.info('version %s starting', constants.VERSION)
         try:
             # create socket
             nslcd_serversocket = create_socket()

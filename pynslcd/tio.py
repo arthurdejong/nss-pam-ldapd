@@ -26,13 +26,13 @@ import socket
 # definition for reading and writing INT32 values
 _int32 = struct.Struct('i')
 
-# FIXME: use something from config.py to determine the correct size
+# FIXME: use something from constants.py to determine the correct size
 _uid_t = struct.Struct('i')
 
-# FIXME: use something from config.py to determine the correct size
+# FIXME: use something from constants.py to determine the correct size
 _gid_t = struct.Struct('i')
 
-# FIXME: use something from config.py to determine the correct size
+# FIXME: use something from constants.py to determine the correct size
 _struct_timeval = struct.Struct('ll')
 
 
