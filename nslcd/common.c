@@ -165,7 +165,7 @@ int write_address(TFILE *fp,MYLDAP_ENTRY *entry,const char *attr,
     /* write the address length */
     WRITE_INT32(fp,sizeof(struct in_addr));
     /* write the address itself (in network byte order) */
-    WRITE_TYPE(fp,ipv4addr,struct in_addr);
+    WRITE(fp,&ipv4addr,sizeof(struct in_addr));
   }
   else if (inet_pton(AF_INET6,addr,&ipv6addr)>0)
   {
@@ -174,7 +174,7 @@ int write_address(TFILE *fp,MYLDAP_ENTRY *entry,const char *attr,
     /* write the address length */
     WRITE_INT32(fp,sizeof(struct in6_addr));
     /* write the address itself (in network byte order) */
-    WRITE_TYPE(fp,ipv6addr,struct in6_addr);
+    WRITE(fp,&ipv6addr,sizeof(struct in6_addr));
   }
   else
   {

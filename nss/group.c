@@ -41,7 +41,7 @@ static nss_status_t read_group(
   memset(result,0,sizeof(struct group));
   READ_BUF_STRING(fp,result->gr_name);
   READ_BUF_STRING(fp,result->gr_passwd);
-  READ_TYPE(fp,result->gr_gid,gid_t);
+  READ_INT32(fp,result->gr_gid);
   READ_BUF_STRINGLIST(fp,result->gr_mem);
   return NSS_STATUS_SUCCESS;
 }
@@ -67,7 +67,7 @@ static nss_status_t read_gids(
     /* skip passwd entry */
     SKIP_STRING(fp);
     /* read gid */
-    READ_TYPE(fp,gid,gid_t);
+    READ_INT32(fp,gid);
     /* skip members */
     SKIP_STRINGLIST(fp);
     /* only add the group to the list if it is not the specified group */
@@ -108,7 +108,7 @@ static nss_status_t read_gids(
     /* read next response code
       (don't bail out on not success since we just want to build
       up a list) */
-    READ_TYPE(fp,res,int32_t);
+    READ_INT32(fp,res);
   }
   /* return the proper status code */
   return NSS_STATUS_SUCCESS;
@@ -131,9 +131,9 @@ nss_status_t _nss_ldap_getgrgid_r(
         gid_t gid,struct group *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,
-             gid,gid_t,
-             read_group(fp,result,buffer,buflen,errnop));
+  NSS_BYINT32(NSLCD_ACTION_GROUP_BYGID,
+              gid,
+              read_group(fp,result,buffer,buflen,errnop));
 }
 
 /* thread-local file pointer to an ongoing request */

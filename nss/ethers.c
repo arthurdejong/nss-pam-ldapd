@@ -39,7 +39,7 @@ static nss_status_t read_etherent(
   size_t bufptr=0;
   memset(result,0,sizeof(struct etherent));
   READ_BUF_STRING(fp,result->e_name);
-  READ_TYPE(fp,result->e_addr,uint8_t[6]);
+  READ(fp,&(result->e_addr),sizeof(uint8_t[6]));
   return NSS_STATUS_SUCCESS;
 }
 
@@ -60,9 +60,9 @@ nss_status_t _nss_ldap_getntohost_r(
         const struct ether_addr *addr,struct etherent *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,
-             *addr,uint8_t[6],
-             read_etherent(fp,result,buffer,buflen,errnop));
+  NSS_BYGEN(NSLCD_ACTION_ETHER_BYETHER,
+            WRITE(fp,addr,sizeof(uint8_t[6])),
+            read_etherent(fp,result,buffer,buflen,errnop));
 }
 
 /* thread-local file pointer to an ongoing request */

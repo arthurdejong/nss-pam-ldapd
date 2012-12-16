@@ -94,7 +94,7 @@
 /* helper macro to read PAM status code (auto-translated from NSLCD PAM
    status code */
 #define READ_PAM_CODE(fp,i) \
-  READ_TYPE(fp,tmpint32,int32_t); \
-  i=nslcd2pam_rc(pamh,tmpint32);
+  READ(fp,&tmpint32,sizeof(int32_t)); \
+  (i)=nslcd2pam_rc(pamh,ntohl(tmpint32));
 
 #endif /* not PAM__COMMON_H */

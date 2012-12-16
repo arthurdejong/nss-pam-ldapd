@@ -133,11 +133,6 @@
   NSS_BYGEN(action,WRITE_STRING(fp,name),readfn)
 
 /* This macro can be used to generate a get..by..() function
-   body where the value that is the key has the specified type. */
-#define NSS_BYTYPE(action,val,type,readfn) \
-  NSS_BYGEN(action,WRITE_TYPE(fp,val,type),readfn)
-
-/* This macro can be used to generate a get..by..() function
    body where the value should be passed as an int32_t. */
 #define NSS_BYINT32(action,val,readfn) \
   NSS_BYGEN(action,WRITE_INT32(fp,val),readfn)

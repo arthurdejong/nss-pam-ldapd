@@ -24,13 +24,7 @@ import socket
 
 
 # definition for reading and writing INT32 values
-_int32 = struct.Struct('i')
-
-# FIXME: use something from constants.py to determine the correct size
-_uid_t = struct.Struct('i')
-
-# FIXME: use something from constants.py to determine the correct size
-_gid_t = struct.Struct('i')
+_int32 = struct.Struct('!i')
 
 # FIXME: use something from constants.py to determine the correct size
 _struct_timeval = struct.Struct('ll')
@@ -56,12 +50,6 @@ class TIOStream(object):
     def read_int32(self):
         return _int32.unpack(self.read(_int32.size))[0]
 
-    def read_uid_t(self):
-        return _uid_t.unpack(self.read(_uid_t.size))[0]
-
-    def read_gid_t(self):
-        return _gid_t.unpack(self.read(_gid_t.size))[0]
-
     def read_string(self, maxsize=None):
         len = self.read_int32()
         if maxsize and len >= maxsize:
@@ -79,12 +67,6 @@ class TIOStream(object):
 
     def write_int32(self, value):
         self.write(_int32.pack(value))
-
-    def write_uid_t(self, value):
-        self.write(_uid_t.pack(value))
-
-    def write_gid_t(self, value):
-        self.write(_gid_t.pack(value))
 
     def write_string(self, value):
         self.write_int32(len(value))

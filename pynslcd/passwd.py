@@ -53,8 +53,8 @@ class PasswdRequest(common.Request):
     def write(self, name, passwd, uid, gid, gecos, home, shell):
         self.fp.write_string(name)
         self.fp.write_string(passwd)
-        self.fp.write_uid_t(uid)
-        self.fp.write_gid_t(gid)
+        self.fp.write_int32(uid)
+        self.fp.write_int32(gid)
         self.fp.write_string(gecos)
         self.fp.write_string(home)
         self.fp.write_string(shell)
@@ -93,7 +93,7 @@ class PasswdByUidRequest(PasswdRequest):
     action = constants.NSLCD_ACTION_PASSWD_BYUID
 
     def read_parameters(self, fp):
-        return dict(uidNumber=fp.read_uid_t())
+        return dict(uidNumber=fp.read_int32())
 
 
 class PasswdAllRequest(PasswdRequest):

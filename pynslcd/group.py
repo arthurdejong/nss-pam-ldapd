@@ -89,7 +89,7 @@ class GroupRequest(common.Request):
     def write(self, name, passwd, gid, members):
         self.fp.write_string(name)
         self.fp.write_string(passwd)
-        self.fp.write_gid_t(gid)
+        self.fp.write_int32(gid)
         self.fp.write_stringlist(members)
 
     def convert(self, dn, attributes, parameters):
@@ -135,7 +135,7 @@ class GroupByGidRequest(GroupRequest):
     action = constants.NSLCD_ACTION_GROUP_BYGID
 
     def read_parameters(self, fp):
-        return dict(gidNumber=fp.read_gid_t())
+        return dict(gidNumber=fp.read_int32())
 
 
 class GroupByMemberRequest(GroupRequest):

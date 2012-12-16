@@ -41,8 +41,8 @@ static nss_status_t read_servent(
   READ_BUF_STRING(fp,result->s_name);
   READ_BUF_STRINGLIST(fp,result->s_aliases);
   /* store port number in network byte order */
-  READ_TYPE(fp,tmpint32,int32_t);
-  result->s_port=htons((uint16_t)tmpint32);
+  READ_INT32(fp,tmp2int32);
+  result->s_port=htons((uint16_t)tmp2int32);;
   READ_BUF_STRING(fp,result->s_proto);
   /* we're done */
   return NSS_STATUS_SUCCESS;
@@ -65,8 +65,10 @@ nss_status_t _nss_ldap_getservbyport_r(
         int port,const char *protocol,struct servent *result,
         char *buffer,size_t buflen,int *errnop)
 {
+  /* port is already in network byte order */
   NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,
-            WRITE_INT32(fp,ntohs(port));WRITE_STRING(fp,protocol),
+            tmpint32=ntohs(port);
+            WRITE_INT32(fp,tmpint32);WRITE_STRING(fp,protocol),
             read_servent(fp,result,buffer,buflen,errnop));
 }
 

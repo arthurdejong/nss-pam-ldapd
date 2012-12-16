@@ -40,8 +40,8 @@ static nss_status_t read_passwd(
   memset(result,0,sizeof(struct passwd));
   READ_BUF_STRING(fp,result->pw_name);
   READ_BUF_STRING(fp,result->pw_passwd);
-  READ_TYPE(fp,result->pw_uid,uid_t);
-  READ_TYPE(fp,result->pw_gid,gid_t);
+  READ_INT32(fp,result->pw_uid);
+  READ_INT32(fp,result->pw_gid);
   READ_BUF_STRING(fp,result->pw_gecos);
   READ_BUF_STRING(fp,result->pw_dir);
   READ_BUF_STRING(fp,result->pw_shell);
@@ -69,9 +69,9 @@ nss_status_t _nss_ldap_getpwuid_r(
         uid_t uid,struct passwd *result,
         char *buffer,size_t buflen,int *errnop)
 {
-  NSS_BYTYPE(NSLCD_ACTION_PASSWD_BYUID,
-             uid,uid_t,
-             read_passwd(fp,result,buffer,buflen,errnop));
+  NSS_BYINT32(NSLCD_ACTION_PASSWD_BYUID,
+              uid,
+              read_passwd(fp,result,buffer,buflen,errnop));
 }
 
 /* thread-local file pointer to an ongoing request */

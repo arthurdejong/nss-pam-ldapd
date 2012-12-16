@@ -78,7 +78,7 @@ static nss_status_t read_netent(
   READ_BUF_STRINGLIST(fp,result->n_aliases);
   result->n_addrtype=AF_INET;
   /* read number of addresses to follow */
-  READ_TYPE(fp,numaddr,int32_t);
+  READ_INT32(fp,numaddr);
   /* go through the address list and filter on af */
   while (--numaddr>=0)
   {
@@ -88,8 +88,7 @@ static nss_status_t read_netent(
     if ((readaf==AF_INET)&&(tmp2int32==4))
     {
       /* read address and translate to host byte order */
-      READ_TYPE(fp,tmpint32,int32_t);
-      result->n_net=ntohl((uint32_t)tmpint32);
+      READ_INT32(fp,result->n_net);
       /* signal that we've read a proper entry */
       retv=NSS_STATUS_SUCCESS;
       /* don't return here to not upset the stream */
@@ -109,7 +108,7 @@ static nss_status_t read_netent(
 #define WRITE_ADDRESS(fp,addr) \
   WRITE_INT32(fp,AF_INET); \
   WRITE_INT32(fp,4); \
-  WRITE_INT32(fp,htonl(addr));
+  WRITE_INT32(fp,addr);
 
 #ifdef NSS_FLAVOUR_GLIBC
 

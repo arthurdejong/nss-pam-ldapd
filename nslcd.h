@@ -59,17 +59,15 @@
    Furthermore the ADDRESS compound data type is defined as:
      INT32  type of address: e.g. AF_INET or AF_INET6
      INT32  lenght of address
-     RAW    the address itself in network byte order
+     RAW    the address itself
    With the ADDRESSLIST using the same construct as with STRINGLIST.
 
-   The protocol uses host-byte order for all types (except in the raw
-   address above).
+   The protocol uses network byte order for all types.
 */
 
-/* The current version of the protocol. Note that version 1
-   is experimental and this version will be used until a
-   1.0 release of nss-pam-ldapd is made. */
-#define NSLCD_VERSION 1
+/* The current version of the protocol. This protocol should only be
+   updated with major backwards-incompatible changes. */
+#define NSLCD_VERSION 2
 
 /* Get a NSLCD configuration option. There is one request parameter:
     INT32   NSLCD_CONFIG_*
@@ -100,7 +98,7 @@
    for a single entry are:
      STRING       group name
      STRING       group password
-     TYPE(gid_t)  group id
+     INT32        group id
      STRINGLIST   members (usernames) of the group
      (not that the BYMEMER call returns an emtpy members list) */
 #define NSLCD_ACTION_GROUP_BYNAME       5001
@@ -142,8 +140,8 @@
 /* User account (/etc/passwd) NSS requests. Result values are:
      STRING       user name
      STRING       user password
-     TYPE(uid_t)  user id
-     TYPE(gid_t)  group id
+     INT32        user id
+     INT32        group id
      STRING       gecos information
      STRING       home directory
      STRING       login shell */

@@ -258,8 +258,6 @@ static int nslcd2pam_rc(pam_handle_t *pamh,int rc)
 static int nslcd_request_exists(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,
                                 const char *username)
 {
-  uid_t dummy_uid;
-  gid_t dummy_gid;
   PAM_REQUEST(NSLCD_ACTION_PASSWD_BYNAME,
     /* log debug message */
     pam_syslog(pamh,LOG_DEBUG,"nslcd account check; user=%s",username),
@@ -268,8 +266,8 @@ static int nslcd_request_exists(pam_handle_t *pamh,struct pld_ctx *ctx,struct pl
     /* read the result entry */
     SKIP_STRING(fp); /* user name */
     SKIP_STRING(fp); /* passwd entry */
-    READ_TYPE(fp,dummy_uid,uid_t);
-    READ_TYPE(fp,dummy_gid,gid_t);
+    SKIP(fp,sizeof(int32_t)); /* uid */
+    SKIP(fp,sizeof(int32_t)); /* gid */
     SKIP_STRING(fp); /* gecos */
     SKIP_STRING(fp); /* home dir */
     SKIP_STRING(fp); /* shell */

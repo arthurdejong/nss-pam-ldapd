@@ -109,7 +109,7 @@ void ether_init(void)
 /* TODO: check for errors in aton() */
 #define WRITE_ETHER(fp,addr) \
   ether_aton_r(addr,&tmpaddr); \
-  WRITE_TYPE(fp,tmpaddr,uint8_t[6]);
+  WRITE(fp,&tmpaddr,sizeof(uint8_t[6]));
 
 static int write_ether(TFILE *fp,MYLDAP_ENTRY *entry,
                        const char *reqname,const char *reqether)
@@ -173,7 +173,7 @@ NSLCD_HANDLE(
   struct ether_addr addr;
   char addrstr[20];
   char filter[4096];
-  READ_TYPE(fp,addr,uint8_t[6]);
+  READ(fp,&addr,sizeof(uint8_t[6]));
   if (ether_ntoa_r(&addr,addrstr)==NULL)
     return -1;
   log_setrequest("ether=%s",addrstr);,

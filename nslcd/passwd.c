@@ -531,8 +531,8 @@ static int write_passwd(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser,
             WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
             WRITE_STRING(fp,usernames[i]);
             WRITE_STRING(fp,passwd);
-            WRITE_TYPE(fp,uids[j],uid_t);
-            WRITE_TYPE(fp,gid,gid_t);
+            WRITE_INT32(fp,uids[j]);
+            WRITE_INT32(fp,gid);
             WRITE_STRING(fp,gecos);
             WRITE_STRING(fp,homedir);
             WRITE_STRING(fp,shell);
@@ -563,7 +563,7 @@ NSLCD_HANDLE_UID(
   passwd,byuid,
   uid_t uid;
   char filter[4096];
-  READ_TYPE(fp,uid,uid_t);
+  READ_INT32(fp,uid);
   log_setrequest("passwd=%lu",(unsigned long int)uid);
   if (uid<nslcd_cfg->ldc_nss_min_uid)
   {

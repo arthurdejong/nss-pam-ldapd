@@ -194,7 +194,7 @@ static int do_write_group(
         WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
         WRITE_STRING(fp,names[i]);
         WRITE_STRING(fp,passwd);
-        WRITE_TYPE(fp,gids[j],gid_t);
+        WRITE_INT32(fp,gids[j]);
         WRITE_STRINGLIST(fp,members);
       }
     }
@@ -334,7 +334,7 @@ NSLCD_HANDLE(
   group,bygid,
   gid_t gid;
   char filter[4096];
-  READ_TYPE(fp,gid,gid_t);
+  READ_INT32(fp,gid);
   log_setrequest("group=%lu",(unsigned long int)gid);,
   NSLCD_ACTION_GROUP_BYGID,
   mkfilter_group_bygid(gid,filter,sizeof(filter)),

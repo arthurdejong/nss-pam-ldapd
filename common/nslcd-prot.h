@@ -23,6 +23,9 @@
 #ifndef COMMON__NSLCD_PROT_H
 #define COMMON__NSLCD_PROT_H 1
 
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
 #include "tio.h"
 
 /* If you use these macros you should define the following macros to
@@ -86,13 +89,10 @@ static void debug_dump(const void *ptr,size_t size)
     ERROR_OUT_WRITEERROR(fp); \
   }
 
-#define WRITE_TYPE(fp,field,type) \
-  WRITE(fp,&(field),sizeof(type))
-
 #define WRITE_INT32(fp,i) \
   DEBUG_PRINT("WRITE_INT32 : var="__STRING(i)" int32=%d",(int)i); \
-  tmpint32=(int32_t)(i); \
-  WRITE_TYPE(fp,tmpint32,int32_t)
+  tmpint32=htonl((int32_t)(i)); \
+  WRITE(fp,&tmpint32,sizeof(int32_t))
 
 #define WRITE_STRING(fp,str) \
   DEBUG_PRINT("WRITE_STRING: var="__STRING(str)" string=\"%s\"",(str)); \
@@ -103,6 +103,7 @@ static void debug_dump(const void *ptr,size_t size)
   else \
   { \
     WRITE_INT32(fp,strlen(str)); \
+    tmpint32=ntohl(tmpint32); \
     if (tmpint32>0) \
       { WRITE(fp,(str),tmpint32); } \
   }
@@ -120,7 +121,7 @@ static void debug_dump(const void *ptr,size_t size)
       /*noting*/ ; \
     /* write number of strings */ \
     DEBUG_PRINT("WRITE_STRLST: var="__STRING(arr)" num=%d",(int)tmp3int32); \
-    WRITE_TYPE(fp,tmp3int32,int32_t); \
+    WRITE_INT32(fp,tmp3int32); \
     /* write strings */ \
     for (tmp2int32=0;tmp2int32<tmp3int32;tmp2int32++) \
     { \
@@ -136,7 +137,7 @@ static void debug_dump(const void *ptr,size_t size)
       tmp3int32++; \
   /* write number of strings (mius one because we intend to skip one) */ \
   DEBUG_PRINT("WRITE_STRLST: var="__STRING(arr)" num=%d",(int)tmp3int32); \
-  WRITE_TYPE(fp,tmp3int32,int32_t); \
+  WRITE_INT32(fp,tmp3int32); \
   /* write strings */ \
   for (tmp2int32=0;(arr)[tmp2int32]!=NULL;tmp2int32++) \
   { \
@@ -163,18 +164,16 @@ static void debug_dump(const void *ptr,size_t size)
   DEBUG_PRINT("READ       : var="__STRING(ptr)" size=%d",(int)size); \
   DEBUG_DUMP(ptr,size);
 
-#define READ_TYPE(fp,field,type) \
-  READ(fp,&(field),sizeof(type))
-
 #define READ_INT32(fp,i) \
-  READ_TYPE(fp,tmpint32,int32_t); \
-  i=tmpint32; \
+  READ(fp,&tmpint32,sizeof(int32_t)); \
+  i=ntohl(tmpint32); \
   DEBUG_PRINT("READ_INT32 : var="__STRING(i)" int32=%d",(int)i);
 
 /* read a string in a fixed-size "normal" buffer */
 #define READ_STRING(fp,buffer) \
   /* read the size of the string */ \
-  READ_TYPE(fp,tmpint32,int32_t); \
+  READ(fp,&tmpint32,sizeof(int32_t)); \
+  tmpint32=ntohl(tmpint32); \
   DEBUG_PRINT("READ_STRING: var="__STRING(buffer)" strlen=%d",tmpint32); \
   /* check if read would fit */ \
   if (((size_t)tmpint32)>=sizeof(buffer)) \
@@ -252,7 +251,8 @@ static void debug_dump(const void *ptr,size_t size)
    and store the actual location of the string in field */
 #define READ_BUF_STRING(fp,field) \
   /* read the size of the string */ \
-  READ_TYPE(fp,tmpint32,int32_t); \
+  READ(fp,&tmpint32,sizeof(int32_t)); \
+  tmpint32=ntohl(tmpint32); \
   DEBUG_PRINT("READ_BUF_STRING: var="__STRING(field)" strlen=%d",tmpint32); \
   /* check if read would fit */ \
   BUF_CHECK(fp,tmpint32+1); \
@@ -270,7 +270,8 @@ static void debug_dump(const void *ptr,size_t size)
    array list (size for the array is allocated) */
 #define READ_BUF_STRINGLIST(fp,arr) \
   /* read the number of entries */ \
-  READ_TYPE(fp,tmp3int32,int32_t); \
+  READ(fp,&tmp3int32,sizeof(int32_t)); \
+  tmp3int32=ntohl(tmp3int32); \
   DEBUG_PRINT("READ_STRLST: var="__STRING(arr)" num=%d",(int)tmp3int32); \
   /* allocate room for *char[num+1] */ \
   BUF_ALLOC(fp,arr,char *,tmp3int32+1); \
@@ -298,7 +299,8 @@ static void debug_dump(const void *ptr,size_t size)
 /* read a string from the stream but don't do anything with the result */
 #define SKIP_STRING(fp) \
   /* read the size of the string */ \
-  READ_TYPE(fp,tmpint32,int32_t); \
+  READ(fp,&tmpint32,sizeof(int32_t)); \
+  tmpint32=ntohl(tmpint32); \
   DEBUG_PRINT("READ_STRING: skip %d bytes",(int)tmpint32); \
   /* read (skip) the specified number of bytes */ \
   SKIP(fp,tmpint32);
@@ -306,7 +308,8 @@ static void debug_dump(const void *ptr,size_t size)
 /* skip a list of strings */
 #define SKIP_STRINGLIST(fp) \
   /* read the number of entries */ \
-  READ_TYPE(fp,tmp3int32,int32_t); \
+  READ(fp,&tmp3int32,sizeof(int32_t)); \
+  tmp3int32=ntohl(tmp3int32); \
   DEBUG_PRINT("READ_STRLST: skip %d strings",(int)tmp3int32); \
   /* read all entries */ \
   for (tmp2int32=0;tmp2int32<tmp3int32;tmp2int32++) \
@@ -340,18 +343,21 @@ TFILE *nslcd_client_open(void)
     ERROR_OUT_WRITEERROR(fp); \
   } \
   /* read and check response version number */ \
-  READ_TYPE(fp,tmpint32,int32_t); \
+  READ(fp,&tmpint32,sizeof(int32_t)); \
+  tmpint32=ntohl(tmpint32); \
   if (tmpint32!=(int32_t)NSLCD_VERSION) \
     { ERROR_OUT_READERROR(fp) } \
   /* read and check response request number */ \
-  READ_TYPE(fp,tmpint32,int32_t); \
+  READ(fp,&tmpint32,sizeof(int32_t)); \
+  tmpint32=ntohl(tmpint32); \
   if (tmpint32!=(int32_t)(action)) \
     { ERROR_OUT_READERROR(fp) }
 
 /* Read the response code (the result code of the query) from
    the stream. */
 #define READ_RESPONSE_CODE(fp) \
-  READ_TYPE(fp,tmpint32,int32_t); \
+  READ(fp,&tmpint32,sizeof(int32_t)); \
+  tmpint32=ntohl(tmpint32); \
   if (tmpint32!=(int32_t)NSLCD_RESULT_BEGIN) \
     { ERROR_OUT_NOSUCCESS(fp) }
 

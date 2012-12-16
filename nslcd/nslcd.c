@@ -372,15 +372,16 @@ static int create_socket(const char *filename)
 static int read_header(TFILE *fp,int32_t *action)
 {
   int32_t tmpint32;
+  int32_t protocol;
   /* read the protocol version */
-  READ_TYPE(fp,tmpint32,int32_t);
-  if (tmpint32 != (int32_t)NSLCD_VERSION)
+  READ_INT32(fp,protocol);
+  if (protocol!=(int32_t)NSLCD_VERSION)
   {
-    log_log(LOG_DEBUG,"wrong nslcd version id (%d)",(int)tmpint32);
+    log_log(LOG_DEBUG,"wrong nslcd version id (%d)",(int)protocol);
     return -1;
   }
   /* read the request type */
-  READ(fp,action,sizeof(int32_t));
+  READ_INT32(fp,*action);
   return 0;
 }
 
@@ -456,7 +457,7 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
     case NSLCD_ACTION_PAM_SESS_C:       (void)nslcd_pam_sess_c(fp,session); break;
     case NSLCD_ACTION_PAM_PWMOD:        (void)nslcd_pam_pwmod(fp,session,uid); break;
     default:
-      log_log(LOG_WARNING,"invalid request id: %d",(int)action);
+      log_log(LOG_WARNING,"invalid request id: %ud",(unsigned int)action);
       break;
   }
   /* we're done with the request */
