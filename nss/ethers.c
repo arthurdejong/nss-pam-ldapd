@@ -163,9 +163,9 @@ static nss_status_t ethers_gethostton(nss_backend_t UNUSED(*be),void *args)
 static nss_status_t ethers_getntohost(nss_backend_t UNUSED(*be),void *args)
 {
   struct ether_addr *addr=(struct ether_addr *)(NSS_ARGS(args)->key.ether);
-  NSS_BYTYPE(NSLCD_ACTION_ETHER_BYETHER,
-             *addr,uint8_t[6],
-             read_result(fp,args,1));
+  NSS_BYGEN(NSLCD_ACTION_ETHER_BYETHER,
+            WRITE(fp,addr,sizeof(uint8_t[6])),
+            read_result(fp,args,1));
 }
 
 static nss_backend_op_t ethers_ops[]={

@@ -129,9 +129,9 @@ static nss_status_t passwd_getpwnam(nss_backend_t UNUSED(*be),void *args)
 
 static nss_status_t passwd_getpwuid(nss_backend_t UNUSED(*be),void *args)
 {
-  NSS_BYTYPE(NSLCD_ACTION_PASSWD_BYUID,
-             NSS_ARGS(args)->key.uid,uid_t,
-             read_result(fp,args));
+  NSS_BYINT32(NSLCD_ACTION_PASSWD_BYUID,
+              NSS_ARGS(args)->key.uid,
+              read_result(fp,args));
 }
 
 /* open a connection to the nslcd and write the request */

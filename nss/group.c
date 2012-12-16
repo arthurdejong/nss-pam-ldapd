@@ -227,9 +227,9 @@ static nss_status_t group_getgrnam(nss_backend_t UNUSED(*be),void *args)
 
 static nss_status_t group_getgrgid(nss_backend_t UNUSED(*be),void *args)
 {
-  NSS_BYTYPE(NSLCD_ACTION_GROUP_BYGID,
-             NSS_ARGS(args)->key.gid,gid_t,
-             read_result(fp,args));
+  NSS_BYINT32(NSLCD_ACTION_GROUP_BYGID,
+              NSS_ARGS(args)->key.gid,
+              read_result(fp,args));
 }
 
 static nss_status_t group_setgrent(nss_backend_t *be,void UNUSED(*args))
