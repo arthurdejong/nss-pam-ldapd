@@ -55,40 +55,41 @@
 /* the name we store our context under */
 #define PLD_CTX "PAM_LDAPD_CTX"
 
+/* structure that stores the results for an nslcd call */
+struct nslcd_resp {
+  int res;
+  char msg[1024];
+};
 
 /* this struct represents the context that the PAM module keeps
    between calls */
 struct pld_ctx {
-  char *user;
-  char *dn;
-  char *tmpluser;
-  char *authzmsg;
+  char *username;
+  struct nslcd_resp saved_authz;
+  struct nslcd_resp saved_session;
+  int asroot;
   char *oldpassword;
-  int authok;
-  int authz;
-  int sessid;
-  char buf[1024];
 };
 
 /* clear the context to all empty values */
 static void ctx_clear(struct pld_ctx *ctx)
 {
-  if (ctx->user)
+  if (ctx->username)
   {
-    free(ctx->user);
-    ctx->user=NULL;
+    free(ctx->username);
+    ctx->username=NULL;
   }
+  ctx->saved_authz.res=PAM_SUCCESS;
+  memset(ctx->saved_authz.msg,0,sizeof(ctx->saved_authz.msg));
+  ctx->saved_session.res=PAM_SUCCESS;
+  memset(ctx->saved_session.msg,0,sizeof(ctx->saved_session.msg));
+  ctx->asroot=0;
   if (ctx->oldpassword)
   {
     memset(ctx->oldpassword,0,strlen(ctx->oldpassword));
     free(ctx->oldpassword);
     ctx->oldpassword=NULL;
   }
-  ctx->dn=NULL;
-  ctx->tmpluser=NULL;
-  ctx->authzmsg=NULL;
-  ctx->authok=0;
-  ctx->authz=0;
 }
 
 /* free the context (this is installed as handler into PAM) */
@@ -109,7 +110,7 @@ static int ctx_get(pam_handle_t *pamh,const char *username,struct pld_ctx **pctx
   if ((rc==PAM_SUCCESS)&&(ctx!=NULL))
   {
     /* if the user is different clear the context */
-    if ((ctx->user!=NULL)&&(strcmp(ctx->user,username)!=0))
+    if ((ctx->username!=NULL)&&(strcmp(ctx->username,username)!=0))
       ctx_clear(ctx);
   }
   else
@@ -131,6 +132,9 @@ static int ctx_get(pam_handle_t *pamh,const char *username,struct pld_ctx **pctx
       return rc;
     }
   }
+  /* save the username in the context */
+  if (ctx->username==NULL)
+    ctx->username=strdup(username);
   /* return the context */
   *pctx=ctx;
   return PAM_SUCCESS;
@@ -187,7 +191,8 @@ static void cfg_init(pam_handle_t *pamh,int flags,int argc,const char **argv,
 }
 
 static int init(pam_handle_t *pamh,struct pld_cfg *cfg,struct pld_ctx **ctx,
-                const char **username,const char **service)
+                const char **username,const char **service,const char **ruser,
+                const char **rhost,const char **tty)
 {
   int rc;
   struct passwd *pwent;
@@ -225,6 +230,10 @@ static int init(pam_handle_t *pamh,struct pld_cfg *cfg,struct pld_ctx **ctx,
     pam_syslog(pamh,LOG_ERR,"failed to get service name: %s",pam_strerror(pamh,rc));
     return rc;
   }
+  /* get more PAM information (ignore errors) */
+  pam_get_item(pamh,PAM_RUSER,(const void **)ruser);
+  pam_get_item(pamh,PAM_RHOST,(const void **)rhost);
+  pam_get_item(pamh,PAM_TTY,(const void **)tty);
   return PAM_SUCCESS;
 }
 
@@ -263,7 +272,7 @@ static int nslcd_request_exists(pam_handle_t *pamh,struct pld_ctx *ctx,struct pl
     pam_syslog(pamh,LOG_DEBUG,"nslcd account check; user=%s",username),
     /* write the request parameters */
     WRITE_STRING(fp,username),
-    /* read the result entry */
+    /* read the result entry (skip it completely) */
     SKIP_STRING(fp); /* user name */
     SKIP_STRING(fp); /* passwd entry */
     SKIP(fp,sizeof(int32_t)); /* uid */
@@ -275,94 +284,125 @@ static int nslcd_request_exists(pam_handle_t *pamh,struct pld_ctx *ctx,struct pl
 }
 
 /* perform an authentication call over nslcd */
-static int nslcd_request_authc(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,
+static int nslcd_request_authc(pam_handle_t *pamh,struct pld_cfg *cfg,
                                const char *username,const char *service,
-                               const char *passwd)
+                               const char *ruser,const char *rhost,
+                               const char *tty,const char *passwd,
+                               struct nslcd_resp *authc_resp,
+                               struct nslcd_resp *authz_resp)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_AUTHC,
     /* log debug message */
     pam_syslog(pamh,LOG_DEBUG,"nslcd authentication; user=%s",username),
     /* write the request parameters */
     WRITE_STRING(fp,username);
-    WRITE_STRING(fp,ctx->dn);
     WRITE_STRING(fp,service);
+    WRITE_STRING(fp,ruser);
+    WRITE_STRING(fp,rhost);
+    WRITE_STRING(fp,tty);
     WRITE_STRING(fp,passwd),
     /* read the result entry */
-    READ_BUF_STRING(fp,ctx->tmpluser);
-    READ_BUF_STRING(fp,ctx->dn);
-    READ_PAM_CODE(fp,ctx->authok)
-    READ_PAM_CODE(fp,ctx->authz)
-    READ_BUF_STRING(fp,ctx->authzmsg);)
+    READ_PAM_CODE(fp,authc_resp->res);
+    READ_STRING(fp,authc_resp->msg); /* user name */
+    /* if we want the authorisation response, save it, otherwise skip it */
+    if (authz_resp!=NULL)
+    {
+      READ_PAM_CODE(fp,authz_resp->res);
+      READ_STRING(fp,authz_resp->msg);
+    }
+    else
+    {
+      SKIP(fp,sizeof(int32_t));
+      SKIP_STRING(fp);
+    })
 }
 
 /* perform an authorisation call over nslcd */
-static int nslcd_request_authz(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,
+static int nslcd_request_authz(pam_handle_t *pamh,struct pld_cfg *cfg,
                                const char *username,const char *service,
                                const char *ruser,const char *rhost,
-                               const char *tty)
+                               const char *tty,struct nslcd_resp *resp)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_AUTHZ,
     /* log debug message */
     pam_syslog(pamh,LOG_DEBUG,"nslcd authorisation; user=%s",username),
     /* write the request parameters */
     WRITE_STRING(fp,username);
-    WRITE_STRING(fp,ctx->dn);
     WRITE_STRING(fp,service);
     WRITE_STRING(fp,ruser);
     WRITE_STRING(fp,rhost);
     WRITE_STRING(fp,tty),
     /* read the result entry */
-    READ_BUF_STRING(fp,ctx->tmpluser);
-    READ_BUF_STRING(fp,ctx->dn);
-    READ_PAM_CODE(fp,ctx->authz);
-    READ_BUF_STRING(fp,ctx->authzmsg);)
+    READ_PAM_CODE(fp,resp->res);
+    READ_STRING(fp,resp->msg);)
 }
 
-/* do a session nslcd request (open or close) */
-static int nslcd_request_sess(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,int action,
-                              const char *username,const char *service,
-                              const char *tty,const char *rhost,
-                              const char *ruser)
+/* do a session open nslcd request */
+static int nslcd_request_sess_o(pam_handle_t *pamh,struct pld_cfg *cfg,
+                               const char *username,const char *service,
+                               const char *ruser,const char *rhost,
+                               const char *tty,struct nslcd_resp *resp)
 {
-  PAM_REQUEST(action,
+  PAM_REQUEST(NSLCD_ACTION_PAM_SESS_O,
     /* log debug message */
-    pam_syslog(pamh,LOG_DEBUG,"nslcd session %s; user=%s",
-          (action==NSLCD_ACTION_PAM_SESS_O)?"open":"close",username),
+    pam_syslog(pamh,LOG_DEBUG,"nslcd session open; user=%s",username),
     /* write the request parameters */
     WRITE_STRING(fp,username);
-    WRITE_STRING(fp,ctx->dn);
     WRITE_STRING(fp,service);
-    WRITE_STRING(fp,tty);
-    WRITE_STRING(fp,rhost);
     WRITE_STRING(fp,ruser);
-    WRITE_INT32(fp,ctx->sessid),
+    WRITE_STRING(fp,rhost);
+    WRITE_STRING(fp,tty),
     /* read the result entry */
-    READ_INT32(fp,ctx->sessid))
+    READ_STRING(fp,resp->msg))
+}
+
+/* do a session close nslcd request */
+static int nslcd_request_sess_c(pam_handle_t *pamh,struct pld_cfg *cfg,
+                               const char *username,const char *service,
+                               const char *ruser,const char *rhost,
+                               const char *tty,const char *sessid)
+{
+  PAM_REQUEST(NSLCD_ACTION_PAM_SESS_C,
+    /* log debug message */
+    pam_syslog(pamh,LOG_DEBUG,"nslcd session close; user=%s",username),
+    /* write the request parameters */
+    WRITE_STRING(fp,username);
+    WRITE_STRING(fp,service);
+    WRITE_STRING(fp,ruser);
+    WRITE_STRING(fp,rhost);
+    WRITE_STRING(fp,tty);
+    WRITE_STRING(fp,sessid),
+    /* no result entry to read */;)
 }
 
 /* do a password modification nslcd call */
-static int nslcd_request_pwmod(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,
+static int nslcd_request_pwmod(pam_handle_t *pamh,struct pld_cfg *cfg,
                                const char *username,const char *service,
-                               const char *oldpasswd,const char *newpasswd)
+                               const char *ruser,const char *rhost,
+                               const char *tty,
+                               int asroot,
+                               const char *oldpasswd,const char *newpasswd,
+                               struct nslcd_resp *resp)
 {
   PAM_REQUEST(NSLCD_ACTION_PAM_PWMOD,
     /* log debug message */
     pam_syslog(pamh,LOG_DEBUG,"nslcd password modify; user=%s",username),
     /* write the request parameters */
     WRITE_STRING(fp,username);
-    WRITE_STRING(fp,ctx->dn);
     WRITE_STRING(fp,service);
+    WRITE_STRING(fp,ruser);
+    WRITE_STRING(fp,rhost);
+    WRITE_STRING(fp,tty);
+    WRITE_INT32(fp,asroot);
     WRITE_STRING(fp,oldpasswd);
     WRITE_STRING(fp,newpasswd),
     /* read the result entry */
-    READ_BUF_STRING(fp,ctx->tmpluser);
-    READ_BUF_STRING(fp,ctx->dn);
-    READ_PAM_CODE(fp,ctx->authz);
-    READ_BUF_STRING(fp,ctx->authzmsg);)
+    READ_PAM_CODE(fp,resp->res);
+    READ_STRING(fp,resp->msg);)
 }
 
-static int nslcd_request_config_get(pam_handle_t *pamh,struct pld_ctx *ctx,struct pld_cfg *cfg,
-                               int cfgopt,char **value)
+static int nslcd_request_config_get(pam_handle_t *pamh,struct pld_cfg *cfg,
+                                    int cfgopt,struct nslcd_resp *resp)
 {
   PAM_REQUEST(NSLCD_ACTION_CONFIG_GET,
     /* log debug message */
@@ -370,7 +410,7 @@ static int nslcd_request_config_get(pam_handle_t *pamh,struct pld_ctx *ctx,struc
     /* write the request parameter */
     WRITE_INT32(fp,cfgopt),
     /* read the result entry */
-    READ_BUF_STRING(fp,*value);)
+    READ_STRING(fp,resp->msg);)
 }
 
 /* remap the return code based on the configuration */
@@ -390,27 +430,28 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
   struct pld_cfg cfg;
   struct pld_ctx *ctx;
   const char *username,*service;
-  char *prohibit_message;
+  const char *ruser=NULL,*rhost=NULL,*tty=NULL;
   char *passwd=NULL;
+  struct nslcd_resp resp;
   /* set up configuration */
   cfg_init(pamh,flags,argc,argv,&cfg);
-  rc=init(pamh,&cfg,&ctx,&username,&service);
+  rc=init(pamh,&cfg,&ctx,&username,&service,&ruser,&rhost,&tty);
   if (rc!=PAM_SUCCESS)
     return remap_pam_rc(rc,&cfg);
   /* if service is "passwd" and pwdmod is not allowed alert user */
   if (!strcmp(service,"passwd"))
   {
-    rc=nslcd_request_config_get(pamh,ctx,&cfg,NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE,&prohibit_message);
-    if ((rc==PAM_SUCCESS)&&(prohibit_message!=NULL)&&(prohibit_message[0]!='\0'))
+    rc=nslcd_request_config_get(pamh,&cfg,NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE,&resp);
+    if ((rc==PAM_SUCCESS)&&(resp.msg!=NULL)&&(resp.msg[0]!='\0'))
     {
       /* we silently ignore errors to get the configuration option */
-      pam_syslog(pamh,LOG_NOTICE,"password change prohibited: %s; user=%s",prohibit_message,username);
+      pam_syslog(pamh,LOG_NOTICE,"password change prohibited: %s; user=%s",resp.msg,username);
       if (!cfg.no_warn)
-        pam_error(pamh,"%s",prohibit_message);
+        pam_error(pamh,"%s",resp.msg);
       return remap_pam_rc(PAM_PERM_DENIED,&cfg);
     }
   }
-  /* get the password */
+  /* prompt the user for a password */
   rc=pam_get_authtok(pamh,PAM_AUTHTOK,(const char **)&passwd,NULL);
   if (rc!=PAM_SUCCESS)
   {
@@ -425,30 +466,32 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
     return PAM_AUTH_ERR;
   }
   /* do the nslcd request */
-  rc=nslcd_request_authc(pamh,ctx,&cfg,username,service,passwd);
+  rc=nslcd_request_authc(pamh,&cfg,username,service,ruser,rhost,tty,passwd,&resp,&(ctx->saved_authz));
   if (rc!=PAM_SUCCESS)
     return remap_pam_rc(rc,&cfg);
   /* check the authentication result */
-  rc=ctx->authok;
-  if (rc!=PAM_SUCCESS)
+  if (resp.res!=PAM_SUCCESS)
   {
-    pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,rc),username);
-    return remap_pam_rc(rc,&cfg);
+    pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,resp.res),username);
+    return remap_pam_rc(resp.res,&cfg);
   }
   /* debug log */
   if (cfg.debug)
     pam_syslog(pamh,LOG_DEBUG,"authentication succeeded");
-  /* save username */
-  ctx->user=strdup(username);
   /* if password change is required, save old password in context */
-  if (ctx->authz==PAM_NEW_AUTHTOK_REQD)
+  if (resp.res==PAM_NEW_AUTHTOK_REQD)
     ctx->oldpassword=strdup(passwd);
   /* update caller's idea of the user name */
-  if ( ctx->tmpluser && ctx->tmpluser[0] && (strcmp(ctx->tmpluser,username)!=0) )
+  if ((resp.msg[0]!='\0') && (strcmp(resp.msg,username)!=0))
   {
-    pam_syslog(pamh,LOG_INFO,"username changed from %s to %s",username,
-               ctx->tmpluser);
-    rc=pam_set_item(pamh,PAM_USER,ctx->tmpluser);
+    pam_syslog(pamh,LOG_INFO,"username changed from %s to %s",username,resp.msg);
+    rc=pam_set_item(pamh,PAM_USER,resp.msg);
+    /* empty the username in the context to not loose our context */
+    if (ctx->username==NULL)
+    {
+      free(ctx->username);
+      ctx->username=NULL;
+    }
   }
   return rc;
 }
@@ -466,104 +509,100 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
   int rc;
   struct pld_cfg cfg;
-  struct pld_ctx *ctx=NULL,ctx2;
+  struct pld_ctx *ctx;
   const char *username,*service;
   const char *ruser=NULL,*rhost=NULL,*tty=NULL;
+  struct nslcd_resp authz_resp;
+  const char *msg;
   /* set up configuration */
   cfg_init(pamh,flags,argc,argv,&cfg);
-  rc=init(pamh,&cfg,&ctx,&username,&service);
+  rc=init(pamh,&cfg,&ctx,&username,&service,&ruser,&rhost,&tty);
   if (rc!=PAM_SUCCESS)
     return remap_pam_rc(rc,&cfg);
-  /* get more PAM information */
-  pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
-  pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
-  pam_get_item(pamh,PAM_TTY,(const void **)&tty);
-  /* call the function with a copy of the context to be able to keep the
-     original context */
-  ctx2.dn=ctx->dn;
-  ctx2.user=ctx->user;
   /* do the nslcd request */
-  rc=nslcd_request_authz(pamh,&ctx2,&cfg,username,service,ruser,rhost,tty);
+  rc=nslcd_request_authz(pamh,&cfg,username,service,ruser,rhost,tty,&authz_resp);
   if (rc!=PAM_SUCCESS)
     return remap_pam_rc(rc,&cfg);
-  /* check the returned authorisation value */
-  if (ctx2.authz!=PAM_SUCCESS)
+  /* check the returned authorisation value and the value from authentication */
+  if (authz_resp.res!=PAM_SUCCESS)
+  {
+    rc=authz_resp.res;
+    msg=authz_resp.msg;
+  }
+  else if (ctx->saved_authz.res!=PAM_SUCCESS)
+  {
+    rc=ctx->saved_authz.res;
+    msg=ctx->saved_authz.msg;
+  }
+  if (rc!=PAM_SUCCESS)
   {
     /* turn in to generic PAM error message if message is empty */
-    if ((ctx2.authzmsg==NULL)||(ctx2.authzmsg[0]=='\0'))
+    if ((msg==NULL)||(msg[0]=='\0'))
     {
-      ctx2.authzmsg=(char *)pam_strerror(pamh,ctx2.authz);
-      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",ctx2.authzmsg,username);
+      msg=pam_strerror(pamh,rc);
+      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",msg,username);
     }
     else
-      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s; err=%s",ctx2.authzmsg,username,pam_strerror(pamh,rc));
-    rc=remap_pam_rc(ctx2.authz,&cfg);
+      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s; err=%s",msg,username,pam_strerror(pamh,rc));
+    rc=remap_pam_rc(rc,&cfg);
     if ((rc!=PAM_IGNORE)&&(!cfg.no_warn))
-      pam_error(pamh,"%s",ctx2.authzmsg);
-    return rc;
-  }
-  /* check the original authorisation check from authentication */
-  if (ctx->authz!=PAM_SUCCESS)
-  {
-    if ((ctx->authzmsg==NULL)||(ctx->authzmsg[0]=='\0'))
-      ctx->authzmsg=(char *)pam_strerror(pamh,ctx->authz);
-    pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",ctx->authzmsg,username);
-    rc=remap_pam_rc(ctx->authz,&cfg);
-    if ((rc!=PAM_IGNORE)&&(!cfg.no_warn))
-      pam_error(pamh,"%s",ctx->authzmsg);
+      pam_error(pamh,"%s",msg);
     return rc;
   }
   if (cfg.debug)
     pam_syslog(pamh,LOG_DEBUG,"authorization succeeded");
   /* present any informational messages to the user */
-  if ((ctx2.authzmsg!=NULL)&&(ctx2.authzmsg[0]!='\0')&&(!cfg.no_warn))
-    pam_info(pamh,"%s",ctx2.authzmsg);
-  if ((ctx->authzmsg!=NULL)&&(ctx->authzmsg[0]!='\0')&&(!cfg.no_warn))
-    pam_info(pamh,"%s",ctx->authzmsg);
+  if ((authz_resp.msg[0]!='\0')&&(!cfg.no_warn))
+    pam_info(pamh,"%s",authz_resp.msg);
+  if ((ctx->saved_authz.msg[0]!='\0')&&(!cfg.no_warn))
+    pam_info(pamh,"%s",ctx->saved_authz.msg);
   return PAM_SUCCESS;
 }
 
-/* PAM session open/close calls */
-static int pam_sm_session(pam_handle_t *pamh,int flags,int argc,
-                          const char **argv,int action)
+/* PAM session open call */
+int pam_sm_open_session(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
   int rc;
   struct pld_cfg cfg;
   struct pld_ctx *ctx;
   const char *username,*service;
-  const char *tty=NULL,*rhost=NULL,*ruser=NULL;
+  const char *ruser=NULL,*rhost=NULL,*tty=NULL;
   /* set up configuration */
   cfg_init(pamh,flags,argc,argv,&cfg);
-  rc=init(pamh,&cfg,&ctx,&username,&service);
+  rc=init(pamh,&cfg,&ctx,&username,&service,&ruser,&rhost,&tty);
   if (rc!=PAM_SUCCESS)
     return remap_pam_rc(rc,&cfg);
-  /* get more PAM information */
-  pam_get_item(pamh,PAM_TTY,(const void **)&tty);
-  pam_get_item(pamh,PAM_RHOST,(const void **)&rhost);
-  pam_get_item(pamh,PAM_RUSER,(const void **)&ruser);
   /* do the nslcd request */
-  rc=nslcd_request_sess(pamh,ctx,&cfg,action,username,service,tty,rhost,ruser);
+  rc=nslcd_request_sess_o(pamh,&cfg,username,service,ruser,rhost,tty,&(ctx->saved_session));
   if (rc!=PAM_SUCCESS)
     return remap_pam_rc(rc,&cfg);
   /* debug log */
   if (cfg.debug)
-    pam_syslog(pamh,LOG_DEBUG,"session %s succeeded; session_id=%d",
-               (action==NSLCD_ACTION_PAM_SESS_O)?"open":"close",ctx->sessid);
+    pam_syslog(pamh,LOG_DEBUG,"session open succeeded; session_id=%s",ctx->saved_session.msg);
   return PAM_SUCCESS;
 }
 
-/* PAM session open call */
-int pam_sm_open_session(
-  pam_handle_t *pamh,int flags,int argc,const char **argv)
-{
-  return pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_O);
-}
-
 /* PAM session close call */
-int pam_sm_close_session(
-  pam_handle_t *pamh,int flags,int argc,const char **argv)
+int pam_sm_close_session(pam_handle_t *pamh,int flags,int argc,const char **argv)
 {
-  return pam_sm_session(pamh,flags,argc,argv,NSLCD_ACTION_PAM_SESS_C);
+  int rc;
+  struct pld_cfg cfg;
+  struct pld_ctx *ctx;
+  const char *username,*service;
+  const char *ruser=NULL,*rhost=NULL,*tty=NULL;
+  /* set up configuration */
+  cfg_init(pamh,flags,argc,argv,&cfg);
+  rc=init(pamh,&cfg,&ctx,&username,&service,&ruser,&rhost,&tty);
+  if (rc!=PAM_SUCCESS)
+    return remap_pam_rc(rc,&cfg);
+  /* do the nslcd request */
+  rc=nslcd_request_sess_c(pamh,&cfg,username,service,ruser,rhost,tty,ctx->saved_session.msg);
+  if (rc!=PAM_SUCCESS)
+    return remap_pam_rc(rc,&cfg);
+  /* debug log */
+  if (cfg.debug)
+    pam_syslog(pamh,LOG_DEBUG,"session close succeeded; session_id=%s",ctx->saved_session.msg);
+  return PAM_SUCCESS;
 }
 
 /* Change the password of the user. This function is first called with
@@ -577,37 +616,37 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
   struct pld_cfg cfg;
   struct pld_ctx *ctx;
   const char *username,*service;
+  const char *ruser=NULL,*rhost=NULL,*tty=NULL;
   const char *oldpassword=NULL,*newpassword=NULL;
-  char *prohibit_message;
   struct passwd *pwent;
   uid_t myuid;
+  struct nslcd_resp resp;
+  const char *msg;
   /* set up configuration */
   cfg_init(pamh,flags,argc,argv,&cfg);
-  rc=init(pamh,&cfg,&ctx,&username,&service);
+  rc=init(pamh,&cfg,&ctx,&username,&service,&ruser,&rhost,&tty);
   if (rc!=PAM_SUCCESS)
     return remap_pam_rc(rc,&cfg);
   /* check if password modification is allowed */
-  rc=nslcd_request_config_get(pamh,ctx,&cfg,NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE,&prohibit_message);
-  if ((rc==PAM_SUCCESS)&&(prohibit_message!=NULL)&&(prohibit_message[0]!='\0'))
+  rc=nslcd_request_config_get(pamh,&cfg,NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE,&resp);
+  if ((rc==PAM_SUCCESS)&&(resp.msg!=NULL)&&(resp.msg[0]!='\0'))
   {
     /* we silently ignore errors to get the configuration option */
-    pam_syslog(pamh,LOG_NOTICE,"password change prohibited: %s; user=%s",prohibit_message,username);
+    pam_syslog(pamh,LOG_NOTICE,"password change prohibited: %s; user=%s",resp.msg,username);
     if (!cfg.no_warn)
-      pam_error(pamh,"%s",prohibit_message);
+      pam_error(pamh,"%s",resp.msg);
     return remap_pam_rc(PAM_PERM_DENIED,&cfg);
   }
   /* see if we are dealing with an LDAP user first */
-  if (ctx->dn==NULL)
-  {
-    rc=nslcd_request_exists(pamh,ctx,&cfg,username);
-    if (rc!=PAM_SUCCESS)
-      return remap_pam_rc(rc,&cfg);
-  }
-  /* prelimenary check, just see if we can connect to the LDAP server
-     and authenticate with the current password */
+  rc=nslcd_request_exists(pamh,ctx,&cfg,username);
+  if (rc!=PAM_SUCCESS)
+    return remap_pam_rc(rc,&cfg);
+  /* preliminary check, just see if we can authenticate with the current password */
   if (flags&PAM_PRELIM_CHECK)
   {
+    ctx->asroot=0;
     /* see if the user is trying to modify another user's password */
+    /* TODO: perhaps this can be combined with the nslcd_request_exists() call above */
     pwent=pam_modutil_getpwnam(args->pamh,username);
     myuid=getuid();
     if ((pwent!=NULL)&&(pwent->pw_uid!=myuid)&&(!(flags&PAM_CHANGE_EXPIRED_AUTHTOK)))
@@ -616,15 +655,19 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
          user's password without the admin password */
       if (myuid==0)
       {
-        rc=nslcd_request_authc(pamh,ctx,&cfg,"",service,"");
-        if ((rc==PAM_SUCCESS)&&(ctx->authok==PAM_SUCCESS))
+        rc=nslcd_request_authc(pamh,&cfg,"",service,ruser,rhost,tty,"",&resp,NULL);
+        if ((rc==PAM_SUCCESS)&&(resp.res==PAM_SUCCESS))
+        {
+          ctx->asroot=1;
           return pam_set_item(pamh,PAM_OLDAUTHTOK,"");
+        }
       }
       /* try to  authenticate with the LDAP administrator password by passing
          an empty username to the authc request */
       rc=pam_get_authtok(pamh,PAM_OLDAUTHTOK,&oldpassword,"LDAP administrator password: ");
       if (rc!=PAM_SUCCESS)
         return rc;
+      ctx->asroot=1;
       username="";
     }
     else if ((ctx->oldpassword!=NULL)&&(*ctx->oldpassword!='\0'))
@@ -633,6 +676,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
       oldpassword=ctx->oldpassword;
     else
     {
+      /* prompt the user for a password if needed */
       rc=pam_get_authtok(pamh,PAM_OLDAUTHTOK,(const char **)&oldpassword,"(current) LDAP Password: ");
       if (rc!=PAM_SUCCESS)
         return rc;
@@ -645,46 +689,49 @@ int pam_sm_chauthtok(pam_handle_t *pamh,int flags,int argc,const char **argv)
       return PAM_AUTH_ERR;
     }
     /* try authenticating */
-    rc=nslcd_request_authc(pamh,ctx,&cfg,username,service,oldpassword);
+    rc=nslcd_request_authc(pamh,&cfg,username,service,ruser,rhost,tty,oldpassword,&resp,NULL);
     if (rc!=PAM_SUCCESS)
       return remap_pam_rc(rc,&cfg);
     /* handle authentication result */
-    if (ctx->authok!=PAM_SUCCESS)
-      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,ctx->authok),username);
+    if (resp.res!=PAM_SUCCESS)
+      pam_syslog(pamh,LOG_NOTICE,"%s; user=%s",pam_strerror(pamh,resp.res),username);
     else if (cfg.debug)
       pam_syslog(pamh,LOG_DEBUG,"authentication succeeded");
     /* store password (needed if oldpassword was retreived from context) */
-    if (ctx->authok==PAM_SUCCESS)
+    if (resp.res==PAM_SUCCESS)
     {
       rc=pam_set_item(pamh,PAM_OLDAUTHTOK,oldpassword);
       if (rc!=PAM_SUCCESS)
         return remap_pam_rc(rc,&cfg);
     }
     /* remap error code */
-    return remap_pam_rc(ctx->authok,&cfg);
+    return remap_pam_rc(resp.res,&cfg);
   }
   /* get the old password (from the previous call) */
   rc=pam_get_item(pamh,PAM_OLDAUTHTOK,(const void **)&oldpassword);
   if (rc!=PAM_SUCCESS)
     return rc;
-  /* get the new password */
+  /* prompt for new password */
   rc=pam_get_authtok(pamh,PAM_AUTHTOK,&newpassword,NULL);
   if (rc!=PAM_SUCCESS)
     return rc;
   /* perform the password modification */
-  rc=nslcd_request_pwmod(pamh,ctx,&cfg,username,service,oldpassword,newpassword);
-  if (rc==PAM_SUCCESS)
-    rc=ctx->authz;
+  rc=nslcd_request_pwmod(pamh,&cfg,username,service,ruser,rhost,tty,ctx->asroot,oldpassword,newpassword,&resp);
+  if (rc!=PAM_SUCCESS)
+    msg=pam_strerror(pamh,rc);
   else
-    ctx->authzmsg=(char *)pam_strerror(pamh,rc);
+  {
+    rc=resp.res;
+    msg=resp.msg;
+  }
   /* remap error code */
   rc=remap_pam_rc(rc,&cfg);
   /* check the returned value */
   if (rc!=PAM_SUCCESS)
   {
-    pam_syslog(pamh,LOG_NOTICE,"password change failed: %s; user=%s",ctx->authzmsg,username);
+    pam_syslog(pamh,LOG_NOTICE,"password change failed: %s; user=%s",msg,username);
     if ((rc!=PAM_IGNORE)&&(!cfg.no_warn))
-      pam_error(pamh,"%s",ctx->authzmsg);
+      pam_error(pamh,"%s",msg);
     return rc;
   }
   pam_syslog(pamh,LOG_NOTICE,"password changed for %s",username);

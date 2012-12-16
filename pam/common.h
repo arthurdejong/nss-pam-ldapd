@@ -76,9 +76,6 @@
 #define PAM_REQUEST(action,debuglog,writefn,readfn) \
   TFILE *fp; \
   int32_t tmpint32; \
-  char *buffer=ctx->buf; \
-  size_t buflen=sizeof(ctx->buf); \
-  size_t bufptr=0; \
   if (cfg->debug) \
     debuglog; \
   /* open socket and write request */ \

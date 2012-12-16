@@ -244,8 +244,7 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
 {
   int32_t tmpint32;
   int rc;
-  char username[256];
-  char servicename[64];
+  char username[256],service[64],ruser[256],rhost[HOST_NAME_MAX+1],tty[64];
   char password[64];
   const char *userdn;
   MYLDAP_ENTRY *entry;
@@ -254,13 +253,15 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   authzmsg[0]='\0';
   /* read request parameters */
   READ_STRING(fp,username);
-  SKIP_STRING(fp); /* DN */
-  READ_STRING(fp,servicename);
+  READ_STRING(fp,service);
+  READ_STRING(fp,ruser);
+  READ_STRING(fp,rhost);
+  READ_STRING(fp,tty);
   READ_STRING(fp,password);
   /* log call */
   log_setrequest("authc=\"%s\"",username);
   log_log(LOG_DEBUG,"nslcd_pam_authc(\"%s\",\"%s\",\"%s\")",
-                    username,servicename,*password?"***":"");
+                    username,service,*password?"***":"");
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHC);
@@ -312,9 +313,8 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
     authzrc=check_shadow(session,username,authzmsg,sizeof(authzmsg),1,0);
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-  WRITE_STRING(fp,username);
-  WRITE_STRING(fp,userdn);
   WRITE_INT32(fp,rc);
+  WRITE_STRING(fp,username);
   WRITE_INT32(fp,authzrc);
   WRITE_STRING(fp,authzmsg);
   WRITE_INT32(fp,NSLCD_RESULT_END);
@@ -460,23 +460,20 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   int rc;
-  char username[256];
-  char servicename[64];
-  char ruser[256],rhost[HOST_NAME_MAX+1],tty[64];
+  char username[256],service[64],ruser[256],rhost[HOST_NAME_MAX+1],tty[64];
   MYLDAP_ENTRY *entry;
   char authzmsg[1024];
   authzmsg[0]='\0';
   /* read request parameters */
   READ_STRING(fp,username);
-  SKIP_STRING(fp); /* DN */
-  READ_STRING(fp,servicename);
+  READ_STRING(fp,service);
   READ_STRING(fp,ruser);
   READ_STRING(fp,rhost);
   READ_STRING(fp,tty);
   /* log call */
   log_setrequest("authz=\"%s\"",username);
   log_log(LOG_DEBUG,"nslcd_pam_authz(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")",
-            username,servicename,ruser,rhost,tty);
+            username,service,ruser,rhost,tty);
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_AUTHZ);
@@ -492,12 +489,10 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
     return -1;
   }
   /* check authorisation search */
-  rc=try_autzsearch(session,myldap_get_dn(entry),username,servicename,ruser,rhost,tty);
+  rc=try_autzsearch(session,myldap_get_dn(entry),username,service,ruser,rhost,tty);
   if (rc!=LDAP_SUCCESS)
   {
     WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-    WRITE_STRING(fp,username);
-    WRITE_STRING(fp,"");
     WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);
     WRITE_STRING(fp,"LDAP authorisation check failed");
     WRITE_INT32(fp,NSLCD_RESULT_END);
@@ -507,8 +502,6 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
   rc=check_shadow(session,username,authzmsg,sizeof(authzmsg),0,0);
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-  WRITE_STRING(fp,username);
-  WRITE_STRING(fp,myldap_get_dn(entry));
   WRITE_INT32(fp,rc);
   WRITE_STRING(fp,authzmsg);
   WRITE_INT32(fp,NSLCD_RESULT_END);
@@ -518,28 +511,32 @@ int nslcd_pam_authz(TFILE *fp,MYLDAP_SESSION *session)
 int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
-  char username[256];
-  char servicename[64];
-  char tty[64],rhost[HOST_NAME_MAX+1],ruser[256];
-  int32_t sessionid;
+  char username[256],service[64],ruser[256],rhost[HOST_NAME_MAX+1],tty[64];
+  char sessionid[25];
+  static const char alphabet[]="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                               "abcdefghijklmnopqrstuvwxyz"
+                               "01234567890";
+  int i;
   /* read request parameters */
   READ_STRING(fp,username);
-  SKIP_STRING(fp); /* DN */
-  READ_STRING(fp,servicename);
-  READ_STRING(fp,tty);
-  READ_STRING(fp,rhost);
+  READ_STRING(fp,service);
   READ_STRING(fp,ruser);
-  READ_INT32(fp,sessionid);
+  READ_STRING(fp,rhost);
+  READ_STRING(fp,tty);
+  /* generate pseudo-random session id */
+  for (i=0;i<(sizeof(sessionid)-1);i++)
+    sessionid[i]=alphabet[rand()%(sizeof(alphabet)-1)];
+  sessionid[i]='\0';
   /* log call */
   log_setrequest("sess_o=\"%s\"",username);
-  log_log(LOG_DEBUG,"nslcd_pam_sess_o(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\")",
-                    username,servicename,tty,rhost,ruser);
+  log_log(LOG_DEBUG,"nslcd_pam_sess_o(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"): %s",
+                    username,service,tty,rhost,ruser,sessionid);
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_SESS_O);
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-  WRITE_INT32(fp,12345);  /* session id */
+  WRITE_STRING(fp,sessionid);
   WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }
@@ -547,28 +544,24 @@ int nslcd_pam_sess_o(TFILE *fp,MYLDAP_SESSION *session)
 int nslcd_pam_sess_c(TFILE *fp,MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
-  char username[256];
-  char servicename[64];
-  char tty[64],rhost[HOST_NAME_MAX+1],ruser[256];
-  int32_t sessionid;
+  char username[256],service[64],ruser[256],rhost[HOST_NAME_MAX+1],tty[64];
+  char sessionid[64];
   /* read request parameters */
   READ_STRING(fp,username);
-  SKIP_STRING(fp); /* DN */
-  READ_STRING(fp,servicename);
-  READ_STRING(fp,tty);
-  READ_STRING(fp,rhost);
+  READ_STRING(fp,service);
   READ_STRING(fp,ruser);
-  READ_INT32(fp,sessionid);
+  READ_STRING(fp,rhost);
+  READ_STRING(fp,tty);
+  READ_STRING(fp,sessionid);
   /* log call */
   log_setrequest("sess_c=\"%s\"",username);
-  log_log(LOG_DEBUG,"nslcd_pam_sess_c(\"%s\",\"%s\",%d)",
-                    username,servicename,(int)sessionid);
+  log_log(LOG_DEBUG,"nslcd_pam_sess_c(\"%s\",\"%s\",%s)",
+                    username,service,sessionid);
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
   WRITE_INT32(fp,NSLCD_ACTION_PAM_SESS_C);
   /* write response */
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-  WRITE_INT32(fp,0);  /* session id */
   WRITE_INT32(fp,NSLCD_RESULT_END);
   return 0;
 }
@@ -610,10 +603,8 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
 {
   int32_t tmpint32;
   int rc;
-  char username[256];
-  char userdn[256];
+  char username[256],service[64],ruser[256],rhost[HOST_NAME_MAX+1],tty[64];
   int asroot;
-  char servicename[64];
   char oldpassword[64];
   char newpassword[64];
   const char *binddn=NULL; /* the user performing the modification */
@@ -622,16 +613,17 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   authzmsg[0]='\0';
   /* read request parameters */
   READ_STRING(fp,username);
-  READ_STRING(fp,userdn); /* we can't ignore userdn for now here because we
-                             need it to determine the modify-as-root case */
-  asroot=(nslcd_cfg->ldc_rootpwmoddn!=NULL)&&(strcmp(userdn,nslcd_cfg->ldc_rootpwmoddn)==0);
-  READ_STRING(fp,servicename);
+  READ_STRING(fp,service);
+  READ_STRING(fp,ruser);
+  READ_STRING(fp,rhost);
+  READ_STRING(fp,tty);
+  READ_INT32(fp,asroot);
   READ_STRING(fp,oldpassword);
   READ_STRING(fp,newpassword);
   /* log call */
   log_setrequest("pwmod=\"%s\"",username);
   log_log(LOG_DEBUG,"nslcd_pam_pwmod(\"%s\",%s,\"%s\",\"%s\",\"%s\")",
-                    username,asroot?"asroot":"asuser",servicename,*oldpassword?"***":"",
+                    username,asroot?"asroot":"asuser",service,*oldpassword?"***":"",
                     *newpassword?"***":"");
   /* write the response header */
   WRITE_INT32(fp,NSLCD_VERSION);
@@ -652,8 +644,6 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   {
     log_log(LOG_NOTICE,"password change prohibited");
     WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-    WRITE_STRING(fp,username);
-    WRITE_STRING(fp,"");
     WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);
     WRITE_STRING(fp,nslcd_cfg->pam_password_prohibit_message);
     WRITE_INT32(fp,NSLCD_RESULT_END);
@@ -682,8 +672,6 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
     if (rc!=NSLCD_PAM_SUCCESS)
     {
       WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-      WRITE_STRING(fp,username);
-      WRITE_STRING(fp,"");
       WRITE_INT32(fp,rc);
       WRITE_STRING(fp,authzmsg);
       WRITE_INT32(fp,NSLCD_RESULT_END);
@@ -696,8 +684,6 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   {
     mysnprintf(authzmsg,sizeof(authzmsg)-1,"password change failed: %s",ldap_err2string(rc));
     WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-    WRITE_STRING(fp,username);
-    WRITE_STRING(fp,"");
     WRITE_INT32(fp,NSLCD_PAM_PERM_DENIED);
     WRITE_STRING(fp,authzmsg);
     WRITE_INT32(fp,NSLCD_RESULT_END);
@@ -706,8 +692,6 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   /* write response */
   log_log(LOG_NOTICE,"password changed for %s",myldap_get_dn(entry));
   WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-  WRITE_STRING(fp,username);
-  WRITE_STRING(fp,myldap_get_dn(entry));
   WRITE_INT32(fp,NSLCD_PAM_SUCCESS);
   WRITE_STRING(fp,"");
   WRITE_INT32(fp,NSLCD_RESULT_END);
