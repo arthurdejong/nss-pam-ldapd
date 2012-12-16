@@ -377,7 +377,7 @@ static int read_header(TFILE *fp,int32_t *action)
   READ_INT32(fp,protocol);
   if (protocol!=(int32_t)NSLCD_VERSION)
   {
-    log_log(LOG_DEBUG,"wrong nslcd version id (%d)",(int)protocol);
+    log_log(LOG_DEBUG,"invalid nslcd version id: 0x%08x",(unsigned int)protocol);
     return -1;
   }
   /* read the request type */
@@ -457,7 +457,7 @@ static void handleconnection(int sock,MYLDAP_SESSION *session)
     case NSLCD_ACTION_PAM_SESS_C:       (void)nslcd_pam_sess_c(fp,session); break;
     case NSLCD_ACTION_PAM_PWMOD:        (void)nslcd_pam_pwmod(fp,session,uid); break;
     default:
-      log_log(LOG_WARNING,"invalid request id: %ud",(unsigned int)action);
+      log_log(LOG_WARNING,"invalid request id: 0x%08x",(unsigned int)action);
       break;
   }
   /* we're done with the request */

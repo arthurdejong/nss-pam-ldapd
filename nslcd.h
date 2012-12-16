@@ -67,32 +67,32 @@
 
 /* The current version of the protocol. This protocol should only be
    updated with major backwards-incompatible changes. */
-#define NSLCD_VERSION 2
+#define NSLCD_VERSION 0x00000002
 
 /* Get a NSLCD configuration option. There is one request parameter:
     INT32   NSLCD_CONFIG_*
   the result value is:
     STRING  value, interpretation depending on request */
-#define NSLCD_ACTION_CONFIG_GET        20006
+#define NSLCD_ACTION_CONFIG_GET        0x00010001
 
 /* return the message, if any, that is presented to the user when password
    modification through PAM is prohibited */
-#define NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE  852
+#define NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE 1
 
 /* Email alias (/etc/aliases) NSS requests. The result values for a
    single entry are:
      STRING      alias name
      STRINGLIST  alias rcpts */
-#define NSLCD_ACTION_ALIAS_BYNAME       4001
-#define NSLCD_ACTION_ALIAS_ALL          4002
+#define NSLCD_ACTION_ALIAS_BYNAME      0x00020001
+#define NSLCD_ACTION_ALIAS_ALL         0x00020008
 
 /* Ethernet address/name mapping NSS requests. The result values for a
    single entry are:
      STRING            ether name
      TYPE(uint8_t[6])  ether address */
-#define NSLCD_ACTION_ETHER_BYNAME       3001
-#define NSLCD_ACTION_ETHER_BYETHER      3002
-#define NSLCD_ACTION_ETHER_ALL          3005
+#define NSLCD_ACTION_ETHER_BYNAME      0x00030001
+#define NSLCD_ACTION_ETHER_BYETHER     0x00030002
+#define NSLCD_ACTION_ETHER_ALL         0x00030008
 
 /* Group and group membership related NSS requests. The result values
    for a single entry are:
@@ -101,19 +101,19 @@
      INT32        group id
      STRINGLIST   members (usernames) of the group
      (not that the BYMEMER call returns an emtpy members list) */
-#define NSLCD_ACTION_GROUP_BYNAME       5001
-#define NSLCD_ACTION_GROUP_BYGID        5002
-#define NSLCD_ACTION_GROUP_BYMEMBER     5003
-#define NSLCD_ACTION_GROUP_ALL          5004
+#define NSLCD_ACTION_GROUP_BYNAME      0x00040001
+#define NSLCD_ACTION_GROUP_BYGID       0x00040002
+#define NSLCD_ACTION_GROUP_BYMEMBER    0x00040006
+#define NSLCD_ACTION_GROUP_ALL         0x00040008
 
 /* Hostname (/etc/hosts) lookup NSS requests. The result values
    for an entry are:
      STRING       host name
      STRINGLIST   host aliases
      ADDRESSLIST  host addresses */
-#define NSLCD_ACTION_HOST_BYNAME        6001
-#define NSLCD_ACTION_HOST_BYADDR        6002
-#define NSLCD_ACTION_HOST_ALL           6005
+#define NSLCD_ACTION_HOST_BYNAME       0x00050001
+#define NSLCD_ACTION_HOST_BYADDR       0x00050002
+#define NSLCD_ACTION_HOST_ALL          0x00050008
 
 /* Netgroup NSS request return a number of results. Result values
    can be either a reference to another netgroup:
@@ -124,18 +124,18 @@
      STRING  host
      STRING  user
      STRING  domain */
-#define NSLCD_ACTION_NETGROUP_BYNAME   12001
-#define NSLCD_NETGROUP_TYPE_NETGROUP 123
-#define NSLCD_NETGROUP_TYPE_TRIPLE   456
+#define NSLCD_ACTION_NETGROUP_BYNAME   0x00060001
+#define NSLCD_NETGROUP_TYPE_NETGROUP 1
+#define NSLCD_NETGROUP_TYPE_TRIPLE   2
 
 /* Network name (/etc/networks) NSS requests. Result values for a single
    entry are:
      STRING       network name
      STRINGLIST   network aliases
      ADDRESSLIST  network addresses */
-#define NSLCD_ACTION_NETWORK_BYNAME     8001
-#define NSLCD_ACTION_NETWORK_BYADDR     8002
-#define NSLCD_ACTION_NETWORK_ALL        8005
+#define NSLCD_ACTION_NETWORK_BYNAME    0x00070001
+#define NSLCD_ACTION_NETWORK_BYADDR    0x00070002
+#define NSLCD_ACTION_NETWORK_ALL       0x00070008
 
 /* User account (/etc/passwd) NSS requests. Result values are:
      STRING       user name
@@ -145,34 +145,34 @@
      STRING       gecos information
      STRING       home directory
      STRING       login shell */
-#define NSLCD_ACTION_PASSWD_BYNAME      1001
-#define NSLCD_ACTION_PASSWD_BYUID       1002
-#define NSLCD_ACTION_PASSWD_ALL         1004
+#define NSLCD_ACTION_PASSWD_BYNAME     0x00080001
+#define NSLCD_ACTION_PASSWD_BYUID      0x00080002
+#define NSLCD_ACTION_PASSWD_ALL        0x00080008
 
 /* Protocol information requests. Result values are:
      STRING      protocol name
      STRINGLIST  protocol aliases
      INT32       protocol number */
-#define NSLCD_ACTION_PROTOCOL_BYNAME    9001
-#define NSLCD_ACTION_PROTOCOL_BYNUMBER  9002
-#define NSLCD_ACTION_PROTOCOL_ALL       9003
+#define NSLCD_ACTION_PROTOCOL_BYNAME   0x00090001
+#define NSLCD_ACTION_PROTOCOL_BYNUMBER 0x00090002
+#define NSLCD_ACTION_PROTOCOL_ALL      0x00090008
 
 /* RPC information requests. Result values are:
      STRING      rpc name
      STRINGLIST  rpc aliases
      INT32       rpc number */
-#define NSLCD_ACTION_RPC_BYNAME        10001
-#define NSLCD_ACTION_RPC_BYNUMBER      10002
-#define NSLCD_ACTION_RPC_ALL           10003
+#define NSLCD_ACTION_RPC_BYNAME        0x000a0001
+#define NSLCD_ACTION_RPC_BYNUMBER      0x000a0002
+#define NSLCD_ACTION_RPC_ALL           0x000a0008
 
 /* Service (/etc/services) information requests. Result values are:
      STRING      service name
      STRINGLIST  service aliases
      INT32       service (port) number
      STRING      service protocol */
-#define NSLCD_ACTION_SERVICE_BYNAME    11001
-#define NSLCD_ACTION_SERVICE_BYNUMBER  11002
-#define NSLCD_ACTION_SERVICE_ALL       11005
+#define NSLCD_ACTION_SERVICE_BYNAME    0x000b0001
+#define NSLCD_ACTION_SERVICE_BYNUMBER  0x000b0002
+#define NSLCD_ACTION_SERVICE_ALL       0x000b0008
 
 /* Extended user account (/etc/shadow) information requests. Result
    values for a single entry are:
@@ -185,8 +185,8 @@
      INT32   inact
      INT32   expire
      INT32   flag */
-#define NSLCD_ACTION_SHADOW_BYNAME      2001
-#define NSLCD_ACTION_SHADOW_ALL         2005
+#define NSLCD_ACTION_SHADOW_BYNAME     0x000c0001
+#define NSLCD_ACTION_SHADOW_ALL        0x000c0008
 
 /* PAM-related requests. The request parameters for all these requests
    begin with:
@@ -209,7 +209,7 @@
    authenticate as the administrator (set using rootpwmoddn).
    Some authorisation checks are already done during authentication so the
    response also includes authorisation information. */
-#define NSLCD_ACTION_PAM_AUTHC         21001
+#define NSLCD_ACTION_PAM_AUTHC         0x000d0001
 
 /* PAM authorisation check request. The result value consists of:
      INT32   authz NSLCD_PAM_* result code
@@ -218,18 +218,18 @@
    information. The authorisation error message, if supplied, will be used
    by the PAM module instead of a message that is generated by the PAM
    module itself. */
-#define NSLCD_ACTION_PAM_AUTHZ         21002
+#define NSLCD_ACTION_PAM_AUTHZ         0x000d0002
 
 /* PAM session open request. The result value consists of:
      STRING   session id
    This session id may be used to close this session with. */
-#define NSLCD_ACTION_PAM_SESS_O        21003
+#define NSLCD_ACTION_PAM_SESS_O        0x000d0003
 
 /* PAM session close request. This request has the following
    extra request value:
      STRING   session id
    and this calls only returns an empty response value. */
-#define NSLCD_ACTION_PAM_SESS_C        21004
+#define NSLCD_ACTION_PAM_SESS_C        0x000d0004
 
 /*
 Note: I'm not sure whether PAM result codes are required here.
@@ -243,11 +243,11 @@ Note: I'm not sure whether PAM result codes are required here.
    and returns there extra result values:
      INT32   NSLCD_PAM_* result code
      STRING  error message */
-#define NSLCD_ACTION_PAM_PWMOD         20005
+#define NSLCD_ACTION_PAM_PWMOD         0x000d0005
 
 /* Request result codes. */
-#define NSLCD_RESULT_BEGIN                 0
-#define NSLCD_RESULT_END                   3
+#define NSLCD_RESULT_BEGIN 1
+#define NSLCD_RESULT_END   2
 
 /* Partial list of PAM result codes. */
 #define NSLCD_PAM_SUCCESS             0 /* everything ok */
