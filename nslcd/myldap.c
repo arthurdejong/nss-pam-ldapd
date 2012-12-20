@@ -433,7 +433,7 @@ static int do_bind(LDAP *ld,const char *binddn,const char *bindpw,const char *ur
   }
 #endif /* LDAP_OPT_X_TLS */
   /* check if the binddn and bindpw are overwritten in the session */
-  if ((binddn!=NULL)&(binddn[0]!='\0'))
+  if ((binddn!=NULL)&&(binddn[0]!='\0'))
   {
     /* do a simple bind */
     log_log(LOG_DEBUG,"ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",binddn,
