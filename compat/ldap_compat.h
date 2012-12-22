@@ -1,7 +1,7 @@
 /*
    ldap_compat.h - provide a replacement definitions for some ldap functions
 
-   Copyright (C) 2009, 2010 Arthur de Jong
+   Copyright (C) 2009, 2010, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,25 +36,25 @@
 #ifndef HAVE_LDAP_INITIALIZE
 /* provide a wrapper around ldap_init() if the system doesn't have
    ldap_initialize() */
-int ldap_initialize(LDAP **ldp,const char *url);
+int ldap_initialize(LDAP **ldp, const char *url);
 #endif /* not HAVE_LDAP_INITIALIZE */
 
 #ifndef HAVE_LDAP_CREATE_PAGE_CONTROL
-int ldap_create_page_control(LDAP *ld,unsigned long pagesize,
-                             struct berval *cookiep,int iscritical,
+int ldap_create_page_control(LDAP *ld, unsigned long pagesize,
+                             struct berval *cookiep, int iscritical,
                              LDAPControl **ctrlp);
 #endif /* not HAVE_LDAP_CREATE_PAGE_CONTROL */
 
 #ifndef HAVE_LDAP_PARSE_PAGE_CONTROL
-int ldap_parse_page_control(LDAP *ld,LDAPControl **ctrls,
+int ldap_parse_page_control(LDAP *ld, LDAPControl **ctrls,
                             unsigned long *list_countp,
                             struct berval **cookiep);
 #endif /* not HAVE_LDAP_PARSE_PAGE_CONTROL */
 
 #ifndef HAVE_LDAP_PASSWD_S
-int ldap_passwd_s(LDAP *ld,struct berval *user,struct berval *oldpw,
-                  struct berval *newpw,struct berval *newpasswd,
-                  LDAPControl **sctrls,LDAPControl **cctrls);
+int ldap_passwd_s(LDAP *ld, struct berval *user, struct berval *oldpw,
+                  struct berval *newpw, struct berval *newpasswd,
+                  LDAPControl **sctrls, LDAPControl **cctrls);
 #endif /* not HAVE_LDAP_PASSWD_S */
 
 /* compatibility definition */

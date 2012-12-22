@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -62,79 +62,77 @@ static const char *alias_attrs[3];
 /* create a search filter for searching an alias by name,
    return -1 on errors */
 static int mkfilter_alias_byname(const char *name,
-                                 char *buffer,size_t buflen)
+                                 char *buffer, size_t buflen)
 {
   char safename[300];
   /* escape attribute */
-  if (myldap_escape(name,safename,sizeof(safename)))
+  if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
   /* build filter */
-  return mysnprintf(buffer,buflen,
-                    "(&%s(%s=%s))",
-                    alias_filter,
-                    attmap_alias_cn,safename);
+  return mysnprintf(buffer, buflen, "(&%s(%s=%s))",
+                    alias_filter, attmap_alias_cn, safename);
 }
 
 void alias_init(void)
 {
   int i;
   /* set up search bases */
-  if (alias_bases[0]==NULL)
-    for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
-      alias_bases[i]=nslcd_cfg->ldc_bases[i];
+  if (alias_bases[0] == NULL)
+    for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
+      alias_bases[i] = nslcd_cfg->ldc_bases[i];
   /* set up scope */
-  if (alias_scope==LDAP_SCOPE_DEFAULT)
-    alias_scope=nslcd_cfg->ldc_scope;
+  if (alias_scope == LDAP_SCOPE_DEFAULT)
+    alias_scope = nslcd_cfg->ldc_scope;
   /* set up attribute list */
-  alias_attrs[0]=attmap_alias_cn;
-  alias_attrs[1]=attmap_alias_rfc822MailMember;
-  alias_attrs[2]=NULL;
+  alias_attrs[0] = attmap_alias_cn;
+  alias_attrs[1] = attmap_alias_rfc822MailMember;
+  alias_attrs[2] = NULL;
 }
 
-static int write_alias(TFILE *fp,MYLDAP_ENTRY *entry,const char *reqalias)
+static int write_alias(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqalias)
 {
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  const char **names,**members;
+  int32_t tmpint32, tmp2int32, tmp3int32;
+  const char **names, **members;
   int i;
   /* get the name of the alias */
-  names=myldap_get_values(entry,attmap_alias_cn);
-  if ((names==NULL)||(names[0]==NULL))
+  names = myldap_get_values(entry, attmap_alias_cn);
+  if ((names == NULL) || (names[0] == NULL))
   {
-    log_log(LOG_WARNING,"%s: %s: missing",
-                        myldap_get_dn(entry),attmap_alias_cn);
+    log_log(LOG_WARNING, "%s: %s: missing",
+            myldap_get_dn(entry), attmap_alias_cn);
     return 0;
   }
   /* get the members of the alias */
-  members=myldap_get_values(entry,attmap_alias_rfc822MailMember);
+  members = myldap_get_values(entry, attmap_alias_rfc822MailMember);
   /* for each name, write an entry */
-  for (i=0;names[i]!=NULL;i++)
+  for (i = 0; names[i] != NULL; i++)
   {
-    if ((reqalias==NULL)||(strcasecmp(reqalias,names[i])==0))
+    if ((reqalias == NULL) || (strcasecmp(reqalias, names[i]) == 0))
     {
-      WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-      WRITE_STRING(fp,names[i]);
-      WRITE_STRINGLIST(fp,members);
+      WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
+      WRITE_STRING(fp, names[i]);
+      WRITE_STRINGLIST(fp, members);
     }
   }
   return 0;
 }
 
 NSLCD_HANDLE(
-  alias,byname,
+  alias, byname,
   char name[256];
   char filter[4096];
-  READ_STRING(fp,name);
-  log_setrequest("alias=\"%s\"",name);,
+  READ_STRING(fp, name);
+  log_setrequest("alias=\"%s\"", name);,
   NSLCD_ACTION_ALIAS_BYNAME,
-  mkfilter_alias_byname(name,filter,sizeof(filter)),
-  write_alias(fp,entry,name)
+  mkfilter_alias_byname(name, filter, sizeof(filter)),
+  write_alias(fp, entry, name)
 )
 
 NSLCD_HANDLE(
-  alias,all,
+  alias, all,
   const char *filter;
   log_setrequest("alias(all)");,
   NSLCD_ACTION_ALIAS_ALL,
-  (filter=alias_filter,0),
-  write_alias(fp,entry,NULL)
+  (filter = alias_filter, 0),
+  write_alias(fp, entry, NULL)
 )

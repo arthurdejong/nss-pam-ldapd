@@ -176,7 +176,7 @@ AC_ARG_ENABLE(configfile_checking,
 AC_MSG_RESULT($configfile_checking)
 if test "x$configfile_checking" = "xyes"
 then
-  AC_DEFINE(ENABLE_CONFIGFILE_CHECKING,1,[Whether to check configfile options.])
+  AC_DEFINE(ENABLE_CONFIGFILE_CHECKING, 1 ,[Whether to check configfile options.])
 fi
 
 # check the name of the configuration file
@@ -185,7 +185,7 @@ AC_ARG_WITH(ldap-conf-file,
                            [path to nslcd configuration file @<:@/etc/nslcd.conf@:>@]),
             [ NSLCD_CONF_PATH="$with_ldap_conf_file" ],
             [ NSLCD_CONF_PATH="/etc/nslcd.conf" ])
-AC_DEFINE_UNQUOTED(NSLCD_CONF_PATH,"$NSLCD_CONF_PATH",[Path to nslcd configuration file.])
+AC_DEFINE_UNQUOTED(NSLCD_CONF_PATH, "$NSLCD_CONF_PATH", [Path to nslcd configuration file.])
 AC_SUBST(NSLCD_CONF_PATH)
 
 # check the name of the file with a bindpw value
@@ -193,7 +193,7 @@ AC_ARG_WITH(bindpw-file,
             AS_HELP_STRING([--with-bindpw-file=PATH],
                            [path to file with value for bindpw @<:@disabled@:>@]),
             [ NSLCD_BINDPW_PATH="$with_bindpw_file"
-              AC_DEFINE_UNQUOTED(NSLCD_BINDPW_PATH,"$NSLCD_BINDPW_PATH",[Path to bindpw value.])
+              AC_DEFINE_UNQUOTED(NSLCD_BINDPW_PATH, "$NSLCD_BINDPW_PATH", [Path to bindpw value.])
               AC_SUBST(NSLCD_BINDPW_PATH)
             ])
 
@@ -203,7 +203,7 @@ AC_ARG_WITH(nslcd-pidfile,
                            [path to pidfile @<:@/var/run/nslcd/nslcd.pid@:>@]),
             [ NSLCD_PIDFILE="$with_nslcd_pidfile" ],
             [ NSLCD_PIDFILE="/var/run/nslcd/nslcd.pid" ])
-AC_DEFINE_UNQUOTED(NSLCD_PIDFILE,"$NSLCD_PIDFILE",[The location of the pidfile used for checking availability of the nslcd.])
+AC_DEFINE_UNQUOTED(NSLCD_PIDFILE, "$NSLCD_PIDFILE", [The location of the pidfile used for checking availability of the nslcd.])
 AC_SUBST(NSLCD_PIDFILE)
 
 # where is the socket used for communication
@@ -212,7 +212,7 @@ AC_ARG_WITH(nslcd-socket,
                            [path to socket @<:@/var/run/nslcd/socket@:>@]),
             [ NSLCD_SOCKET="$with_nslcd_socket" ],
             [ NSLCD_SOCKET="/var/run/nslcd/socket" ])
-AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used for communicating.])
+AC_DEFINE_UNQUOTED(NSLCD_SOCKET, "$NSLCD_SOCKET", [The location of the socket used for communicating.])
 AC_SUBST(NSLCD_SOCKET)
 
 # the directory PAM librabries are expected to be placed into
@@ -221,7 +221,7 @@ AC_ARG_WITH(pam-seclib-dir,
                            [path to PAM security library @<:@/lib/security@:>@]),
             [ PAM_SECLIB_DIR="$with_pam_seclib_dir" ],
             [ PAM_SECLIB_DIR="/lib/security" ])
-AC_DEFINE_UNQUOTED(PAM_SECLIB_DIR,"$PAM_SECLIB_DIR",[path to PAM security library])
+AC_DEFINE_UNQUOTED(PAM_SECLIB_DIR, "$PAM_SECLIB_DIR", [path to PAM security library])
 AC_SUBST(PAM_SECLIB_DIR)
 
 # the SONAME to use for the NSS module
@@ -240,7 +240,7 @@ then
   esac
 fi
 AC_MSG_RESULT($NSS_LDAP_SONAME)
-AC_DEFINE_UNQUOTED(NSS_LDAP_SONAME,"$NSS_LDAP_SONAME",[The SONAME of the NSS library module.])
+AC_DEFINE_UNQUOTED(NSS_LDAP_SONAME, "$NSS_LDAP_SONAME", [The SONAME of the NSS library module.])
 AC_SUBST(NSS_LDAP_SONAME)
 
 # the SONAME to use for the PAM module
@@ -263,8 +263,8 @@ AC_SUBST(PAM_LDAP_SONAME)
 # check which modules should be build
 AC_ARG_WITH(nss-maps,
             AS_HELP_STRING([--with-nss-maps=MAP LIST],
-                           [comma separated list of NSS maps to build @<:@all@:>@]),
-            ,[ with_nss_maps="all" ])
+                           [comma separated list of NSS maps to build @<:@all@:>@]),,
+            [ with_nss_maps="all" ])
 
 # checks for availability of header files
 AC_CHECK_HEADERS([ctype.h strings.h pthread.h pthread_np.h fcntl.h limits.h])
@@ -280,7 +280,7 @@ AC_C_CONST
 
 # checks for availability of common functions
 AC_CHECK_FUNCS([sigaction snprintf])
-AC_SEARCH_LIBS(socket,socket)
+AC_SEARCH_LIBS(socket, socket)
 AC_CHECK_FUNCS([strcasecmp strncasecmp strchr strcspn strspn strtol strtoul strtoull])
 AC_CHECK_FUNCS([malloc realloc])
 AC_FUNC_FORK
@@ -309,11 +309,11 @@ AC_CACHE_CHECK([whether $CC supports '__thread'], [mn_cv_c___thread_supported],
 if test $mn_cv_c___thread_supported != yes
 then
   AC_MSG_WARN([$CC does not support '__thread' keyword])
-  AC_DEFINE(__thread,,[Define to empty if compiler does not support `__thread' keyword.])
+  AC_DEFINE(__thread,, [Define to empty if compiler does not support `__thread' keyword.])
 fi
 
 # check for support for the struct ether_addr structure
-AC_CHECK_TYPES(struct ether_addr,,,[
+AC_CHECK_TYPES(struct ether_addr,,, [
     #include <sys/types.h>
     #include <sys/socket.h>
     #include <net/if.h>
@@ -325,7 +325,7 @@ AC_CHECK_TYPES(struct ether_addr,,,[
 
 # check for ether_aton and ether_ntoa functions
 AC_CHECK_FUNCS(ether_aton ether_ntoa ether_aton_r ether_ntoa_r)
-AC_CHECK_DECLS([ether_aton,ether_ntoa],,,[
+AC_CHECK_DECLS([ether_aton, ether_ntoa],,, [
     #include <sys/types.h>
     #include <sys/socket.h>
     #include <net/if.h>
@@ -337,7 +337,7 @@ AC_CHECK_DECLS([ether_aton,ether_ntoa],,,[
 
 # check to see if socklen_t is defined
 AC_CHECK_TYPE(socklen_t,,
-    AC_DEFINE(socklen_t,size_t,[Define to `size_t' if not defined elswhere.]),[
+    AC_DEFINE(socklen_t, size_t, [Define to `size_t' if not defined elswhere.]), [
     #include <sys/types.h>
     #include <sys/socket.h>])
 
@@ -349,13 +349,13 @@ then
   nss_save_LIBS="$LIBS"
 
   # check for a definition of struct aliasent
-  AC_CHECK_TYPES(struct aliasent,,,[
+  AC_CHECK_TYPES(struct aliasent,,, [
       #ifdef HAVE_ALIASES_H
       #include <aliases.h>
       #endif])
 
   # check for a definition of struct etherent
-  AC_CHECK_TYPES(struct etherent,,,[
+  AC_CHECK_TYPES(struct etherent,,, [
     #include <sys/socket.h>
     #include <net/if.h>
     #include <netinet/in.h>
@@ -365,18 +365,18 @@ then
     #endif])
 
   # check if struct passwd has a pw_class member
-  AC_CHECK_MEMBERS([struct passwd.pw_class],,,[
+  AC_CHECK_MEMBERS([struct passwd.pw_class],,, [
       #include <pwd.h>])
 
   # check for a definition of struct rpcent
-  AC_CHECK_TYPES(struct rpcent,,,[
+  AC_CHECK_TYPES(struct rpcent,,, [
       #include <netdb.h>
       #ifdef HAVE_RPC_RPCENT_H
       #include <rpc/rpcent.h>
       #endif])
 
   # check for a definition of struct spwd
-  AC_CHECK_TYPES(struct spwd,,,[
+  AC_CHECK_TYPES(struct spwd,,, [
       #ifdef HAVE_NSS_H
       #include <nss.h>
       #endif
@@ -389,7 +389,7 @@ then
       #endif])
 
   # check for a definition of enum nss_status and nss_backend_t
-  AC_CHECK_TYPES([enum nss_status,nss_backend_t],,,[
+  AC_CHECK_TYPES([enum nss_status, nss_backend_t],,, [
       #ifdef HAVE_NSS_H
       #include <nss.h>
       #endif
@@ -407,7 +407,7 @@ then
       #endif])
 
   # check if struct nss_XbyY_args has a returnlen attribute
-  AC_CHECK_MEMBERS([struct nss_XbyY_args.returnlen],,,[[
+  AC_CHECK_MEMBERS([struct nss_XbyY_args.returnlen],,, [[
       #ifdef HAVE_NSS_H
       #include <nss.h>
       #endif
@@ -441,9 +441,9 @@ then
   fi
   AC_MSG_RESULT($with_nss_flavour)
   case "$with_nss_flavour" in
-    glibc)   AC_DEFINE(NSS_FLAVOUR_GLIBC,1,[Whether to use the Glibc NSS interface flavour.]) ;;
-    solaris) AC_DEFINE(NSS_FLAVOUR_SOLARIS,1,[Whether to use the Solaris NSS interface flavour.]) ;;
-    freebsd) AC_DEFINE(NSS_FLAVOUR_FREEBSD,1,[Whether to use the FreeBSD NSS interface flavour.]) ;;
+    glibc)   AC_DEFINE(NSS_FLAVOUR_GLIBC, 1, [Whether to use the Glibc NSS interface flavour.]) ;;
+    solaris) AC_DEFINE(NSS_FLAVOUR_SOLARIS, 1, [Whether to use the Solaris NSS interface flavour.]) ;;
+    freebsd) AC_DEFINE(NSS_FLAVOUR_FREEBSD, 1, [Whether to use the FreeBSD NSS interface flavour.]) ;;
   esac
 
   # check which module source files to use
@@ -492,7 +492,7 @@ then
 
   # check for headers
   AC_CHECK_HEADERS(security/pam_appl.h)
-  AC_CHECK_HEADERS(security/pam_modules.h,,,[
+  AC_CHECK_HEADERS(security/pam_modules.h,,, [
       #ifdef HAVE_SECURITY_PAM_APPL_H
       #include <security/pam_appl.h>
       #endif
@@ -509,7 +509,7 @@ then
   fi
 
   # find pam library
-  AC_SEARCH_LIBS(pam_get_data,pam,,AC_MSG_ERROR(no PAM library available))
+  AC_SEARCH_LIBS(pam_get_data, pam,, AC_MSG_ERROR(no PAM library available))
 
   # replace some PAM functions if they are unavailable
   AC_REPLACE_FUNCS(pam_get_authtok pam_prompt)
@@ -547,7 +547,7 @@ then
 
   # check header files
   AC_CHECK_HEADERS(lber.h)
-  AC_CHECK_HEADERS(ldap.h,, test "x$enable_nslcd" = "xyes" && AC_MSG_ERROR([could not locate <ldap.h>]),[
+  AC_CHECK_HEADERS(ldap.h,, test "x$enable_nslcd" = "xyes" && AC_MSG_ERROR([could not locate <ldap.h>]), [
       #if HAVE_LBER_H
       #include <lber.h>
       #endif
@@ -566,9 +566,9 @@ then
   AC_CHECK_HEADERS(regex.h)
 
   # checks for availability of system libraries for nslcd
-  AC_SEARCH_LIBS(gethostbyname,nsl socket)
-  AC_SEARCH_LIBS(hstrerror,resolv)
-  AC_SEARCH_LIBS(dlopen,dl)
+  AC_SEARCH_LIBS(gethostbyname, nsl socket)
+  AC_SEARCH_LIBS(hstrerror, resolv)
+  AC_SEARCH_LIBS(dlopen, dl)
 
   # check for availability of functions
   AC_CHECK_FUNCS(initgroups setgroups)
@@ -584,30 +584,30 @@ then
   AC_REPLACE_FUNCS(strndup)
 
   # replace daemon() function if it is not on the system
-  AC_SEARCH_LIBS(daemon,bsd)
+  AC_SEARCH_LIBS(daemon, bsd)
   AC_REPLACE_FUNCS(daemon)
-  AC_CHECK_DECLS([daemon],,,[
+  AC_CHECK_DECLS([daemon],,, [
       #include <unistd.h>
       #include <stdlib.h>])
 
   # replace ether_aton_r() and ether_ntoa_r() if they are not found
-  AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,,[AC_LIBOBJ(ether)])
+  AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,, [AC_LIBOBJ(ether)])
 
   # check to see if struct sockaddr_storage is defined
   AC_CHECK_TYPE(struct sockaddr_storage,,
-      AC_DEFINE(sockaddr_storage,sockaddr_in,[Define to `sockaddr_in' if not defined elsewhere.]),[
+      AC_DEFINE(sockaddr_storage, sockaddr_in, [Define to `sockaddr_in' if not defined elsewhere.]), [
       #include <sys/types.h>
       #include <sys/socket.h>])
 
   # check for support for the struct ucred structure
   AC_CHECK_TYPE(struct ucred,
-      AC_DEFINE(HAVE_STRUCT_UCRED,1,[Define to 1 if you have a `struct ucred' definition.]),,[
+      AC_DEFINE(HAVE_STRUCT_UCRED, 1, [Define to 1 if you have a `struct ucred' definition.]),, [
       #include <sys/socket.h>
       #include <sys/un.h>
       #include <sys/types.h>])
 
   # check threading stuff
-  AX_PTHREAD(,AC_MSG_ERROR([no support for pthreads]))
+  AX_PTHREAD(, AC_MSG_ERROR([no support for pthreads]))
   pthread_save_CFLAGS="$CFLAGS"
   pthread_save_LIBS="$LIBS"
   CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
@@ -631,7 +631,7 @@ then
   fi
   if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = umich -o $with_ldap_lib = openldap \)
   then
-    AC_SEARCH_LIBS(ldap_search_ext,[ldap_r ldap],found_ldap_lib=yes,,)
+    AC_SEARCH_LIBS(ldap_search_ext, [ldap_r ldap], found_ldap_lib=yes,, )
   fi
   if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape5 \)
   then
@@ -646,40 +646,40 @@ then
     fi
     if test -z "$found_ldap_lib"
     then
-      AC_CHECK_LIB(ldap41, main, LIBS="-lldap41 $LIBS" found_ldap_lib=yes,,)
+      AC_CHECK_LIB(ldap41, main, LIBS="-lldap41 $LIBS" found_ldap_lib=yes,, )
     fi
     if test -z "$found_ldap_lib"
     then
-      AC_CHECK_LIB(ldap40, main, LIBS="-lldap40 $LIBS" found_ldap_lib=yes,,)
+      AC_CHECK_LIB(ldap40, main, LIBS="-lldap40 $LIBS" found_ldap_lib=yes,, )
     fi
   fi
   if test -z "$found_ldap_lib" -a \( $with_ldap_lib = auto -o $with_ldap_lib = netscape3 \)
   then
     AC_CHECK_LIB(ldapssl30, main, LIBS="-lldapssl30 $LIBS" found_ldap_lib=yes,, -lpthread)
   fi
-  AC_CHECK_FUNCS(ldap_search_ext,,AC_MSG_ERROR([could not locate a valid LDAP library]))
+  AC_CHECK_FUNCS(ldap_search_ext,, AC_MSG_ERROR([could not locate a valid LDAP library]))
 
   # see if we need a BER library
-  AC_SEARCH_LIBS(ber_bvfree,lber)
+  AC_SEARCH_LIBS(ber_bvfree, lber)
 
   # check for extra SASL libraries
   if test "$enable_sasl" = "yes"
   then
     AC_CHECK_TYPE(sasl_interact_t,
-        AC_DEFINE(HAVE_SASL_INTERACT_T,1,[Define to 1 if you have a `sasl_interact_t' definition.]),,[
+        AC_DEFINE(HAVE_SASL_INTERACT_T, 1, [Define to 1 if you have a `sasl_interact_t' definition.]),, [
         #ifdef HAVE_SASL_SASL_H
         #include <sasl/sasl.h>
         #elif defined(HAVE_SASL_H)
         #include <sasl.h>
         #endif])
-    AC_SEARCH_LIBS(ldap_sasl_interactive_bind_s,sasl2)
+    AC_SEARCH_LIBS(ldap_sasl_interactive_bind_s, sasl2)
     AC_CHECK_FUNCS(ldap_sasl_interactive_bind_s)
   fi
 
   # check for extra Kerberos libraries
   if test "$enable_kerberos" = "yes"
   then
-    AC_SEARCH_LIBS(gss_krb5_ccache_name,gssapi gssapi_krb5)
+    AC_SEARCH_LIBS(gss_krb5_ccache_name, gssapi gssapi_krb5)
     AC_CHECK_FUNCS(gss_krb5_ccache_name)
   fi
 
@@ -695,8 +695,8 @@ then
   AC_CHECK_FUNCS(ber_bvfree ber_free ber_set_option)
 
   # replace ldap_create_page_control() and ldap_parse_page_control()
-  AC_CHECK_FUNCS(ldap_create_page_control ldap_parse_page_control,,[AC_LIBOBJ(pagectrl)])
-  AC_CHECK_DECLS(ldap_extended_operation_s,,,[
+  AC_CHECK_FUNCS(ldap_create_page_control ldap_parse_page_control,, [AC_LIBOBJ(pagectrl)])
+  AC_CHECK_DECLS(ldap_extended_operation_s,,, [
       #if HAVE_LBER_H
       #include <lber.h>
       #endif
@@ -714,12 +714,12 @@ then
           [AC_LANG_PROGRAM([[
               #include <lber.h>
               #include <ldap.h>
-              ]],[[
-              ldap_set_rebind_proc(0,0,0);
+              ]], [[
+              ldap_set_rebind_proc(0, 0, 0);
               ]])],
           [nss_ldapd_cv_ldap_set_rebind_proc_args=3],
           [nss_ldapd_cv_ldap_set_rebind_proc_args=2]) ])
-  AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS,$nss_ldapd_cv_ldap_set_rebind_proc_args,
+  AC_DEFINE_UNQUOTED(LDAP_SET_REBIND_PROC_ARGS, $nss_ldapd_cv_ldap_set_rebind_proc_args,
                      [Define to the number of arguments to ldap_set_rebindproc.])
 
   # check the return type of ldap_set_rebind_proc()
@@ -730,18 +730,18 @@ then
           [AC_LANG_PROGRAM([[
               #include <lber.h>
               #include <ldap.h>
-              ]],[[
+              ]], [[
               #if LDAP_SET_REBIND_PROC_ARGS == 3
-              return ldap_set_rebind_proc(0,0,0);
+              return ldap_set_rebind_proc(0, 0, 0);
               #else
-              return ldap_set_rebind_proc(0,0);
+              return ldap_set_rebind_proc(0, 0);
               #endif
               ]])],
           [nss_ldapd_cv_ldap_set_rebind_proc_type=int],
           [nss_ldapd_cv_ldap_set_rebind_proc_type=void]) ])
   if test "x$nss_ldapd_cv_ldap_set_rebind_proc_type" = "xvoid"
   then
-    AC_DEFINE(LDAP_SET_REBIND_PROC_RETURNS_VOID,1,
+    AC_DEFINE(LDAP_SET_REBIND_PROC_RETURNS_VOID, 1,
               [Define to 1 if ldap_set_rebind_proc() returns void.])
   fi
 

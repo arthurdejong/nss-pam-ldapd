@@ -1,7 +1,7 @@
 /*
    strndup.h - definition of strndup() for systems that lack it
 
-   Copyright (C) 2011 Arthur de Jong
+   Copyright (C) 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -26,7 +26,7 @@
 
 /* this is a strndup() replacement for systems that don't have it
    (strndup() is in POSIX 2008 now) */
-char *strndup(const char *s,size_t size);
+char *strndup(const char *s, size_t size);
 
 #endif /* not HAVE_STRNDUP */
 

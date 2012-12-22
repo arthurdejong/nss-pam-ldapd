@@ -1,7 +1,7 @@
 /*
    ldap_initialize.c - replacement function for ldap_initialize()
 
-   Copyright (C) 2009 Arthur de Jong
+   Copyright (C) 2009, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,29 +36,29 @@
 
 /* provide a wrapper around ldap_init() if the system doesn't have
    ldap_initialize() */
-int ldap_initialize(LDAP **ldp,const char *url)
+int ldap_initialize(LDAP **ldp, const char *url)
 {
   char host[80];
   /* check schema part */
-  if (strncasecmp(url,"ldap://",7)==0)
+  if (strncasecmp(url, "ldap://", 7) == 0)
   {
-    strncpy(host,url+7,sizeof(host));
-    host[sizeof(host)-1]='\0';
+    strncpy(host, url + 7, sizeof(host));
+    host[sizeof(host) - 1] = '\0';
   }
-  else if (strncasecmp(url,"ldaps://",8)==0)
+  else if (strncasecmp(url, "ldaps://", 8) == 0)
   {
-    strncpy(host,url+8,sizeof(host));
-    host[sizeof(host)-1]='\0';
+    strncpy(host, url + 8, sizeof(host));
+    host[sizeof(host) - 1] = '\0';
   }
   else
   {
-    log_log(LOG_ERR,"ldap_initialize(): schema not supported: %s",url);
+    log_log(LOG_ERR, "ldap_initialize(): schema not supported: %s", url);
     exit(EXIT_FAILURE);
   }
   /* strip trailing slash */
-  if ((strlen(host)>0)&&(host[strlen(host)-1]=='/'))
-    host[strlen(host)-1]='\0';
+  if ((strlen(host) > 0) && (host[strlen(host) - 1] == '/'))
+    host[strlen(host) - 1] = '\0';
   /* call ldap_init() */
-  *ldp=ldap_init(host,LDAP_PORT);
-  return (*ldp==NULL)?LDAP_OPERATIONS_ERROR:LDAP_SUCCESS;
+  *ldp = ldap_init(host, LDAP_PORT);
+  return (*ldp == NULL) ? LDAP_OPERATIONS_ERROR : LDAP_SUCCESS;
 }

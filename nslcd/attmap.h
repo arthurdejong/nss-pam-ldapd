@@ -2,7 +2,7 @@
    attmap.h - attribute mapping variables
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -80,19 +80,20 @@ const char **filter_get_var(enum ldap_map_selector map);
 /* return a reference to the attribute mapping variable for the specified name
    the name is the name after the attmap_... variables above with the
    underscode replaced by a dot (e.g passwd.homeDirectory) */
-const char **attmap_get_var(enum ldap_map_selector map,const char *name);
+const char **attmap_get_var(enum ldap_map_selector map, const char *name);
 
 /* Set the attribute mapping of the variable to the value specified.
    Returns the new value on success. */
-MUST_USE const char *attmap_set_mapping(const char **var,const char *value);
+MUST_USE const char *attmap_set_mapping(const char **var, const char *value);
 
 /* Return a value for the attribute, handling the case where attr
    is an expression. On error (e.g. problem parsing expression, attribute
    value not found) it returns NULL and the buffer is made empty. */
-const char *attmap_get_value(MYLDAP_ENTRY *entry,const char *attr,char *buffer,size_t buflen);
+const char *attmap_get_value(MYLDAP_ENTRY *entry, const char *attr,
+                             char *buffer, size_t buflen);
 
 /* Add the attributes from attr to the set. The attr argumenent
    can either be an attribute or an attribute expression. */
-SET *attmap_add_attributes(SET *set,const char *attr);
+SET *attmap_add_attributes(SET *set, const char *attr);
 
 #endif /* not NSLCD__ATTMAP_H */

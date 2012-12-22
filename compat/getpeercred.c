@@ -3,7 +3,7 @@
                    other end of a unix socket
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008 Arthur de Jong
+   Copyright (C) 2008, 2009, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -40,67 +40,81 @@
 /* Note: most of this code is untested, except for the first
          implementation (it may even fail to compile) */
 
-int getpeercred(int sock,uid_t *uid,gid_t *gid,pid_t *pid)
+int getpeercred(int sock, uid_t *uid, gid_t *gid, pid_t *pid)
 {
 #if defined(SO_PEERCRED)
   socklen_t l;
   struct ucred cred;
   /* initialize client information (in case getsockopt() breaks) */
-  cred.pid=(pid_t)0;
-  cred.uid=(uid_t)-1;
-  cred.gid=(gid_t)-1;
+  cred.pid = (pid_t)0;
+  cred.uid = (uid_t)-1;
+  cred.gid = (gid_t)-1;
   /* look up process information from peer */
-  l=(socklen_t)sizeof(struct ucred);
-  if (getsockopt(sock,SOL_SOCKET,SO_PEERCRED,&cred,&l) < 0)
+  l = (socklen_t)sizeof(struct ucred);
+  if (getsockopt(sock, SOL_SOCKET, SO_PEERCRED, &cred, &l) < 0)
     return -1; /* errno already set */
   /* return the data */
-  if (uid!=NULL) *uid=cred.uid;
-  if (gid!=NULL) *gid=cred.gid;
-  if (pid!=NULL) *pid=cred.pid;
+  if (uid != NULL)
+    *uid = cred.uid;
+  if (gid != NULL)
+    *gid = cred.gid;
+  if (pid != NULL)
+    *pid = cred.pid;
   return 0;
 #elif defined(LOCAL_PEERCRED)
   socklen_t l;
   struct xucred cred;
   /* look up process information from peer */
-  l=(socklen_t)sizeof(struct xucred);
-  if (getsockopt(sock,0,LOCAL_PEERCRED,&cred,&l) < 0)
+  l = (socklen_t)sizeof(struct xucred);
+  if (getsockopt(sock, 0, LOCAL_PEERCRED, &cred, &l) < 0)
     return -1; /* errno already set */
-  if (cred.cr_version!=XUCRED_VERSION)
+  if (cred.cr_version != XUCRED_VERSION)
   {
-    errno=EINVAL;
+    errno = EINVAL;
     return -1;
   }
   /* return the data */
-  if (uid!=NULL) *uid=cred.cr_uid;
-  if (gid!=NULL) *gid=cred.cr_gid;
-  if (pid!=NULL) *pid=(pid_t)-1;
+  if (uid != NULL)
+    *uid = cred.cr_uid;
+  if (gid != NULL)
+    *gid = cred.cr_gid;
+  if (pid != NULL)
+    *pid = (pid_t)-1;
   return 0;
 #elif defined(HAVE_GETPEERUCRED)
-  ucred_t *cred=NULL;
-  if (getpeerucred(sock,&cred))
+  ucred_t *cred = NULL;
+  if (getpeerucred(sock, &cred))
     return -1;
   /* save the data */
-  if (uid!=NULL) *uid=ucred_geteuid(cred);
-  if (gid!=NULL) *gid=ucred_getegid(cred);
-  if (pid!=NULL) *pid=ucred_getpid(cred);
+  if (uid != NULL)
+    *uid = ucred_geteuid(cred);
+  if (gid != NULL)
+    *gid = ucred_getegid(cred);
+  if (pid != NULL)
+    *pid = ucred_getpid(cred);
   /* free cred and return */
   ucred_free(cred);
   return 0;
 #elif defined(HAVE_GETPEEREID)
   uid_t tuid;
   gid_t tgid;
-  if (uid==NULL) uid=&tuid;
-  if (gid==NULL) gid=&tguid;
-  if (getpeereid(sock,uid,gid))
+  if (uid == NULL)
+    uid = &tuid;
+  if (gid == NULL)
+    gid = &tguid;
+  if (getpeereid(sock, uid, gid))
     return -1;
   /* return the data */
-  if (uid!=NULL) *uid=cred.uid;
-  if (gid!=NULL) *gid=cred.gid;
-  if (pid!=NULL) *pid=-1; /* we return a -1 pid because we have no usable pid */
+  if (uid != NULL)
+    *uid = cred.uid;
+  if (gid != NULL)
+    *gid = cred.gid;
+  if (pid != NULL)
+    *pid = -1; /* we return a -1 pid because we have no usable pid */
   return 0;
 #else
   /* nothing found that is supported */
-  errno=ENOSYS;
+  errno = ENOSYS;
   return -1;
 #endif
 }

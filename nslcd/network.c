@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -63,128 +63,124 @@ static const char *network_attrs[3];
 /* create a search filter for searching a network entry
    by name, return -1 on errors */
 static int mkfilter_network_byname(const char *name,
-                                   char *buffer,size_t buflen)
+                                   char *buffer, size_t buflen)
 {
   char safename[300];
   /* escape attribute */
-  if (myldap_escape(name,safename,sizeof(safename)))
+  if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
   /* build filter */
-  return mysnprintf(buffer,buflen,
-                    "(&%s(%s=%s))",
-                    network_filter,
-                    attmap_network_cn,safename);
+  return mysnprintf(buffer, buflen, "(&%s(%s=%s))",
+                    network_filter, attmap_network_cn, safename);
 }
 
 static int mkfilter_network_byaddr(const char *addrstr,
-                                   char *buffer,size_t buflen)
+                                   char *buffer, size_t buflen)
 {
   char safeaddr[64];
   /* escape attribute */
-  if (myldap_escape(addrstr,safeaddr,sizeof(safeaddr)))
+  if (myldap_escape(addrstr, safeaddr, sizeof(safeaddr)))
     return -1;
   /* build filter */
-  return mysnprintf(buffer,buflen,
-                    "(&%s(%s=%s))",
-                    network_filter,
-                    attmap_network_ipNetworkNumber,safeaddr);
+  return mysnprintf(buffer, buflen, "(&%s(%s=%s))",
+                    network_filter, attmap_network_ipNetworkNumber, safeaddr);
 }
 
 void network_init(void)
 {
   int i;
   /* set up search bases */
-  if (network_bases[0]==NULL)
-    for (i=0;i<NSS_LDAP_CONFIG_MAX_BASES;i++)
-      network_bases[i]=nslcd_cfg->ldc_bases[i];
+  if (network_bases[0] == NULL)
+    for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
+      network_bases[i] = nslcd_cfg->ldc_bases[i];
   /* set up scope */
-  if (network_scope==LDAP_SCOPE_DEFAULT)
-    network_scope=nslcd_cfg->ldc_scope;
+  if (network_scope == LDAP_SCOPE_DEFAULT)
+    network_scope = nslcd_cfg->ldc_scope;
   /* set up attribute list */
-  network_attrs[0]=attmap_network_cn;
-  network_attrs[1]=attmap_network_ipNetworkNumber;
-  network_attrs[2]=NULL;
+  network_attrs[0] = attmap_network_cn;
+  network_attrs[1] = attmap_network_ipNetworkNumber;
+  network_attrs[2] = NULL;
 }
 
 /* write a single network entry to the stream */
-static int write_network(TFILE *fp,MYLDAP_ENTRY *entry)
+static int write_network(TFILE *fp, MYLDAP_ENTRY *entry)
 {
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  int numaddr,i;
+  int32_t tmpint32, tmp2int32, tmp3int32;
+  int numaddr, i;
   const char *networkname;
   const char **networknames;
   const char **addresses;
   /* get the most canonical name */
-  networkname=myldap_get_rdn_value(entry,attmap_network_cn);
+  networkname = myldap_get_rdn_value(entry, attmap_network_cn);
   /* get the other names for the network */
-  networknames=myldap_get_values(entry,attmap_network_cn);
-  if ((networknames==NULL)||(networknames[0]==NULL))
+  networknames = myldap_get_values(entry, attmap_network_cn);
+  if ((networknames == NULL) || (networknames[0] == NULL))
   {
-    log_log(LOG_WARNING,"%s: %s: missing",
-                        myldap_get_dn(entry),attmap_network_cn);
+    log_log(LOG_WARNING, "%s: %s: missing",
+            myldap_get_dn(entry), attmap_network_cn);
     return 0;
   }
   /* if the networkname is not yet found, get the first entry from networknames */
-  if (networkname==NULL)
-    networkname=networknames[0];
+  if (networkname == NULL)
+    networkname = networknames[0];
   /* get the addresses */
-  addresses=myldap_get_values(entry,attmap_network_ipNetworkNumber);
-  if ((addresses==NULL)||(addresses[0]==NULL))
+  addresses = myldap_get_values(entry, attmap_network_ipNetworkNumber);
+  if ((addresses == NULL) || (addresses[0] == NULL))
   {
-    log_log(LOG_WARNING,"%s: %s: missing",
-                        myldap_get_dn(entry),attmap_network_ipNetworkNumber);
+    log_log(LOG_WARNING, "%s: %s: missing",
+            myldap_get_dn(entry), attmap_network_ipNetworkNumber);
     return 0;
   }
   /* write the entry */
-  WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
-  WRITE_STRING(fp,networkname);
-  WRITE_STRINGLIST_EXCEPT(fp,networknames,networkname);
-  for (numaddr=0;addresses[numaddr]!=NULL;numaddr++)
-    /*noting*/ ;
-  WRITE_INT32(fp,numaddr);
-  for (i=0;i<numaddr;i++)
+  WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
+  WRITE_STRING(fp, networkname);
+  WRITE_STRINGLIST_EXCEPT(fp, networknames, networkname);
+  for (numaddr = 0; addresses[numaddr] != NULL; numaddr++)
+    /* noting */ ;
+  WRITE_INT32(fp, numaddr);
+  for (i = 0; i < numaddr; i++)
   {
-    WRITE_ADDRESS(fp,entry,attmap_network_ipNetworkNumber,addresses[i]);
+    WRITE_ADDRESS(fp, entry, attmap_network_ipNetworkNumber, addresses[i]);
   }
   return 0;
 }
 
 NSLCD_HANDLE(
-  network,byname,
+  network, byname,
   char name[256];
   char filter[4096];
-  READ_STRING(fp,name);
-  log_setrequest("network=\"%s\"",name);,
+  READ_STRING(fp, name);
+  log_setrequest("network=\"%s\"", name);,
   NSLCD_ACTION_NETWORK_BYNAME,
-  mkfilter_network_byname(name,filter,sizeof(filter)),
-  write_network(fp,entry)
+  mkfilter_network_byname(name, filter, sizeof(filter)),
+  write_network(fp, entry)
 )
 
 NSLCD_HANDLE(
-  network,byaddr,
+  network, byaddr,
   int af;
   char addr[64];
-  int len=sizeof(addr);
+  int len = sizeof(addr);
   char addrstr[64];
   char filter[4096];
-  READ_ADDRESS(fp,addr,len,af);
+  READ_ADDRESS(fp, addr, len, af);
   /* translate the address to a string */
-  if (inet_ntop(af,addr,addrstr,sizeof(addrstr))==NULL)
+  if (inet_ntop(af, addr, addrstr, sizeof(addrstr)) == NULL)
   {
-    log_log(LOG_WARNING,"unable to convert address to string");
+    log_log(LOG_WARNING, "unable to convert address to string");
     return -1;
   }
-  log_setrequest("network=%s",addrstr);,
+  log_setrequest("network=%s", addrstr);,
   NSLCD_ACTION_NETWORK_BYADDR,
-  mkfilter_network_byaddr(addrstr,filter,sizeof(filter)),
-  write_network(fp,entry)
+  mkfilter_network_byaddr(addrstr, filter, sizeof(filter)),
+  write_network(fp, entry)
 )
 
 NSLCD_HANDLE(
-  network,all,
+  network, all,
   const char *filter;
   log_setrequest("network(all)");,
   NSLCD_ACTION_NETWORK_ALL,
-  (filter=network_filter,0),
-  write_network(fp,entry)
+  (filter = network_filter, 0),
+  write_network(fp, entry)
 )

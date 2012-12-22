@@ -41,12 +41,12 @@
 
 /* read timeout is 60 seconds because looking up stuff may take some time
    write timeout is 10 secods because nslcd could be loaded with requests */
-#define READ_TIMEOUT 60*1000
-#define WRITE_TIMEOUT 10*1000
+#define READ_TIMEOUT 60 * 1000
+#define WRITE_TIMEOUT 10 * 1000
 
 /* buffer sizes for I/O */
 #define READBUFFER_MINSIZE 1024
-#define READBUFFER_MAXSIZE 2*1024*1024
+#define READBUFFER_MAXSIZE 2 * 1024 * 1024
 #define WRITEBUFFER_MINSIZE 32
 #define WRITEBUFFER_MAXSIZE 32
 
@@ -65,27 +65,27 @@ TFILE *nslcd_client_open()
   TFILE *fp;
   int flags;
   /* create a socket */
-  if ( (sock=socket(PF_UNIX,SOCK_STREAM,0))<0 )
+  if ((sock = socket(PF_UNIX, SOCK_STREAM, 0)) < 0)
     return NULL;
   /* create socket address structure */
-  memset(&addr,0,sizeof(struct sockaddr_un));
-  addr.sun_family=AF_UNIX;
-  strncpy(addr.sun_path,NSLCD_SOCKET,sizeof(addr.sun_path));
-  addr.sun_path[sizeof(addr.sun_path)-1]='\0';
+  memset(&addr, 0, sizeof(struct sockaddr_un));
+  addr.sun_family = AF_UNIX;
+  strncpy(addr.sun_path, NSLCD_SOCKET, sizeof(addr.sun_path));
+  addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
   /* close the file descriptor on exec (ignore errors) */
-  flags=fcntl(sock,F_GETFL);
-  if (flags>=0)
-    (void)fcntl(sock,F_SETFD,flags|FD_CLOEXEC);
+  flags = fcntl(sock, F_GETFL);
+  if (flags >= 0)
+    (void)fcntl(sock, F_SETFD, flags | FD_CLOEXEC);
   /* connect to the socket */
-  if (connect(sock,(struct sockaddr *)&addr,SUN_LEN(&addr))<0)
+  if (connect(sock, (struct sockaddr *)&addr, SUN_LEN(&addr)) < 0)
   {
     (void)close(sock);
     return NULL;
   }
   /* create a stream object */
-  if ((fp=tio_fdopen(sock,READ_TIMEOUT,WRITE_TIMEOUT,
-                     READBUFFER_MINSIZE,READBUFFER_MAXSIZE,
-                     WRITEBUFFER_MINSIZE,WRITEBUFFER_MAXSIZE))==NULL)
+  if ((fp = tio_fdopen(sock, READ_TIMEOUT, WRITE_TIMEOUT,
+                       READBUFFER_MINSIZE, READBUFFER_MAXSIZE,
+                       WRITEBUFFER_MINSIZE, WRITEBUFFER_MAXSIZE)) == NULL)
   {
     (void)close(sock);
     return NULL;

@@ -48,16 +48,14 @@
 /* maximum number of pam_authz_search options */
 #define NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES 8
 
-enum ldap_ssl_options
-{
+enum ldap_ssl_options {
   SSL_OFF,
   SSL_LDAPS,
   SSL_START_TLS
 };
 
 /* selectors for different maps */
-enum ldap_map_selector
-{
+enum ldap_map_selector {
   LM_PASSWD,
   LM_SHADOW,
   LM_GROUP,
@@ -72,8 +70,7 @@ enum ldap_map_selector
   LM_NONE
 };
 
-struct myldap_uri
-{
+struct myldap_uri {
   char *uri;
   /* time of first failed operation */
   time_t firstfail;
@@ -81,8 +78,7 @@ struct myldap_uri
   time_t lastfail;
 };
 
-struct ldap_config
-{
+struct ldap_config {
   /* the number of threads to start */
   int ldc_threads;
   /* the user name specified in the uid option */
@@ -94,7 +90,7 @@ struct ldap_config
   /* whether or not case should be ignored in lookups */
   int ldc_ignorecase;
   /* NULL terminated list of URIs */
-  struct myldap_uri ldc_uris[NSS_LDAP_CONFIG_URI_MAX+1];
+  struct myldap_uri ldc_uris[NSS_LDAP_CONFIG_URI_MAX + 1];
   /* protocol version */
   int ldc_version;
   /* bind DN */

@@ -2,7 +2,7 @@
    dict.h - dictionary functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -37,15 +37,15 @@ DICT *dict_new(void)
 
 /* Add a relation in the dictionary. The key is duplicated
    and can be reused by the caller. The pointer is just stored.
-   This function returns non-0 in case of memory allocation
+   This function returns non-zero in case of memory allocation
    errors. If the key was previously in use the value
    is replaced. All key comparisons are case sensitive. */
-int dict_put(DICT *dict,const char *key,void *value);
+int dict_put(DICT *dict, const char *key, void *value);
 
 /* Look up a key in the dictionary and return the associated
    value. NULL is returned if the key is not found in the dictionary.
    All key comparisons are case sensitive. */
-void *dict_get(DICT *dict,const char *key)
+void *dict_get(DICT *dict, const char *key)
   MUST_USE;
 
 /* Get a key from the dictionary that has a value set. The caller does
@@ -55,7 +55,7 @@ const char *dict_getany(DICT *dict);
 
 /* Delete a key-value association from the dictionary.
    All key comparisons are case sensitive. */
-/*void dict_del(DICT *dict,const char *key);*/
+/*void dict_del(DICT *dict, const char *key);*/
 
 /* Remove the dictionary from memory. All allocated storage
    for the dictionary and the keys is freed.

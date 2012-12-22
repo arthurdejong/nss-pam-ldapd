@@ -4,7 +4,7 @@
    (taken from _update_authtok() in pam_ldap.c).
 
    Copyright (C) 1998-2004 Luke Howard
-   Copyright (C) 2009, 2010 Arthur de Jong
+   Copyright (C) 2009, 2010, 20120 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -39,9 +39,9 @@
 #define LDAP_TAG_EXOP_MODIFY_PASSWD_NEW LDAP_TAG_EXOP_X_MODIFY_PASSWD_NEW
 #else /* not LDAP_EXOP_X_MODIFY_PASSWD */
 #define LDAP_EXOP_MODIFY_PASSWD "1.3.6.1.4.1.4203.1.11.1"
-#define LDAP_TAG_EXOP_MODIFY_PASSWD_ID ((ber_tag_t) 0x80U)
-#define LDAP_TAG_EXOP_MODIFY_PASSWD_OLD ((ber_tag_t) 0x81U)
-#define LDAP_TAG_EXOP_MODIFY_PASSWD_NEW ((ber_tag_t) 0x82U)
+#define LDAP_TAG_EXOP_MODIFY_PASSWD_ID ((ber_tag_t)0x80U)
+#define LDAP_TAG_EXOP_MODIFY_PASSWD_OLD ((ber_tag_t)0x81U)
+#define LDAP_TAG_EXOP_MODIFY_PASSWD_NEW ((ber_tag_t)0x82U)
 #endif /* not LDAP_EXOP_X_MODIFY_PASSWD */
 #endif /* not LDAP_EXOP_MODIFY_PASSWD */
 
@@ -56,18 +56,18 @@
 #if !HAVE_DECL_LDAP_EXTENDED_OPERATION_S
 /* we define this ourselves here because some LDAP header versions don't
    seem to define this */
-extern int ldap_extended_operation_s(LDAP *ld,LDAP_CONST char *reqoid,
-    struct berval *reqdata,LDAPControl **serverctrls,LDAPControl **clientctrls,
-    char **retoidp,struct berval **retdatap);
+extern int ldap_extended_operation_s(LDAP *ld, LDAP_CONST char *reqoid,
+      struct berval *reqdata, LDAPControl **serverctrls,
+      LDAPControl **clientctrls, char **retoidp, struct berval **retdatap);
 #endif /* not HAVE_DECL_LDAP_EXTENDED_OPERATION_S */
 
 /* Replacement for password modification. user is the DN of the entry to
    change, oldpw is the old password (may not always be needed?), newpw is
    the new password to set and newpasswd is sometimes returned (though not
-   by us). See RFC 3062 for details.*/
-int ldap_passwd_s(LDAP *ld,struct berval *user,struct berval *oldpw,
-                  struct berval *newpw,struct berval UNUSED(*newpasswd),
-                  LDAPControl **sctrls,LDAPControl **cctrls)
+   by us). See RFC 3062 for details. */
+int ldap_passwd_s(LDAP *ld, struct berval *user, struct berval *oldpw,
+                  struct berval *newpw, struct berval UNUSED(*newpasswd),
+                  LDAPControl **sctrls, LDAPControl **cctrls)
 {
 #ifndef HAVE_LDAP_EXTENDED_OPERATION_S
   return LDAP_OPERATIONS_ERROR;
@@ -78,25 +78,25 @@ int ldap_passwd_s(LDAP *ld,struct berval *user,struct berval *oldpw,
   char *retoid;
   struct berval *retdata;
   /* set up request data */
-  ber=ber_alloc_t(LBER_USE_DER);
-  if (ber==NULL)
+  ber = ber_alloc_t(LBER_USE_DER);
+  if (ber == NULL)
     return LDAP_NO_MEMORY;
-  ber_printf(ber,"{");
-  ber_printf(ber,"tO",LDAP_TAG_EXOP_MODIFY_PASSWD_ID,user);
-  if (oldpw!=NULL)
-    ber_printf(ber,"tO",LDAP_TAG_EXOP_MODIFY_PASSWD_OLD,oldpw);
-  ber_printf(ber,"tO",LDAP_TAG_EXOP_MODIFY_PASSWD_NEW,newpw);
-  ber_printf(ber,"N}");
-  rc=ber_flatten(ber,&bv);
-  ber_free(ber,1);
-  if (rc<0)
+  ber_printf(ber, "{");
+  ber_printf(ber, "tO", LDAP_TAG_EXOP_MODIFY_PASSWD_ID, user);
+  if (oldpw != NULL)
+    ber_printf(ber, "tO", LDAP_TAG_EXOP_MODIFY_PASSWD_OLD, oldpw);
+  ber_printf(ber, "tO", LDAP_TAG_EXOP_MODIFY_PASSWD_NEW, newpw);
+  ber_printf(ber, "N}");
+  rc = ber_flatten(ber, &bv);
+  ber_free(ber, 1);
+  if (rc < 0)
     return LDAP_NO_MEMORY;
   /* perform the operation */
-  rc=ldap_extended_operation_s(ld,LDAP_EXOP_MODIFY_PASSWD,bv,sctrls,cctrls,
-                               &retoid,&retdata);
+  rc = ldap_extended_operation_s(ld, LDAP_EXOP_MODIFY_PASSWD, bv, sctrls,
+                                 cctrls, &retoid, &retdata);
   /* free data */
   ber_bvfree(bv);
-  if (rc==LDAP_SUCCESS)
+  if (rc == LDAP_SUCCESS)
   {
     ber_bvfree(retdata);
     ber_memfree(retoid);

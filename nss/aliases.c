@@ -29,33 +29,32 @@
 #include "common.h"
 
 /* read an alias entry from the stream */
-static nss_status_t read_aliasent(
-        TFILE *fp,struct aliasent *result,
-        char *buffer,size_t buflen,int *errnop)
+static nss_status_t read_aliasent(TFILE *fp, struct aliasent *result,
+                                  char *buffer, size_t buflen, int *errnop)
 {
-  int32_t tmpint32,tmp2int32,tmp3int32;
-  size_t bufptr=0;
-  memset(result,0,sizeof(struct aliasent));
+  int32_t tmpint32, tmp2int32, tmp3int32;
+  size_t bufptr = 0;
+  memset(result, 0, sizeof(struct aliasent));
   /* read the name of the alias */
-  READ_BUF_STRING(fp,result->alias_name);
+  READ_BUF_STRING(fp, result->alias_name);
   /* read the members */
-  READ_BUF_STRINGLIST(fp,result->alias_members);
+  READ_BUF_STRINGLIST(fp, result->alias_members);
   /* tmp3int32 holds the number of entries read */
-  result->alias_members_len=tmp3int32;
+  result->alias_members_len = tmp3int32;
   /* fill in remaining gaps in struct */
-  result->alias_local=0;
+  result->alias_local = 0;
   /* we're done */
   return NSS_STATUS_SUCCESS;
 }
 
 /* get an alias entry by name */
-nss_status_t _nss_ldap_getaliasbyname_r(
-        const char *name,struct aliasent *result,
-        char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getaliasbyname_r(const char *name,
+                                        struct aliasent *result,
+                                        char *buffer, size_t buflen,
+                                        int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_ALIAS_BYNAME,
-             name,
-             read_aliasent(fp,result,buffer,buflen,errnop));
+  NSS_BYNAME(NSLCD_ACTION_ALIAS_BYNAME, name,
+             read_aliasent(fp, result, buffer, buflen, errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -68,12 +67,11 @@ nss_status_t _nss_ldap_setaliasent(void)
 }
 
 /* read a single alias entry from the stream */
-nss_status_t _nss_ldap_getaliasent_r(
-        struct aliasent *result,
-        char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getaliasent_r(struct aliasent *result,
+                                     char *buffer, size_t buflen, int *errnop)
 {
-  NSS_GETENT(aliasentfp,NSLCD_ACTION_ALIAS_ALL,
-             read_aliasent(aliasentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(aliasentfp, NSLCD_ACTION_ALIAS_ALL,
+             read_aliasent(aliasentfp, result, buffer, buflen, errnop));
 }
 
 /* close the stream opened with setaliasent() above */

@@ -33,42 +33,45 @@
 #ifndef HAVE___ASSERT_FAIL
 /* for Solaris: */
 #ifdef sun
-#define __assert_fail(assertion,file,line,function) __assert(assertion,file,line)
+#define __assert_fail(assertion, file, line, function)                      \
+  __assert(assertion, file, line)
 #endif
 /* for FreeBSD: */
 #ifdef __FreeBSD__
-#define __assert_fail(assertion,file,line,function) __assert(assertion,file,line,function)
+#define __assert_fail(assertion, file, line, function)                      \
+  __assert(assertion, file, line, function)
 #endif
 #endif /* not HAVE___ASSERT_FAIL */
 
 /* extra assertion function that epxects both strings to be the same
    (special macro because strcmp() can be a macro that turns ugly in assert) */
-#define assertstreq(str1,str2) \
-  (assertstreq_impl(str1,str2,"strcmp(" __STRING(str1) "," __STRING(str2) ")==0", \
+#define assertstreq(str1, str2)                                             \
+  (assertstreq_impl(str1, str2,                                             \
+                    "strcmp(" __STRING(str1) ", " __STRING(str2) ") == 0",  \
                     __FILE__, __LINE__, __ASSERT_FUNCTION))
 
-static inline void assertstreq_impl(const char *str1,const char *str2,
-                             const char *assertion,const char *file,
-                             int line,const char *function)
+static inline void assertstreq_impl(const char *str1, const char *str2,
+                                    const char *assertion, const char *file,
+                                    int line, const char *function)
 {
-  if (strcmp(str1,str2)!=0)
-    __assert_fail(assertion,file,line,function);
+  if (strcmp(str1, str2) != 0)
+    __assert_fail(assertion, file, line, function);
 }
 
 /* extra assertion function that expects expr to be valid and prints an
    error message that include errno otherwise */
-#define assertok(expr) \
-  ((expr) \
-   ? (void) (0) \
-   : __assertok_fail(__STRING(expr),__FILE__,__LINE__,__ASSERT_FUNCTION))
+#define assertok(expr)                                                      \
+  ((expr)                                                                   \
+   ? (void) (0)                                                             \
+   : __assertok_fail(__STRING(expr), __FILE__, __LINE__, __ASSERT_FUNCTION))
 
 
-static inline void __assertok_fail(const char *expr,const char *file,
-                            int line,const char *function)
+static inline void __assertok_fail(const char *expr, const char *file,
+                                   int line, const char *function)
 {
   char msg[120];
-  snprintf(msg,sizeof(msg),"%s (errno=\"%s\")",expr,strerror(errno));
-  __assert_fail(msg,file,line,function);
+  snprintf(msg, sizeof(msg), "%s (errno=\"%s\")", expr, strerror(errno));
+  __assert_fail(msg, file, line, function);
 }
 
 

@@ -1,7 +1,7 @@
 /*
    ether.h - ethernet definitions for systems lacking those
 
-   Copyright (C) 2008, 2010 Arthur de Jong
+   Copyright (C) 2008, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -38,11 +38,11 @@ struct ether_addr {
 #endif /* not HAVE_STRUCT_ETHER_ADDR */
 
 #ifndef HAVE_ETHER_NTOA_R
-char *ether_ntoa_r(const struct ether_addr *addr,char *buf);
+char *ether_ntoa_r(const struct ether_addr *addr, char *buf);
 #endif /* not HAVE_ETHER_NTOA_R */
 
 #ifndef HAVE_ETHER_ATON_R
-struct ether_addr *ether_aton_r(const char *asc,struct ether_addr *addr);
+struct ether_addr *ether_aton_r(const char *asc, struct ether_addr *addr);
 #endif /* not HAVE_ETHER_ATON_R */
 
 #ifdef HAVE_ETHER_NTOA

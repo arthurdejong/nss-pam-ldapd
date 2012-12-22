@@ -2,7 +2,7 @@
    test_set.c - simple test for the set module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008, 2009, 2010 Arthur de Jong
+   Copyright (C) 2008, 2009, 2010, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -32,38 +32,37 @@
 
 static int isknownvalue(const char *value)
 {
-  return value!=NULL && (
-          (strcmp(value,"key1")==0) ||
-          (strcmp(value,"key2")==0) ||
-          (strcmp(value,"key3")==0) );
+  return value != NULL && (
+        (strcmp(value, "key1") == 0) || (strcmp(value, "key2") == 0) ||
+        (strcmp(value, "key3") == 0));
 }
 
 /* the main program... */
-int main(int UNUSED(argc),char UNUSED(*argv[]))
+int main(int UNUSED(argc), char UNUSED(*argv[]))
 {
   SET *set;
   const char **list;
   int i;
 
   /* initialize */
-  set=set_new();
+  set = set_new();
 
   /* store some entries */
-  set_add(set,"key1");
-  set_add(set,"key2");
-  set_add(set,"key3");
-  set_add(set,"key2");
+  set_add(set, "key1");
+  set_add(set, "key2");
+  set_add(set, "key3");
+  set_add(set, "key2");
 
   /* check set contents */
-  assert(set_contains(set,"key1"));
-  assert(set_contains(set,"key2"));
-  assert(set_contains(set,"key3"));
-  assert(!set_contains(set,"key4"));
-  assert(!set_contains(set,"KEY1"));
+  assert(set_contains(set, "key1"));
+  assert(set_contains(set, "key2"));
+  assert(set_contains(set, "key3"));
+  assert(!set_contains(set, "key4"));
+  assert(!set_contains(set, "KEY1"));
 
   /* loop over set contents */
-  list=set_tolist(set);
-  for (i=0;list[i]!=NULL;i++)
+  list = set_tolist(set);
+  for (i = 0; list[i] != NULL; i++)
   {
     assert(isknownvalue(list[i]));
   }
@@ -72,7 +71,7 @@ int main(int UNUSED(argc),char UNUSED(*argv[]))
   assert(isknownvalue(set_pop(set)));
   assert(isknownvalue(set_pop(set)));
   assert(isknownvalue(set_pop(set)));
-  assert(set_pop(set)==NULL);
+  assert(set_pop(set) == NULL);
 
   /* free set */
   set_free(set);

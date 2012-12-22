@@ -54,7 +54,7 @@ NSS_METHOD_PROTOTYPE(__nss_compat_gethostbyname);
 NSS_METHOD_PROTOTYPE(__nss_compat_gethostbyname2);
 NSS_METHOD_PROTOTYPE(__nss_compat_gethostbyaddr);
 
-static ns_mtab methods[]={
+static ns_mtab methods[] = {
   { NSDB_GROUP, "getgrnam_r", __nss_compat_getgrnam_r, _nss_ldap_getgrnam_r },
   { NSDB_GROUP, "getgrgid_r", __nss_compat_getgrgid_r, _nss_ldap_getgrgid_r },
   { NSDB_GROUP, "getgrent_r", __nss_compat_getgrent_r, _nss_ldap_getgrent_r },
@@ -68,8 +68,8 @@ static ns_mtab methods[]={
   { NSDB_PASSWD, "setpwent",   __nss_compat_setpwent,   _nss_ldap_setpwent },
   { NSDB_PASSWD, "endpwent",   __nss_compat_endpwent,   _nss_ldap_endpwent },
 
-  { NSDB_HOSTS, "gethostbyname", __nss_compat_gethostbyname, _nss_ldap_gethostbyname_r },
-  { NSDB_HOSTS, "gethostbyaddr", __nss_compat_gethostbyaddr, _nss_ldap_gethostbyaddr_r },
+  { NSDB_HOSTS, "gethostbyname",  __nss_compat_gethostbyname,  _nss_ldap_gethostbyname_r },
+  { NSDB_HOSTS, "gethostbyaddr",  __nss_compat_gethostbyaddr,  _nss_ldap_gethostbyaddr_r },
   { NSDB_HOSTS, "gethostbyname2", __nss_compat_gethostbyname2, _nss_ldap_gethostbyname2_r },
 
   { NSDB_GROUP_COMPAT, "getgrnam_r", __nss_compat_getgrnam_r, _nss_ldap_getgrnam_r },
@@ -85,9 +85,9 @@ static ns_mtab methods[]={
   { NSDB_PASSWD_COMPAT, "endpwent",   __nss_compat_endpwent,   _nss_ldap_endpwent },
 };
 
-int __nss_compat_gethostbyname(void *retval,void *mdata,va_list ap)
+int __nss_compat_gethostbyname(void *retval, void *mdata, va_list ap)
 {
-  nss_status_t (*fn)(const char *,struct hostent *,char *,size_t,int *,int *);
+  nss_status_t (*fn)(const char *, struct hostent *, char *, size_t, int *, int *);
   const char *name;
   struct hostent *result;
   char buffer[BUFFER_SIZE];
@@ -95,19 +95,19 @@ int __nss_compat_gethostbyname(void *retval,void *mdata,va_list ap)
   int h_errnop;
   int af;
   nss_status_t status;
-  fn=mdata;
-  name=va_arg(ap,const char*);
-  af=va_arg(ap,int);
-  result=va_arg(ap,struct hostent *);
-  status=fn(name,result,buffer,sizeof(buffer),&errnop,&h_errnop);
-  status=__nss_compat_result(status,errnop);
-  h_errno=h_errnop;
-  return (status);
+  fn = mdata;
+  name = va_arg(ap, const char *);
+  af = va_arg(ap, int);
+  result = va_arg(ap, struct hostent *);
+  status = fn(name, result, buffer, sizeof(buffer), &errnop, &h_errnop);
+  status = __nss_compat_result(status, errnop);
+  h_errno = h_errnop;
+  return status;
 }
 
-int __nss_compat_gethostbyname2(void *retval,void *mdata,va_list ap)
+int __nss_compat_gethostbyname2(void *retval, void *mdata, va_list ap)
 {
-  nss_status_t (*fn)(const char *,struct hostent *,char *,size_t,int *,int *);
+  nss_status_t (*fn)(const char *, struct hostent *, char *, size_t, int *, int *);
   const char *name;
   struct hostent *result;
   char buffer[BUFFER_SIZE];
@@ -115,17 +115,17 @@ int __nss_compat_gethostbyname2(void *retval,void *mdata,va_list ap)
   int h_errnop;
   int af;
   nss_status_t status;
-  fn=mdata;
-  name=va_arg(ap,const char*);
-  af=va_arg(ap,int);
-  result=va_arg(ap,struct hostent *);
-  status=fn(name,result,buffer,sizeof(buffer),&errnop,&h_errnop);
-  status=__nss_compat_result(status,errnop);
-  h_errno=h_errnop;
-  return (status);
+  fn = mdata;
+  name = va_arg(ap, const char *);
+  af = va_arg(ap, int);
+  result = va_arg(ap, struct hostent *);
+  status = fn(name, result, buffer, sizeof(buffer), &errnop, &h_errnop);
+  status = __nss_compat_result(status, errnop);
+  h_errno = h_errnop;
+  return status;
 }
 
-int __nss_compat_gethostbyaddr(void *retval,void *mdata,va_list ap)
+int __nss_compat_gethostbyaddr(void *retval, void *mdata, va_list ap)
 {
   struct in_addr *addr;
   int len;
@@ -134,38 +134,38 @@ int __nss_compat_gethostbyaddr(void *retval,void *mdata,va_list ap)
   char buffer[BUFFER_SIZE];
   int errnop;
   int h_errnop;
-  nss_status_t (*fn)(struct in_addr *,int,int,struct hostent *,char *,size_t,int *,int *);
+  nss_status_t (*fn)(struct in_addr *, int, int, struct hostent *, char *, size_t, int *, int *);
   nss_status_t status;
-  fn=mdata;
-  addr=va_arg(ap,struct in_addr*);
-  len=va_arg(ap,int);
-  type=va_arg(ap,int);
-  result=va_arg(ap,struct hostent*);
-  status=fn(addr,len,type,result,buffer,sizeof(buffer),&errnop,&h_errnop);
-  status=__nss_compat_result(status,errnop);
-  h_errno=h_errnop;
-  return (status);
+  fn = mdata;
+  addr = va_arg(ap, struct in_addr *);
+  len = va_arg(ap, int);
+  type = va_arg(ap, int);
+  result = va_arg(ap, struct hostent *);
+  status = fn(addr, len, type, result, buffer, sizeof(buffer), &errnop, &h_errnop);
+  status = __nss_compat_result(status, errnop);
+  h_errno = h_errnop;
+  return status;
 }
 
-static int __gr_addgid(gid_t gid,gid_t *groups,int maxgrp,int *groupc)
+static int __gr_addgid(gid_t gid, gid_t *groups, int maxgrp, int *groupc)
 {
-  int ret,dupc;
+  int ret, dupc;
   /* skip duplicates */
-  for (dupc=0;dupc<MIN(maxgrp,*groupc);dupc++)
+  for (dupc = 0; dupc < MIN(maxgrp, *groupc); dupc++)
   {
-    if (groups[dupc]==gid)
+    if (groups[dupc] == gid)
       return 1;
   }
-  ret=1;
-  if (*groupc<maxgrp)  /* add this gid */
-    groups[*groupc]=gid;
+  ret = 1;
+  if (*groupc < maxgrp) /* add this gid */
+    groups[*groupc] = gid;
   else
-    ret=0;
+    ret = 0;
   (*groupc)++;
   return ret;
 }
 
-int __freebsd_getgroupmembership(void *retval,void *mdata,va_list ap)
+int __freebsd_getgroupmembership(void *retval, void *mdata, va_list ap)
 {
   int err;
   nss_status_t s;
@@ -173,36 +173,36 @@ int __freebsd_getgroupmembership(void *retval,void *mdata,va_list ap)
   gid_t *tmpgroups;
   const char *user;
   gid_t *groups;
-  int maxgrp,*grpcnt;
+  int maxgrp, *grpcnt;
   int i;
-  long int lstart,lsize;
-  user=va_arg(ap,const char *);
-  group=va_arg(ap,gid_t);
-  groups=va_arg(ap,gid_t *);
-  maxgrp=va_arg(ap,int);
-  grpcnt=va_arg(ap,int *);
-  tmpgroups=malloc(maxgrp*sizeof(gid_t));
-  if (tmpgroups==NULL)
+  long int lstart, lsize;
+  user = va_arg(ap, const char *);
+  group = va_arg(ap, gid_t);
+  groups = va_arg(ap, gid_t *);
+  maxgrp = va_arg(ap, int);
+  grpcnt = va_arg(ap, int *);
+  tmpgroups = malloc(maxgrp * sizeof(gid_t));
+  if (tmpgroups == NULL)
     return NSS_STATUS_UNAVAIL;
   /* insert primary membership */
-  __gr_addgid(group,groups,maxgrp,grpcnt);
-  lstart=0;
-  lsize=maxgrp;
-  s=_nss_ldap_initgroups_dyn(user,group,&lstart,&lsize,&tmpgroups,0,&err);
-  if (s==NSS_STATUS_SUCCESS)
+  __gr_addgid(group, groups, maxgrp, grpcnt);
+  lstart = 0;
+  lsize = maxgrp;
+  s = _nss_ldap_initgroups_dyn(user, group, &lstart, &lsize, &tmpgroups, 0, &err);
+  if (s == NSS_STATUS_SUCCESS)
   {
-    for (i=0;i<lstart;i++)
-      __gr_addgid(tmpgroups[i],groups,maxgrp,grpcnt);
-    s=NSS_STATUS_NOTFOUND;
+    for (i = 0; i < lstart; i++)
+      __gr_addgid(tmpgroups[i], groups, maxgrp, grpcnt);
+    s = NSS_STATUS_NOTFOUND;
   }
   free(tmpgroups);
-  return __nss_compat_result(s,0);
+  return __nss_compat_result(s, 0);
 }
 
-ns_mtab *nss_module_register(const char *source,unsigned int *mtabsize,
-    nss_module_unregister_fn *unreg)
+ns_mtab *nss_module_register(const char *source, unsigned int *mtabsize,
+                             nss_module_unregister_fn *unreg)
 {
-  *mtabsize=sizeof(methods)/sizeof(methods[0]);
-  *unreg=NULL;
-  return (methods);
+  *mtabsize = sizeof(methods) / sizeof(methods[0]);
+  *unreg = NULL;
+  return methods;
 }

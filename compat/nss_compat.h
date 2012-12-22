@@ -81,8 +81,7 @@ typedef enum nss_status nss_status_t;
 
 /* Define an aliasent if it was not found on the system. */
 #ifndef HAVE_STRUCT_ALIASENT
-struct aliasent
-{
+struct aliasent {
   char *alias_name;
   size_t alias_members_len;
   char **alias_members;
@@ -92,8 +91,7 @@ struct aliasent
 
 /* Define an rpcent if it was not found on the system */
 #ifndef HAVE_STRUCT_RPCENT
-struct rpcent
-{
+struct rpcent {
   char *r_name;
   char **r_aliases;
   int r_number;
@@ -105,8 +103,7 @@ struct rpcent
    by glibc. This is taken from include/netinet/ether.h
    of the glibc (2.3.6) source tarball. */
 #ifndef HAVE_STRUCT_ETHERENT
-struct etherent
-{
+struct etherent {
   const char *e_name;
   struct ether_addr e_addr;
 };
@@ -118,13 +115,10 @@ struct etherent
    The first part of the struct is the only part that is modified
    by our getnetgrent() function, all the other fields are not
    touched at all. */
-struct __netgrent
-{
+struct __netgrent {
   enum { triple_val, group_val } type;
-  union
-  {
-    struct
-    {
+  union {
+    struct {
       const char *host;
       const char *user;
       const char *domain;
@@ -137,8 +131,7 @@ struct __netgrent
      by our caller */
   char *data;
   size_t data_size;
-  union
-  {
+  union {
     char *cursor;
     unsigned long int position;
   } insertedname; /* added name to union to avoid warning */

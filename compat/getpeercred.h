@@ -3,7 +3,7 @@
                    other end of a unix socket
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008 Arthur de Jong
+   Copyright (C) 2008, 2009, 2010, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,6 @@
    that information.
    On success, zero is returned.  On error, -1 is returned, and errno
    is set appropriately. */
-int getpeercred(int sock,uid_t *uid,gid_t *gid,pid_t *pid);
+int getpeercred(int sock, uid_t *uid, gid_t *gid, pid_t *pid);
 
 #endif /* not COMPAT__GETPEERCRED_H */

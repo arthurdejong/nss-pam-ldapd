@@ -31,38 +31,36 @@
 #include "compat/attrs.h"
 
 /* read an ethernet entry from the stream */
-static nss_status_t read_etherent(
-        TFILE *fp,struct etherent *result,
-        char *buffer,size_t buflen,int *errnop)
+static nss_status_t read_etherent(TFILE *fp, struct etherent *result,
+                                  char *buffer, size_t buflen, int *errnop)
 {
   int32_t tmpint32;
-  size_t bufptr=0;
-  memset(result,0,sizeof(struct etherent));
-  READ_BUF_STRING(fp,result->e_name);
-  READ(fp,&(result->e_addr),sizeof(uint8_t[6]));
+  size_t bufptr = 0;
+  memset(result, 0, sizeof(struct etherent));
+  READ_BUF_STRING(fp, result->e_name);
+  READ(fp, &(result->e_addr), sizeof(uint8_t[6]));
   return NSS_STATUS_SUCCESS;
 }
 
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* map a hostname to the corresponding ethernet address */
-nss_status_t _nss_ldap_gethostton_r(
-        const char *name,struct etherent *result,
-        char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_gethostton_r(const char *name,
+                                    struct etherent *result, char *buffer,
+                                    size_t buflen, int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,
-             name,
-             read_etherent(fp,result,buffer,buflen,errnop));
+  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME, name,
+             read_etherent(fp, result, buffer, buflen, errnop));
 }
 
 /* map an ethernet address to the corresponding hostname */
-nss_status_t _nss_ldap_getntohost_r(
-        const struct ether_addr *addr,struct etherent *result,
-        char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getntohost_r(const struct ether_addr *addr,
+                                    struct etherent *result, char *buffer,
+                                    size_t buflen, int *errnop)
 {
   NSS_BYGEN(NSLCD_ACTION_ETHER_BYETHER,
-            WRITE(fp,addr,sizeof(uint8_t[6])),
-            read_etherent(fp,result,buffer,buflen,errnop));
+            WRITE(fp, addr, sizeof(uint8_t[6])),
+            read_etherent(fp, result, buffer, buflen, errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -75,12 +73,11 @@ nss_status_t _nss_ldap_setetherent(int UNUSED(stayopen))
 }
 
 /* read a single ethernet entry from the stream */
-nss_status_t _nss_ldap_getetherent_r(
-        struct etherent *result,
-        char *buffer,size_t buflen,int *errnop)
+nss_status_t _nss_ldap_getetherent_r(struct etherent *result,
+                                     char *buffer, size_t buflen, int *errnop)
 {
-  NSS_GETENT(etherentfp,NSLCD_ACTION_ETHER_ALL,
-             read_etherent(etherentfp,result,buffer,buflen,errnop));
+  NSS_GETENT(etherentfp, NSLCD_ACTION_ETHER_ALL,
+             read_etherent(etherentfp, result, buffer, buflen, errnop));
 }
 
 /* close the stream opened with setetherent() above */
@@ -103,81 +100,84 @@ nss_status_t _nss_ldap_endetherent(void)
 #endif /* NSS_BUFLEN_ETHERS */
 
 #ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
-static char *etherent2str(struct etherent *result,char *buffer,size_t buflen)
+static char *etherent2str(struct etherent *result, char *buffer,
+                          size_t buflen)
 {
   int res;
-  res=snprintf(buffer,buflen,"%s %s",ether_ntoa(&result->e_addr),result->e_name);
-  if ((res<0)||(res>=buflen))
+  res = snprintf(buffer, buflen, "%s %s", ether_ntoa(&result->e_addr),
+                 result->e_name);
+  if ((res < 0) || (res >= buflen))
     return NULL;
   return buffer;
 }
 #endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
 
-static nss_status_t read_result(TFILE *fp,nss_XbyY_args_t *args,int wantname)
+static nss_status_t read_result(TFILE *fp, nss_XbyY_args_t *args, int wantname)
 {
   struct etherent result;
   char buffer[NSS_BUFLEN_ETHERS];
   nss_status_t retv;
   /* read the result entry from the stream */
-  retv=read_etherent(fp,&result,buffer,sizeof(buffer),&args->erange);
-  if (retv!=NSS_STATUS_SUCCESS)
+  retv = read_etherent(fp, &result, buffer, sizeof(buffer), &args->erange);
+  if (retv != NSS_STATUS_SUCCESS)
     return retv;
 #ifdef HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN
   /* try to return in string format if requested */
-  if ((args->buf.buffer!=NULL)&&(args->buf.buflen>0))
+  if ((args->buf.buffer != NULL) && (args->buf.buflen > 0))
   {
-    if (etherent2str(&result,args->buf.buffer,args->buf.buflen)==NULL)
+    if (etherent2str(&result, args->buf.buffer, args->buf.buflen) == NULL)
     {
-      args->erange=1;
+      args->erange = 1;
       return NSS_NOTFOUND;
     }
-    args->returnval=args->buf.buffer;
-    args->returnlen=strlen(args->returnval);
+    args->returnval = args->buf.buffer;
+    args->returnlen = strlen(args->returnval);
     return NSS_SUCCESS;
   }
 #endif /* HAVE_STRUCT_NSS_XBYY_ARGS_RETURNLEN */
   /* return the result entry */
   if (wantname)
   {
-    /* we expect the buffer to have enough room for the name (buflen==0) */
-    strcpy(args->buf.buffer,result.e_name);
-    args->returnval=args->buf.buffer;
+    /* we expect the buffer to have enough room for the name (buflen == 0) */
+    strcpy(args->buf.buffer, result.e_name);
+    args->returnval = args->buf.buffer;
   }
   else /* address */
   {
-    memcpy(args->buf.result,&result.e_addr,sizeof(result.e_addr));
-    args->returnval=args->buf.result;
+    memcpy(args->buf.result, &result.e_addr, sizeof(result.e_addr));
+    args->returnval = args->buf.result;
   }
   return NSS_SUCCESS;
 }
 
 /* map a hostname to the corresponding ethernet address */
-static nss_status_t ethers_gethostton(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t ethers_gethostton(nss_backend_t UNUSED(*be), void *args)
 {
   NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,
              NSS_ARGS(args)->key.name,
-             read_result(fp,args,0));
+             read_result(fp, args, 0));
 }
 
 /* map an ethernet address to the corresponding hostname */
-static nss_status_t ethers_getntohost(nss_backend_t UNUSED(*be),void *args)
+static nss_status_t ethers_getntohost(nss_backend_t UNUSED(*be), void *args)
 {
-  struct ether_addr *addr=(struct ether_addr *)(NSS_ARGS(args)->key.ether);
+  struct ether_addr *addr = (struct ether_addr *)(NSS_ARGS(args)->key.ether);
   NSS_BYGEN(NSLCD_ACTION_ETHER_BYETHER,
-            WRITE(fp,addr,sizeof(uint8_t[6])),
-            read_result(fp,args,1));
+            WRITE(fp, addr, sizeof(uint8_t[6])),
+            read_result(fp, args, 1));
 }
 
-static nss_backend_op_t ethers_ops[]={
+static nss_backend_op_t ethers_ops[] = {
   nss_ldap_destructor,
   ethers_gethostton,
   ethers_getntohost
 };
 
 nss_backend_t *_nss_ldap_ethers_constr(const char UNUSED(*db_name),
-                  const char UNUSED(*src_name),const char UNUSED(*cfg_args))
+                                       const char UNUSED(*src_name),
+                                       const char UNUSED(*cfg_args))
 {
-  return nss_ldap_constructor(ethers_ops,sizeof(ethers_ops));
+  return nss_ldap_constructor(ethers_ops, sizeof(ethers_ops));
 }
 
 #endif /* NSS_FLAVOUR_SOLARIS */

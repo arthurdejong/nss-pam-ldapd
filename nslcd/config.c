@@ -33,29 +33,29 @@
 #include "log.h"
 #include "cfg.h"
 
-int nslcd_config_get(TFILE *fp,MYLDAP_SESSION *session)
+int nslcd_config_get(TFILE *fp, MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   int32_t cfgopt;
   /* read request parameters */
-  READ_INT32(fp,cfgopt);
+  READ_INT32(fp, cfgopt);
   /* log call */
-  log_setrequest("config=%d",(int)cfgopt);
-  log_log(LOG_DEBUG,"nslcd_config_get(%d)",(int)cfgopt);
+  log_setrequest("config=%d", (int)cfgopt);
+  log_log(LOG_DEBUG, "nslcd_config_get(%d)", (int)cfgopt);
   /* write the response header */
-  WRITE_INT32(fp,NSLCD_VERSION);
-  WRITE_INT32(fp,NSLCD_ACTION_CONFIG_GET);
-  WRITE_INT32(fp,NSLCD_RESULT_BEGIN);
+  WRITE_INT32(fp, NSLCD_VERSION);
+  WRITE_INT32(fp, NSLCD_ACTION_CONFIG_GET);
+  WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
   /* validate request */
   switch (cfgopt)
   {
     case NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE:
-      WRITE_STRING(fp,nslcd_cfg->pam_password_prohibit_message);
+      WRITE_STRING(fp, nslcd_cfg->pam_password_prohibit_message);
       break;
     default:
       /* all other config options are ignored */
       break;
   }
-  WRITE_INT32(fp,NSLCD_RESULT_END);
+  WRITE_INT32(fp, NSLCD_RESULT_END);
   return 0;
 }

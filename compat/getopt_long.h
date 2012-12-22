@@ -1,7 +1,7 @@
 /*
    getopt_long.h - definition of getopt_long() for systems that lack it
 
-   Copyright (C) 2001, 2002, 2008 Arthur de Jong
+   Copyright (C) 2001, 2002, 2008, 2010, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -41,9 +41,9 @@ struct option {
    to options and options following filenames is not quite right, allso
    minimal error checking
    */
-int getopt_long(int argc,char * const argv[],
+int getopt_long(int argc, char *const argv[],
                 const char *optstring,
-                const struct option *longopts,int *longindex);
+                const struct option *longopts, int *longindex);
 
 #endif /* not HAVE_GETOPT_LONG */
 

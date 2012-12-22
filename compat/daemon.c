@@ -1,7 +1,7 @@
 /*
    daemon.c - implementation of daemon() for systems that lack it
 
-   Copyright (C) 2002, 2003, 2008 Arthur de Jong
+   Copyright (C) 2002, 2003, 2008, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -26,46 +26,46 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-int daemon(int nochdir,int noclose)
+int daemon(int nochdir, int noclose)
 {
   /* change directory */
   if (!nochdir)
-    if (chdir("/")!=0)
+    if (chdir("/") != 0)
       return -1;
   /* fork() and exit() to detach from the parent process */
   switch (fork())
   {
-  case 0: /* we are the child */
-    break;
-  case -1: /* we are the parent, but have an error */
-    return -1;
-  default: /* we are the parent and we're done*/
-    _exit(0);
+    case 0:    /* we are the child */
+      break;
+    case -1:   /* we are the parent, but have an error */
+      return -1;
+    default:   /* we are the parent and we're done */
+      _exit(0);
   }
   /* become process leader */
-  if (setsid()<0)
+  if (setsid() < 0)
   {
     return -1;
   }
   /* fork again so we cannot allocate a pty */
   switch (fork())
   {
-  case 0: /* we are the child */
-    break;
-  case -1: /* we are the parent, but have an error */
-    return -1;
-  default: /* we are the parent and we're done*/
-    _exit(0);
+    case 0:    /* we are the child */
+      break;
+    case -1:   /* we are the parent, but have an error */
+      return -1;
+    default:   /* we are the parent and we're done */
+      _exit(0);
   }
   /* close stdin, stdout and stderr and reconnect to /dev/null */
   if (!noclose)
   {
-    close(0); /* stdin */
-    close(1); /* stdout */
-    close(2); /* stderr */
-    open("/dev/null",O_RDWR); /* stdin, fd=0 */
-    dup(0); /* stdout, fd=1 */
-    dup(0); /* stderr, fd=2 */
+    close(0);   /* stdin */
+    close(1);   /* stdout */
+    close(2);   /* stderr */
+    open("/dev/null", O_RDWR);  /* stdin, fd=0 */
+    dup(0);     /* stdout, fd=1 */
+    dup(0);     /* stderr, fd=2 */
   }
   return 0;
 }

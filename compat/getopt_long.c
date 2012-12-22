@@ -1,7 +1,7 @@
 /*
    getopt_long.c - implementation of getopt_long() for systems that lack it
 
-   Copyright (C) 2001, 2002, 2008 Arthur de Jong
+   Copyright (C) 2001, 2002, 2008, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -31,55 +31,53 @@
    to options and options following filenames is not quite right, allso
    minimal error checking is provided
    */
-int getopt_long(int argc,char * const argv[],
+int getopt_long(int argc, char *const argv[],
                 const char *optstring,
-                const struct option *longopts,int *longindex)
+                const struct option *longopts, int *longindex)
 {
-  int i;   /* for looping through options */
-  int l;   /* for length */
-
+  int i, l;
   /* first check if there realy is a -- option */
-  if ( (optind>0)&&(optind<argc) &&
-       (strncmp(argv[optind],"--",2)==0) &&
-       (argv[optind][2]!='\0') )
+  if ((optind > 0) && (optind < argc) &&
+      (strncmp(argv[optind], "--", 2) == 0) &&
+      (argv[optind][2] != '\0'))
   {
     /* check the longopts list for a valid option */
-    for (i=0;longopts[i].name!=NULL;i++)
+    for (i = 0; longopts[i].name != NULL; i++)
     {
       /* save the length for later */
-      l=strlen(longopts[i].name);
-      if (strncmp(argv[optind]+2,longopts[i].name,l)==0)
+      l = strlen(longopts[i].name);
+      if (strncmp(argv[optind] + 2, longopts[i].name, l) == 0)
       {
         /* we have a match */
-        if ( (longopts[i].has_arg==no_argument) &&
-             (argv[optind][2+l]=='\0') )
+        if ((longopts[i].has_arg == no_argument) &&
+            (argv[optind][2 + l] == '\0'))
         {
           optind++;
           return longopts[i].val;
         }
-        else if ( (longopts[i].has_arg==required_argument) &&
-                  (argv[optind][2+l]=='=') )
+        else if ((longopts[i].has_arg == required_argument) &&
+                 (argv[optind][2 + l] == '='))
         {
-          optarg=argv[optind]+3+l;
+          optarg = argv[optind] + 3 + l;
           optind++;
           return longopts[i].val;
         }
-        else if ( (longopts[i].has_arg==required_argument) &&
-                  (argv[optind][2+l]=='\0') )
+        else if ((longopts[i].has_arg == required_argument) &&
+                 (argv[optind][2 + l] == '\0'))
         {
-          optarg=argv[optind+1];
-          optind+=2;
+          optarg = argv[optind + 1];
+          optind += 2;
           return longopts[i].val;
         }
-        else if ( (longopts[i].has_arg==optional_argument) &&
-                  (argv[optind][2+l]=='=') )
+        else if ((longopts[i].has_arg == optional_argument) &&
+                 (argv[optind][2 + l] == '='))
         {
-          optarg=argv[optind]+3+l;
+          optarg = argv[optind] + 3 + l;
           optind++;
           return longopts[i].val;
         }
-        else if ( (longopts[i].has_arg==optional_argument) &&
-                  (argv[optind][2+l]=='\0') )
+        else if ((longopts[i].has_arg == optional_argument) &&
+                 (argv[optind][2 + l] == '\0'))
         {
           optind++;
           return longopts[i].val;
@@ -88,5 +86,5 @@ int getopt_long(int argc,char * const argv[],
     }
   }
   /* if all else fails use plain getopt() */
-  return getopt(argc,argv,optstring);
+  return getopt(argc, argv, optstring);
 }

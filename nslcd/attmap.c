@@ -2,7 +2,7 @@
    attmap.c - attribute mapping values and functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -128,168 +128,169 @@ const char **filter_get_var(enum ldap_map_selector map)
   }
 }
 
-const char **attmap_get_var(enum ldap_map_selector map,const char *name)
+const char **attmap_get_var(enum ldap_map_selector map, const char *name)
 {
-  if (map==LM_ALIASES)
+  if (map == LM_ALIASES)
   {
-    if (strcasecmp(name,"cn")==0)                return &attmap_alias_cn;
-    if (strcasecmp(name,"rfc822MailMember")==0)  return &attmap_alias_rfc822MailMember;
+    if (strcasecmp(name, "cn") == 0)                return &attmap_alias_cn;
+    if (strcasecmp(name, "rfc822MailMember") == 0)  return &attmap_alias_rfc822MailMember;
   }
-  else if (map==LM_ETHERS)
+  else if (map == LM_ETHERS)
   {
-    if (strcasecmp(name,"cn")==0)                return &attmap_ether_cn;
-    if (strcasecmp(name,"macAddress")==0)        return &attmap_ether_macAddress;
+    if (strcasecmp(name, "cn") == 0)                return &attmap_ether_cn;
+    if (strcasecmp(name, "macAddress") == 0)        return &attmap_ether_macAddress;
   }
-  else if (map==LM_GROUP)
+  else if (map == LM_GROUP)
   {
-    if (strcasecmp(name,"cn")==0)                return &attmap_group_cn;
-    if (strcasecmp(name,"userPassword")==0)      return &attmap_group_userPassword;
-    if (strcasecmp(name,"gidNumber")==0)         return &attmap_group_gidNumber;
-    if (strcasecmp(name,"memberUid")==0)         return &attmap_group_memberUid;
-    if (strcasecmp(name,"member")==0)            return &attmap_group_member;
+    if (strcasecmp(name, "cn") == 0)                return &attmap_group_cn;
+    if (strcasecmp(name, "userPassword") == 0)      return &attmap_group_userPassword;
+    if (strcasecmp(name, "gidNumber") == 0)         return &attmap_group_gidNumber;
+    if (strcasecmp(name, "memberUid") == 0)         return &attmap_group_memberUid;
+    if (strcasecmp(name, "member") == 0)            return &attmap_group_member;
   }
-  else if (map==LM_HOSTS)
+  else if (map == LM_HOSTS)
   {
-    if (strcasecmp(name,"cn")==0)                return &attmap_host_cn;
-    if (strcasecmp(name,"ipHostNumber")==0)      return &attmap_host_ipHostNumber;
+    if (strcasecmp(name, "cn") == 0)                return &attmap_host_cn;
+    if (strcasecmp(name, "ipHostNumber") == 0)      return &attmap_host_ipHostNumber;
   }
-  else if (map==LM_NETGROUP)
+  else if (map == LM_NETGROUP)
   {
-    if (strcasecmp(name,"cn")==0)                return &attmap_netgroup_cn;
-    if (strcasecmp(name,"nisNetgroupTriple")==0) return &attmap_netgroup_nisNetgroupTriple;
-    if (strcasecmp(name,"memberNisNetgroup")==0) return &attmap_netgroup_memberNisNetgroup;
+    if (strcasecmp(name, "cn") == 0)                return &attmap_netgroup_cn;
+    if (strcasecmp(name, "nisNetgroupTriple") == 0) return &attmap_netgroup_nisNetgroupTriple;
+    if (strcasecmp(name, "memberNisNetgroup") == 0) return &attmap_netgroup_memberNisNetgroup;
   }
-  else if (map==LM_NETWORKS)
+  else if (map == LM_NETWORKS)
   {
-    if (strcasecmp(name,"cn")==0)                return &attmap_network_cn;
-    if (strcasecmp(name,"ipNetworkNumber")==0)   return &attmap_network_ipNetworkNumber;
+    if (strcasecmp(name, "cn") == 0)                return &attmap_network_cn;
+    if (strcasecmp(name, "ipNetworkNumber") == 0)   return &attmap_network_ipNetworkNumber;
   }
-  else if (map==LM_PASSWD)
+  else if (map == LM_PASSWD)
   {
-    if (strcasecmp(name,"uid")==0)               return &attmap_passwd_uid;
-    if (strcasecmp(name,"userPassword")==0)      return &attmap_passwd_userPassword;
-    if (strcasecmp(name,"uidNumber")==0)         return &attmap_passwd_uidNumber;
-    if (strcasecmp(name,"gidNumber")==0)         return &attmap_passwd_gidNumber;
-    if (strcasecmp(name,"gecos")==0)             return &attmap_passwd_gecos;
-    if (strcasecmp(name,"homeDirectory")==0)     return &attmap_passwd_homeDirectory;
-    if (strcasecmp(name,"loginShell")==0)        return &attmap_passwd_loginShell;
+    if (strcasecmp(name, "uid") == 0)               return &attmap_passwd_uid;
+    if (strcasecmp(name, "userPassword") == 0)      return &attmap_passwd_userPassword;
+    if (strcasecmp(name, "uidNumber") == 0)         return &attmap_passwd_uidNumber;
+    if (strcasecmp(name, "gidNumber") == 0)         return &attmap_passwd_gidNumber;
+    if (strcasecmp(name, "gecos") == 0)             return &attmap_passwd_gecos;
+    if (strcasecmp(name, "homeDirectory") == 0)     return &attmap_passwd_homeDirectory;
+    if (strcasecmp(name, "loginShell") == 0)        return &attmap_passwd_loginShell;
   }
-  else if (map==LM_PROTOCOLS)
+  else if (map == LM_PROTOCOLS)
   {
-    if (strcasecmp(name,"cn")==0)                return &attmap_protocol_cn;
-    if (strcasecmp(name,"ipProtocolNumber")==0)  return &attmap_protocol_ipProtocolNumber;
+    if (strcasecmp(name, "cn") == 0)                return &attmap_protocol_cn;
+    if (strcasecmp(name, "ipProtocolNumber") == 0)  return &attmap_protocol_ipProtocolNumber;
   }
-  else if (map==LM_RPC)
+  else if (map == LM_RPC)
   {
-    if (strcasecmp(name,"cn")==0)                return &attmap_rpc_cn;
-    if (strcasecmp(name,"oncRpcNumber")==0)      return &attmap_rpc_oncRpcNumber;
+    if (strcasecmp(name, "cn") == 0)                return &attmap_rpc_cn;
+    if (strcasecmp(name, "oncRpcNumber") == 0)      return &attmap_rpc_oncRpcNumber;
   }
-  else if (map==LM_SERVICES)
+  else if (map == LM_SERVICES)
   {
-    if (strcasecmp(name,"cn")==0)                return &attmap_service_cn;
-    if (strcasecmp(name,"ipServicePort")==0)     return &attmap_service_ipServicePort;
-    if (strcasecmp(name,"ipServiceProtocol")==0) return &attmap_service_ipServiceProtocol;
+    if (strcasecmp(name, "cn") == 0)                return &attmap_service_cn;
+    if (strcasecmp(name, "ipServicePort") == 0)     return &attmap_service_ipServicePort;
+    if (strcasecmp(name, "ipServiceProtocol") == 0) return &attmap_service_ipServiceProtocol;
   }
-  else if (map==LM_SHADOW)
+  else if (map == LM_SHADOW)
   {
-    if (strcasecmp(name,"uid")==0)               return &attmap_shadow_uid;
-    if (strcasecmp(name,"userPassword")==0)      return &attmap_shadow_userPassword;
-    if (strcasecmp(name,"shadowLastChange")==0)  return &attmap_shadow_shadowLastChange;
-    if (strcasecmp(name,"shadowMin")==0)         return &attmap_shadow_shadowMin;
-    if (strcasecmp(name,"shadowMax")==0)         return &attmap_shadow_shadowMax;
-    if (strcasecmp(name,"shadowWarning")==0)     return &attmap_shadow_shadowWarning;
-    if (strcasecmp(name,"shadowInactive")==0)    return &attmap_shadow_shadowInactive;
-    if (strcasecmp(name,"shadowExpire")==0)      return &attmap_shadow_shadowExpire;
-    if (strcasecmp(name,"shadowFlag")==0)        return &attmap_shadow_shadowFlag;
+    if (strcasecmp(name, "uid") == 0)               return &attmap_shadow_uid;
+    if (strcasecmp(name, "userPassword") == 0)      return &attmap_shadow_userPassword;
+    if (strcasecmp(name, "shadowLastChange") == 0)  return &attmap_shadow_shadowLastChange;
+    if (strcasecmp(name, "shadowMin") == 0)         return &attmap_shadow_shadowMin;
+    if (strcasecmp(name, "shadowMax") == 0)         return &attmap_shadow_shadowMax;
+    if (strcasecmp(name, "shadowWarning") == 0)     return &attmap_shadow_shadowWarning;
+    if (strcasecmp(name, "shadowInactive") == 0)    return &attmap_shadow_shadowInactive;
+    if (strcasecmp(name, "shadowExpire") == 0)      return &attmap_shadow_shadowExpire;
+    if (strcasecmp(name, "shadowFlag") == 0)        return &attmap_shadow_shadowFlag;
   }
   return NULL;
 }
 
-const char *attmap_set_mapping(const char **var,const char *value)
+const char *attmap_set_mapping(const char **var, const char *value)
 {
   /* check if we are setting an expression */
-  if (value[0]=='"')
+  if (value[0] == '"')
   {
     /* these attributes may contain an expression
        (note that this needs to match the functionality in the specific
        lookup module) */
-    if ( (var!=&attmap_group_userPassword) &&
-         (var!=&attmap_passwd_userPassword) &&
-         (var!=&attmap_passwd_gidNumber) &&
-         (var!=&attmap_passwd_gecos) &&
-         (var!=&attmap_passwd_homeDirectory) &&
-         (var!=&attmap_passwd_loginShell) &&
-         (var!=&attmap_shadow_userPassword) &&
-         (var!=&attmap_shadow_shadowLastChange) &&
-         (var!=&attmap_shadow_shadowMin) &&
-         (var!=&attmap_shadow_shadowMax) &&
-         (var!=&attmap_shadow_shadowWarning) &&
-         (var!=&attmap_shadow_shadowInactive) &&
-         (var!=&attmap_shadow_shadowExpire) &&
-         (var!=&attmap_shadow_shadowFlag) )
+    if ((var != &attmap_group_userPassword) &&
+        (var != &attmap_passwd_userPassword) &&
+        (var != &attmap_passwd_gidNumber) &&
+        (var != &attmap_passwd_gecos) &&
+        (var != &attmap_passwd_homeDirectory) &&
+        (var != &attmap_passwd_loginShell) &&
+        (var != &attmap_shadow_userPassword) &&
+        (var != &attmap_shadow_shadowLastChange) &&
+        (var != &attmap_shadow_shadowMin) &&
+        (var != &attmap_shadow_shadowMax) &&
+        (var != &attmap_shadow_shadowWarning) &&
+        (var != &attmap_shadow_shadowInactive) &&
+        (var != &attmap_shadow_shadowExpire) &&
+        (var != &attmap_shadow_shadowFlag))
       return NULL;
   }
   /* check if the value will be changed */
-  if ( (*var==NULL) || (strcmp(*var,value)!=0) )
-    *var=strdup(value);
+  if ((*var == NULL) || (strcmp(*var, value) != 0))
+    *var = strdup(value);
   return *var;
 }
 
-static const char *entry_expand(const char *name,void *expander_attr)
+static const char *entry_expand(const char *name, void *expander_attr)
 {
-  MYLDAP_ENTRY *entry=(MYLDAP_ENTRY *)expander_attr;
+  MYLDAP_ENTRY *entry = (MYLDAP_ENTRY *)expander_attr;
   const char **values;
-  if (strcasecmp(name,"dn")==0)
+  if (strcasecmp(name, "dn") == 0)
     return myldap_get_dn(entry);
-  values=myldap_get_values(entry,name);
-  if (values==NULL)
+  values = myldap_get_values(entry, name);
+  if (values == NULL)
     return "";
   /* TODO: handle userPassword attribute specially */
-  if ((values[0]!=NULL)&&(values[1]!=NULL))
+  if ((values[0] != NULL) && (values[1] != NULL))
   {
-    log_log(LOG_WARNING,"%s: %s: multiple values",
-                        myldap_get_dn(entry),name);
+    log_log(LOG_WARNING, "%s: %s: multiple values",
+            myldap_get_dn(entry), name);
   }
   return values[0];
 }
 
-const char *attmap_get_value(MYLDAP_ENTRY *entry,const char *attr,char *buffer,size_t buflen)
+const char *attmap_get_value(MYLDAP_ENTRY *entry, const char *attr,
+                             char *buffer, size_t buflen)
 {
   const char **values;
   /* check and clear buffer */
-  if ((buffer==NULL)||(buflen<=0))
+  if ((buffer == NULL) || (buflen <= 0))
     return NULL;
-  buffer[0]='\0';
+  buffer[0] = '\0';
   /* for simple values just return the attribute */
-  if (attr[0]!='"')
+  if (attr[0] != '"')
   {
-    values=myldap_get_values(entry,attr);
-    if ((values==NULL)||(values[0]==NULL))
+    values = myldap_get_values(entry, attr);
+    if ((values == NULL) || (values[0] == NULL))
       return NULL;
-    strncpy(buffer,values[0],buflen);
-    buffer[buflen-1]='\0';
+    strncpy(buffer, values[0], buflen);
+    buffer[buflen - 1] = '\0';
     return buffer;
     /* TODO: maybe warn when multiple values are found */
   }
   /* we have an expression, try to parse */
-  if ( (attr[strlen(attr)-1]!='"') ||
-       (expr_parse(attr+1,buffer,buflen,entry_expand,(void *)entry)==NULL) )
+  if ((attr[strlen(attr) - 1] != '"') ||
+      (expr_parse(attr + 1, buffer, buflen, entry_expand, (void *)entry) == NULL))
   {
-    log_log(LOG_ERR,"attribute mapping %s is invalid",attr);
-    buffer[0]='\0';
+    log_log(LOG_ERR, "attribute mapping %s is invalid", attr);
+    buffer[0] = '\0';
     return NULL;
   }
   /* strip trailing " */
-  if (buffer[strlen(buffer)-1]=='"')
-    buffer[strlen(buffer)-1]='\0';
+  if (buffer[strlen(buffer) - 1] == '"')
+    buffer[strlen(buffer) - 1] = '\0';
   return buffer;
 }
 
-SET *attmap_add_attributes(SET *set,const char *attr)
+SET *attmap_add_attributes(SET *set, const char *attr)
 {
-  if (attr[0]!='\"')
-    set_add(set,attr);
+  if (attr[0] != '\"')
+    set_add(set, attr);
   else
-    expr_vars(attr,set);
+    expr_vars(attr, set);
   return set;
 }
