@@ -57,8 +57,8 @@ static nss_status_t read_passwd(TFILE *fp, struct passwd *result,
 nss_status_t _nss_ldap_getpwnam_r(const char *name, struct passwd *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_PASSWD_BYNAME,
-             name,
+  NSS_GETONE(NSLCD_ACTION_PASSWD_BYNAME,
+             WRITE_STRING(fp, name),
              read_passwd(fp, result, buffer, buflen, errnop));
 }
 
@@ -66,9 +66,9 @@ nss_status_t _nss_ldap_getpwnam_r(const char *name, struct passwd *result,
 nss_status_t _nss_ldap_getpwuid_r(uid_t uid, struct passwd *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
-  NSS_BYINT32(NSLCD_ACTION_PASSWD_BYUID,
-              uid,
-              read_passwd(fp, result, buffer, buflen, errnop));
+  NSS_GETONE(NSLCD_ACTION_PASSWD_BYUID,
+             WRITE_INT32(fp, uid),
+             read_passwd(fp, result, buffer, buflen, errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -119,16 +119,16 @@ static nss_status_t read_result(TFILE *fp, nss_XbyY_args_t *args)
 
 static nss_status_t passwd_getpwnam(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_PASSWD_BYNAME,
-             NSS_ARGS(args)->key.name,
+  NSS_GETONE(NSLCD_ACTION_PASSWD_BYNAME,
+             WRITE_STRING(fp, NSS_ARGS(args)->key.name),
              read_result(fp, args));
 }
 
 static nss_status_t passwd_getpwuid(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYINT32(NSLCD_ACTION_PASSWD_BYUID,
-              NSS_ARGS(args)->key.uid,
-              read_result(fp, args));
+  NSS_GETONE(NSLCD_ACTION_PASSWD_BYUID,
+             WRITE_INT32(fp, NSS_ARGS(args)->key.uid),
+             read_result(fp, args));
 }
 
 /* open a connection to the nslcd and write the request */

@@ -53,7 +53,8 @@ nss_status_t _nss_ldap_getaliasbyname_r(const char *name,
                                         char *buffer, size_t buflen,
                                         int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_ALIAS_BYNAME, name,
+  NSS_GETONE(NSLCD_ACTION_ALIAS_BYNAME,
+             WRITE_STRING(fp, name),
              read_aliasent(fp, result, buffer, buflen, errnop));
 }
 

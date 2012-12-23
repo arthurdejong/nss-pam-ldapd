@@ -55,8 +55,8 @@ static nss_status_t read_spwd(TFILE *fp, struct spwd *result,
 nss_status_t _nss_ldap_getspnam_r(const char *name, struct spwd *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,
-             name,
+  NSS_GETONE(NSLCD_ACTION_SHADOW_BYNAME,
+             WRITE_STRING(fp, name),
              read_spwd(fp, result, buffer, buflen, errnop));
 }
 
@@ -125,8 +125,8 @@ static nss_status_t read_result(TFILE *fp, nss_XbyY_args_t *args)
 
 static nss_status_t shadow_getspnam(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_SHADOW_BYNAME,
-             NSS_ARGS(args)->key.name,
+  NSS_GETONE(NSLCD_ACTION_SHADOW_BYNAME,
+             WRITE_STRING(fp, NSS_ARGS(args)->key. name),
              read_result(fp, args));
 }
 

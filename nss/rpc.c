@@ -50,8 +50,8 @@ nss_status_t _nss_ldap_getrpcbyname_r(const char *name,
                                       struct rpcent *result, char *buffer,
                                       size_t buflen, int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,
-             name,
+  NSS_GETONE(NSLCD_ACTION_RPC_BYNAME,
+             WRITE_STRING(fp, name),
              read_rpcent(fp, result, buffer, buflen, errnop));
 }
 
@@ -60,9 +60,9 @@ nss_status_t _nss_ldap_getrpcbynumber_r(int number, struct rpcent *result,
                                         char *buffer, size_t buflen,
                                         int *errnop)
 {
-  NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,
-              number,
-              read_rpcent(fp, result, buffer, buflen, errnop));
+  NSS_GETONE(NSLCD_ACTION_RPC_BYNUMBER,
+             WRITE_INT32(fp, number),
+             read_rpcent(fp, result, buffer, buflen, errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -118,16 +118,16 @@ static nss_status_t read_result(TFILE *fp, nss_XbyY_args_t *args)
 
 static nss_status_t rpc_getrpcbyname(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_RPC_BYNAME,
-             NSS_ARGS(args)->key.name,
+  NSS_GETONE(NSLCD_ACTION_RPC_BYNAME,
+             WRITE_STRING(fp, NSS_ARGS(args)->key.name),
              read_result(fp, args));
 }
 
 static nss_status_t rpc_getrpcbynumber(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYINT32(NSLCD_ACTION_RPC_BYNUMBER,
-              NSS_ARGS(args)->key.number,
-              read_result(fp, args));
+  NSS_GETONE(NSLCD_ACTION_RPC_BYNUMBER,
+             WRITE_INT32(fp, NSS_ARGS(args)->key.number),
+             read_result(fp, args));
 }
 
 static nss_status_t rpc_setrpcent(nss_backend_t *be, void UNUSED(*args))

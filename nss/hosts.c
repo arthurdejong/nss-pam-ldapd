@@ -158,8 +158,8 @@ nss_status_t _nss_ldap_gethostbyname2_r(const char *name, int af,
                                         size_t buflen, int *errnop,
                                         int *h_errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,
-             name,
+  NSS_GETONE(NSLCD_ACTION_HOST_BYNAME,
+             WRITE_STRING(fp, name),
              read_hostent(fp, result, buffer, buflen, errnop, h_errnop, af, 0));
 }
 
@@ -187,9 +187,9 @@ nss_status_t _nss_ldap_gethostbyaddr_r(const void *addr, socklen_t len,
                                        char *buffer, size_t buflen,
                                        int *errnop, int *h_errnop)
 {
-  NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
-            WRITE_ADDRESS(fp, af, len, addr),
-            read_hostent(fp, result, buffer, buflen, errnop, h_errnop, af, 0));
+  NSS_GETONE(NSLCD_ACTION_HOST_BYADDR,
+             WRITE_ADDRESS(fp, af, len, addr),
+             read_hostent(fp, result, buffer, buflen, errnop, h_errnop, af, 0));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -265,18 +265,18 @@ static nss_status_t read_result(TFILE *fp, int af, int retry,
 
 static nss_status_t hosts_gethostbyname(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_HOST_BYNAME,
-             NSS_ARGS(args)->key.name,
+  NSS_GETONE(NSLCD_ACTION_HOST_BYNAME,
+             WRITE_STRING(fp, NSS_ARGS(args)->key.name),
              read_result(fp, AF_INET, 0, args));
 }
 
 static nss_status_t hosts_gethostbyaddr(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYGEN(NSLCD_ACTION_HOST_BYADDR,
-            WRITE_ADDRESS(fp, NSS_ARGS(args)->key.hostaddr.type,
-                          NSS_ARGS(args)->key.hostaddr.len,
-                          NSS_ARGS(args)->key.hostaddr.addr),
-            read_result(fp, NSS_ARGS(args)->key.hostaddr.type, 0, args));
+  NSS_GETONE(NSLCD_ACTION_HOST_BYADDR,
+             WRITE_ADDRESS(fp, NSS_ARGS(args)->key.hostaddr.type,
+                           NSS_ARGS(args)->key.hostaddr.len,
+                           NSS_ARGS(args)->key.hostaddr.addr),
+             read_result(fp, NSS_ARGS(args)->key.hostaddr.type, 0, args));
 }
 
 static nss_status_t hosts_sethostent(nss_backend_t *be, void UNUSED(*args))

@@ -54,10 +54,10 @@ nss_status_t _nss_ldap_getservbyname_r(const char *name, const char *protocol,
                                        struct servent *result, char *buffer,
                                        size_t buflen, int *errnop)
 {
-  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,
-            WRITE_STRING(fp, name);
-            WRITE_STRING(fp, protocol),
-            read_servent(fp, result, buffer, buflen, errnop));
+  NSS_GETONE(NSLCD_ACTION_SERVICE_BYNAME,
+             WRITE_STRING(fp, name);
+             WRITE_STRING(fp, protocol),
+             read_servent(fp, result, buffer, buflen, errnop));
 }
 
 /* get a service entry by port and protocol */
@@ -66,11 +66,11 @@ nss_status_t _nss_ldap_getservbyport_r(int port, const char *protocol,
                                        size_t buflen, int *errnop)
 {
   /* port is already in network byte order */
-  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,
-            tmpint32 = ntohs(port);
-            WRITE_INT32(fp, tmpint32);
-            WRITE_STRING(fp, protocol),
-            read_servent(fp, result, buffer, buflen, errnop));
+  NSS_GETONE(NSLCD_ACTION_SERVICE_BYNUMBER,
+             tmpint32 = ntohs(port);
+             WRITE_INT32(fp, tmpint32);
+             WRITE_STRING(fp, protocol),
+             read_servent(fp, result, buffer, buflen, errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -127,18 +127,18 @@ static nss_status_t read_result(TFILE *fp, nss_XbyY_args_t *args)
 
 static nss_status_t services_getservbyname(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNAME,
-            WRITE_STRING(fp, NSS_ARGS(args)->key.serv.serv.name);
-            WRITE_STRING(fp, NSS_ARGS(args)->key.serv.proto),
-            read_result(fp, args));
+  NSS_GETONE(NSLCD_ACTION_SERVICE_BYNAME,
+             WRITE_STRING(fp, NSS_ARGS(args)->key.serv.serv.name);
+             WRITE_STRING(fp, NSS_ARGS(args)->key.serv.proto),
+             read_result(fp, args));
 }
 
 static nss_status_t services_getservbyport(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYGEN(NSLCD_ACTION_SERVICE_BYNUMBER,
-            WRITE_INT32(fp, ntohs(NSS_ARGS(args)->key.serv.serv.port));
-            WRITE_STRING(fp, NSS_ARGS(args)->key.serv.proto),
-            read_result(fp, args));
+  NSS_GETONE(NSLCD_ACTION_SERVICE_BYNUMBER,
+             WRITE_INT32(fp, ntohs(NSS_ARGS(args)->key.serv.serv.port));
+             WRITE_STRING(fp, NSS_ARGS(args)->key.serv.proto),
+             read_result(fp, args));
 }
 
 static nss_status_t services_setservent(nss_backend_t *be, void UNUSED(*args))

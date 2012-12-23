@@ -107,7 +107,7 @@
    the result structure, the user buffer with length and the
    errno to return. This macro should be called through some of
    the customized ones below. */
-#define NSS_BYGEN(action, writefn, readfn)                                  \
+#define NSS_GETONE(action, writefn, readfn)                                 \
   TFILE *fp;                                                                \
   int32_t tmpint32;                                                         \
   nss_status_t retv;                                                        \
@@ -126,16 +126,6 @@
     (void)tio_close(fp);                                                    \
   }                                                                         \
   return retv;
-
-/* This macro can be used to generate a get..byname() function
-   body. */
-#define NSS_BYNAME(action, name, readfn)                                    \
-  NSS_BYGEN(action, WRITE_STRING(fp, name), readfn)
-
-/* This macro can be used to generate a get..by..() function
-   body where the value should be passed as an int32_t. */
-#define NSS_BYINT32(action, val, readfn)                                    \
-  NSS_BYGEN(action, WRITE_INT32(fp, val), readfn)
 
 /* This macro generates a simple setent() function body. This closes any
    open streams so that NSS_GETENT() can open a new file. */

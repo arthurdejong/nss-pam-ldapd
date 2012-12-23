@@ -49,7 +49,8 @@ nss_status_t _nss_ldap_gethostton_r(const char *name,
                                     struct etherent *result, char *buffer,
                                     size_t buflen, int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME, name,
+  NSS_GETONE(NSLCD_ACTION_ETHER_BYNAME,
+             WRITE_STRING(fp, name),
              read_etherent(fp, result, buffer, buflen, errnop));
 }
 
@@ -58,9 +59,9 @@ nss_status_t _nss_ldap_getntohost_r(const struct ether_addr *addr,
                                     struct etherent *result, char *buffer,
                                     size_t buflen, int *errnop)
 {
-  NSS_BYGEN(NSLCD_ACTION_ETHER_BYETHER,
-            WRITE(fp, addr, sizeof(uint8_t[6])),
-            read_etherent(fp, result, buffer, buflen, errnop));
+  NSS_GETONE(NSLCD_ACTION_ETHER_BYETHER,
+             WRITE(fp, addr, sizeof(uint8_t[6])),
+             read_etherent(fp, result, buffer, buflen, errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -153,8 +154,8 @@ static nss_status_t read_result(TFILE *fp, nss_XbyY_args_t *args, int wantname)
 /* map a hostname to the corresponding ethernet address */
 static nss_status_t ethers_gethostton(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_ETHER_BYNAME,
-             NSS_ARGS(args)->key.name,
+  NSS_GETONE(NSLCD_ACTION_ETHER_BYNAME,
+             WRITE_STRING(fp, NSS_ARGS(args)->key.name),
              read_result(fp, args, 0));
 }
 
@@ -162,9 +163,9 @@ static nss_status_t ethers_gethostton(nss_backend_t UNUSED(*be), void *args)
 static nss_status_t ethers_getntohost(nss_backend_t UNUSED(*be), void *args)
 {
   struct ether_addr *addr = (struct ether_addr *)(NSS_ARGS(args)->key.ether);
-  NSS_BYGEN(NSLCD_ACTION_ETHER_BYETHER,
-            WRITE(fp, addr, sizeof(uint8_t[6])),
-            read_result(fp, args, 1));
+  NSS_GETONE(NSLCD_ACTION_ETHER_BYETHER,
+             WRITE(fp, addr, sizeof(uint8_t[6])),
+             read_result(fp, args, 1));
 }
 
 static nss_backend_op_t ethers_ops[] = {

@@ -51,8 +51,8 @@ nss_status_t _nss_ldap_getprotobyname_r(const char *name,
                                         char *buffer, size_t buflen,
                                         int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_PROTOCOL_BYNAME,
-             name,
+  NSS_GETONE(NSLCD_ACTION_PROTOCOL_BYNAME,
+             WRITE_STRING(fp, name),
              read_protoent(fp, result, buffer, buflen, errnop));
 }
 
@@ -61,9 +61,9 @@ nss_status_t _nss_ldap_getprotobynumber_r(int number, struct protoent *result,
                                           char *buffer, size_t buflen,
                                           int *errnop)
 {
-  NSS_BYINT32(NSLCD_ACTION_PROTOCOL_BYNUMBER,
-              number,
-              read_protoent(fp, result, buffer, buflen, errnop));
+  NSS_GETONE(NSLCD_ACTION_PROTOCOL_BYNUMBER,
+             WRITE_INT32(fp, number),
+             read_protoent(fp, result, buffer, buflen, errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -119,16 +119,16 @@ static nss_status_t read_result(TFILE *fp, nss_XbyY_args_t *args)
 
 static nss_status_t protocols_getprotobyname(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_PROTOCOL_BYNAME,
-             NSS_ARGS(args)->key.name,
+  NSS_GETONE(NSLCD_ACTION_PROTOCOL_BYNAME,
+             WRITE_STRING(fp, NSS_ARGS(args)->key.name),
              read_result(fp, args));
 }
 
 static nss_status_t protocols_getprotobynumber(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYINT32(NSLCD_ACTION_PROTOCOL_BYNUMBER,
-              NSS_ARGS(args)->key.number,
-              read_result(fp, args));
+  NSS_GETONE(NSLCD_ACTION_PROTOCOL_BYNUMBER,
+             WRITE_INT32(fp, NSS_ARGS(args)->key.number),
+             read_result(fp, args));
 }
 
 static nss_status_t protocols_setprotoent(nss_backend_t *be, void UNUSED(*args))

@@ -118,8 +118,8 @@ nss_status_t _nss_ldap_getnetbyname_r(const char *name,
                                       size_t buflen, int *errnop,
                                       int *h_errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,
-             name,
+  NSS_GETONE(NSLCD_ACTION_NETWORK_BYNAME,
+             WRITE_STRING(fp, name),
              read_netent(fp, result, buffer, buflen, errnop, h_errnop));
 }
 
@@ -130,9 +130,9 @@ nss_status_t _nss_ldap_getnetbyaddr_r(uint32_t addr, int UNUSED(af),
                                       size_t buflen, int *errnop,
                                       int *h_errnop)
 {
-  NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,
-            WRITE_ADDRESS(fp, addr),
-            read_netent(fp, result, buffer, buflen, errnop, h_errnop));
+  NSS_GETONE(NSLCD_ACTION_NETWORK_BYADDR,
+             WRITE_ADDRESS(fp, addr),
+             read_netent(fp, result, buffer, buflen, errnop, h_errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -194,16 +194,16 @@ static nss_status_t read_result(TFILE *fp, nss_XbyY_args_t *args)
 
 static nss_status_t networks_getnetbyname(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_NETWORK_BYNAME,
-             NSS_ARGS(args)->key.name,
+  NSS_GETONE(NSLCD_ACTION_NETWORK_BYNAME,
+             WRITE_STRING(fp, NSS_ARGS(args)->key.name),
              read_result(fp, args));
 }
 
 static nss_status_t networks_getnetbyaddr(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYGEN(NSLCD_ACTION_NETWORK_BYADDR,
-            WRITE_ADDRESS(fp, NSS_ARGS(args)->key.netaddr.net),
-            read_result(fp, args));
+  NSS_GETONE(NSLCD_ACTION_NETWORK_BYADDR,
+             WRITE_ADDRESS(fp, NSS_ARGS(args)->key.netaddr.net),
+             read_result(fp, args));
 }
 
 static nss_status_t networks_setnetent(nss_backend_t *be, void UNUSED(*args))

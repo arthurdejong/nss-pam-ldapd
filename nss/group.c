@@ -118,8 +118,8 @@ static nss_status_t read_gids(TFILE *fp, gid_t skipgroup, long int *start,
 nss_status_t _nss_ldap_getgrnam_r(const char *name, struct group *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
-  NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,
-             name,
+  NSS_GETONE(NSLCD_ACTION_GROUP_BYNAME,
+             WRITE_STRING(fp, name),
              read_group(fp, result, buffer, buflen, errnop));
 }
 
@@ -127,9 +127,9 @@ nss_status_t _nss_ldap_getgrnam_r(const char *name, struct group *result,
 nss_status_t _nss_ldap_getgrgid_r(gid_t gid, struct group *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
-  NSS_BYINT32(NSLCD_ACTION_GROUP_BYGID,
-              gid,
-              read_group(fp, result, buffer, buflen, errnop));
+  NSS_GETONE(NSLCD_ACTION_GROUP_BYGID,
+             WRITE_INT32(fp, gid),
+             read_group(fp, result, buffer, buflen, errnop));
 }
 
 /* thread-local file pointer to an ongoing request */
@@ -172,13 +172,13 @@ nss_status_t _nss_ldap_initgroups_dyn(const char *user, gid_t skipgroup,
                                       gid_t **groupsp, long int limit,
                                       int *errnop)
 {
-/* temporarily map the buffer and buflen names so the check in NSS_BYNAME
+/* temporarily map the buffer and buflen names so the check in NSS_GETONE
    for validity of the buffer works (renaming the parameters may cause
    confusion) */
 #define buffer groupsp
 #define buflen *size
-  NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,
-             user,
+  NSS_GETONE(NSLCD_ACTION_GROUP_BYMEMBER,
+             WRITE_STRING(fp, user),
              read_gids(fp, skipgroup, start, size, groupsp, limit, errnop));
 #undef buffer
 #undef buflen
@@ -217,16 +217,16 @@ static nss_status_t read_result(TFILE *fp, nss_XbyY_args_t *args)
 
 static nss_status_t group_getgrnam(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYNAME(NSLCD_ACTION_GROUP_BYNAME,
-             NSS_ARGS(args)->key.name,
+  NSS_GETONE(NSLCD_ACTION_GROUP_BYNAME,
+             WRITE_STRING(fp, NSS_ARGS(args)->key.name),
              read_result(fp, args));
 }
 
 static nss_status_t group_getgrgid(nss_backend_t UNUSED(*be), void *args)
 {
-  NSS_BYINT32(NSLCD_ACTION_GROUP_BYGID,
-              NSS_ARGS(args)->key.gid,
-              read_result(fp, args));
+  NSS_GETONE(NSLCD_ACTION_GROUP_BYGID,
+             WRITE_INT32(fp, NSS_ARGS(args)->key.gid),
+             read_result(fp, args));
 }
 
 static nss_status_t group_setgrent(nss_backend_t *be, void UNUSED(*args))
@@ -250,12 +250,11 @@ static nss_status_t group_getgroupsbymember(nss_backend_t UNUSED(*be), void *arg
   struct nss_groupsbymem *argp = (struct nss_groupsbymem *)args;
   long int start = (long int)argp->numgids;
   gid_t skipgroup = (start > 0) ? argp->gid_array[0] : (gid_t)-1;
-  NSS_BYNAME(NSLCD_ACTION_GROUP_BYMEMBER,
-             argp->username,
+  NSS_GETONE(NSLCD_ACTION_GROUP_BYMEMBER,
+             WRITE_STRING(fp, argp->username),
              read_gids(fp, skipgroup, &start, NULL, (gid_t **)&argp->gid_array,
                        argp->maxgids, &NSS_ARGS(args)->erange);
-             argp->numgids = (int)start;
-      );
+             argp->numgids = (int)start);
 }
 
 static nss_backend_op_t group_ops[] = {
