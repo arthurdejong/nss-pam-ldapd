@@ -96,25 +96,18 @@ static int write_string_stripspace_len(TFILE *fp, const char *str, int len)
   int32_t tmpint32;
   int i, j;
   DEBUG_PRINT("WRITE_STRING: var=" __STRING(str) " string=\"%s\"", str);
-  if (str == NULL)
+  /* skip leading spaces */
+  for (i = 0; (str[i] != '\0') && (isspace(str[i])); i++)
+    /* nothing */ ;
+  /* skip trailing spaces */
+  for (j = len; (j > i) && (isspace(str[j - 1])); j--)
+    /* nothing */ ;
+  /* write length of string */
+  WRITE_INT32(fp, j - i);
+  /* write string itself */
+  if (j > i)
   {
-    WRITE_INT32(fp, 0);
-  }
-  else
-  {
-    /* skip leading spaces */
-    for (i = 0; (str[i] != '\0') && (isspace(str[i])); i++)
-      /* nothing */ ;
-    /* skip trailing spaces */
-    for (j = len; (j > i) && (isspace(str[j - 1])); j--)
-      /* nothing */ ;
-    /* write length of string */
-    WRITE_INT32(fp, j - i);
-    /* write string itself */
-    if (j > i)
-    {
-      WRITE(fp, str + i, j - i);
-    }
+    WRITE(fp, str + i, j - i);
   }
   /* we're done */
   return 0;
@@ -148,38 +141,35 @@ static int write_netgroup_triple(TFILE *fp, MYLDAP_ENTRY *entry,
   /* find comma (end of host string) */
   for (; (triple[i] != '\0') && (triple[i] != ','); i++)
     /* nothing */ ;
-  if (triple[i] != ',')
+  hoste = i;
+  if (triple[i++] != ',')
   {
     log_log(LOG_WARNING, "%s: %s: missing ','",
             myldap_get_dn(entry), attmap_netgroup_nisNetgroupTriple);
     return 0;
   }
-  hoste = i;
-  i++;
   userb = i;
   /* find comma (end of user string) */
   for (; (triple[i] != '\0') && (triple[i] != ','); i++)
     /* nothing */ ;
-  if (triple[i] != ',')
+  usere = i;
+  if (triple[i++] != ',')
   {
     log_log(LOG_WARNING, "%s: %s: missing ','",
             myldap_get_dn(entry), attmap_netgroup_nisNetgroupTriple);
     return 0;
   }
-  usere = i;
-  i++;
   domainb = i;
   /* find closing bracket (end of domain string) */
   for (; (triple[i] != '\0') && (triple[i] != ')'); i++)
     /* nothing */ ;
-  if (triple[i] != ')')
+  domaine=i;
+  if (triple[i++] != ')')
   {
     log_log(LOG_WARNING, "%s: %s: missing ')'",
             myldap_get_dn(entry), attmap_netgroup_nisNetgroupTriple);
     return 0;
   }
-  domaine = i;
-  i++;
   /* skip trailing spaces */
   for (; (triple[i] != '\0') && (isspace(triple[i])); i++)
     /* nothing */ ;
@@ -191,23 +181,18 @@ static int write_netgroup_triple(TFILE *fp, MYLDAP_ENTRY *entry,
     return 0;
   }
   /* write strings */
-  WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
   WRITE_INT32(fp, NSLCD_NETGROUP_TYPE_TRIPLE);
-  WRITE_STRING_STRIPSPACE_LEN(fp, triple + hostb, hoste - hostb);
-  WRITE_STRING_STRIPSPACE_LEN(fp, triple + userb, usere - userb);
-  WRITE_STRING_STRIPSPACE_LEN(fp, triple + domainb, domaine - domainb);
+  WRITE_STRING_STRIPSPACE_LEN(fp, triple + hostb, hoste - hostb)
+  WRITE_STRING_STRIPSPACE_LEN(fp, triple + userb, usere - userb)
+  WRITE_STRING_STRIPSPACE_LEN(fp, triple + domainb, domaine - domainb)
   /* we're done */
   return 0;
 }
 
-#define WRITE_NETGROUP_TRIPLE(fp, entry, triple)                            \
-  if (write_netgroup_triple(fp, entry, triple))                             \
-    return -1;
-
 static int write_netgroup(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname)
 {
   int32_t tmpint32;
-  int i;
+  int i, j;
   const char **names;
   const char **triples;
   const char **members;
@@ -219,29 +204,32 @@ static int write_netgroup(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname)
             myldap_get_dn(entry), attmap_netgroup_cn);
     return 0;
   }
-  for (i = 0; (names[i] != NULL) && (STR_CMP(reqname, names[i]) != 0); i++)
-    /* nothing */ ;
-  if (names[i] == NULL)
-    return 0; /* the name was not found */
   /* get the netgroup triples and member */
   triples = myldap_get_values(entry, attmap_netgroup_nisNetgroupTriple);
   members = myldap_get_values(entry, attmap_netgroup_memberNisNetgroup);
-  /* write the netgroup triples */
-  if (triples != NULL)
-    for (i = 0; triples[i] != NULL; i++)
+  /* write the entries */
+  for (i = 0; names[i] != NULL; i++)
+    if ((reqname == NULL) || (STR_CMP(reqname, names[i]) == 0))
     {
-      WRITE_NETGROUP_TRIPLE(fp, entry, triples[i]);
-    }
-  /* write netgroup members */
-  if (members != NULL)
-    for (i = 0; members[i] != NULL; i++)
-    {
-      /* write the result code */
+      /* write first part of result */
       WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
-      /* write triple indicator */
-      WRITE_INT32(fp, NSLCD_NETGROUP_TYPE_NETGROUP);
-      /* write netgroup name */
-      WRITE_STRING_STRIPSPACE(fp, members[i]);
+      WRITE_STRING(fp, names[i]);
+      /* write the netgroup triples */
+      if (triples != NULL)
+        for (j = 0; triples[j] != NULL; j++)
+          if (write_netgroup_triple(fp, entry, triples[j]))
+            return -1;
+      /* write netgroup members */
+      if (members != NULL)
+        for (j = 0; members[j] != NULL; j++)
+        {
+          /* write triple indicator */
+          WRITE_INT32(fp, NSLCD_NETGROUP_TYPE_NETGROUP);
+          /* write netgroup name */
+          WRITE_STRING_STRIPSPACE(fp, members[j]);
+        }
+      /* write end of result marker */
+      WRITE_INT32(fp, NSLCD_NETGROUP_TYPE_END);
     }
   /* we're done */
   return 0;

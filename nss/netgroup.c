@@ -32,17 +32,9 @@
 #include "compat/attrs.h"
 #include "common/set.h"
 
-/* we redefine this here because we need to return NSS_STATUS_RETURN
-   instead of NSS_STATUS_NOTFOUND */
-#undef ERROR_OUT_NOSUCCESS
-#define ERROR_OUT_NOSUCCESS(fp)                                             \
-  (void)tio_close(fp);                                                      \
-  fp = NULL;                                                                \
-  return NSS_STATUS_RETURN;
-
 /* function for reading a single result entry */
-static nss_status_t read_netgrent(TFILE *fp, struct __netgrent *result,
-                                  char *buffer, size_t buflen, int *errnop)
+static nss_status_t read_netgrent_line(TFILE *fp, struct __netgrent *result,
+                                       char *buffer, size_t buflen, int *errnop)
 {
   int32_t tmpint32;
   int type;
@@ -54,6 +46,7 @@ static nss_status_t read_netgrent(TFILE *fp, struct __netgrent *result,
     /* the response is a reference to another netgroup */
     result->type = group_val;
     READ_BUF_STRING(fp, result->val.group);
+    return NSS_STATUS_SUCCESS;
   }
   else if (type == NSLCD_NETGROUP_TYPE_TRIPLE)
   {
@@ -80,11 +73,14 @@ static nss_status_t read_netgrent(TFILE *fp, struct __netgrent *result,
       result->val.triple.domain = NULL;
       bufptr--; /* free unused space */
     }
+    return NSS_STATUS_SUCCESS;
   }
-  else
-    return NSS_STATUS_UNAVAIL;
-  /* we're done */
-  return NSS_STATUS_SUCCESS;
+  else if (type == NSLCD_NETGROUP_TYPE_END)
+    /* make _nss_ldap_getnetgrent_r() indicate the end of the netgroup */
+    return NSS_STATUS_RETURN;
+  /* we got something unexpected */
+  ERROR_OUT_NOSUCCESS(fp);
+  return NSS_STATUS_UNAVAIL;
 }
 
 #ifdef NSS_FLAVOUR_GLIBC
@@ -100,16 +96,18 @@ nss_status_t _nss_ldap_setnetgrent(const char *group,
      available in this function */
   int32_t tmpint32;
   int errnocp;
-  int *errnop;
-  if (!_nss_ldap_enablelookups)
-    return NSS_STATUS_UNAVAIL;
-  errnop = &errnocp;
+  int *errnop = &errnocp;
+  NSS_EXTRA_DEFS
+  NSS_AVAILCHECK;
   /* check parameter */
   if ((group == NULL) || (group[0] == '\0'))
     return NSS_STATUS_UNAVAIL;
   /* open a new stream and write the request */
   NSLCD_REQUEST(netgrentfp, NSLCD_ACTION_NETGROUP_BYNAME,
                 WRITE_STRING(netgrentfp, group));
+  /* read response code */
+  READ_RESPONSE_CODE(netgrentfp);
+  SKIP_STRING(netgrentfp); /* netgroup name */
   return NSS_STATUS_SUCCESS;
 }
 
@@ -117,8 +115,35 @@ nss_status_t _nss_ldap_setnetgrent(const char *group,
 nss_status_t _nss_ldap_getnetgrent_r(struct __netgrent *result,
                                      char *buffer, size_t buflen, int *errnop)
 {
-  NSS_GETENT(netgrentfp, NSLCD_ACTION_NETGROUP_BYNAME,
-             read_netgrent(netgrentfp, result, buffer, buflen, errnop));
+  nss_status_t retv;
+  NSS_EXTRA_DEFS;
+  NSS_AVAILCHECK;
+  NSS_BUFCHECK;
+  /* check that we have a valid file descriptor */
+  if (netgrentfp == NULL)
+    return NSS_STATUS_UNAVAIL;
+  /* prepare for buffer errors */
+  tio_mark(netgrentfp);
+  /* read a response */
+  retv = read_netgrent_line(netgrentfp, result, buffer, buflen, errnop);
+  /* check read result */
+  if (retv == NSS_STATUS_TRYAGAIN)
+  {
+    /* if we have a full buffer try to reset the stream */
+    if (tio_reset(netgrentfp))
+    {
+      /* reset failed, we close and give up with a permanent error
+         because we cannot retry just the getent() call because it
+         may not be only the first entry that failed */
+      tio_close(netgrentfp);
+      netgrentfp = NULL;
+      *errnop = EINVAL;
+      return NSS_STATUS_UNAVAIL;
+    }
+  }
+  else if ((retv != NSS_STATUS_SUCCESS) && (retv != NSS_STATUS_RETURN))
+    netgrentfp = NULL; /* file should be closed by now */
+  return retv;
 }
 
 /* close the stream opened with setnetgrent() above */
@@ -185,8 +210,7 @@ static nss_status_t netgroup_nslcd_getnetgrent(nss_backend_t *be,
                                                void *args)
 {
   NSS_GETENT(NETGROUP_BE(be)->fp, NSLCD_ACTION_NETGROUP_BYNAME,
-             read_netgrent(NETGROUP_BE(be)->fp, result, buffer, buflen,
-                           errnop));
+             read_netgrent_line(NETGROUP_BE(be)->fp, result, buffer, buflen, errnop));
 }
 
 static nss_status_t netgroup_setnetgrent_setnetgrent(nss_backend_t

@@ -47,25 +47,26 @@ class Cache(cache.Cache):
 
 class NetgroupRequest(common.Request):
 
-    def write(self, name, member):
-        m = _netgroup_triple_re.match(member)
-        if m:
-            self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_TRIPLE)
-            self.fp.write_string(m.group('host'))
-            self.fp.write_string(m.group('user'))
-            self.fp.write_string(m.group('domain'))
-        else:
+    def write(self, name, triples, members):
+        self.fp.write_string(name)
+        for triple in triples:
+            m = _netgroup_triple_re.match(triple)
+            if m:
+                self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_TRIPLE)
+                self.fp.write_string(m.group('host'))
+                self.fp.write_string(m.group('user'))
+                self.fp.write_string(m.group('domain'))
+        for member in members:
             self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_NETGROUP)
             self.fp.write_string(member)
+        self.fp.write_int32(constants.NSLCD_NETGROUP_TYPE_END)
 
     def convert(self, dn, attributes, parameters):
-        # write the netgroup triples
-        name = attributes['cn'][0]
-        for triple in attributes['nisNetgroupTriple']:
-            yield (name, triple)
-        # write netgroup members
-        for member in attributes['memberNisNetgroup']:
-            yield (name, member)
+        names = attributes['cn']
+        triples = attributes['nisNetgroupTriple']
+        members = attributes['memberNisNetgroup']
+        for name in names:
+            yield (name, triples, members)
 
 
 class NetgroupByNameRequest(NetgroupRequest):

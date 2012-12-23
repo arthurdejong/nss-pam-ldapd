@@ -115,18 +115,25 @@
 #define NSLCD_ACTION_HOST_BYADDR       0x00050002
 #define NSLCD_ACTION_HOST_ALL          0x00050008
 
-/* Netgroup NSS request return a number of results. Result values
-   can be either a reference to another netgroup:
+/* Netgroup NSS result entries contain a number of parts. A result entry
+   starts with:
+     STRING  netgroup name
+   followed by zero or more references to other netgroups or netgroup
+   triples. A reference to another netgroup looks like:
      INT32   NSLCD_NETGROUP_TYPE_NETGROUP
      STRING  other netgroup name
-   or a netgroup triple:
+   A a netgroup triple looks like:
      INT32   NSLCD_NETGROUP_TYPE_TRIPLE
      STRING  host
      STRING  user
-     STRING  domain */
+     STRING  domain
+   A netgroup result entry is terminated by:
+     INT32   NSLCD_NETGROUP_TYPE_END
+   */
 #define NSLCD_ACTION_NETGROUP_BYNAME   0x00060001
 #define NSLCD_NETGROUP_TYPE_NETGROUP 1
 #define NSLCD_NETGROUP_TYPE_TRIPLE   2
+#define NSLCD_NETGROUP_TYPE_END      3
 
 /* Network name (/etc/networks) NSS requests. Result values for a single
    entry are:
