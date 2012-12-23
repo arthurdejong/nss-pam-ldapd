@@ -54,25 +54,31 @@ static nss_status_t read_netgrent_line(TFILE *fp, struct __netgrent *result,
     result->type = triple_val;
     /* read host and revert to NULL on empty string */
     READ_BUF_STRING(fp, result->val.triple.host);
+#ifdef NSS_FLAVOUR_GLIBC
     if (result->val.triple.host[0] == '\0')
     {
       result->val.triple.host = NULL;
       bufptr--; /* free unused space */
     }
+#endif /* NSS_FLAVOUR_GLIBC */
     /* read user and revert to NULL on empty string */
     READ_BUF_STRING(fp, result->val.triple.user);
+#ifdef NSS_FLAVOUR_GLIBC
     if (result->val.triple.user[0] == '\0')
     {
       result->val.triple.user = NULL;
       bufptr--; /* free unused space */
     }
+#endif /* NSS_FLAVOUR_GLIBC */
     /* read domain and revert to NULL on empty string */
     READ_BUF_STRING(fp, result->val.triple.domain);
+#ifdef NSS_FLAVOUR_GLIBC
     if (result->val.triple.domain[0] == '\0')
     {
       result->val.triple.domain = NULL;
       bufptr--; /* free unused space */
     }
+#endif /* NSS_FLAVOUR_GLIBC */
     return NSS_STATUS_SUCCESS;
   }
   else if (type == NSLCD_NETGROUP_TYPE_END)
@@ -156,7 +162,7 @@ nss_status_t _nss_ldap_endnetgrent(struct __netgrent UNUSED(*result))
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
-/* this is the backend structure for the {set,get,end}ent() functions */
+/* this is the custom backend structure for the {set,get,end}ent() functions */
 struct setnetgrent_backend {
   nss_backend_op_t *ops; /* function-pointer table */
   int n_ops;             /* number of function pointers */
@@ -173,48 +179,40 @@ struct setnetgrent_backend {
 #define GETNETGRENT_ARGS(args) ((struct nss_getnetgrent_args *)(args))
 
 /* return a netgroup that has not been traversed */
-static char *find_unseen_netgroup(nss_backend_t *be)
+static char *find_unseen_netgroup(struct setnetgrent_backend *be)
 {
   char *group;
   while (1)
   {
-    group = set_pop(NETGROUP_BE(be)->unseen_groups);
+    group = set_pop(be->unseen_groups);
     if (group == NULL)
       return NULL;
-    if (!set_contains(NETGROUP_BE(be)->seen_groups, group))
-    {
-      set_add(NETGROUP_BE(be)->seen_groups, group);
+    if (!set_contains(be->seen_groups, group))
       return group;
-    }
   }
 }
 
-static nss_status_t netgroup_nslcd_setnetgrent(nss_backend_t *be,
-                                               const char *group, int *errnop)
+static nss_status_t start_netgroup_request(struct setnetgrent_backend *be,
+                                           const char *group)
 {
   /* we cannot use NSS_SETENT() here because we have a parameter that is only
      available in this function */
   int32_t tmpint32;
+  int *errnop = &errno;
   /* check parameter */
   if ((group == NULL) || (group[0] == '\0'))
     return NSS_STATUS_UNAVAIL;
+  set_add(be->seen_groups, group);
   /* open a new stream and write the request */
   NSLCD_REQUEST(NETGROUP_BE(be)->fp, NSLCD_ACTION_NETGROUP_BYNAME,
                 WRITE_STRING(NETGROUP_BE(be)->fp, group));
+  /* read response code */
+  READ_RESPONSE_CODE(NETGROUP_BE(be)->fp);
+  SKIP_STRING(NETGROUP_BE(be)->fp); /* netgroup name */
   return NSS_STATUS_SUCCESS;
 }
 
-static nss_status_t netgroup_nslcd_getnetgrent(nss_backend_t *be,
-                                               struct __netgrent *result,
-                                               char *buffer, size_t buflen,
-                                               void *args)
-{
-  NSS_GETENT(NETGROUP_BE(be)->fp, NSLCD_ACTION_NETGROUP_BYNAME,
-             read_netgrent_line(NETGROUP_BE(be)->fp, result, buffer, buflen, errnop));
-}
-
-static nss_status_t netgroup_setnetgrent_setnetgrent(nss_backend_t
-                                                     UNUSED(*be),
+static nss_status_t netgroup_setnetgrent_setnetgrent(nss_backend_t UNUSED(*be),
                                                      void UNUSED(*args))
 {
   return NSS_STATUS_SUCCESS;
@@ -224,72 +222,77 @@ static nss_status_t netgroup_setnetgrent_getnetgrent(nss_backend_t *be,
                                                      void *args)
 {
   struct __netgrent result;
-  char *group = NULL;
-  int done = 0;
-  nss_status_t status, rc;
-  GETNETGRENT_ARGS(args)->status = NSS_NETGR_NO;
-  while (!done)
+  nss_status_t retv;
+  /* check that we have a valid file descriptor */
+  if (NETGROUP_BE(be)->fp == NULL)
+    return NSS_STATUS_UNAVAIL;
+  /* go over the result lines */
+  while (1)
   {
-    status = netgroup_nslcd_getnetgrent(be, &result, GETNETGRENT_ARGS(args)->buffer,
-                                        GETNETGRENT_ARGS(args)->buflen, args);
-    if (status != NSS_STATUS_SUCCESS)
+    /* prepare for buffer errors */
+    tio_mark(NETGROUP_BE(be)->fp);
+    /* read single line from the netgroup information */
+    retv = read_netgrent_line(NETGROUP_BE(be)->fp, &result, GETNETGRENT_ARGS(args)->buffer,
+                              GETNETGRENT_ARGS(args)->buflen, &errno);
+    /* check read result */
+    if ((retv == NSS_STATUS_SUCCESS) && (result.type == group_val))
     {
-      if (errno == ENOENT)
+      /* a netgroup nested within the current netgroup */
+      set_add(NETGROUP_BE(be)->unseen_groups, result.val.group);
+    }
+    else if ((retv == NSS_STATUS_SUCCESS) && (result.type == triple_val))
+    {
+      /* a netgroup line we can return */
+      GETNETGRENT_ARGS(args)->status = NSS_NETGR_FOUND;
+      GETNETGRENT_ARGS(args)->retp[NSS_NETGR_MACHINE] = result.val.triple.host;
+      GETNETGRENT_ARGS(args)->retp[NSS_NETGR_USER] = result.val.triple.user;
+      GETNETGRENT_ARGS(args)->retp[NSS_NETGR_DOMAIN] = result.val.triple.domain;
+      return NSS_STATUS_SUCCESS;
+    }
+    else if (retv == NSS_STATUS_TRYAGAIN)
+    {
+      /* we have a full buffer, try to reset the stream */
+      if (tio_reset(NETGROUP_BE(be)->fp))
       {
-        /* done with the current netgroup */
-        /* explore nested netgroup, if any */
-        int found = 0;
-        while (!found)
-        {
-          /* find a nested netgroup to pursue further */
-          group = find_unseen_netgroup(be);
-          if (group == NULL)
-          {
-            /* no more netgroup */
-            found = 1;
-            done = 1;
-            errno = ENOENT; /* TODO: probably don't do this */
-          }
-          else
-          {
-            rc = netgroup_nslcd_setnetgrent(be, group, &NSS_ARGS(args)->erange);
-            if (rc == NSS_STATUS_SUCCESS)
-              found = 1;
-            free(group);
-            group = NULL;
-          }
-        } /* while !found */
+        /* reset failed, we close and give up with a permanent error
+           because we cannot retry just the getent() call because it
+           may not be only the first entry that failed */
+        tio_close(NETGROUP_BE(be)->fp);
+        NETGROUP_BE(be)->fp = NULL;
+        return NSS_STATUS_UNAVAIL;
       }
-      else
-      { /* err != ENOENT */
-        done = 1;
+      GETNETGRENT_ARGS(args)->status = NSS_NETGR_NOMEM;
+      return NSS_STATUS_TRYAGAIN;
+    }
+    else if (retv == NSS_STATUS_RETURN)
+    {
+      /* done with the current netgroup */
+      tio_close(NETGROUP_BE(be)->fp);
+      NETGROUP_BE(be)->fp = NULL;
+      /* explore nested netgroups, if any */
+      while (retv != NSS_STATUS_SUCCESS)
+      {
+        /* find a nested netgroup to pursue further */
+        char *group = find_unseen_netgroup(NETGROUP_BE(be));
+        if (group == NULL)
+        {
+          /* no more netgroups to explore */
+          GETNETGRENT_ARGS(args)->status = NSS_NETGR_NO;
+          return NSS_STATUS_SUCCESS;
+        }
+        /* start a new search with this netgroup */
+        retv = start_netgroup_request(NETGROUP_BE(be), group);
+        free(group);
       }
     }
     else
-    { /* status == NSS_STATUS_SUCCESS */
-      if (result.type == group_val)
-      {
-        /* a netgroup nested within the current netgroup */
-        set_add(NETGROUP_BE(be)->unseen_groups, result.val.group);
-      }
-      else if (result.type == triple_val)
-      {
-        GETNETGRENT_ARGS(args)->retp[NSS_NETGR_MACHINE] = result.val.triple.host;
-        GETNETGRENT_ARGS(args)->retp[NSS_NETGR_USER] = result.val.triple.user;
-        GETNETGRENT_ARGS(args)->retp[NSS_NETGR_DOMAIN] = result.val.triple.domain;
-        GETNETGRENT_ARGS(args)->status = NSS_NETGR_FOUND;
-        done = 1;
-      }
-      else
-      {
-        /* NSS_STATUS_SUCCESS, but type is not group_val or triple_val */
-        /* should not be here, log a message */
-        status = NSS_STATUS_NOTFOUND;
-        done = 1;
-      }
+    {
+      /* some error occurred when reading the line (stream should be closed by now) */
+      NETGROUP_BE(be)->fp = NULL;
+      GETNETGRENT_ARGS(args)->status = NSS_NETGR_NO;
+      return retv;
     }
-  } /* while !done */
-  return status;
+  }
 }
 
 static nss_status_t netgroup_setnetgrent_endnetgrent(nss_backend_t
@@ -334,11 +337,10 @@ static nss_status_t netgroup_setnetgrent_constructor(nss_backend_t *be, void *ar
   ngbe->seen_groups = set_new();
   ngbe->unseen_groups = set_new();
   /* start the first search */
-  retv = netgroup_nslcd_setnetgrent(be, SETNETGRENT_ARGS(args)->netgroup,
-                                    &NSS_ARGS(args)->erange);
+  retv = start_netgroup_request(ngbe, SETNETGRENT_ARGS(args)->netgroup);
   if (retv != NSS_STATUS_SUCCESS)
   {
-    netgroup_setnetgrent_destructor(be, args);
+    netgroup_setnetgrent_destructor((nss_backend_t *)ngbe, args);
     return retv;
   }
   /* return the new back-end */
