@@ -146,18 +146,17 @@ static int write_network(TFILE *fp, MYLDAP_ENTRY *entry)
 }
 
 NSLCD_HANDLE(
-  network, byname,
+  network, byname, NSLCD_ACTION_NETWORK_BYNAME,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
   log_setrequest("network=\"%s\"", name);,
-  NSLCD_ACTION_NETWORK_BYNAME,
   mkfilter_network_byname(name, filter, sizeof(filter)),
   write_network(fp, entry)
 )
 
 NSLCD_HANDLE(
-  network, byaddr,
+  network, byaddr, NSLCD_ACTION_NETWORK_BYADDR,
   int af;
   char addr[64];
   int len = sizeof(addr);
@@ -171,16 +170,14 @@ NSLCD_HANDLE(
     return -1;
   }
   log_setrequest("network=%s", addrstr);,
-  NSLCD_ACTION_NETWORK_BYADDR,
   mkfilter_network_byaddr(addrstr, filter, sizeof(filter)),
   write_network(fp, entry)
 )
 
 NSLCD_HANDLE(
-  network, all,
+  network, all, NSLCD_ACTION_NETWORK_ALL,
   const char *filter;
   log_setrequest("network(all)");,
-  NSLCD_ACTION_NETWORK_ALL,
   (filter = network_filter, 0),
   write_network(fp, entry)
 )

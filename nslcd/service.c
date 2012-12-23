@@ -203,36 +203,33 @@ static int write_service(TFILE *fp, MYLDAP_ENTRY *entry,
 }
 
 NSLCD_HANDLE(
-  service, byname,
+  service, byname, NSLCD_ACTION_SERVICE_BYNAME,
   char name[256];
   char protocol[256];
   char filter[4096];
   READ_STRING(fp, name);
   READ_STRING(fp, protocol);
   log_setrequest("service=\"%s\"/%s", name, protocol);,
-  NSLCD_ACTION_SERVICE_BYNAME,
   mkfilter_service_byname(name, protocol, filter, sizeof(filter)),
   write_service(fp, entry, name, protocol)
 )
 
 NSLCD_HANDLE(
-  service, bynumber,
+  service, bynumber, NSLCD_ACTION_SERVICE_BYNUMBER,
   int number;
   char protocol[256];
   char filter[4096];
   READ_INT32(fp, number);
   READ_STRING(fp, protocol);
   log_setrequest("service=%lu/%s", (unsigned long int)number, protocol);,
-  NSLCD_ACTION_SERVICE_BYNUMBER,
   mkfilter_service_bynumber(number, protocol, filter, sizeof(filter)),
   write_service(fp, entry, NULL, protocol)
 )
 
 NSLCD_HANDLE(
-  service, all,
+  service, all, NSLCD_ACTION_SERVICE_ALL,
   const char *filter;
   log_setrequest("service(all)");,
-  NSLCD_ACTION_SERVICE_ALL,
   (filter = service_filter, 0),
   write_service(fp, entry, NULL, NULL)
 )

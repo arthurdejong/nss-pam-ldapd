@@ -539,7 +539,7 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
 }
 
 NSLCD_HANDLE_UID(
-  passwd, byname,
+  passwd, byname, NSLCD_ACTION_PASSWD_BYNAME,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
@@ -550,13 +550,12 @@ NSLCD_HANDLE_UID(
     return -1;
   }
   nsswitch_check_reload();,
-  NSLCD_ACTION_PASSWD_BYNAME,
   mkfilter_passwd_byname(name, filter, sizeof(filter)),
   write_passwd(fp, entry, name, NULL, calleruid)
 )
 
 NSLCD_HANDLE_UID(
-  passwd, byuid,
+  passwd, byuid, NSLCD_ACTION_PASSWD_BYUID,
   uid_t uid;
   char filter[4096];
   READ_INT32(fp, uid);
@@ -570,17 +569,15 @@ NSLCD_HANDLE_UID(
     return 0;
   }
   nsswitch_check_reload();,
-  NSLCD_ACTION_PASSWD_BYUID,
   mkfilter_passwd_byuid(uid, filter, sizeof(filter)),
   write_passwd(fp, entry, NULL, &uid, calleruid)
 )
 
 NSLCD_HANDLE_UID(
-  passwd, all,
+  passwd, all, NSLCD_ACTION_PASSWD_ALL,
   const char *filter;
   log_setrequest("passwd(all)");
   nsswitch_check_reload();,
-  NSLCD_ACTION_PASSWD_ALL,
   (filter = passwd_filter, 0),
   write_passwd(fp, entry, NULL, NULL, calleruid)
 )

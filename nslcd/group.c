@@ -309,7 +309,7 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
 }
 
 NSLCD_HANDLE(
-  group, byname,
+  group, byname, NSLCD_ACTION_GROUP_BYNAME,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
@@ -319,24 +319,22 @@ NSLCD_HANDLE(
     log_log(LOG_WARNING, "request denied by validnames option");
     return -1;
   },
-  NSLCD_ACTION_GROUP_BYNAME,
   mkfilter_group_byname(name, filter, sizeof(filter)),
   write_group(fp, entry, name, NULL, 1, session)
 )
 
 NSLCD_HANDLE(
-  group, bygid,
+  group, bygid, NSLCD_ACTION_GROUP_BYGID,
   gid_t gid;
   char filter[4096];
   READ_INT32(fp, gid);
   log_setrequest("group=%lu", (unsigned long int)gid);,
-  NSLCD_ACTION_GROUP_BYGID,
   mkfilter_group_bygid(gid, filter, sizeof(filter)),
   write_group(fp, entry, NULL, &gid, 1, session)
 )
 
 NSLCD_HANDLE(
-  group, bymember,
+  group, bymember, NSLCD_ACTION_GROUP_BYMEMBER,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
@@ -356,16 +354,14 @@ NSLCD_HANDLE(
     WRITE_INT32(fp, NSLCD_RESULT_END);
     return 0;
   },
-  NSLCD_ACTION_GROUP_BYMEMBER,
   mkfilter_group_bymember(session, name, filter, sizeof(filter)),
   write_group(fp, entry, NULL, NULL, 0, session)
 )
 
 NSLCD_HANDLE(
-  group, all,
+  group, all, NSLCD_ACTION_GROUP_ALL,
   const char *filter;
   log_setrequest("group(all)");,
-  NSLCD_ACTION_GROUP_ALL,
   (filter = group_filter, 0),
   write_group(fp, entry, NULL, NULL, 1, session)
 )

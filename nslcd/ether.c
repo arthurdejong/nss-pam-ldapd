@@ -154,18 +154,17 @@ static int write_ether(TFILE *fp, MYLDAP_ENTRY *entry,
 }
 
 NSLCD_HANDLE(
-  ether, byname,
+  ether, byname, NSLCD_ACTION_ETHER_BYNAME,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
   log_setrequest("ether=\"%s\"", name);,
-  NSLCD_ACTION_ETHER_BYNAME,
   mkfilter_ether_byname(name, filter, sizeof(filter)),
   write_ether(fp, entry, name, NULL)
 )
 
 NSLCD_HANDLE(
-  ether, byether,
+  ether, byether, NSLCD_ACTION_ETHER_BYETHER,
   struct ether_addr addr;
   char addrstr[20];
   char filter[4096];
@@ -173,16 +172,14 @@ NSLCD_HANDLE(
   if (ether_ntoa_r(&addr, addrstr) == NULL)
     return -1;
   log_setrequest("ether=%s", addrstr);,
-  NSLCD_ACTION_ETHER_BYETHER,
   mkfilter_ether_byether(addrstr, filter, sizeof(filter)),
   write_ether(fp, entry, NULL, addrstr)
 )
 
 NSLCD_HANDLE(
-  ether, all,
+  ether, all, NSLCD_ACTION_ETHER_ALL,
   const char *filter;
   log_setrequest("ether(all)");,
-  NSLCD_ACTION_ETHER_ALL,
   (filter = ether_filter, 0),
   write_ether(fp, entry, NULL, NULL)
 )

@@ -147,18 +147,17 @@ static int write_host(TFILE *fp, MYLDAP_ENTRY *entry)
 }
 
 NSLCD_HANDLE(
-  host, byname,
+  host, byname, NSLCD_ACTION_HOST_BYNAME,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
   log_setrequest("host=\"%s\"", name);,
-  NSLCD_ACTION_HOST_BYNAME,
   mkfilter_host_byname(name, filter, sizeof(filter)),
   write_host(fp, entry)
 )
 
 NSLCD_HANDLE(
-  host, byaddr,
+  host, byaddr, NSLCD_ACTION_HOST_BYADDR,
   int af;
   char addr[64];
   int len = sizeof(addr);
@@ -172,17 +171,15 @@ NSLCD_HANDLE(
     return -1;
   }
   log_setrequest("host=%s", addrstr);,
-  NSLCD_ACTION_HOST_BYADDR,
   mkfilter_host_byaddr(addrstr, filter, sizeof(filter)),
   write_host(fp, entry)
 )
 
 
 NSLCD_HANDLE(
-  host, all,
+  host, all, NSLCD_ACTION_HOST_ALL,
   const char *filter;
   log_setrequest("host(all)");,
-  NSLCD_ACTION_HOST_ALL,
   (filter = host_filter, 0),
   write_host(fp, entry)
 )

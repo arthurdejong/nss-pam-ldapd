@@ -361,21 +361,19 @@ MYLDAP_ENTRY *shadow_uid2entry(MYLDAP_SESSION *session, const char *username,
 }
 
 NSLCD_HANDLE(
-  shadow, byname,
+  shadow, byname, NSLCD_ACTION_SHADOW_BYNAME,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
   log_setrequest("shadow=\"%s\"", name);,
-  NSLCD_ACTION_SHADOW_BYNAME,
   mkfilter_shadow_byname(name, filter, sizeof(filter)),
   write_shadow(fp, entry, name)
 )
 
 NSLCD_HANDLE(
-  shadow, all,
+  shadow, all, NSLCD_ACTION_SHADOW_ALL,
   const char *filter;
   log_setrequest("shadow(all)");,
-  NSLCD_ACTION_SHADOW_ALL,
   (filter = shadow_filter, 0),
   write_shadow(fp, entry, NULL)
 )

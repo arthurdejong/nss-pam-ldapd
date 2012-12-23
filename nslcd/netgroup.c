@@ -236,12 +236,11 @@ static int write_netgroup(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname)
 }
 
 NSLCD_HANDLE(
-  netgroup, byname,
+  netgroup, byname, NSLCD_ACTION_NETGROUP_BYNAME,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
   log_setrequest("netgroup=\"%s\"", name);,
-  NSLCD_ACTION_NETGROUP_BYNAME,
   mkfilter_netgroup_byname(name, filter, sizeof(filter)),
   write_netgroup(fp, entry, name)
 )

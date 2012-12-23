@@ -118,21 +118,19 @@ static int write_alias(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqalias)
 }
 
 NSLCD_HANDLE(
-  alias, byname,
+  alias, byname, NSLCD_ACTION_ALIAS_BYNAME,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
   log_setrequest("alias=\"%s\"", name);,
-  NSLCD_ACTION_ALIAS_BYNAME,
   mkfilter_alias_byname(name, filter, sizeof(filter)),
   write_alias(fp, entry, name)
 )
 
 NSLCD_HANDLE(
-  alias, all,
+  alias, all, NSLCD_ACTION_ALIAS_ALL,
   const char *filter;
   log_setrequest("alias(all)");,
-  NSLCD_ACTION_ALIAS_ALL,
   (filter = alias_filter, 0),
   write_alias(fp, entry, NULL)
 )

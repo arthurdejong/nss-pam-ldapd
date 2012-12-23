@@ -166,32 +166,29 @@ static int write_protocol(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname)
 }
 
 NSLCD_HANDLE(
-  protocol, byname,
+  protocol, byname, NSLCD_ACTION_PROTOCOL_BYNAME,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
   log_setrequest("protocol=\"%s\"", name);,
-  NSLCD_ACTION_PROTOCOL_BYNAME,
   mkfilter_protocol_byname(name, filter, sizeof(filter)),
   write_protocol(fp, entry, name)
 )
 
 NSLCD_HANDLE(
-  protocol, bynumber,
+  protocol, bynumber, NSLCD_ACTION_PROTOCOL_BYNUMBER,
   int protocol;
   char filter[4096];
   READ_INT32(fp, protocol);
   log_setrequest("protocol=%lu", (unsigned long int)protocol);,
-  NSLCD_ACTION_PROTOCOL_BYNUMBER,
   mkfilter_protocol_bynumber(protocol, filter, sizeof(filter)),
   write_protocol(fp, entry, NULL)
 )
 
 NSLCD_HANDLE(
-  protocol, all,
+  protocol, all, NSLCD_ACTION_PROTOCOL_ALL,
   const char *filter;
   log_setrequest("protocol(all)");,
-  NSLCD_ACTION_PROTOCOL_ALL,
   (filter = protocol_filter, 0),
   write_protocol(fp, entry, NULL)
 )
