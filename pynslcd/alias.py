@@ -1,5 +1,5 @@
 
-# alias.py - lookup functions for aliasnet addresses
+# alias.py - lookup functions for email aliases
 #
 # Copyright (C) 2010, 2011, 2012 Arthur de Jong
 #

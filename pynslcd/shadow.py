@@ -1,5 +1,5 @@
 
-# shadow.py - lookup functions for shadownet addresses
+# shadow.py - lookup functions for shadow information
 #
 # Copyright (C) 2010, 2011, 2012 Arthur de Jong
 #

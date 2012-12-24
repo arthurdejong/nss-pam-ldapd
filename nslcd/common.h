@@ -126,7 +126,7 @@ int update_lastchange(MYLDAP_SESSION *session, const char *userdn);
 MYLDAP_ENTRY *shadow_uid2entry(MYLDAP_SESSION *session, const char *username,
                                int *rcp);
 
-/* return shadown information */
+/* return shadow information */
 void get_shadow_properties(MYLDAP_ENTRY *entry, long *lastchangedate,
                            long *mindays, long *maxdays, long *warndays,
                            long *inactdays, long *expiredate,
