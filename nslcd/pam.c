@@ -157,7 +157,7 @@ static int check_shadow(MYLDAP_SESSION *session, const char *username,
     return NSLCD_PAM_SUCCESS; /* no shadow entry found, nothing to check */
   /* get today's date */
   today = (long)(time(NULL) / (60 * 60 * 24));
-  /* get shadown information */
+  /* get shadow information */
   get_shadow_properties(entry, &lastchangedate, &mindays, &maxdays, &warndays,
                         &inactdays, &expiredate, &flag);
   /* check account expiry date */
