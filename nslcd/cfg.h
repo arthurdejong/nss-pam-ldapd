@@ -56,17 +56,17 @@ enum ldap_ssl_options {
 
 /* selectors for different maps */
 enum ldap_map_selector {
-  LM_PASSWD,
-  LM_SHADOW,
+  LM_ALIASES,
+  LM_ETHERS,
   LM_GROUP,
   LM_HOSTS,
-  LM_SERVICES,
+  LM_NETGROUP,
   LM_NETWORKS,
+  LM_PASSWD,
   LM_PROTOCOLS,
   LM_RPC,
-  LM_ETHERS,
-  LM_ALIASES,
-  LM_NETGROUP,
+  LM_SERVICES,
+  LM_SHADOW,
   LM_NONE
 };
 
