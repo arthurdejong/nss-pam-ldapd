@@ -53,6 +53,7 @@ stamp-*
 /pynslcd/constants.py
 
 # /tests/
+/tests/lookup_netgroup
 /tests/temp.cfg
 /tests/test_cfg
 /tests/test_common
