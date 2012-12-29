@@ -238,10 +238,6 @@
    and this calls only returns an empty response value. */
 #define NSLCD_ACTION_PAM_SESS_C        0x000d0004
 
-/*
-Note: I'm not sure whether PAM result codes are required here.
-*/
-
 /* PAM password modification request. This requests has the following extra
    request values:
      INT32   asroot: 0=oldpasswd is user passwd, 1=oldpasswd is root passwd
