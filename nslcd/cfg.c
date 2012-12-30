@@ -986,11 +986,6 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       get_restdup(filename, lnr, keyword, &line, &cfg->rootpwmodpw);
     }
     /* SASL authentication options */
-    else if (strcasecmp(keyword, "use_sasl") == 0)
-    {
-      log_log(LOG_WARNING, "%s:%d: option %s is deprecated (and will be removed in an upcoming release), use sasl_mech instead",
-              filename, lnr, keyword);
-    }
     else if (strcasecmp(keyword, "sasl_mech") == 0)
     {
       get_strdup(filename, lnr, keyword, &line, &cfg->sasl_mech);
@@ -1094,20 +1089,13 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       get_int(filename, lnr, keyword, &line, &cfg->idle_timelimit);
       get_eol(filename, lnr, keyword, &line);
     }
-    else if (strcasecmp(keyword, "reconnect_tries") == 0)
-      log_log(LOG_WARNING, "%s:%d: option %s has been removed and will be ignored",
-              filename, lnr, keyword);
     else if (!strcasecmp(keyword, "reconnect_sleeptime"))
     {
       get_int(filename, lnr, keyword, &line, &cfg->reconnect_sleeptime);
       get_eol(filename, lnr, keyword, &line);
     }
-    else if ((strcasecmp(keyword, "reconnect_retrytime") == 0) ||
-             (strcasecmp(keyword, "reconnect_maxsleeptime") == 0))
+    else if (strcasecmp(keyword, "reconnect_retrytime") == 0)
     {
-      if (strcasecmp(keyword, "reconnect_maxsleeptime") == 0)
-        log_log(LOG_WARNING, "%s:%d: option %s has been renamed to reconnect_retrytime",
-                filename, lnr, keyword);
       get_int(filename, lnr, keyword, &line, &cfg->reconnect_retrytime);
       get_eol(filename, lnr, keyword, &line);
     }
@@ -1124,12 +1112,8 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
         cfg->ssl = SSL_LDAPS;
       get_eol(filename, lnr, keyword, &line);
     }
-    else if ((strcasecmp(keyword, "tls_reqcert") == 0) ||
-             (strcasecmp(keyword, "tls_checkpeer") == 0))
+    else if (strcasecmp(keyword, "tls_reqcert") == 0)
     {
-      if (strcasecmp(keyword, "tls_checkpeer") == 0)
-        log_log(LOG_WARNING, "%s:%d: option %s is deprecated (and will be removed in an upcoming release), use tls_reqcert instead",
-                filename, lnr, keyword);
       get_reqcert(filename, lnr, keyword, &line, &i);
       get_eol(filename, lnr, keyword, &line);
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%d)", i);
