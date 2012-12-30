@@ -32,6 +32,8 @@ all-local: $(nodist_pynslcd_PYTHON)
 clean-local:
 	rm -f *.pyc *.pyo
 
+constants.py: constants.py.in $(top_srcdir)/nslcd.h
+
 # create a symbolic link for the pynslcd daemon and fix permissions
 install-data-hook:
 	chmod a+rx $(DESTDIR)$(pynslcddir)/pynslcd.py
