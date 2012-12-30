@@ -38,13 +38,13 @@ int main(int argc,char *argv[])
     exit(EXIT_FAILURE);
   }
   /* start lookup */
-  if (setnetgrent(argv[1])!=0)
+  if (setnetgrent(argv[1]) != 0)
   {
     /* output nothing */
     exit(EXIT_FAILURE);
   }
   fprintf(stdout, "%-20s", argv[1]);
-  while (getnetgrent(&host, &user, &domain)!=0)
+  while (getnetgrent(&host, &user, &domain) != 0)
   {
     fprintf(stdout, " (%s, %s, %s)", host, user, domain);
   }
