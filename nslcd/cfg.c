@@ -92,17 +92,16 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->uidname = NULL;
   cfg->uid = NOUID;
   cfg->gid = NOGID;
-  cfg->ignorecase = 0;
-  for (i = 0; i < (NSS_LDAP_CONFIG_URI_MAX + 1); i++)
+  for (i = 0; i < (NSS_LDAP_CONFIG_MAX_URIS + 1); i++)
   {
     cfg->uris[i].uri = NULL;
     cfg->uris[i].firstfail = 0;
     cfg->uris[i].lastfail = 0;
   }
 #ifdef LDAP_VERSION3
-  cfg->version = LDAP_VERSION3;
+  cfg->ldap_version = LDAP_VERSION3;
 #else /* LDAP_VERSION3 */
-  cfg->version = LDAP_VERSION2;
+  cfg->ldap_version = LDAP_VERSION2;
 #endif /* not LDAP_VERSION3 */
   cfg->binddn = NULL;
   cfg->bindpw = NULL;
@@ -127,18 +126,19 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->reconnect_sleeptime = 1;
   cfg->reconnect_retrytime = 10;
 #ifdef LDAP_OPT_X_TLS
-  cfg->ssl_on = SSL_OFF;
+  cfg->ssl = SSL_OFF;
 #endif /* LDAP_OPT_X_TLS */
-  cfg->restart = 1;
   cfg->pagesize = 0;
   cfg->nss_initgroups_ignoreusers = NULL;
-  for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)
-    cfg->pam_authz_search[i] = NULL;
   cfg->nss_min_uid = 0;
   parse_validnames_statement(__FILE__, __LINE__, "",
                              "/^[a-z0-9._@$][a-z0-9._@$ \\~-]*[a-z0-9._@$~-]$/i",
                              cfg);
+  cfg->ignorecase = 0;
+  for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)
+    cfg->pam_authz_searches[i] = NULL;
   cfg->pam_password_prohibit_message = NULL;
+  cfg->restart = 1;
 }
 
 /* simple strdup wrapper */
@@ -169,7 +169,7 @@ static void add_uri(const char *filename, int lnr,
   for (i = 0; cfg->uris[i].uri != NULL; i++)
     /* nothing */ ;
   /* check for room */
-  if (i >= NSS_LDAP_CONFIG_URI_MAX)
+  if (i >= NSS_LDAP_CONFIG_MAX_URIS)
   {
     log_log(LOG_ERR, "%s:%d: maximum number of URIs exceeded",
             filename, lnr);
@@ -839,7 +839,7 @@ static void parse_pam_authz_search_statement(
   check_argumentcount(filename, lnr, keyword, (line != NULL) && (*line != '\0'));
   /* find free spot for search filter */
   for (i = 0;
-       (i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES) && (cfg->pam_authz_search[i] != NULL);
+       (i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES) && (cfg->pam_authz_searches[i] != NULL);
        i++)
     /* nothing */ ;
   if (i >= NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES)
@@ -848,9 +848,9 @@ static void parse_pam_authz_search_statement(
             filename, lnr, NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES);
     exit(EXIT_FAILURE);
   }
-  cfg->pam_authz_search[i] = xstrdup(line);
+  cfg->pam_authz_searches[i] = xstrdup(line);
   /* check the variables used in the expression */
-  set = expr_vars(cfg->pam_authz_search[i], NULL);
+  set = expr_vars(cfg->pam_authz_searches[i], NULL);
   list = set_tolist(set);
   for (i = 0; list[i] != NULL; i++)
   {
@@ -931,11 +931,6 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       get_gid(filename, lnr, keyword, &line, &cfg->gid);
       get_eol(filename, lnr, keyword, &line);
     }
-    else if (strcasecmp(keyword, "ignorecase") == 0)
-    {
-      get_boolean(filename, lnr, keyword, &line, &cfg->ignorecase);
-      get_eol(filename, lnr, keyword, &line);
-    }
     /* general connection options */
     else if (strcasecmp(keyword, "uri") == 0)
     {
@@ -970,7 +965,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "ldap_version") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->version);
+      get_int(filename, lnr, keyword, &line, &cfg->ldap_version);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "binddn") == 0)
@@ -1125,9 +1120,9 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
                           (get_token(&line, token, sizeof(token)) != NULL));
       if ((strcasecmp(token, "start_tls") == 0) ||
           (strcasecmp(token, "starttls") == 0))
-        cfg->ssl_on = SSL_START_TLS;
+        cfg->ssl = SSL_START_TLS;
       else if (parse_boolean(filename, lnr, token))
-        cfg->ssl_on = SSL_LDAPS;
+        cfg->ssl = SSL_LDAPS;
       get_eol(filename, lnr, keyword, &line);
     }
     else if ((strcasecmp(keyword, "tls_reqcert") == 0) ||
@@ -1219,10 +1214,6 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       parse_nss_initgroups_ignoreusers_statement(filename, lnr, keyword, line,
                                                  cfg);
     }
-    else if (strcasecmp(keyword, "pam_authz_search") == 0)
-    {
-      parse_pam_authz_search_statement(filename, lnr, keyword, line, cfg);
-    }
     else if (strcasecmp(keyword, "nss_min_uid") == 0)
     {
       get_uid(filename, lnr, keyword, &line, &cfg->nss_min_uid, NULL, NULL);
@@ -1231,6 +1222,15 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     else if (strcasecmp(keyword, "validnames") == 0)
     {
       parse_validnames_statement(filename, lnr, keyword, line, cfg);
+    }
+    else if (strcasecmp(keyword, "ignorecase") == 0)
+    {
+      get_boolean(filename, lnr, keyword, &line, &cfg->ignorecase);
+      get_eol(filename, lnr, keyword, &line);
+    }
+    else if (strcasecmp(keyword, "pam_authz_search") == 0)
+    {
+      parse_pam_authz_search_statement(filename, lnr, keyword, line, cfg);
     }
     else if (strcasecmp(keyword, "pam_password_prohibit_message") == 0)
     {
@@ -1241,8 +1241,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     /* fallthrough */
     else
     {
-      log_log(LOG_ERR, "%s:%d: unknown keyword: '%s'",
-              filename, lnr, keyword);
+      log_log(LOG_ERR, "%s:%d: unknown keyword: '%s'", filename, lnr, keyword);
       exit(EXIT_FAILURE);
     }
 #endif
@@ -1391,7 +1390,7 @@ void cfg_init(const char *fname)
   }
   /* if ssl is on each URI should start with ldaps */
 #ifdef LDAP_OPT_X_TLS
-  if (nslcd_cfg->ssl_on == SSL_LDAPS)
+  if (nslcd_cfg->ssl == SSL_LDAPS)
   {
     for (i = 0; nslcd_cfg->uris[i].uri != NULL; i++)
     {

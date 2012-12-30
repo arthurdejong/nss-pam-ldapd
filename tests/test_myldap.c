@@ -364,10 +364,10 @@ static void test_connections(void)
   MYLDAP_SESSION *session;
   MYLDAP_SEARCH *search;
   const char *attrs[] = { "uid", "cn", "gid", NULL };
-  char *old_uris[NSS_LDAP_CONFIG_URI_MAX + 1];
+  char *old_uris[NSS_LDAP_CONFIG_MAX_URIS + 1];
   int i;
   /* save the old URIs */
-  for (i = 0; i < (NSS_LDAP_CONFIG_URI_MAX + 1); i++)
+  for (i = 0; i < (NSS_LDAP_CONFIG_MAX_URIS + 1); i++)
   {
     old_uris[i] = nslcd_cfg->uris[i].uri;
     nslcd_cfg->uris[i].uri = NULL;
@@ -391,7 +391,7 @@ static void test_connections(void)
   /* clean up */
   myldap_session_close(session);
   /* restore the old URIs */
-  for (i = 0; i < (NSS_LDAP_CONFIG_URI_MAX + 1); i++)
+  for (i = 0; i < (NSS_LDAP_CONFIG_MAX_URIS + 1); i++)
     nslcd_cfg->uris[i].uri = old_uris[i];
 }
 

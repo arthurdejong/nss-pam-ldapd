@@ -396,7 +396,7 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
   const char *res;
   int i;
   /* go over all pam_authz_search options */
-  for (i = 0; (i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES) && (nslcd_cfg->pam_authz_search[i] != NULL); i++)
+  for (i = 0; (i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES) && (nslcd_cfg->pam_authz_searches[i] != NULL); i++)
   {
     if (dict == NULL)
     {
@@ -417,7 +417,7 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
       autzsearch_var_add(dict, "uid", username);
     }
     /* build the search filter */
-    res = expr_parse(nslcd_cfg->pam_authz_search[i],
+    res = expr_parse(nslcd_cfg->pam_authz_searches[i],
                      filter, sizeof(filter),
                      autzsearch_var_get, (void *)dict);
     if (res == NULL)
@@ -425,7 +425,7 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
       autzsearch_vars_free(dict);
       dict_free(dict);
       log_log(LOG_ERR, "invalid pam_authz_search \"%s\"",
-              nslcd_cfg->pam_authz_search[i]);
+              nslcd_cfg->pam_authz_searches[i]);
       return LDAP_LOCAL_ERROR;
     }
     log_log(LOG_DEBUG, "trying pam_authz_search \"%s\"", filter);

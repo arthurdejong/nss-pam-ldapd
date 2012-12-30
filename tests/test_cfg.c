@@ -58,7 +58,7 @@ static void test_add_uris(void)
   assert(cfg.uris[0].uri != NULL);
   assert(cfg.uris[1].uri == NULL);
   /* add some more uris */
-  for (i = 1; i < NSS_LDAP_CONFIG_URI_MAX; i++)
+  for (i = 1; i < NSS_LDAP_CONFIG_MAX_URIS; i++)
   {
     add_uri(__FILE__, __LINE__, &cfg, "ldap://localhost");
     assert(cfg.uris[i].uri != NULL);

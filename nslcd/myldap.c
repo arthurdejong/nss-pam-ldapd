@@ -424,7 +424,7 @@ static int do_bind(LDAP *ld, const char *binddn, const char *bindpw,
 #endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
 #ifdef LDAP_OPT_X_TLS
   /* check if StartTLS is requested */
-  if (nslcd_cfg->ssl_on == SSL_START_TLS)
+  if (nslcd_cfg->ssl == SSL_START_TLS)
   {
     log_log(LOG_DEBUG, "ldap_start_tls_s()");
     errno = 0;
@@ -639,9 +639,9 @@ static int do_set_options(MYLDAP_SESSION *session)
 #endif /* HAVE_LDAP_SET_REBIND_PROC */
   /* set the protocol version to use */
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_PROTOCOL_VERSION,%d)",
-          nslcd_cfg->version);
+          nslcd_cfg->ldap_version);
   LDAP_SET_OPTION(session->ld, LDAP_OPT_PROTOCOL_VERSION,
-                  &nslcd_cfg->version);
+                  &nslcd_cfg->ldap_version);
   /* set some other options */
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_DEREF,%d)",
           nslcd_cfg->deref);
@@ -683,7 +683,7 @@ static int do_set_options(MYLDAP_SESSION *session)
 #endif /* LDAP_OPT_CONNECT_CB */
 #ifdef LDAP_OPT_X_TLS
   /* if SSL is desired, then enable it */
-  if ((nslcd_cfg->ssl_on == SSL_LDAPS) ||
+  if ((nslcd_cfg->ssl == SSL_LDAPS) ||
       (strncasecmp(nslcd_cfg->uris[session->current_uri].uri, "ldaps://", 8) == 0))
   {
     /* use tls */
@@ -965,9 +965,9 @@ static int do_retry_search(MYLDAP_SEARCH *search)
   time_t t;
   int rc = LDAP_UNAVAILABLE;
   struct myldap_uri *current_uri;
-  int dotry[NSS_LDAP_CONFIG_URI_MAX];
+  int dotry[NSS_LDAP_CONFIG_MAX_URIS];
   /* clear time stamps */
-  for (start_uri = 0; start_uri < NSS_LDAP_CONFIG_URI_MAX; start_uri++)
+  for (start_uri = 0; start_uri < NSS_LDAP_CONFIG_MAX_URIS; start_uri++)
     dotry[start_uri] = 1;
   /* keep trying until we time out */
   endtime = time(NULL) + nslcd_cfg->reconnect_retrytime;
