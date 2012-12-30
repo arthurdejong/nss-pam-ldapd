@@ -89,10 +89,10 @@ void protocol_init(void)
   /* set up search bases */
   if (protocol_bases[0] == NULL)
     for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-      protocol_bases[i] = nslcd_cfg->ldc_bases[i];
+      protocol_bases[i] = nslcd_cfg->bases[i];
   /* set up scope */
   if (protocol_scope == LDAP_SCOPE_DEFAULT)
-    protocol_scope = nslcd_cfg->ldc_scope;
+    protocol_scope = nslcd_cfg->scope;
   /* set up attribute list */
   protocol_attrs[0] = attmap_protocol_cn;
   protocol_attrs[1] = attmap_protocol_ipProtocolNumber;

@@ -121,10 +121,10 @@ void passwd_init(void)
   /* set up search bases */
   if (passwd_bases[0] == NULL)
     for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-      passwd_bases[i] = nslcd_cfg->ldc_bases[i];
+      passwd_bases[i] = nslcd_cfg->bases[i];
   /* set up scope */
   if (passwd_scope == LDAP_SCOPE_DEFAULT)
-    passwd_scope = nslcd_cfg->ldc_scope;
+    passwd_scope = nslcd_cfg->scope;
   /* special case when uidNumber or gidNumber reference objectSid */
   if (strncasecmp(attmap_passwd_uidNumber, "objectSid:", 10) == 0)
   {
@@ -168,7 +168,7 @@ static int entry_has_valid_uid(MYLDAP_ENTRY *entry)
   char *tmp;
   uid_t uid;
   /* if min_uid is not set any entry should do */
-  if (nslcd_cfg->ldc_nss_min_uid == 0)
+  if (nslcd_cfg->nss_min_uid == 0)
     return 1;
   /* get all uidNumber attributes */
   values = myldap_get_values_len(entry, attmap_passwd_uidNumber);
@@ -200,7 +200,7 @@ static int entry_has_valid_uid(MYLDAP_ENTRY *entry)
         continue;
       }
     }
-    if (uid >= nslcd_cfg->ldc_nss_min_uid)
+    if (uid >= nslcd_cfg->nss_min_uid)
       return 1;
   }
   /* nothing found */
@@ -521,7 +521,7 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
       {
         for (j = 0; j < numuids; j++)
         {
-          if (uids[j] >= nslcd_cfg->ldc_nss_min_uid)
+          if (uids[j] >= nslcd_cfg->nss_min_uid)
           {
             WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
             WRITE_STRING(fp, usernames[i]);
@@ -560,7 +560,7 @@ NSLCD_HANDLE_UID(
   char filter[4096];
   READ_INT32(fp, uid);
   log_setrequest("passwd=%lu", (unsigned long int)uid);
-  if (uid < nslcd_cfg->ldc_nss_min_uid)
+  if (uid < nslcd_cfg->nss_min_uid)
   {
     /* return an empty result */
     WRITE_INT32(fp, NSLCD_VERSION);

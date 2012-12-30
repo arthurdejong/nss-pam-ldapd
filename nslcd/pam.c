@@ -274,18 +274,18 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
   WRITE_INT32(fp, NSLCD_ACTION_PAM_AUTHC);
   /* if the username is blank and rootpwmoddn is configured, try to
      authenticate as administrator, otherwise validate request as usual */
-  if ((*username == '\0') && (nslcd_cfg->ldc_rootpwmoddn != NULL))
+  if ((*username == '\0') && (nslcd_cfg->rootpwmoddn != NULL))
   {
-    userdn = nslcd_cfg->ldc_rootpwmoddn;
+    userdn = nslcd_cfg->rootpwmoddn;
     /* if the caller is root we will allow the use of the rootpwmodpw option */
-    if ((*password == '\0') && (calleruid == 0) && (nslcd_cfg->ldc_rootpwmodpw != NULL))
+    if ((*password == '\0') && (calleruid == 0) && (nslcd_cfg->rootpwmodpw != NULL))
     {
-      if (strlen(nslcd_cfg->ldc_rootpwmodpw) >= sizeof(password))
+      if (strlen(nslcd_cfg->rootpwmodpw) >= sizeof(password))
       {
         log_log(LOG_ERR, "nslcd_pam_authc(): rootpwmodpw will not fit in password");
         return -1;
       }
-      strcpy(password, nslcd_cfg->ldc_rootpwmodpw);
+      strcpy(password, nslcd_cfg->rootpwmodpw);
     }
   }
   else
@@ -396,7 +396,7 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
   const char *res;
   int i;
   /* go over all pam_authz_search options */
-  for (i = 0; (i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES) && (nslcd_cfg->ldc_pam_authz_search[i] != NULL); i++)
+  for (i = 0; (i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES) && (nslcd_cfg->pam_authz_search[i] != NULL); i++)
   {
     if (dict == NULL)
     {
@@ -417,7 +417,7 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
       autzsearch_var_add(dict, "uid", username);
     }
     /* build the search filter */
-    res = expr_parse(nslcd_cfg->ldc_pam_authz_search[i],
+    res = expr_parse(nslcd_cfg->pam_authz_search[i],
                      filter, sizeof(filter),
                      autzsearch_var_get, (void *)dict);
     if (res == NULL)
@@ -425,7 +425,7 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
       autzsearch_vars_free(dict);
       dict_free(dict);
       log_log(LOG_ERR, "invalid pam_authz_search \"%s\"",
-              nslcd_cfg->ldc_pam_authz_search[i]);
+              nslcd_cfg->pam_authz_search[i]);
       return LDAP_LOCAL_ERROR;
     }
     log_log(LOG_DEBUG, "trying pam_authz_search \"%s\"", filter);
@@ -433,7 +433,7 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
     attrs[0] = "dn";
     attrs[1] = NULL;
     /* FIXME: this only searches the first base */
-    search = myldap_search(session, nslcd_cfg->ldc_bases[0],
+    search = myldap_search(session, nslcd_cfg->bases[0],
                            LDAP_SCOPE_SUBTREE, filter, attrs, &rc);
     if (search == NULL)
     {
@@ -595,8 +595,8 @@ static int try_pwmod(const char *binddn, const char *userdn,
       (rc == LDAP_SUCCESS))
   {
     /* if doing password modification as admin, don't pass old password along */
-    if ((nslcd_cfg->ldc_rootpwmoddn != NULL) &&
-        (strcmp(binddn, nslcd_cfg->ldc_rootpwmoddn) == 0))
+    if ((nslcd_cfg->rootpwmoddn != NULL) &&
+        (strcmp(binddn, nslcd_cfg->rootpwmoddn) == 0))
       oldpassword = NULL;
     /* perform password modification */
     rc = myldap_passwd(session, userdn, oldpassword, newpassword);
@@ -665,17 +665,17 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
   /* check if the the user passed the rootpwmoddn */
   if (asroot)
   {
-    binddn = nslcd_cfg->ldc_rootpwmoddn;
+    binddn = nslcd_cfg->rootpwmoddn;
     /* check if rootpwmodpw should be used */
     if ((*oldpassword == '\0') && (calleruid == 0) &&
-        (nslcd_cfg->ldc_rootpwmodpw != NULL))
+        (nslcd_cfg->rootpwmodpw != NULL))
     {
-      if (strlen(nslcd_cfg->ldc_rootpwmodpw) >= sizeof(oldpassword))
+      if (strlen(nslcd_cfg->rootpwmodpw) >= sizeof(oldpassword))
       {
         log_log(LOG_ERR, "nslcd_pam_pwmod(): rootpwmodpw will not fit in oldpassword");
         return -1;
       }
-      strcpy(oldpassword, nslcd_cfg->ldc_rootpwmodpw);
+      strcpy(oldpassword, nslcd_cfg->rootpwmodpw);
     }
   }
   else

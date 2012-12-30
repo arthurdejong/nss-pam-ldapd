@@ -59,8 +59,7 @@ static void test_search(void)
   assert(session != NULL);
   /* perform search */
   printf("test_myldap: test_search(): doing search...\n");
-  search = myldap_search(session, nslcd_cfg->ldc_bases[0],
-                         LDAP_SCOPE_SUBTREE,
+  search = myldap_search(session, nslcd_cfg->bases[0], LDAP_SCOPE_SUBTREE,
                          "(objectclass=posixAccount)", attrs, NULL);
   assert(search != NULL);
   /* go over results */
@@ -78,8 +77,7 @@ static void test_search(void)
   assert(rc == LDAP_SUCCESS);
   /* perform another search */
   printf("test_myldap: test_search(): doing search...\n");
-  search = myldap_search(session, nslcd_cfg->ldc_bases[0],
-                         LDAP_SCOPE_SUBTREE,
+  search = myldap_search(session, nslcd_cfg->bases[0], LDAP_SCOPE_SUBTREE,
                          "(objectclass=posixGroup)", attrs, NULL);
   assert(search != NULL);
   /* go over results */
@@ -113,8 +111,7 @@ static void test_get(void)
   assert(session != NULL);
   /* perform search */
   printf("test_myldap: test_get(): doing search...\n");
-  search1 = myldap_search(session, nslcd_cfg->ldc_bases[0],
-                          LDAP_SCOPE_SUBTREE,
+  search1 = myldap_search(session, nslcd_cfg->bases[0], LDAP_SCOPE_SUBTREE,
                           "(&(|(objectClass=posixGroup)(objectClass=groupOfNames))(cn=testgroup2))",
                           attrs1, NULL);
   assert(search1 != NULL);
@@ -159,8 +156,7 @@ static void test_get_values(void)
   session = myldap_create_session();
   assert(session != NULL);
   /* perform search */
-  search = myldap_search(session, nslcd_cfg->ldc_bases[0],
-                         LDAP_SCOPE_SUBTREE,
+  search = myldap_search(session, nslcd_cfg->bases[0], LDAP_SCOPE_SUBTREE,
                          "(&(objectClass=posixAccount)(uid=*))", attrs, NULL);
   assert(search != NULL);
   /* go over results */
@@ -261,8 +257,7 @@ static void test_two_searches(void)
   session = myldap_create_session();
   assert(session != NULL);
   /* perform search1 */
-  search1 = myldap_search(session, nslcd_cfg->ldc_bases[0],
-                          LDAP_SCOPE_SUBTREE,
+  search1 = myldap_search(session, nslcd_cfg->bases[0], LDAP_SCOPE_SUBTREE,
                           "(&(objectClass=posixAccount)(uid=*))",
                           attrs, NULL);
   assert(search1 != NULL);
@@ -275,8 +270,7 @@ static void test_two_searches(void)
   assert((vals != NULL) && (vals[0] != NULL));
   printf("test_myldap: test_two_searches(): [search1] cn=%s\n", vals[0]);
   /* start a second search */
-  search2 = myldap_search(session, nslcd_cfg->ldc_bases[0],
-                          LDAP_SCOPE_SUBTREE,
+  search2 = myldap_search(session, nslcd_cfg->bases[0], LDAP_SCOPE_SUBTREE,
                           "(&(objectclass=posixGroup)(gidNumber=*))",
                           attrs, NULL);
   assert(search2 != NULL);
@@ -324,8 +318,7 @@ static void *worker(void *arg)
   session = myldap_create_session();
   assert(session != NULL);
   /* perform search */
-  search = myldap_search(session, nslcd_cfg->ldc_bases[0],
-                         LDAP_SCOPE_SUBTREE,
+  search = myldap_search(session, nslcd_cfg->bases[0], LDAP_SCOPE_SUBTREE,
                          "(objectclass=posixAccount)", attrs, NULL);
   assert(search != NULL);
   /* go over results */
@@ -376,31 +369,30 @@ static void test_connections(void)
   /* save the old URIs */
   for (i = 0; i < (NSS_LDAP_CONFIG_URI_MAX + 1); i++)
   {
-    old_uris[i] = nslcd_cfg->ldc_uris[i].uri;
-    nslcd_cfg->ldc_uris[i].uri = NULL;
+    old_uris[i] = nslcd_cfg->uris[i].uri;
+    nslcd_cfg->uris[i].uri = NULL;
   }
   /* set new URIs */
   i = 0;
-  nslcd_cfg->ldc_uris[i++].uri = "ldapi://%2fdev%2fnull/";
-  nslcd_cfg->ldc_uris[i++].uri = "ldap://10.10.10.10/";
-  nslcd_cfg->ldc_uris[i++].uri = "ldapi://%2fdev%2fnonexistent/";
-  nslcd_cfg->ldc_uris[i++].uri = "ldap://nosuchhost/";
-  nslcd_cfg->ldc_uris[i++].uri = NULL;
+  nslcd_cfg->uris[i++].uri = "ldapi://%2fdev%2fnull/";
+  nslcd_cfg->uris[i++].uri = "ldap://10.10.10.10/";
+  nslcd_cfg->uris[i++].uri = "ldapi://%2fdev%2fnonexistent/";
+  nslcd_cfg->uris[i++].uri = "ldap://nosuchhost/";
+  nslcd_cfg->uris[i++].uri = NULL;
   /* initialize session */
   printf("test_myldap: test_connections(): getting session...\n");
   session = myldap_create_session();
   assert(session != NULL);
   /* perform search */
   printf("test_myldap: test_connections(): doing search...\n");
-  search = myldap_search(session, nslcd_cfg->ldc_bases[0],
-                         LDAP_SCOPE_SUBTREE,
+  search = myldap_search(session, nslcd_cfg->bases[0], LDAP_SCOPE_SUBTREE,
                          "(objectclass=posixAccount)", attrs, NULL);
   assert(search == NULL);
   /* clean up */
   myldap_session_close(session);
   /* restore the old URIs */
   for (i = 0; i < (NSS_LDAP_CONFIG_URI_MAX + 1); i++)
-    nslcd_cfg->ldc_uris[i].uri = old_uris[i];
+    nslcd_cfg->uris[i].uri = old_uris[i];
 }
 
 /* test whether myldap_escape() handles buffer overlows correctly */

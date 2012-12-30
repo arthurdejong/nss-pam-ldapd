@@ -88,53 +88,53 @@ static void cfg_defaults(struct ldap_config *cfg)
 {
   int i;
   memset(cfg, 0, sizeof(struct ldap_config));
-  cfg->ldc_threads = 5;
-  cfg->ldc_uidname = NULL;
-  cfg->ldc_uid = NOUID;
-  cfg->ldc_gid = NOGID;
-  cfg->ldc_ignorecase = 0;
+  cfg->threads = 5;
+  cfg->uidname = NULL;
+  cfg->uid = NOUID;
+  cfg->gid = NOGID;
+  cfg->ignorecase = 0;
   for (i = 0; i < (NSS_LDAP_CONFIG_URI_MAX + 1); i++)
   {
-    cfg->ldc_uris[i].uri = NULL;
-    cfg->ldc_uris[i].firstfail = 0;
-    cfg->ldc_uris[i].lastfail = 0;
+    cfg->uris[i].uri = NULL;
+    cfg->uris[i].firstfail = 0;
+    cfg->uris[i].lastfail = 0;
   }
 #ifdef LDAP_VERSION3
-  cfg->ldc_version = LDAP_VERSION3;
+  cfg->version = LDAP_VERSION3;
 #else /* LDAP_VERSION3 */
-  cfg->ldc_version = LDAP_VERSION2;
+  cfg->version = LDAP_VERSION2;
 #endif /* not LDAP_VERSION3 */
-  cfg->ldc_binddn = NULL;
-  cfg->ldc_bindpw = NULL;
-  cfg->ldc_rootpwmoddn = NULL;
-  cfg->ldc_rootpwmodpw = NULL;
-  cfg->ldc_sasl_mech = NULL;
-  cfg->ldc_sasl_realm = NULL;
-  cfg->ldc_sasl_authcid = NULL;
-  cfg->ldc_sasl_authzid = NULL;
-  cfg->ldc_sasl_secprops = NULL;
+  cfg->binddn = NULL;
+  cfg->bindpw = NULL;
+  cfg->rootpwmoddn = NULL;
+  cfg->rootpwmodpw = NULL;
+  cfg->sasl_mech = NULL;
+  cfg->sasl_realm = NULL;
+  cfg->sasl_authcid = NULL;
+  cfg->sasl_authzid = NULL;
+  cfg->sasl_secprops = NULL;
 #ifdef LDAP_OPT_X_SASL_NOCANON
-  cfg->ldc_sasl_canonicalize = -1;
+  cfg->sasl_canonicalize = -1;
 #endif /* LDAP_OPT_X_SASL_NOCANON */
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-    cfg->ldc_bases[i] = NULL;
-  cfg->ldc_scope = LDAP_SCOPE_SUBTREE;
-  cfg->ldc_deref = LDAP_DEREF_NEVER;
-  cfg->ldc_referrals = 1;
-  cfg->ldc_bind_timelimit = 10;
-  cfg->ldc_timelimit = LDAP_NO_LIMIT;
-  cfg->ldc_idle_timelimit = 0;
-  cfg->ldc_reconnect_sleeptime = 1;
-  cfg->ldc_reconnect_retrytime = 10;
+    cfg->bases[i] = NULL;
+  cfg->scope = LDAP_SCOPE_SUBTREE;
+  cfg->deref = LDAP_DEREF_NEVER;
+  cfg->referrals = 1;
+  cfg->bind_timelimit = 10;
+  cfg->timelimit = LDAP_NO_LIMIT;
+  cfg->idle_timelimit = 0;
+  cfg->reconnect_sleeptime = 1;
+  cfg->reconnect_retrytime = 10;
 #ifdef LDAP_OPT_X_TLS
-  cfg->ldc_ssl_on = SSL_OFF;
+  cfg->ssl_on = SSL_OFF;
 #endif /* LDAP_OPT_X_TLS */
-  cfg->ldc_restart = 1;
-  cfg->ldc_pagesize = 0;
-  cfg->ldc_nss_initgroups_ignoreusers = NULL;
+  cfg->restart = 1;
+  cfg->pagesize = 0;
+  cfg->nss_initgroups_ignoreusers = NULL;
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)
-    cfg->ldc_pam_authz_search[i] = NULL;
-  cfg->ldc_nss_min_uid = 0;
+    cfg->pam_authz_search[i] = NULL;
+  cfg->nss_min_uid = 0;
   parse_validnames_statement(__FILE__, __LINE__, "",
                              "/^[a-z0-9._@$][a-z0-9._@$ \\~-]*[a-z0-9._@$~-]$/i",
                              cfg);
@@ -166,7 +166,7 @@ static void add_uri(const char *filename, int lnr,
   int i;
   log_log(LOG_DEBUG, "add_uri(%s)", uri);
   /* find the place where to insert the URI */
-  for (i = 0; cfg->ldc_uris[i].uri != NULL; i++)
+  for (i = 0; cfg->uris[i].uri != NULL; i++)
     /* nothing */ ;
   /* check for room */
   if (i >= NSS_LDAP_CONFIG_URI_MAX)
@@ -176,7 +176,7 @@ static void add_uri(const char *filename, int lnr,
     exit(EXIT_FAILURE);
   }
   /* append URI to list */
-  cfg->ldc_uris[i].uri = xstrdup(uri);
+  cfg->uris[i].uri = xstrdup(uri);
 }
 
 #ifdef HAVE_LDAP_DOMAIN2HOSTLIST
@@ -698,7 +698,7 @@ static void parse_base_statement(const char *filename, int lnr,
   /* get the list of bases to update */
   bases = base_get_var(get_map(&line));
   if (bases == NULL)
-    bases = cfg->ldc_bases;
+    bases = cfg->bases;
   /* find the spot in the list of bases */
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
   {
@@ -722,7 +722,7 @@ static void parse_scope_statement(const char *filename, int lnr,
   int *var;
   var = scope_get_var(get_map(&line));
   if (var == NULL)
-    var = &cfg->ldc_scope;
+    var = &cfg->scope;
   check_argumentcount(filename, lnr, keyword, (line != NULL) && (*line != '\0'));
   *var = parse_scope(filename, lnr, line);
 }
@@ -792,8 +792,8 @@ static void parse_nss_initgroups_ignoreusers_statement(
   char *username, *next;
   struct passwd *pwent;
   check_argumentcount(filename, lnr, keyword, (line != NULL) && (*line != '\0'));
-  if (cfg->ldc_nss_initgroups_ignoreusers == NULL)
-    cfg->ldc_nss_initgroups_ignoreusers = set_new();
+  if (cfg->nss_initgroups_ignoreusers == NULL)
+    cfg->nss_initgroups_ignoreusers = set_new();
   while (get_token(&line, token, sizeof(token)) != NULL)
   {
     if (strcasecmp(token, "alllocal") == 0)
@@ -801,7 +801,7 @@ static void parse_nss_initgroups_ignoreusers_statement(
       /* go over all users (this will work because nslcd is not yet running) */
       setpwent();
       while ((pwent = getpwent()) != NULL)
-        set_add(cfg->ldc_nss_initgroups_ignoreusers, pwent->pw_name);
+        set_add(cfg->nss_initgroups_ignoreusers, pwent->pw_name);
       endpwent();
     }
     else
@@ -823,7 +823,7 @@ static void parse_nss_initgroups_ignoreusers_statement(
         if (pwent == NULL)
           log_log(LOG_ERR, "%s:%d: user '%s' does not exist",
                   filename, lnr, username);
-        set_add(cfg->ldc_nss_initgroups_ignoreusers, username);
+        set_add(cfg->nss_initgroups_ignoreusers, username);
       }
     }
   }
@@ -839,7 +839,7 @@ static void parse_pam_authz_search_statement(
   check_argumentcount(filename, lnr, keyword, (line != NULL) && (*line != '\0'));
   /* find free spot for search filter */
   for (i = 0;
-       (i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES) && (cfg->ldc_pam_authz_search[i] != NULL);
+       (i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES) && (cfg->pam_authz_search[i] != NULL);
        i++)
     /* nothing */ ;
   if (i >= NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES)
@@ -848,9 +848,9 @@ static void parse_pam_authz_search_statement(
             filename, lnr, NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES);
     exit(EXIT_FAILURE);
   }
-  cfg->ldc_pam_authz_search[i] = xstrdup(line);
+  cfg->pam_authz_search[i] = xstrdup(line);
   /* check the variables used in the expression */
-  set = expr_vars(cfg->ldc_pam_authz_search[i], NULL);
+  set = expr_vars(cfg->pam_authz_search[i], NULL);
   list = set_tolist(set);
   for (i = 0; list[i] != NULL; i++)
   {
@@ -918,23 +918,22 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     /* runtime options */
     if (strcasecmp(keyword, "threads") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->ldc_threads);
+      get_int(filename, lnr, keyword, &line, &cfg->threads);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "uid") == 0)
     {
-      get_uid(filename, lnr, keyword, &line, &cfg->ldc_uid, &cfg->ldc_gid,
-              &cfg->ldc_uidname);
+      get_uid(filename, lnr, keyword, &line, &cfg->uid, &cfg->gid, &cfg->uidname);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "gid") == 0)
     {
-      get_gid(filename, lnr, keyword, &line, &cfg->ldc_gid);
+      get_gid(filename, lnr, keyword, &line, &cfg->gid);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "ignorecase") == 0)
     {
-      get_boolean(filename, lnr, keyword, &line, &cfg->ldc_ignorecase);
+      get_boolean(filename, lnr, keyword, &line, &cfg->ignorecase);
       get_eol(filename, lnr, keyword, &line);
     }
     /* general connection options */
@@ -971,26 +970,26 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "ldap_version") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->ldc_version);
+      get_int(filename, lnr, keyword, &line, &cfg->version);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "binddn") == 0)
     {
-      get_restdup(filename, lnr, keyword, &line, &cfg->ldc_binddn);
+      get_restdup(filename, lnr, keyword, &line, &cfg->binddn);
     }
     else if (strcasecmp(keyword, "bindpw") == 0)
     {
       check_permissions(filename, keyword);
-      get_restdup(filename, lnr, keyword, &line, &cfg->ldc_bindpw);
+      get_restdup(filename, lnr, keyword, &line, &cfg->bindpw);
     }
     else if (strcasecmp(keyword, "rootpwmoddn") == 0)
     {
-      get_restdup(filename, lnr, keyword, &line, &cfg->ldc_rootpwmoddn);
+      get_restdup(filename, lnr, keyword, &line, &cfg->rootpwmoddn);
     }
     else if (strcasecmp(keyword, "rootpwmodpw") == 0)
     {
       check_permissions(filename, keyword);
-      get_restdup(filename, lnr, keyword, &line, &cfg->ldc_rootpwmodpw);
+      get_restdup(filename, lnr, keyword, &line, &cfg->rootpwmodpw);
     }
     /* SASL authentication options */
     else if (strcasecmp(keyword, "use_sasl") == 0)
@@ -1000,27 +999,27 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "sasl_mech") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &cfg->ldc_sasl_mech);
+      get_strdup(filename, lnr, keyword, &line, &cfg->sasl_mech);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "sasl_realm") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &cfg->ldc_sasl_realm);
+      get_strdup(filename, lnr, keyword, &line, &cfg->sasl_realm);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "sasl_authcid") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &cfg->ldc_sasl_authcid);
+      get_strdup(filename, lnr, keyword, &line, &cfg->sasl_authcid);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "sasl_authzid") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &cfg->ldc_sasl_authzid);
+      get_strdup(filename, lnr, keyword, &line, &cfg->sasl_authzid);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "sasl_secprops") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &cfg->ldc_sasl_secprops);
+      get_strdup(filename, lnr, keyword, &line, &cfg->sasl_secprops);
       get_eol(filename, lnr, keyword, &line);
     }
 #ifdef LDAP_OPT_X_SASL_NOCANON
@@ -1029,13 +1028,13 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
              (strcasecmp(keyword, "ldap_sasl_canonicalize") == 0) ||
              (strcasecmp(keyword, "sasl_canon") == 0))
     {
-      get_boolean(filename, lnr, keyword, &line, &cfg->ldc_sasl_canonicalize);
+      get_boolean(filename, lnr, keyword, &line, &cfg->sasl_canonicalize);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "sasl_nocanon") == 0)
     {
-      get_boolean(filename, lnr, keyword, &line, &cfg->ldc_sasl_canonicalize);
-      cfg->ldc_sasl_canonicalize = !cfg->ldc_sasl_canonicalize;
+      get_boolean(filename, lnr, keyword, &line, &cfg->sasl_canonicalize);
+      cfg->sasl_canonicalize = !cfg->sasl_canonicalize;
       get_eol(filename, lnr, keyword, &line);
     }
 #endif /* LDAP_OPT_X_SASL_NOCANON */
@@ -1058,13 +1057,13 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       check_argumentcount(filename, lnr, keyword,
                           (get_token(&line, token, sizeof(token)) != NULL));
       if (strcasecmp(token, "never") == 0)
-        cfg->ldc_deref = LDAP_DEREF_NEVER;
+        cfg->deref = LDAP_DEREF_NEVER;
       else if (strcasecmp(token, "searching") == 0)
-        cfg->ldc_deref = LDAP_DEREF_SEARCHING;
+        cfg->deref = LDAP_DEREF_SEARCHING;
       else if (strcasecmp(token, "finding") == 0)
-        cfg->ldc_deref = LDAP_DEREF_FINDING;
+        cfg->deref = LDAP_DEREF_FINDING;
       else if (strcasecmp(token, "always") == 0)
-        cfg->ldc_deref = LDAP_DEREF_ALWAYS;
+        cfg->deref = LDAP_DEREF_ALWAYS;
       else
       {
         log_log(LOG_ERR, "%s:%d: wrong argument: '%s'", filename, lnr, token);
@@ -1074,7 +1073,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "referrals") == 0)
     {
-      get_boolean(filename, lnr, keyword, &line, &cfg->ldc_referrals);
+      get_boolean(filename, lnr, keyword, &line, &cfg->referrals);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "filter") == 0)
@@ -1088,17 +1087,17 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     /* timing/reconnect options */
     else if (strcasecmp(keyword, "bind_timelimit") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->ldc_bind_timelimit);
+      get_int(filename, lnr, keyword, &line, &cfg->bind_timelimit);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "timelimit") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->ldc_timelimit);
+      get_int(filename, lnr, keyword, &line, &cfg->timelimit);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "idle_timelimit") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->ldc_idle_timelimit);
+      get_int(filename, lnr, keyword, &line, &cfg->idle_timelimit);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "reconnect_tries") == 0)
@@ -1106,7 +1105,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
               filename, lnr, keyword);
     else if (!strcasecmp(keyword, "reconnect_sleeptime"))
     {
-      get_int(filename, lnr, keyword, &line, &cfg->ldc_reconnect_sleeptime);
+      get_int(filename, lnr, keyword, &line, &cfg->reconnect_sleeptime);
       get_eol(filename, lnr, keyword, &line);
     }
     else if ((strcasecmp(keyword, "reconnect_retrytime") == 0) ||
@@ -1115,7 +1114,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       if (strcasecmp(keyword, "reconnect_maxsleeptime") == 0)
         log_log(LOG_WARNING, "%s:%d: option %s has been renamed to reconnect_retrytime",
                 filename, lnr, keyword);
-      get_int(filename, lnr, keyword, &line, &cfg->ldc_reconnect_retrytime);
+      get_int(filename, lnr, keyword, &line, &cfg->reconnect_retrytime);
       get_eol(filename, lnr, keyword, &line);
     }
 #ifdef LDAP_OPT_X_TLS
@@ -1126,9 +1125,9 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
                           (get_token(&line, token, sizeof(token)) != NULL));
       if ((strcasecmp(token, "start_tls") == 0) ||
           (strcasecmp(token, "starttls") == 0))
-        cfg->ldc_ssl_on = SSL_START_TLS;
+        cfg->ssl_on = SSL_START_TLS;
       else if (parse_boolean(filename, lnr, token))
-        cfg->ldc_ssl_on = SSL_LDAPS;
+        cfg->ssl_on = SSL_LDAPS;
       get_eol(filename, lnr, keyword, &line);
     }
     else if ((strcasecmp(keyword, "tls_reqcert") == 0) ||
@@ -1207,12 +1206,12 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       log_log(LOG_WARNING, "%s:%d: option %s is currently untested (and may be removed in an upcoming release)",
               filename, lnr, keyword);
-      get_boolean(filename, lnr, keyword, &line, &cfg->ldc_restart);
+      get_boolean(filename, lnr, keyword, &line, &cfg->restart);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "pagesize") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->ldc_pagesize);
+      get_int(filename, lnr, keyword, &line, &cfg->pagesize);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "nss_initgroups_ignoreusers") == 0)
@@ -1226,8 +1225,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "nss_min_uid") == 0)
     {
-      get_uid(filename, lnr, keyword, &line, &cfg->ldc_nss_min_uid, NULL,
-              NULL);
+      get_uid(filename, lnr, keyword, &line, &cfg->nss_min_uid, NULL, NULL);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "validnames") == 0)
@@ -1296,7 +1294,7 @@ static void bindpw_read(const char *filename, struct ldap_config *cfg)
     log_log(LOG_ERR, "%s:1: the password is empty", filename);
     exit(EXIT_FAILURE);
   }
-  cfg->ldc_bindpw = strdup(linebuf);
+  cfg->bindpw = strdup(linebuf);
   /* check if there is no more data in the file */
   if (fgets(linebuf, sizeof(linebuf), fp) != NULL)
   {
@@ -1386,30 +1384,30 @@ void cfg_init(const char *fname)
   bindpw_read(NSLCD_BINDPW_PATH, nslcd_cfg);
 #endif /* NSLCD_BINDPW_PATH */
   /* do some sanity checks */
-  if (nslcd_cfg->ldc_uris[0].uri == NULL)
+  if (nslcd_cfg->uris[0].uri == NULL)
   {
     log_log(LOG_ERR, "no URIs defined in config");
     exit(EXIT_FAILURE);
   }
   /* if ssl is on each URI should start with ldaps */
 #ifdef LDAP_OPT_X_TLS
-  if (nslcd_cfg->ldc_ssl_on == SSL_LDAPS)
+  if (nslcd_cfg->ssl_on == SSL_LDAPS)
   {
-    for (i = 0; nslcd_cfg->ldc_uris[i].uri != NULL; i++)
+    for (i = 0; nslcd_cfg->uris[i].uri != NULL; i++)
     {
-      if (strncasecmp(nslcd_cfg->ldc_uris[i].uri, "ldaps://", 8) != 0)
+      if (strncasecmp(nslcd_cfg->uris[i].uri, "ldaps://", 8) != 0)
         log_log(LOG_WARNING, "%s doesn't start with ldaps:// and \"ssl on\" is specified",
-                nslcd_cfg->ldc_uris[i].uri);
+                nslcd_cfg->uris[i].uri);
     }
   }
   /* TODO: check that if some tls options are set the ssl option should be set to on (just warn) */
 #endif /* LDAP_OPT_X_TLS */
   /* if basedn is not yet set,  get if from the rootDSE */
-  if (nslcd_cfg->ldc_bases[0] == NULL)
-    nslcd_cfg->ldc_bases[0] = get_base_from_rootdse();
+  if (nslcd_cfg->bases[0] == NULL)
+    nslcd_cfg->bases[0] = get_base_from_rootdse();
   /* TODO: handle the case gracefully when no LDAP server is available yet */
   /* see if we have a valid basedn */
-  if ((nslcd_cfg->ldc_bases[0] == NULL) || (nslcd_cfg->ldc_bases[0][0] == '\0'))
+  if ((nslcd_cfg->bases[0] == NULL) || (nslcd_cfg->bases[0][0] == '\0'))
   {
     log_log(LOG_ERR, "no base defined in config and couldn't get one from server");
     exit(EXIT_FAILURE);

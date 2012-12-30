@@ -79,10 +79,10 @@ void alias_init(void)
   /* set up search bases */
   if (alias_bases[0] == NULL)
     for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-      alias_bases[i] = nslcd_cfg->ldc_bases[i];
+      alias_bases[i] = nslcd_cfg->bases[i];
   /* set up scope */
   if (alias_scope == LDAP_SCOPE_DEFAULT)
-    alias_scope = nslcd_cfg->ldc_scope;
+    alias_scope = nslcd_cfg->scope;
   /* set up attribute list */
   alias_attrs[0] = attmap_alias_cn;
   alias_attrs[1] = attmap_alias_rfc822MailMember;

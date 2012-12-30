@@ -90,7 +90,7 @@ struct ldap_session {
   char bindpw[64];
   /* timestamp of last activity */
   time_t lastactivity;
-  /* index into ldc_uris: currently connected LDAP uri */
+  /* index into uris: currently connected LDAP uri */
   int current_uri;
   /* a list of searches registered with this session */
   struct myldap_search *searches[MAX_SEARCHES_IN_SESSION];
@@ -349,44 +349,44 @@ static int do_sasl_interact(LDAP UNUSED(*ld), unsigned UNUSED(flags),
     switch (interact->id)
     {
       case SASL_CB_GETREALM:
-        if (cfg->ldc_sasl_realm)
+        if (cfg->sasl_realm)
         {
           log_log(LOG_DEBUG, "do_sasl_interact(): returning sasl_realm \"%s\"",
-                  cfg->ldc_sasl_realm);
-          interact->result = cfg->ldc_sasl_realm;
-          interact->len = strlen(cfg->ldc_sasl_realm);
+                  cfg->sasl_realm);
+          interact->result = cfg->sasl_realm;
+          interact->len = strlen(cfg->sasl_realm);
         }
         else
           log_log(LOG_DEBUG, "do_sasl_interact(): were asked for sasl_realm but we don't have any");
         break;
       case SASL_CB_AUTHNAME:
-        if (cfg->ldc_sasl_authcid)
+        if (cfg->sasl_authcid)
         {
           log_log(LOG_DEBUG, "do_sasl_interact(): returning sasl_authcid \"%s\"",
-                  cfg->ldc_sasl_authcid);
-          interact->result = cfg->ldc_sasl_authcid;
-          interact->len = strlen(cfg->ldc_sasl_authcid);
+                  cfg->sasl_authcid);
+          interact->result = cfg->sasl_authcid;
+          interact->len = strlen(cfg->sasl_authcid);
         }
         else
           log_log(LOG_DEBUG, "do_sasl_interact(): were asked for sasl_authcid but we don't have any");
         break;
       case SASL_CB_USER:
-        if (cfg->ldc_sasl_authzid)
+        if (cfg->sasl_authzid)
         {
           log_log(LOG_DEBUG, "do_sasl_interact(): returning sasl_authzid \"%s\"",
-                  cfg->ldc_sasl_authzid);
-          interact->result = cfg->ldc_sasl_authzid;
-          interact->len = strlen(cfg->ldc_sasl_authzid);
+                  cfg->sasl_authzid);
+          interact->result = cfg->sasl_authzid;
+          interact->len = strlen(cfg->sasl_authzid);
         }
         else
           log_log(LOG_DEBUG, "do_sasl_interact(): were asked for sasl_authzid but we don't have any");
         break;
       case SASL_CB_PASS:
-        if (cfg->ldc_bindpw)
+        if (cfg->bindpw)
         {
           log_log(LOG_DEBUG, "do_sasl_interact(): returning bindpw \"***\"");
-          interact->result = cfg->ldc_bindpw;
-          interact->len = strlen(cfg->ldc_bindpw);
+          interact->result = cfg->bindpw;
+          interact->len = strlen(cfg->bindpw);
         }
         else
           log_log(LOG_DEBUG, "do_sasl_interact(): were asked for bindpw but we don't have any");
@@ -424,7 +424,7 @@ static int do_bind(LDAP *ld, const char *binddn, const char *bindpw,
 #endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
 #ifdef LDAP_OPT_X_TLS
   /* check if StartTLS is requested */
-  if (nslcd_cfg->ldc_ssl_on == SSL_START_TLS)
+  if (nslcd_cfg->ssl_on == SSL_START_TLS)
   {
     log_log(LOG_DEBUG, "ldap_start_tls_s()");
     errno = 0;
@@ -448,59 +448,59 @@ static int do_bind(LDAP *ld, const char *binddn, const char *bindpw,
   /* perform SASL bind if requested and available on platform */
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
   /* TODO: store this information in the session */
-  if (nslcd_cfg->ldc_sasl_mech != NULL)
+  if (nslcd_cfg->sasl_mech != NULL)
   {
     /* do a SASL bind */
-    if (nslcd_cfg->ldc_sasl_secprops != NULL)
+    if (nslcd_cfg->sasl_secprops != NULL)
     {
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_SASL_SECPROPS,\"%s\")",
-              nslcd_cfg->ldc_sasl_secprops);
-      LDAP_SET_OPTION(ld, LDAP_OPT_X_SASL_SECPROPS, (void *)nslcd_cfg->ldc_sasl_secprops);
+              nslcd_cfg->sasl_secprops);
+      LDAP_SET_OPTION(ld, LDAP_OPT_X_SASL_SECPROPS, (void *)nslcd_cfg->sasl_secprops);
     }
 #ifdef HAVE_SASL_INTERACT_T
-    if (nslcd_cfg->ldc_binddn != NULL)
+    if (nslcd_cfg->binddn != NULL)
       log_log(LOG_DEBUG, "ldap_sasl_interactive_bind_s(\"%s\",\"%s\") (uri=\"%s\")",
-              nslcd_cfg->ldc_binddn, nslcd_cfg->ldc_sasl_mech, uri);
+              nslcd_cfg->binddn, nslcd_cfg->sasl_mech, uri);
     else
       log_log(LOG_DEBUG, "ldap_sasl_interactive_bind_s(NULL,\"%s\") (uri=\"%s\")",
-              nslcd_cfg->ldc_sasl_mech, uri);
-    return ldap_sasl_interactive_bind_s(ld, nslcd_cfg->ldc_binddn,
-                                        nslcd_cfg->ldc_sasl_mech, NULL, NULL,
+              nslcd_cfg->sasl_mech, uri);
+    return ldap_sasl_interactive_bind_s(ld, nslcd_cfg->binddn,
+                                        nslcd_cfg->sasl_mech, NULL, NULL,
                                         LDAP_SASL_QUIET, do_sasl_interact,
                                         (void *)nslcd_cfg);
 #else /* HAVE_SASL_INTERACT_T */
-    if (nslcd_cfg->ldc_bindpw != NULL)
+    if (nslcd_cfg->bindpw != NULL)
     {
-      cred.bv_val = nslcd_cfg->ldc_bindpw;
-      cred.bv_len = strlen(nslcd_cfg->ldc_bindpw);
+      cred.bv_val = nslcd_cfg->bindpw;
+      cred.bv_len = strlen(nslcd_cfg->bindpw);
     }
     else
     {
       cred.bv_val = "";
       cred.bv_len = 0;
     }
-    if (nslcd_cfg->ldc_binddn != NULL)
+    if (nslcd_cfg->binddn != NULL)
       log_log(LOG_DEBUG, "ldap_sasl_bind_s(\"%s\",\"%s\",%s) (uri=\"%s\")",
-              nslcd_cfg->ldc_binddn, nslcd_cfg->ldc_sasl_mech,
-              nslcd_cfg->ldc_bindpw ? "\"***\"" : "NULL", uri);
+              nslcd_cfg->binddn, nslcd_cfg->sasl_mech,
+              nslcd_cfg->bindpw ? "\"***\"" : "NULL", uri);
     else
       log_log(LOG_DEBUG, "ldap_sasl_bind_s(NULL,\"%s\",%s) (uri=\"%s\")",
-              nslcd_cfg->ldc_sasl_mech,
-              nslcd_cfg->ldc_bindpw ? "\"***\"" : "NULL", uri);
-    return ldap_sasl_bind_s(ld, nslcd_cfg->ldc_binddn,
-                            nslcd_cfg->ldc_sasl_mech, &cred, NULL, NULL, NULL);
+              nslcd_cfg->sasl_mech,
+              nslcd_cfg->bindpw ? "\"***\"" : "NULL", uri);
+    return ldap_sasl_bind_s(ld, nslcd_cfg->binddn,
+                            nslcd_cfg->sasl_mech, &cred, NULL, NULL, NULL);
 #endif /* not HAVE_SASL_INTERACT_T */
   }
 #endif /* HAVE_LDAP_SASL_INTERACTIVE_BIND_S */
   /* do a simple bind */
-  if (nslcd_cfg->ldc_binddn)
+  if (nslcd_cfg->binddn)
     log_log(LOG_DEBUG, "ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",
-            nslcd_cfg->ldc_binddn, nslcd_cfg->ldc_bindpw ? "\"***\"" : "NULL",
+            nslcd_cfg->binddn, nslcd_cfg->bindpw ? "\"***\"" : "NULL",
             uri);
   else
     log_log(LOG_DEBUG, "ldap_simple_bind_s(NULL,%s) (uri=\"%s\")",
-            nslcd_cfg->ldc_bindpw ? "\"***\"" : "NULL", uri);
-  return ldap_simple_bind_s(ld, nslcd_cfg->ldc_binddn, nslcd_cfg->ldc_bindpw);
+            nslcd_cfg->bindpw ? "\"***\"" : "NULL", uri);
+  return ldap_simple_bind_s(ld, nslcd_cfg->binddn, nslcd_cfg->bindpw);
 }
 
 #ifdef HAVE_LDAP_SET_REBIND_PROC
@@ -592,8 +592,8 @@ static int connect_cb(LDAP *ld, Sockbuf UNUSED(*sb),
   /* set timeout options on socket to avoid hang in some cases (a little
      more than the normal timeout so this should only be triggered in cases
      where the library behaves incorrectly) */
-  if (nslcd_cfg->ldc_timelimit)
-    set_socket_timeout(ld, nslcd_cfg->ldc_timelimit, 500000);
+  if (nslcd_cfg->timelimit)
+    set_socket_timeout(ld, nslcd_cfg->timelimit, 500000);
   return LDAP_SUCCESS;
 }
 
@@ -639,41 +639,41 @@ static int do_set_options(MYLDAP_SESSION *session)
 #endif /* HAVE_LDAP_SET_REBIND_PROC */
   /* set the protocol version to use */
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_PROTOCOL_VERSION,%d)",
-          nslcd_cfg->ldc_version);
+          nslcd_cfg->version);
   LDAP_SET_OPTION(session->ld, LDAP_OPT_PROTOCOL_VERSION,
-                  &nslcd_cfg->ldc_version);
+                  &nslcd_cfg->version);
   /* set some other options */
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_DEREF,%d)",
-          nslcd_cfg->ldc_deref);
-  LDAP_SET_OPTION(session->ld, LDAP_OPT_DEREF, &nslcd_cfg->ldc_deref);
+          nslcd_cfg->deref);
+  LDAP_SET_OPTION(session->ld, LDAP_OPT_DEREF, &nslcd_cfg->deref);
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_TIMELIMIT,%d)",
-          nslcd_cfg->ldc_timelimit);
-  LDAP_SET_OPTION(session->ld, LDAP_OPT_TIMELIMIT, &nslcd_cfg->ldc_timelimit);
-  tv.tv_sec = nslcd_cfg->ldc_bind_timelimit;
+          nslcd_cfg->timelimit);
+  LDAP_SET_OPTION(session->ld, LDAP_OPT_TIMELIMIT, &nslcd_cfg->timelimit);
+  tv.tv_sec = nslcd_cfg->bind_timelimit;
   tv.tv_usec = 0;
 #ifdef LDAP_OPT_TIMEOUT
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_TIMEOUT,%d)",
-          nslcd_cfg->ldc_timelimit);
+          nslcd_cfg->timelimit);
   LDAP_SET_OPTION(session->ld, LDAP_OPT_TIMEOUT, &tv);
 #endif /* LDAP_OPT_TIMEOUT */
 #ifdef LDAP_OPT_NETWORK_TIMEOUT
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_NETWORK_TIMEOUT,%d)",
-          nslcd_cfg->ldc_timelimit);
+          nslcd_cfg->timelimit);
   LDAP_SET_OPTION(session->ld, LDAP_OPT_NETWORK_TIMEOUT, &tv);
 #endif /* LDAP_OPT_NETWORK_TIMEOUT */
 #ifdef LDAP_X_OPT_CONNECT_TIMEOUT
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_X_OPT_CONNECT_TIMEOUT,%d)",
-          nslcd_cfg->ldc_timelimit);
+          nslcd_cfg->timelimit);
   LDAP_SET_OPTION(session->ld, LDAP_X_OPT_CONNECT_TIMEOUT, &tv);
 #endif /* LDAP_X_OPT_CONNECT_TIMEOUT */
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_REFERRALS,%s)",
-          nslcd_cfg->ldc_referrals ? "LDAP_OPT_ON" : "LDAP_OPT_OFF");
+          nslcd_cfg->referrals ? "LDAP_OPT_ON" : "LDAP_OPT_OFF");
   LDAP_SET_OPTION(session->ld, LDAP_OPT_REFERRALS,
-                  nslcd_cfg->ldc_referrals ? LDAP_OPT_ON : LDAP_OPT_OFF);
+                  nslcd_cfg->referrals ? LDAP_OPT_ON : LDAP_OPT_OFF);
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_RESTART,%s)",
-          nslcd_cfg->ldc_restart ? "LDAP_OPT_ON" : "LDAP_OPT_OFF");
+          nslcd_cfg->restart ? "LDAP_OPT_ON" : "LDAP_OPT_OFF");
   LDAP_SET_OPTION(session->ld, LDAP_OPT_RESTART,
-                  nslcd_cfg->ldc_restart ? LDAP_OPT_ON : LDAP_OPT_OFF);
+                  nslcd_cfg->restart ? LDAP_OPT_ON : LDAP_OPT_OFF);
 #ifdef LDAP_OPT_CONNECT_CB
   /* register a connection callback */
   cb.lc_add = connect_cb;
@@ -683,8 +683,8 @@ static int do_set_options(MYLDAP_SESSION *session)
 #endif /* LDAP_OPT_CONNECT_CB */
 #ifdef LDAP_OPT_X_TLS
   /* if SSL is desired, then enable it */
-  if ((nslcd_cfg->ldc_ssl_on == SSL_LDAPS) ||
-      (strncasecmp(nslcd_cfg->ldc_uris[session->current_uri].uri, "ldaps://", 8) == 0))
+  if ((nslcd_cfg->ssl_on == SSL_LDAPS) ||
+      (strncasecmp(nslcd_cfg->uris[session->current_uri].uri, "ldaps://", 8) == 0))
   {
     /* use tls */
     i = LDAP_OPT_X_TLS_HARD;
@@ -693,12 +693,12 @@ static int do_set_options(MYLDAP_SESSION *session)
   }
 #endif /* LDAP_OPT_X_TLS */
 #ifdef LDAP_OPT_X_SASL_NOCANON
-  if (nslcd_cfg->ldc_sasl_canonicalize >= 0)
+  if (nslcd_cfg->sasl_canonicalize >= 0)
   {
     log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_SASL_NOCANON,%s)",
-            nslcd_cfg->ldc_sasl_canonicalize ? "LDAP_OPT_OFF" : "LDAP_OPT_ON");
+            nslcd_cfg->sasl_canonicalize ? "LDAP_OPT_OFF" : "LDAP_OPT_ON");
     LDAP_SET_OPTION(session->ld, LDAP_OPT_X_SASL_NOCANON,
-                    nslcd_cfg->ldc_sasl_canonicalize ? LDAP_OPT_OFF : LDAP_OPT_ON);
+                    nslcd_cfg->sasl_canonicalize ? LDAP_OPT_OFF : LDAP_OPT_ON);
   }
 #endif /* LDAP_OPT_X_SASL_NOCANON */
   /* if nothing above failed, everything should be fine */
@@ -717,9 +717,9 @@ static void do_close(MYLDAP_SESSION *session)
     /* set timeout options on socket to avoid hang in some cases
        (we set a short timeout because we don't care too much about properly
        shutting down the connection) */
-    if (nslcd_cfg->ldc_timelimit)
+    if (nslcd_cfg->timelimit)
     {
-      sec = nslcd_cfg->ldc_timelimit / 2;
+      sec = nslcd_cfg->timelimit / 2;
       if (!sec)
         sec = 1;
       set_socket_timeout(session->ld, sec, 0);
@@ -773,7 +773,7 @@ void myldap_session_check(MYLDAP_SESSION *session)
     return;
   }
   /* check if we should time out the connection */
-  if ((session->ld != NULL) && (nslcd_cfg->ldc_idle_timelimit > 0))
+  if ((session->ld != NULL) && (nslcd_cfg->idle_timelimit > 0))
   {
     /* if we have any running searches, don't time out */
     for (i = 0; i < MAX_SEARCHES_IN_SESSION; i++)
@@ -781,7 +781,7 @@ void myldap_session_check(MYLDAP_SESSION *session)
         return;
     /* consider timeout (there are no running searches) */
     time(&current_time);
-    if ((session->lastactivity + nslcd_cfg->ldc_idle_timelimit) < current_time)
+    if ((session->lastactivity + nslcd_cfg->idle_timelimit) < current_time)
     {
       log_log(LOG_DEBUG, "myldap_session_check(): idle_timelimit reached");
       do_close(session);
@@ -803,13 +803,13 @@ static int do_open(MYLDAP_SESSION *session)
   session->lastactivity = 0;
   /* open the connection */
   log_log(LOG_DEBUG, "ldap_initialize(%s)",
-          nslcd_cfg->ldc_uris[session->current_uri].uri);
+          nslcd_cfg->uris[session->current_uri].uri);
   errno = 0;
-  rc = ldap_initialize(&(session->ld), nslcd_cfg->ldc_uris[session->current_uri].uri);
+  rc = ldap_initialize(&(session->ld), nslcd_cfg->uris[session->current_uri].uri);
   if (rc != LDAP_SUCCESS)
   {
     myldap_err(LOG_WARNING, session->ld, rc, "ldap_initialize(%s) failed",
-               nslcd_cfg->ldc_uris[session->current_uri].uri);
+               nslcd_cfg->uris[session->current_uri].uri);
     if (session->ld != NULL)
       do_close(session);
     return rc;
@@ -829,13 +829,13 @@ static int do_open(MYLDAP_SESSION *session)
   /* bind to the server */
   errno = 0;
   rc = do_bind(session->ld, session->binddn, session->bindpw,
-               nslcd_cfg->ldc_uris[session->current_uri].uri);
+               nslcd_cfg->uris[session->current_uri].uri);
   if (rc != LDAP_SUCCESS)
   {
     /* log actual LDAP error code */
     myldap_err((session->binddn[0] == '\0') ? LOG_WARNING : LOG_DEBUG,
                session->ld, rc, "failed to bind to LDAP server %s",
-               nslcd_cfg->ldc_uris[session->current_uri].uri);
+               nslcd_cfg->uris[session->current_uri].uri);
     do_close(session);
     return rc;
   }
@@ -866,9 +866,9 @@ static int do_try_search(MYLDAP_SEARCH *search)
   if (rc != LDAP_SUCCESS)
     return rc;
   /* if we're using paging, build a page control */
-  if ((nslcd_cfg->ldc_pagesize > 0) && (search->scope != LDAP_SCOPE_BASE))
+  if ((nslcd_cfg->pagesize > 0) && (search->scope != LDAP_SCOPE_BASE))
   {
-    rc = ldap_create_page_control(search->session->ld, nslcd_cfg->ldc_pagesize,
+    rc = ldap_create_page_control(search->session->ld, nslcd_cfg->pagesize,
                                   NULL, 0, &serverCtrls[0]);
     if (rc == LDAP_SUCCESS)
     {
@@ -970,7 +970,7 @@ static int do_retry_search(MYLDAP_SEARCH *search)
   for (start_uri = 0; start_uri < NSS_LDAP_CONFIG_URI_MAX; start_uri++)
     dotry[start_uri] = 1;
   /* keep trying until we time out */
-  endtime = time(NULL) + nslcd_cfg->ldc_reconnect_retrytime;
+  endtime = time(NULL) + nslcd_cfg->reconnect_retrytime;
   while (1)
   {
     nexttry = endtime;
@@ -979,12 +979,12 @@ static int do_retry_search(MYLDAP_SEARCH *search)
     start_uri = search->session->current_uri;
     do
     {
-      current_uri = &(nslcd_cfg->ldc_uris[search->session->current_uri]);
+      current_uri = &(nslcd_cfg->uris[search->session->current_uri]);
       /* only try this URI if we should */
       if (!dotry[search->session->current_uri])
       { /* skip this URI */ }
-      else if ((current_uri->lastfail > (current_uri->firstfail + nslcd_cfg->ldc_reconnect_retrytime)) &&
-               ((t = time(NULL)) < (current_uri->lastfail + nslcd_cfg->ldc_reconnect_retrytime)))
+      else if ((current_uri->lastfail > (current_uri->firstfail + nslcd_cfg->reconnect_retrytime)) &&
+               ((t = time(NULL)) < (current_uri->lastfail + nslcd_cfg->reconnect_retrytime)))
       {
         /* we are in a hard fail state and have retried not long ago */
         log_log(LOG_DEBUG, "not retrying server %s which failed just %d second(s) ago and has been failing for %d seconds",
@@ -1028,16 +1028,16 @@ static int do_retry_search(MYLDAP_SEARCH *search)
             (rc == LDAP_AUTH_METHOD_NOT_SUPPORTED))
           dotry[search->session->current_uri] = 0;
         /* check when we should try this URI again */
-        else if (t <= (current_uri->firstfail + nslcd_cfg->ldc_reconnect_retrytime))
+        else if (t <= (current_uri->firstfail + nslcd_cfg->reconnect_retrytime))
         {
-          t += nslcd_cfg->ldc_reconnect_sleeptime;
+          t += nslcd_cfg->reconnect_sleeptime;
           if (t < nexttry)
             nexttry = t;
         }
       }
       /* try the next URI (with wrap-around) */
       search->session->current_uri++;
-      if (nslcd_cfg->ldc_uris[search->session->current_uri].uri == NULL)
+      if (nslcd_cfg->uris[search->session->current_uri].uri == NULL)
         search->session->current_uri = 0;
     }
     while (search->session->current_uri != start_uri);
@@ -1184,11 +1184,11 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
     return NULL;
   }
   /* set up a timelimit value for operations */
-  if (nslcd_cfg->ldc_timelimit == LDAP_NO_LIMIT)
+  if (nslcd_cfg->timelimit == LDAP_NO_LIMIT)
     tvp = NULL;
   else
   {
-    tv.tv_sec = nslcd_cfg->ldc_timelimit;
+    tv.tv_sec = nslcd_cfg->timelimit;
     tv.tv_usec = 0;
     tvp = &tv;
   }
@@ -1299,7 +1299,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
         /* try the next page */
         serverctrls[0] = NULL;
         serverctrls[1] = NULL;
-        rc = ldap_create_page_control(search->session->ld, nslcd_cfg->ldc_pagesize,
+        rc = ldap_create_page_control(search->session->ld, nslcd_cfg->pagesize,
                                       search->cookie, 0, &serverctrls[0]);
         if (rc != LDAP_SUCCESS)
         {

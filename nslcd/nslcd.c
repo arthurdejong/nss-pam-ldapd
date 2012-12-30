@@ -277,7 +277,7 @@ static void mkdirname(const char *filename)
   if (mkdir(path, (mode_t)0755) == 0)
   {
     /* if directory was just created, set correct ownership */
-    if (lchown(path, nslcd_cfg->ldc_uid, nslcd_cfg->ldc_gid) < 0)
+    if (lchown(path, nslcd_cfg->uid, nslcd_cfg->gid) < 0)
       log_log(LOG_WARNING, "problem setting permissions for %s: %s",
               path, strerror(errno));
   }
@@ -574,11 +574,11 @@ static void *worker(void UNUSED(*arg))
     FD_ZERO(&fds);
     FD_SET(nslcd_serversocket, &fds);
     /* set up our timeout value */
-    tv.tv_sec = nslcd_cfg->ldc_idle_timelimit;
+    tv.tv_sec = nslcd_cfg->idle_timelimit;
     tv.tv_usec = 0;
     /* wait for a new connection */
     j = select(nslcd_serversocket + 1, &fds, NULL, NULL,
-               nslcd_cfg->ldc_idle_timelimit > 0 ? &tv : NULL);
+               nslcd_cfg->idle_timelimit > 0 ? &tv : NULL);
     /* check result of select() */
     if (j < 0)
     {
@@ -754,16 +754,16 @@ int main(int argc, char *argv[])
   }
   /* create socket */
   nslcd_serversocket = create_socket(NSLCD_SOCKET);
-  if ((nslcd_cfg->ldc_gid != NOGID) && (nslcd_cfg->ldc_uidname != NULL))
+  if ((nslcd_cfg->gid != NOGID) && (nslcd_cfg->uidname != NULL))
   {
 #ifdef HAVE_INITGROUPS
     /* load supplementary groups */
-    if (initgroups(nslcd_cfg->ldc_uidname, nslcd_cfg->ldc_gid) < 0)
+    if (initgroups(nslcd_cfg->uidname, nslcd_cfg->gid) < 0)
       log_log(LOG_WARNING, "cannot initgroups(\"%s\",%d) (ignored): %s",
-              nslcd_cfg->ldc_uidname, (int)nslcd_cfg->ldc_gid, strerror(errno));
+              nslcd_cfg->uidname, (int)nslcd_cfg->gid, strerror(errno));
     else
       log_log(LOG_DEBUG, "initgroups(\"%s\",%d) done",
-              nslcd_cfg->ldc_uidname, (int)nslcd_cfg->ldc_gid);
+              nslcd_cfg->uidname, (int)nslcd_cfg->gid);
 #else /* not HAVE_INITGROUPS */
 #ifdef HAVE_SETGROUPS
     /* just drop all supplemental groups */
@@ -778,26 +778,26 @@ int main(int argc, char *argv[])
 #endif /* not HAVE_INITGROUPS */
   }
   /* change to nslcd gid */
-  if (nslcd_cfg->ldc_gid != NOGID)
+  if (nslcd_cfg->gid != NOGID)
   {
-    if (setgid(nslcd_cfg->ldc_gid) != 0)
+    if (setgid(nslcd_cfg->gid) != 0)
     {
       log_log(LOG_ERR, "cannot setgid(%d): %s",
-              (int)nslcd_cfg->ldc_gid, strerror(errno));
+              (int)nslcd_cfg->gid, strerror(errno));
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG, "setgid(%d) done", (int)nslcd_cfg->ldc_gid);
+    log_log(LOG_DEBUG, "setgid(%d) done", (int)nslcd_cfg->gid);
   }
   /* change to nslcd uid */
-  if (nslcd_cfg->ldc_uid != NOUID)
+  if (nslcd_cfg->uid != NOUID)
   {
-    if (setuid(nslcd_cfg->ldc_uid) != 0)
+    if (setuid(nslcd_cfg->uid) != 0)
     {
       log_log(LOG_ERR, "cannot setuid(%d): %s",
-              (int)nslcd_cfg->ldc_uid, strerror(errno));
+              (int)nslcd_cfg->uid, strerror(errno));
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG, "setuid(%d) done", (int)nslcd_cfg->ldc_uid);
+    log_log(LOG_DEBUG, "setuid(%d) done", (int)nslcd_cfg->uid);
   }
   /* block all these signals so our worker threads won't handle them */
   sigemptyset(&signalmask);
@@ -812,13 +812,13 @@ int main(int argc, char *argv[])
   pthread_sigmask(SIG_BLOCK, &signalmask, &oldmask);
   /* start worker threads */
   log_log(LOG_INFO, "accepting connections");
-  nslcd_threads = (pthread_t *)malloc(nslcd_cfg->ldc_threads * sizeof(pthread_t));
+  nslcd_threads = (pthread_t *)malloc(nslcd_cfg->threads * sizeof(pthread_t));
   if (nslcd_threads == NULL)
   {
     log_log(LOG_CRIT, "main(): malloc() failed to allocate memory");
     exit(EXIT_FAILURE);
   }
-  for (i = 0; i < nslcd_cfg->ldc_threads; i++)
+  for (i = 0; i < nslcd_cfg->threads; i++)
   {
     if (pthread_create(&nslcd_threads[i], NULL, worker, NULL))
     {
@@ -846,7 +846,7 @@ int main(int argc, char *argv[])
   log_log(LOG_INFO, "caught signal %s (%d), shutting down",
           signame(nslcd_exitsignal), nslcd_exitsignal);
   /* cancel all running threads */
-  for (i = 0; i < nslcd_cfg->ldc_threads; i++)
+  for (i = 0; i < nslcd_cfg->threads; i++)
     if (pthread_cancel(nslcd_threads[i]))
       log_log(LOG_WARNING, "failed to stop thread %d (ignored): %s",
               i, strerror(errno));
@@ -858,7 +858,7 @@ int main(int argc, char *argv[])
   ts.tv_sec = time(NULL) + 3;
   ts.tv_nsec = 0;
 #endif /* HAVE_PTHREAD_TIMEDJOIN_NP */
-  for (i = 0; i < nslcd_cfg->ldc_threads; i++)
+  for (i = 0; i < nslcd_cfg->threads; i++)
   {
 #ifdef HAVE_PTHREAD_TIMEDJOIN_NP
     pthread_timedjoin_np(nslcd_threads[i], NULL, &ts);

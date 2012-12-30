@@ -80,10 +80,10 @@ void netgroup_init(void)
   /* set up search bases */
   if (netgroup_bases[0] == NULL)
     for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-      netgroup_bases[i] = nslcd_cfg->ldc_bases[i];
+      netgroup_bases[i] = nslcd_cfg->bases[i];
   /* set up scope */
   if (netgroup_scope == LDAP_SCOPE_DEFAULT)
-    netgroup_scope = nslcd_cfg->ldc_scope;
+    netgroup_scope = nslcd_cfg->scope;
   /* set up attribute list */
   netgroup_attrs[0] = attmap_netgroup_cn;
   netgroup_attrs[1] = attmap_netgroup_nisNetgroupTriple;

@@ -92,10 +92,10 @@ void network_init(void)
   /* set up search bases */
   if (network_bases[0] == NULL)
     for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-      network_bases[i] = nslcd_cfg->ldc_bases[i];
+      network_bases[i] = nslcd_cfg->bases[i];
   /* set up scope */
   if (network_scope == LDAP_SCOPE_DEFAULT)
-    network_scope = nslcd_cfg->ldc_scope;
+    network_scope = nslcd_cfg->scope;
   /* set up attribute list */
   network_attrs[0] = attmap_network_cn;
   network_attrs[1] = attmap_network_ipNetworkNumber;

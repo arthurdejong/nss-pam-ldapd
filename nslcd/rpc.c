@@ -87,10 +87,10 @@ void rpc_init(void)
   /* set up search bases */
   if (rpc_bases[0] == NULL)
     for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-      rpc_bases[i] = nslcd_cfg->ldc_bases[i];
+      rpc_bases[i] = nslcd_cfg->bases[i];
   /* set up scope */
   if (rpc_scope == LDAP_SCOPE_DEFAULT)
-    rpc_scope = nslcd_cfg->ldc_scope;
+    rpc_scope = nslcd_cfg->scope;
   /* set up attribute list */
   rpc_attrs[0] = attmap_rpc_cn;
   rpc_attrs[1] = attmap_rpc_oncRpcNumber;

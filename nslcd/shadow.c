@@ -88,10 +88,10 @@ void shadow_init(void)
   /* set up search bases */
   if (shadow_bases[0] == NULL)
     for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-      shadow_bases[i] = nslcd_cfg->ldc_bases[i];
+      shadow_bases[i] = nslcd_cfg->bases[i];
   /* set up scope */
   if (shadow_scope == LDAP_SCOPE_DEFAULT)
-    shadow_scope = nslcd_cfg->ldc_scope;
+    shadow_scope = nslcd_cfg->scope;
   /* set up attribute list */
   set = set_new();
   attmap_add_attributes(set, attmap_shadow_uid);

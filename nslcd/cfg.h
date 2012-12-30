@@ -80,73 +80,73 @@ struct myldap_uri {
 
 struct ldap_config {
   /* the number of threads to start */
-  int ldc_threads;
+  int threads;
   /* the user name specified in the uid option */
-  char *ldc_uidname;
+  char *uidname;
   /* the user id nslcd should be run as */
-  uid_t ldc_uid;
+  uid_t uid;
   /* the group id nslcd should be run as */
-  gid_t ldc_gid;
+  gid_t gid;
   /* whether or not case should be ignored in lookups */
-  int ldc_ignorecase;
+  int ignorecase;
   /* NULL terminated list of URIs */
-  struct myldap_uri ldc_uris[NSS_LDAP_CONFIG_URI_MAX + 1];
+  struct myldap_uri uris[NSS_LDAP_CONFIG_URI_MAX + 1];
   /* protocol version */
-  int ldc_version;
+  int version;
   /* bind DN */
-  char *ldc_binddn;
+  char *binddn;
   /* bind cred */
-  char *ldc_bindpw;
+  char *bindpw;
   /* bind DN for password modification by administrator */
-  char *ldc_rootpwmoddn;
+  char *rootpwmoddn;
   /* bind password for password modification by root */
-  char *ldc_rootpwmodpw;
+  char *rootpwmodpw;
   /* sasl mech */
-  char *ldc_sasl_mech;
+  char *sasl_mech;
   /* sasl realm */
-  char *ldc_sasl_realm;
+  char *sasl_realm;
   /* sasl authentication id */
-  char *ldc_sasl_authcid;
+  char *sasl_authcid;
   /* sasl authorization id */
-  char *ldc_sasl_authzid;
+  char *sasl_authzid;
   /* sasl security */
-  char *ldc_sasl_secprops;
+  char *sasl_secprops;
 #ifdef LDAP_OPT_X_SASL_NOCANON
   /* whether host name should be canonicalised */
-  int ldc_sasl_canonicalize;
+  int sasl_canonicalize;
 #endif /* LDAP_OPT_X_SASL_NOCANON */
   /* base DN, eg. dc=gnu,dc=org */
-  const char *ldc_bases[NSS_LDAP_CONFIG_MAX_BASES];
+  const char *bases[NSS_LDAP_CONFIG_MAX_BASES];
   /* scope for searches */
-  int ldc_scope;
+  int scope;
   /* dereference aliases/links */
-  int ldc_deref;
+  int deref;
   /* chase referrals */
-  int ldc_referrals;
+  int referrals;
   /* bind timelimit */
-  int ldc_bind_timelimit;
+  int bind_timelimit;
   /* search timelimit */
-  int ldc_timelimit;
+  int timelimit;
   /* idle timeout */
-  int ldc_idle_timelimit;
+  int idle_timelimit;
   /* seconds to sleep; doubled until max */
-  int ldc_reconnect_sleeptime;
+  int reconnect_sleeptime;
   /* maximum seconds to sleep */
-  int ldc_reconnect_retrytime;
+  int reconnect_retrytime;
 #ifdef LDAP_OPT_X_TLS
   /* SSL enabled */
-  enum ldap_ssl_options ldc_ssl_on;
+  enum ldap_ssl_options ssl_on;
 #endif /* LDAP_OPT_X_TLS */
   /* whether the LDAP library should restart the select(2) system call when interrupted */
-  int ldc_restart;
+  int restart;
   /* set to a greater than 0 to enable handling of paged results with the specified size */
-  int ldc_pagesize;
+  int pagesize;
   /* the users for which no initgroups() searches should be done */
-  SET *ldc_nss_initgroups_ignoreusers;
+  SET *nss_initgroups_ignoreusers;
   /* the searches that should be performed to do autorisation checks */
-  char *ldc_pam_authz_search[NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES];
+  char *pam_authz_search[NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES];
   /* minimum uid for users retreived from LDAP */
-  uid_t ldc_nss_min_uid;
+  uid_t nss_min_uid;
   /* the regular expression to determine valid names */
   regex_t validnames;
   /* whether password changing should be denied and user prompted with

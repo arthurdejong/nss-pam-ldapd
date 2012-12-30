@@ -92,10 +92,10 @@ void ether_init(void)
   /* set up search bases */
   if (ether_bases[0] == NULL)
     for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-      ether_bases[i] = nslcd_cfg->ldc_bases[i];
+      ether_bases[i] = nslcd_cfg->bases[i];
   /* set up scope */
   if (ether_scope == LDAP_SCOPE_DEFAULT)
-    ether_scope = nslcd_cfg->ldc_scope;
+    ether_scope = nslcd_cfg->scope;
   /* set up attribute list */
   ether_attrs[0] = attmap_ether_cn;
   ether_attrs[1] = attmap_ether_macAddress;

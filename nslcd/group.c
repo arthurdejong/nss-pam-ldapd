@@ -142,10 +142,10 @@ void group_init(void)
   /* set up search bases */
   if (group_bases[0] == NULL)
     for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-      group_bases[i] = nslcd_cfg->ldc_bases[i];
+      group_bases[i] = nslcd_cfg->bases[i];
   /* set up scope */
   if (group_scope == LDAP_SCOPE_DEFAULT)
-    group_scope = nslcd_cfg->ldc_scope;
+    group_scope = nslcd_cfg->scope;
   /* special case when gidNumber references objectSid */
   if (strncasecmp(attmap_group_gidNumber, "objectSid:", 10) == 0)
   {
@@ -344,8 +344,8 @@ NSLCD_HANDLE(
     log_log(LOG_WARNING, "request denied by validnames option");
     return -1;
   }
-  if ((nslcd_cfg->ldc_nss_initgroups_ignoreusers != NULL) &&
-      set_contains(nslcd_cfg->ldc_nss_initgroups_ignoreusers, name))
+  if ((nslcd_cfg->nss_initgroups_ignoreusers != NULL) &&
+      set_contains(nslcd_cfg->nss_initgroups_ignoreusers, name))
   {
     log_log(LOG_DEBUG, "ignored group member");
     /* just end the request, returning no results */

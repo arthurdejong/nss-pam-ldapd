@@ -93,10 +93,10 @@ void host_init(void)
   /* set up search bases */
   if (host_bases[0] == NULL)
     for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-      host_bases[i] = nslcd_cfg->ldc_bases[i];
+      host_bases[i] = nslcd_cfg->bases[i];
   /* set up scope */
   if (host_scope == LDAP_SCOPE_DEFAULT)
-    host_scope = nslcd_cfg->ldc_scope;
+    host_scope = nslcd_cfg->scope;
   /* set up attribute list */
   host_attrs[0] = attmap_host_cn;
   host_attrs[1] = attmap_host_ipHostNumber;
