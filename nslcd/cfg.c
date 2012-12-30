@@ -138,7 +138,6 @@ static void cfg_defaults(struct ldap_config *cfg)
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)
     cfg->pam_authz_searches[i] = NULL;
   cfg->pam_password_prohibit_message = NULL;
-  cfg->restart = 1;
 }
 
 /* simple strdup wrapper */
@@ -1197,13 +1196,6 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
 #endif /* LDAP_OPT_X_TLS */
     /* other options */
-    else if (strcasecmp(keyword, "restart") == 0)
-    {
-      log_log(LOG_WARNING, "%s:%d: option %s is currently untested (and may be removed in an upcoming release)",
-              filename, lnr, keyword);
-      get_boolean(filename, lnr, keyword, &line, &cfg->restart);
-      get_eol(filename, lnr, keyword, &line);
-    }
     else if (strcasecmp(keyword, "pagesize") == 0)
     {
       get_int(filename, lnr, keyword, &line, &cfg->pagesize);

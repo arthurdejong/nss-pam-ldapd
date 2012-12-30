@@ -670,10 +670,8 @@ static int do_set_options(MYLDAP_SESSION *session)
           nslcd_cfg->referrals ? "LDAP_OPT_ON" : "LDAP_OPT_OFF");
   LDAP_SET_OPTION(session->ld, LDAP_OPT_REFERRALS,
                   nslcd_cfg->referrals ? LDAP_OPT_ON : LDAP_OPT_OFF);
-  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_RESTART,%s)",
-          nslcd_cfg->restart ? "LDAP_OPT_ON" : "LDAP_OPT_OFF");
-  LDAP_SET_OPTION(session->ld, LDAP_OPT_RESTART,
-                  nslcd_cfg->restart ? LDAP_OPT_ON : LDAP_OPT_OFF);
+  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_RESTART,%s)", LDAP_OPT_ON);
+  LDAP_SET_OPTION(session->ld, LDAP_OPT_RESTART, LDAP_OPT_ON);
 #ifdef LDAP_OPT_CONNECT_CB
   /* register a connection callback */
   cb.lc_add = connect_cb;
