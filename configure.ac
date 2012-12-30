@@ -47,7 +47,7 @@ AC_CONFIG_LIBOBJ_DIR([compat])
 
 # display notice and initialize automake
 AC_MSG_NOTICE([configuring AC_PACKAGE_TARNAME AC_PACKAGE_VERSION])
-AM_INIT_AUTOMAKE(AC_PACKAGE_TARNAME,AC_PACKAGE_VERSION)
+AM_INIT_AUTOMAKE([check-news gnu std-options color-tests --warnings=all])
 
 # create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AC_CONFIG_HEADERS([config.h])
