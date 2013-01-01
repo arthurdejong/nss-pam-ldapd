@@ -1977,3 +1977,29 @@ int myldap_modify(MYLDAP_SESSION *session, const char *dn, LDAPMod * mods[])
   }
   return ldap_modify_ext_s(session->ld, dn, mods, NULL, NULL);
 }
+
+int myldap_error_message(MYLDAP_SESSION *session, int rc,
+                         char *buffer, size_t buflen)
+{
+  char *msg_diag = NULL;
+  if (!is_valid_session(session) || (buffer == NULL) || (buflen <= 0))
+  {
+    log_log(LOG_ERR, "myldap_error_message(): invalid parameter passed");
+    errno = EINVAL;
+    return LDAP_OTHER;
+  }
+  /* clear buffer */
+  buffer[0] = '\0';
+#ifdef LDAP_OPT_DIAGNOSTIC_MESSAGE
+  if (session->ld != NULL)
+    ldap_get_option(session->ld, LDAP_OPT_DIAGNOSTIC_MESSAGE, &msg_diag);
+#endif /* LDAP_OPT_DIAGNOSTIC_MESSAGE */
+  /* return msg_diag or generic error message */
+  mysnprintf(buffer, buflen - 1, "%s",
+             ((msg_diag != NULL) && (msg_diag[0]!='\0')) ?
+             msg_diag : ldap_err2string(rc));
+  /* free diagnostic message */
+  if (msg_diag != NULL)
+    ldap_memfree(msg_diag);
+  return LDAP_SUCCESS;
+}

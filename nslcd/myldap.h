@@ -2,7 +2,7 @@
    myldap.h - simple interface to do LDAP requests
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -150,5 +150,10 @@ int myldap_passwd(MYLDAP_SESSION *session,
 
 /* Perform an LDAP modification request. Returns an LDAP status code. */
 int myldap_modify(MYLDAP_SESSION *session, const char *dn, LDAPMod * mods[]);
+
+/* Get an LDAP error message from the supplied rc and optionally any extra
+   information in the connection. */
+int myldap_error_message(MYLDAP_SESSION *session, int rc,
+                         char *buffer, size_t buflen);
 
 #endif /* not NSLCD__MYLDAP_H */

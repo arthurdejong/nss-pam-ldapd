@@ -2,7 +2,7 @@
    pam.c - pam processing routines
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -580,10 +580,11 @@ int nslcd_pam_sess_c(TFILE *fp, MYLDAP_SESSION *session)
 /* perform an LDAP password modification, returns an LDAP status code */
 static int try_pwmod(MYLDAP_SESSION *oldsession,
                      const char *binddn, const char *userdn,
-                     const char *oldpassword, const char *newpassword)
+                     const char *oldpassword, const char *newpassword,
+                     char *authzmsg, size_t authzmsg_len)
 {
   MYLDAP_SESSION *session;
-  char buffer[256];
+  char buffer[1024];
   int rc;
   /* set up a new connection */
   session = myldap_create_session();
@@ -607,6 +608,14 @@ static int try_pwmod(MYLDAP_SESSION *oldsession,
       if (update_lastchange(session, userdn) != LDAP_SUCCESS)
         /* retry with the normal session */
         (void)update_lastchange(oldsession, userdn);
+    }
+    else
+    {
+      /* get a diagnostic or error message */
+      if ((myldap_error_message(session, rc, buffer, sizeof(buffer)) == LDAP_SUCCESS) &&
+          (buffer[0] != '\0'))
+        mysnprintf(authzmsg, authzmsg_len - 1, "password change failed: %s",
+                   buffer);
     }
   }
   /* close the session */
@@ -696,11 +705,13 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
     }
   }
   /* perform password modification */
-  rc = try_pwmod(session, binddn, myldap_get_dn(entry), oldpassword, newpassword);
+  rc = try_pwmod(session, binddn, myldap_get_dn(entry), oldpassword, newpassword,
+                 authzmsg, sizeof(authzmsg));
   if (rc != LDAP_SUCCESS)
   {
-    mysnprintf(authzmsg, sizeof(authzmsg) - 1, "password change failed: %s",
-               ldap_err2string(rc));
+    if (authzmsg[0] == '\0')
+      mysnprintf(authzmsg, sizeof(authzmsg) - 1, "password change failed: %s",
+                 ldap_err2string(rc));
     WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
     WRITE_INT32(fp, NSLCD_PAM_PERM_DENIED);
     WRITE_STRING(fp, authzmsg);
