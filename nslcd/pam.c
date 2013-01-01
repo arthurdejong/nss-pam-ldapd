@@ -578,7 +578,8 @@ int nslcd_pam_sess_c(TFILE *fp, MYLDAP_SESSION *session)
 }
 
 /* perform an LDAP password modification, returns an LDAP status code */
-static int try_pwmod(const char *binddn, const char *userdn,
+static int try_pwmod(MYLDAP_SESSION *oldsession,
+                     const char *binddn, const char *userdn,
                      const char *oldpassword, const char *newpassword)
 {
   MYLDAP_SESSION *session;
@@ -603,7 +604,9 @@ static int try_pwmod(const char *binddn, const char *userdn,
     if (rc == LDAP_SUCCESS)
     {
       /* try to update the shadowLastChange attribute */
-      (void)update_lastchange(session, userdn);
+      if (update_lastchange(session, userdn) != LDAP_SUCCESS)
+        /* retry with the normal session */
+        (void)update_lastchange(oldsession, userdn);
     }
   }
   /* close the session */
@@ -693,7 +696,7 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
     }
   }
   /* perform password modification */
-  rc = try_pwmod(binddn, myldap_get_dn(entry), oldpassword, newpassword);
+  rc = try_pwmod(session, binddn, myldap_get_dn(entry), oldpassword, newpassword);
   if (rc != LDAP_SUCCESS)
   {
     mysnprintf(authzmsg, sizeof(authzmsg) - 1, "password change failed: %s",
