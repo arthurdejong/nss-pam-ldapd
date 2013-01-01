@@ -1,7 +1,7 @@
 
 # pam.py - functions authentication, authorisation and session handling
 #
-# Copyright (C) 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -53,6 +53,7 @@ class PAMRequest(common.Request):
         # look up user DN
         entry = passwd.uid2entry(self.conn, parameters['username'])
         if not entry:
+            # FIXME: we should close the stream with an empty response here
             raise ValueError('%r: user not found' % parameters['username'])
         # save the DN
         parameters['userdn'] = entry[0]
@@ -79,19 +80,21 @@ class PAMAuthenticationRequest(PAMRequest):
 
     def read_parameters(self, fp):
         return dict(username=fp.read_string(),
-                    ignore_userdn=fp.read_string(),
                     service=fp.read_string(),
+                    ruser=fp.read_string(),
+                    rhost=fp.read_string(),
+                    tty=fp.read_string(),
                     password=fp.read_string())
         #self.validate_request()
         # TODO: log call with parameters
 
-    def write(self, parameters, code=constants.NSLCD_PAM_SUCCESS, msg=''):
+    def write(self, username, authc=constants.NSLCD_PAM_SUCCESS,
+              authz=constants.NSLCD_PAM_SUCCESS, msg=''):
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-        self.fp.write_string(parameters['username'])
-        self.fp.write_string('')  # userdn
-        self.fp.write_int32(code)  # authc
-        self.fp.write_int32(constants.NSLCD_PAM_SUCCESS)  # authz
-        self.fp.write_string(msg)  # authzmsg
+        self.fp.write_int32(authc)
+        self.fp.write_string(username)
+        self.fp.write_int32(authz)
+        self.fp.write_string(msg)
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 
     def handle_request(self, parameters):
@@ -115,7 +118,7 @@ class PAMAuthenticationRequest(PAMRequest):
         try:
             try_bind(userdn, password)
             logging.debug('bind successful')
-            self.write(parameters)
+            self.write(parameters['username'])
         except ldap.INVALID_CREDENTIALS, e:
             try:
                 msg = e[0]['desc']
@@ -131,18 +134,15 @@ class PAMAuthorisationRequest(PAMRequest):
 
     def read_parameters(self, fp):
         return dict(username=fp.read_string(),
-                    ignore_userdn=fp.read_string(),
                     service=fp.read_string(),
                     ruser=fp.read_string(),
                     rhost=fp.read_string(),
                     tty=fp.read_string())
         # TODO: log call with parameters
 
-    def write(self, parameters, code=constants.NSLCD_PAM_SUCCESS, msg=''):
+    def write(self, parameters, authz=constants.NSLCD_PAM_SUCCESS, msg=''):
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-        self.fp.write_string(parameters['username'])
-        self.fp.write_string('')  # userdn
-        self.fp.write_int32(code)
+        self.fp.write_int32(authz)
         self.fp.write_string(msg)
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 
