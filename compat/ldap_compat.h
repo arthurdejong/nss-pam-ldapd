@@ -76,6 +76,10 @@ int ldap_parse_passwordpolicy_control(LDAP *ld, LDAPControl *ctrl,
                                       LDAPPasswordPolicyError *errorp);
 #endif /* HAVE_LDAP_PARSE_PASSWORDPOLICY_CONTROL */
 
+#ifndef HAVE_LDAP_PASSWORDPOLICY_ERR2TXT
+const char *ldap_passwordpolicy_err2txt(LDAPPasswordPolicyError error);
+#endif /* HAVE_LDAP_PASSWORDPOLICY_ERR2TXT */
+
 /* compatibility definition */
 #ifndef LDAP_SASL_QUIET
 #define LDAP_SASL_QUIET 2U

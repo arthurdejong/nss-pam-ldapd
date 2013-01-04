@@ -727,6 +727,7 @@ then
   AC_REPLACE_FUNCS(ldap_passwd_s)
   AC_REPLACE_FUNCS(ldap_initialize)
   AC_REPLACE_FUNCS(ldap_parse_passwordpolicy_control)
+  AC_REPLACE_FUNCS(ldap_passwordpolicy_err2txt)
 
   # check the number of arguments that ldap_set_rebind_proc() uses
   AC_CACHE_CHECK(
