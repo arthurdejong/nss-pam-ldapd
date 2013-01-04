@@ -57,6 +57,25 @@ int ldap_passwd_s(LDAP *ld, struct berval *user, struct berval *oldpw,
                   LDAPControl **sctrls, LDAPControl **cctrls);
 #endif /* not HAVE_LDAP_PASSWD_S */
 
+#ifndef HAVE_LDAP_PARSE_PASSWORDPOLICY_CONTROL
+/* definition lifted from ldap.h */
+typedef enum passpolicyerror_enum {
+  PP_passwordExpired = 0,
+  PP_accountLocked = 1,
+  PP_changeAfterReset = 2,
+  PP_passwordModNotAllowed = 3,
+  PP_mustSupplyOldPassword = 4,
+  PP_insufficientPasswordQuality = 5,
+  PP_passwordTooShort = 6,
+  PP_passwordTooYoung = 7,
+  PP_passwordInHistory = 8,
+  PP_noError = 65535
+} LDAPPasswordPolicyError;
+int ldap_parse_passwordpolicy_control(LDAP *ld, LDAPControl *ctrl,
+                                      ber_int_t *expirep, ber_int_t *gracep,
+                                      LDAPPasswordPolicyError *errorp);
+#endif /* HAVE_LDAP_PARSE_PASSWORDPOLICY_CONTROL */
+
 /* compatibility definition */
 #ifndef LDAP_SASL_QUIET
 #define LDAP_SASL_QUIET 2U
