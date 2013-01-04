@@ -2,7 +2,7 @@
    expr.c - limited shell-like expression parsing functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2009, 2010, 2011, 2012, 2013 Arthur de Jong
    Copyright (c) 2012 Thorsten Glaser <t.glaser@tarent.de>
 
    This library is free software; you can redistribute it and/or
@@ -143,66 +143,48 @@ MUST_USE static const char *parse_dollar_expression(
         buffer[0] = '\0';
       }
     }
-    else if (str[*ptr]=='#')
+    else if (str[*ptr] == '#')
     {
       char c;
       const char *cp, *vp;
       int ismatch;
       size_t vallen;
-
-      (*ptr)+=1;
-      cp=str+*ptr;
-      vp=varvalue;
-      ismatch=1;
-      while ((c=*cp++) && c!='}')
+      (*ptr) += 1;
+      cp = str + *ptr;
+      vp = varvalue;
+      ismatch = 1;
+      while (((c = *cp++) != '\0') && (c != '}'))
       {
-        if (ismatch && !*vp)
-        {
-          /* varvalue shorter than trim string */
-          ismatch=0;
-        }
-        if (c=='?')
+        if (ismatch && (*vp =='\0'))
+          ismatch = 0; /* varvalue shorter than trim string */
+        if (c == '?')
         {
           /* match any one character */
-          ++vp;
+          vp++;
           continue;
         }
-        if (c=='\\')
+        if (c == '\\')
         {
-          if (!(c=*cp++))
-          {
-            /* end of input: syntax error */
-            return NULL;
-          }
+          if ((c = *cp++) == '\0')
+            return NULL; /* end of input: syntax error */
           /* escape the next character c */
         }
-        if (ismatch && *vp!=c)
-        {
-          /* they differ */
-          ismatch=0;
-        }
-        ++vp;
+        if (ismatch && (*vp != c))
+          ismatch = 0; /* they differ */
+        vp++;
       }
-      if (!c)
-      {
-        /* end of input: syntax error */
-        return NULL;
-      }
-      /*
-       * at this point, cp points to after the closing }
-       * if ismatch, vp points to the beginning of the
-       * data after trimming, otherwise vp is invalid
-       */
-      --cp;
-      (*ptr)=cp-str;
+      if (c == '\0')
+        return NULL; /* end of input: syntax error */
+      /* at this point, cp points to after the closing } */
+      (*ptr) = cp - str - 1;
+      /* if ismatch, vp points to the beginning of the
+         data after trimming, otherwise vp is invalid */
       if (!ismatch)
-      {
-        vp=varvalue;
-      }
+        vp = varvalue;
       /* now copy the (trimmed or not) value to the buffer */
-      if ((vallen=strlen(vp)+1)>buflen)
+      if ((vallen = strlen(vp) + 1) > buflen)
         return NULL;
-      memcpy(buffer,vp,vallen);
+      memcpy(buffer, vp, vallen);
     }
     else
       return NULL;
