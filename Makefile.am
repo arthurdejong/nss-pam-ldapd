@@ -69,7 +69,8 @@ dist-hook:
 
 # target for generating the ChangeLog file
 changelog:
-	svn2cl -i -r HEAD:1586
+	git log --pretty --numstat --summary '47f7fd10f87bfcb5240cf5b794ce9380bf671044...' | \
+	  grep -v 'git-svn-id:' | git2cl > ChangeLog
 
 flawfinder.html:
 	flawfinder --quiet --html --context --followdotdir . > $@
