@@ -315,26 +315,11 @@ static MYLDAP_SESSION *myldap_session_new(void)
   return session;
 }
 
-PURE static inline int is_valid_session(MYLDAP_SESSION *session)
-{
-  return (session != NULL);
-}
-
-PURE static inline int is_open_session(MYLDAP_SESSION *session)
-{
-  return is_valid_session(session) && (session->ld != NULL);
-}
-
-/* note that this does not check the valid flag of the search */
-PURE static inline int is_valid_search(MYLDAP_SEARCH *search)
-{
-  return (search != NULL) && is_open_session(search->session);
-}
-
 PURE static inline int is_valid_entry(MYLDAP_ENTRY *entry)
 {
-  return (entry != NULL) && is_valid_search(entry->search) &&
-         (entry->search->msg != NULL);
+ return (entry != NULL) && (entry->search != NULL) &&
+        (entry->search->session != NULL) && (entry->search->session->ld != NULL) &&
+        (entry->search->msg != NULL);
 }
 
 #ifdef HAVE_SASL_INTERACT_T
@@ -764,7 +749,7 @@ void myldap_session_check(MYLDAP_SESSION *session)
   int i;
   time_t current_time;
   /* check parameters */
-  if (!is_valid_session(session))
+  if (session == NULL)
   {
     log_log(LOG_ERR, "myldap_session_check(): invalid parameter passed");
     errno = EINVAL;
@@ -919,7 +904,7 @@ void myldap_session_cleanup(MYLDAP_SESSION *session)
 {
   int i;
   /* check parameter */
-  if (!is_valid_session(session))
+  if (session == NULL)
   {
     log_log(LOG_ERR, "myldap_session_cleanup(): invalid session passed");
     return;
@@ -938,7 +923,7 @@ void myldap_session_cleanup(MYLDAP_SESSION *session)
 void myldap_session_close(MYLDAP_SESSION *session)
 {
   /* check parameter */
-  if (!is_valid_session(session))
+  if (session == NULL)
   {
     log_log(LOG_ERR, "myldap_session_cleanup(): invalid session passed");
     return;
@@ -1066,8 +1051,7 @@ MYLDAP_SEARCH *myldap_search(MYLDAP_SESSION *session,
   int i;
   int rc;
   /* check parameters */
-  if (!is_valid_session(session) || (base == NULL) || (filter == NULL) ||
-      (attrs == NULL))
+  if ((session == NULL) || (base == NULL) || (filter == NULL) || (attrs == NULL))
   {
     log_log(LOG_ERR, "myldap_search(): invalid parameter passed");
     errno = EINVAL;
@@ -1156,7 +1140,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
   LDAPControl *serverctrls[2];
   ber_int_t count;
   /* check parameters */
-  if (!is_valid_search(search))
+  if ((search == NULL) || (search->session == NULL) || (search->session->ld == NULL))
   {
     log_log(LOG_ERR, "myldap_get_entry(): invalid search passed");
     errno = EINVAL;
@@ -1924,7 +1908,7 @@ int myldap_passwd(MYLDAP_SESSION *session,
   int rc;
   struct berval ber_userdn, ber_oldpassword, ber_newpassword, ber_retpassword;
   /* check parameters */
-  if (!is_valid_session(session) || (userdn == NULL) || (newpasswd == NULL))
+  if ((session == NULL) || (userdn == NULL) || (newpasswd == NULL))
   {
     log_log(LOG_ERR, "myldap_passwd(): invalid parameter passed");
     errno = EINVAL;
@@ -1969,7 +1953,7 @@ int myldap_passwd(MYLDAP_SESSION *session,
 
 int myldap_modify(MYLDAP_SESSION *session, const char *dn, LDAPMod * mods[])
 {
-  if (!is_valid_session(session) || (dn == NULL))
+  if ((session == NULL) || (dn == NULL))
   {
     log_log(LOG_ERR, "myldap_passwd(): invalid parameter passed");
     errno = EINVAL;
@@ -1982,7 +1966,7 @@ int myldap_error_message(MYLDAP_SESSION *session, int rc,
                          char *buffer, size_t buflen)
 {
   char *msg_diag = NULL;
-  if (!is_valid_session(session) || (buffer == NULL) || (buflen <= 0))
+  if ((session == NULL) || (buffer == NULL) || (buflen <= 0))
   {
     log_log(LOG_ERR, "myldap_error_message(): invalid parameter passed");
     errno = EINVAL;
