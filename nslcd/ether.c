@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -78,10 +78,10 @@ static int mkfilter_ether_byname(const char *name,
 static int mkfilter_ether_byether(const char *addrstr,
                                   char *buffer, size_t buflen)
 {
-  /* FIXME: this has a bug when the directory has 01:00:0e:...
-     and we're looking for 1:0:e:... (leading zeros) */
+  /* Note: this only works if the address in LDAP has the preferred minimal
+     representation (e.g. 1:0:e:...) and not with extra leading zeros
+     (e.g. 01:00:0e:...) */
   /* there should be no characters that need escaping */
-  /* build filter */
   return mysnprintf(buffer, buflen, "(&%s(%s=%s))",
                     ether_filter, attmap_ether_macAddress, addrstr);
 }
