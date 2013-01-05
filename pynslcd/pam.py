@@ -102,7 +102,7 @@ class PAMAuthenticationRequest(PAMRequest):
         # authenticate as administrator, otherwise validate request as usual
         if not parameters['username'] and cfg.rootpwmoddn:
             # authenticate as rootpwmoddn
-            userdn = cfg.rootpwmoddn
+            binddn = cfg.rootpwmoddn
             # if the caller is root we will allow the use of rootpwmodpw
             if not parameters['password'] and self.calleruid == 0 and cfg.rootpwmodpw:
                 password = cfg.rootpwmodpw
@@ -112,20 +112,22 @@ class PAMAuthenticationRequest(PAMRequest):
                 raise ValueError('password missing')
         else:
             self.validate_request(parameters)
-            userdn = parameters['userdn']
+            binddn = parameters['userdn']
             password = parameters['password']
         # try authentication
         try:
-            try_bind(userdn, password)
-            logging.debug('bind successful')
-            self.write(parameters['username'])
+            try_bind(binddn, password)
         except ldap.INVALID_CREDENTIALS, e:
             try:
                 msg = e[0]['desc']
             except:
                 msg = str(e)
             logging.debug('bind failed: %s', msg)
-            self.write(parameters, constants.NSLCD_PAM_AUTH_ERR, msg)
+            self.write(parameters['username'], constants.NSLCD_PAM_AUTH_ERR, msg)
+            return
+        logging.debug('bind successful')
+        # FIXME: perform shadow attribute checks with check_shadow()
+        self.write(parameters['username'])
 
 
 class PAMAuthorisationRequest(PAMRequest):
@@ -140,7 +142,7 @@ class PAMAuthorisationRequest(PAMRequest):
                     tty=fp.read_string())
         # TODO: log call with parameters
 
-    def write(self, parameters, authz=constants.NSLCD_PAM_SUCCESS, msg=''):
+    def write(self, authz=constants.NSLCD_PAM_SUCCESS, msg=''):
         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
         self.fp.write_int32(authz)
         self.fp.write_string(msg)
@@ -176,11 +178,11 @@ class PAMAuthorisationRequest(PAMRequest):
         try:
             self.check_authzsearch(parameters)
         except StopIteration:
-            self.write(parameters, constants.NSLCD_PAM_PERM_DENIED,
+            self.write(constants.NSLCD_PAM_PERM_DENIED,
                        'LDAP authorisation check failed')
             return
         # all tests passed, return OK response
-        self.write(parameters)
+        self.write()
 
 
 #NSLCD_ACTION_PAM_SESS_O
