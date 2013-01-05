@@ -595,7 +595,6 @@ static void disconnect_cb(LDAP UNUSED(*ld), Sockbuf UNUSED(*sb),
    LDAP status code. */
 static int do_set_options(MYLDAP_SESSION *session)
 {
-  /* FIXME: move this to a global initialisation routine */
   int rc;
   struct timeval tv;
 #ifdef LDAP_OPT_CONNECT_CB

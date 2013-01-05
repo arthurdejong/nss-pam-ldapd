@@ -157,7 +157,7 @@ static void test_parse_map(void)
 
 static void test_parse_map_statement(void)
 {
-  /* FIXME: implement */
+  /* TODO: implement */
 }
 
 static void test_tokenize(void)
