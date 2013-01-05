@@ -2,7 +2,7 @@
    nslcd-prot.h - helper macros for reading and writing in protocol streams
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -92,7 +92,7 @@ static void debug_dump(const void *ptr, size_t size)
   }
 
 #define WRITE_INT32(fp, i)                                                  \
-  DEBUG_PRINT("WRITE_INT32 : var="__STRING(i)" int32=%d", (int)i);          \
+  DEBUG_PRINT("WRITE_INT32 : var="__STRING(i)" int32=%08x", (int)i);        \
   tmpint32 = htonl((int32_t)(i));                                           \
   WRITE(fp, &tmpint32, sizeof(int32_t))
 
@@ -171,7 +171,7 @@ static void debug_dump(const void *ptr, size_t size)
 #define READ_INT32(fp, i)                                                   \
   READ(fp, &tmpint32, sizeof(int32_t));                                     \
   (i) = ntohl(tmpint32);                                                    \
-  DEBUG_PRINT("READ_INT32 : var="__STRING(i)" int32=%d", (int)(i));
+  DEBUG_PRINT("READ_INT32 : var="__STRING(i)" int32==%08x", (int)(i));
 
 /* read a string in a fixed-size "normal" buffer */
 #define READ_STRING(fp, buffer)                                             \
