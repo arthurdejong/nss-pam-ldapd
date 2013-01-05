@@ -1,0 +1,658 @@
+2012-12-30  arthur
+
+	* [r1891] tests/lookup_netgroup.c: code style fix
+	* [r1890] nslcd/cfg.c: remove deprecated use_sasl, reconnect_tries,
+	  reconnect_maxsleeptime and tls_checkpeer options which have been
+	  replaced some time ago
+	* [r1889] nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c: remove
+	  undocumented restart configuration option
+	* [r1888] nslcd/cfg.c, nslcd/cfg.h, nslcd/myldap.c, nslcd/pam.c,
+	  tests/test_cfg.c, tests/test_myldap.c: reorganise and rename
+	  configuration options to be in line with manual page
+	* [r1887] nslcd/alias.c, nslcd/cfg.c, nslcd/cfg.h, nslcd/common.h,
+	  nslcd/ether.c, nslcd/group.c, nslcd/host.c, nslcd/myldap.c,
+	  nslcd/netgroup.c, nslcd/network.c, nslcd/nslcd.c, nslcd/pam.c,
+	  nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c,
+	  nslcd/shadow.c, tests/test_cfg.c, tests/test_myldap.c: remove the
+	  ldc_ prefix from struct ldap_config fields
+	* [r1886] configure.ac: use the newer style AM_INIT_AUTOMAKE
+	* [r1885] pynslcd/Makefile.am: add dependency information to
+	  regenerate constants.py
+	* [r1884] man/Makefile.am: make the way manual pages are selected
+	  for installation more maintainable
+
+2012-12-29  arthur
+
+	* [r1883] nslcd.h: remove unnecessary comment
+	* [r1882] .gitignore, tests, tests/Makefile.am,
+	  tests/lookup_netgroup.c: implement a lookup_netgroup command for
+	  systems that cannot use getent to list netgroups
+
+2012-12-28  arthur
+
+	* [r1881] nslcd/service.c: another comment typo fix
+	* [r1880] nslcd/cfg.h: re-order enum values to use the same order
+	  as elsewhere
+
+2012-12-24  arthur
+
+	* [r1879] nslcd/common.h, pynslcd/alias.py, pynslcd/shadow.py: more
+	  comment fixes
+	* [r1878] nslcd/pam.c: fix typo in comment
+
+2012-12-23  arthur
+
+	* [r1877] nslcd/alias.c, nslcd/common.h, nslcd/ether.c,
+	  nslcd/group.c, nslcd/host.c, nslcd/netgroup.c, nslcd/network.c,
+	  nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c,
+	  nslcd/shadow.c: move the action argument to NSLCD_HANDLE to the
+	  front
+	* [r1876] nss/aliases.c, nss/common.h, nss/ethers.c, nss/group.c,
+	  nss/hosts.c, nss/networks.c, nss/passwd.c, nss/protocols.c,
+	  nss/rpc.c, nss/services.c, nss/shadow.c: merge NSS_BYNAME and
+	  NSS_BYINT32 into NSS_BYGEN and rename to NSS_GETONE
+	* [r1875] nss/netgroup.c: adapt Solaris netgroup lookup code
+	* [r1874] nslcd.h, nslcd/netgroup.c, nss/netgroup.c,
+	  pynslcd/netgroup.py, tests/test_nsscmds.sh: update the netgroup
+	  by name request to have one result entry per netgroup with
+	  multiple rows within one result
+
+2012-12-22  arthur
+
+	* [r1873] common/dict.c, common/dict.h, common/expr.c,
+	  common/expr.h, common/nslcd-prot.c, common/nslcd-prot.h,
+	  common/set.c, common/set.h, common/tio.c, common/tio.h,
+	  compat/attrs.h, compat/daemon.c, compat/daemon.h, compat/ether.c,
+	  compat/ether.h, compat/getopt_long.c, compat/getopt_long.h,
+	  compat/getpeercred.c, compat/getpeercred.h, compat/ldap_compat.h,
+	  compat/ldap_initialize.c, compat/ldap_passwd_s.c,
+	  compat/nss_compat.h, compat/pam_compat.h,
+	  compat/pam_get_authtok.c, compat/pam_prompt.c, compat/socket.h,
+	  compat/strndup.c, compat/strndup.h, configure.ac, nslcd/alias.c,
+	  nslcd/attmap.c, nslcd/attmap.h, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/common.c, nslcd/common.h, nslcd/config.c, nslcd/ether.c,
+	  nslcd/group.c, nslcd/host.c, nslcd/log.c, nslcd/log.h,
+	  nslcd/myldap.c, nslcd/myldap.h, nslcd/netgroup.c,
+	  nslcd/network.c, nslcd/nslcd.c, nslcd/nsswitch.c, nslcd/pam.c,
+	  nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c,
+	  nslcd/shadow.c, nss/aliases.c, nss/bsdnss.c, nss/common.c,
+	  nss/common.h, nss/ethers.c, nss/group.c, nss/hosts.c,
+	  nss/netgroup.c, nss/networks.c, nss/passwd.c, nss/protocols.c,
+	  nss/prototypes.h, nss/rpc.c, nss/services.c, nss/shadow.c,
+	  nss/solnss.c, nss/solnss.h, pam/common.h, pam/pam.c,
+	  tests/common.h, tests/test_cfg.c, tests/test_common.c,
+	  tests/test_dict.c, tests/test_expr.c, tests/test_getpeercred.c,
+	  tests/test_myldap.c, tests/test_set.c, tests/test_tio.c: update C
+	  coding style to a more commonly used style
+
+2012-12-20  arthur
+
+	* [r1870] nslcd/passwd.c: don't process the passwd_byuid request at
+	  all for uids < nss_min_uid
+	* [r1868] nslcd/myldap.c: fix logic error (use && instead of & for
+	  logical and)
+
+2012-12-16  arthur
+
+	* [r1867] nss/ethers.c, nss/group.c, nss/passwd.c: also no longer
+	  use NSS_BYINT32() in Solaris (fixes r1864)
+	* [r1866] nslcd.h, nslcd/nslcd.c: make nslcd actions hexadecimal
+	  values with some structure to make debugging easier
+	* [r1865] nslcd.h, nslcd/pam.c, pam/common.h, pam/pam.c: change PAM
+	  protocol to be more consistent and simpler
+	* [r1864] common/nslcd-prot.h, nslcd.h, nslcd/common.c,
+	  nslcd/ether.c, nslcd/group.c, nslcd/nslcd.c, nslcd/passwd.c,
+	  nss/common.h, nss/ethers.c, nss/group.c, nss/networks.c,
+	  nss/passwd.c, nss/services.c, pam/common.h, pam/pam.c,
+	  pynslcd/group.py, pynslcd/passwd.py, pynslcd/tio.py: switch
+	  protocol from host byte order to network byte order and switch
+	  use of uid_t and gid_t in the protocol to int32
+
+2012-12-15  arthur
+
+	* [r1863] .gitignore, configure.ac, pynslcd, pynslcd/Makefile.am,
+	  pynslcd/config.py.in, pynslcd/constants.py.in,
+	  pynslcd/pynslcd.py, pynslcd/tio.py: merge config.py into
+	  constants.py and generate it from configure
+
+2012-12-14  arthur
+
+	* [r1859] pynslcd/pynslcd.py: remove unneeded brackets
+	* [r1858] tests/test_tio.c: also test for correct value of errno on
+	  timeout and make read and write timeout tests consistent
+	* [r1857] tests/test_tio.c: also output debugging info in
+	  test_timeout_reader test
+
+2012-12-08  arthur
+
+	* [r1848] common/tio.c: update microseconds when setting deadline,
+	  not seconds (thanks Julien Cristau)
+
+2012-12-06  arthur
+
+	* [r1846] common/tio.c, tests/test_tio.c: make test even more
+	  verbose and set number of writes back at 10000 to avoid issues
+	  with systems with large buffers
+
+2012-11-30  arthur
+
+	* [r1845] tests/test_tio.c: rephrase test to more clearly explain
+	  what we're testing and be a little more verbose
+
+2012-11-25  arthur
+
+	* [r1842] nslcd/nsswitch.c: remove inline keyword (should have been
+	  removed in r1840)
+	* [r1841] nslcd/nsswitch.c: if nsswitch.conf is missing a shadow
+	  entry, fall back to checking the passwd mapping
+	* [r1840] nslcd/common.h, nslcd/nsswitch.c, nslcd/passwd.c: move
+	  all nsswitch-parsing related functions to nsswitch.c
+	* [r1839] .gitignore: small fix for .gitignore
+
+2012-11-22  arthur
+
+	* [r1838] nslcd/group.c, nslcd/passwd.c, nslcd/protocol.c,
+	  nslcd/rpc.c, nslcd/service.c: ensure that values are logged as
+	  unsigned numbers
+
+2012-11-18  arthur
+
+	* [r1834] ChangeLog, NEWS, TODO, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml: get
+	  files ready for 0.8.12 release
+	* [r1833] configure.ac, nss/passwd.c: properly initialise
+	  passwd.pw_class on FreeBSD to empty string (was set to NULL due
+	  to the memset which was introduced in r1767)
+
+2012-11-17  arthur
+
+	* [r1832] pam/pam.c: use pam_modutil_getpwnam() instead of
+	  getpwnam() in PAM module
+	* [r1831] man/nslcd.8.xml, man/pynslcd.8.xml: fix formatting and
+	  improve consistency in manaual pages
+
+2012-11-16  arthur
+
+	* [r1828] man/nslcd.8.xml, man/pynslcd.8.xml: remove dots from
+	  short description in manual page
+	* [r1827] nslcd/config.c: fix comment in header
+
+2012-11-13  arthur
+
+	* [r1824] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/myldap.c,
+	  pynslcd/cfg.py, pynslcd/pynslcd.py: to only set
+	  LDAP_OPT_X_SASL_NOCANON if the sasl_canonicalize option is
+	  explicitly set in the configuration file
+
+2012-11-11  arthur
+
+	* [r1823] pam/pam.c: log the PAM error message along with the
+	  message from nslcd if it is available
+	* [r1822] .gitignore: add a .gitignore file for those working with
+	  git
+	* [r1821] common/nslcd-prot.c: set FD_CLOEXEC in NSS and PAM
+	  modules to ensure that nslcd file descriptor is not leaked to
+	  child processes
+	* [r1814] nslcd/myldap.c: log connection message before clearing
+	  error indicators to not hide these log messages in most
+	  configurations (fixes r1095)
+
+2012-10-28  arthur
+
+	* [r1812] nss/Makefile.am, nss/common.h, nss/group.c, nss/hosts.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/rpc.c,
+	  nss/services.c, nss/shadow.c, nss/solnss.h: refactor the
+	  read_result() functions into a common macro and move all the
+	  Solaris-specific definitions to solnss.h
+	* [r1811] nss/hosts.c: combine read_hostent_erronempty() and
+	  read_hostent_nextonempty() into a read_hostent() with a retry
+	  parameter
+	* [r1810] nss/group.c: fix typo (thanks Ted C. Cheng)
+
+2012-10-26  arthur
+
+	* [r1809] nss/group.c: fix buffer size checking in group by member
+	  NSS function on Solaris
+	* [r1808] nss/ethers.c, nss/group.c, nss/hosts.c, nss/netgroup.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/rpc.c,
+	  nss/services.c, nss/shadow.c: introduce ent2str() functions for
+	  each database (except ether and netgroup) and make buffer
+	  handling consistent (for Solaris)
+
+2012-10-21  arthur
+
+	* [r1807] configure.ac: remove duplicate checks from the configure
+	  script
+	* [r1806] man: ignore generated pynslcd manual pages
+	* [r1805] nss/passwd.c: fix a problem on Solaris (fixes r1793)
+	* [r1804] man/Makefile.am, man/nslcd.8.xml, man/pynslcd.8.xml: make
+	  a pynslcd manual page and install it if pynslcd is enabled (and
+	  small fix in nslcd manual page)
+
+2012-10-19  arthur
+
+	* [r1803] common/expr.c, tests/test_expr.c: allow attribute options
+	  in attribute mapping expressions
+
+2012-10-14  arthur
+
+	* [r1798] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.11 release
+	* [r1797] configure.ac: remove extra code that sets PACKAGE_URL
+	  (which isn't used)
+	* [r1796] nss/netgroup.c: do not clear the netgroup struct because
+	  it contains information for others as well (fixes r1767)
+	* [r1795] nslcd/nslcd.c: if nslcd creates the state directory, try
+	  to set the right ownership
+
+2012-10-13  arthur
+
+	* [r1794] nss/passwd.c: include missing definition (fixes r1793)
+	* [r1793] nss/passwd.c: do proper range checking and replace
+	  READ_RESULT macro with read_result function (Solaris)
+	* [r1792] nss/hosts.c: return correct error for buffer too small
+	  (Solaris)
+	* [r1791] HACKING, nss/ethers.c: in ether handling only write to
+	  output values and return correct error for buffer too small
+	* [r1790] nss/common.h: on Solaris initialise the output values
+	* [r1789] nss/common.h: fix code indentation
+	* [r1787] tests/common.h: provide alternatives for assertion
+	  failures on Solaris and FreeBSD
+	* [r1786] Makefile.am: pass CPPFLAGS and LDFLAGS to distcheck's
+	  configure and put nslcd.conf under prefix
+	* [r1785] pynslcd/Makefile.am: use $(top_srcdir)/nslcd.h instead of
+	  $< to avoid problems with FreeBSD's make
+	* [r1784] tests/test_tio.c: update tests to new tio interface
+	  (fixes r1783)
+
+2012-10-12  arthur
+
+	* [r1783] common/nslcd-prot.c, common/tio.c, common/tio.h,
+	  nslcd/nslcd.c: use poll() instead of select() for checking file
+	  descriptor activity to also correctly work if more than
+	  FD_SETSIZE files are already open
+	* [r1781] common/tio.c: check if the file descriptor can be stored
+	  in the select() file descriptor set
+	* [r1780] README: small clarifications to shadow properties
+
+2012-09-16  arthur
+
+	* [r1771] nslcd/passwd.c: fix problem storing negative hit to
+	  dn2uid cache (thanks scan-build)
+	* [r1770] nslcd/myldap.c: fix logic error when falling back to
+	  getting ranged attribute values for possibly binary attributes
+	  (thanks scan-build)
+	* [r1769] nslcd/myldap.c: swap values and buf assignment to avoid
+	  compiler alignment warnings
+
+2012-09-15  arthur
+
+	* [r1768] nslcd/passwd.c: only check nsswitch.conf for shadow
+	  mapping on glibc (Solaris shadow map follows passwd's mapping and
+	  FreeBSD doesn't have shadow at all)
+	* [r1767] nss/aliases.c, nss/ethers.c, nss/group.c, nss/hosts.c,
+	  nss/netgroup.c, nss/networks.c, nss/passwd.c, nss/protocols.c,
+	  nss/rpc.c, nss/services.c, nss/shadow.c: clear the *ent structs
+	  before writing fields to avoid problems with extra fields (fixes
+	  password field weirdness on Solaris 10)
+
+2012-09-14  arthur
+
+	* [r1766] nss/hosts.c: fix host name lookups for Solaris (tested
+	  with Solaris 10)
+	* [r1765] nss/ethers.c: use the standard constructor and destructor
+	  eventhough be->fp isn't used
+	* [r1764] nss/ethers.c: fix ethernet lookups for Solaris (tested
+	  with Solaris 10)
+	* [r1763] nslcd/alias.c, nslcd/ether.c, nslcd/group.c,
+	  nslcd/host.c, nslcd/netgroup.c, nslcd/network.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  grow all search filter buffers to 4096 bytes (thanks flavio)
+	* [r1762] nslcd/pam.c: rename filter_buffer to filter for
+	  consistency
+
+2012-09-08  arthur
+
+	* [r1761] ChangeLog, ChangeLog-2011, Makefile.am: archive older
+	  ChangeLog entries in year files
+
+2012-09-03  arthur
+
+	* [r1749] nss/group.c: a few fixes in the Solaris group lookups
+	* [r1748] nss/common.h, nss/passwd.c: fix indenting of code
+	* [r1747] nss/ethers.c, nss/group.c, nss/hosts.c, nss/netgroup.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/rpc.c,
+	  nss/services.c, nss/shadow.c: on Solaris store the errno value in
+	  NSS_ARGS(args)->erange
+
+2012-09-01  arthur
+
+	* [r1746] compat/pam_get_authtok.c: include a missing cast
+	* [r1745] nslcd/myldap.c: provide an alternative do_rebind() for
+	  Netscape LDAP
+	* [r1744] nslcd/nslcd.c: include an explicit cast to int when
+	  printing gid_t (fixes r1723)
+
+2012-08-31  arthur
+
+	* [r1736] depcomp: mark file as executable
+	* [r1735] man/nslcd.conf.5.xml, nslcd/cfg.c, pynslcd/cfg.py: change
+	  the default value of sasl_canonicalize to yes (thanks Marcus
+	  Moeller)
+
+2012-08-14  arthur
+
+	* [r1734] nslcd/myldap.c: remove variable definition that was
+	  introduced in r1626 but should have been removed in r1714
+	* [r1733] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/myldap.c, pynslcd/cfg.py, pynslcd/pynslcd.py: introduce a
+	  sasl_canonicalize option that will now, by default, disable
+	  reverse host name lookups in OpenLDAP
+
+2012-07-23  arthur
+
+	* [r1731] nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c: ensure
+	  that all places where stdint.h is included it is surrounded by
+	  #ifdefs
+
+2012-07-21  arthur
+
+	* [r1725] nslcd/common.h: only inlude stdint.h if we have it
+	* [r1724] nslcd/common.h: add missing includes to ensure all types
+	  are defined in header
+
+2012-07-20  arthur
+
+	* [r1723] configure.ac, nslcd/cfg.c, nslcd/cfg.h, nslcd/nslcd.c,
+	  pynslcd/pynslcd.py: on startup have the gid option default to the
+	  primary group of the specified user and load the user's
+	  supplementary groups
+	* [r1722] Makefile.am, ldapns.ldif: add an LDIF version of the
+	  ldapns.schema schema file
+
+2012-07-15  arthur
+
+	* [r1721] pynslcd/pynslcd.py: avoid setting tls_randfile twice and
+	  remove fixed FIXME (fixed in r1717)
+	* [r1720] pynslcd/pynslcd.py: set the pynslcd process name if
+	  possible
+	* [r1719] pynslcd/cfg.py: support getting
+	  pam_password_prohibit_message from configuration (but don't
+	  handle it yet)
+	* [r1718] pynslcd/cfg.py, pynslcd/pam.py: rename internal
+	  pam_authz_search to pam_authz_searches
+	* [r1717] pynslcd/pynslcd.py: properly set most LDAP options from
+	  configuration
+
+2012-07-11  arthur
+
+	* [r1716] pam/pam.c: also check pam_password_prohibit_message in
+	  pam_sm_authenticate() because Solaris does authentication before
+	  pam_sm_chauthtok() (thanks Ted Cheng)
+
+2012-07-08  arthur
+
+	* [r1715] man/nslcd.conf.5.xml, nslcd.h, nslcd/Makefile.am,
+	  nslcd/cfg.c, nslcd/cfg.h, nslcd/common.h, nslcd/config.c,
+	  nslcd/nslcd.c, nslcd/pam.c, pam/pam.c: implement a
+	  pam_password_prohibit_message nslcd.conf option to deny password
+	  change introducing a NSLCD_ACTION_CONFIG_GET request thanks to
+	  Ted Cheng
+	* [r1714] nslcd/myldap.c: remove duplicate getting of
+	  LDAP_OPT_DIAGNOSTIC_MESSAGE (should have been part of r1639)
+
+2012-07-07  arthur
+
+	* [r1713] AUTHORS, pynslcd/Makefile.am: ensure that cache.py is
+	  installed (thanks Jon Severinsson)
+
+2012-06-29  arthur
+
+	* [r1707] ChangeLog, NEWS, TODO, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.10 release
+	* [r1706] config.sub: update from latest automake
+
+2012-06-17  arthur
+
+	* [r1705] HACKING: minor documentation touch-ups
+
+2012-06-15  arthur
+
+	* [r1704] Makefile.am: install the default configuration file with
+	  reduced permissions (further protection for CVE-2009-1073)
+	* [r1703] nslcd/pam.c: log successful password change in nslcd and
+	  correctly terminate protocol on password change failure
+	* [r1702] pam/pam.c: fix problem with returning wrong error code
+	  when changing password with wrong old password (thanks Anton
+	  Helwart)
+
+2012-05-25  arthur
+
+	* [r1701] README: reword section on bug reporting and add a
+	  reference to the ignorecase option on the case sensitivity
+	  section
+	* [r1700] HACKING: include list of required libraries and do not
+	  put information on AUTHORS file on the patch requirements
+
+2012-05-20  arthur
+
+	* [r1695] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.9 release
+	* [r1694] nslcd/cfg.c, nslcd/common.c, nslcd/group.c,
+	  nslcd/passwd.c, nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c,
+	  nslcd/shadow.c: implement extra range checking of all numeric
+	  values
+
+2012-05-18  arthur
+
+	* [r1693] configure.ac, nslcd/myldap.c, nslcd/nslcd.c,
+	  nss/bsdnss.c: get rid of a few compiler warnings on FreeBSD
+
+2012-05-11  arthur
+
+	* [r1690] compat/nss_compat.h, configure.ac: provide a
+	  compatibility version of struct spwd for systems without it
+	* [r1688] compat/socket.h: fix fallback definition of SUN_LEN()
+	  (fixes r1686)
+
+2012-05-09  arthur
+
+	* [r1686] common/nslcd-prot.c, compat/Makefile.am,
+	  compat/nss_compat.h, compat/socket.h, nslcd/nslcd.c: provide a
+	  compatibility definition of SUN_LEN() for systems that lack it
+	* [r1685] nslcd/nslcd.c: remove duplicate debug from log message
+
+2012-05-04  arthur
+
+	* [r1684] pynslcd/pam.py: implement PAM authorisation check using
+	  pam_authz_search option
+	* [r1683] pynslcd/pam.py: ignore user-supplied DN for PAM requests
+	  and don't send it back
+	* [r1682] pynslcd/Makefile.am, pynslcd/attmap.py, pynslcd/cfg.py,
+	  pynslcd/expr.py: move expression handling to own module
+	* [r1681] pynslcd/common.py: ensure search also works without
+	  attribute map
+	* [r1680] pynslcd/cfg.py: small code style improvements
+	* [r1679] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/pam.c, pynslcd/cfg.py: allow the pam_authz_search option to
+	  be specified multiple times
+	* [r1678] nslcd/nslcd.c: don't try to close _SC_OPEN_MAX file
+	  descriptor
+
+2012-05-02  arthur
+
+	* [r1677] compat/pam_compat.h, compat/pam_get_authtok.c: move all
+	  PAM_AUTHTOK_RECOVERY_ERR compatibility definitions to
+	  compat/pam_compat.h
+
+2012-04-29  arthur
+
+	* [r1673] README: documentation touch-ups
+
+2012-04-27  arthur
+
+	* [r1662] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.8 release
+	* [r1660] Makefile.am, ldapns.schema: add a schema file that some
+	  people use for PAM
+
+2012-04-26  arthur
+
+	* [r1659] common/tio.c, common/tio.h, nss/common.h: split the
+	  functionality to read everything from the stream into a separate
+	  function and don't assume we use non-blocking IO (fix r1637)
+	* [r1658] tests/test_pamcmds.expect: support alternative unknown
+	  user response
+
+2012-04-22  arthur
+
+	* [r1653] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.7 release
+
+2012-04-09  arthur
+
+	* [r1649] compile, depcomp: update files from recent automake
+
+2012-03-23  arthur
+
+	* [r1643] nslcd/pam.c: increase buffer for pam_authz_search as
+	  suggested by Chris J Arges
+
+2012-03-16  arthur
+
+	* [r1642] pynslcd/attmap.py: support the upper and lower functions
+	  in attribute mapping expressions
+	* [r1641] pynslcd/attmap.py, pynslcd/common.py, pynslcd/pam.py:
+	  refactor some of the attribute mapping code to introduce a
+	  mapping instance that does the hard work and support the lower()
+	  and upper() attribute mapping functions
+	* [r1640] pynslcd/pynslcd.py: implement a getpeercred() function
+	* [r1639] nslcd/myldap.c: always try to log the ldap error, the
+	  diagnostic message and errno if available in a consistent format
+	* [r1638] nss/common.h: put both tio_skip() and tio_close() within
+	  if (fixes r1637) and clarify documentation of one part of the
+	  code
+
+2012-03-14  arthur
+
+	* [r1637] common/tio.c, common/tio.h, nss/common.h: read any
+	  remaining available data from the stream when closing the
+	  connection in a normal way to prevent Broken pipe messages in
+	  nslcd
+	* [r1636] common/tio.c: ensure that we don't try to read more than
+	  SSIZE_MAX bytes
+
+2012-03-13  arthur
+
+	* [r1635] AUTHORS, man/nslcd.conf.5.xml: document the fact that
+	  each thread opens it's own connection (patch by Chris Hiestand)
+	* [r1634] AUTHORS, man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/common.h, nslcd/group.c, nslcd/netgroup.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c:
+	  make whether or not to do case-sensitive filtering configurable
+	  (patch by Matthew L. Dailey)
+	* [r1633] compile, config.guess, config.sub, missing: update from
+	  latest automake
+
+2012-03-10  arthur
+
+	* [r1632] nslcd/cfg.c: when doing DNS queries for SRV records
+	  recognise default ldap and ldaps ports
+	* [r1631] nslcd/common.h: add missing include for
+	  _POSIX_HOST_NAME_MAX (thanks Mel Flynn)
+	* [r1628] nslcd/pam.c: fix log message for invalid pam_authz_search
+	  as reported by Matt Rae
+
+2012-03-05  arthur
+
+	* [r1627] nslcd/myldap.c: remove extra newline from log message
+	* [r1626] compat/ldap_compat.h, nslcd/myldap.c: provide more
+	  detailed logging information for ldap_start_tls_s() failures
+	  (based on a patch by Mel Flynn)
+
+2012-02-29  arthur
+
+	* [r1625] nslcd/myldap.c: log the first 10 search results in debug
+	  mode to make debugging easier (patch by Matthijs Kooijman)
+	* [r1624] README, nslcd/nslcd.c: update copyright years
+
+2012-01-29  arthur
+
+	* [r1616] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml: get files ready for
+	  0.8.6 release
+	* [r1615] pynslcd/alias.py, pynslcd/cache.py, pynslcd/common.py,
+	  pynslcd/ether.py, pynslcd/group.py, pynslcd/host.py,
+	  pynslcd/netgroup.py, pynslcd/network.py, pynslcd/passwd.py,
+	  pynslcd/protocol.py, pynslcd/rpc.py, pynslcd/service.py,
+	  pynslcd/shadow.py: implement a naive offline cache
+	* [r1614] pynslcd/group.py: small simplification in group lookups
+	  (member attributes are not requested anyway)
+	* [r1613] pynslcd/alias.py, pynslcd/common.py, pynslcd/ether.py,
+	  pynslcd/group.py, pynslcd/host.py, pynslcd/netgroup.py,
+	  pynslcd/network.py, pynslcd/passwd.py, pynslcd/protocol.py,
+	  pynslcd/rpc.py, pynslcd/service.py, pynslcd/shadow.py: split the
+	  result handling into a convert() and write() step
+
+2012-01-20  arthur
+
+	* [r1611] nslcd/netgroup.c, pynslcd/pynslcd.py: formatting fixes
+	* [r1605] nslcd/nslcd.c: clarify error messages and fix typo in
+	  comment
+	* [r1604] Makefile.am, debian: separate the Debian packaging from
+	  main sources switching to non-native Debian package (using
+	  svn-buildpackage)
+	* [r1603] pynslcd/Makefile.am: add missing Python modules to
+	  tarball
+
+2012-01-17  arthur
+
+	* [r1597] AUTHORS, nss/bsdnss.c: FreeBSD compilation fixes by Maxim
+	  Vetrov
+	* [r1596] common/nslcd-prot.c, nslcd/nslcd.c: pass the correct size
+	  of named socket address (fixes FreeBSD issue, fixes r1295)
+
+2012-01-16  arthur
+
+	* [r1595] INSTALL, compile, depcomp, install-sh, py-compile: update
+	  files from recent automake
+
+2012-01-09  jhrozek
+
+	* [r1594] nslcd/common.c: Add a matching va_end() for va_start() in
+	  mysnprintf()
+	* [r1593] nslcd/myldap.c: Warn if ldap_set_option() fails for
+	  LDAP_OPT_ERROR_NUM
+	* [r1592] nslcd/nslcd.c: Warn if fd cannot be closed in is_locked()
+	* [r1591] nslcd/netgroup.c: Check NULL return in write_netgroup()
+	* [r1590] nslcd/pam.c: Do not leak memory if myldap_escape() fails
+	* [r1589] nslcd/pam.c: Return from update_username() if
+	  myldap_get_values() returns invalid value
+
+	  If myldap_get_values() failed for the attmap_passwd_uid,
+	  nss-pam-ldapd
+	  would dereference a NULL pointer.
+
+2012-01-06  arthur
+
+	* [r1588] pynslcd/alias.py, pynslcd/cfg.py, pynslcd/common.py,
+	  pynslcd/ether.py, pynslcd/group.py, pynslcd/host.py,
+	  pynslcd/mypidfile.py, pynslcd/netgroup.py, pynslcd/network.py,
+	  pynslcd/pam.py, pynslcd/passwd.py, pynslcd/protocol.py,
+	  pynslcd/pynslcd.py, pynslcd/rpc.py: user the logging framework,
+	  handle exceptions properly and some cleanups
+
+2012-01-05  arthur
+
+	* [r1587] debian/po/zh_CN.po: updated Simplified Chinese (zh_CN)
+	  translation of debconf templates by zym
+
+2012-01-02  arthur
+
+	* [r1586] debian/po/nb.po: updated Norwegian Bokmål (nb)
+	  translation of debconf templates by Bjørn Steensrud
