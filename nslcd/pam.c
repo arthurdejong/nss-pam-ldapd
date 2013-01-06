@@ -379,6 +379,44 @@ static const char *autzsearch_var_get(const char *name, void *expander_attr)
            element in the dict) */
 }
 
+/* search all search bases using the provided filter */
+static int do_autzsearches(MYLDAP_SESSION *session, const char *filter)
+{
+  int i;
+  int rc;
+  const char *base;
+  static const char *attrs[2];
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  /* prepare the search */
+  attrs[0] = "dn";
+  attrs[1] = NULL;
+  /* perform a search for each search base */
+  log_log(LOG_DEBUG, "trying pam_authz_search \"%s\"", filter);
+  for (i = 0; (base = nslcd_cfg->bases[i]) != NULL; i++)
+  {
+    /* do the LDAP search */
+    search = myldap_search(session, base, LDAP_SCOPE_SUBTREE, filter, attrs, &rc);
+    if (search == NULL)
+    {
+      log_log(LOG_ERR, "pam_authz_search \"%s\" failed: %s",
+              filter, ldap_err2string(rc));
+      return rc;
+    }
+    /* try to get an entry */
+    entry = myldap_get_entry(search, &rc);
+    if (entry != NULL)
+    {
+      log_log(LOG_DEBUG, "pam_authz_search found \"%s\"", myldap_get_dn(entry));
+      return LDAP_SUCCESS;
+    }
+  }
+  log_log(LOG_ERR, "pam_authz_search \"%s\" found no matches", filter);
+  if (rc == LDAP_SUCCESS)
+    rc = LDAP_NO_SUCH_OBJECT;
+  return rc;
+}
+
 /* perform an authorisation search, returns an LDAP status code */
 static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
                           const char *username, const char *servicename,
@@ -389,10 +427,7 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
   const char *fqdn;
   DICT *dict = NULL;
   char filter[4096];
-  MYLDAP_SEARCH *search;
-  MYLDAP_ENTRY *entry;
-  static const char *attrs[2];
-  int rc;
+  int rc = LDAP_SUCCESS;
   const char *res;
   int i;
   /* go over all pam_authz_search options */
@@ -428,33 +463,10 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
               nslcd_cfg->pam_authz_searches[i]);
       return LDAP_LOCAL_ERROR;
     }
-    log_log(LOG_DEBUG, "trying pam_authz_search \"%s\"", filter);
-    /* perform the search */
-    attrs[0] = "dn";
-    attrs[1] = NULL;
-    /* FIXME: this only searches the first base */
-    search = myldap_search(session, nslcd_cfg->bases[0],
-                           LDAP_SCOPE_SUBTREE, filter, attrs, &rc);
-    if (search == NULL)
-    {
-      autzsearch_vars_free(dict);
-      dict_free(dict);
-      log_log(LOG_ERR, "pam_authz_search \"%s\" failed: %s",
-              filter, ldap_err2string(rc));
-      return rc;
-    }
-    /* try to get an entry */
-    entry = myldap_get_entry(search, &rc);
-    if (entry == NULL)
-    {
-      autzsearch_vars_free(dict);
-      dict_free(dict);
-      log_log(LOG_ERR, "pam_authz_search \"%s\" found no matches", filter);
-      if (rc == LDAP_SUCCESS)
-        rc = LDAP_NO_SUCH_OBJECT;
-      return rc;
-    }
-    log_log(LOG_DEBUG, "pam_authz_search found \"%s\"", myldap_get_dn(entry));
+    /* perform the actual searches on all bases */
+    rc = do_autzsearches(session, filter);
+    if (rc != LDAP_SUCCESS)
+      break;
   }
   /* we went over all pam_authz_search entries */
   if (dict != NULL)
@@ -462,7 +474,7 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
     autzsearch_vars_free(dict);
     dict_free(dict);
   }
-  return LDAP_SUCCESS;
+  return rc;
 }
 
 /* check authorisation of the user */
