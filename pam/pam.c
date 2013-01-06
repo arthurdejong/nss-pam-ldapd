@@ -710,9 +710,12 @@ int pam_sm_chauthtok(pam_handle_t *pamh, int flags,
       username = "";
     }
     else if ((ctx->oldpassword != NULL) && (*ctx->oldpassword != '\0'))
+    {
       /* we already have an old password stored (from a previous
-         authentication phase) so we'll use that */
-      oldpassword = ctx->oldpassword;
+         authentication phase) so we'll use that and don't re-check */
+      rc = pam_set_item(pamh, PAM_OLDAUTHTOK, ctx->oldpassword);
+      return remap_pam_rc(rc, &cfg);
+    }
     else
     {
       /* prompt the user for a password if needed */
@@ -739,13 +742,6 @@ int pam_sm_chauthtok(pam_handle_t *pamh, int flags,
                  pam_strerror(pamh, resp.res), username);
     else if (cfg.debug)
       pam_syslog(pamh, LOG_DEBUG, "authentication succeeded");
-    /* store password (needed if oldpassword was retreived from context) */
-    if (resp.res == PAM_SUCCESS)
-    {
-      rc = pam_set_item(pamh, PAM_OLDAUTHTOK, oldpassword);
-      if (rc != PAM_SUCCESS)
-        return remap_pam_rc(rc, &cfg);
-    }
     /* remap error code */
     return remap_pam_rc(resp.res, &cfg);
   }
