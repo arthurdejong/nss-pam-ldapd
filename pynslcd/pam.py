@@ -21,6 +21,7 @@
 import logging
 import socket
 
+from ldap.controls.ppolicy import PasswordPolicyControl, PasswordPolicyError
 from ldap.filter import escape_filter_chars as escape
 import ldap
 
@@ -34,12 +35,33 @@ def try_bind(userdn, password):
     # open a new connection
     conn = ldap.initialize(cfg.uri)
     # bind using the specified credentials
-    conn.simple_bind_s(userdn, password)
+    pwctrl = PasswordPolicyControl()
+    res, data, msgid, ctrls = conn.simple_bind_s(userdn, password, serverctrls=[pwctrl])
+    # go over bind result server controls
+    for ctrl in ctrls:
+        if ctrl.controlType == PasswordPolicyControl.controlType:
+            # found a password policy control
+            logging.debug('PasswordPolicyControl found: error=%s (%s), timeBeforeExpiration=%s, graceAuthNsRemaining=%s',
+                'None' if ctrl.error is None else PasswordPolicyError(ctrl.error).prettyPrint(),
+                ctrl.error, ctrl.timeBeforeExpiration, ctrl.graceAuthNsRemaining)
+            if ctrl.error == 0:  # passwordExpired
+                return constants.NSLCD_PAM_AUTHTOK_EXPIRED, PasswordPolicyError(ctrl.error).prettyPrint()
+            elif ctrl.error == 1:  # accountLocked
+                return constants.NSLCD_PAM_ACCT_EXPIRED, PasswordPolicyError(ctrl.error).prettyPrint()
+            elif ctrl.error == 2:  # changeAfterReset
+                return constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password change is needed after reset'
+            elif ctrl.error:
+                return constants.NSLCD_PAM_PERM_DENIED, PasswordPolicyError(ctrl.error).prettyPrint()
+            elif ctrl.timeBeforeExpiration is not None:
+                return constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password will expire in %d seconds' % ctrl.timeBeforeExpiration
+            elif ctrl.graceAuthNsRemaining is not None:
+                return constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password expired, %d grace logins left' % ctrl.graceAuthNsRemaining
     # perform search for own object (just to do any kind of search)
-    res = conn.search_s(userdn, ldap.SCOPE_BASE, '(objectClass=*)', ['dn', ])
-    for entry in res:
+    results = conn.search_s(userdn, ldap.SCOPE_BASE, '(objectClass=*)', ['dn', ])
+    for entry in results:
         if entry[0] == userdn:
-            return
+            return constants.NSLCD_PAM_SUCCESS, ''
+    # if our DN wasn't found raise an error to signal bind failure
     raise ldap.NO_SUCH_OBJECT()
 
 
@@ -116,18 +138,21 @@ class PAMAuthenticationRequest(PAMRequest):
             password = parameters['password']
         # try authentication
         try:
-            try_bind(binddn, password)
+            authz, msg = try_bind(userdn, password)
         except ldap.INVALID_CREDENTIALS, e:
             try:
                 msg = e[0]['desc']
             except:
                 msg = str(e)
             logging.debug('bind failed: %s', msg)
-            self.write(parameters['username'], constants.NSLCD_PAM_AUTH_ERR, msg)
+            self.write(parameters['username'], authc=constants.NSLCD_PAM_AUTH_ERR, msg=msg)
             return
-        logging.debug('bind successful')
+        if authz != constants.NSLCD_PAM_SUCCESS:
+            logging.warning('%s: %s: %s', userdn, parameters['username'], msg)
+        else:
+            logging.debug('bind successful')
         # FIXME: perform shadow attribute checks with check_shadow()
-        self.write(parameters['username'])
+        self.write(parameters['username'], authz=authz, msg=msg)
 
 
 class PAMAuthorisationRequest(PAMRequest):
