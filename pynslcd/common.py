@@ -25,7 +25,7 @@ import ldap
 import ldap.dn
 
 from attmap import Attributes
-import cache
+#import cache
 import cfg
 import constants
 
@@ -191,10 +191,11 @@ class Request(object):
         self.calleruid = calleruid
         module = sys.modules[self.__module__]
         self.search = getattr(module, 'Search', None)
-        if not hasattr(module, 'cache_obj'):
-            cache_cls = getattr(module, 'Cache', None)
-            module.cache_obj = cache_cls() if cache_cls else None
-        self.cache = module.cache_obj
+        #if not hasattr(module, 'cache_obj'):
+        #    cache_cls = getattr(module, 'Cache', None)
+        #    module.cache_obj = cache_cls() if cache_cls else None
+        #self.cache = module.cache_obj
+        self.cache = None
 
     def read_parameters(self, fp):
         """This method should read the parameters from ths stream and
@@ -205,7 +206,8 @@ class Request(object):
         """This method handles the request based on the parameters read
         with read_parameters()."""
         try:
-            with cache.con:
+            #with cache.con:
+            if True:
                 for dn, attributes in self.search(conn=self.conn, parameters=parameters):
                     for values in self.convert(dn, attributes, parameters):
                         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)

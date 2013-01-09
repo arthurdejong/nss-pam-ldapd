@@ -28,8 +28,11 @@ import sqlite3
 
 # TODO: probably create a config table
 
+
+
+
 # FIXME: store the cache in the right place and make it configurable
-filename = '/var/run/nslcd/cache.sqlite'
+filename = '/tmp/cache.sqlite'
 dirname = os.path.dirname(filename)
 if not os.path.isdir(dirname):
     os.mkdir(dirname)
