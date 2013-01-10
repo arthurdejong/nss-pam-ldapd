@@ -568,7 +568,7 @@ static int set_socket_timeout(LDAP *ld, time_t sec, suseconds_t usec)
 
 #ifdef LDAP_OPT_CONNECT_CB
 /* This function is called by the LDAP library once a connection was made to the server. We
-   set a timeout on the socket here, to catch netzwork timeouts during the ssl
+   set a timeout on the socket here, to catch network timeouts during the ssl
    handshake phase. It is configured with LDAP_OPT_CONNECT_CB. */
 static int connect_cb(LDAP *ld, Sockbuf UNUSED(*sb),
                       LDAPURLDesc UNUSED(*srv), struct sockaddr UNUSED(*addr),
