@@ -2,7 +2,7 @@
    test_cfg.c - simple test for the cfg module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2009, 2011, 2012 Arthur de Jong
+   Copyright (C) 2007, 2009, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -85,18 +85,26 @@ static void test_parse_boolean(void)
 
 static void test_parse_scope(void)
 {
-  assert(parse_scope(__FILE__, __LINE__, "sUb") == LDAP_SCOPE_SUBTREE);
-  assert(parse_scope(__FILE__, __LINE__, "subtree") == LDAP_SCOPE_SUBTREE);
-  assert(parse_scope(__FILE__, __LINE__, "ONE") == LDAP_SCOPE_ONELEVEL);
-  assert(parse_scope(__FILE__, __LINE__, "oneLevel") == LDAP_SCOPE_ONELEVEL);
-  assert(parse_scope(__FILE__, __LINE__, "base") == LDAP_SCOPE_BASE);
-  assert(parse_scope(__FILE__, __LINE__, "bASe") == LDAP_SCOPE_BASE);
+  struct ldap_config cfg;
+  handle_scope(__FILE__, __LINE__, "scope", "sUb", &cfg);
+  assert(cfg.scope == LDAP_SCOPE_SUBTREE);
+  handle_scope(__FILE__, __LINE__, "scope", "subtree", &cfg);
+  assert(cfg.scope == LDAP_SCOPE_SUBTREE);
+  handle_scope(__FILE__, __LINE__, "scope", "ONE", &cfg);
+  assert(cfg.scope == LDAP_SCOPE_ONELEVEL);
+  handle_scope(__FILE__, __LINE__, "scope", "oneLevel", &cfg);
+  assert(cfg.scope == LDAP_SCOPE_ONELEVEL);
+  handle_scope(__FILE__, __LINE__, "scope", "base", &cfg);
+  assert(cfg.scope == LDAP_SCOPE_BASE);
+  handle_scope(__FILE__, __LINE__, "scope", "bASe", &cfg);
+  assert(cfg.scope == LDAP_SCOPE_BASE);
   /* most other values should call exit():
-     assert(parse_scope(__FILE__, __LINE__, "BSAE") == LDAP_SCOPE_BASE); */
+     handle_scope(__FILE__, __LINE__, "scope", "BSAE", &cfg); */
 }
 
 static void test_parse_map(void)
 {
+  char *line;
   /* some general assertions */
   assert((LM_ALIASES != LM_ETHERS) && (LM_ALIASES != LM_GROUP) &&
          (LM_ALIASES != LM_HOSTS) && (LM_ALIASES != LM_NETGROUP) &&
@@ -129,30 +137,25 @@ static void test_parse_map(void)
   assert((LM_RPC != LM_SERVICES) && (LM_RPC != LM_SHADOW));
   assert((LM_SERVICES != LM_SHADOW));
   /* test supported names */
-  assert(parse_map("alIas") == LM_ALIASES);
-  assert(parse_map("AliasES") == LM_ALIASES);
-  assert(parse_map("ether") == LM_ETHERS);
-  assert(parse_map("ethers") == LM_ETHERS);
-  assert(parse_map("group") == LM_GROUP);
-  /* assert(parse_map("groups") == LM_GROUP); */
-  assert(parse_map("host") == LM_HOSTS);
-  assert(parse_map("hosts") == LM_HOSTS);
-  assert(parse_map("netgroup") == LM_NETGROUP);
-  /* assert(parse_map("netgroups") == LM_NETGROUP); */
-  assert(parse_map("network") == LM_NETWORKS);
-  assert(parse_map("networks") == LM_NETWORKS);
-  assert(parse_map("passwd") == LM_PASSWD);
-  /* assert(parse_map("passwds") == LM_PASSWD); */
-  assert(parse_map("protocol") == LM_PROTOCOLS);
-  assert(parse_map("protocols") == LM_PROTOCOLS);
-  assert(parse_map("rpc") == LM_RPC);
-  /* assert(parse_map("rpcs") == LM_RPC); */
-  assert(parse_map("service") == LM_SERVICES);
-  assert(parse_map("services") == LM_SERVICES);
-  assert(parse_map("shadow") == LM_SHADOW);
-  /* assert(parse_map("shadows") == LM_SHADOW); */
-  /* most other values should call exit():
-     assert(parse_map("publickey") == LM_SERVICES); */
+  line = "alIas"; assert(get_map(&line) == LM_ALIASES);
+  line = "AliasES"; assert(get_map(&line) == LM_ALIASES);
+  line = "ether"; assert(get_map(&line) == LM_ETHERS);
+  line = "ethers"; assert(get_map(&line) == LM_ETHERS);
+  line = "group"; assert(get_map(&line) == LM_GROUP);
+  line = "host"; assert(get_map(&line) == LM_HOSTS);
+  line = "hosts"; assert(get_map(&line) == LM_HOSTS);
+  line = "netgroup"; assert(get_map(&line) == LM_NETGROUP);
+  line = "network"; assert(get_map(&line) == LM_NETWORKS);
+  line = "networks"; assert(get_map(&line) == LM_NETWORKS);
+  line = "passwd"; assert(get_map(&line) == LM_PASSWD);
+  line = "protocol"; assert(get_map(&line) == LM_PROTOCOLS);
+  line = "protocols"; assert(get_map(&line) == LM_PROTOCOLS);
+  line = "rpc"; assert(get_map(&line) == LM_RPC);
+  line = "service"; assert(get_map(&line) == LM_SERVICES);
+  line = "services"; assert(get_map(&line) == LM_SERVICES);
+  line = "shadow"; assert(get_map(&line) == LM_SHADOW);
+  line = "unknown"; assert(get_map(&line) == LM_NONE);
+  line = "x"; assert(get_map(&line) == LM_NONE);
 }
 
 static void test_parse_map_statement(void)
@@ -163,19 +166,20 @@ static void test_parse_map_statement(void)
 static void test_tokenize(void)
 {
   /* this leaks memory all over the place */
-  char *line = strdup("yes this is 1 simple line");
+  char *line = strdup("yes  this is 1 simple line");
   char *str;
   int i;
-  get_boolean(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line, &i);
+  i = get_boolean(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line);
   assert(i == 1);
-  get_strdup(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line, &str);
+  str = get_strdup(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line);
   assertstreq(str, "this");
-  get_strdup(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line, &str);
+  str = get_strdup(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line);
   assertstreq(str, "is");
-  get_int(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line, &i);
+  i = get_int(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line);
   assert(i == 1);
-  get_restdup(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line, &str);
+  str = get_linedup(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line);
   assertstreq(str, "simple line");
+  get_eol(__FILE__, __LINE__, __PRETTY_FUNCTION__, &line);
 }
 
 extern const char *passwd_bases[];

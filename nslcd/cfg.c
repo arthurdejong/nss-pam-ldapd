@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -77,69 +77,6 @@ struct ldap_config *nslcd_cfg = NULL;
     exit(EXIT_FAILURE);                                                     \
   }
 
-/* prototype for parse_validnames_statement() because it is used in
-   cfg_defaults() */
-static void parse_validnames_statement(const char *filename, int lnr,
-                                       const char *keyword, char *line,
-                                       struct ldap_config *cfg);
-
-/* set the configuration information to the defaults */
-static void cfg_defaults(struct ldap_config *cfg)
-{
-  int i;
-  memset(cfg, 0, sizeof(struct ldap_config));
-  cfg->threads = 5;
-  cfg->uidname = NULL;
-  cfg->uid = NOUID;
-  cfg->gid = NOGID;
-  for (i = 0; i < (NSS_LDAP_CONFIG_MAX_URIS + 1); i++)
-  {
-    cfg->uris[i].uri = NULL;
-    cfg->uris[i].firstfail = 0;
-    cfg->uris[i].lastfail = 0;
-  }
-#ifdef LDAP_VERSION3
-  cfg->ldap_version = LDAP_VERSION3;
-#else /* LDAP_VERSION3 */
-  cfg->ldap_version = LDAP_VERSION2;
-#endif /* not LDAP_VERSION3 */
-  cfg->binddn = NULL;
-  cfg->bindpw = NULL;
-  cfg->rootpwmoddn = NULL;
-  cfg->rootpwmodpw = NULL;
-  cfg->sasl_mech = NULL;
-  cfg->sasl_realm = NULL;
-  cfg->sasl_authcid = NULL;
-  cfg->sasl_authzid = NULL;
-  cfg->sasl_secprops = NULL;
-#ifdef LDAP_OPT_X_SASL_NOCANON
-  cfg->sasl_canonicalize = -1;
-#endif /* LDAP_OPT_X_SASL_NOCANON */
-  for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-    cfg->bases[i] = NULL;
-  cfg->scope = LDAP_SCOPE_SUBTREE;
-  cfg->deref = LDAP_DEREF_NEVER;
-  cfg->referrals = 1;
-  cfg->bind_timelimit = 10;
-  cfg->timelimit = LDAP_NO_LIMIT;
-  cfg->idle_timelimit = 0;
-  cfg->reconnect_sleeptime = 1;
-  cfg->reconnect_retrytime = 10;
-#ifdef LDAP_OPT_X_TLS
-  cfg->ssl = SSL_OFF;
-#endif /* LDAP_OPT_X_TLS */
-  cfg->pagesize = 0;
-  cfg->nss_initgroups_ignoreusers = NULL;
-  cfg->nss_min_uid = 0;
-  parse_validnames_statement(__FILE__, __LINE__, "",
-                             "/^[a-z0-9._@$][a-z0-9._@$ \\~-]*[a-z0-9._@$~-]$/i",
-                             cfg);
-  cfg->ignorecase = 0;
-  for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)
-    cfg->pam_authz_searches[i] = NULL;
-  cfg->pam_password_prohibit_message = NULL;
-}
-
 /* simple strdup wrapper */
 static char *xstrdup(const char *s)
 {
@@ -158,12 +95,192 @@ static char *xstrdup(const char *s)
   return tmp;
 }
 
+/* check that the condition is true and otherwise log an error
+   and bail out */
+static inline void check_argumentcount(const char *filename, int lnr,
+                                       const char *keyword, int condition)
+{
+  if (!condition)
+  {
+    log_log(LOG_ERR, "%s:%d: %s: wrong number of arguments",
+            filename, lnr, keyword);
+    exit(EXIT_FAILURE);
+  }
+}
+
+/* This function works like strtok() except that the original string is
+   not modified and a pointer within str to where the next token begins
+   is returned (this can be used to pass to the function on the next
+   iteration). If no more tokens are found or the token will not fit in
+   the buffer, NULL is returned. */
+static char *get_token(char **line, char *buf, size_t buflen)
+{
+  size_t len;
+  if ((line == NULL) || (*line == NULL) || (**line == '\0') || (buf == NULL))
+    return NULL;
+  /* find the beginning and length of the token */
+  *line += strspn(*line, TOKEN_DELIM);
+  len = strcspn(*line, TOKEN_DELIM);
+  /* check if there is a token */
+  if (len == 0)
+  {
+    *line = NULL;
+    return NULL;
+  }
+  /* limit the token length */
+  if (len >= buflen)
+    len = buflen - 1;
+  /* copy the token */
+  strncpy(buf, *line, len);
+  buf[len] = '\0';
+  /* skip to the next token */
+  *line += len;
+  *line += strspn(*line, TOKEN_DELIM);
+  /* return the token */
+  return buf;
+}
+
+static char *get_strdup(const char *filename, int lnr,
+                        const char *keyword, char **line)
+{
+  char token[64];
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(line, token, sizeof(token)) != NULL);
+  return xstrdup(token);
+}
+
+static char *get_linedup(const char *filename, int lnr,
+                         const char *keyword, char **line)
+{
+  char *var;
+  check_argumentcount(filename, lnr, keyword, (*line != NULL) && (**line != '\0'));
+  var = xstrdup(*line);
+  /* mark that we are at the end of the line */
+  *line = NULL;
+  return var;
+}
+
+static void get_eol(const char *filename, int lnr,
+                    const char *keyword, char **line)
+{
+  if ((line != NULL) && (*line != NULL) && (**line != '\0'))
+  {
+    log_log(LOG_ERR, "%s:%d: %s: too may arguments", filename, lnr, keyword);
+    exit(EXIT_FAILURE);
+  }
+}
+
+static int get_int(const char *filename, int lnr,
+                   const char *keyword, char **line)
+{
+  char token[32];
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(line, token, sizeof(token)) != NULL);
+  /* TODO: replace with correct numeric parse */
+  return atoi(token);
+}
+
+static int parse_boolean(const char *filename, int lnr, const char *value)
+{
+  if ((strcasecmp(value, "on") == 0) ||
+      (strcasecmp(value, "yes") == 0) ||
+      (strcasecmp(value, "true") == 0) || (strcasecmp(value, "1") == 0))
+    return 1;
+  else if ((strcasecmp(value, "off") == 0) ||
+           (strcasecmp(value, "no") == 0) ||
+           (strcasecmp(value, "false") == 0) || (strcasecmp(value, "0") == 0))
+    return 0;
+  else
+  {
+    log_log(LOG_ERR, "%s:%d: not a boolean argument: '%s'",
+            filename, lnr, value);
+    exit(EXIT_FAILURE);
+  }
+}
+
+static int get_boolean(const char *filename, int lnr,
+                       const char *keyword, char **line)
+{
+  char token[32];
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(line, token, sizeof(token)) != NULL);
+  return parse_boolean(filename, lnr, token);
+}
+
+static void handle_uid(const char *filename, int lnr,
+                       const char *keyword, char *line,
+                       struct ldap_config *cfg)
+{
+  char token[32];
+  struct passwd *pwent;
+  char *tmp;
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(&line, token, sizeof(token)) != NULL);
+  get_eol(filename, lnr, keyword, &line);
+  /* check if it is a valid numerical uid */
+  errno = 0;
+  cfg->uid = strtouid(token, &tmp, 10);
+  if ((*token != '\0') && (*tmp == '\0') && (errno == 0) && (strchr(token, '-') == NULL))
+  {
+    /* get the name and gid from the passwd database */
+    pwent = getpwuid(cfg->uid);
+    if (pwent != NULL)
+    {
+      if (cfg->gid == NOGID)
+        cfg->gid = pwent->pw_gid;
+      cfg->uidname = strdup(pwent->pw_name);
+      return;
+    }
+  }
+  /* find by name */
+  pwent = getpwnam(token);
+  if (pwent != NULL)
+  {
+    cfg->uid = pwent->pw_uid;
+    if (cfg->gid == NOGID)
+      cfg->gid = pwent->pw_gid;
+    cfg->uidname = strdup(token);
+    return;
+  }
+  /* log an error */
+  log_log(LOG_ERR, "%s:%d: %s: not a valid uid: '%s'",
+          filename, lnr, keyword, token);
+  exit(EXIT_FAILURE);
+}
+
+static void handle_gid(const char *filename, int lnr,
+                       const char *keyword, char *line,
+                       gid_t *gid)
+{
+  char token[32];
+  struct group *grent;
+  char *tmp;
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(&line, token, sizeof(token)) != NULL);
+  get_eol(filename, lnr, keyword, &line);
+  /* check if it is a valid numerical gid */
+  errno = 0;
+  *gid = strtogid(token, &tmp, 10);
+  if ((*token != '\0') && (*tmp == '\0') && (errno == 0) && (strchr(token, '-') == NULL))
+    return;
+  /* find by name */
+  grent = getgrnam(token);
+  if (grent != NULL)
+  {
+    *gid = grent->gr_gid;
+    return;
+  }
+  /* log an error */
+  log_log(LOG_ERR, "%s:%d: %s: not a valid gid: '%s'",
+          filename, lnr, keyword, token);
+  exit(EXIT_FAILURE);
+}
+
 /* add a single URI to the list of URIs in the configuration */
 static void add_uri(const char *filename, int lnr,
                     struct ldap_config *cfg, const char *uri)
 {
   int i;
-  log_log(LOG_DEBUG, "add_uri(%s)", uri);
   /* find the place where to insert the URI */
   for (i = 0; cfg->uris[i].uri != NULL; i++)
     /* nothing */ ;
@@ -245,305 +362,8 @@ static void add_uris_from_dns(const char *filename, int lnr,
 }
 #endif /* HAVE_LDAP_DOMAIN2HOSTLIST */
 
-static int parse_boolean(const char *filename, int lnr, const char *value)
-{
-  if ((strcasecmp(value, "on") == 0) ||
-      (strcasecmp(value, "yes") == 0) ||
-      (strcasecmp(value, "true") == 0) || (strcasecmp(value, "1") == 0))
-    return 1;
-  else if ((strcasecmp(value, "off") == 0) ||
-           (strcasecmp(value, "no") == 0) ||
-           (strcasecmp(value, "false") == 0) || (strcasecmp(value, "0") == 0))
-    return 0;
-  else
-  {
-    log_log(LOG_ERR, "%s:%d: not a boolean argument: '%s'",
-            filename, lnr, value);
-    exit(EXIT_FAILURE);
-  }
-}
-
-static int parse_scope(const char *filename, int lnr, const char *value)
-{
-  if ((strcasecmp(value, "sub") == 0) || (strcasecmp(value, "subtree") == 0))
-    return LDAP_SCOPE_SUBTREE;
-  else if ((strcasecmp(value, "one") == 0) || (strcasecmp(value, "onelevel") == 0))
-    return LDAP_SCOPE_ONELEVEL;
-  else if (strcasecmp(value, "base") == 0)
-    return LDAP_SCOPE_BASE;
-  else
-  {
-    log_log(LOG_ERR, "%s:%d: not a scope argument: '%s'",
-            filename, lnr, value);
-    exit(EXIT_FAILURE);
-  }
-}
-
-/* This function works like strtok() except that the original string is
-   not modified and a pointer within str to where the next token begins
-   is returned (this can be used to pass to the function on the next
-   iteration). If no more tokens are found or the token will not fit in
-   the buffer, NULL is returned. */
-static char *get_token(char **line, char *buf, size_t buflen)
-{
-  size_t len;
-  if ((line == NULL) || (*line == NULL) || (**line == '\0') || (buf == NULL))
-    return NULL;
-  /* find the beginning and length of the token */
-  *line += strspn(*line, TOKEN_DELIM);
-  len = strcspn(*line, TOKEN_DELIM);
-  /* check if there is a token */
-  if (len == 0)
-  {
-    *line = NULL;
-    return NULL;
-  }
-  /* limit the token length */
-  if (len >= buflen)
-    len = buflen - 1;
-  /* copy the token */
-  strncpy(buf, *line, len);
-  buf[len] = '\0';
-  /* skip to the next token */
-  *line += len;
-  *line += strspn(*line, TOKEN_DELIM);
-  /* return the token */
-  return buf;
-}
-
-static enum ldap_map_selector parse_map(const char *value)
-{
-  if ((strcasecmp(value, "alias") == 0) || (strcasecmp(value, "aliases") == 0))
-    return LM_ALIASES;
-  else if ((strcasecmp(value, "ether") == 0) || (strcasecmp(value, "ethers") == 0))
-    return LM_ETHERS;
-  else if (strcasecmp(value, "group") == 0)
-    return LM_GROUP;
-  else if ((strcasecmp(value, "host") == 0) || (strcasecmp(value, "hosts") == 0))
-    return LM_HOSTS;
-  else if (strcasecmp(value, "netgroup") == 0)
-    return LM_NETGROUP;
-  else if ((strcasecmp(value, "network") == 0) || (strcasecmp(value, "networks") == 0))
-    return LM_NETWORKS;
-  else if (strcasecmp(value, "passwd") == 0)
-    return LM_PASSWD;
-  else if ((strcasecmp(value, "protocol") == 0) || (strcasecmp(value, "protocols") == 0))
-    return LM_PROTOCOLS;
-  else if (strcasecmp(value, "rpc") == 0)
-    return LM_RPC;
-  else if ((strcasecmp(value, "service") == 0) || (strcasecmp(value, "services") == 0))
-    return LM_SERVICES;
-  else if (strcasecmp(value, "shadow") == 0)
-    return LM_SHADOW;
-  else
-    return LM_NONE;
-}
-
-/* check to see if the line begins with a named map */
-static enum ldap_map_selector get_map(char **line)
-{
-  char token[32];
-  char *old;
-  enum ldap_map_selector map;
-  /* get the token */
-  old = *line;
-  if (get_token(line, token, sizeof(token)) == NULL)
-    return LM_NONE;
-  /* find the map if any */
-  map = parse_map(token);
-  /* unknown map, return to the previous state */
-  if (map == LM_NONE)
-    *line = old;
-  return map;
-}
-
-/* check that the condition is true and otherwise log an error
-   and bail out */
-static inline void check_argumentcount(const char *filename, int lnr,
-                                       const char *keyword, int condition)
-{
-  if (!condition)
-  {
-    log_log(LOG_ERR, "%s:%d: %s: wrong number of arguments",
-            filename, lnr, keyword);
-    exit(EXIT_FAILURE);
-  }
-}
-
-/* check that the file is not world readable */
-static void check_permissions(const char *filename, const char *keyword)
-{
-  struct stat sb;
-  /* get file status */
-  if (stat(filename, &sb))
-  {
-    log_log(LOG_ERR, "cannot stat() %s: %s", filename, strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-  /* check permissions */
-  if ((sb.st_mode & 0007) != 0)
-  {
-    if (keyword != NULL)
-      log_log(LOG_ERR, "%s: file should not be world readable if %s is set",
-              filename, keyword);
-    else
-      log_log(LOG_ERR, "%s: file should not be world readable", filename);
-    exit(EXIT_FAILURE);
-  }
-}
-
-static void get_int(const char *filename, int lnr,
-                    const char *keyword, char **line, int *var)
-{
-  /* TODO: refactor to have less overhead */
-  char token[32];
-  check_argumentcount(filename, lnr, keyword,
-                      get_token(line, token, sizeof(token)) != NULL);
-  /* TODO: replace with correct numeric parse */
-  *var = atoi(token);
-}
-
-static void get_boolean(const char *filename, int lnr,
-                        const char *keyword, char **line, int *var)
-{
-  /* TODO: refactor to have less overhead */
-  char token[32];
-  check_argumentcount(filename, lnr, keyword,
-                      get_token(line, token, sizeof(token)) != NULL);
-  *var = parse_boolean(filename, lnr, token);
-}
-
-static void get_strdup(const char *filename, int lnr,
-                       const char *keyword, char **line, char **var)
-{
-  /* TODO: refactor to have less overhead */
-  char token[64];
-  check_argumentcount(filename, lnr, keyword,
-                      get_token(line, token, sizeof(token)) != NULL);
-  /* Note: we have a memory leak here if a single variable is changed
-     multiple times in one config (deemed not a problem) */
-  *var = xstrdup(token);
-}
-
-static void get_restdup(const char *filename, int lnr,
-                        const char *keyword, char **line, char **var)
-{
-  check_argumentcount(filename, lnr, keyword, (*line != NULL) && (**line != '\0'));
-  /* Note: we have a memory leak here if a single mapping is changed
-     multiple times in one config (deemed not a problem) */
-  *var = xstrdup(*line);
-  /* mark that we are at the end of the line */
-  *line = NULL;
-}
-
-static void get_eol(const char *filename, int lnr,
-                    const char *keyword, char **line)
-{
-  if ((line != NULL) && (*line != NULL) && (**line != '\0'))
-  {
-    log_log(LOG_ERR, "%s:%d: %s: too may arguments", filename, lnr, keyword);
-    exit(EXIT_FAILURE);
-  }
-}
-
-static void get_uid(const char *filename, int lnr,
-                    const char *keyword, char **line,
-                    uid_t *var, gid_t *gid, char **str)
-{
-  /* TODO: refactor to have less overhead */
-  char token[32];
-  struct passwd *pwent;
-  char *tmp;
-  check_argumentcount(filename, lnr, keyword,
-                      get_token(line, token, sizeof(token)) != NULL);
-  /* check if it is a valid numerical uid */
-  errno = 0;
-  *var = strtouid(token, &tmp, 10);
-  if ((*token != '\0') && (*tmp == '\0') && (errno == 0) && (strchr(token, '-') == NULL))
-  {
-    /* get the name and gid from the passwd database */
-    pwent = getpwuid(*var);
-    if ((gid != NULL) && (*gid != NOGID))
-      *gid = pwent->pw_gid;
-    if (str != NULL)
-      *str = strdup(pwent->pw_name);
-    return;
-  }
-  /* find by name */
-  pwent = getpwnam(token);
-  if (pwent != NULL)
-  {
-    *var = pwent->pw_uid;
-    if ((gid != NULL) && (*gid != NOGID))
-      *gid = pwent->pw_gid;
-    if (str != NULL)
-      *str = strdup(token);
-    return;
-  }
-  /* log an error */
-  log_log(LOG_ERR, "%s:%d: %s: not a valid uid: '%s'",
-          filename, lnr, keyword, token);
-  exit(EXIT_FAILURE);
-}
-
-static void get_gid(const char *filename, int lnr,
-                    const char *keyword, char **line, gid_t *var)
-{
-  /* TODO: refactor to have less overhead */
-  char token[32];
-  struct group *grent;
-  char *tmp;
-  check_argumentcount(filename, lnr, keyword,
-                      get_token(line, token, sizeof(token)) != NULL);
-  /* check if it is a valid numerical gid */
-  errno = 0;
-  *var = strtogid(token, &tmp, 10);
-  if ((*token != '\0') && (*tmp == '\0') && (errno == 0) && (strchr(token, '-') == NULL))
-    return;
-  /* find by name */
-  grent = getgrnam(token);
-  if (grent != NULL)
-  {
-    *var = grent->gr_gid;
-    return;
-  }
-  /* log an error */
-  log_log(LOG_ERR, "%s:%d: %s: not a valid gid: '%s'",
-          filename, lnr, keyword, token);
-  exit(EXIT_FAILURE);
-}
-
-#ifdef LDAP_OPT_X_TLS
-static void get_reqcert(const char *filename, int lnr,
-                        const char *keyword, char **line, int *var)
-{
-  char token[16];
-  /* get token */
-  check_argumentcount(filename, lnr, keyword,
-                      get_token(line, token, sizeof(token)) != NULL);
-  /* check if it is a valid value for tls_reqcert option */
-  if ((strcasecmp(token, "never") == 0) || (strcasecmp(token, "no") == 0))
-    *var = LDAP_OPT_X_TLS_NEVER;
-  else if (strcasecmp(token, "allow") == 0)
-    *var = LDAP_OPT_X_TLS_ALLOW;
-  else if (strcasecmp(token, "try") == 0)
-    *var = LDAP_OPT_X_TLS_TRY;
-  else if ((strcasecmp(token, "demand") == 0) ||
-           (strcasecmp(token, "yes") == 0))
-    *var = LDAP_OPT_X_TLS_DEMAND;
-  else if (strcasecmp(token, "hard") == 0)
-    *var = LDAP_OPT_X_TLS_HARD;
-  else
-  {
-    log_log(LOG_ERR, "%s:%d: %s: invalid argument: '%s'",
-            filename, lnr, keyword, token);
-    exit(EXIT_FAILURE);
-  }
-}
-#endif /* LDAP_OPT_X_TLS */
-
-static void parse_krb5_ccname_statement(const char *filename, int lnr,
-                                        const char *keyword, char *line)
+static void handle_krb5_ccname(const char *filename, int lnr,
+                               const char *keyword, char *line)
 {
   char token[80];
   const char *ccname;
@@ -555,8 +375,8 @@ static void parse_krb5_ccname_statement(const char *filename, int lnr,
 #endif /* HAVE_GSS_KRB5_CCACHE_NAME */
   /* get token */
   check_argumentcount(filename, lnr, keyword,
-                      (get_token(&line, token, sizeof(token)) != NULL) &&
-                      (*line == '\0'));
+                      (get_token(&line, token, sizeof(token)) != NULL));
+  get_eol(filename, lnr, keyword, &line);
   /* set default kerberos ticket cache for SASL-GSSAPI */
   ccname = token;
   /* check that cache exists and is readable if it is a file */
@@ -593,141 +413,140 @@ static void parse_krb5_ccname_statement(const char *filename, int lnr,
 #endif /* HAVE_GSS_KRB5_CCACHE_NAME */
 }
 
-/* assigns the base to the specified variable doing domain expansion
-   and a simple check to avoid overwriting duplicate values */
-static void set_base(const char *filename, int lnr,
-                     const char *value, const char **var)
+/* check to see if the line begins with a named map */
+static enum ldap_map_selector get_map(char **line)
 {
+  char token[32];
+  char *old;
+  /* get the token */
+  old = *line;
+  if (get_token(line, token, sizeof(token)) == NULL)
+    return LM_NONE;
+  /* see if we found a map */
+  if ((strcasecmp(token, "alias") == 0) || (strcasecmp(token, "aliases") == 0))
+    return LM_ALIASES;
+  else if ((strcasecmp(token, "ether") == 0) || (strcasecmp(token, "ethers") == 0))
+    return LM_ETHERS;
+  else if (strcasecmp(token, "group") == 0)
+    return LM_GROUP;
+  else if ((strcasecmp(token, "host") == 0) || (strcasecmp(token, "hosts") == 0))
+    return LM_HOSTS;
+  else if (strcasecmp(token, "netgroup") == 0)
+    return LM_NETGROUP;
+  else if ((strcasecmp(token, "network") == 0) || (strcasecmp(token, "networks") == 0))
+    return LM_NETWORKS;
+  else if (strcasecmp(token, "passwd") == 0)
+    return LM_PASSWD;
+  else if ((strcasecmp(token, "protocol") == 0) || (strcasecmp(token, "protocols") == 0))
+    return LM_PROTOCOLS;
+  else if (strcasecmp(token, "rpc") == 0)
+    return LM_RPC;
+  else if ((strcasecmp(token, "service") == 0) || (strcasecmp(token, "services") == 0))
+    return LM_SERVICES;
+  else if (strcasecmp(token, "shadow") == 0)
+    return LM_SHADOW;
+  /* unknown map, return to the previous state */
+  *line = old;
+  return LM_NONE;
+}
+
+static void handle_base(const char *filename, int lnr,
+                        const char *keyword, char *line,
+                        struct ldap_config *cfg)
+{
+  const char **bases;
+  int i;
+  char *value;
 #ifdef HAVE_LDAP_DOMAIN2DN
   const char *domain = NULL;
   char *domaindn = NULL;
 #endif /* HAVE_LDAP_DOMAIN2DN */
+  /* get the list of bases to update */
+  bases = base_get_var(get_map(&line));
+  if (bases == NULL)
+    bases = cfg->bases;
+  /* rest of the line is the value */
+  value = get_linedup(filename, lnr, keyword, &line);
   /* if the base is "DOMAIN" use the domain name */
   if (strcasecmp(value, "domain") == 0)
   {
 #ifdef HAVE_LDAP_DOMAIN2DN
+    free(value);
     domain = cfg_getdomainname(filename, lnr);
     ldap_domain2dn(domain, &domaindn);
     log_log(LOG_DEBUG, "set_base(): setting base to %s from domain",
             domaindn);
-    value = domaindn;
+    value = xstrdup(domaindn);
 #else /* not HAVE_LDAP_DOMAIN2DN */
     log_log(LOG_ERR, "%s:%d: value %s not supported on platform",
             filename, lnr, value);
     exit(EXIT_FAILURE);
 #endif /* not HAVE_LDAP_DOMAIN2DN */
   }
-  /* set the new value */
-  *var = xstrdup(value);
-}
-
-/* parse the validnames statement */
-static void parse_validnames_statement(const char *filename, int lnr,
-                                       const char *keyword, char *line,
-                                       struct ldap_config *cfg)
-{
-  char *value;
-  int i, l;
-  int flags = REG_EXTENDED | REG_NOSUB;
-  /* the rest of the line should be a regular expression */
-  get_restdup(filename, lnr, keyword, &line, &value);
-  /* check formatting and update flags */
-  if (value[0] != '/')
-  {
-    log_log(LOG_ERR, "%s:%d: regular expression incorrectly delimited",
-            filename, lnr);
-    exit(EXIT_FAILURE);
-  }
-  l = strlen(value);
-  if (value[l - 1] == 'i')
-  {
-    value[l - 1] = '\0';
-    l--;
-    flags |= REG_ICASE;
-  }
-  if (value[l - 1] != '/')
-  {
-    log_log(LOG_ERR, "%s:%d: regular expression incorrectly delimited",
-            filename, lnr);
-    exit(EXIT_FAILURE);
-  }
-  value[l - 1] = '\0';
-  /* compile the regular expression */
-  if ((i = regcomp(&cfg->validnames, value + 1, flags)) != 0)
-  {
-    /* get the error message */
-    l = regerror(i, &cfg->validnames, NULL, 0);
-    value = malloc(l);
-    if (value == NULL)
-      log_log(LOG_ERR, "%s:%d: invalid regular expression", filename, lnr);
-    else
-    {
-      regerror(i, &cfg->validnames, value, l);
-      log_log(LOG_ERR, "%s:%d: invalid regular expression: %s",
-              filename, lnr, value);
-    }
-    exit(EXIT_FAILURE);
-  }
-}
-
-static void parse_pam_password_prohibit_message_statement(
-                const char *filename, int lnr, const char *keyword,
-                char *line, struct ldap_config *cfg)
-{
-  char *value;
-  int l;
-  /* the rest of the line should be a message */
-  get_restdup(filename, lnr, keyword, &line, &value);
-  /* strip quotes if they are present */
-  l = strlen(value);
-  if ((value[0] == '\"') && (value[l - 1] == '\"'))
-  {
-    value[l - 1] = '\0';
-    value++;
-  }
-  cfg->pam_password_prohibit_message = value;
-}
-
-static void parse_base_statement(const char *filename, int lnr,
-                                 const char *keyword, char *line,
-                                 struct ldap_config *cfg)
-{
-  const char **bases;
-  int i;
-  /* get the list of bases to update */
-  bases = base_get_var(get_map(&line));
-  if (bases == NULL)
-    bases = cfg->bases;
   /* find the spot in the list of bases */
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
-  {
     if (bases[i] == NULL)
     {
-      check_argumentcount(filename, lnr, keyword, (line != NULL) && (*line != '\0'));
-      set_base(filename, lnr, line, &bases[i]);
+      bases[i] = value;
       return;
     }
-  }
   /* no free spot found */
   log_log(LOG_ERR, "%s:%d: maximum number of base options per map (%d) exceeded",
           filename, lnr, NSS_LDAP_CONFIG_MAX_BASES);
   exit(EXIT_FAILURE);
 }
 
-static void parse_scope_statement(const char *filename, int lnr,
-                                  const char *keyword, char *line,
-                                  struct ldap_config *cfg)
+static void handle_scope(const char *filename, int lnr,
+                         const char *keyword, char *line,
+                         struct ldap_config *cfg)
 {
+  char token[32];
   int *var;
   var = scope_get_var(get_map(&line));
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(&line, token, sizeof(token)) != NULL);
+  get_eol(filename, lnr, keyword, &line);
   if (var == NULL)
     var = &cfg->scope;
-  check_argumentcount(filename, lnr, keyword, (line != NULL) && (*line != '\0'));
-  *var = parse_scope(filename, lnr, line);
+  if ((strcasecmp(token, "sub") == 0) || (strcasecmp(token, "subtree") == 0))
+    *var = LDAP_SCOPE_SUBTREE;
+  else if ((strcasecmp(token, "one") == 0) || (strcasecmp(token, "onelevel") == 0))
+    *var = LDAP_SCOPE_ONELEVEL;
+  else if (strcasecmp(token, "base") == 0)
+    *var = LDAP_SCOPE_BASE;
+  else
+  {
+    log_log(LOG_ERR, "%s:%d: not a scope argument: '%s'",
+            filename, lnr, token);
+    exit(EXIT_FAILURE);
+  }
 }
 
-static void parse_filter_statement(const char *filename, int lnr,
-                                   const char *keyword, char *line)
+static void handle_deref(const char *filename, int lnr,
+                         const char *keyword, char *line,
+                         struct ldap_config *cfg)
+{
+  char token[32];
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(&line, token, sizeof(token)) != NULL);
+  get_eol(filename, lnr, keyword, &line);
+  if (strcasecmp(token, "never") == 0)
+    cfg->deref = LDAP_DEREF_NEVER;
+  else if (strcasecmp(token, "searching") == 0)
+    cfg->deref = LDAP_DEREF_SEARCHING;
+  else if (strcasecmp(token, "finding") == 0)
+    cfg->deref = LDAP_DEREF_FINDING;
+  else if (strcasecmp(token, "always") == 0)
+    cfg->deref = LDAP_DEREF_ALWAYS;
+  else
+  {
+    log_log(LOG_ERR, "%s:%d: wrong argument: '%s'", filename, lnr, token);
+    exit(EXIT_FAILURE);
+  }
+}
+
+static void handle_filter(const char *filename, int lnr,
+                          const char *keyword, char *line)
 {
   const char **var;
   const char *map = line;
@@ -748,8 +567,8 @@ static void parse_filter_statement(const char *filename, int lnr,
 }
 
 /* this function modifies the statement argument passed */
-static void parse_map_statement(const char *filename, int lnr,
-                                const char *keyword, char *line)
+static void handle_map(const char *filename, int lnr,
+                       const char *keyword, char *line)
 {
   enum ldap_map_selector map;
   const char **var;
@@ -782,10 +601,43 @@ static void parse_map_statement(const char *filename, int lnr,
   }
 }
 
-/* this function modifies the statement argument passed */
-static void parse_nss_initgroups_ignoreusers_statement(
-                const char *filename, int lnr, const char *keyword,
-                char *line, struct ldap_config *cfg)
+#ifdef LDAP_OPT_X_TLS
+static void handle_tls_reqcert(const char *filename, int lnr,
+                               const char *keyword, char *line)
+{
+  char token[16];
+  int value, rc;
+  /* get token */
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(&line, token, sizeof(token)) != NULL);
+  get_eol(filename, lnr, keyword, &line);
+  /* check if it is a valid value for tls_reqcert option */
+  if ((strcasecmp(token, "never") == 0) || (strcasecmp(token, "no") == 0))
+    value = LDAP_OPT_X_TLS_NEVER;
+  else if (strcasecmp(token, "allow") == 0)
+    value = LDAP_OPT_X_TLS_ALLOW;
+  else if (strcasecmp(token, "try") == 0)
+    value = LDAP_OPT_X_TLS_TRY;
+  else if ((strcasecmp(token, "demand") == 0) ||
+           (strcasecmp(token, "yes") == 0))
+    value = LDAP_OPT_X_TLS_DEMAND;
+  else if (strcasecmp(token, "hard") == 0)
+    value = LDAP_OPT_X_TLS_HARD;
+  else
+  {
+    log_log(LOG_ERR, "%s:%d: %s: invalid argument: '%s'",
+            filename, lnr, keyword, token);
+    exit(EXIT_FAILURE);
+  }
+  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%s)", token);
+  LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_REQUIRE_CERT, &value);
+}
+#endif /* LDAP_OPT_X_TLS */
+
+/* this function modifies the line argument passed */
+static void handle_nss_initgroups_ignoreusers(
+                const char *filename, int lnr,
+                const char *keyword, char *line, struct ldap_config *cfg)
 {
   char token[MAX_LINE_LENGTH];
   char *username, *next;
@@ -828,17 +680,64 @@ static void parse_nss_initgroups_ignoreusers_statement(
   }
 }
 
-static void parse_pam_authz_search_statement(
-                const char *filename, int lnr, const char *keyword,
-                char *line, struct ldap_config *cfg)
+static void handle_validnames(const char *filename, int lnr,
+                              const char *keyword, char *line,
+                              struct ldap_config *cfg)
+{
+  char *value;
+  int i, l;
+  int flags = REG_EXTENDED | REG_NOSUB;
+  /* the rest of the line should be a regular expression */
+  value = get_linedup(filename, lnr, keyword, &line);
+  /* check formatting and update flags */
+  if (value[0] != '/')
+  {
+    log_log(LOG_ERR, "%s:%d: regular expression incorrectly delimited",
+            filename, lnr);
+    exit(EXIT_FAILURE);
+  }
+  l = strlen(value);
+  if (value[l - 1] == 'i')
+  {
+    value[l - 1] = '\0';
+    l--;
+    flags |= REG_ICASE;
+  }
+  if (value[l - 1] != '/')
+  {
+    log_log(LOG_ERR, "%s:%d: regular expression incorrectly delimited",
+            filename, lnr);
+    exit(EXIT_FAILURE);
+  }
+  value[l - 1] = '\0';
+  /* compile the regular expression */
+  if ((i = regcomp(&cfg->validnames, value + 1, flags)) != 0)
+  {
+    /* get the error message */
+    l = regerror(i, &cfg->validnames, NULL, 0);
+    value = malloc(l);
+    if (value == NULL)
+      log_log(LOG_ERR, "%s:%d: invalid regular expression", filename, lnr);
+    else
+    {
+      regerror(i, &cfg->validnames, value, l);
+      log_log(LOG_ERR, "%s:%d: invalid regular expression: %s",
+              filename, lnr, value);
+    }
+    exit(EXIT_FAILURE);
+  }
+}
+
+static void handle_pam_authz_search(
+                const char *filename, int lnr,
+                const char *keyword, char *line, struct ldap_config *cfg)
 {
   SET *set;
   const char **list;
   int i;
   check_argumentcount(filename, lnr, keyword, (line != NULL) && (*line != '\0'));
   /* find free spot for search filter */
-  for (i = 0;
-       (i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES) && (cfg->pam_authz_searches[i] != NULL);
+  for (i = 0; (i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES) && (cfg->pam_authz_searches[i] != NULL);
        i++)
     /* nothing */ ;
   if (i >= NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES)
@@ -874,6 +773,155 @@ static void parse_pam_authz_search_statement(
   /* free memory */
   set_free(set);
   free(list);
+}
+
+static void handle_pam_password_prohibit_message(
+                const char *filename, int lnr,
+                const char *keyword, char *line, struct ldap_config *cfg)
+{
+  char *value;
+  int l;
+  /* the rest of the line should be a message */
+  value = get_linedup(filename, lnr, keyword, &line);
+  /* strip quotes if they are present */
+  l = strlen(value);
+  if ((value[0] == '\"') && (value[l - 1] == '\"'))
+  {
+    value[l - 1] = '\0';
+    value++;
+  }
+  cfg->pam_password_prohibit_message = value;
+}
+
+/* This function tries to get the LDAP search base from the LDAP server.
+   Note that this returns a string that has been allocated with strdup().
+   For this to work the myldap module needs enough configuration information
+   to make an LDAP connection. */
+static MUST_USE char *get_base_from_rootdse(void)
+{
+  MYLDAP_SESSION *session;
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  const char *attrs[] = { "+", NULL };
+  int i;
+  int rc;
+  const char **values;
+  char *base = NULL;
+  /* initialize session */
+  session = myldap_create_session();
+  assert(session != NULL);
+  /* perform search */
+  search = myldap_search(session, "", LDAP_SCOPE_BASE, "(objectClass=*)",
+                         attrs, NULL);
+  if (search == NULL)
+  {
+    myldap_session_close(session);
+    return NULL;
+  }
+  /* go over results */
+  for (i = 0; (entry = myldap_get_entry(search, &rc)) != NULL; i++)
+  {
+    /* get defaultNamingContext */
+    values = myldap_get_values(entry, "defaultNamingContext");
+    if ((values != NULL) && (values[0] != NULL))
+    {
+      base = xstrdup(values[0]);
+      log_log(LOG_DEBUG, "get_basedn_from_rootdse(): found attribute defaultNamingContext with value %s",
+              values[0]);
+      break;
+    }
+    /* get namingContexts */
+    values = myldap_get_values(entry, "namingContexts");
+    if ((values != NULL) && (values[0] != NULL))
+    {
+      base = xstrdup(values[0]);
+      log_log(LOG_DEBUG, "get_basedn_from_rootdse(): found attribute namingContexts with value %s",
+              values[0]);
+      break;
+    }
+  }
+  /* clean up */
+  myldap_session_close(session);
+  return base;
+}
+
+/* check that the file is not world readable */
+static void check_permissions(const char *filename, const char *keyword)
+{
+  struct stat sb;
+  /* get file status */
+  if (stat(filename, &sb))
+  {
+    log_log(LOG_ERR, "cannot stat() %s: %s", filename, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  /* check permissions */
+  if ((sb.st_mode & 0007) != 0)
+  {
+    if (keyword != NULL)
+      log_log(LOG_ERR, "%s: file should not be world readable if %s is set",
+              filename, keyword);
+    else
+      log_log(LOG_ERR, "%s: file should not be world readable", filename);
+    exit(EXIT_FAILURE);
+  }
+}
+
+/* set the configuration information to the defaults */
+static void cfg_defaults(struct ldap_config *cfg)
+{
+  int i;
+  memset(cfg, 0, sizeof(struct ldap_config));
+  cfg->threads = 5;
+  cfg->uidname = NULL;
+  cfg->uid = NOUID;
+  cfg->gid = NOGID;
+  for (i = 0; i < (NSS_LDAP_CONFIG_MAX_URIS + 1); i++)
+  {
+    cfg->uris[i].uri = NULL;
+    cfg->uris[i].firstfail = 0;
+    cfg->uris[i].lastfail = 0;
+  }
+#ifdef LDAP_VERSION3
+  cfg->ldap_version = LDAP_VERSION3;
+#else /* LDAP_VERSION3 */
+  cfg->ldap_version = LDAP_VERSION2;
+#endif /* not LDAP_VERSION3 */
+  cfg->binddn = NULL;
+  cfg->bindpw = NULL;
+  cfg->rootpwmoddn = NULL;
+  cfg->rootpwmodpw = NULL;
+  cfg->sasl_mech = NULL;
+  cfg->sasl_realm = NULL;
+  cfg->sasl_authcid = NULL;
+  cfg->sasl_authzid = NULL;
+  cfg->sasl_secprops = NULL;
+#ifdef LDAP_OPT_X_SASL_NOCANON
+  cfg->sasl_canonicalize = -1;
+#endif /* LDAP_OPT_X_SASL_NOCANON */
+  for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
+    cfg->bases[i] = NULL;
+  cfg->scope = LDAP_SCOPE_SUBTREE;
+  cfg->deref = LDAP_DEREF_NEVER;
+  cfg->referrals = 1;
+  cfg->bind_timelimit = 10;
+  cfg->timelimit = LDAP_NO_LIMIT;
+  cfg->idle_timelimit = 0;
+  cfg->reconnect_sleeptime = 1;
+  cfg->reconnect_retrytime = 10;
+#ifdef LDAP_OPT_X_TLS
+  cfg->ssl = SSL_OFF;
+#endif /* LDAP_OPT_X_TLS */
+  cfg->pagesize = 0;
+  cfg->nss_initgroups_ignoreusers = NULL;
+  cfg->nss_min_uid = 0;
+  handle_validnames(__FILE__, __LINE__, "",
+                    "/^[a-z0-9._@$][a-z0-9._@$ \\~-]*[a-z0-9._@$~-]$/i",
+                    cfg);
+  cfg->ignorecase = 0;
+  for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)
+    cfg->pam_authz_searches[i] = NULL;
+  cfg->pam_password_prohibit_message = NULL;
 }
 
 static void cfg_read(const char *filename, struct ldap_config *cfg)
@@ -922,18 +970,16 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     /* runtime options */
     if (strcasecmp(keyword, "threads") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->threads);
+      cfg->threads = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "uid") == 0)
     {
-      get_uid(filename, lnr, keyword, &line, &cfg->uid, &cfg->gid, &cfg->uidname);
-      get_eol(filename, lnr, keyword, &line);
+      handle_uid(filename, lnr, keyword, line, cfg);
     }
     else if (strcasecmp(keyword, "gid") == 0)
     {
-      get_gid(filename, lnr, keyword, &line, &cfg->gid);
-      get_eol(filename, lnr, keyword, &line);
+      handle_gid(filename, lnr, keyword, line, &cfg->gid);
     }
     /* general connection options */
     else if (strcasecmp(keyword, "uri") == 0)
@@ -955,8 +1001,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
         else if (strncasecmp(token, "dns:", 4) == 0)
         {
 #ifdef HAVE_LDAP_DOMAIN2HOSTLIST
-          add_uris_from_dns(filename, lnr, cfg,
-                            strdup(token + sizeof("dns")));
+          add_uris_from_dns(filename, lnr, cfg, strdup(token + 4));
 #else /* not HAVE_LDAP_DOMAIN2HOSTLIST */
           log_log(LOG_ERR, "%s:%d: value %s not supported on platform",
                   filename, lnr, token);
@@ -969,51 +1014,51 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "ldap_version") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->ldap_version);
+      cfg->ldap_version = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "binddn") == 0)
     {
-      get_restdup(filename, lnr, keyword, &line, &cfg->binddn);
+      cfg->binddn = get_linedup(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "bindpw") == 0)
     {
       check_permissions(filename, keyword);
-      get_restdup(filename, lnr, keyword, &line, &cfg->bindpw);
+      cfg->bindpw = get_linedup(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "rootpwmoddn") == 0)
     {
-      get_restdup(filename, lnr, keyword, &line, &cfg->rootpwmoddn);
+      cfg->rootpwmoddn = get_linedup(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "rootpwmodpw") == 0)
     {
       check_permissions(filename, keyword);
-      get_restdup(filename, lnr, keyword, &line, &cfg->rootpwmodpw);
+      cfg->rootpwmodpw = get_linedup(filename, lnr, keyword, &line);
     }
     /* SASL authentication options */
     else if (strcasecmp(keyword, "sasl_mech") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &cfg->sasl_mech);
+      cfg->sasl_mech = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "sasl_realm") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &cfg->sasl_realm);
+      cfg->sasl_realm = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "sasl_authcid") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &cfg->sasl_authcid);
+      cfg->sasl_authcid = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "sasl_authzid") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &cfg->sasl_authzid);
+      cfg->sasl_authzid = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "sasl_secprops") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &cfg->sasl_secprops);
+      cfg->sasl_secprops = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
 #ifdef LDAP_OPT_X_SASL_NOCANON
@@ -1022,12 +1067,12 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
              (strcasecmp(keyword, "ldap_sasl_canonicalize") == 0) ||
              (strcasecmp(keyword, "sasl_canon") == 0))
     {
-      get_boolean(filename, lnr, keyword, &line, &cfg->sasl_canonicalize);
+      cfg->sasl_canonicalize = get_boolean(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "sasl_nocanon") == 0)
     {
-      get_boolean(filename, lnr, keyword, &line, &cfg->sasl_canonicalize);
+      cfg->sasl_canonicalize = get_boolean(filename, lnr, keyword, &line);
       cfg->sasl_canonicalize = !cfg->sasl_canonicalize;
       get_eol(filename, lnr, keyword, &line);
     }
@@ -1035,73 +1080,58 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     /* Kerberos authentication options */
     else if (strcasecmp(keyword, "krb5_ccname") == 0)
     {
-      parse_krb5_ccname_statement(filename, lnr, keyword, line);
+      handle_krb5_ccname(filename, lnr, keyword, line);
     }
     /* search/mapping options */
     else if (strcasecmp(keyword, "base") == 0)
     {
-      parse_base_statement(filename, lnr, keyword, line, cfg);
+      handle_base(filename, lnr, keyword, line, cfg);
     }
     else if (strcasecmp(keyword, "scope") == 0)
     {
-      parse_scope_statement(filename, lnr, keyword, line, cfg);
+      handle_scope(filename, lnr, keyword, line, cfg);
     }
     else if (strcasecmp(keyword, "deref") == 0)
     {
-      check_argumentcount(filename, lnr, keyword,
-                          (get_token(&line, token, sizeof(token)) != NULL));
-      if (strcasecmp(token, "never") == 0)
-        cfg->deref = LDAP_DEREF_NEVER;
-      else if (strcasecmp(token, "searching") == 0)
-        cfg->deref = LDAP_DEREF_SEARCHING;
-      else if (strcasecmp(token, "finding") == 0)
-        cfg->deref = LDAP_DEREF_FINDING;
-      else if (strcasecmp(token, "always") == 0)
-        cfg->deref = LDAP_DEREF_ALWAYS;
-      else
-      {
-        log_log(LOG_ERR, "%s:%d: wrong argument: '%s'", filename, lnr, token);
-        exit(EXIT_FAILURE);
-      }
-      get_eol(filename, lnr, keyword, &line);
+      handle_deref(filename, lnr, keyword, line, cfg);
     }
     else if (strcasecmp(keyword, "referrals") == 0)
     {
-      get_boolean(filename, lnr, keyword, &line, &cfg->referrals);
+      cfg->referrals = get_boolean(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "filter") == 0)
     {
-      parse_filter_statement(filename, lnr, keyword, line);
+      handle_filter(filename, lnr, keyword, line);
     }
     else if (strcasecmp(keyword, "map") == 0)
     {
-      parse_map_statement(filename, lnr, keyword, line);
+      handle_map(filename, lnr, keyword, line);
     }
     /* timing/reconnect options */
     else if (strcasecmp(keyword, "bind_timelimit") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->bind_timelimit);
+      cfg->bind_timelimit = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "timelimit") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->timelimit);
+      cfg->timelimit = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "idle_timelimit") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->idle_timelimit);
+      cfg->idle_timelimit = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (!strcasecmp(keyword, "reconnect_sleeptime"))
     {
-      get_int(filename, lnr, keyword, &line, &cfg->reconnect_sleeptime);
+      cfg->reconnect_sleeptime = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "reconnect_retrytime") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->reconnect_retrytime);
+      cfg->reconnect_retrytime = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
 #ifdef LDAP_OPT_X_TLS
@@ -1119,14 +1149,11 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "tls_reqcert") == 0)
     {
-      get_reqcert(filename, lnr, keyword, &line, &i);
-      get_eol(filename, lnr, keyword, &line);
-      log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%d)", i);
-      LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_REQUIRE_CERT, &i);
+      handle_tls_reqcert(filename, lnr, keyword, line);
     }
     else if (strcasecmp(keyword, "tls_cacertdir") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &value);
+      value = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
       /* TODO: check that the path is valid */
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CACERTDIR,\"%s\")",
@@ -1137,7 +1164,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     else if ((strcasecmp(keyword, "tls_cacertfile") == 0) ||
              (strcasecmp(keyword, "tls_cacert") == 0))
     {
-      get_strdup(filename, lnr, keyword, &line, &value);
+      value = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
       /* TODO: check that the path is valid */
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CACERTFILE,\"%s\")",
@@ -1147,7 +1174,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "tls_randfile") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &value);
+      value = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
       /* TODO: check that the path is valid */
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_RANDOM_FILE,\"%s\")",
@@ -1157,7 +1184,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "tls_ciphers") == 0)
     {
-      get_restdup(filename, lnr, keyword, &line, &value);
+      value = get_linedup(filename, lnr, keyword, &line);
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CIPHER_SUITE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CIPHER_SUITE, value);
@@ -1165,7 +1192,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "tls_cert") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &value);
+      value = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
       /* TODO: check that the path is valid */
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CERTFILE,\"%s\")",
@@ -1175,7 +1202,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "tls_key") == 0)
     {
-      get_strdup(filename, lnr, keyword, &line, &value);
+      value = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
       /* TODO: check that the path is valid */
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_KEYFILE,\"%s\")",
@@ -1187,36 +1214,35 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     /* other options */
     else if (strcasecmp(keyword, "pagesize") == 0)
     {
-      get_int(filename, lnr, keyword, &line, &cfg->pagesize);
+      cfg->pagesize = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "nss_initgroups_ignoreusers") == 0)
     {
-      parse_nss_initgroups_ignoreusers_statement(filename, lnr, keyword, line,
+      handle_nss_initgroups_ignoreusers(filename, lnr, keyword, line,
                                                  cfg);
     }
     else if (strcasecmp(keyword, "nss_min_uid") == 0)
     {
-      get_uid(filename, lnr, keyword, &line, &cfg->nss_min_uid, NULL, NULL);
+      cfg->nss_min_uid = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "validnames") == 0)
     {
-      parse_validnames_statement(filename, lnr, keyword, line, cfg);
+      handle_validnames(filename, lnr, keyword, line, cfg);
     }
     else if (strcasecmp(keyword, "ignorecase") == 0)
     {
-      get_boolean(filename, lnr, keyword, &line, &cfg->ignorecase);
+      cfg->ignorecase = get_boolean(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "pam_authz_search") == 0)
     {
-      parse_pam_authz_search_statement(filename, lnr, keyword, line, cfg);
+      handle_pam_authz_search(filename, lnr, keyword, line, cfg);
     }
     else if (strcasecmp(keyword, "pam_password_prohibit_message") == 0)
     {
-      parse_pam_password_prohibit_message_statement(filename, lnr, keyword,
-                                                    line, cfg);
+      handle_pam_password_prohibit_message(filename, lnr, keyword, line, cfg);
     }
 #ifdef ENABLE_CONFIGFILE_CHECKING
     /* fallthrough */
@@ -1285,58 +1311,6 @@ static void bindpw_read(const char *filename, struct ldap_config *cfg)
   fclose(fp);
 }
 #endif /* NSLCD_BINDPW_PATH */
-
-/* This function tries to get the LDAP search base from the LDAP server.
-   Note that this returns a string that has been allocated with strdup().
-   For this to work the myldap module needs enough configuration information
-   to make an LDAP connection. */
-static MUST_USE char *get_base_from_rootdse(void)
-{
-  MYLDAP_SESSION *session;
-  MYLDAP_SEARCH *search;
-  MYLDAP_ENTRY *entry;
-  const char *attrs[] = { "+", NULL };
-  int i;
-  int rc;
-  const char **values;
-  char *base = NULL;
-  /* initialize session */
-  session = myldap_create_session();
-  assert(session != NULL);
-  /* perform search */
-  search = myldap_search(session, "", LDAP_SCOPE_BASE, "(objectClass=*)",
-                         attrs, NULL);
-  if (search == NULL)
-  {
-    myldap_session_close(session);
-    return NULL;
-  }
-  /* go over results */
-  for (i = 0; (entry = myldap_get_entry(search, &rc)) != NULL; i++)
-  {
-    /* get defaultNamingContext */
-    values = myldap_get_values(entry, "defaultNamingContext");
-    if ((values != NULL) && (values[0] != NULL))
-    {
-      base = xstrdup(values[0]);
-      log_log(LOG_DEBUG, "get_basedn_from_rootdse(): found attribute defaultNamingContext with value %s",
-              values[0]);
-      break;
-    }
-    /* get namingContexts */
-    values = myldap_get_values(entry, "namingContexts");
-    if ((values != NULL) && (values[0] != NULL))
-    {
-      base = xstrdup(values[0]);
-      log_log(LOG_DEBUG, "get_basedn_from_rootdse(): found attribute namingContexts with value %s",
-              values[0]);
-      break;
-    }
-  }
-  /* clean up */
-  myldap_session_close(session);
-  return base;
-}
 
 void cfg_init(const char *fname)
 {
