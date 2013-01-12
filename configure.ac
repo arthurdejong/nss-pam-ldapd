@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ AC_PREREQ(2.61)
 AC_COPYRIGHT(
 [Copyright (C) 2006 Luke Howard
 Copyright (C) 2006 West Consulting
-Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
 This configure script is derived from configure.ac which is free software;
 you can redistribute it and/or modify it under the terms of the GNU Lesser
@@ -83,7 +83,7 @@ AC_ARG_ENABLE(warnings,
                              [enable extra compiler warnings (gcc)]),
               [if test "x$enableval" != "no"
                then
-                 CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations -Wunused -Wformat=2 -Wswitch-default -Wswitch-enum -Wfloat-equal -Wbad-function-cast -Wredundant-decls"
+                 CFLAGS="$CFLAGS -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Waggregate-return -Wmissing-declarations -Wunused -Wformat=2 -Wswitch-default -Wswitch-enum -Wfloat-equal -Wbad-function-cast -Wredundant-decls"
                  DESIRED_CFLAGS="$DESIRED_CFLAGS -Wextra -Wdeclaration-after-statement -Werror-implicit-function-declaration"
                fi])
 test_gcc_flag() {
