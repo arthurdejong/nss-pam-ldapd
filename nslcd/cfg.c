@@ -851,6 +851,11 @@ static void parse_pam_authz_search_statement(
   /* check the variables used in the expression */
   set = expr_vars(cfg->pam_authz_searches[i], NULL);
   list = set_tolist(set);
+  if (list == NULL)
+  {
+    log_log(LOG_CRIT, "malloc() failed to allocate memory");
+    exit(EXIT_FAILURE);
+  }
   for (i = 0; list[i] != NULL; i++)
   {
     if ((strcmp(list[i], "username") != 0) &&
