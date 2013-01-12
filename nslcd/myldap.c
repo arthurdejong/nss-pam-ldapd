@@ -1410,7 +1410,7 @@ char *myldap_cpy_dn(MYLDAP_ENTRY *entry, char *buf, size_t buflen)
 /* Perform ranged retreival of attributes.
    http://msdn.microsoft.com/en-us/library/aa367017(vs.85).aspx
    http://www.tkk.fi/cc/docs/kerberos/draft-kashi-incremental-00.txt */
-static SET *myldap_get_ranged_values(MYLDAP_ENTRY *entry, const char *attr)
+static char **myldap_get_ranged_values(MYLDAP_ENTRY *entry, const char *attr)
 {
   char **values;
   char *attn;
@@ -1491,7 +1491,13 @@ static SET *myldap_get_ranged_values(MYLDAP_ENTRY *entry, const char *attr)
   if (search != NULL)
     myldap_search_close(search);
   /* return the contents of the set as a list */
-  return set;
+  if (set == NULL)
+    return NULL;
+  values = (char **)set_tolist(set);
+  set_free(set);
+  if (values == NULL)
+    log_log(LOG_CRIT, "myldap_get_ranged_values(): malloc() failed to allocate memory");
+  return values;
 }
 
 /* Simple wrapper around ldap_get_values(). */
@@ -1500,7 +1506,6 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry, const char *attr)
   char **values;
   int rc;
   int i;
-  SET *set;
   /* check parameters */
   if (!is_valid_entry(entry))
   {
@@ -1533,20 +1538,19 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry, const char *attr)
     {
       /* we have a success code but no values, let's try to get ranged
          values */
-      set = myldap_get_ranged_values(entry, attr);
-      if (set == NULL)
+      values = myldap_get_ranged_values(entry, attr);
+      if (values == NULL)
         return NULL;
       /* store values entry so we can free it later on */
       for (i = 0; i < MAX_RANGED_ATTRIBUTES_PER_ENTRY; i++)
         if (entry->rangedattributevalues[i] == NULL)
         {
-          entry->rangedattributevalues[i] = (char **)set_tolist(set);
-          set_free(set);
+          entry->rangedattributevalues[i] = values;
           return (const char **)entry->rangedattributevalues[i];
         }
       /* we found no room to store the values */
       log_log(LOG_ERR, "ldap_get_values() couldn't store results, increase MAX_RANGED_ATTRIBUTES_PER_ENTRY");
-      set_free(set);
+      free(values);
       return NULL;
     }
     else
@@ -1610,7 +1614,6 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *attr)
   struct berval **bvalues;
   int rc;
   int i;
-  SET *set;
   /* check parameters */
   if (!is_valid_entry(entry))
   {
@@ -1644,16 +1647,7 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *attr)
     {
       /* we have a success code but no values, let's try to get ranged
          values */
-      set = myldap_get_ranged_values(entry, attr);
-      if (set == NULL)
-        return NULL;
-      values = set_tolist(set);
-      set_free(set);
-      if (values == NULL)
-      {
-        log_log(LOG_CRIT, "myldap_get_values_len(): malloc() failed to allocate memory");
-        return NULL;
-      }
+      values = (const char **)myldap_get_ranged_values(entry, attr);
     }
     else
     {
