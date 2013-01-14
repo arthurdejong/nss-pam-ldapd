@@ -1,7 +1,7 @@
 /*
    lookup_netgroup.c - simple lookup code for netgroups
 
-   Copyright (C) 2012 Arthur de Jong
+   Copyright (C) 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -38,11 +38,15 @@ int main(int argc,char *argv[])
     exit(EXIT_FAILURE);
   }
   /* start lookup */
+#ifdef SETNETGRENT_RETURNS_VOID
+  setnetgrent(argv[1]);
+#else /* not SETNETGRENT_RETURNS_VOID */
   if (setnetgrent(argv[1]) != 0)
   {
     /* output nothing */
     exit(EXIT_FAILURE);
   }
+#endif /* not SETNETGRENT_RETURNS_VOID */
   fprintf(stdout, "%-20s", argv[1]);
   while (getnetgrent(&host, &user, &domain) != 0)
   {

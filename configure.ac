@@ -341,6 +341,24 @@ AC_CHECK_TYPE(socklen_t,,
     #include <sys/types.h>
     #include <sys/socket.h>])
 
+# check the return type of setnetgrent()
+AC_CACHE_CHECK(
+    [return type of setnetgrent],
+    nss_pam_ldapd_cv_setnetgrent_type,
+    [AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([[
+            #include <netdb.h>
+            ]], [[
+            return setnetgrent(0);
+            ]])],
+        [nss_pam_ldapd_cv_setnetgrent_type=int],
+        [nss_pam_ldapd_cv_setnetgrent_type=void]) ])
+if test "x$nss_pam_ldapd_cv_setnetgrent_type" = "xvoid"
+then
+  AC_DEFINE(SETNETGRENT_RETURNS_VOID, 1,
+            [Define to 1 if setnetgrent() returns void.])
+fi
+
 # NSS module-specific tests
 if test "x$enable_nss" = "xyes"
 then
