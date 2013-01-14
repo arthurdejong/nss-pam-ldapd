@@ -1,7 +1,7 @@
 
 # cfg.py - module for accessing configuration information
 #
-# Copyright (C) 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -216,7 +216,7 @@ def read(filename):
                      line, re.IGNORECASE)
         if m:
             mod = maps[str(m.group('map')).lower()]
-            mod.scope = _scope_options[m.group('keyword').lower()]
+            mod.scope = _scope_options[m.group('value').lower()]
             continue
         # map <MAP> <ATTRIBUTE> <ATTMAPPING>
         m = re.match('map\s+(?P<map>%s)\s+(?P<attribute>\S+)\s+(?P<value>\S.*)' %
