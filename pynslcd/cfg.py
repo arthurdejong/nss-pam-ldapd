@@ -94,9 +94,13 @@ _boolean_options = {'on': True, 'yes': True, 'true': True, '1': True,
                     'off': False, 'no': False, 'false': False, '0': False}
 
 # allowed values for scope option
+if not hasattr(ldap, 'SCOPE_CHILDREN') and ldap.VENDOR_VERSION >= 20400:
+    ldap.SCOPE_CHILDREN = 3   # OpenLDAP extension
 _scope_options = dict(sub=ldap.SCOPE_SUBTREE, subtree=ldap.SCOPE_SUBTREE,
                       one=ldap.SCOPE_ONELEVEL, onelevel=ldap.SCOPE_ONELEVEL,
                       base=ldap.SCOPE_BASE)
+if hasattr(ldap, 'SCOPE_CHILDREN'):
+    _scope_options['children'] = ldap.SCOPE_CHILDREN
 
 # allowed values for the deref option
 _deref_options = dict(never=ldap.DEREF_NEVER,

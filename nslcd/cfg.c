@@ -514,6 +514,10 @@ static void handle_scope(const char *filename, int lnr,
     *var = LDAP_SCOPE_ONELEVEL;
   else if (strcasecmp(token, "base") == 0)
     *var = LDAP_SCOPE_BASE;
+#ifdef LDAP_SCOPE_CHILDREN
+  else if (strcasecmp(token, "children") == 0)
+    *var = LDAP_SCOPE_CHILDREN;
+#endif /* LDAP_SCOPE_CHILDREN */
   else
   {
     log_log(LOG_ERR, "%s:%d: not a scope argument: '%s'",

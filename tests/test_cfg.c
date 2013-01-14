@@ -98,6 +98,10 @@ static void test_parse_scope(void)
   assert(cfg.scope == LDAP_SCOPE_BASE);
   handle_scope(__FILE__, __LINE__, "scope", "bASe", &cfg);
   assert(cfg.scope == LDAP_SCOPE_BASE);
+#ifdef LDAP_SCOPE_CHILDREN
+  handle_scope(__FILE__, __LINE__, "scope", "children", &cfg);
+  assert(cfg.scope == LDAP_SCOPE_CHILDREN);
+#endif /* LDAP_SCOPE_CHILDREN */
   /* most other values should call exit():
      handle_scope(__FILE__, __LINE__, "scope", "BSAE", &cfg); */
 }
