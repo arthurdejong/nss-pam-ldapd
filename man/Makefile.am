@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2007, 2009, 2010 Arthur de Jong
+# Copyright (C) 2007, 2009, 2010, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,26 +17,29 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-NSLCD_MANS = nslcd.conf.5 nslcd.8
-PYNSLCD_MANS = pynslcd.8
 PAM_MANS = pam_ldap.8
-ALLMANS = $(NSLCD_MANS) $(PYNSLCD_MANS) $(PAM_MANS)
-
-noinst_DATA = $(ALLMANS)
-EXTRA_DIST = $(shell echo $(ALLMANS) | sed 's/ \|$$/.xml /g')
+NSLCD_MANS = nslcd.conf.5 nslcd.8
+PYNSLCD_MANS = nslcd.conf.5 pynslcd.8
+ALL_MANS = $(PAM_MANS) $(NSLCD_MANS) $(PYNSLCD_MANS)
 
 # figure out which manual pages to install
-dist_man_MANS = $(NSLCD_MANS)
+INST_MANS =
 if ENABLE_PAM
-  dist_man_MANS += $(PAM_MANS)
+  INST_MANS += $(PAM_MANS)
+endif
+if ENABLE_NSLCD
+  INST_MANS += $(NSLCD_MANS)
 endif
 if ENABLE_PYNSLCD
-  dist_man_MANS += $(PYNSLCD_MANS)
+  INST_MANS += $(PYNSLCD_MANS)
 endif
+man_MANS = $(INST_MANS:u)
+noinst_DATA = $(ALL_MANS)
+EXTRA_DIST = $(ALL_MANS) $(ALL_MANS:=.xml)
 
 if GENMAN
 
-MAINTAINERCLEANFILES = $(dist_man_MANS)
+MAINTAINERCLEANFILES = $(ALL_MANS)
 
 SUFFIXES = .xml
 .xml:
