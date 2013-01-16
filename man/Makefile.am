@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2007, 2009, 2010 Arthur de Jong
+# Copyright (C) 2007, 2009, 2010, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,30 +17,29 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-dist_man_MANS = nslcd.conf.5 nslcd.8
+PAM_MANS = pam_ldap.8
+NSLCD_MANS = nslcd.conf.5 nslcd.8
+PYNSLCD_MANS = nslcd.conf.5 pynslcd.8
+ALL_MANS = $(PAM_MANS) $(NSLCD_MANS) $(PYNSLCD_MANS)
 
-EXTRA_DIST = nslcd.conf.5.xml nslcd.8.xml pam_ldap.8.xml pynslcd.8.xml
-
-# ensure that the pam_ldap manpage is always built but only installed
-# if the PAM module is built
+# figure out which manual pages to install
+INST_MANS =
 if ENABLE_PAM
-dist_man_MANS += pam_ldap.8
-else
-EXTRA_DIST += pam_ldap.8
-noinst_DATA = pam_ldap.8
+  INST_MANS += $(PAM_MANS)
 endif
-
-# ensure that pynslcd manpage is installed when pynslcd is built
+if ENABLE_NSLCD
+  INST_MANS += $(NSLCD_MANS)
+endif
 if ENABLE_PYNSLCD
-dist_man_MANS += pynslcd.8
-else
-EXTRA_DIST += pynslcd.8
-noinst_DATA = pynslcd.8
+  INST_MANS += $(PYNSLCD_MANS)
 endif
+man_MANS = $(INST_MANS:u)
+noinst_DATA = $(ALL_MANS)
+EXTRA_DIST = $(ALL_MANS) $(ALL_MANS:=.xml)
 
 if GENMAN
 
-MAINTAINERCLEANFILES = $(dist_man_MANS)
+MAINTAINERCLEANFILES = $(ALL_MANS)
 
 SUFFIXES = .xml
 .xml:
