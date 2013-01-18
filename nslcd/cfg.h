@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -120,6 +120,7 @@ struct ldap_config {
   SET *nss_initgroups_ignoreusers;  /* the users for which no initgroups() searches should be done */
   uid_t nss_min_uid;  /* minimum uid for users retreived from LDAP */
   regex_t validnames; /* the regular expression to determine valid names */
+  char *validnames_str; /* string version of validnames regexp */
   int ignorecase; /* whether or not case should be ignored in lookups */
   char *pam_authz_searches[NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES]; /* the searches that should be performed to do autorisation checks */
   char *pam_password_prohibit_message;   /* whether password changing should be denied and user prompted with this message */

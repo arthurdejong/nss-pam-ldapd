@@ -207,6 +207,12 @@ static int get_boolean(const char *filename, int lnr,
   return parse_boolean(filename, lnr, token);
 }
 
+static const char *print_boolean(int bool)
+{
+  if (bool) return "yes";
+  else      return "no";
+}
+
 static void handle_uid(const char *filename, int lnr,
                        const char *keyword, char *line,
                        struct ldap_config *cfg)
@@ -450,6 +456,26 @@ static enum ldap_map_selector get_map(char **line)
   return LM_NONE;
 }
 
+static const char *print_map(enum ldap_map_selector map)
+{
+  switch (map)
+  {
+    case LM_ALIASES:   return "aliases";
+    case LM_ETHERS:    return "ethers";
+    case LM_GROUP:     return "group";
+    case LM_HOSTS:     return "hosts";
+    case LM_NETGROUP:  return "netgroup";
+    case LM_NETWORKS:  return "networks";
+    case LM_PASSWD:    return "passwd";
+    case LM_PROTOCOLS: return "protocols";
+    case LM_RPC:       return "rpc";
+    case LM_SERVICES:  return "services";
+    case LM_SHADOW:    return "shadow";
+    case LM_NONE:
+    default:           return "???";
+  }
+}
+
 static void handle_base(const char *filename, int lnr,
                         const char *keyword, char *line,
                         struct ldap_config *cfg)
@@ -526,6 +552,17 @@ static void handle_scope(const char *filename, int lnr,
   }
 }
 
+static const char *print_scope(int scope)
+{
+  switch (scope)
+  {
+    case LDAP_SCOPE_SUBTREE:  return "sub";
+    case LDAP_SCOPE_ONELEVEL: return "one";
+    case LDAP_SCOPE_BASE:     return "base";
+    default:                  return "???";
+  }
+}
+
 static void handle_deref(const char *filename, int lnr,
                          const char *keyword, char *line,
                          struct ldap_config *cfg)
@@ -546,6 +583,18 @@ static void handle_deref(const char *filename, int lnr,
   {
     log_log(LOG_ERR, "%s:%d: wrong argument: '%s'", filename, lnr, token);
     exit(EXIT_FAILURE);
+  }
+}
+
+static const char *print_deref(int deref)
+{
+  switch (deref)
+  {
+    case LDAP_DEREF_NEVER:     return "never";
+    case LDAP_DEREF_SEARCHING: return "searching";
+    case LDAP_DEREF_FINDING:   return "finding";
+    case LDAP_DEREF_ALWAYS:    return "always";
+    default:                   return "???";
   }
 }
 
@@ -606,6 +655,17 @@ static void handle_map(const char *filename, int lnr,
 }
 
 #ifdef LDAP_OPT_X_TLS
+static const char *print_ssl(int ssl)
+{
+  switch (ssl)
+  {
+    case SSL_OFF:       return "off";
+    case SSL_START_TLS: return "start_tls";
+    case SSL_LDAPS:     return "on";
+    default:            return "???";
+  }
+}
+
 static void handle_tls_reqcert(const char *filename, int lnr,
                                const char *keyword, char *line)
 {
@@ -635,6 +695,19 @@ static void handle_tls_reqcert(const char *filename, int lnr,
   }
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%s)", token);
   LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_REQUIRE_CERT, &value);
+}
+
+static const char *print_tls_reqcert(int value)
+{
+  switch (value)
+  {
+    case LDAP_OPT_X_TLS_NEVER:  return "never";
+    case LDAP_OPT_X_TLS_ALLOW:  return "allow";
+    case LDAP_OPT_X_TLS_TRY:    return "try";
+    case LDAP_OPT_X_TLS_DEMAND: return "demand";
+    case LDAP_OPT_X_TLS_HARD:   return "hard";
+    default:                    return "???";
+  }
 }
 #endif /* LDAP_OPT_X_TLS */
 
@@ -693,6 +766,12 @@ static void handle_validnames(const char *filename, int lnr,
   int flags = REG_EXTENDED | REG_NOSUB;
   /* the rest of the line should be a regular expression */
   value = get_linedup(filename, lnr, keyword, &line);
+  if (cfg->validnames_str != NULL)
+  {
+    free(cfg->validnames_str);
+    regfree(&cfg->validnames);
+  }
+  cfg->validnames_str = strdup(value);
   /* check formatting and update flags */
   if (value[0] != '/')
   {
@@ -730,6 +809,7 @@ static void handle_validnames(const char *filename, int lnr,
     }
     exit(EXIT_FAILURE);
   }
+  free(value);
 }
 
 static void handle_pam_authz_search(
@@ -919,6 +999,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->pagesize = 0;
   cfg->nss_initgroups_ignoreusers = NULL;
   cfg->nss_min_uid = 0;
+  cfg->validnames_str = NULL;
   handle_validnames(__FILE__, __LINE__, "",
                     "/^[a-z0-9._@$][a-z0-9._@$ \\~-]*[a-z0-9._@$~-]$/i",
                     cfg);
@@ -1316,6 +1397,186 @@ static void bindpw_read(const char *filename, struct ldap_config *cfg)
 }
 #endif /* NSLCD_BINDPW_PATH */
 
+/* dump configuration */
+static void cfg_dump(void)
+{
+  int i;
+  int rc;
+  enum ldap_map_selector map;
+  char *str;
+  const char **strp;
+  char buffer[1024];
+  int *scopep;
+  log_log(LOG_DEBUG, "CFG: threads %d", nslcd_cfg->threads);
+  if (nslcd_cfg->uidname != NULL)
+    log_log(LOG_DEBUG, "CFG: uid %s", nslcd_cfg->uidname);
+  else if (nslcd_cfg->uid != NOUID)
+    log_log(LOG_DEBUG, "CFG: uid %d", nslcd_cfg->uid);
+  else
+    log_log(LOG_DEBUG, "CFG: # uid not set");
+  if (nslcd_cfg->gid != NOGID)
+    log_log(LOG_DEBUG, "CFG: gid %d", nslcd_cfg->gid);
+  else
+    log_log(LOG_DEBUG, "CFG: # gid not set");
+  for (i = 0; i < (NSS_LDAP_CONFIG_MAX_URIS + 1); i++)
+    if (nslcd_cfg->uris[i].uri != NULL)
+      log_log(LOG_DEBUG, "CFG: uri %s", nslcd_cfg->uris[i].uri);
+  log_log(LOG_DEBUG, "CFG: ldap_version %d", nslcd_cfg->ldap_version);
+  if (nslcd_cfg->binddn != NULL)
+    log_log(LOG_DEBUG, "CFG: binddn %s", nslcd_cfg->binddn);
+  if (nslcd_cfg->bindpw != NULL)
+    log_log(LOG_DEBUG, "CFG: bindpw ***");
+  if (nslcd_cfg->rootpwmoddn != NULL)
+    log_log(LOG_DEBUG, "CFG: rootpwmoddn %s", nslcd_cfg->rootpwmoddn);
+  if (nslcd_cfg->rootpwmodpw != NULL)
+    log_log(LOG_DEBUG, "CFG: rootpwmodpw ***");
+  if (nslcd_cfg->sasl_mech != NULL)
+    log_log(LOG_DEBUG, "CFG: sasl_mech %s", nslcd_cfg->sasl_mech);
+  if (nslcd_cfg->sasl_realm != NULL)
+    log_log(LOG_DEBUG, "CFG: sasl_realm %s", nslcd_cfg->sasl_realm);
+  if (nslcd_cfg->sasl_authcid != NULL)
+    log_log(LOG_DEBUG, "CFG: sasl_authcid %s", nslcd_cfg->sasl_authcid);
+  if (nslcd_cfg->sasl_authzid != NULL)
+    log_log(LOG_DEBUG, "CFG: sasl_authzid %s", nslcd_cfg->sasl_authzid);
+  if (nslcd_cfg->sasl_secprops != NULL)
+    log_log(LOG_DEBUG, "CFG: sasl_secprops %s", nslcd_cfg->sasl_secprops);
+#ifdef LDAP_OPT_X_SASL_NOCANON
+  if (nslcd_cfg->sasl_canonicalize >= 0)
+    log_log(LOG_DEBUG, "CFG: sasl_canonicalize %s", print_boolean(nslcd_cfg->sasl_canonicalize));
+#endif /* LDAP_OPT_X_SASL_NOCANON */
+  str = getenv("KRB5CCNAME");
+  if (str != NULL)
+    log_log(LOG_DEBUG, "CFG: krb5_ccname %s", str);
+  for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
+    if (nslcd_cfg->bases[i] != NULL)
+      log_log(LOG_DEBUG, "CFG: base %s", nslcd_cfg->bases[i]);
+  for (map = LM_ALIASES; map < LM_NONE; map++)
+  {
+    strp = base_get_var(map);
+    if (strp != NULL)
+      for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
+        if (strp[i] != NULL)
+          log_log(LOG_DEBUG, "CFG: base %s %s", print_map(map), strp[i]);
+  }
+  log_log(LOG_DEBUG, "CFG: scope %s", print_scope(nslcd_cfg->scope));
+  for (map = LM_ALIASES; map < LM_NONE; map++)
+  {
+    scopep = scope_get_var(map);
+    if ((scopep != NULL) && (*scopep != LDAP_SCOPE_DEFAULT))
+      log_log(LOG_DEBUG, "CFG: scope %s %s", print_map(map), print_scope(*scopep));
+  }
+  log_log(LOG_DEBUG, "CFG: deref %s", print_deref(nslcd_cfg->deref));
+  log_log(LOG_DEBUG, "CFG: referrals %s", print_boolean(nslcd_cfg->referrals));
+  for (map = LM_ALIASES; map < LM_NONE; map++)
+  {
+    strp = filter_get_var(map);
+    if ((strp != NULL) && (*strp != NULL))
+      log_log(LOG_DEBUG, "CFG: filter %s %s", print_map(map), *strp);
+  }
+#define LOG_ATTMAP(map, mapl, att)                                          \
+  if (strcmp(attmap_##mapl##_##att, __STRING(att)) != 0)                    \
+    log_log(LOG_DEBUG, "CFG: map %s %s %s",                                 \
+            print_map(map), __STRING(att), attmap_##mapl##_##att);
+  LOG_ATTMAP(LM_ALIASES, alias, cn);
+  LOG_ATTMAP(LM_ALIASES, alias, rfc822MailMember);
+  LOG_ATTMAP(LM_ETHERS, ether, cn);
+  LOG_ATTMAP(LM_ETHERS, ether, macAddress);
+  LOG_ATTMAP(LM_GROUP, group, cn);
+  LOG_ATTMAP(LM_GROUP, group, userPassword);
+  LOG_ATTMAP(LM_GROUP, group, gidNumber);
+  LOG_ATTMAP(LM_GROUP, group, memberUid);
+  LOG_ATTMAP(LM_GROUP, group, member);
+  LOG_ATTMAP(LM_HOSTS, host, cn);
+  LOG_ATTMAP(LM_HOSTS, host, ipHostNumber);
+  LOG_ATTMAP(LM_NETGROUP, netgroup, cn);
+  LOG_ATTMAP(LM_NETGROUP, netgroup, nisNetgroupTriple);
+  LOG_ATTMAP(LM_NETGROUP, netgroup, memberNisNetgroup);
+  LOG_ATTMAP(LM_NETWORKS, network, cn);
+  LOG_ATTMAP(LM_NETWORKS, network, ipNetworkNumber);
+  LOG_ATTMAP(LM_PASSWD, passwd, uid);
+  LOG_ATTMAP(LM_PASSWD, passwd, userPassword);
+  LOG_ATTMAP(LM_PASSWD, passwd, uidNumber);
+  LOG_ATTMAP(LM_PASSWD, passwd, gidNumber);
+  LOG_ATTMAP(LM_PASSWD, passwd, gecos);
+  LOG_ATTMAP(LM_PASSWD, passwd, homeDirectory);
+  LOG_ATTMAP(LM_PASSWD, passwd, loginShell);
+  LOG_ATTMAP(LM_PROTOCOLS, protocol, cn);
+  LOG_ATTMAP(LM_PROTOCOLS, protocol, ipProtocolNumber);
+  LOG_ATTMAP(LM_RPC, rpc, cn);
+  LOG_ATTMAP(LM_RPC, rpc, oncRpcNumber);
+  LOG_ATTMAP(LM_SERVICES, service, cn);
+  LOG_ATTMAP(LM_SERVICES, service, ipServicePort);
+  LOG_ATTMAP(LM_SERVICES, service, ipServiceProtocol);
+  LOG_ATTMAP(LM_SHADOW, shadow, uid);
+  LOG_ATTMAP(LM_SHADOW, shadow, userPassword);
+  LOG_ATTMAP(LM_SHADOW, shadow, shadowLastChange);
+  LOG_ATTMAP(LM_SHADOW, shadow, shadowMin);
+  LOG_ATTMAP(LM_SHADOW, shadow, shadowMax);
+  LOG_ATTMAP(LM_SHADOW, shadow, shadowWarning);
+  LOG_ATTMAP(LM_SHADOW, shadow, shadowInactive);
+  LOG_ATTMAP(LM_SHADOW, shadow, shadowExpire);
+  LOG_ATTMAP(LM_SHADOW, shadow, shadowFlag);
+  log_log(LOG_DEBUG, "CFG: bind_timelimit %d", nslcd_cfg->bind_timelimit);
+  log_log(LOG_DEBUG, "CFG: timelimit %d", nslcd_cfg->timelimit);
+  log_log(LOG_DEBUG, "CFG: idle_timelimit %d", nslcd_cfg->idle_timelimit);
+  log_log(LOG_DEBUG, "CFG: reconnect_sleeptime %d", nslcd_cfg->reconnect_sleeptime);
+  log_log(LOG_DEBUG, "CFG: reconnect_retrytime %d", nslcd_cfg->reconnect_retrytime);
+#ifdef LDAP_OPT_X_TLS
+  log_log(LOG_DEBUG, "CFG: ssl %s", print_ssl(nslcd_cfg->ssl));
+  rc = ldap_get_option(NULL, LDAP_OPT_X_TLS_REQUIRE_CERT, &i);
+  if (rc != LDAP_SUCCESS)
+    log_log(LOG_DEBUG, "CFG: # tls_reqcert ERROR: %s", ldap_err2string(rc));
+  else
+    log_log(LOG_DEBUG, "CFG: tls_reqcert %s", print_tls_reqcert(i));
+  #define LOG_LDAP_OPT_STRING(cfg, option)                                  \
+    str = NULL;                                                             \
+    rc = ldap_get_option(NULL, option, &str);                               \
+    if (rc != LDAP_SUCCESS)                                                 \
+      log_log(LOG_DEBUG, "CFG: # %s ERROR: %s", cfg, ldap_err2string(rc));  \
+    else if ((str != NULL) && (*str != '\0'))                               \
+      log_log(LOG_DEBUG, "CFG: %s %s", cfg, str);                           \
+    if (str != NULL)                                                        \
+      ldap_memfree(str);
+  LOG_LDAP_OPT_STRING("tls_cacertdir", LDAP_OPT_X_TLS_CACERTDIR);
+  LOG_LDAP_OPT_STRING("tls_cacertfile", LDAP_OPT_X_TLS_CACERTFILE);
+  LOG_LDAP_OPT_STRING("tls_randfile", LDAP_OPT_X_TLS_RANDOM_FILE);
+  LOG_LDAP_OPT_STRING("tls_ciphers", LDAP_OPT_X_TLS_CIPHER_SUITE);
+  LOG_LDAP_OPT_STRING("tls_cert", LDAP_OPT_X_TLS_CERTFILE);
+  LOG_LDAP_OPT_STRING("tls_key", LDAP_OPT_X_TLS_KEYFILE);
+#endif /* LDAP_OPT_X_TLS */
+  log_log(LOG_DEBUG, "CFG: pagesize %d", nslcd_cfg->pagesize);
+  if (nslcd_cfg->nss_initgroups_ignoreusers != NULL)
+  {
+    /* allocate memory for a comma-separated list */
+    strp = set_tolist(nslcd_cfg->nss_initgroups_ignoreusers);
+    if (strp == NULL)
+    {
+      log_log(LOG_CRIT, "malloc() failed to allocate memory");
+      exit(EXIT_FAILURE);
+    }
+    /* turn the set into a comma-separated list */
+    buffer[0] = '\0';
+    for (i = 0; strp[i] != NULL; i++)
+    {
+      if (i > 0)
+        strncat(buffer, ",", sizeof(buffer) - 1 - strlen(buffer));
+      strncat(buffer, strp[i], sizeof(buffer) - 1 - strlen(buffer));
+    }
+    free(strp);
+    if (strlen(buffer) >= (sizeof(buffer) - 4))
+      strcpy(buffer + sizeof(buffer) - 4, "...");
+    log_log(LOG_DEBUG, "CFG: nss_initgroups_ignoreusers %s", buffer);
+  }
+  log_log(LOG_DEBUG, "CFG: nss_min_uid %d", nslcd_cfg->nss_min_uid);
+  log_log(LOG_DEBUG, "CFG: validnames %s", nslcd_cfg->validnames_str);
+  log_log(LOG_DEBUG, "CFG: ignorecase %s", print_boolean(nslcd_cfg->ignorecase));
+  for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)
+    if (nslcd_cfg->pam_authz_searches[i] != NULL)
+      log_log(LOG_DEBUG, "CFG: pam_authz_search %s", nslcd_cfg->pam_authz_searches[i]);
+  if (nslcd_cfg->pam_password_prohibit_message != NULL)
+    log_log(LOG_DEBUG, "CFG: pam_password_prohibit_message \"%s\"", nslcd_cfg->pam_password_prohibit_message);
+}
+
 void cfg_init(const char *fname)
 {
 #ifdef LDAP_OPT_X_TLS
@@ -1370,6 +1631,8 @@ void cfg_init(const char *fname)
     log_log(LOG_ERR, "no base defined in config and couldn't get one from server");
     exit(EXIT_FAILURE);
   }
+  /* dump configuration */
+  cfg_dump();
   /* initialise all database modules */
   alias_init();
   ether_init();
