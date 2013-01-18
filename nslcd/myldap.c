@@ -398,8 +398,7 @@ static int do_sasl_interact(LDAP UNUSED(*ld), unsigned UNUSED(flags),
    The binddn and bindpw parameters may be used to override the authentication
    mechanism defined in the configuration.  This returns an LDAP result
    code. */
-static int do_bind(LDAP *ld, const char *binddn, const char *bindpw,
-                   const char *uri)
+static int do_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
 {
   int rc;
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
@@ -423,12 +422,14 @@ static int do_bind(LDAP *ld, const char *binddn, const char *bindpw,
   }
 #endif /* LDAP_OPT_X_TLS */
   /* check if the binddn and bindpw are overwritten in the session */
-  if ((binddn != NULL) && (binddn[0] != '\0'))
+  if ((session->binddn != NULL) && (session->binddn[0] != '\0'))
   {
     /* do a simple bind */
     log_log(LOG_DEBUG, "ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",
-            binddn, ((bindpw != NULL) && (bindpw[0] != '\0')) ? "\"***\"" : "\"\"", uri);
-    return ldap_simple_bind_s(ld, binddn, bindpw);
+            session->binddn,
+            ((session->bindpw != NULL) && (session->bindpw[0] != '\0')) ? "\"***\"" : "\"\"",
+            uri);
+    return ldap_simple_bind_s(ld, session->binddn, session->bindpw);
   }
   /* perform SASL bind if requested and available on platform */
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
@@ -498,7 +499,7 @@ static int do_rebind(LDAP *ld, LDAP_CONST char *url,
 {
   MYLDAP_SESSION *session = (MYLDAP_SESSION *)arg;
   log_log(LOG_DEBUG, "rebinding to %s", url);
-  return do_bind(ld, session->binddn, session->bindpw, url);
+  return do_bind(session, ld, url);
 }
 #else /* not recent OpenLDAP */
 static int do_rebind(LDAP *ld, char **dnp, char **passwdp, int *authmethodp,
@@ -810,8 +811,7 @@ static int do_open(MYLDAP_SESSION *session)
   }
   /* bind to the server */
   errno = 0;
-  rc = do_bind(session->ld, session->binddn, session->bindpw,
-               nslcd_cfg->uris[session->current_uri].uri);
+  rc = do_bind(session, session->ld, nslcd_cfg->uris[session->current_uri].uri);
   if (rc != LDAP_SUCCESS)
   {
     /* log actual LDAP error code */
