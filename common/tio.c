@@ -2,7 +2,7 @@
    tio.c - timed io functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2007, 2008, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -75,31 +75,24 @@ struct tio_fileinfo {
 #endif /* DEBUG_TIO_STATS */
 };
 
-/* build a timeval for comparison to when the operation should be finished */
-static inline void tio_get_deadline(struct timeval *deadline, int timeout)
-{
-  if (gettimeofday(deadline, NULL))
-  {
-    /* just blank it in case of errors */
-    deadline->tv_sec = 0;
-    deadline->tv_usec = 0;
-    return;
-  }
-  deadline->tv_sec += timeout / 1000;
-  deadline->tv_usec += (timeout % 1000) * 1000;
-}
-
 /* update the timeout to the value that is remaining before deadline
    returns non-zero if there is no more time before the deadline */
-static inline int tio_time_remaining(const struct timeval *deadline)
+static inline int tio_time_remaining(struct timeval *deadline, int timeout)
 {
   struct timeval tv;
-  /* get the current time */
-  if (gettimeofday(&tv, NULL))
+  /* if this is the first call, set the deadline and return the full time */
+  if ((deadline->tv_sec == 0) && (deadline->tv_usec == 0))
   {
-    /* 1 second default if gettimeofday() is broken */
-    return 1000;
+    if (gettimeofday(deadline, NULL) == 0)
+    {
+      deadline->tv_sec += timeout / 1000;
+      deadline->tv_usec += (timeout % 1000) * 1000;
+    }
+    return timeout;
   }
+  /* get the current time (fall back to full time on error) */
+  if (gettimeofday(&tv, NULL))
+    return timeout;
   /* calculate time remaining in miliseconds */
   return (deadline->tv_sec - tv.tv_sec) * 1000 +
          (deadline->tv_usec - tv.tv_usec) / 1000;
@@ -151,36 +144,36 @@ TFILE *tio_fdopen(int fd, int readtimeout, int writetimeout,
 
 /* wait for any activity on the specified file descriptor using
    the specified deadline */
-static int tio_wait(TFILE *fp, int readfd, const struct timeval *deadline)
+static int tio_wait(TFILE *fp, int readfd, struct timeval *deadline)
 {
-  int timeout;
+  int timeout, max_timeout;
   struct pollfd fds[1];
   int rv;
   while (1)
   {
-    /* figure out the time we need to wait */
-    if ((timeout = tio_time_remaining(deadline)) < 0)
-    {
-      errno = ETIME;
-      return -1;
-    }
-    /* wait for activity */
+    /* figure out which values to use */
     if (readfd)
     {
       fds[0].fd = fp->fd;
       fds[0].events = POLLIN;
-      /* santiy check for moving clock */
-      if (timeout > fp->readtimeout)
-        timeout = fp->readtimeout;
+      max_timeout = fp->readtimeout;
     }
     else
     {
       fds[0].fd = fp->fd;
       fds[0].events = POLLOUT;
-      /* santiy check for moving clock */
-      if (timeout > fp->writetimeout)
-        timeout = fp->writetimeout;
+      max_timeout = fp->writetimeout;
     }
+    /* figure out the time we need to wait */
+    if ((timeout = tio_time_remaining(deadline, max_timeout)) < 0)
+    {
+      errno = ETIME;
+      return -1;
+    }
+    /* sanitiy check for moving clock */
+    if (timeout > max_timeout)
+      timeout = max_timeout;
+    /* wait for activity */
     rv = poll(fds, 1, timeout);
     if (rv > 0)
       return 0; /* we have activity */
@@ -201,15 +194,13 @@ static int tio_wait(TFILE *fp, int readfd, const struct timeval *deadline)
    if no data was read in the specified time an error is returned */
 int tio_read(TFILE *fp, void *buf, size_t count)
 {
-  struct timeval deadline;
+  struct timeval deadline = {0, 0};
   int rv;
   uint8_t *tmp;
   size_t newsz;
   size_t len;
   /* have a more convenient storage type for the buffer */
   uint8_t *ptr = (uint8_t *)buf;
-  /* build a time by which we should be finished */
-  tio_get_deadline(&deadline, fp->readtimeout);
   /* loop until we have returned all the needed data */
   while (1)
   {
@@ -398,9 +389,7 @@ static int tio_writebuf(TFILE *fp)
 /* write all the data in the buffer to the stream */
 int tio_flush(TFILE *fp)
 {
-  struct timeval deadline;
-  /* build a time by which we should be finished */
-  tio_get_deadline(&deadline, fp->writetimeout);
+  struct timeval deadline = {0, 0};
   /* loop until we have written our buffer */
   while (fp->writebuffer.len > 0)
   {
