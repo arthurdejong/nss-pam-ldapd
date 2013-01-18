@@ -4,7 +4,7 @@
    (taken from _update_authtok() in pam_ldap.c).
 
    Copyright (C) 1998-2004 Luke Howard
-   Copyright (C) 2009, 2010, 20120 Arthur de Jong
+   Copyright (C) 2009, 2010, 2012 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
