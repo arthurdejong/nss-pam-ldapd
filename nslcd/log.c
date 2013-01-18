@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 
 #include "log.h"
 
@@ -43,12 +44,29 @@ static int prelogging_loglevel = LOG_INFO;
 /* loglevel to use before logging to syslog */
 static int loglevel = LOG_INFO;
 
+#define MAX_REQUESTID_LENGTH 40
+
+#ifdef TLS
+
 /* the session id that is set for this thread */
 static TLS char *sessionid = NULL;
 
 /* the request identifier that is set for this thread */
 static TLS char *requestid = NULL;
-#define MAX_REQUESTID_LENGTH 40
+
+#else /* no TLS, use pthreads */
+
+static pthread_once_t tls_init_once = PTHREAD_ONCE_INIT;
+static pthread_key_t sessionid_key;
+static pthread_key_t requestid_key;
+
+static void tls_init_keys(void)
+{
+  pthread_key_create(&sessionid_key, NULL);
+  pthread_key_create(&requestid_key, NULL);
+}
+
+#endif /* no TLS, use pthreads */
 
 /* set loglevel when no logging is configured */
 void log_setdefaultloglevel(int pri)
@@ -68,6 +86,12 @@ void log_startlogging(void)
    log_newsession */
 void log_clearsession(void)
 {
+#ifndef TLS
+  char *sessionid, *requestid;
+  pthread_once(&tls_init_once, tls_init_keys);
+  sessionid = pthread_getspecific(sessionid_key);
+  requestid = pthread_getspecific(requestid_key);
+#endif /* no TLS */
   /* set the session id to empty */
   if (sessionid != NULL)
     sessionid[0] = '\0';
@@ -80,6 +104,12 @@ void log_clearsession(void)
    and set it to a new value */
 void log_newsession(void)
 {
+#ifndef TLS
+  char *sessionid, *requestid;
+  pthread_once(&tls_init_once, tls_init_keys);
+  sessionid = pthread_getspecific(sessionid_key);
+  requestid = pthread_getspecific(requestid_key);
+#endif /* no TLS */
   /* ensure that sessionid can hold a string */
   if (sessionid == NULL)
   {
@@ -89,6 +119,9 @@ void log_newsession(void)
       fprintf(stderr, "malloc() failed: %s", strerror(errno));
       return; /* silently fail */
     }
+#ifndef TLS
+    pthread_setspecific(sessionid_key, sessionid);
+#endif /* no TLS */
   }
   sprintf(sessionid, "%06x", (int)(rand() & 0xffffff));
   /* set the request id to empty */
@@ -101,6 +134,11 @@ void log_newsession(void)
 void log_setrequest(const char *format, ...)
 {
   va_list ap;
+#ifndef TLS
+  char *requestid;
+  pthread_once(&tls_init_once, tls_init_keys);
+  requestid = pthread_getspecific(requestid_key);
+#endif /* no TLS */
   /* ensure that requestid can hold a string */
   if (requestid == NULL)
   {
@@ -110,6 +148,9 @@ void log_setrequest(const char *format, ...)
       fprintf(stderr, "malloc() failed: %s", strerror(errno));
       return; /* silently fail */
     }
+#ifndef TLS
+    pthread_setspecific(requestid_key, requestid);
+#endif /* no TLS */
   }
   /* make the message */
   va_start(ap, format);
@@ -124,6 +165,12 @@ void log_log(int pri, const char *format, ...)
   int res;
   char buffer[200];
   va_list ap;
+#ifndef TLS
+  char *sessionid, *requestid;
+  pthread_once(&tls_init_once, tls_init_keys);
+  sessionid = pthread_getspecific(sessionid_key);
+  requestid = pthread_getspecific(requestid_key);
+#endif /* no TLS */
   /* make the message */
   va_start(ap, format);
   res = vsnprintf(buffer, sizeof(buffer), format, ap);
