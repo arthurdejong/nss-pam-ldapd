@@ -2,7 +2,7 @@
    ethers.c - NSS lookup functions for ethers database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -65,7 +65,7 @@ nss_status_t _nss_ldap_getntohost_r(const struct ether_addr *addr,
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *etherentfp;
+static TLS TFILE *etherentfp;
 
 /* open a connection to read all ether entries */
 nss_status_t _nss_ldap_setetherent(int UNUSED(stayopen))

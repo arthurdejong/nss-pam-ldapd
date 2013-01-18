@@ -1,7 +1,7 @@
 /*
    log.c - logging funtions
 
-   Copyright (C) 2002, 2003, 2008, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2002, 2003, 2008, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -44,10 +44,10 @@ static int prelogging_loglevel = LOG_INFO;
 static int loglevel = LOG_INFO;
 
 /* the session id that is set for this thread */
-static __thread char *sessionid = NULL;
+static TLS char *sessionid = NULL;
 
 /* the request identifier that is set for this thread */
-static __thread char *requestid = NULL;
+static TLS char *requestid = NULL;
 #define MAX_REQUESTID_LENGTH 40
 
 /* set loglevel when no logging is configured */

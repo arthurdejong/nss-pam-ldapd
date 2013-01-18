@@ -2,7 +2,7 @@
    shadow.c - NSS lookup functions for shadow database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -61,7 +61,7 @@ nss_status_t _nss_ldap_getspnam_r(const char *name, struct spwd *result,
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *spentfp;
+static TLS TFILE *spentfp;
 
 /* start listing all shadow users */
 nss_status_t _nss_ldap_setspent(int UNUSED(stayopen))

@@ -2,7 +2,7 @@
    rpc.c - NSS lookup functions for rpc database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -66,7 +66,7 @@ nss_status_t _nss_ldap_getrpcbynumber_r(int number, struct rpcent *result,
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *rpcentfp;
+static TLS TFILE *rpcentfp;
 
 /* request a stream to list all rpc entries */
 nss_status_t _nss_ldap_setrpcent(int UNUSED(stayopen))

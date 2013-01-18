@@ -2,7 +2,7 @@
    group.c - NSS lookup functions for group database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2012, 2013 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -133,7 +133,7 @@ nss_status_t _nss_ldap_getgrgid_r(gid_t gid, struct group *result,
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *grentfp;
+static TLS TFILE *grentfp;
 
 /* start a request to read all groups */
 nss_status_t _nss_ldap_setgrent(int UNUSED(stayopen))

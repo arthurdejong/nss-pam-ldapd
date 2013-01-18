@@ -2,7 +2,7 @@
    networks.c - NSS lookup functions for networks database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2011, 2012, 2013 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -136,7 +136,7 @@ nss_status_t _nss_ldap_getnetbyaddr_r(uint32_t addr, int UNUSED(af),
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *netentfp;
+static TLS TFILE *netentfp;
 
 /* start a request to read all networks */
 nss_status_t _nss_ldap_setnetent(int UNUSED(stayopen))

@@ -2,7 +2,7 @@
    netgroup.c - NSS lookup functions for netgroup entries
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -92,7 +92,7 @@ static nss_status_t read_netgrent_line(TFILE *fp, struct __netgrent *result,
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *netgrentfp;
+static TLS TFILE *netgrentfp;
 
 /* start a request to get a netgroup by name */
 nss_status_t _nss_ldap_setnetgrent(const char *group,

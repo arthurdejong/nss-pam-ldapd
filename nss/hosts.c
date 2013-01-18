@@ -2,7 +2,7 @@
    hosts.c - NSS lookup functions for hosts database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -193,7 +193,7 @@ nss_status_t _nss_ldap_gethostbyaddr_r(const void *addr, socklen_t len,
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *hostentfp;
+static TLS TFILE *hostentfp;
 
 nss_status_t _nss_ldap_sethostent(int UNUSED(stayopen))
 {

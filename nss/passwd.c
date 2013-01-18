@@ -2,7 +2,7 @@
    passwd.c - NSS lookup functions for passwd database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -72,7 +72,7 @@ nss_status_t _nss_ldap_getpwuid_r(uid_t uid, struct passwd *result,
 }
 
 /* thread-local file pointer to an ongoing request */
-static __thread TFILE *pwentfp;
+static TLS TFILE *pwentfp;
 
 /* open a connection to read all passwd entries */
 nss_status_t _nss_ldap_setpwent(int UNUSED(stayopen))
