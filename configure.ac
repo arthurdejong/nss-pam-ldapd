@@ -126,6 +126,15 @@ AC_ARG_ENABLE(pam,
 AC_MSG_RESULT($enable_pam)
 AM_CONDITIONAL([ENABLE_PAM], [test "x$enable_pam" = "xyes"])
 
+# check whether command-line utilities should be built
+AC_MSG_CHECKING([whether to build the command-line utilities])
+AC_ARG_ENABLE(utils,
+              AS_HELP_STRING([--enable-utils],
+                             [build the the command-line utilities [[default=disabled]]]),,
+              [enable_util="no"])
+AC_MSG_RESULT($enable_utils)
+AM_CONDITIONAL([ENABLE_UTILS], [test "x$enable_utils" = "xyes"])
+
 # check whether the nslcd daemon should be built
 AC_MSG_CHECKING([whether to build the nslcd daemon])
 AC_ARG_ENABLE(nslcd,
@@ -762,8 +771,8 @@ then
   AC_SUBST(nslcd_LIBS)
 fi
 
-# pynslcd daemon-specific tests
-if test "x$enable_pynslcd" = "xyes"
+# Python-specific tests
+if test "x$enable_pynslcd" = "xyes" || test "x$enable_utils" = "xyes"
 then
   # check Python interpreter
   AM_PATH_PYTHON(2.5)
@@ -775,7 +784,7 @@ AM_CONDITIONAL([NSS_FLAVOUR_FREEBSD], [test "x${with_nss_flavour}" = xfreebsd])
 
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile
-                 pam/Makefile nslcd/Makefile pynslcd/Makefile
+                 pam/Makefile utils/Makefile nslcd/Makefile pynslcd/Makefile
                  man/Makefile tests/Makefile])
 AC_CONFIG_FILES([pynslcd/constants.py], [[
 (

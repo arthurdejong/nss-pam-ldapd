@@ -64,3 +64,6 @@ stamp-*
 /tests/test_pamcmds.log
 /tests/test_set
 /tests/test_tio
+
+# /utils/
+/utils/constants.py
