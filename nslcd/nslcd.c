@@ -433,6 +433,7 @@ static void handleconnection(int sock, MYLDAP_SESSION *session)
     case NSLCD_ACTION_HOST_BYADDR:      (void)nslcd_host_byaddr(fp, session); break;
     case NSLCD_ACTION_HOST_ALL:         (void)nslcd_host_all(fp, session); break;
     case NSLCD_ACTION_NETGROUP_BYNAME:  (void)nslcd_netgroup_byname(fp, session); break;
+    case NSLCD_ACTION_NETGROUP_ALL:     (void)nslcd_netgroup_all(fp, session); break;
     case NSLCD_ACTION_NETWORK_BYNAME:   (void)nslcd_network_byname(fp, session); break;
     case NSLCD_ACTION_NETWORK_BYADDR:   (void)nslcd_network_byaddr(fp, session); break;
     case NSLCD_ACTION_NETWORK_ALL:      (void)nslcd_network_all(fp, session); break;

@@ -2,7 +2,7 @@
    nslcd.h - file describing client/server protocol
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -131,6 +131,7 @@
      INT32   NSLCD_NETGROUP_TYPE_END
    */
 #define NSLCD_ACTION_NETGROUP_BYNAME   0x00060001
+#define NSLCD_ACTION_NETGROUP_ALL      0x00060008
 #define NSLCD_NETGROUP_TYPE_NETGROUP 1
 #define NSLCD_NETGROUP_TYPE_TRIPLE   2
 #define NSLCD_NETGROUP_TYPE_END      3

@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -243,4 +243,12 @@ NSLCD_HANDLE(
   log_setrequest("netgroup=\"%s\"", name);,
   mkfilter_netgroup_byname(name, filter, sizeof(filter)),
   write_netgroup(fp, entry, name)
+)
+
+NSLCD_HANDLE(
+  netgroup, all, NSLCD_ACTION_NETGROUP_ALL,
+  const char *filter;
+  log_setrequest("netgroup(all)");,
+  (filter = netgroup_filter, 0),
+  write_netgroup(fp, entry, NULL)
 )

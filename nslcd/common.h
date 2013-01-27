@@ -3,7 +3,7 @@
    This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -209,6 +209,7 @@ int nslcd_host_byname(TFILE *fp, MYLDAP_SESSION *session);
 int nslcd_host_byaddr(TFILE *fp, MYLDAP_SESSION *session);
 int nslcd_host_all(TFILE *fp, MYLDAP_SESSION *session);
 int nslcd_netgroup_byname(TFILE *fp, MYLDAP_SESSION *session);
+int nslcd_netgroup_all(TFILE *fp, MYLDAP_SESSION *session);
 int nslcd_network_byname(TFILE *fp, MYLDAP_SESSION *session);
 int nslcd_network_byaddr(TFILE *fp, MYLDAP_SESSION *session);
 int nslcd_network_all(TFILE *fp, MYLDAP_SESSION *session);
