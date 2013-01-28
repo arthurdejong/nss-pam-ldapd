@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+
+<!--
+   getent.ldap.1.xml - docbook manual page for chsh.ldap
+
+   Copyright (C) 2013 Arthur de Jong
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+   02110-1301 USA
+-->
+
+<refentry id="getentldap1">
+
+ <refentryinfo>
+  <author>
+   <firstname>Arthur</firstname>
+   <surname>de Jong</surname>
+  </author>
+ </refentryinfo>
+
+ <refmeta>
+  <refentrytitle>getent.ldap</refentrytitle>
+  <manvolnum>1</manvolnum>
+  <refmiscinfo class="version">Version 0.8.11</refmiscinfo>
+  <refmiscinfo class="manual">User Commands</refmiscinfo>
+  <refmiscinfo class="date">Oct 2012</refmiscinfo>
+ </refmeta>
+
+ <refnamediv id="name">
+  <refname>getent.ldap</refname>
+  <refpurpose>query information from LDAP</refpurpose>
+ </refnamediv>
+
+ <refsynopsisdiv id="synopsis">
+  <cmdsynopsis>
+   <command>getent.ldap</command>
+   <arg choice="opt"><replaceable>options</replaceable></arg>
+   <arg><replaceable>DATABASE</replaceable></arg>
+   <arg choice="opt"><replaceable>KEY</replaceable></arg>
+  </cmdsynopsis>
+ </refsynopsisdiv>
+
+ <refsect1 id="description">
+  <title>Description</title>
+  <para>
+   The <command>getent.ldap</command> command can be used to lookup or
+   enumerate information from <acronym>LDAP</acronym>.
+   Unlike the
+   <citerefentry><refentrytitle>getent</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+   command, this command completely bypasses the lookups configured in
+   <file>/etc/nsswitch.conf</file> and queries the
+   <citerefentry><refentrytitle>nslcd</refentrytitle><manvolnum>8</manvolnum></citerefentry>
+   daemon directly.
+  </para>
+  <para>
+   <command>getent.ldap</command> tries to match the behaviour and output of
+   <command>getent</command> and the format in the corresponding flat files
+   as much as possible, however there are a number of differences.
+   If multiple entries are found in <acronym>LDAP</acronym> that match a
+   specific query, multiple values are printed (e.g. ethernet addresses that
+   have multiple names, services that support multiple protocols, etc.).
+   Also, some databases have extra options as described below.
+  </para>
+ </refsect1>
+
+ <refsect1 id="options">
+  <title>Options</title>
+  <para>
+   The options that may be specified to the <command>getent.ldap</command>
+   command are:
+  </para>
+  <variablelist remap="TP">
+
+   <varlistentry id="help">
+    <term>
+     <option>-h</option>, <option>--help</option>
+    </term>
+    <listitem>
+     <para>Display short help and exit.</para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="version">
+    <term>
+     <option>-V, --version</option>
+    </term>
+    <listitem>
+     <para>Output version information and exit.</para>
+    </listitem>
+   </varlistentry>
+
+  </variablelist>
+ </refsect1>
+
+ <refsect1 id="databases">
+  <title>Databases</title>
+  <para>
+   The <replaceable>DATABASE</replaceable> argument may be any of the
+   supported databases below:
+  </para>
+  <variablelist remap="TP">
+
+   <varlistentry id="aliases">
+    <term><option>aliases</option></term>
+    <listitem>
+     <para>
+      Lists or queries email aliases.
+      If <replaceable>KEY</replaceable> is given it searches for the alias
+      by name, otherwise it returns all aliases from
+      <acronym>LDAP</acronym>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="ethers">
+    <term><option>ethers</option></term>
+    <listitem>
+     <para>
+      Lists or queries ethernet addresses.
+      If <replaceable>KEY</replaceable> matches the format of an ethernet
+      address a search by address is performed, otherwise a search by name
+      is performed or all entries are returned if
+      <replaceable>KEY</replaceable> is omitted.
+      Unlike <command>getent</command>, <command>getent.ldapd</command>
+      does support enumerating all ethernet addresses.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="group">
+    <term><option>group</option></term>
+    <listitem>
+     <para>
+      Lists or queries groups.
+      If <replaceable>KEY</replaceable> is numeric, it searches for the
+      group by group id.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="group.bymember">
+    <term><option>group.bymember</option></term>
+    <listitem>
+     <para>
+      The <replaceable>KEY</replaceable> is a user name and groups are
+      returned for which this user is a member.
+      The format is similar to the <option>group</option> output but the
+      group members are left out for performance reasons.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="hosts">
+    <term><option>hosts</option></term>
+    <listitem>
+     <para>
+      List or search host names and addresses by either host name,
+      IPv4 or IPv6 address. This returns both IPv4 and IPv6 addresses
+      (if available).
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="hostsv4">
+    <term><option>hostsv4</option></term>
+    <listitem>
+     <para>
+      Similar to <option>hosts</option> but any supplied IPv6 addresses are
+      treated as host names and only IPv4 addresses are returned.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="hostsv6">
+    <term><option>hostsv6</option></term>
+    <listitem>
+     <para>
+      Similar to <option>hosts</option> but <replaceable>KEY</replaceable>
+      is treated as an IPv6 address or a host name and only IPv6 addresses
+      are returned.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="netgroup">
+    <term><option>netgroup</option></term>
+    <listitem>
+     <para>
+      List or query netgroups and netgroup triples (host, user, domain) that
+      are a member of the netgroup.
+      Unlike <command>getent</command>, <command>getent.ldapd</command>
+      does support enumerating all ethernet addresses.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="netgroup.norec">
+    <term><option>netgroup.norec</option></term>
+    <listitem>
+     <para>
+      Similar to <option>netgroup</option> except that no subsequent
+      lookups are done to expand netgroups which are member of the
+      supplied netgroup and the output may contain both other netgroup
+      names and netgroup triples.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="networks">
+    <term><option>networks</option></term>
+    <listitem>
+     <para>
+      List or query network names and addresses.
+      <replaceable>KEY</replaceable> may be a network name or address.
+      This map can return both IPv4 and IPv6 network addresses.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="networksv4">
+    <term><option>networksv4</option></term>
+    <listitem>
+     <para>
+      Only return IPv4 network addresses.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="networksv6">
+    <term><option>networksv6</option></term>
+    <listitem>
+     <para>
+      Only return IPv6 network addresses.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="passwd">
+    <term><option>passwd</option></term>
+    <listitem>
+     <para>
+      Enumerate or search the user account database.
+      <replaceable>KEY</replaceable> may be a user name or numeric user id
+      or be omitted to list all users.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="protocols">
+    <term><option>protocols</option></term>
+    <listitem>
+     <para>
+      Enumerate the internet protocols database.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="rpc">
+    <term><option>rpc</option></term>
+    <listitem>
+     <para>
+      List or search user readable names that map to RPC program numbers.
+      Searching by <replaceable>KEY</replaceable> can be done on name or
+      rpc program number.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="services">
+    <term><option>services</option></term>
+    <listitem>
+     <para>
+      List or search the mapping between names for internet services and
+      their corresponding port numbers and protocol types.
+      The <replaceable>KEY</replaceable> can be either a service name or
+      number, followed by an optional slash and protocol name to restrict
+      the search to only entries for the specified protocol.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="shadow">
+    <term><option>shadow</option></term>
+    <listitem>
+     <para>
+      Enumerate or search extended user account information.
+      Note that shadow information is likely only exposed to the root user
+      and by default <command>nslcd</command> does not expose password
+      hashes, even to root.
+     </para>
+    </listitem>
+   </varlistentry>
+
+  </variablelist>
+ </refsect1>
+
+
+ <refsect1 id="see_also">
+  <title>See Also</title>
+  <para>
+   <citerefentry><refentrytitle>getent</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+   <citerefentry><refentrytitle>nslcd</refentrytitle><manvolnum>8</manvolnum></citerefentry>
+  </para>
+ </refsect1>
+
+ <refsect1 id="author">
+  <title>Author</title>
+  <para>This manual was written by Arthur de Jong &lt;arthur@arthurdejong.org&gt;.</para>
+ </refsect1>
+
+ <refsect1 id="bugs">
+  <title>Bugs</title>
+  <para>
+   Currently, <command>getent.ldapd</command> does not correctly set an
+   exit code. It should return the same kind of exit codes as
+   <command>getent</command> does (e.g. for missing entries).
+  </para>
+ </refsect1>
+
+</refentry>

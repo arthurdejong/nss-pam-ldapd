@@ -37,6 +37,8 @@ stamp-*
 /splint.txt
 
 # /man/
+/man/getent.ldap.1
+/man/getent.ldap.1.html
 /man/nslcd.8
 /man/nslcd.8.html
 /man/nslcd.conf.5

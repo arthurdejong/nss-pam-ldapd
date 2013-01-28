@@ -18,14 +18,18 @@
 # 02110-1301 USA
 
 PAM_MANS = pam_ldap.8
+UTILS_MANS = getent.ldap.1
 NSLCD_MANS = nslcd.conf.5 nslcd.8
 PYNSLCD_MANS = nslcd.conf.5 pynslcd.8
-ALL_MANS = $(PAM_MANS) $(NSLCD_MANS) $(PYNSLCD_MANS)
+ALL_MANS = $(PAM_MANS) $(UTILS_MANS) $(NSLCD_MANS) $(PYNSLCD_MANS)
 
 # figure out which manual pages to install
 INST_MANS =
 if ENABLE_PAM
   INST_MANS += $(PAM_MANS)
+endif
+if ENABLE_UTILS
+  INST_MANS += $(UTILS_MANS)
 endif
 if ENABLE_NSLCD
   INST_MANS += $(NSLCD_MANS)
