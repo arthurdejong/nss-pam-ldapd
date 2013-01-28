@@ -19,6 +19,7 @@
 
 utilsdir = $(datadir)/nslcdutils
 
+utils_PYTHON = cmdline.py getent.py nslcd.py
 nodist_utils_PYTHON = constants.py
 CLEANFILES = $(nodist_utils_PYTHON)
 
@@ -31,3 +32,11 @@ clean-local:
 # copy constants module
 constants.py: ../pynslcd/constants.py
 	cp ../pynslcd/constants.py .
+
+# create symbolic links to the commands and fix permissions
+install-data-hook:
+	$(MKDIR_P) $(DESTDIR)$(bindir)
+	set -ex; for cmd in getent ; do \
+	  chmod a+rx $(DESTDIR)$(utilsdir)/$$cmd.py ; \
+	  [ -L $(DESTDIR)$(bindir)/$$cmd.ldap ] || $(LN_S) $(utilsdir)/$$cmd.py $(DESTDIR)$(bindir)/$$cmd.ldap ; \
+	done
