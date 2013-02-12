@@ -62,7 +62,7 @@
    Unlike the
    <citerefentry><refentrytitle>getent</refentrytitle><manvolnum>1</manvolnum></citerefentry>
    command, this command completely bypasses the lookups configured in
-   <file>/etc/nsswitch.conf</file> and queries the
+   <filename>/etc/nsswitch.conf</filename> and queries the
    <citerefentry><refentrytitle>nslcd</refentrytitle><manvolnum>8</manvolnum></citerefentry>
    daemon directly.
   </para>
