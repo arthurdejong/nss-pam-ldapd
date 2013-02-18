@@ -1,3 +1,13 @@
+nss-pam-ldapd (0.7.15+squeeze3) stable-security; urgency=high
+
+  * SECURITY FIX: Garth Mollett discovered that a file descriptor overflow
+                  issue in the use of FD_SET() in nss-pam-ldapd can lead
+                  to a stack-based buffer overflow (CVE-2013-0288)
+                  this bug has been fixed by extra range checking before
+                  calling FD_SET() (backported from 0.7.18) (closes: #690319)
+
+ -- Arthur de Jong <adejong@debian.org>  Fri, 15 Feb 2013 23:00:00 +0100
+
 nss-pam-ldapd (0.7.15+squeeze2) stable; urgency=low
 
   * support larger gecos values (closes: #640781) (backported from 0.7.17)
