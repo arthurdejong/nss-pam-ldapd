@@ -681,6 +681,14 @@ int main(int argc, char *argv[])
 #ifdef HAVE_PTHREAD_TIMEDJOIN_NP
   struct timespec ts;
 #endif /* HAVE_PTHREAD_TIMEDJOIN_NP */
+  /* close all file descriptors (except stdin/out/err) */
+  i = sysconf(_SC_OPEN_MAX) - 1;
+  /* if the system does not have OPEN_MAX just close the first 32 and
+     hope we closed enough */
+  if (i < 0)
+    i = 32;
+  for (; i > 3; i--)
+    close(i);
   /* parse the command line */
   parse_cmdline(argc, argv);
   /* clean the environment */
@@ -727,14 +735,6 @@ int main(int argc, char *argv[])
             NSLCD_PIDFILE, strerror(errno));
     exit(EXIT_FAILURE);
   }
-  /* close all file descriptors (except stdin/out/err) */
-  i = sysconf(_SC_OPEN_MAX) - 1;
-  /* if the system does not have OPEN_MAX just close the first 32 and
-     hope we closed enough */
-  if (i < 0)
-    i = 32;
-  for (; i > 3; i--)
-    close(i);
   /* daemonize */
   if ((!nslcd_debugging) && (daemon(0, 0) < 0))
   {

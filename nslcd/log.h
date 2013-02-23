@@ -59,4 +59,7 @@ void log_setrequest(const char *format, ...)
 void log_log(int pri, const char *format, ...)
   LIKE_PRINTF(2, 3);
 
+/* log the logging configuration on DEBUG loglevel */
+void log_log_config(void);
+
 #endif /* not NSLCD__LOG_H */

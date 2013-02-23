@@ -42,6 +42,7 @@
 /* storage for logging modes */
 static struct log_cfg {
   int loglevel;
+  const char *scheme;
   FILE *fp; /* NULL == syslog */
   struct log_cfg *next;
 } *loglist = NULL;
@@ -80,7 +81,7 @@ void log_setdefaultloglevel(int loglevel)
 }
 
 /* add logging method to configuration list */
-static void addlogging(int loglevel, FILE *fp)
+static void addlogging(int loglevel, const char *scheme, FILE *fp)
 {
   struct log_cfg *tmp, *lst;
   /* create new logstruct */
@@ -90,8 +91,9 @@ static void addlogging(int loglevel, FILE *fp)
     log_log(LOG_CRIT, "malloc() returned NULL");
     exit(EXIT_FAILURE);
   }
-  tmp->fp = fp;
   tmp->loglevel = loglevel;
+  tmp->scheme = scheme;
+  tmp->fp = fp;
   tmp->next = NULL;
   /* save the struct in the list */
   if (loglist == NULL)
@@ -107,6 +109,12 @@ static void addlogging(int loglevel, FILE *fp)
 void log_addlogging_file(int loglevel, const char *filename)
 {
   FILE *fp;
+  filename = strdup(filename);
+  if (filename == NULL)
+  {
+    log_log(LOG_CRIT, "strdup() returned NULL");
+    exit(EXIT_FAILURE);
+  }
   fp = fopen(filename, "a");
   if (fp == NULL)
   {
@@ -114,21 +122,21 @@ void log_addlogging_file(int loglevel, const char *filename)
             filename, strerror(errno));
     exit(1);
   }
-  addlogging(loglevel, fp);
+  addlogging(loglevel, filename, fp);
 }
 
 /* configure logging to syslog */
 void log_addlogging_syslog(int loglevel)
 {
   openlog(PACKAGE, LOG_PID, LOG_DAEMON);
-  addlogging(loglevel, NULL);
+  addlogging(loglevel, "syslog", NULL);
 }
 
 /* configure a null logging mode (no logging) */
 void log_addlogging_none()
 {
   /* this is a hack, but it's so easy */
-  addlogging(LOG_EMERG, NULL);
+  addlogging(LOG_EMERG, "none", NULL);
 }
 
 /* start the logging with the configured logging methods
@@ -292,5 +300,33 @@ void log_log(int pri, const char *format, ...)
         }
       }
     }
+  }
+}
+
+static const char *loglevel2str(int loglevel)
+{
+  switch (loglevel)
+  {
+    case LOG_CRIT:    return "crit";
+    case LOG_ERR:     return "error";
+    case LOG_WARNING: return "warning";
+    case LOG_NOTICE:  return "notice";
+    case LOG_INFO:    return "info";
+    case LOG_DEBUG:   return "debug";
+    default:          return "???";
+  }
+}
+
+/* log the logging configuration on DEBUG loglevel */
+void log_log_config(void)
+{
+  struct log_cfg *lst;
+  for (lst = loglist; lst != NULL; lst = lst->next)
+  {
+    if (lst->loglevel == LOG_EMERG)
+      log_log(LOG_DEBUG, "CFG: log %s", lst->scheme);
+    else
+      log_log(LOG_DEBUG, "CFG: log %s %s", lst->scheme,
+              loglevel2str(lst->loglevel));
   }
 }

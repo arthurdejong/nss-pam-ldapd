@@ -282,6 +282,53 @@ static void handle_gid(const char *filename, int lnr,
   exit(EXIT_FAILURE);
 }
 
+static int parse_loglevel(const char *filename, int lnr, const char *value)
+{
+  if (strcasecmp(value, "crit") == 0)
+    return LOG_CRIT;
+  else if ((strcasecmp(value, "error") == 0) || (strcasecmp(value, "err") == 0))
+    return LOG_ERR;
+  else if (strcasecmp(value, "warning")==0)
+    return LOG_WARNING;
+  else if (strcasecmp(value, "notice")==0)
+    return LOG_NOTICE;
+  else if (strcasecmp(value, "info")==0)
+    return LOG_INFO;
+  else if (strcasecmp(value, "debug")==0)
+    return LOG_DEBUG;
+  else
+  {
+    log_log(LOG_ERR, "%s:%d: not a log level '%s'",
+            filename, lnr, value);
+    exit(EXIT_FAILURE);
+  }
+}
+
+static void handle_log(const char *filename, int lnr,
+                       const char *keyword, char *line)
+{
+  int level = LOG_INFO;
+  char scheme[64];
+  char loglevel[32];
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(&line, scheme, sizeof(scheme)) != NULL);
+  if (get_token(&line, loglevel, sizeof(loglevel)) != NULL)
+    level = parse_loglevel(filename, lnr, loglevel);
+  get_eol(filename, lnr, keyword, &line);
+  if (strcasecmp(scheme, "none") == 0)
+    log_addlogging_none();
+  else if (strcasecmp(scheme, "syslog") == 0)
+    log_addlogging_syslog(level);
+  else if (scheme[0] == '/')
+    log_addlogging_file(level, scheme);
+  else
+  {
+    log_log(LOG_ERR, "%s:%d: %s: invalid argument '%s'",
+            filename, lnr, keyword, scheme);
+    exit(EXIT_FAILURE);
+  }
+}
+
 /* add a single URI to the list of URIs in the configuration */
 static void add_uri(const char *filename, int lnr,
                     struct ldap_config *cfg, const char *uri)
@@ -1066,6 +1113,10 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       handle_gid(filename, lnr, keyword, line, &cfg->gid);
     }
+    else if (strcasecmp(keyword, "log") == 0)
+    {
+      handle_log(filename, lnr, keyword, line);
+    }
     /* general connection options */
     else if (strcasecmp(keyword, "uri") == 0)
     {
@@ -1418,6 +1469,7 @@ static void cfg_dump(void)
     log_log(LOG_DEBUG, "CFG: gid %d", nslcd_cfg->gid);
   else
     log_log(LOG_DEBUG, "CFG: # gid not set");
+  log_log_config();
   for (i = 0; i < (NSS_LDAP_CONFIG_MAX_URIS + 1); i++)
     if (nslcd_cfg->uris[i].uri != NULL)
       log_log(LOG_DEBUG, "CFG: uri %s", nslcd_cfg->uris[i].uri);
