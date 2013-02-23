@@ -1,7 +1,7 @@
 
 # ether.py - lookup functions for ethernet addresses
 #
-# Copyright (C) 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -45,6 +45,16 @@ class Search(common.Search):
     case_insensitive = ('cn', )
     limit_attributes = ('cn', 'macAddress')
     required = ('cn', 'macAddress')
+
+    def mk_filter(self):
+        # we need a custom mk_filter because this is an | query
+        if 'macAddress' in self.parameters:
+            ether = self.parameters['macAddress']
+            alt_ether = ':'.join('%02x' % int(x, 16) for x in ether.split(':'))
+            return '(&%s(|(%s=%s)(%s=%s)))' % (self.filter,
+                      attmap['macAddress'], ether,
+                      attmap['macAddress'], alt_ether)
+        return super(Search, self).mk_filter()
 
 
 class Cache(cache.Cache):
