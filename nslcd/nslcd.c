@@ -640,6 +640,7 @@ static void disable_nss_ldap(void)
 {
   void *handle;
   char *error;
+  char **version_info;
   int *enable_flag;
   /* try to load the NSS module */
 #ifdef RTLD_NODELETE
@@ -649,9 +650,18 @@ static void disable_nss_ldap(void)
 #endif /* RTLD_NODELETE */
   if (handle == NULL)
   {
-    log_log(LOG_WARNING, "Warning: LDAP NSS module not loaded: %s", dlerror());
+    log_log(LOG_WARNING, "Warning: NSS_LDAP module not loaded: %s", dlerror());
     return;
   }
+  /* clear any existing errors */
+  dlerror();
+  /* lookup the NSS version if possible */
+  version_info = (char **)dlsym(handle, "_nss_ldap_version");
+  error = dlerror();
+  if ((version_info != NULL) && (error == NULL))
+    log_log(LOG_DEBUG, "NSS_LDAP %s %s", version_info[0], version_info[1]);
+  else
+    log_log(LOG_WARNING, "Warning: NSS_LDAP version missing: %s", error);
   /* clear any existing errors */
   dlerror();
   /* try to look up the flag */

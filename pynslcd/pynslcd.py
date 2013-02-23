@@ -225,7 +225,15 @@ def disable_nss_ldap():
     """Disable the nss_ldap module to avoid lookup loops."""
     import ctypes
     lib = ctypes.CDLL(constants.NSS_LDAP_SONAME)
-    ctypes.c_int.in_dll(lib, '_nss_ldap_enablelookups').value = 0
+    try:
+        ctypes.c_int.in_dll(lib, '_nss_ldap_enablelookups').value = 0
+    except ValueError:
+        logging.warn('probably older NSS module loaded', exc_info=True)
+    try:
+        version_info = (ctypes.c_char_p * 2).in_dll(lib, '_nss_ldap_version')
+        logging.debug('NSS_LDAP %s %s', version_info[0], version_info[1])
+    except ValueError:
+        logging.warn('probably older NSS module loaded', exc_info=True)
 
 
 def get_connection():
@@ -269,11 +277,11 @@ if __name__ == '__main__':
     os.putenv('HOME', '/')
     os.putenv('TMPDIR', '/tmp')
     os.putenv('LDAPNOINIT', '1')
-    # disable ldap lookups of host names to avoid lookup loop
-    disable_nss_ldap()
     # set log level
     if debugging:
         logging.getLogger().setLevel(logging.DEBUG)
+    # disable ldap lookups of host names to avoid lookup loop
+    disable_nss_ldap()
     # TODO: implement
     #if myldap_set_debuglevel(cfg.debug) != LDAP_SUCCESS:
     #    sys.exit(1)
