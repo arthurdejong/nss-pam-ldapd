@@ -1634,6 +1634,12 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry,const char *attr)
       if (set==NULL)
         return NULL;
       values=set_tolist(set);
+      set_free(set);
+      if (values==NULL)
+      {
+        log_log(LOG_CRIT,"myldap_get_values_len(): malloc() failed to allocate memory");
+        return NULL;
+      }
     }
     else
     {
