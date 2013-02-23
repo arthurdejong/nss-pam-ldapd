@@ -173,7 +173,9 @@
 #define NSLCD_ACTION_RPC_BYNUMBER      0x000a0002
 #define NSLCD_ACTION_RPC_ALL           0x000a0008
 
-/* Service (/etc/services) information requests. Result values are:
+/* Service (/etc/services) information requests. The BYNAME and BYNUMBER
+   requests contain an extra protocol string in the request which, if not
+   blank, will filter the services by this protocol. Result values are:
      STRING      service name
      STRINGLIST  service aliases
      INT32       service (port) number
