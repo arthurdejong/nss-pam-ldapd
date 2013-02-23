@@ -733,7 +733,7 @@
        characters and the 'i' flag may be appended at the end to indicate
        that the match should be case-insensetive.
        The default value is
-       <literal>/^[a-z0-9._@$][a-z0-9._@$ \\~-]*[a-z0-9._@$~-]$/i</literal>
+       <literal>/^[a-z0-9._@$()]([a-z0-9._@$() \\~-]*[a-z0-9._@$()~-])?$/i</literal>
       </para>
      </listitem>
     </varlistentry>

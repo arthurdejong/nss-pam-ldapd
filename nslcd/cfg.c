@@ -1048,7 +1048,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->nss_min_uid = 0;
   cfg->validnames_str = NULL;
   handle_validnames(__FILE__, __LINE__, "",
-                    "/^[a-z0-9._@$][a-z0-9._@$ \\~-]*[a-z0-9._@$~-]$/i",
+                    "/^[a-z0-9._@$()]([a-z0-9._@$() \\~-]*[a-z0-9._@$()~-])?$/i",
                     cfg);
   cfg->ignorecase = 0;
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)

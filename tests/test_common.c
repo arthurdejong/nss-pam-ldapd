@@ -2,7 +2,7 @@
    test_common.c - simple test for the common module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008, 2009, 2011, 2012 Arthur de Jong
+   Copyright (C) 2008, 2009, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,8 @@ static void test_isvalidname(void)
   assert(!isvalidname("\\foo\\bar"));
   assert(!isvalidname("foo\\bar\\"));
   assert(isvalidname("me"));    /* try short name */
+  assert(isvalidname("f"));
+  assert(isvalidname("(foo bar)"));
 }
 
 /* the main program... */
