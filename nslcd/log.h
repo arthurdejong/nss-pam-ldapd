@@ -1,7 +1,7 @@
 /*
    log.h - definitions of logging funtions
 
-   Copyright (C) 2002, 2003, 2007, 2008, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2002, 2003, 2007, 2008, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,16 @@
 #include "compat/attrs.h"
 
 /* set loglevel when no logging is configured */
-void log_setdefaultloglevel(int pri);
+void log_setdefaultloglevel(int loglevel);
+
+/* configure logging to a file */
+void log_addlogging_file(int loglevel, const char *filename);
+
+/* configure logging to syslog */
+void log_addlogging_syslog(int loglevel);
+
+/* configure a null logging mode (no logging) */
+void log_addlogging_none(void);
 
 /* start the logging with the configured logging methods
    if no method is configured yet, logging is done to syslog */

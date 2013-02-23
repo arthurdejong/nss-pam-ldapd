@@ -31,6 +31,7 @@
 #include <string.h>
 #include <time.h>
 #include <pthread.h>
+#include <strings.h>
 
 #include "log.h"
 
@@ -38,11 +39,15 @@
 #undef PACKAGE
 #define PACKAGE "nslcd"
 
+/* storage for logging modes */
+static struct log_cfg {
+  int loglevel;
+  FILE *fp; /* NULL == syslog */
+  struct log_cfg *next;
+} *loglist = NULL;
+
 /* default loglevel when no logging is configured */
 static int prelogging_loglevel = LOG_INFO;
-
-/* loglevel to use before logging to syslog */
-static int loglevel = LOG_INFO;
 
 #define MAX_REQUESTID_LENGTH 40
 
@@ -69,16 +74,69 @@ static void tls_init_keys(void)
 #endif /* no TLS, use pthreads */
 
 /* set loglevel when no logging is configured */
-void log_setdefaultloglevel(int pri)
+void log_setdefaultloglevel(int loglevel)
 {
-  prelogging_loglevel = pri;
+  prelogging_loglevel = loglevel;
+}
+
+/* add logging method to configuration list */
+static void addlogging(int loglevel, FILE *fp)
+{
+  struct log_cfg *tmp, *lst;
+  /* create new logstruct */
+  tmp = (struct log_cfg *)malloc(sizeof(struct log_cfg));
+  if (tmp == NULL)
+  {
+    log_log(LOG_CRIT, "malloc() returned NULL");
+    exit(EXIT_FAILURE);
+  }
+  tmp->fp = fp;
+  tmp->loglevel = loglevel;
+  tmp->next = NULL;
+  /* save the struct in the list */
+  if (loglist == NULL)
+    loglist = tmp;
+  else
+  {
+    for (lst = loglist; lst->next != NULL; lst = lst->next);
+    lst->next = tmp;
+  }
+}
+
+/* configure logging to a file */
+void log_addlogging_file(int loglevel, const char *filename)
+{
+  FILE *fp;
+  fp = fopen(filename, "a");
+  if (fp == NULL)
+  {
+    log_log(LOG_ERR, "cannot open logfile (%s) for appending: %s",
+            filename, strerror(errno));
+    exit(1);
+  }
+  addlogging(loglevel, fp);
+}
+
+/* configure logging to syslog */
+void log_addlogging_syslog(int loglevel)
+{
+  openlog(PACKAGE, LOG_PID, LOG_DAEMON);
+  addlogging(loglevel, NULL);
+}
+
+/* configure a null logging mode (no logging) */
+void log_addlogging_none()
+{
+  /* this is a hack, but it's so easy */
+  addlogging(LOG_EMERG, NULL);
 }
 
 /* start the logging with the configured logging methods
    if no method is configured yet, logging is done to syslog */
 void log_startlogging(void)
 {
-  openlog(PACKAGE, LOG_PID, LOG_DAEMON);
+  if (loglist == NULL)
+    log_addlogging_syslog(LOG_INFO);
   prelogging_loglevel = -1;
 }
 
@@ -163,6 +221,7 @@ void log_setrequest(const char *format, ...)
 void log_log(int pri, const char *format, ...)
 {
   int res;
+  struct log_cfg *lst;
   char buffer[200];
   va_list ap;
 #ifndef TLS
@@ -202,14 +261,36 @@ void log_log(int pri, const char *format, ...)
   }
   else
   {
-    if (pri <= loglevel)
+    for (lst = loglist; lst != NULL; lst = lst->next)
     {
-      if ((requestid != NULL) && (requestid[0] != '\0'))
-        syslog(pri, "[%s] <%s> %s", sessionid, requestid, buffer);
-      else if ((sessionid != NULL) && (sessionid[0] != '\0'))
-        syslog(pri, "[%s] %s", sessionid, buffer);
-      else
-        syslog(pri, "%s", buffer);
+      if (pri <= lst->loglevel)
+      {
+        if (lst->fp == NULL)
+        {
+          if ((requestid != NULL) && (requestid[0] != '\0'))
+            syslog(pri, "[%s] <%s> %s%s", sessionid, requestid,
+                   pri == LOG_DEBUG ? "DEBUG: " : "", buffer);
+          else if ((sessionid != NULL) && (sessionid[0] != '\0'))
+            syslog(pri, "[%s] %s%s", sessionid,
+                   pri == LOG_DEBUG ? "DEBUG: " : "", buffer);
+          else
+            syslog(pri, "%s%s",
+                   pri == LOG_DEBUG ? "DEBUG: " : "", buffer);
+        }
+        else
+        {
+          if ((requestid != NULL) && (requestid[0] != '\0'))
+            fprintf(lst->fp, "%s: [%s] <%s> %s%s\n", PACKAGE, sessionid, requestid,
+                    pri == LOG_DEBUG ? "DEBUG: " : "", buffer);
+          else if ((sessionid != NULL) && (sessionid[0] != '\0'))
+            fprintf(lst->fp, "%s: [%s] %s%s\n", PACKAGE, sessionid,
+                    pri == LOG_DEBUG ? "DEBUG: " : "", buffer);
+          else
+            fprintf(lst->fp, "%s: %s%s\n", PACKAGE,
+                    pri == LOG_DEBUG ? "DEBUG: " : "", buffer);
+          fflush(lst->fp);
+        }
+      }
     }
   }
 }
