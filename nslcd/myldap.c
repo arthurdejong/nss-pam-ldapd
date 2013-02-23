@@ -1572,8 +1572,7 @@ static const char **bervalues_to_values(struct berval **bvalues)
   values=(char **)malloc(sz);
   if (values==NULL)
   {
-    log_log(LOG_CRIT,"myldap_get_values_len(): malloc() failed to allocate memory");
-    ldap_value_free_len(bvalues);
+    log_log(LOG_CRIT,"bervalues_to_values(): malloc() failed to allocate memory");
     return NULL;
   }
   buf=(char *)values;
@@ -1649,6 +1648,9 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry,const char *attr)
     values=bervalues_to_values(bvalues);
     ldap_value_free_len(bvalues);
   }
+  /* check if we got allocated memory */
+  if (values==NULL)
+    return NULL;
   /* store values entry so we can free it later on */
   for (i=0;i<MAX_RANGED_ATTRIBUTES_PER_ENTRY;i++)
     if (entry->rangedattributevalues[i]==NULL)
