@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -155,6 +155,11 @@ void passwd_init(void)
   attmap_add_attributes(set,attmap_passwd_homeDirectory);
   attmap_add_attributes(set,attmap_passwd_loginShell);
   passwd_attrs=set_tolist(set);
+  if (passwd_attrs==NULL)
+  {
+    log_log(LOG_CRIT,"malloc() failed to allocate memory");
+    exit(EXIT_FAILURE);
+  }
   set_free(set);
 }
 
