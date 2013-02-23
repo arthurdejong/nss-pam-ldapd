@@ -111,6 +111,27 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="log">
+     <term><option>log</option> <replaceable>SCHEME</replaceable> <optional><replaceable>LEVEL</replaceable></optional></term>
+     <listitem>
+      <para>
+       This option controls the way logging is done.
+       The <replaceable>SCHEME</replaceable> argument may either be
+       <literal>none</literal>, <literal>syslog</literal> or an absolute
+       file name.
+       The <replaceable>LEVEL</replaceable> argument is optional and specifies
+       the log level.
+       The log level may be one of: <literal>crit</literal>,
+       <literal>error</literal>, <literal>warning</literal>,
+       <literal>notice</literal>, <literal>info</literal> or
+       <literal>debug</literal>. The default log level is <literal>info</literal>.
+       All messages with the specified loglevel or higher are logged.
+       This option can be supplied multiple times.
+       If this option is omitted <literal>syslog info</literal> is assumed.
+      </para>
+     </listitem>
+    </varlistentry>
+
    </variablelist>
   </refsect2>
 
