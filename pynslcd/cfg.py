@@ -33,6 +33,8 @@ threads = 5
 uid = None
 # the group id nslcd should be run as
 gid = None
+# the configured loggers
+logs = []
 
 # the LDAP server to use
 # FIXME: support multiple servers and have a fail-over mechanism
@@ -79,7 +81,6 @@ tls_ciphers = None
 tls_cert = None
 tls_key = None
 
-
 # other options
 pagesize = 0
 nss_initgroups_ignoreusers = set()
@@ -92,6 +93,12 @@ pam_password_prohibit_message = None
 # allowed boolean values
 _boolean_options = {'on': True, 'yes': True, 'true': True, '1': True,
                     'off': False, 'no': False, 'false': False, '0': False}
+
+# allowed log levels (we log notice which is unsupported in Python to warning)
+_log_levels = {'crit': logging.CRITICAL, 'error': logging.ERROR,
+               'err': logging.ERROR, 'warning': logging.WARNING,
+               'notice': logging.WARNING, 'info': logging.INFO,
+               'debug': logging.DEBUG, 'none': logging.INFO}
 
 # allowed values for scope option
 if not hasattr(ldap, 'SCOPE_CHILDREN') and ldap.VENDOR_VERSION >= 20400:
@@ -186,6 +193,13 @@ def read(filename):
                      line, re.IGNORECASE)
         if m:
             globals()[m.group('keyword').lower()] = m.group('value')
+            continue
+        # log <SCHEME> [<LEVEL>]
+        m = re.match('log\s+(?P<scheme>syslog|/\S*)(\s+(?P<level>%s))?' %
+                         '|'.join(_log_levels.keys()),
+                     line, re.IGNORECASE)
+        if m:
+            logs.append((m.group('scheme'), _log_levels[str(m.group('level')).lower()]))
             continue
         # uri <URI>
         m = re.match('uri\s+(?P<uri>\S+)', line, re.IGNORECASE)
@@ -299,6 +313,9 @@ def read(filename):
             continue
         # unrecognised line
         raise ParseError(filename, lineno, 'error parsing line %r' % line)
+    # if logging is not configured, default to syslog
+    if not logs:
+        log.append('syslog', logging.INFO)
     # dump config (debugging code)
     for k, v in globals().items():
         if not k.startswith('_'):

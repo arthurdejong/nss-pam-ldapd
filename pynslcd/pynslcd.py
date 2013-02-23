@@ -2,7 +2,7 @@
 
 # pynslcd.py - main daemon module
 #
-# Copyright (C) 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -50,10 +50,8 @@ checkonly = False
 class MyFormatter(logging.Formatter):
 
     def format(self, record):
-        msg = super(MyFormatter, self).format(record)
-        if record.levelno == logging.DEBUG:
-            msg = 'DEBUG: %s' % msg
-        return msg
+        record.prefix = 'DEBUG: ' if record.levelno == logging.DEBUG else ''
+        return super(MyFormatter, self).format(record)
 
 
 class MySysLogHandler(logging.Handler):
@@ -78,11 +76,8 @@ class MySysLogHandler(logging.Handler):
 
 
 # configure logging
-formatter = MyFormatter('%(message)s')
 stderrhandler = logging.StreamHandler(sys.stderr)
-stderrhandler.setFormatter(formatter)
-sysloghandler = MySysLogHandler()
-sysloghandler.setFormatter(formatter)
+stderrhandler.setFormatter(MyFormatter('pynslcd: %(prefix)s%(message)s'))
 logging.getLogger().addHandler(stderrhandler)
 logging.getLogger().setLevel(logging.INFO)
 
@@ -91,7 +86,7 @@ def display_version(fp):
     fp.write('%(PACKAGE_STRING)s\n'
              'Written by Arthur de Jong.\n'
              '\n'
-             'Copyright (C) 2010-2012 Arthur de Jong\n'
+             'Copyright (C) 2010-2013 Arthur de Jong\n'
              'This is free software; see the source for copying conditions.  There is NO\n'
              'warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n'
              % {'PACKAGE_STRING': constants.PACKAGE_STRING, })
@@ -320,11 +315,21 @@ if __name__ == '__main__':
                       })
     # start daemon
     with daemon:
-        # start normal logging to syslog
-        if not debugging:
-            logging.getLogger().addHandler(sysloghandler)
-        logging.info('version %s starting', constants.VERSION)
         try:
+            # start normal logging as configured
+            if not debugging:
+                for method, level in cfg.logs:
+                    if method == 'syslog':
+                        handler = MySysLogHandler()
+                        handler.setFormatter(MyFormatter('%(prefix)s%(message)s'))
+                    else:
+                        handler = logging.FileHandler(method, encoding='utf-8')
+                        handler.setFormatter(MyFormatter('%(asctime)s %(prefix)s%(message)s'))
+                    handler.setLevel(level)
+                    logging.getLogger().addHandler(handler)
+                logging.getLogger().setLevel(min(level for method, level in cfg.logs))
+                logging.getLogger().removeHandler(stderrhandler)
+            logging.info('version %s starting', constants.VERSION)
             # create socket
             nslcd_serversocket = create_socket()
             # load supplementary groups
