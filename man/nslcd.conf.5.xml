@@ -72,7 +72,7 @@
    <title>Runtime options</title>
    <variablelist>
 
-    <varlistentry id="threads">
+    <varlistentry id="threads"> <!-- since 0.6.2 -->
      <term><option>threads</option> <replaceable>NUM</replaceable></term>
      <listitem>
       <para>
@@ -85,7 +85,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="uid">
+    <varlistentry id="uid"> <!-- since 0.6.3 -->
      <term><option>uid</option> <replaceable>UID</replaceable></term>
      <listitem>
       <para>
@@ -98,7 +98,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="gid">
+    <varlistentry id="gid"> <!-- since 0.6.3 -->
      <term><option>gid</option> <replaceable>GID</replaceable></term>
      <listitem>
       <para>
@@ -111,7 +111,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="log">
+    <varlistentry id="log"> <!-- since 0.9 -->
      <term><option>log</option> <replaceable>SCHEME</replaceable> <optional><replaceable>LEVEL</replaceable></optional></term>
      <listitem>
       <para>
@@ -139,7 +139,7 @@
    <title>General connection options</title>
    <variablelist>
 
-    <varlistentry id="uri">
+    <varlistentry id="uri"> <!-- since 0.1 -->
      <term><option>uri</option> <replaceable>URI</replaceable></term>
      <listitem>
       <para>
@@ -154,10 +154,11 @@
       <para>
        Alternatively, the value <literal>DNS</literal> may be
        used to try to lookup the server using <acronym>DNS</acronym>
-       <acronym>SRV</acronym> records.
+       <acronym>SRV</acronym> records. <!-- since 0.5 -->
        By default the current domain is used but another domain can
        be queried by using the
        <literal>DNS:</literal><replaceable>DOMAIN</replaceable> syntax.
+       <!-- since 0.8.4 -->
       </para>
       <para>
        When using the ldapi scheme, %2f should be used to escape slashes
@@ -177,7 +178,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="ldap_version">
+    <varlistentry id="ldap_version"> <!-- since 0.1 -->
      <term><option>ldap_version</option> <replaceable>VERSION</replaceable></term>
      <listitem>
       <para>
@@ -187,7 +188,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="binddn">
+    <varlistentry id="binddn"> <!-- since 0.1 -->
      <term><option>binddn</option> <replaceable>DN</replaceable></term>
      <listitem>
       <para>
@@ -198,7 +199,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="bindpw">
+    <varlistentry id="bindpw"> <!-- since 0.1 -->
      <term><option>bindpw</option> <replaceable>PASSWORD</replaceable></term>
      <listitem>
       <para>
@@ -215,7 +216,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="rootpwmoddn">
+    <varlistentry id="rootpwmoddn"> <!-- since 0.7.3 -->
      <term><option>rootpwmoddn</option> <replaceable>DN</replaceable></term>
      <listitem>
       <para>
@@ -225,7 +226,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="rootpwmodpw">
+    <varlistentry id="rootpwmodpw"> <!-- since 0.8.0 -->
      <term><option>rootpwmodpw</option> <replaceable>PASSWORD</replaceable></term>
      <listitem>
       <para>
@@ -249,7 +250,7 @@
    <title><acronym>SASL</acronym> authentication options</title>
    <variablelist>
 
-    <varlistentry id="sasl_mech">
+    <varlistentry id="sasl_mech"> <!-- documented since 0.7.7 -->
      <term><option>sasl_mech</option> <replaceable>MECHANISM</replaceable></term>
      <listitem>
       <para>
@@ -259,7 +260,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="sasl_realm">
+    <varlistentry id="sasl_realm"> <!-- documented since 0.7.7 -->
      <term><option>sasl_realm</option> <replaceable>REALM</replaceable></term>
      <listitem>
       <para>
@@ -269,7 +270,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="sasl_authcid">
+    <varlistentry id="sasl_authcid"> <!-- documented since 0.7.7 -->
      <term><option>sasl_authcid</option> <replaceable>AUTHCID</replaceable></term>
      <listitem>
       <para>
@@ -279,7 +280,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="sasl_authzid">
+    <varlistentry id="sasl_authzid"> <!-- documented since 0.7.7 -->
      <term><option>sasl_authzid</option> <replaceable>AUTHZID</replaceable></term>
      <listitem>
       <para>
@@ -291,7 +292,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="sasl_secprops">
+    <varlistentry id="sasl_secprops"> <!-- documented since 0.7.7 -->
      <term><option>sasl_secprops</option> <replaceable>PROPERTIES</replaceable></term>
      <listitem>
       <para>
@@ -303,7 +304,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="sasl_canonicalize">
+    <varlistentry id="sasl_canonicalize"> <!-- since 0.8.11 -->
      <term><option>sasl_canonicalize</option> yes|no</term>
      <listitem>
       <para>
@@ -323,7 +324,7 @@
    <title>Kerberos authentication options</title>
    <variablelist>
 
-    <varlistentry id="krb5_ccname">
+    <varlistentry id="krb5_ccname"> <!-- since 0.5 -->
      <term><option>krb5_ccname</option> <replaceable>NAME</replaceable></term>
      <listitem>
       <para>
@@ -339,7 +340,7 @@
    <title>Search/mapping options</title>
    <variablelist>
 
-    <varlistentry id="base">
+    <varlistentry id="base"> <!-- since 0.3 -->
      <term><option>base</option>
            <optional><replaceable>MAP</replaceable></optional>
            <replaceable>DN</replaceable></term>
@@ -368,7 +369,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="scope">
+    <varlistentry id="scope"> <!-- since 0.3 -->
      <term><option>scope</option>
            <optional><replaceable>MAP</replaceable></optional>
            sub<optional>tree</optional>|one<optional>level</optional>|base</term>
@@ -381,7 +382,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="deref">
+    <varlistentry id="deref"> <!-- since 0.3 -->
      <term><option>deref</option> never|searching|finding|always</term>
      <listitem>
       <para>
@@ -391,7 +392,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="referrals">
+    <varlistentry id="referrals"> <!-- since 0.6.1 -->
      <term><option>referrals</option> yes|no</term>
      <listitem>
       <para>
@@ -401,7 +402,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="filter">
+    <varlistentry id="filter"> <!-- since 0.3 -->
      <term><option>filter</option>
            <replaceable>MAP</replaceable>
            <replaceable>FILTER</replaceable></term>
@@ -416,7 +417,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="map">
+    <varlistentry id="map"> <!-- since 0.3 -->
      <term><option>map</option>
            <replaceable>MAP</replaceable>
            <replaceable>ATTRIBUTE</replaceable>
@@ -455,14 +456,14 @@
        <literal>shadowWarning</literal>, <literal>shadowInactive</literal>,
        <literal>shadowExpire</literal> and <literal>shadowFlag</literal>.
       </para>
-      <para>
+      <para> <!-- since 0.8.3 -->
        The <literal>uidNumber</literal> and <literal>gidNumber</literal>
        attributes in the <literal>passwd</literal> and <literal>group</literal>
        maps may be mapped to the <literal>objectSid</literal> followed by
        the domain SID to derive numeric user and group ids from the SID
        (e.g. <literal>objectSid:S-1-5-21-3623811015-3361044348-30300820</literal>).
       </para>
-      <para>
+      <para> <!-- since 0.8.0 -->
        By default all <literal>userPassword</literal> attributes are mapped
        to the unmatchable password ("*") to avoid accidentally leaking
        password information.
@@ -477,7 +478,7 @@
    <title>Timing/reconnect options</title>
    <variablelist>
 
-    <varlistentry id="bind_timelimit">
+    <varlistentry id="bind_timelimit"> <!-- since 0.1 -->
      <term><option>bind_timelimit</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
@@ -492,7 +493,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="timelimit">
+    <varlistentry id="timelimit"> <!-- since 0.1 -->
      <term><option>timelimit</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
@@ -504,7 +505,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="idle_timelimit">
+    <varlistentry id="idle_timelimit"> <!-- since 0.1 -->
      <term><option>idle_timelimit</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
@@ -515,7 +516,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="reconnect_sleeptime">
+    <varlistentry id="reconnect_sleeptime"> <!-- since 0.5 -->
      <term><option>reconnect_sleeptime</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
@@ -527,7 +528,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="reconnect_retrytime">
+    <varlistentry id="reconnect_retrytime"> <!-- since 0.7.4, was reconnect_maxsleeptime before -->
      <term><option>reconnect_retrytime</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
@@ -559,7 +560,7 @@
    <title><acronym>SSL</acronym>/<acronym>TLS</acronym> options</title>
    <variablelist>
 
-    <varlistentry id="ssl">
+    <varlistentry id="ssl"> <!-- since 0.3 -->
      <term><option>ssl</option> on|off|start_tls</term>
      <listitem>
       <para>
@@ -572,7 +573,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="tls_reqcert">
+    <varlistentry id="tls_reqcert"> <!-- since 0.6.8, was tls_checkpeer before -->
      <term><option>tls_reqcert</option> never|allow|try|demand|hard</term>
      <listitem>
       <para>
@@ -587,7 +588,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="tls_cacertdir">
+    <varlistentry id="tls_cacertdir"> <!-- since 0.3 -->
      <term><option>tls_cacertdir</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
@@ -599,7 +600,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="tls_cacertfile">
+    <varlistentry id="tls_cacertfile"> <!-- since 0.3 -->
      <term><option>tls_cacertfile</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
@@ -608,7 +609,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="tls_randfile">
+    <varlistentry id="tls_randfile"> <!-- since 0.3 -->
      <term><option>tls_randfile</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
@@ -619,7 +620,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="tls_ciphers">
+    <varlistentry id="tls_ciphers"> <!-- since 0.3 -->
      <term><option>tls_ciphers</option> <replaceable>CIPHERS</replaceable></term>
      <listitem>
       <para>
@@ -630,7 +631,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="tls_cert">
+    <varlistentry id="tls_cert"> <!-- since 0.3 -->
      <term><option>tls_cert</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
@@ -640,7 +641,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="tls_key">
+    <varlistentry id="tls_key"> <!-- since 0.3 -->
      <term><option>tls_key</option> <replaceable>PATH</replaceable></term>
      <listitem>
       <para>
@@ -672,7 +673,7 @@
     </varlistentry>
 -->
 
-    <varlistentry id="pagesize">
+    <varlistentry id="pagesize"> <!-- since 0.3 -->
      <term><option>pagesize</option> <replaceable>NUMBER</replaceable></term>
      <listitem>
       <para>
@@ -691,7 +692,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="nss_initgroups_ignoreusers">
+    <varlistentry id="nss_initgroups_ignoreusers"> <!-- since 0.7.4 -->
      <term><option>nss_initgroups_ignoreusers</option> user1,user2,...</term>
      <listitem>
       <para>
@@ -708,7 +709,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="nss_min_uid">
+    <varlistentry id="nss_min_uid"> <!-- since 0.8.0 -->
      <term><option>nss_min_uid</option> <replaceable>UID</replaceable></term>
      <listitem>
       <para>
@@ -719,7 +720,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="validnames">
+    <varlistentry id="validnames"> <!-- since 0.8.2 -->
      <term><option>validnames</option> <replaceable>REGEX</replaceable></term>
      <listitem>
       <para>
@@ -738,7 +739,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="ignorecase">
+    <varlistentry id="ignorecase"> <!-- since 0.8.7 -->
      <term><option>ignorecase</option> yes|no</term>
      <listitem>
       <para>
@@ -754,7 +755,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="pam_authz_search">
+    <varlistentry id="pam_authz_search"> <!-- since 0.7.4 -->
      <term><option>pam_authz_search</option>
            <replaceable>FILTER</replaceable></term>
      <listitem>
@@ -768,7 +769,7 @@
          <literal>$username</literal>, <literal>$service</literal>,
          <literal>$ruser</literal>, <literal>$rhost</literal>,
          <literal>$tty</literal>, <literal>$hostname</literal>,
-         <literal>$fqdn</literal>,
+         <literal>$fqdn</literal>, <!-- since 0.8.1 -->
          <literal>$dn</literal>, and <literal>$uid</literal>.
        These references are substituted in the search filter using the
        same syntax as described in the section on attribute mapping
@@ -784,14 +785,14 @@
        The <option>pam_check_host_attr</option> option can be emulated with:
        <literallayout><literal>(&amp;(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(host=$fqdn)(host=\\*)))</literal></literallayout>
       </para>
-      <para>
+      <para> <!-- since 0.8.9 -->
        This option may be specified multiple times and all specified searches
        should at least return one entry for access to be granted.
       </para>
      </listitem>
     </varlistentry>
 
-    <varlistentry id="pam_password_prohibit_message">
+    <varlistentry id="pam_password_prohibit_message"> <!-- since 0.8.11 -->
      <term><option>pam_password_prohibit_message</option>
            "<replaceable>MESSAGE</replaceable>"</term>
      <listitem>
@@ -868,7 +869,7 @@
   </variablelist>
  </refsect1>
 
- <refsect1 id="attmappingexpressions">
+ <refsect1 id="attmappingexpressions"> <!-- since 0.7.2 -->
   <title>Attribute mapping expressions</title>
   <para>
    For some attributes a mapping expression may be used to construct the
