@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include <stddef.h>
+
 int _nss_ldap_enablelookups = 1;
 
 /* version information about the NSS module */
