@@ -7,7 +7,6 @@
 * make I/O timeout between NSS lib and daemon configurable with configure
 * protocols/rpc: the description attribute should be used as an alias?
 * maybe rate-limit LDAP entry warnings
-* setnetgrent() may need to return an error if the netgroup is undefined
 * handle repeated calls to getent() better
   (see http://bugzilla.padl.com/show_bug.cgi?id=376)
 * make it possible to start nslcd real early in the boot process and have
