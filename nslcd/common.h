@@ -118,9 +118,6 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session, const char *uid, int *rcp);
 MUST_USE char *uid2dn(MYLDAP_SESSION *session, const char *uid, char *buf,
                       size_t buflen);
 
-/* try to update the shadowLastChange attribute of the entry if possible */
-int update_lastchange(MYLDAP_SESSION *session, const char *userdn);
-
 /* use the user id to lookup an LDAP entry with the shadow attributes
    requested */
 MYLDAP_ENTRY *shadow_uid2entry(MYLDAP_SESSION *session, const char *username,
