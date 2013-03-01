@@ -274,8 +274,14 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
   WRITE_INT32(fp, NSLCD_ACTION_PAM_AUTHC);
   /* if the username is blank and rootpwmoddn is configured, try to
      authenticate as administrator, otherwise validate request as usual */
-  if ((*username == '\0') && (nslcd_cfg->rootpwmoddn != NULL))
+  if (*username == '\0')
   {
+    if (nslcd_cfg->rootpwmoddn == NULL)
+    {
+      log_log(LOG_NOTICE, "rootpwmoddn not configured");
+      /* we break the protocol */
+      return -1;
+    }
     userdn = nslcd_cfg->rootpwmoddn;
     /* if the caller is root we will allow the use of the rootpwmodpw option */
     if ((*password == '\0') && (calleruid == 0) && (nslcd_cfg->rootpwmodpw != NULL))
