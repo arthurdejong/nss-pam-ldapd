@@ -1,7 +1,7 @@
 /*
    ldap_compat.h - provide a replacement definitions for some ldap functions
 
-   Copyright (C) 2009, 2010, 2012 Arthur de Jong
+   Copyright (C) 2009, 2010, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -69,5 +69,19 @@ int ldap_passwd_s(LDAP *ld, struct berval *user, struct berval *oldpw,
 #define LDAP_OPT_DIAGNOSTIC_MESSAGE LDAP_OPT_ERROR_STRING
 #endif /* LDAP_OPT_ERROR_STRING */
 #endif /* not LDAP_OPT_DIAGNOSTIC_MESSAGE */
+
+/* provide replacement oid definitions */
+#ifndef LDAP_CONTROL_PWEXPIRED
+#define LDAP_CONTROL_PWEXPIRED "2.16.840.1.113730.3.4.4"
+#endif /* LDAP_CONTROL_PWEXPIRED */
+#ifndef LDAP_CONTROL_PWEXPIRING
+#define LDAP_CONTROL_PWEXPIRING "2.16.840.1.113730.3.4.5"
+#endif /* LDAP_CONTROL_PWEXPIRING */
+#ifndef LDAP_CONTROL_PASSWORDPOLICYREQUEST
+#define LDAP_CONTROL_PASSWORDPOLICYREQUEST "1.3.6.1.4.1.42.2.27.8.5.1"
+#endif /* LDAP_CONTROL_PASSWORDPOLICYREQUEST */
+#ifndef LDAP_CONTROL_PASSWORDPOLICYRESPONSE
+#define LDAP_CONTROL_PASSWORDPOLICYRESPONSE "1.3.6.1.4.1.42.2.27.8.5.1"
+#endif /* LDAP_CONTROL_PASSWORDPOLICYRESPONSE */
 
 #endif /* COMPAT__LDAP_COMPAT_H */

@@ -704,6 +704,8 @@ then
   AC_CHECK_FUNCS(ldap_parse_result ldap_memfree ldap_controls_free ldap_control_free)
   AC_CHECK_FUNCS(ldap_explode_dn ldap_explode_rdn ldap_set_option ldap_get_option)
   AC_CHECK_FUNCS(ldap_abandon ldap_simple_bind_s ldap_unbind ldap_set_rebind_proc)
+  AC_CHECK_FUNCS(ldap_sasl_bind ldap_sasl_bind_s ldap_control_find)
+  AC_CHECK_FUNCS(ldap_parse_passwordpolicy_control ldap_passwordpolicy_err2txt)
   AC_CHECK_FUNCS(ldap_initialize ldap_search_ext ldap_start_tls_s)
   AC_CHECK_FUNCS(ldap_create_control ldap_extended_operation_s)
   AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)

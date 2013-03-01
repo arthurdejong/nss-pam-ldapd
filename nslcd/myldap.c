@@ -84,16 +84,20 @@
 struct ldap_session {
   /* the connection */
   LDAP *ld;
-  /* the username to bind with */
-  char binddn[256];
-  /* the password to bind with if any */
-  char bindpw[64];
   /* timestamp of last activity */
   time_t lastactivity;
   /* index into uris: currently connected LDAP uri */
   int current_uri;
   /* a list of searches registered with this session */
   struct myldap_search *searches[MAX_SEARCHES_IN_SESSION];
+  /* the username to bind with */
+  char binddn[256];
+  /* the password to bind with if any */
+  char bindpw[64];
+  /* the authentication result (NSLCD_PAM_* code) */
+  int policy_response;
+  /* the authentication message */
+  char policy_message[1024];
 };
 
 /* A search description set as returned by myldap_search(). */
@@ -305,12 +309,14 @@ static MYLDAP_SESSION *myldap_session_new(void)
   }
   /* initialize the session */
   session->ld = NULL;
-  session->binddn[0] = '\0';
-  session->bindpw[0] = '\0';
   session->lastactivity = 0;
   session->current_uri = 0;
   for (i = 0; i < MAX_SEARCHES_IN_SESSION; i++)
     session->searches[i] = NULL;
+  session->binddn[0] = '\0';
+  session->bindpw[0] = '\0';
+  session->policy_response = NSLCD_PAM_SUCCESS;
+  session->policy_message[0] = '\0';
   /* return the new session */
   return session;
 }
@@ -394,6 +400,196 @@ static int do_sasl_interact(LDAP UNUSED(*ld), unsigned UNUSED(flags),
     return rc;                                                              \
   }
 
+#if defined(HAVE_LDAP_SASL_BIND) && defined(LDAP_SASL_SIMPLE)
+static void handle_ppasswd_controls(MYLDAP_SESSION *session, LDAP *ld, LDAPControl **ctrls)
+{
+  int i;
+  int rc;
+  /* clear policy response information in session */
+  session->policy_response = NSLCD_PAM_SUCCESS;
+  strncpy(session->policy_message, "", sizeof(session->policy_message));
+  for (i = 0; ctrls[i] != NULL; i++)
+  {
+    if (strcmp(ctrls[i]->ldctl_oid, LDAP_CONTROL_PWEXPIRED) == 0)
+    {
+      /* check for expired control: force the user to change their password */
+      log_log(LOG_DEBUG, "got LDAP_CONTROL_PWEXPIRED (password expired, user should change)");
+      if (session->policy_response == NSLCD_PAM_SUCCESS)
+        session->policy_response = NSLCD_PAM_NEW_AUTHTOK_REQD;
+    }
+    else if (strcmp(ctrls[i]->ldctl_oid, LDAP_CONTROL_PWEXPIRING) == 0)
+    {
+      /* check for password expiration warning control: the password is about
+         to expire (returns the number of seconds remaining until the password
+         expires) */
+      char seconds[32];
+      long int sec;
+      mysnprintf(seconds, sizeof(seconds), "%.*s", (int)ctrls[i]->ldctl_value.bv_len,
+                 ctrls[i]->ldctl_value.bv_val);
+      sec = atol(seconds);
+      log_log(LOG_DEBUG, "got LDAP_CONTROL_PWEXPIRING (password will expire in %ld seconds)",
+              sec);
+      /* return this warning to PAM */
+      if (session->policy_response == NSLCD_PAM_SUCCESS)
+      {
+        session->policy_response = NSLCD_PAM_NEW_AUTHTOK_REQD;
+        mysnprintf(session->policy_message, sizeof(session->policy_message),
+                   "password will expire in %ld seconds",  sec);
+      }
+    }
+    else if (strcmp(ctrls[i]->ldctl_oid, LDAP_CONTROL_PASSWORDPOLICYRESPONSE) == 0)
+    {
+      /* check for password policy control */
+      int expire = 0, grace = 0;
+      LDAPPasswordPolicyError error = -1;
+      rc = ldap_parse_passwordpolicy_control(ld, ctrls[i], &expire, &grace, &error);
+      if (rc != LDAP_SUCCESS)
+        myldap_err(LOG_WARNING, ld, rc, "ldap_parse_passwordpolicy_control() failed (ignored)");
+      else
+      {
+        /* log returned control information */
+        if (error != PP_noError)
+          log_log(LOG_DEBUG, "got LDAP_CONTROL_PASSWORDPOLICYRESPONSE (%s)",
+                  ldap_passwordpolicy_err2txt(error));
+        if (expire >= 0)
+          log_log(LOG_DEBUG, "got LDAP_CONTROL_PASSWORDPOLICYRESPONSE (password will expire in %d seconds)",
+                  expire);
+        if (grace >= 0)
+          log_log(LOG_DEBUG, "got LDAP_CONTROL_PASSWORDPOLICYRESPONSE (%d grace logins left)",
+                  grace);
+        /* return this information to PAM */
+        if ((error == PP_passwordExpired) &&
+            ((session->policy_response == NSLCD_PAM_SUCCESS) ||
+             (session->policy_response == NSLCD_PAM_NEW_AUTHTOK_REQD)))
+        {
+          session->policy_response = NSLCD_PAM_AUTHTOK_EXPIRED;
+          mysnprintf(session->policy_message, sizeof(session->policy_message),
+                     "%s", ldap_passwordpolicy_err2txt(error));
+        }
+        else if ((error == PP_accountLocked) &&
+                 ((session->policy_response == NSLCD_PAM_SUCCESS) ||
+                  (session->policy_response == NSLCD_PAM_NEW_AUTHTOK_REQD)))
+        {
+          session->policy_response = NSLCD_PAM_ACCT_EXPIRED;
+          mysnprintf(session->policy_message, sizeof(session->policy_message),
+                     "%s", ldap_passwordpolicy_err2txt(error));
+        }
+        else if ((error == PP_changeAfterReset) &&
+                 (session->policy_response == NSLCD_PAM_SUCCESS))
+        {
+          session->policy_response = NSLCD_PAM_NEW_AUTHTOK_REQD;
+          mysnprintf(session->policy_message, sizeof(session->policy_message),
+                     "%s", ldap_passwordpolicy_err2txt(error));
+        }
+        else if ((error != PP_noError) &&
+                 ((session->policy_response == NSLCD_PAM_SUCCESS) ||
+                  (session->policy_response == NSLCD_PAM_NEW_AUTHTOK_REQD)))
+        {
+          session->policy_response = NSLCD_PAM_PERM_DENIED;
+          mysnprintf(session->policy_message, sizeof(session->policy_message),
+                     "%s", ldap_passwordpolicy_err2txt(error));
+        }
+        else if ((expire >= 0) &&
+                 ((session->policy_response == NSLCD_PAM_SUCCESS) ||
+                  (session->policy_response == NSLCD_PAM_NEW_AUTHTOK_REQD)))
+        {
+          session->policy_response = NSLCD_PAM_NEW_AUTHTOK_REQD;
+          mysnprintf(session->policy_message, sizeof(session->policy_message),
+                     "Password will expire in %d seconds", expire);
+        }
+        else if ((grace >= 0) &&
+                 (session->policy_response == NSLCD_PAM_SUCCESS))
+        {
+          session->policy_response = NSLCD_PAM_NEW_AUTHTOK_REQD;
+          mysnprintf(session->policy_message, sizeof(session->policy_message),
+                     "Password expired, %d grace logins left", grace);
+        }
+      }
+    }
+    /* ignore any other controls */
+  }
+}
+
+static int do_ppolicy_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
+{
+  int rc, parserc;
+  struct berval cred;
+  LDAPControl passwd_policy_req;
+  LDAPControl *requestctrls[2];
+  LDAPControl **responsectrls;
+  int msgid;
+  struct timeval timeout;
+  LDAPMessage *result;
+  /* build password policy request control */
+  passwd_policy_req.ldctl_oid = LDAP_CONTROL_PASSWORDPOLICYREQUEST;
+  passwd_policy_req.ldctl_value.bv_val = NULL; /* none */
+  passwd_policy_req.ldctl_value.bv_len = 0;
+  passwd_policy_req.ldctl_iscritical = 0; /* not critical */
+  requestctrls[0] = &passwd_policy_req;
+  requestctrls[1] = NULL;
+  /* build password berval */
+  cred.bv_val = (char *)session->bindpw;
+  cred.bv_len = (session->bindpw == NULL) ? 0 : strlen(session->bindpw);
+  /* do a SASL simple bind with the binddn and bindpw */
+  log_log(LOG_DEBUG, "ldap_sasl_bind(\"%s\",%s) (uri=\"%s\")", session->binddn,
+          ((session->bindpw != NULL) && (session->bindpw[0] != '\0')) ? "\"***\"" : "\"\"", uri);
+  rc = ldap_sasl_bind(ld, session->binddn, LDAP_SASL_SIMPLE, &cred, requestctrls, NULL, &msgid);
+  if (rc != LDAP_SUCCESS)
+    return rc;
+  if (msgid == -1)
+  {
+    myldap_err(LOG_WARNING, ld, rc,"ldap_sasl_bind() failed (msgid=-1, uri=%s)", uri);
+    return LDAP_OPERATIONS_ERROR;
+  }
+  /* get the result from the bind operation */
+  timeout.tv_sec = nslcd_cfg->bind_timelimit;
+  timeout.tv_usec = 0;
+  result = NULL;
+  rc = ldap_result(ld, msgid, LDAP_MSG_ALL, &timeout, &result);
+  if (rc == -1) /* some error */
+  {
+    if (ldap_get_option(ld, LDAP_OPT_ERROR_NUMBER, &rc) != LDAP_SUCCESS)
+      rc = LDAP_UNAVAILABLE;
+    myldap_err(LOG_ERR, ld, rc, "ldap_result() failed");
+    if (result != NULL)
+      ldap_msgfree(result);
+    return LDAP_LOCAL_ERROR;
+  }
+  if (rc == 0) /* the timeout expired */
+  {
+    log_log(LOG_ERR, "ldap_result() timed out");
+    if (result != NULL)
+      ldap_msgfree(result);
+    return LDAP_TIMEOUT;
+  }
+  /* parse the result from the bind operation (frees result, get controls) */
+  responsectrls = NULL;
+  parserc = ldap_parse_result(ld, result, &rc, NULL, NULL, NULL, &responsectrls, 1);
+  if (parserc != LDAP_SUCCESS)
+  {
+    myldap_err(LOG_ERR, ld, parserc, "ldap_parse_result() failed");
+    if (responsectrls != NULL)
+      ldap_controls_free(responsectrls);
+    return parserc;
+  }
+  if (rc != LDAP_SUCCESS)
+  {
+    myldap_err(LOG_ERR, ld, rc, "ldap_parse_result() failed");
+    if (responsectrls != NULL)
+      ldap_controls_free(responsectrls);
+    return rc;
+  }
+  /* check the returned controls */
+  if (responsectrls != NULL)
+  {
+    handle_ppasswd_controls(session, ld, responsectrls);
+    /* free controls */
+    ldap_controls_free(responsectrls);
+  }
+  return LDAP_SUCCESS;
+}
+#endif /* no SASL, so no ppolicy */
+
 /* This function performs the authentication phase of opening a connection.
    The binddn and bindpw parameters may be used to override the authentication
    mechanism defined in the configuration.  This returns an LDAP result
@@ -424,12 +620,16 @@ static int do_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
   /* check if the binddn and bindpw are overwritten in the session */
   if ((session->binddn != NULL) && (session->binddn[0] != '\0'))
   {
+#if defined(HAVE_LDAP_SASL_BIND) && defined(LDAP_SASL_SIMPLE)
+    return do_ppolicy_bind(session, ld, uri);
+#else /* no SASL, so no ppolicy */
     /* do a simple bind */
     log_log(LOG_DEBUG, "ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",
             session->binddn,
             ((session->bindpw != NULL) && (session->bindpw[0] != '\0')) ? "\"***\"" : "\"\"",
             uri);
     return ldap_simple_bind_s(ld, session->binddn, session->bindpw);
+#endif
   }
   /* perform SASL bind if requested and available on platform */
 #ifdef HAVE_LDAP_SASL_INTERACTIVE_BIND_S
