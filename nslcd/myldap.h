@@ -72,6 +72,11 @@ MUST_USE MYLDAP_SESSION *myldap_create_session(void);
 void myldap_set_credentials(MYLDAP_SESSION *session, const char *dn,
                             const char *password);
 
+/* Get bind ppolicy results from the last bind operation. This function
+   returns a NSLCD_PAM_* code and optional message. */
+void myldap_get_policy_response(MYLDAP_SESSION *session, int *response,
+                                const char **message);
+
 /* Closes all pending searches and deallocates any memory that is allocated
    with these searches. This does not close the session. */
 void myldap_session_cleanup(MYLDAP_SESSION *session);

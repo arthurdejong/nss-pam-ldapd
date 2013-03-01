@@ -1037,6 +1037,17 @@ void myldap_set_credentials(MYLDAP_SESSION *session, const char *dn,
   session->bindpw[sizeof(session->bindpw) - 1] = '\0';
 }
 
+/* Get bind ppolicy results from the last bind operation. This function
+   returns a NSLCD_PAM_* code and optional message. */
+void myldap_get_policy_response(MYLDAP_SESSION *session, int *response,
+                                const char **message)
+{
+  if (response != NULL)
+    *response = session->policy_response;
+  if (message != NULL)
+    *message = session->policy_message;
+}
+
 static int do_try_search(MYLDAP_SEARCH *search)
 {
   int rc;

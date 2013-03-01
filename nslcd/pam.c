@@ -41,13 +41,15 @@
 
 /* set up a connection and try to bind with the specified DN and password,
    returns an LDAP result code */
-static int try_bind(const char *userdn, const char *password)
+static int try_bind(const char *userdn, const char *password,
+                    int *authzrc, char *authzmsg, size_t authzmsgsz)
 {
   MYLDAP_SESSION *session;
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   static const char *attrs[2];
   int rc;
+  const char *msg;
   /* set up a new connection */
   session = myldap_create_session();
   if (session == NULL)
@@ -74,6 +76,13 @@ static int try_bind(const char *userdn, const char *password)
         rc = LDAP_NO_RESULTS_RETURNED;
       log_log(LOG_WARNING, "%s: lookup failed: %s", userdn, ldap_err2string(rc));
     }
+  }
+  /* get any policy response from the bind */
+  myldap_get_policy_response(session, authzrc, &msg);
+  if ((msg != NULL) && (msg[0] != '\0'))
+  {
+    mysnprintf(authzmsg, authzmsgsz - 1, "%s", msg);
+    log_log(LOG_WARNING, "%s: %s", userdn, authzmsg);
   }
   /* close the session */
   myldap_session_close(session);
@@ -311,7 +320,7 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
     update_username(entry, username, sizeof(username));
   }
   /* try authentication */
-  rc = try_bind(userdn, password);
+  rc = try_bind(userdn, password, &authzrc, authzmsg, sizeof(authzmsg));
   if (rc == LDAP_SUCCESS)
     log_log(LOG_DEBUG, "bind successful");
   /* map result code */
@@ -322,7 +331,7 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
     default:                       rc = NSLCD_PAM_AUTH_ERR;
   }
   /* perform shadow attribute checks */
-  if (*username != '\0')
+  if ((*username != '\0') && (authzrc == NSLCD_PAM_SUCCESS))
     authzrc = check_shadow(session, username, authzmsg, sizeof(authzmsg), 1, 0);
   /* write response */
   WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
