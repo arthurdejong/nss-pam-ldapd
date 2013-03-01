@@ -43,10 +43,6 @@ parser.add_argument('key', metavar='KEY', nargs='?',
     help='information to lookup')
 
 
-# parse arguments
-args = parser.parse_args()
-
-
 def getent_aliases(database, key=None):
     if not key:
         con = NslcdClient(constants.NSLCD_ACTION_ALIAS_ALL)
@@ -316,6 +312,7 @@ def getent_shadow(database, key=None):
             )
 
 
+args = parser.parse_args()
 try:
     if args.database == 'aliases':
         getent_aliases(args.database, args.key)
