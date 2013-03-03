@@ -1,7 +1,7 @@
 
 # expr.py - expression handling functions
 #
-# Copyright (C) 2011, 2012 Arthur de Jong
+# Copyright (C) 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,31 @@
 'foo=YY'
 >>> expr.value(dict(bar=['YY', 'ZZ']))
 'foo=YY'
+>>> Expression(r'${passwd#{crypt\}}').value(dict(passwd='{crypt}HASH'))
+'HASH'
+>>> Expression('${var#trim}').value(dict(var='notrimme'))
+'notrimme'
+>>> Expression('${var#?trim}').value(dict(var='xtrimme'))
+'me'
+>>> Expression('${var#*trim}').value(dict(var='xxxtrimme'))
+'me'
+>>> Expression('${var%.txt}').value(dict(var='foo.txt'))
+'foo'
+>>> Expression('${x#$y}').value(dict(x='a/b', y='a'))
+'/b'
+>>> Expression('${var#t*is}').value(dict(var='this is a test'))
+' is a test'
+>>> Expression('${var##t*is}').value(dict(var='this is a test'))
+' a test'
+>>> Expression('${var%t*st}').value(dict(var='this is a test'))
+'this is a '
+>>> Expression('${var%%t*st}').value(dict(var='this is a test'))
+''
 """
+
+import fnmatch
+import re
+
 
 # exported names
 __all__ = ('Expression', )
@@ -82,7 +106,17 @@ class DollarExpression(object):
             c = value.next()
             if c == '}':
                 return
-            self.op = c + value.next()
+            elif c == ':':
+                self.op = c + value.next()
+            elif c in ('#', '%'):
+                c2 = value.next()
+                if c2 in ('#', '%'):
+                    c += c2
+                else:
+                    value.back()
+                self.op = c
+            else:
+                raise ValueError('Expecting operator')
             self.expr = Expression(value, endat='}')
         elif c == '(':
             self.name = None
@@ -111,6 +145,18 @@ class DollarExpression(object):
             return value if value else self.expr.value(variables)
         elif self.op == ':+':
             return self.expr.value(variables) if value else ''
+        elif self.op in ('#', '##', '%', '%%'):
+            match = fnmatch.translate(self.expr.value(variables))
+            if self.op == '#':
+                match = match.replace('*', '*?').replace(r'\Z', r'(?P<replace>.*)\Z')
+            elif self.op == '##':
+                match = match.replace(r'\Z', r'(?P<replace>.*?)\Z')
+            elif self.op == '%':
+                match = r'(?P<replace>.*)' + match.replace('*', '*?')
+            elif self.op == '%%':
+                match = r'(?P<replace>.*?)' + match
+            match = re.match(match, value)
+            return match.group('replace') if match else value
         elif self.op == 'lower':
             return self.expr.value(variables).lower()
         elif self.op == 'upper':
