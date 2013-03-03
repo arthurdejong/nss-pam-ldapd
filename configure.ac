@@ -281,7 +281,7 @@ AC_CHECK_HEADERS([nss.h nss_common.h grp.h shadow.h aliases.h netdb.h rpc/rpcent
 AC_CHECK_HEADERS([netinet/ether.h arpa/inet.h netinet/in.h])
 AC_CHECK_HEADERS([nsswitch.h nss_dbdefs.h])
 AC_CHECK_HEADERS([sys/socket.h sys/un.h sys/ucred.h ucred.h sys/param.h sys/time.h])
-AC_CHECK_HEADERS([getopt.h syslog.h])
+AC_CHECK_HEADERS([getopt.h syslog.h stddef.h])
 
 # other general checks
 AC_C_INLINE
@@ -290,8 +290,8 @@ AC_C_CONST
 # checks for availability of common functions
 AC_CHECK_FUNCS([sigaction snprintf])
 AC_SEARCH_LIBS(socket, socket)
-AC_CHECK_FUNCS([strcasecmp strncasecmp strchr strcspn strspn strtol strtoul strtoull])
-AC_CHECK_FUNCS([malloc realloc])
+AC_CHECK_FUNCS([strcasecmp strncasecmp strchr strcspn strspn strtol strtoul strtoull strndup])
+AC_CHECK_FUNCS([malloc realloc atexit])
 AC_FUNC_FORK
 AC_CHECK_FUNCS(__assert_fail)
 
@@ -704,12 +704,14 @@ then
   AC_CHECK_FUNCS(ldap_parse_result ldap_memfree ldap_controls_free ldap_control_free)
   AC_CHECK_FUNCS(ldap_explode_dn ldap_explode_rdn ldap_set_option ldap_get_option)
   AC_CHECK_FUNCS(ldap_abandon ldap_simple_bind_s ldap_unbind ldap_set_rebind_proc)
-  AC_CHECK_FUNCS(ldap_initialize ldap_search_ext)
+  AC_CHECK_FUNCS(ldap_initialize ldap_search_ext ldap_start_tls_s)
   AC_CHECK_FUNCS(ldap_create_control ldap_extended_operation_s)
   AC_CHECK_FUNCS(ldap_domain2hostlist ldap_domain2dn)
-  AC_CHECK_FUNCS(ldap_get_values ldap_value_free ldap_get_dn)
+  AC_CHECK_FUNCS(ldap_get_values ldap_get_values_len ldap_value_free ldap_value_free_len)
+  AC_CHECK_FUNCS(ldap_get_dn ldap_explode_dn ldap_count_values_len)
   AC_CHECK_FUNCS(ldap_err2string ldap_msgfree ldap_result)
-  AC_CHECK_FUNCS(ber_bvfree ber_free ber_set_option)
+  AC_CHECK_FUNCS(ber_bvfree ber_free ber_set_option ldap_modify_ext_s)
+  AC_CHECK_FUNCS(ldap_first_attribute ldap_next_attribute)
 
   # replace ldap_create_page_control() and ldap_parse_page_control()
   AC_CHECK_FUNCS(ldap_create_page_control ldap_parse_page_control,, [AC_LIBOBJ(pagectrl)])
