@@ -899,19 +899,52 @@
    <varlistentry>
     <term><literal>${attr:+word}</literal></term>
     <listitem><para>
-     (use alternative) will substitbute word if attribute is set, otherwise
-     substitute the empty string
+     (use alternative) will substitbute <literal>word</literal> if attribute
+     is set, otherwise substitute the empty string
+    </para></listitem>
+   </varlistentry>
+   <varlistentry> <!-- since 0.9.0 -->
+    <term><literal>${attr#word}</literal></term>
+    <listitem><para>
+     remove the shortest possible match of <literal>word</literal> from the
+     left of the attribute value
+    </para></listitem>
+   </varlistentry>
+   <varlistentry> <!-- since 0.9.0 (pynslcd only) -->
+    <term><literal>${attr##word}</literal></term>
+    <listitem><para>
+     remove the longest possible match of <literal>word</literal> from the
+     left of the attribute value (<command>pynslcd</command> only)
+    </para></listitem>
+   </varlistentry>
+   <varlistentry> <!-- since 0.9.0 (pynslcd only) -->
+    <term><literal>${attr%word}</literal></term>
+    <listitem><para>
+     remove the shortest possible match of <literal>word</literal> from the
+     right of the attribute value (<command>pynslcd</command> only)
+    </para></listitem>
+   </varlistentry>
+   <varlistentry> <!-- since 0.9.0 (pynslcd only) -->
+    <term><literal>${attr%%word}</literal></term>
+    <listitem><para>
+     remove the longest possible match of <literal>word</literal> from the
+     right of the attribute value (<command>pynslcd</command> only)
     </para></listitem>
    </varlistentry>
   </variablelist>
   <para>
-   Quote (<literal>"</literal>), dollar (<literal>$</literal>) or
+   Only the # matching expression is supported in <command>nslcd</command>
+   and only with the ? wildcard symbol. The <command>pynslcd</command>
+   implementation supports full matching.
+  </para>
+  <para>
+   Quote (<literal>"</literal>), dollar (<literal>$</literal>) and
    backslash (<literal>\</literal>) characters should be escaped with a
    backslash (<literal>\</literal>).
   </para>
   <para>
-   The <command>nslcd</command> daemon checks the expressions to figure
-   out which attributes to fetch from <acronym>LDAP</acronym>.
+   The expressions are checked to figure out which attributes to fetch
+   from <acronym>LDAP</acronym>.
    Some examples to demonstrate how these expressions may be used in
    attribute mapping:
   </para>
@@ -935,6 +968,13 @@
     <listitem><para>
      if the <literal>isDisabled</literal> attribute is set, return 100,
      otherwise leave value empty
+    </para></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><literal>"${userPassword#{crypt\}}"</literal></term>
+    <listitem><para>
+     strip the {crypt} prefix from the userPassword attribute, returning
+     the raw hash value
     </para></listitem>
    </varlistentry>
   </variablelist>
