@@ -2,7 +2,7 @@
    test_expr.c - simple tests for the expr module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2009, 2011, 2012 Arthur de Jong
+   Copyright (C) 2009, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -52,6 +52,8 @@ static const char *expanderfn(const char *name, void UNUSED(*expander_attr))
     return "";
   if (strcmp(name, "null") == 0)
     return NULL;
+  if (strcmp(name, "userPassword") == 0)
+    return "{crypt}HASH";
   else
     return "foobar";
 }
@@ -91,6 +93,17 @@ static void test_expr_parse(void)
   assertstreq(buffer, "afoobarbfoobarec");
   assert(expr_parse("a${test1}b${test2:+${empty:-d$test4}e}c", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
   assertstreq(buffer, "afoobarbdfoobarec");
+  /* test ${var#trim} functions */
+  assert(expr_parse("${test1#foo}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "bar");
+  assert(expr_parse("${test1#zoo}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "foobar");
+  assert(expr_parse("${test1#?oo}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "bar");
+  assert(expr_parse("${test1#f\\?o}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "foobar");
+  assert(expr_parse("${userPassword#{crypt\\}}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "HASH");
   /* these are errors */
   assert(expr_parse("$&", buffer, sizeof(buffer), expanderfn, NULL) == NULL);
   assert(expr_parse("${a", buffer, sizeof(buffer), expanderfn, NULL) == NULL);
