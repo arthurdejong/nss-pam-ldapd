@@ -805,6 +805,24 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="nscd_invalidate"> <!-- since 0.9.0 -->
+     <term><option>nscd_invalidate</option>
+           <replaceable>DB</replaceable>,<replaceable>DB</replaceable>,...</term>
+     <listitem>
+      <para>
+       If this option is set, on start-up and whenever a connection to the
+       <acronym>LDAP</acronym> server is re-established after an error
+       <command>nscd</command> is contacted to flush it's cache for the
+       configured databases.
+      </para>
+      <para>
+       Using this option ensures that <command>nscd</command> is not
+       caching absence of users that were not available if the LDAP server
+       was unavailable.
+      </para>
+     </listitem>
+    </varlistentry>
+
    </variablelist>
   </refsect2>
 
