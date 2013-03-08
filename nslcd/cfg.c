@@ -466,41 +466,50 @@ static void handle_krb5_ccname(const char *filename, int lnr,
 #endif /* HAVE_GSS_KRB5_CCACHE_NAME */
 }
 
+static enum ldap_map_selector parse_map(const char *value)
+{
+  if ((strcasecmp(value, "alias") == 0) || (strcasecmp(value, "aliases") == 0))
+    return LM_ALIASES;
+  else if ((strcasecmp(value, "ether") == 0) || (strcasecmp(value, "ethers") == 0))
+    return LM_ETHERS;
+  else if (strcasecmp(value, "group") == 0)
+    return LM_GROUP;
+  else if ((strcasecmp(value, "host") == 0) || (strcasecmp(value, "hosts") == 0))
+    return LM_HOSTS;
+  else if (strcasecmp(value, "netgroup") == 0)
+    return LM_NETGROUP;
+  else if ((strcasecmp(value, "network") == 0) || (strcasecmp(value, "networks") == 0))
+    return LM_NETWORKS;
+  else if (strcasecmp(value, "passwd") == 0)
+    return LM_PASSWD;
+  else if ((strcasecmp(value, "protocol") == 0) || (strcasecmp(value, "protocols") == 0))
+    return LM_PROTOCOLS;
+  else if (strcasecmp(value, "rpc") == 0)
+    return LM_RPC;
+  else if ((strcasecmp(value, "service") == 0) || (strcasecmp(value, "services") == 0))
+    return LM_SERVICES;
+  else if (strcasecmp(value, "shadow") == 0)
+    return LM_SHADOW;
+  /* unknown map */
+  return LM_NONE;
+}
+
 /* check to see if the line begins with a named map */
 static enum ldap_map_selector get_map(char **line)
 {
   char token[32];
   char *old;
+  enum ldap_map_selector map;
   /* get the token */
   old = *line;
   if (get_token(line, token, sizeof(token)) == NULL)
     return LM_NONE;
   /* see if we found a map */
-  if ((strcasecmp(token, "alias") == 0) || (strcasecmp(token, "aliases") == 0))
-    return LM_ALIASES;
-  else if ((strcasecmp(token, "ether") == 0) || (strcasecmp(token, "ethers") == 0))
-    return LM_ETHERS;
-  else if (strcasecmp(token, "group") == 0)
-    return LM_GROUP;
-  else if ((strcasecmp(token, "host") == 0) || (strcasecmp(token, "hosts") == 0))
-    return LM_HOSTS;
-  else if (strcasecmp(token, "netgroup") == 0)
-    return LM_NETGROUP;
-  else if ((strcasecmp(token, "network") == 0) || (strcasecmp(token, "networks") == 0))
-    return LM_NETWORKS;
-  else if (strcasecmp(token, "passwd") == 0)
-    return LM_PASSWD;
-  else if ((strcasecmp(token, "protocol") == 0) || (strcasecmp(token, "protocols") == 0))
-    return LM_PROTOCOLS;
-  else if (strcasecmp(token, "rpc") == 0)
-    return LM_RPC;
-  else if ((strcasecmp(token, "service") == 0) || (strcasecmp(token, "services") == 0))
-    return LM_SERVICES;
-  else if (strcasecmp(token, "shadow") == 0)
-    return LM_SHADOW;
+  map = parse_map(token);
   /* unknown map, return to the previous state */
-  *line = old;
-  return LM_NONE;
+  if (map == LM_NONE)
+    *line = old;
+  return map;
 }
 
 static const char *print_map(enum ldap_map_selector map)
@@ -924,6 +933,40 @@ static void handle_pam_password_prohibit_message(
   cfg->pam_password_prohibit_message = value;
 }
 
+static void handle_nscd_invalidate(
+                const char *filename, int lnr,
+                const char *keyword, char *line, struct ldap_config *cfg)
+{
+  char token[MAX_LINE_LENGTH];
+  char *name, *next;
+  enum ldap_map_selector map;
+  check_argumentcount(filename, lnr, keyword, (line != NULL) && (*line != '\0'));
+  while (get_token(&line, token, sizeof(token)) != NULL)
+  {
+    next = token;
+    while (*next != '\0')
+    {
+      name = next;
+      /* find the end of the current map name */
+      while ((*next != '\0') && (*next != ','))
+        next++;
+      if (*next == ',')
+      {
+        *next = '\0';
+        next++;
+      }
+      /* check if map name exists */
+      map = parse_map(name);
+      if (map == LM_NONE)
+      {
+        log_log(LOG_ERR, "%s:%d: unknown map: '%s'", filename, lnr, name);
+        exit(EXIT_FAILURE);
+      }
+      cfg->nscd_invalidate[map] = 1;
+    }
+  }
+}
+
 /* This function tries to get the LDAP search base from the LDAP server.
    Note that this returns a string that has been allocated with strdup().
    For this to work the myldap module needs enough configuration information
@@ -1054,6 +1097,8 @@ static void cfg_defaults(struct ldap_config *cfg)
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)
     cfg->pam_authz_searches[i] = NULL;
   cfg->pam_password_prohibit_message = NULL;
+  for (i = 0; i < LM_NONE; i++)
+    cfg->nscd_invalidate[i] = 0;
 }
 
 static void cfg_read(const char *filename, struct ldap_config *cfg)
@@ -1380,6 +1425,10 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       handle_pam_password_prohibit_message(filename, lnr, keyword, line, cfg);
     }
+    else if (strcasecmp(keyword, "nscd_invalidate") == 0)
+    {
+      handle_nscd_invalidate(filename, lnr, keyword, line, cfg);
+    }
 #ifdef ENABLE_CONFIGFILE_CHECKING
     /* fallthrough */
     else
@@ -1627,6 +1676,17 @@ static void cfg_dump(void)
       log_log(LOG_DEBUG, "CFG: pam_authz_search %s", nslcd_cfg->pam_authz_searches[i]);
   if (nslcd_cfg->pam_password_prohibit_message != NULL)
     log_log(LOG_DEBUG, "CFG: pam_password_prohibit_message \"%s\"", nslcd_cfg->pam_password_prohibit_message);
+  /* build a comma-separated list */
+  buffer[0] = '\0';
+  for (i = 0; i < LM_NONE ; i++)
+    if (nslcd_cfg->nscd_invalidate[i])
+    {
+      if (buffer[0] != '\0')
+        strncat(buffer, ",", sizeof(buffer) - 1 - strlen(buffer));
+      strncat(buffer, print_map(i), sizeof(buffer) - 1 - strlen(buffer));
+    }
+  if (buffer[0] != '\0')
+    log_log(LOG_DEBUG, "CFG: nscd_invalidate %s", buffer);
 }
 
 void cfg_init(const char *fname)
