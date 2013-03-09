@@ -315,7 +315,7 @@ def read(filename):
         raise ParseError(filename, lineno, 'error parsing line %r' % line)
     # if logging is not configured, default to syslog
     if not logs:
-        log.append('syslog', logging.INFO)
+        logs.append(('syslog', logging.INFO))
     # dump config (debugging code)
     for k, v in globals().items():
         if not k.startswith('_'):
