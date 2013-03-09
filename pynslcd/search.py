@@ -117,10 +117,6 @@ class LDAPSearch(object):
                 # FIXME: log message
                 pass
 
-    def escape(self, value):
-        """Escape the provided value so it may be used in a search filter."""
-        return ldap.filter.escape_filter_chars(str(value))
-
     def mk_filter(self):
         """Return the active search filter (based on the read parameters)."""
         if self.parameters:

@@ -19,8 +19,6 @@
 # 02110-1301 USA
 
 import datetime
-import ldap.filter
-import logging
 
 import cache
 import common

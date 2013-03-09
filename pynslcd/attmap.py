@@ -1,7 +1,7 @@
 
 # attmap.py - attribute mapping class
 #
-# Copyright (C) 2011, 2012 Arthur de Jong
+# Copyright (C) 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -37,9 +37,9 @@ True
 '"${gecos:-$cn}"'
 """
 
-import ldap
+from ldap.filter import escape_filter_chars
+import ldap.dn
 import re
-from ldap.filter import escape_filter_chars as escape
 
 from expr import Expression
 
@@ -62,7 +62,9 @@ class SimpleMapping(str):
         return [self]
 
     def mk_filter(self, value):
-        return '(%s=%s)' % (self, escape(str(value)))
+        return '(%s=%s)' % (
+                self, escape_filter_chars(str(value))
+            )
 
     def values(self, variables):
         """Expand the expression using the variables specified."""
@@ -106,7 +108,9 @@ class FunctionMapping(str):
         return [self.attribute]
 
     def mk_filter(self, value):
-        return '(%s=%s)' % (self.attribute, escape(value))
+        return '(%s=%s)' % (
+                self.attribute, escape_filter_chars(value)
+            )
 
     def values(self, variables):
         return [self.function(value)
@@ -163,4 +167,7 @@ class Attributes(dict):
     def get_rdn_value(self, dn, attribute):
         """Extract the attribute value from from DN if possible. Return None
         otherwise."""
-        return self.translate(dict((x, [y]) for x, y, z in ldap.dn.str2dn(dn)[0]))[attribute][0]
+        return self.translate(dict(
+                (x, [y])
+                for x, y, z in ldap.dn.str2dn(dn)[0]
+            ))[attribute][0]

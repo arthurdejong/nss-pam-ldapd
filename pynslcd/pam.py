@@ -22,7 +22,7 @@ import logging
 import socket
 
 from ldap.controls.ppolicy import PasswordPolicyControl, PasswordPolicyError
-from ldap.filter import escape_filter_chars as escape
+from ldap.filter import escape_filter_chars
 import ldap
 
 import cfg
@@ -178,10 +178,10 @@ class PAMAuthorisationRequest(PAMRequest):
         if not cfg.pam_authz_searches:
             return
         # escape all parameters
-        variables = dict((k, escape(v)) for k, v in parameters.items())
+        variables = dict((k, escape_filter_chars(v)) for k, v in parameters.items())
         variables.update(
-                hostname=escape(socket.gethostname()),
-                fqdn=escape(socket.getfqdn()),
+                hostname=escape_filter_chars(socket.gethostname()),
+                fqdn=escape_filter_chars(socket.getfqdn()),
                 dn=variables['userdn'],
                 uid=variables['username'],
             )

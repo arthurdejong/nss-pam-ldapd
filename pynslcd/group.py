@@ -21,6 +21,8 @@
 import itertools
 import logging
 
+from ldap.filter import escape_filter_chars
+
 from passwd import dn2uid, uid2dn
 import cache
 import common
@@ -62,8 +64,8 @@ class Search(search.LDAPSearch):
             dn = uid2dn(self.conn, memberuid)
             if dn:
                 return '(&%s(|(%s=%s)(%s=%s)))' % (self.filter,
-                          attmap['memberUid'], self.escape(memberuid),
-                          attmap['member'], self.escape(dn))
+                          attmap['memberUid'], escape_filter_chars(memberuid),
+                          attmap['member'], escape_filter_chars(dn))
         return super(Search, self).mk_filter()
 
 
