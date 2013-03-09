@@ -24,6 +24,7 @@ import re
 import cache
 import common
 import constants
+import search
 
 
 _netgroup_triple_re = re.compile(r'^\s*\(\s*(?P<host>.*)\s*,\s*(?P<user>.*)\s*,\s*(?P<domain>.*)\s*\)\s*$')
@@ -35,7 +36,7 @@ attmap = common.Attributes(cn='cn',
 filter = '(objectClass=nisNetgroup)'
 
 
-class Search(common.Search):
+class Search(search.LDAPSearch):
 
     case_sensitive = ('cn', )
     required = ('cn', )

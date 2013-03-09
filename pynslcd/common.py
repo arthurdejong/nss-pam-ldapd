@@ -1,7 +1,7 @@
 
 # common.py - functions that are used by different modules
 #
-# Copyright (C) 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,6 @@ import logging
 import sys
 
 import ldap
-import ldap.dn
 
 from attmap import Attributes
 #import cache
@@ -53,125 +52,6 @@ def validate_name(name):
         raise ValueError('%r: denied by validnames option' % name)
 
 
-class Search(object):
-    """
-    Class that performs a search. Subclasses are expected to define the actual
-    searches and should implement the following members:
-
-      case_sensitive - check that these attributes are present in the response
-                       if they were in the request
-      case_insensitive - check that these attributes are present in the
-                         response if they were in the request
-      limit_attributes - override response attributes with request attributes
-                         (ensure that only one copy of the value is returned)
-      required - attributes that are required
-      canonical_first - search the DN for these attributes and ensure that
-                        they are listed first in the attribute values
-      mk_filter() (optional) - function that returns the LDAP search filter
-
-    The module that contains the Request class can also contain the following
-    definitions:
-
-      attmap - an attribute mapping definition (using he Attributes class)
-      filter - an LDAP search filter
-      bases - search bases to be used, falls back to cfg.bases
-      scope - search scope, falls back to cfg.scope
-
-    """
-
-    canonical_first = []
-    required = []
-    case_sensitive = []
-    case_insensitive = []
-    limit_attributes = []
-
-# FIXME: figure out which of these arguments are actually needed
-
-    def __init__(self, conn, base=None, scope=None, filter=None, attributes=None,
-                 parameters=None):
-        # load information from module that defines the class
-        self.conn = conn
-        module = sys.modules[self.__module__]
-        self.attmap = getattr(module, 'attmap', None)
-        self.filter = filter or getattr(module, 'filter', None)
-        self.parameters = parameters or {}
-        if base:
-            self.bases = [base]
-        else:
-            self.bases = getattr(module, 'bases', cfg.bases)
-        self.scope = scope or getattr(module, 'scope', cfg.scope)
-        self.attributes = attributes or self.attmap.attributes()
-
-    def __iter__(self):
-        return self.items()
-
-    def items(self):
-        """Return the results from the search."""
-        filter = self.mk_filter()
-        for base in self.bases:
-            logging.debug('SEARCHING %s %s', base, filter)
-            try:
-                for entry in self.conn.search_s(base, self.scope, filter, self.attributes):
-                    if entry[0]:
-                        entry = self.handle_entry(entry[0], entry[1])
-                        if entry:
-                            yield entry
-            except ldap.NO_SUCH_OBJECT:
-                # FIXME: log message
-                pass
-
-    def escape(self, value):
-        """Escape the provided value so it may be used in a search filter."""
-        return ldap.filter.escape_filter_chars(str(value))
-
-    def mk_filter(self):
-        """Return the active search filter (based on the read parameters)."""
-        if self.parameters:
-            return '(&%s%s)' % (
-                self.filter,
-                ''.join(self.attmap.mk_filter(attribute, value)
-                        for attribute, value in self.parameters.items()))
-        return self.filter
-
-    def handle_entry(self, dn, attributes):
-        """Handle an entry with the specified attributes, filtering it with
-        the request parameters where needed."""
-        # translate the attributes using the attribute mapping
-        if self.attmap:
-            attributes = self.attmap.translate(attributes)
-        # make sure value from DN is first value
-        for attr in self.canonical_first:
-            primary_value = self.attmap.get_rdn_value(dn, attr)
-            if primary_value:
-                values = attributes[attr]
-                if primary_value in values:
-                    values.remove(primary_value)
-                attributes[attr] = [primary_value] + values
-        # check that these attributes have at least one value
-        for attr in self.required:
-            if not attributes.get(attr, None):
-                logging.warning('%s: %s: missing', dn, self.attmap[attr])
-                return
-        # check that requested attribute is present (case sensitive)
-        for attr in self.case_sensitive:
-            value = self.parameters.get(attr, None)
-            if value and str(value) not in attributes[attr]:
-                logging.debug('%s: %s: does not contain %r value', dn, self.attmap[attr], value)
-                return  # not found, skip entry
-        # check that requested attribute is present (case insensitive)
-        for attr in self.case_insensitive:
-            value = self.parameters.get(attr, None)
-            if value and str(value).lower() not in (x.lower() for x in attributes[attr]):
-                logging.debug('%s: %s: does not contain %r value', dn, self.attmap[attr], value)
-                return  # not found, skip entry
-        # limit attribute values to requested value
-        for attr in self.limit_attributes:
-            if attr in self.parameters:
-                attributes[attr] = [self.parameters[attr]]
-        # return the entry
-        return dn, attributes
-
-
 class Request(object):
     """
     Request handler class. Subclasses are expected to handle actual requests
@@ -198,8 +78,8 @@ class Request(object):
         self.cache = None
 
     def read_parameters(self, fp):
-        """This method should read the parameters from ths stream and
-        store them in self."""
+        """This method should read and return the parameters from the
+        stream."""
         pass
 
     def handle_request(self, parameters):
@@ -208,7 +88,7 @@ class Request(object):
         try:
             #with cache.con:
             if True:
-                for dn, attributes in self.search(conn=self.conn, parameters=parameters):
+                for dn, attributes in self.search(self.conn, parameters=parameters):
                     for values in self.convert(dn, attributes, parameters):
                         self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
                         self.write(*values)

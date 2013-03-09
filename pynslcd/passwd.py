@@ -1,7 +1,7 @@
 
 # passwd.py - lookup functions for user account information
 #
-# Copyright (C) 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ import logging
 import cache
 import common
 import constants
+import search
 
 
 attmap = common.Attributes(uid='uid',
@@ -36,7 +37,7 @@ attmap = common.Attributes(uid='uid',
 filter = '(objectClass=posixAccount)'
 
 
-class Search(common.Search):
+class Search(search.LDAPSearch):
 
     case_sensitive = ('uid', 'uidNumber', )
     limit_attributes = ('uid', 'uidNumber', )

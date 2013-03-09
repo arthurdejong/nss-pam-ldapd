@@ -1,7 +1,7 @@
 
 # group.py - group entry lookup routines
 #
-# Copyright (C) 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@ from passwd import dn2uid, uid2dn
 import cache
 import common
 import constants
+import search
 
 
 def clean(lst):
@@ -41,7 +42,7 @@ attmap = common.Attributes(cn='cn',
 filter = '(objectClass=posixGroup)'
 
 
-class Search(common.Search):
+class Search(search.LDAPSearch):
 
     case_sensitive = ('cn', )
     limit_attributes = ('cn', 'gidNumber')

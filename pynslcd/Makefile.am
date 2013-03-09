@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
 pynslcddir = $(datadir)/pynslcd
 
 pynslcd_PYTHON = pynslcd.py attmap.py cache.py cfg.py common.py expr.py \
-                 mypidfile.py tio.py \
+                 mypidfile.py search.py tio.py \
                  alias.py ether.py group.py host.py netgroup.py network.py \
                  pam.py passwd.py protocol.py rpc.py service.py shadow.py
 nodist_pynslcd_PYTHON = constants.py

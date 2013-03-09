@@ -29,6 +29,7 @@ import cfg
 import common
 import constants
 import passwd
+import search
 
 
 def try_bind(userdn, password):
@@ -188,9 +189,9 @@ class PAMAuthorisationRequest(PAMRequest):
         for x in cfg.pam_authz_searches:
             filter = x.value(variables)
             logging.debug('trying pam_authz_search "%s"', filter)
-            search = common.Search(self.conn, filter=filter, attributes=('dn', ))
+            srch = search.LDAPSearch(self.conn, filter=filter, attributes=('dn', ))
             try:
-                dn, values = search.items().next()
+                dn, values = srch.items().next()
             except StopIteration:
                 logging.error('pam_authz_search "%s" found no matches', filter)
                 raise

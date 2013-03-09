@@ -23,6 +23,7 @@ import struct
 import cache
 import common
 import constants
+import search
 
 
 def ether_aton(ether):
@@ -40,7 +41,7 @@ attmap = common.Attributes(cn='cn', macAddress='macAddress')
 filter = '(objectClass=ieee802Device)'
 
 
-class Search(common.Search):
+class Search(search.LDAPSearch):
 
     case_insensitive = ('cn', )
     limit_attributes = ('cn', 'macAddress')
