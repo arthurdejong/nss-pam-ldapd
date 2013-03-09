@@ -34,7 +34,7 @@ import search
 
 def try_bind(userdn, password):
     # open a new connection
-    conn = ldap.initialize(cfg.uri)
+    conn = search.Connection()
     # bind using the specified credentials
     pwctrl = PasswordPolicyControl()
     res, data, msgid, ctrls = conn.simple_bind_s(userdn, password, serverctrls=[pwctrl])

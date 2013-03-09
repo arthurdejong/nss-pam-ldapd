@@ -22,8 +22,33 @@ import logging
 import sys
 
 import ldap
+import ldap.ldapobject
 
 import cfg
+
+
+class Connection(ldap.ldapobject.ReconnectLDAPObject):
+
+    def __init__(self):
+        ldap.ldapobject.ReconnectLDAPObject.__init__(self, cfg.uri,
+            retry_max=1, retry_delay=cfg.reconnect_retrytime)
+        # set connection-specific LDAP options
+        if cfg.ldap_version:
+            self.set_option(ldap.OPT_PROTOCOL_VERSION, cfg.ldap_version)
+        if cfg.deref:
+            self.set_option(ldap.OPT_DEREF, cfg.deref)
+        if cfg.timelimit:
+            self.set_option(ldap.OPT_TIMELIMIT, cfg.timelimit)
+            self.set_option(ldap.OPT_TIMEOUT, cfg.timelimit)
+            self.set_option(ldap.OPT_NETWORK_TIMEOUT, cfg.timelimit)
+        if cfg.referrals:
+            self.set_option(ldap.OPT_REFERRALS, cfg.referrals)
+        if cfg.sasl_canonicalize is not None:
+            self.set_option(ldap.OPT_X_SASL_NOCANON, not cfg.sasl_canonicalize)
+        self.set_option(ldap.OPT_RESTART, True)
+        # TODO: register a connection callback (like dis?connect_cb() in myldap.c)
+        if cfg.ssl or cfg.uri.startswith('ldaps://'):
+            self.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_HARD)
 
 
 class LDAPSearch(object):

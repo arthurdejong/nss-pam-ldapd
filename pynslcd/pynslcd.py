@@ -35,6 +35,7 @@ import cfg
 import common
 import constants
 import mypidfile
+import search
 
 
 # the name of the program
@@ -236,31 +237,8 @@ def disable_nss_ldap():
         logging.warn('probably older NSS module loaded', exc_info=True)
 
 
-def get_connection():
-    """Return a connection to the LDAP server."""
-    session = ldap.initialize(cfg.uri)
-    # set session-specific LDAP options
-    if cfg.ldap_version:
-        session.set_option(ldap.OPT_PROTOCOL_VERSION, cfg.ldap_version)
-    if cfg.deref:
-        session.set_option(ldap.OPT_DEREF, cfg.deref)
-    if cfg.timelimit:
-        session.set_option(ldap.OPT_TIMELIMIT, cfg.timelimit)
-        session.set_option(ldap.OPT_TIMEOUT, cfg.timelimit)
-        session.set_option(ldap.OPT_NETWORK_TIMEOUT, cfg.timelimit)
-    if cfg.referrals:
-        session.set_option(ldap.OPT_REFERRALS, cfg.referrals)
-    if cfg.sasl_canonicalize is not None:
-        session.set_option(ldap.OPT_X_SASL_NOCANON, not cfg.sasl_canonicalize)
-    session.set_option(ldap.OPT_RESTART, True)
-    # TODO: register a connection callback (like dis?connect_cb() in myldap.c)
-    if cfg.ssl or cfg.uri.startswith('ldaps://'):
-        session.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_HARD)
-    return session
-
-
 def worker():
-    session = get_connection()
+    session = search.Connection()
     while True:
         try:
             acceptconnection(session)
