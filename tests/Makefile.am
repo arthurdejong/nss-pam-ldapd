@@ -1,7 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,7 @@ test_getpeercred_SOURCES = test_getpeercred.c common.h
 test_getpeercred_LDADD = ../compat/libcompat.a
 
 # common objects that are included for the tests of nslcd functionality
-common_nslcd_LDADD = ../nslcd/log.o ../nslcd/common.o \
+common_nslcd_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/nscd.o \
                      ../nslcd/myldap.o ../nslcd/attmap.o ../nslcd/nsswitch.o \
                      ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
                      ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \

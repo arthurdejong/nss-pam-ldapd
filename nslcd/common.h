@@ -36,6 +36,7 @@
 #include "common/tio.h"
 #include "compat/attrs.h"
 #include "myldap.h"
+#include "cfg.h"
 
 /* macros for basic read and write operations, the following
    ERROR_OUT* marcos define the action taken on errors
@@ -138,6 +139,13 @@ void nsswitch_check_reload(void);
 
 /* check whether the nsswitch.conf file has LDAP as a naming source for db */
 int nsswitch_shadow_uses_ldap(void);
+
+/* start a child process that holds onto the original privileges with the
+   sole purpose of running nscd -i commands */
+int nscd_start_invalidator(void);
+
+/* signal nscd to invalidate the selected map */
+void nscd_invalidate(enum ldap_map_selector map);
 
 /* fallback definition of HOST_NAME_MAX */
 #ifndef HOST_NAME_MAX
