@@ -32,12 +32,12 @@ import passwd
 import search
 
 
-def try_bind(userdn, password):
+def try_bind(binddn, password):
     # open a new connection
     conn = search.Connection()
     # bind using the specified credentials
     pwctrl = PasswordPolicyControl()
-    res, data, msgid, ctrls = conn.simple_bind_s(userdn, password, serverctrls=[pwctrl])
+    res, data, msgid, ctrls = conn.simple_bind_s(binddn, password, serverctrls=[pwctrl])
     # go over bind result server controls
     for ctrl in ctrls:
         if ctrl.controlType == PasswordPolicyControl.controlType:
@@ -58,9 +58,9 @@ def try_bind(userdn, password):
             elif ctrl.graceAuthNsRemaining is not None:
                 return constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password expired, %d grace logins left' % ctrl.graceAuthNsRemaining
     # perform search for own object (just to do any kind of search)
-    results = conn.search_s(userdn, ldap.SCOPE_BASE, '(objectClass=*)', ['dn', ])
+    results = conn.search_s(binddn, ldap.SCOPE_BASE, '(objectClass=*)', ['dn', ])
     for entry in results:
-        if entry[0] == userdn:
+        if entry[0] == binddn:
             return constants.NSLCD_PAM_SUCCESS, ''
     # if our DN wasn't found raise an error to signal bind failure
     raise ldap.NO_SUCH_OBJECT()
@@ -86,11 +86,11 @@ class PAMRequest(common.Request):
             # get the username from the uid attribute
             values = entry[1]['uid']
             if not values or not values[0]:
-                logging.warning('%s: is missing a %s attribute', dn, passwd.attmap['uid'])
+                logging.warning('%s: is missing a %s attribute', entry[0], passwd.attmap['uid'])
             value = values[0]
         # check the username
         if value and not common.isvalidname(value):
-            raise ValueError('%s: has invalid %s attribute', dn, passwd.attmap['uid'])
+            raise ValueError('%s: has invalid %s attribute', entry[0], passwd.attmap['uid'])
         # check if the username is different and update it if needed
         if value != parameters['username']:
             logging.info('username changed from %r to %r', parameters['username'], value)
@@ -108,7 +108,6 @@ class PAMAuthenticationRequest(PAMRequest):
                     rhost=fp.read_string(),
                     tty=fp.read_string(),
                     password=fp.read_string())
-        #self.validate_request()
         # TODO: log call with parameters
 
     def write(self, username, authc=constants.NSLCD_PAM_SUCCESS,
@@ -139,7 +138,7 @@ class PAMAuthenticationRequest(PAMRequest):
             password = parameters['password']
         # try authentication
         try:
-            authz, msg = try_bind(userdn, password)
+            authz, msg = try_bind(binddn, password)
         except ldap.INVALID_CREDENTIALS, e:
             try:
                 msg = e[0]['desc']
@@ -149,7 +148,7 @@ class PAMAuthenticationRequest(PAMRequest):
             self.write(parameters['username'], authc=constants.NSLCD_PAM_AUTH_ERR, msg=msg)
             return
         if authz != constants.NSLCD_PAM_SUCCESS:
-            logging.warning('%s: %s: %s', userdn, parameters['username'], msg)
+            logging.warning('%s: %s: %s', binddn, parameters['username'], msg)
         else:
             logging.debug('bind successful')
         # FIXME: perform shadow attribute checks with check_shadow()
