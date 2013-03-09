@@ -229,6 +229,14 @@ void nscd_invalidate(enum ldap_map_selector map)
   int rc;
   if (signalfd < 0)
     return;
+  /* LM_NONE is used to signal all maps condigured in nscd_invalidate */
+  if (map == LM_NONE)
+  {
+    for (map = 0; map < LM_NONE ; map++)
+      if (nslcd_cfg->nscd_invalidate[map])
+        nscd_invalidate(map);
+    return;
+  }
   /* write a single byte which should be atomic and not fill the PIPE
      buffer too soon on most platforms
      (nslcd should already ignore SIGPIPE) */

@@ -1195,7 +1195,11 @@ static int do_retry_search(MYLDAP_SEARCH *search)
           pthread_mutex_lock(&uris_mutex);
           /* check if we are coming back from an error */
           if ((current_uri->lastfail > 0) || (search->session->current_uri != start_uri))
+          {
             log_log(LOG_INFO, "connected to LDAP server %s", current_uri->uri);
+            /* signal nscd cache invalidation */
+            nscd_invalidate(LM_NONE);
+          }
           /* update ok time */
           current_uri->firstfail = 0;
           current_uri->lastfail = 0;
