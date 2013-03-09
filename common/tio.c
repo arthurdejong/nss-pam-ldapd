@@ -75,8 +75,9 @@ struct tio_fileinfo {
 #endif /* DEBUG_TIO_STATS */
 };
 
-/* update the timeout to the value that is remaining before deadline
-   returns non-zero if there is no more time before the deadline */
+/* update the timeout to the value that is remaining before the deadline
+   returns the number of milliseconds before the deadline (or a negative
+   value of the deadline has expired) */
 static inline int tio_time_remaining(struct timeval *deadline, int timeout)
 {
   struct timeval tv;
