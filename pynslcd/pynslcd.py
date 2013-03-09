@@ -214,7 +214,7 @@ def acceptconnection(session):
         try:
             handler = handlers[action]
         except KeyError:
-            logging.warning('invalid action id: %r', action)
+            logging.warning('invalid action id: 0x%08x', action)
             return
         handler(fp, session, uid)()
     finally:
