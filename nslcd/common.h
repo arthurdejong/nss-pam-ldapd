@@ -60,6 +60,9 @@
 int mysnprintf(char *buffer, size_t buflen, const char *format, ...)
   LIKE_PRINTF(3, 4);
 
+/* get a name of a signal with a given signal number */
+const char *signame(int signum);
+
 /* return the fully qualified domain name of the current host
    the returned value does not need to be freed but is re-used for every
    call */

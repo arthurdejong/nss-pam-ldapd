@@ -3,7 +3,7 @@
    This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,7 @@
 #include <string.h>
 #include <regex.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include "nslcd.h"
 #include "common.h"
@@ -56,6 +57,61 @@ int mysnprintf(char *buffer, size_t buflen, const char *format, ...)
   buffer[buflen - 1] = '\0';
   /* check if the string was completely written */
   return ((res < 0) || (((size_t)res) >= buflen));
+}
+
+/* get a name of a signal with a given signal number */
+const char *signame(int signum)
+{
+  switch (signum)
+  {
+    case SIGHUP:  return "SIGHUP";  /* Hangup detected */
+    case SIGINT:  return "SIGINT";  /* Interrupt from keyboard */
+    case SIGQUIT: return "SIGQUIT"; /* Quit from keyboard */
+    case SIGILL:  return "SIGILL";  /* Illegal Instruction */
+    case SIGABRT: return "SIGABRT"; /* Abort signal from abort(3) */
+    case SIGFPE:  return "SIGFPE";  /* Floating point exception */
+    case SIGKILL: return "SIGKILL"; /* Kill signal */
+    case SIGSEGV: return "SIGSEGV"; /* Invalid memory reference */
+    case SIGPIPE: return "SIGPIPE"; /* Broken pipe */
+    case SIGALRM: return "SIGALRM"; /* Timer signal from alarm(2) */
+    case SIGTERM: return "SIGTERM"; /* Termination signal */
+    case SIGUSR1: return "SIGUSR1"; /* User-defined signal 1 */
+    case SIGUSR2: return "SIGUSR2"; /* User-defined signal 2 */
+    case SIGCHLD: return "SIGCHLD"; /* Child stopped or terminated */
+    case SIGCONT: return "SIGCONT"; /* Continue if stopped */
+    case SIGSTOP: return "SIGSTOP"; /* Stop process */
+    case SIGTSTP: return "SIGTSTP"; /* Stop typed at tty */
+    case SIGTTIN: return "SIGTTIN"; /* tty input for background process */
+    case SIGTTOU: return "SIGTTOU"; /* tty output for background process */
+#ifdef SIGBUS
+    case SIGBUS:  return "SIGBUS";  /* Bus error */
+#endif
+#ifdef SIGPOLL
+    case SIGPOLL: return "SIGPOLL"; /* Pollable event */
+#endif
+#ifdef SIGPROF
+    case SIGPROF: return "SIGPROF"; /* Profiling timer expired */
+#endif
+#ifdef SIGSYS
+    case SIGSYS:  return "SIGSYS";  /* Bad argument to routine */
+#endif
+#ifdef SIGTRAP
+    case SIGTRAP: return "SIGTRAP"; /* Trace/breakpoint trap */
+#endif
+#ifdef SIGURG
+    case SIGURG:  return "SIGURG";  /* Urgent condition on socket */
+#endif
+#ifdef SIGVTALRM
+    case SIGVTALRM: return "SIGVTALRM"; /* Virtual alarm clock */
+#endif
+#ifdef SIGXCPU
+    case SIGXCPU: return "SIGXCPU"; /* CPU time limit exceeded */
+#endif
+#ifdef SIGXFSZ
+    case SIGXFSZ: return "SIGXFSZ"; /* File size limit exceeded */
+#endif
+    default:      return "UNKNOWN";
+  }
 }
 
 /* return the fully qualified domain name of the current host */

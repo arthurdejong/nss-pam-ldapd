@@ -178,61 +178,6 @@ static void parse_cmdline(int argc, char *argv[])
   }
 }
 
-/* get a name of a signal with a given signal number */
-static const char *signame(int signum)
-{
-  switch (signum)
-  {
-    case SIGHUP:  return "SIGHUP";  /* Hangup detected */
-    case SIGINT:  return "SIGINT";  /* Interrupt from keyboard */
-    case SIGQUIT: return "SIGQUIT"; /* Quit from keyboard */
-    case SIGILL:  return "SIGILL";  /* Illegal Instruction */
-    case SIGABRT: return "SIGABRT"; /* Abort signal from abort(3) */
-    case SIGFPE:  return "SIGFPE";  /* Floating point exception */
-    case SIGKILL: return "SIGKILL"; /* Kill signal */
-    case SIGSEGV: return "SIGSEGV"; /* Invalid memory reference */
-    case SIGPIPE: return "SIGPIPE"; /* Broken pipe */
-    case SIGALRM: return "SIGALRM"; /* Timer signal from alarm(2) */
-    case SIGTERM: return "SIGTERM"; /* Termination signal */
-    case SIGUSR1: return "SIGUSR1"; /* User-defined signal 1 */
-    case SIGUSR2: return "SIGUSR2"; /* User-defined signal 2 */
-    case SIGCHLD: return "SIGCHLD"; /* Child stopped or terminated */
-    case SIGCONT: return "SIGCONT"; /* Continue if stopped */
-    case SIGSTOP: return "SIGSTOP"; /* Stop process */
-    case SIGTSTP: return "SIGTSTP"; /* Stop typed at tty */
-    case SIGTTIN: return "SIGTTIN"; /* tty input for background process */
-    case SIGTTOU: return "SIGTTOU"; /* tty output for background process */
-#ifdef SIGBUS
-    case SIGBUS:  return "SIGBUS";  /* Bus error */
-#endif
-#ifdef SIGPOLL
-    case SIGPOLL: return "SIGPOLL"; /* Pollable event */
-#endif
-#ifdef SIGPROF
-    case SIGPROF: return "SIGPROF"; /* Profiling timer expired */
-#endif
-#ifdef SIGSYS
-    case SIGSYS:  return "SIGSYS";  /* Bad argument to routine */
-#endif
-#ifdef SIGTRAP
-    case SIGTRAP: return "SIGTRAP"; /* Trace/breakpoint trap */
-#endif
-#ifdef SIGURG
-    case SIGURG:  return "SIGURG";  /* Urgent condition on socket */
-#endif
-#ifdef SIGVTALRM
-    case SIGVTALRM: return "SIGVTALRM"; /* Virtual alarm clock */
-#endif
-#ifdef SIGXCPU
-    case SIGXCPU: return "SIGXCPU"; /* CPU time limit exceeded */
-#endif
-#ifdef SIGXFSZ
-    case SIGXFSZ: return "SIGXFSZ"; /* File size limit exceeded */
-#endif
-    default:      return "UNKNOWN";
-  }
-}
-
 /* signal handler for closing down */
 static void sigexit_handler(int signum)
 {
