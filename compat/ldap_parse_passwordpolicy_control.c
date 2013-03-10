@@ -52,7 +52,9 @@ int ldap_parse_passwordpolicy_control(LDAP UNUSED(*ld), LDAPControl *ctrl,
   ber_tag_t tag;
   ber_len_t berLen;
   char *last;
+#ifdef HAVE_BER_GET_ENUM
   int err = PP_noError;
+#endif /* HAVE_BER_GET_ENUM */
   /* get a BerElement from the control */
   ber = ber_init(&ctrl->ldctl_value);
   if (ber == NULL)
@@ -86,6 +88,7 @@ int ldap_parse_passwordpolicy_control(LDAP UNUSED(*ld), LDAPControl *ctrl,
             return LDAP_DECODING_ERROR;
         }
         break;
+#ifdef HAVE_BER_GET_ENUM
       case PPOLICY_ERROR:
         if (ber_get_enum(ber, &err) == LBER_DEFAULT)
         {
@@ -93,6 +96,7 @@ int ldap_parse_passwordpolicy_control(LDAP UNUSED(*ld), LDAPControl *ctrl,
           return LDAP_DECODING_ERROR;
         }
         break;
+#endif /* HAVE_BER_GET_ENUM */
       default:
         ber_free(ber, 1);
         return LDAP_DECODING_ERROR;

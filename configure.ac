@@ -712,7 +712,7 @@ then
   AC_CHECK_FUNCS(ldap_get_values ldap_get_values_len ldap_value_free ldap_value_free_len)
   AC_CHECK_FUNCS(ldap_get_dn ldap_explode_dn ldap_count_values_len)
   AC_CHECK_FUNCS(ldap_err2string ldap_msgfree ldap_result)
-  AC_CHECK_FUNCS(ber_bvfree ber_free ber_set_option ldap_modify_ext_s)
+  AC_CHECK_FUNCS(ber_bvfree ber_free ber_set_option ldap_modify_ext_s ber_get_enum)
   AC_CHECK_FUNCS(ldap_first_attribute ldap_next_attribute)
 
   # replace ldap_create_page_control() and ldap_parse_page_control()
