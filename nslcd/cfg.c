@@ -1501,7 +1501,9 @@ static void bindpw_read(const char *filename, struct ldap_config *cfg)
 static void cfg_dump(void)
 {
   int i;
+#ifdef LDAP_OPT_X_TLS
   int rc;
+#endif /* LDAP_OPT_X_TLS */
   enum ldap_map_selector map;
   char *str;
   const char **strp;

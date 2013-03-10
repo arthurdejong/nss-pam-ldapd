@@ -105,26 +105,26 @@ static void exec_invalidate(const char *db)
       }
       while ((i < 0) && (errno == EINTR));
       if (i < 0)
-        log_log(LOG_ERR, "nscd_invalidator: waitpid(%d) failed: %s", cpid, strerror(errno));
+        log_log(LOG_ERR, "nscd_invalidator: waitpid(%d) failed: %s", (int)cpid, strerror(errno));
       else if (WIFEXITED(status))
       {
         i = WEXITSTATUS(status);
         if (i == 0)
           log_log(LOG_DEBUG, "nscd_invalidator: nscd -i %s (pid %d) success",
-                  db, cpid);
+                  db, (int)cpid);
         else
           log_log(LOG_DEBUG, "nscd_invalidator: nscd -i %s (pid %d) failed (%d)",
-                  db, cpid, i);
+                  db, (int)cpid, i);
       }
       else if (WIFSIGNALED(status))
       {
         i = WTERMSIG(status);
         log_log(LOG_ERR, "nscd_invalidator: nscd -i %s (pid %d) killed by %s (%d)",
-                db, cpid, signame(i), i);
+                db, (int)cpid, signame(i), i);
       }
       else
         log_log(LOG_ERR, "nscd_invalidator: nscd -i %s (pid %d) had unknown failure",
-                db, cpid);
+                db, (int)cpid);
       break;
   }
 }
