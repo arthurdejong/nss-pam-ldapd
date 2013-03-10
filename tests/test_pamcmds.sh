@@ -2,7 +2,7 @@
 
 # test_pamcmds.sh - test script to start test_pamcmds.expect
 #
-# Copyright (C) 2011 Arthur de Jong
+# Copyright (C) 2011, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -29,8 +29,10 @@ srcdir="${srcdir-`dirname "$0"`}"
 
 # check if we have expect installed
 EXPECT="$(which expect 2> /dev/null || true)"
-if ! [ -x "$EXPECT" ]
+if [ -x "$EXPECT" ]
 then
+  :
+else
   echo "$0: expect not found, not running tests"
   exit 77
 fi
