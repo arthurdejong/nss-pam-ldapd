@@ -209,7 +209,8 @@ NSLCD_HANDLE(
   char filter[4096];
   READ_STRING(fp, name);
   READ_STRING(fp, protocol);
-  log_setrequest("service=\"%s\"/%s", name, protocol);,
+  log_setrequest("service=\"%s\"%s%s", name,
+                 *protocol != '\0' ? "/" : "", protocol);,
   mkfilter_service_byname(name, protocol, filter, sizeof(filter)),
   write_service(fp, entry, name, protocol)
 )
@@ -221,7 +222,8 @@ NSLCD_HANDLE(
   char filter[4096];
   READ_INT32(fp, number);
   READ_STRING(fp, protocol);
-  log_setrequest("service=%lu/%s", (unsigned long int)number, protocol);,
+  log_setrequest("service=%lu/%s", (unsigned long int)number,
+                 *protocol != '\0' ? "/" : "", protocol);,
   mkfilter_service_bynumber(number, protocol, filter, sizeof(filter)),
   write_service(fp, entry, NULL, protocol)
 )
