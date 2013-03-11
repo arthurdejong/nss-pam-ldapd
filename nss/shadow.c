@@ -93,24 +93,24 @@ static char *spwd2str(struct spwd *result, char *buffer, size_t buflen)
   /* snprintf writes a terminating \0 on Solaris */
   snprintf(buffer, buflen, "%s:%s:", result->sp_namp, result->sp_pwdp);
   if (result->sp_lstchg >= 0)
-    snprintf(buffer, buflen - strlen(buffer) - 1, "%d:", result->sp_lstchg);
+    snprintf(buffer, buflen - strlen(buffer) - 1, "%d", result->sp_lstchg);
   strlcat(buffer, ":", buflen);
   if (result->sp_min >= 0)
-    snprintf(buffer, buflen - strlen(buffer) - 1, "%d:", result->sp_min);
+    snprintf(buffer, buflen - strlen(buffer) - 1, "%d", result->sp_min);
   strlcat(buffer, ":", buflen);
   if (result->sp_max >= 0)
-    snprintf(buffer, buflen - strlen(buffer) - 1, "%d:", result->sp_max);
+    snprintf(buffer, buflen - strlen(buffer) - 1, "%d", result->sp_max);
   strlcat(buffer, ":", buflen);
   if (result->sp_warn >= 0)
-    snprintf(buffer, buflen - strlen(buffer) - 1, "%d:", result->sp_warn);
+    snprintf(buffer, buflen - strlen(buffer) - 1, "%d", result->sp_warn);
   strlcat(buffer, ":", buflen);
   if (result->sp_inact >= 0)
-    snprintf(buffer, buflen - strlen(buffer) - 1, "%d:", result->sp_inact);
+    snprintf(buffer, buflen - strlen(buffer) - 1, "%d", result->sp_inact);
   strlcat(buffer, ":", buflen);
   if (result->sp_expire >= 0)
-    snprintf(buffer, buflen - strlen(buffer) - 1, "%d:", result->sp_expire);
+    snprintf(buffer, buflen - strlen(buffer) - 1, "%d", result->sp_expire);
   strlcat(buffer, ":", buflen);
-  if (result->sp_flag >= 0)
+  if (result->sp_flag > 0)
     snprintf(buffer, buflen - strlen(buffer) - 1, "%x", result->sp_flag);
   if (strlen(buffer) >= buflen - 1)
     return NULL;
