@@ -56,6 +56,7 @@ stamp-*
 
 # /tests/
 /tests/lookup_netgroup
+/tests/lookup_shadow
 /tests/temp.cfg
 /tests/test_cfg
 /tests/test_common

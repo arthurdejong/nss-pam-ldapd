@@ -22,7 +22,8 @@ TESTS = test_dict test_set test_tio test_expr test_getpeercred test_cfg \
         test_myldap.sh test_common test_nsscmds.sh test_pamcmds.sh
 
 check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
-                 test_cfg test_myldap test_common lookup_netgroup
+                 test_cfg test_myldap test_common \
+                 lookup_netgroup lookup_shadow
 
 EXTRA_DIST = nslcd-test.conf test_myldap.sh test_nsscmds.sh test_pamcmds.sh \
              in_testenv.sh test_pamcmds.expect usernames.txt
@@ -74,3 +75,5 @@ test_common_SOURCES = test_common.c ../nslcd/common.h
 test_common_LDADD = ../nslcd/cfg.o $(common_nslcd_LDADD)
 
 lookup_netgroup_SOURCES = lookup_netgroup.c
+
+lookup_shadow_SOURCES = lookup_shadow.c
