@@ -86,10 +86,15 @@
 
 /* check validity of passed buffer (Glibc flavour) */
 #define NSS_BUFCHECK                                                        \
-  if ((buffer == NULL) || (buflen == 0))                                    \
+  if (buffer == NULL)                                                       \
   {                                                                         \
     *errnop = EINVAL;                                                       \
     return NSS_STATUS_UNAVAIL;                                              \
+  }                                                                         \
+  if (buflen == 0)                                                          \
+  {                                                                         \
+    *errnop = ERANGE;                                                       \
+    return NSS_STATUS_TRYAGAIN;                                             \
   }
 
 #endif /* NSS_FLAVOUR_GLIBC */
