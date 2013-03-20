@@ -6,6 +6,7 @@
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2013 Steve Hill
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -132,6 +133,20 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
   return mysnprintf(buffer, buflen, "(&%s(|(%s=%s)(%s=%s)))",
                     group_filter,
                     attmap_group_memberUid, safeuid,
+                    attmap_group_member, safedn);
+}
+
+static int mkfilter_group_bymemberdn(MYLDAP_SESSION *session,
+                                     const char *dn,
+                                     char *buffer, size_t buflen)
+{
+  char safedn[300];
+  /* escape DN */
+  if (myldap_escape(dn, safedn, sizeof(safedn)))
+    return -1;
+  return mysnprintf(buffer, buflen,
+                    "(&%s(%s=%s))",
+                    group_filter,
                     attmap_group_member, safedn);
 }
 
