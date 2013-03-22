@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -222,7 +222,7 @@ NSLCD_HANDLE(
   char filter[4096];
   READ_INT32(fp, number);
   READ_STRING(fp, protocol);
-  log_setrequest("service=%lu/%s", (unsigned long int)number,
+  log_setrequest("service=%lu%s%s", (unsigned long int)number,
                  *protocol != '\0' ? "/" : "", protocol);,
   mkfilter_service_bynumber(number, protocol, filter, sizeof(filter)),
   write_service(fp, entry, NULL, protocol)
