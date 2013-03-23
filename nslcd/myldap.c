@@ -1576,7 +1576,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
 
 /* Get the DN from the entry. This function only returns NULL (and sets
    errno) if an incorrect entry is passed. If the DN value cannot be
-   retreived "unknown" is returned instead. */
+   retrieved "unknown" is returned instead. */
 const char *myldap_get_dn(MYLDAP_ENTRY *entry)
 {
   int rc;

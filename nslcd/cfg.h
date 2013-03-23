@@ -118,7 +118,7 @@ struct ldap_config {
 
   int pagesize; /* set to a greater than 0 to enable handling of paged results with the specified size */
   SET *nss_initgroups_ignoreusers;  /* the users for which no initgroups() searches should be done */
-  uid_t nss_min_uid;  /* minimum uid for users retreived from LDAP */
+  uid_t nss_min_uid;  /* minimum uid for users retrieved from LDAP */
   regex_t validnames; /* the regular expression to determine valid names */
   char *validnames_str; /* string version of validnames regexp */
   int ignorecase; /* whether or not case should be ignored in lookups */
