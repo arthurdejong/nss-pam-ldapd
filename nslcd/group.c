@@ -322,8 +322,11 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
     set = set_new();
     if (set != NULL)
     {
-      seen = set_new();
-      subgroups = set_new();
+      if (nslcd_cfg->nss_nested_groups)
+      {
+        seen = set_new();
+        subgroups = set_new();
+      }
       /* collect the members from this group */
       getmembers(entry, session, set, seen, subgroups);
       /* add the members of any nested groups */
@@ -420,17 +423,20 @@ int nslcd_group_bymember(TFILE *fp, MYLDAP_SESSION *session)
     log_log(LOG_WARNING, "nslcd_group_bymember(): filter buffer too small");
     return -1;
   }
-  seen = set_new();
-  tocheck = set_new();
-  if ((seen != NULL) && (tocheck == NULL))
+  if (nslcd_cfg->nss_nested_groups)
   {
-    set_free(seen);
-    seen = NULL;
-  }
-  else if ((tocheck != NULL) && (seen == NULL))
-  {
-    set_free(tocheck);
-    tocheck = NULL;
+    seen = set_new();
+    tocheck = set_new();
+    if ((seen != NULL) && (tocheck == NULL))
+    {
+      set_free(seen);
+      seen = NULL;
+    }
+    else if ((tocheck != NULL) && (seen == NULL))
+    {
+      set_free(tocheck);
+      tocheck = NULL;
+    }
   }
   /* perform a search for each search base */
   for (i = 0; (base = group_bases[i]) != NULL; i++)

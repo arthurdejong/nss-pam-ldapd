@@ -26,6 +26,7 @@ import ldap
 
 from passwd import dn2uid, uid2dn
 import cache
+import cfg
 import common
 import constants
 import search
@@ -109,7 +110,7 @@ class GroupRequest(common.Request):
             member = dn2uid(self.conn, memberdn)
             if member and common.isvalidname(member):
                 members.add(member)
-            else:
+            elif cfg.nss_nested_groups:
                 subgroups.append(memberdn)
 
     def convert(self, dn, attributes, parameters):
@@ -172,16 +173,17 @@ class GroupByMemberRequest(GroupRequest):
             seen.add(dn)
             for values in self.convert(dn, attributes, parameters):
                 yield values
-        tocheck = list(seen)
-        # find parent groups
-        while tocheck:
-            group = tocheck.pop(0)
-            for dn, attributes in self.search(self.conn, parameters=dict(member=group)):
-                if dn not in seen:
-                    seen.add(dn)
-                    tocheck.append(dn)
-                    for result in self.convert(dn, attributes, parameters):
-                        yield result
+        if cfg.nss_nested_groups:
+            tocheck = list(seen)
+            # find parent groups
+            while tocheck:
+                group = tocheck.pop(0)
+                for dn, attributes in self.search(self.conn, parameters=dict(member=group)):
+                    if dn not in seen:
+                        seen.add(dn)
+                        tocheck.append(dn)
+                        for result in self.convert(dn, attributes, parameters):
+                            yield result
 
 
 class GroupAllRequest(GroupRequest):
