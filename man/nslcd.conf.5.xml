@@ -724,7 +724,7 @@
      <term><option>nss_nested_groups</option> yes|no</term>
      <listitem>
       <para>
-       If this option is set, the <litera>member</litera> attribute of a
+       If this option is set, the <literal>member</literal> attribute of a
        group may point to another group.
        Members of nested groups are also returned in the higher level group
        and parent groups are returned when finding groups for a specific user.
