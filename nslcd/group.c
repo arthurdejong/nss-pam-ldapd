@@ -6,6 +6,7 @@
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
    Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2013 Steve Hill
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -135,6 +136,20 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
                     attmap_group_member, safedn);
 }
 
+static int mkfilter_group_bymemberdn(MYLDAP_SESSION *session,
+                                     const char *dn,
+                                     char *buffer, size_t buflen)
+{
+  char safedn[300];
+  /* escape DN */
+  if (myldap_escape(dn, safedn, sizeof(safedn)))
+    return -1;
+  return mysnprintf(buffer, buflen,
+                    "(&%s(%s=%s))",
+                    group_filter,
+                    attmap_group_member, safedn);
+}
+
 void group_init(void)
 {
   int i;
@@ -198,16 +213,12 @@ static int do_write_group(TFILE *fp, MYLDAP_ENTRY *entry,
   return 0;
 }
 
-/* return the list of members */
-static const char **getmembers(MYLDAP_ENTRY *entry, MYLDAP_SESSION *session)
+static void getmembers(MYLDAP_ENTRY *entry, MYLDAP_SESSION *session,
+                       SET *members, SET *seen, SET *subgroups)
 {
   char buf[256];
   int i;
   const char **values;
-  SET *set;
-  set = set_new();
-  if (set == NULL)
-    return NULL;
   /* add the memberUid values */
   values = myldap_get_values(entry, attmap_group_memberUid);
   if (values != NULL)
@@ -215,21 +226,25 @@ static const char **getmembers(MYLDAP_ENTRY *entry, MYLDAP_SESSION *session)
     {
       /* only add valid usernames */
       if (isvalidname(values[i]))
-        set_add(set, values[i]);
+        set_add(members, values[i]);
     }
   /* add the member values */
   values = myldap_get_values(entry, attmap_group_member);
   if (values != NULL)
     for (i = 0; values[i] != NULL; i++)
     {
-      /* transform the DN into a uid (dn2uid() already checks validity) */
-      if (dn2uid(session, values[i], buf, sizeof(buf)) != NULL)
-        set_add(set, buf);
+      if ((seen == NULL) || (!set_contains(seen, values[i])))
+      {
+        if (seen != NULL)
+          set_add(seen, values[i]);
+        /* transform the DN into a uid (dn2uid() already checks validity) */
+        if (dn2uid(session, values[i], buf, sizeof(buf)) != NULL)
+          set_add(members, buf);
+        /* wasn't a UID - try handling it as a nested group */
+        else if (subgroups != NULL)
+          set_add(subgroups, values[i]);
+      }
     }
-  /* return the members */
-  values = set_tolist(set);
-  set_free(set);
-  return values;
 }
 
 /* the maximum number of gidNumber attributes per entry */
@@ -241,11 +256,14 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
 {
   const char **names, **gidvalues;
   const char *passwd;
-  const char **members;
+  const char **members = NULL;
+  SET *set, *seen=NULL, *subgroups=NULL;
   gid_t gids[MAXGIDS_PER_ENTRY];
   int numgids;
   char *tmp;
   char passbuffer[64];
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry2;
   int rc;
   /* get group name (cn) */
   names = myldap_get_values(entry, attmap_group_cn);
@@ -300,9 +318,36 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
     passwd = default_group_userPassword;
   /* get group memebers (memberUid&member) */
   if (wantmembers)
-    members = getmembers(entry, session);
-  else
-    members = NULL;
+  {
+    set = set_new();
+    if (set != NULL)
+    {
+      if (nslcd_cfg->nss_nested_groups)
+      {
+        seen = set_new();
+        subgroups = set_new();
+      }
+      /* collect the members from this group */
+      getmembers(entry, session, set, seen, subgroups);
+      /* add the members of any nested groups */
+      if (subgroups != NULL)
+      {
+        while ((tmp = set_pop(subgroups)) != NULL)
+        {
+          search = myldap_search(session, tmp, LDAP_SCOPE_BASE, group_filter, group_attrs, NULL);
+          if (search != NULL)
+            while ((entry2 = myldap_get_entry(search, NULL)) != NULL)
+              getmembers(entry2, session, set, seen, subgroups);
+        }
+      }
+      members = set_tolist(set);
+      set_free(set);
+      if (seen != NULL)
+        set_free(seen);
+      if (subgroups != NULL)
+        set_free(subgroups);
+    }
+  }
   /* write entries (split to a separate function so we can ensure the call
      to free() below in case a write fails) */
   rc = do_write_group(fp, entry, names, gids, numgids, passwd, members,
@@ -338,12 +383,22 @@ NSLCD_HANDLE(
   write_group(fp, entry, NULL, &gid, 1, session)
 )
 
-NSLCD_HANDLE(
-  group, bymember, NSLCD_ACTION_GROUP_BYMEMBER,
+int nslcd_group_bymember(TFILE *fp, MYLDAP_SESSION *session)
+{
+  /* define common variables */
+  int32_t tmpint32;
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  const char *dn;
+  const char *base;
+  int rc, i;
   char name[256];
   char filter[4096];
+  SET *seen=NULL, *tocheck=NULL;
+  /* read request parameters */
   READ_STRING(fp, name);
   log_setrequest("group/member=\"%s\"", name);
+  /* validate request */
   if (!isvalidname(name))
   {
     log_log(LOG_WARNING, "request denied by validnames option");
@@ -358,10 +413,114 @@ NSLCD_HANDLE(
     WRITE_INT32(fp, NSLCD_ACTION_GROUP_BYMEMBER);
     WRITE_INT32(fp, NSLCD_RESULT_END);
     return 0;
-  },
-  mkfilter_group_bymember(session, name, filter, sizeof(filter)),
-  write_group(fp, entry, NULL, NULL, 0, session)
-)
+  }
+  /* write the response header */
+  WRITE_INT32(fp, NSLCD_VERSION);
+  WRITE_INT32(fp, NSLCD_ACTION_GROUP_BYMEMBER);
+  /* prepare the search filter */
+  if (mkfilter_group_bymember(session, name, filter, sizeof(filter)))
+  {
+    log_log(LOG_WARNING, "nslcd_group_bymember(): filter buffer too small");
+    return -1;
+  }
+  if (nslcd_cfg->nss_nested_groups)
+  {
+    seen = set_new();
+    tocheck = set_new();
+    if ((seen != NULL) && (tocheck == NULL))
+    {
+      set_free(seen);
+      seen = NULL;
+    }
+    else if ((tocheck != NULL) && (seen == NULL))
+    {
+      set_free(tocheck);
+      tocheck = NULL;
+    }
+  }
+  /* perform a search for each search base */
+  for (i = 0; (base = group_bases[i]) != NULL; i++)
+  {
+    /* do the LDAP search */
+    search = myldap_search(session, base, group_scope, filter,
+                           group_attrs, NULL);
+    if (search == NULL)
+    {
+      if (seen != NULL)
+      {
+        set_free(seen);
+        set_free(tocheck);
+      }
+      return -1;
+    }
+    /* go over results */
+    while ((entry = myldap_get_entry(search, &rc)) != NULL)
+    {
+      if ((seen == NULL) || (!set_contains(seen, dn = myldap_get_dn(entry))))
+      {
+        if (seen != NULL)
+        {
+          set_add(seen, dn);
+          set_add(tocheck, dn);
+        }
+        if (write_group(fp, entry, NULL, NULL, 0, session))
+        {
+          if (seen != NULL)
+          {
+            set_free(seen);
+            set_free(tocheck);
+          }
+          return -1;
+        }
+      }
+    }
+  }
+  /* write possible parent groups */
+  if (tocheck != NULL)
+  {
+    while ((dn = set_pop(tocheck)) != NULL)
+    {
+      /* make filter for finding groups with our group as member */
+      if (mkfilter_group_bymemberdn(session, dn, filter, sizeof(filter)))
+      {
+        log_log(LOG_WARNING, "nslcd_group_bymember(): filter buffer too small");
+        set_free(seen);
+        set_free(tocheck);
+        return -1;
+      }
+      /* do the LDAP searches */
+      for (i = 0; (base = group_bases[i]) != NULL; i++)
+      {
+        search = myldap_search(session, base, group_scope, filter, group_attrs, NULL);
+        if (search != NULL)
+        {
+          while ((entry = myldap_get_entry(search, NULL)) != NULL)
+          {
+            if (!set_contains(seen, dn = myldap_get_dn(entry)))
+            {
+              set_add(seen, dn);
+              set_add(tocheck, dn);
+              if (write_group(fp, entry, NULL, NULL, 0, session))
+              {
+                set_free(seen);
+                set_free(tocheck);
+                return -1;
+              }
+            }
+          }
+        }
+      }
+    }
+    set_free(seen);
+    set_free(tocheck);
+  }
+  /* write the final result code */
+  if (rc == LDAP_SUCCESS)
+  {
+    WRITE_INT32(fp, NSLCD_RESULT_END);
+  }
+  return 0;
+}
 
 NSLCD_HANDLE(
   group, all, NSLCD_ACTION_GROUP_ALL,

@@ -15,7 +15,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006-2007 West Consulting
-   Copyright (C) 2006-2012 Arthur de Jong
+   Copyright (C) 2006-2013 Arthur de Jong
    Copyright (C) 2009 Howard Chu
    Copyright (C) 2010 Symas Corporation
 
@@ -158,7 +158,6 @@ unsupported features
 Since nss-pam-ldapd was forked from nss_ldap most of the features that came
 with nss_ldap are available. The most important differences:
 - the configuration file formats are not fully compatible
-- nested groups are currently unsupported
 - rootbinddn/rootbindpw support is removed and is not likely to return
 
 For the PAM module some functionality is missing. Comparing it to pam_ldap:
@@ -356,8 +355,11 @@ If the DN value already contains a uid value (e.g. uid=arthur, dc=example,
 dc=com) the lookup is skipped and the value from the DN is used. A cache is
 maintained that saves the DN to uid translations for 15 minutes.
 
-Currently, having nested groups by member values pointing to other groups,
-as well as the memberOf attribute in posixAccount entries are unsupported.
+The member attribute may also contain the DN of another group entry. These
+nested groups are parsed recursively depending on the nss_nested_groups
+option.
+
+Currently, the memberOf attribute in posixAccount entries is unsupported.
 
 case sensitivity
 ----------------
