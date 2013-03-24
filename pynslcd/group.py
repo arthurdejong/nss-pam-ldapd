@@ -22,6 +22,7 @@ import itertools
 import logging
 
 from ldap.filter import escape_filter_chars
+import ldap
 
 from passwd import dn2uid, uid2dn
 import cache
@@ -51,7 +52,7 @@ class Search(search.LDAPSearch):
 
     def __init__(self, *args, **kwargs):
         super(Search, self).__init__(*args, **kwargs)
-        if 'memberUid' in self.parameters:
+        if 'memberUid' in self.parameters or 'member' in self.parameters:
             # set up our own attributes that leave out membership attributes
             self.attributes = list(self.attributes)
             self.attributes.remove(attmap['memberUid'])
@@ -95,6 +96,22 @@ class GroupRequest(common.Request):
         self.fp.write_int32(gid)
         self.fp.write_stringlist(members)
 
+    def get_members(self, attributes, members, subgroups, seen):
+        # add the memberUid values
+        for member in clean(attributes['memberUid']):
+            if common.isvalidname(member):
+                members.add(member)
+        # translate and add the member values
+        for memberdn in clean(attributes['member']):
+            if memberdn in seen:
+                continue
+            seen.add(memberdn)
+            member = dn2uid(self.conn, memberdn)
+            if member and common.isvalidname(member):
+                members.add(member)
+            else:
+                subgroups.append(memberdn)
+
     def convert(self, dn, attributes, parameters):
         # get group names and check against requested group name
         names = attributes['cn']
@@ -104,15 +121,14 @@ class GroupRequest(common.Request):
         gids = [int(x) for x in attributes['gidNumber']]
         # build member list
         members = set()
-        # add the memberUid values
-        for member in clean(attributes['memberUid']):
-            if common.isvalidname(member):
-                members.add(member)
-        # translate and add the member values
-        for memberdn in clean(attributes['member']):
-            member = dn2uid(self.conn, memberdn)
-            if member and common.isvalidname(member):
-                members.add(member)
+        subgroups = []
+        seen = set([dn])
+        self.get_members(attributes, members, subgroups, seen)
+        # go over subgroups to find more members
+        while subgroups:
+            memberdn = subgroups.pop(0)
+            for dn2, attributes2 in self.search(self.conn, base=memberdn, scope=ldap.SCOPE_BASE):
+                self.get_members(attributes2, members, subgroups, seen)
         # actually return the results
         for name in names:
             if not common.isvalidname(name):
@@ -149,6 +165,23 @@ class GroupByMemberRequest(GroupRequest):
         memberuid = fp.read_string()
         common.validate_name(memberuid)
         return dict(memberUid=memberuid)
+
+    def get_results(self, parameters):
+        seen = set()
+        for dn, attributes in self.search(self.conn, parameters=parameters):
+            seen.add(dn)
+            for values in self.convert(dn, attributes, parameters):
+                yield values
+        tocheck = list(seen)
+        # find parent groups
+        while tocheck:
+            group = tocheck.pop(0)
+            for dn, attributes in self.search(self.conn, parameters=dict(member=group)):
+                if dn not in seen:
+                    seen.add(dn)
+                    tocheck.append(dn)
+                    for result in self.convert(dn, attributes, parameters):
+                        yield result
 
 
 class GroupAllRequest(GroupRequest):

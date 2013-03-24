@@ -82,18 +82,23 @@ class Request(object):
         stream."""
         pass
 
+    def get_results(self, parameters):
+        """Provide the result entries by performing a search."""
+        for dn, attributes in self.search(self.conn, parameters=parameters):
+            for values in self.convert(dn, attributes, parameters):
+                yield values
+
     def handle_request(self, parameters):
         """This method handles the request based on the parameters read
         with read_parameters()."""
         try:
             #with cache.con:
             if True:
-                for dn, attributes in self.search(self.conn, parameters=parameters):
-                    for values in self.convert(dn, attributes, parameters):
-                        self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-                        self.write(*values)
-                        if self.cache:
-                            self.cache.store(*values)
+                for values in self.get_results(parameters):
+                    self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+                    self.write(*values)
+                    if self.cache:
+                        self.cache.store(*values)
         except ldap.SERVER_DOWN:
             if self.cache:
                 logging.debug('read from cache')
