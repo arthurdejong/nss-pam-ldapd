@@ -55570,11 +55570,6 @@ modifyTimestamp: 20080215164610Z
 entryCSN: 20080215164610.645394Z#000000#000#000000
 
 dn: cn=testgroup2,ou=groups,dc=test,dc=tld
-member: cn=Test User2,ou=people,dc=test,dc=tld
-member: uid=arthur,ou=people,dc=test,dc=tld
-member: cn=testhost,ou=hosts,dc=test,dc=tld
-member: cn=bar,dc=foo,dc=com
-member: cn=Test\2C User4,ou=people,dc=test,dc=tld
 sambaSID: 2
 sambaGroupType: 2
 gidNumber: 6200
@@ -55586,9 +55581,16 @@ cn: testgroup2
 objectClass: top
 objectClass: groupOfNames
 objectClass: sambaGroupMapping
-entryCSN: 20091101122555.190719Z#000000#000#000000
+member: cn=Test User2,ou=people,dc=test,dc=tld
+member: cn=Test\2C User4,ou=people,dc=test,dc=tld
+member: cn=bar,dc=foo,dc=com
+member: cn=testhost,ou=hosts,dc=test,dc=tld
+member:: Y2490JDQkdCSINCT0pDQlNCC0IPQldCBLG91PXBlb3BsZSxkYz10ZXN0LGRjPXRsZA==
+member:: Y2495Y+v5piv5b2T6L+Z5LiqVeebmOWcqCxvdT1wZW9wbGUsZGM9dGVzdCxkYz10bGQ=
+member: uid=arthur,ou=people,dc=test,dc=tld
+entryCSN: 20130123220302.586061Z#000000#000#000000
 modifiersName: cn=admin,dc=test,dc=tld
-modifyTimestamp: 20091101122555Z
+modifyTimestamp: 20130123220302Z
 
 dn: cn=tst2netgroup,ou=netgroups,dc=test,dc=tld
 objectClass: top
@@ -55864,4 +55866,260 @@ createTimestamp: 20110208181844Z
 entryCSN: 20110208181844.413002Z#000000#000#000000
 modifiersName: cn=admin,dc=test,dc=tld
 modifyTimestamp: 20110208181844Z
+
+dn: ou=policies,dc=test,dc=tld
+objectClass: organizationalUnit
+objectClass: top
+ou: policies
+structuralObjectClass: organizationalUnit
+entryUUID: 4d7b4f58-e7a3-1031-9db7-15080ced11c7
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20121231143709Z
+entryCSN: 20121231143709.943433Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20121231143709Z
+
+dn: cn=default,ou=policies,dc=test,dc=tld
+cn: default
+objectClass: pwdPolicyChecker
+objectClass: pwdPolicy
+objectClass: person
+objectClass: top
+pwdAllowUserChange: TRUE
+pwdAttribute: userPassword
+pwdCheckModule: crackcheck.so
+pwdFailureCountInterval: 30
+pwdLockout: TRUE
+pwdMinLength: 12
+pwdSafeModify: FALSE
+sn: dummy value
+structuralObjectClass: person
+entryUUID: 4db81816-e7a3-1031-9db8-15080ced11c7
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20121231143710Z
+pwdMaxFailure: 3
+pwdCheckQuality: 0
+pwdMinAge: 1
+pwdGraceAuthNLimit: 10
+pwdLockoutDuration: 30
+pwdMustChange: TRUE
+pwdExpireWarning: 600
+pwdMaxAge: 660
+pwdInHistory: 0
+entryCSN: 20130106105309.705361Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130106105309Z
+
+dn:: Y2495Y+v5piv5b2T6L+Z5LiqVeebmOWcqCxvdT1wZW9wbGUsZGM9dGVzdCxkYz10bGQ=
+uid: tstchinese
+uidNumber: 1005
+gidNumber: 100
+homeDirectory: /home/tstchinese
+userPassword:: e01ENX1DWTlyelVZaDAzUEszazZESmllMDlnPT0=
+loginShell: /bin/sh
+sn: User
+cn:: 5Y+v5piv5b2T6L+Z5LiqVeebmOWcqA==
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+pwdChangedTime: 20130123214155Z
+structuralObjectClass: inetOrgPerson
+entryUUID: 73821438-f9f1-1031-95ee-17c50f29b0b1
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130123214155Z
+entryCSN: 20130123214155.416125Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130123214155Z
+
+dn:: Y2490JDQkdCSINCT0pDQlNCC0IPQldCBLG91PXBlb3BsZSxkYz10ZXN0LGRjPXRsZA==
+uid: tstcyrillic
+uidNumber: 1006
+gidNumber: 100
+homeDirectory: /home/tstcyrillic
+userPassword:: e01ENX1DWTlyelVZaDAzUEszazZESmllMDlnPT0=
+loginShell: /bin/sh
+sn: User
+cn:: 0JDQkdCSINCT0pDQlNCC0IPQldCB
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+pwdChangedTime: 20130123220302Z
+structuralObjectClass: inetOrgPerson
+entryUUID: 66e3afe0-f9f4-1031-95ef-17c50f29b0b1
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130123220302Z
+entryCSN: 20130123220302.735610Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130123220302Z
+
+dn: ou=autofs,dc=test,dc=tld
+objectClass: top
+objectClass: organizationalUnit
+ou: autofs
+structuralObjectClass: organizationalUnit
+entryUUID: ce19e9de-07c5-1032-9908-1b06e556a61b
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130210120445Z
+entryCSN: 20130210120445.828919Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130210120445Z
+
+dn: ou=auto.master,ou=autofs,dc=test,dc=tld
+objectClass: top
+objectClass: automountMap
+ou: auto.master
+structuralObjectClass: automountMap
+entryUUID: ce3875ac-07c5-1032-9909-1b06e556a61b
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130210120446Z
+entryCSN: 20130210120446.029108Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130210120446Z
+
+dn: cn=/ldap,ou=auto.master,ou=autofs,dc=test,dc=tld
+objectClass: automount
+cn: /ldap
+automountInformation: ldap://192.168.12.4/ou=auto.indirect,ou=autofs, dc=test,
+  dc=tld
+structuralObjectClass: automount
+entryUUID: ce3ce7ae-07c5-1032-990a-1b06e556a61b
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130210120446Z
+entryCSN: 20130210120446.058241Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130210120446Z
+
+dn: cn=/-,ou=auto.master,ou=autofs,dc=test,dc=tld
+objectClass: automount
+cn: /-
+automountInformation: ldap://192.168.12.4/ou=auto.direct,ou=autofs, dc=test, d
+ c=tld
+structuralObjectClass: automount
+entryUUID: ce401df2-07c5-1032-990b-1b06e556a61b
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130210120446Z
+entryCSN: 20130210120446.079292Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130210120446Z
+
+dn: ou=auto.indirect,ou=autofs,dc=test,dc=tld
+objectClass: top
+objectClass: automountMap
+ou: auto.indirect
+structuralObjectClass: automountMap
+entryUUID: ce415fb4-07c5-1032-990c-1b06e556a61b
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130210120446Z
+entryCSN: 20130210120446.087530Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130210120446Z
+
+dn: cn=bin,ou=auto.indirect,ou=autofs,dc=test,dc=tld
+objectClass: automount
+cn: bin
+automountInformation:: ICBzdGlwcGVyOi9zaGFyZQ==
+structuralObjectClass: automount
+entryUUID: ce48aae4-07c5-1032-990d-1b06e556a61b
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130210120446Z
+entryCSN: 20130210120446.135327Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130210120446Z
+
+dn: ou=auto.direct,ou=autofs,dc=test,dc=tld
+objectClass: top
+objectClass: automountMap
+ou: auto.direct
+structuralObjectClass: automountMap
+entryUUID: ce4ce1fe-07c5-1032-990e-1b06e556a61b
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130210120446Z
+entryCSN: 20130210120446.162952Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130210120446Z
+
+dn: cn=/nfs/budgie/man,ou=auto.direct,ou=autofs,dc=test,dc=tld
+objectClass: automount
+cn: /nfs/budgie/man
+automountInformation:: ICBidWRnaWU6L3Vzci9sb2NhbC9tYW4=
+structuralObjectClass: automount
+entryUUID: ce4e24a6-07c5-1032-990f-1b06e556a61b
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130210120446Z
+entryCSN: 20130210120446.171215Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130210120446Z
+
+dn: cn=/nfs/budgie/bin,ou=auto.direct,ou=autofs,dc=test,dc=tld
+objectClass: automount
+cn: /nfs/budgie/bin
+automountInformation:: ICBidWRnaWU6L2xvY2FsL2RhdGEvYmlu
+structuralObjectClass: automount
+entryUUID: ce4f6d34-07c5-1032-9910-1b06e556a61b
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130210120446Z
+entryCSN: 20130210120446.179627Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130210120446Z
+
+dn: cn=nstgrp1,ou=groups,dc=test,dc=tld
+objectClass: top
+objectClass: groupOfNames
+objectClass: sambaGroupMapping
+cn: nstgrp1
+sambaSID: 3
+sambaGroupType: 2
+gidNumber: 800
+structuralObjectClass: groupOfNames
+entryUUID: 52b454ae-277e-1032-97b8-977873c640f6
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130322205341Z
+member: cn=Test User2,ou=people,dc=test,dc=tld
+entryCSN: 20130323210928.654262Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130323210928Z
+
+dn: cn=nstgrp2,ou=groups,dc=test,dc=tld
+objectClass: top
+objectClass: groupOfNames
+objectClass: sambaGroupMapping
+cn: nstgrp2
+sambaSID: 4
+sambaGroupType: 2
+gidNumber: 801
+structuralObjectClass: groupOfNames
+entryUUID: 52bbd0d0-277e-1032-97b9-977873c640f6
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130322205341Z
+member: cn=Test User2,ou=people,dc=test,dc=tld
+member: cn=Test User3,ou=extra,ou=people,dc=test,dc=tld
+member: cn=nstgrp1,ou=groups,dc=test,dc=tld
+entryCSN: 20130323210928.673771Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130323210928Z
+
+dn: cn=nstgrp3,ou=groups,dc=test,dc=tld
+objectClass: top
+objectClass: groupOfNames
+objectClass: sambaGroupMapping
+cn: nstgrp3
+sambaSID: 5
+sambaGroupType: 2
+gidNumber: 802
+member: cn=nstgrp1,ou=groups,dc=test,dc=tld
+member: cn=nstgrp2,ou=groups,dc=test,dc=tld
+member: cn=nstgrp3,ou=groups,dc=test,dc=tld
+structuralObjectClass: groupOfNames
+entryUUID: 1ae13698-2849-1032-8d63-9f2843fb7873
+creatorsName: cn=admin,dc=test,dc=tld
+createTimestamp: 20130323210515Z
+entryCSN: 20130323210515.920979Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20130323210515Z
 
