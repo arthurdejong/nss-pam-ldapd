@@ -2,7 +2,7 @@
 
 # test_nsscmds.sh - simple test script to check output of name lookup commands
 #
-# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -57,6 +57,8 @@ check() {
 
 ###########################################################################
 
+if grep '^aliases.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing aliases..."
 
 # note that this doesn't work if /etc/aliases contains anything
@@ -83,8 +85,12 @@ check "getent aliases FOO" << EOM
 foo:            bar@example.com
 EOM
 
+fi  # end of aliases tests
+
 ###########################################################################
 
+if grep '^ethers.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing ether..."
 
 # get an entry by hostname
@@ -118,8 +124,12 @@ check "getent ethers" << EOM
 Enumeration not supported on ethers
 EOM
 
+fi  # end of ethers tests
+
 ###########################################################################
 
+if grep '^group.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing group..."
 
 # function to sort group members of a group
@@ -204,8 +214,12 @@ check "groups testusr3 | sed 's/^.* *: *//'" << EOM
 users largegroup nstgrp2 nstgrp3
 EOM
 
+fi  # end of group tests
+
 ###########################################################################
 
+if grep '^hosts.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing hosts..."
 
 check "getent hosts testhost" << EOM
@@ -231,8 +245,12 @@ EOM
 
 # TODO: add more tests for IPv6 support
 
+fi  # end of hosts tests
+
 ###########################################################################
 
+if grep '^netgroup.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing netgroup..."
 
 # check netgroup lookup of test netgroup
@@ -244,8 +262,12 @@ EOM
 check "getent netgroup TSTNETGROUP" << EOM
 EOM
 
+fi  # end of netgroup tests
+
 ###########################################################################
 
+if grep '^networks.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing networks..."
 
 check "getent networks testnet" << EOM
@@ -265,8 +287,12 @@ check "getent networks | grep testnet" << EOM
 testnet               10.0.0.0
 EOM
 
+fi  # end of networks tests
+
 ###########################################################################
 
+if grep '^passwd.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing passwd..."
 
 check "getent passwd ecolden" << EOM
@@ -290,8 +316,12 @@ check "getent passwd | grep -c ':x:[45][0-9][0-9][0-9]:'" << EOM
 2000
 EOM
 
+fi  # end of passwd tests
+
 ###########################################################################
 
+if grep '^protocols.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing protocols..."
 
 check "getent protocols protfoo" << EOM
@@ -322,8 +352,12 @@ check "getent protocols | grep protfoo" << EOM
 protfoo               253 protfooalias
 EOM
 
+fi  # end of protocols tests
+
 ###########################################################################
 
+if grep '^rpc.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing rpc..."
 
 check "getent rpc rpcfoo" << EOM
@@ -346,8 +380,12 @@ check "getent rpc | grep rpcfoo" << EOM
 rpcfoo          160002  rpcfooalias
 EOM
 
+fi  # end of rpc tests
+
 ###########################################################################
 
+if grep '^services.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing services..."
 
 check "getent services foosrv" << EOM
@@ -406,8 +444,12 @@ check "getent services | wc -l" << EOM
 `grep -c '^[^#].' /etc/services | awk '{print $1 + 4}'`
 EOM
 
+fi  # end of services tests
+
 ###########################################################################
 
+if grep '^shadow.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing shadow..."
 
 # NOTE: the output of this should depend on whether we are root or not
@@ -432,6 +474,8 @@ EOM
 # check if the names of users match between passwd and shadow
 getent passwd | sed 's/:.*//' | sort | \
   check "getent shadow | sed 's/:.*//' | sort"
+
+fi  # end of shadow tests
 
 ###########################################################################
 # determine the result
