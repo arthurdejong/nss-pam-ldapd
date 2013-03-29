@@ -60,6 +60,7 @@ AC_PROG_RANLIB
 AM_PROG_CC_C_O
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_LN_S
+AM_PATH_PYTHON(2.5)
 
 # checks for tool to convert docbook to man
 AC_PATH_PROGS(DOCBOOK2X_MAN, docbook2x-man)
@@ -130,8 +131,17 @@ AM_CONDITIONAL([ENABLE_PAM], [test "x$enable_pam" = "xyes"])
 AC_MSG_CHECKING([whether to build the command-line utilities])
 AC_ARG_ENABLE(utils,
               AS_HELP_STRING([--enable-utils],
-                             [build the the command-line utilities [[default=disabled]]]),,
-              [enable_util="no"])
+                             [build the the command-line utilities @<:@auto@:>@]),,
+              [enable_utils="auto"])
+if test "x$enable_utils" = "xauto"
+then
+  if test "x$PYTHON" = "x"
+  then
+    enable_utils="no"
+  else
+    enable_utils="yes"
+  fi
+fi
 AC_MSG_RESULT($enable_utils)
 AM_CONDITIONAL([ENABLE_UTILS], [test "x$enable_utils" = "xyes"])
 
