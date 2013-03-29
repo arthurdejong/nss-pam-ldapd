@@ -69,7 +69,7 @@ def try_bind(binddn, password):
 
 class PAMRequest(common.Request):
 
-    def validate_request(self, parameters):
+    def validate(self, parameters):
         """This method checks the provided username for validity and fills
         in the DN if needed."""
         # check username for validity
@@ -134,7 +134,7 @@ class PAMAuthenticationRequest(PAMRequest):
             else:
                 raise ValueError('password missing')
         else:
-            self.validate_request(parameters)
+            self.validate(parameters)
             binddn = parameters['userdn']
             password = parameters['password']
         # try authentication
@@ -199,7 +199,7 @@ class PAMAuthorisationRequest(PAMRequest):
 
     def handle_request(self, parameters):
         # fill in any missing userdn, etc.
-        self.validate_request(parameters)
+        self.validate(parameters)
         # check authorisation search
         try:
             self.check_authzsearch(parameters)
