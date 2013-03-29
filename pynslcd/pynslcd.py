@@ -252,9 +252,9 @@ if __name__ == '__main__':
     parse_cmdline()
     # clean the environment
     os.environ.clear()
-    os.putenv('HOME', '/')
-    os.putenv('TMPDIR', '/tmp')
-    os.putenv('LDAPNOINIT', '1')
+    os.environ['HOME'] = '/'
+    os.environ['TMPDIR'] = '/tmp'
+    os.environ['LDAPNOINIT'] = '1'
     # set log level
     if debugging:
         logging.getLogger().setLevel(logging.DEBUG)
