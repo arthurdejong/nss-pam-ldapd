@@ -35,6 +35,7 @@ import cfg
 import common
 import constants
 import mypidfile
+import nscd
 import search
 
 
@@ -316,6 +317,9 @@ if __name__ == '__main__':
                 logging.getLogger().setLevel(min(level for method, level in cfg.logs))
                 logging.getLogger().removeHandler(stderrhandler)
             logging.info('version %s starting', constants.VERSION)
+            # start nscd sub-process if needed
+            if cfg.nscd_invalidate:
+                nscd.start_invalidator()
             # create socket
             nslcd_serversocket = create_socket()
             # load supplementary groups
