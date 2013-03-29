@@ -24,6 +24,8 @@ import os
 import subprocess
 import struct
 
+import cfg
+
 
 # the file descriptor used for sending messages to the child process
 signalfd = None
@@ -100,7 +102,10 @@ def start_invalidator():
 def invalidate(db=None):
     if signalfd is None:
         return  # nothing to do
-    db = _db_to_char.get(db, '')
+    if db:
+        db = _db_to_char.get(db, '')
+    else:
+        db = ''.join(_db_to_char[x] for x in cfg.nscd_invalidate)
     try:
         os.write(signalfd, db)
     except:

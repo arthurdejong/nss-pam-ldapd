@@ -25,6 +25,11 @@ import ldap
 import ldap.ldapobject
 
 import cfg
+import nscd
+
+
+# global indicator that there was some error connection to an LDAP server
+server_error = False
 
 
 class Connection(ldap.ldapobject.ReconnectLDAPObject):
@@ -49,6 +54,23 @@ class Connection(ldap.ldapobject.ReconnectLDAPObject):
         # TODO: register a connection callback (like dis?connect_cb() in myldap.c)
         if cfg.ssl or cfg.uri.startswith('ldaps://'):
             self.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_HARD)
+
+    def reconnect_after_fail(self):
+        logging.info('connected to LDAP server %s', cfg.uri)
+        nscd.invalidate()
+
+    def search_s(self, *args, **kwargs):
+        # wrapper function to keep the global server_error state
+        global server_error
+        try:
+            res = ldap.ldapobject.ReconnectLDAPObject.search_s(self, *args, **kwargs)
+        except ldap.SERVER_DOWN:
+            server_error = True
+            raise
+        if server_error:
+            self.reconnect_after_fail()
+            server_error = False
+        return res
 
 
 class LDAPSearch(object):
