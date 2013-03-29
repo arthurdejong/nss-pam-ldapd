@@ -58,7 +58,8 @@ def try_bind(binddn, password):
             elif ctrl.graceAuthNsRemaining is not None:
                 return constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password expired, %d grace logins left' % ctrl.graceAuthNsRemaining
     # perform search for own object (just to do any kind of search)
-    results = conn.search_s(binddn, ldap.SCOPE_BASE, '(objectClass=*)', ['dn', ])
+    results = search.LDAPSearch(conn, base=binddn, scope=ldap.SCOPE_BASE,
+                                filter='(objectClass=*)', attributes=['dn', ])
     for entry in results:
         if entry[0] == binddn:
             return constants.NSLCD_PAM_SUCCESS, ''
