@@ -408,6 +408,7 @@ static void handleconnection(int sock, MYLDAP_SESSION *session)
     case NSLCD_ACTION_PAM_SESS_O:       (void)nslcd_pam_sess_o(fp, session); break;
     case NSLCD_ACTION_PAM_SESS_C:       (void)nslcd_pam_sess_c(fp, session); break;
     case NSLCD_ACTION_PAM_PWMOD:        (void)nslcd_pam_pwmod(fp, session, uid); break;
+    case NSLCD_ACTION_USERMOD:          (void)nslcd_usermod(fp, session, uid); break;
     default:
       log_log(LOG_WARNING, "invalid request id: 0x%08x", (unsigned int)action);
       break;
