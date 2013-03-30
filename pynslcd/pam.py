@@ -20,6 +20,7 @@
 
 import logging
 import socket
+import time
 
 from ldap.controls.ppolicy import PasswordPolicyControl, PasswordPolicyError
 from ldap.filter import escape_filter_chars
@@ -30,6 +31,7 @@ import common
 import constants
 import passwd
 import search
+import shadow
 
 
 def authenticate(binddn, password):
@@ -77,6 +79,29 @@ def pwmod(conn, userdn, oldpassword, newpassword):
             conn.passwd_s(userdn, oldpassword, newpassword)
         else:
             raise
+
+
+def update_lastchange(conns, userdn):
+    """Try to update the shadowLastChange attribute of the entry."""
+    attribute = shadow.attmap['shadowLastChange']
+    if attribute == '${shadowLastChange:--1}':
+        attribute = 'shadowLastChange'
+    if not attribute or '$' in attribute:
+        raise ValueError('shadowLastChange has unsupported mapping')
+    # build the value for the new attribute
+    if attribute.lower() == 'pwdlastset':
+        # for AD we use another timestamp */
+        value = '%d000000000' % (time.time() / 100L + (134774L * 864L))
+    else:
+        # time in days since Jan 1, 1970
+        value = '%d' % (time.time() / (60 * 60 * 24))
+    # perform the modification, return at first success
+    for conn in conns:
+        try:
+            conn.modify_s(userdn, [(ldap.MOD_REPLACE, attribute, [value])])
+            return
+        except ldap.LDAPError:
+            pass  # ignore error and try next connection
 
 
 class PAMRequest(common.Request):
@@ -268,6 +293,8 @@ class PAMPasswordModificationRequest(PAMRequest):
         try:
             conn, authz, msg = authenticate(binddn, password)
             pwmod(conn, parameters['userdn'], parameters['oldpassword'], parameters['newpassword'])
+            # try to update lastchange with normal or user connection
+            update_lastchange((self.conn, conn), parameters['userdn'])
         except ldap.INVALID_CREDENTIALS, e:
             try:
                 msg = e[0]['desc']
