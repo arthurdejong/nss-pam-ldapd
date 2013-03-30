@@ -187,6 +187,7 @@ handlers.update(common.get_handlers('protocol'))
 handlers.update(common.get_handlers('rpc'))
 handlers.update(common.get_handlers('service'))
 handlers.update(common.get_handlers('shadow'))
+handlers.update(common.get_handlers('usermod'))
 
 
 def acceptconnection(session):
