@@ -135,7 +135,7 @@ AC_ARG_ENABLE(utils,
               [enable_utils="auto"])
 if test "x$enable_utils" = "xauto"
 then
-  if test "x$PYTHON" = "x"
+  if test "x$PYTHON" = "x:"
   then
     enable_utils="no"
   else
