@@ -251,6 +251,36 @@
      STRING  error message */
 #define NSLCD_ACTION_PAM_PWMOD         0x000d0005
 
+/* User information change request. This request allows one to change
+   their full name and other information. The request parameters for this
+   request are:
+     STRING  user name
+     INT32   asroot: 0=passwd is user passwd, 1=passwd is root passwd
+     STRING  password
+   followed by one or more of the below, terminated by NSLCD_USERMOD_END
+     INT32   NSLCD_USERMOD_*
+     STRING  new value
+   the response consists of one or more of the entries below, terminated
+   by NSLCD_USERMOD_END:
+     INT32   NSLCD_USERMOD_*
+     STRING  response
+   (if the response is blank, the change went OK, otherwise the string
+   contains an error message)
+   */
+#define NSLCD_ACTION_USERMOD           0x000e0001
+
+/* These are the possible values for the NSLCD_ACTION_USERMOD operation
+   above. */
+#define NSLCD_USERMOD_END        0 /* end of change values */
+#define NSLCD_USERMOD_RESULT     1 /* global result value */
+#define NSLCD_USERMOD_FULLNAME   2 /* full name */
+#define NSLCD_USERMOD_ROOMNUMBER 3 /* room number */
+#define NSLCD_USERMOD_WORKPHONE  4 /* office phone number */
+#define NSLCD_USERMOD_HOMEPHONE  5 /* home phone number */
+#define NSLCD_USERMOD_OTHER      6 /* other info */
+#define NSLCD_USERMOD_HOMEDIR    7 /* home directory */
+#define NSLCD_USERMOD_SHELL      8 /* login shell */
+
 /* Request result codes. */
 #define NSLCD_RESULT_BEGIN 1
 #define NSLCD_RESULT_END   2
