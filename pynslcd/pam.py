@@ -32,7 +32,7 @@ import passwd
 import search
 
 
-def try_bind(binddn, password):
+def authenticate(binddn, password):
     # open a new connection
     conn = search.Connection()
     # bind using the specified credentials
@@ -46,23 +46,23 @@ def try_bind(binddn, password):
                 'None' if ctrl.error is None else PasswordPolicyError(ctrl.error).prettyPrint(),
                 ctrl.error, ctrl.timeBeforeExpiration, ctrl.graceAuthNsRemaining)
             if ctrl.error == 0:  # passwordExpired
-                return constants.NSLCD_PAM_AUTHTOK_EXPIRED, PasswordPolicyError(ctrl.error).prettyPrint()
+                return conn, constants.NSLCD_PAM_AUTHTOK_EXPIRED, PasswordPolicyError(ctrl.error).prettyPrint()
             elif ctrl.error == 1:  # accountLocked
-                return constants.NSLCD_PAM_ACCT_EXPIRED, PasswordPolicyError(ctrl.error).prettyPrint()
+                return conn, constants.NSLCD_PAM_ACCT_EXPIRED, PasswordPolicyError(ctrl.error).prettyPrint()
             elif ctrl.error == 2:  # changeAfterReset
-                return constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password change is needed after reset'
+                return conn, constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password change is needed after reset'
             elif ctrl.error:
-                return constants.NSLCD_PAM_PERM_DENIED, PasswordPolicyError(ctrl.error).prettyPrint()
+                return conn, constants.NSLCD_PAM_PERM_DENIED, PasswordPolicyError(ctrl.error).prettyPrint()
             elif ctrl.timeBeforeExpiration is not None:
-                return constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password will expire in %d seconds' % ctrl.timeBeforeExpiration
+                return conn, constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password will expire in %d seconds' % ctrl.timeBeforeExpiration
             elif ctrl.graceAuthNsRemaining is not None:
-                return constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password expired, %d grace logins left' % ctrl.graceAuthNsRemaining
+                return conn, constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password expired, %d grace logins left' % ctrl.graceAuthNsRemaining
     # perform search for own object (just to do any kind of search)
     results = search.LDAPSearch(conn, base=binddn, scope=ldap.SCOPE_BASE,
                                 filter='(objectClass=*)', attributes=['dn', ])
     for entry in results:
         if entry[0] == binddn:
-            return constants.NSLCD_PAM_SUCCESS, ''
+            return conn, constants.NSLCD_PAM_SUCCESS, ''
     # if our DN wasn't found raise an error to signal bind failure
     raise ldap.NO_SUCH_OBJECT()
 
@@ -139,7 +139,7 @@ class PAMAuthenticationRequest(PAMRequest):
             password = parameters['password']
         # try authentication
         try:
-            authz, msg = try_bind(binddn, password)
+            conn, authz, msg = authenticate(binddn, password)
         except ldap.INVALID_CREDENTIALS, e:
             try:
                 msg = e[0]['desc']
