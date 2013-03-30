@@ -67,6 +67,18 @@ def authenticate(binddn, password):
     raise ldap.NO_SUCH_OBJECT()
 
 
+def pwmod(conn, userdn, oldpassword, newpassword):
+    # perform request without old password
+    try:
+        conn.passwd_s(userdn, None, newpassword)
+    except ldap.LDAPError:
+        # retry with old password
+        if oldpassword:
+            conn.passwd_s(userdn, oldpassword, newpassword)
+        else:
+            raise
+
+
 class PAMRequest(common.Request):
 
     def validate(self, parameters):
@@ -211,6 +223,62 @@ class PAMAuthorisationRequest(PAMRequest):
         self.write()
 
 
+class PAMPasswordModificationRequest(PAMRequest):
+
+    action = constants.NSLCD_ACTION_PAM_PWMOD
+
+    def read_parameters(self, fp):
+        return dict(username=fp.read_string(),
+                    service=fp.read_string(),
+                    ruser=fp.read_string(),
+                    rhost=fp.read_string(),
+                    tty=fp.read_string(),
+                    asroot=fp.read_int32(),
+                    oldpassword=fp.read_string(),
+                    newpassword=fp.read_string())
+        # TODO: log call with parameters
+
+    def write(self, rc=constants.NSLCD_PAM_SUCCESS, msg=''):
+        self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+        self.fp.write_int32(rc)
+        self.fp.write_string(msg)
+        self.fp.write_int32(constants.NSLCD_RESULT_END)
+
+    def handle_request(self, parameters):
+        # fill in any missing userdn, etc.
+        self.validate(parameters)
+        # check if pam_password_prohibit_message is set
+        if cfg.pam_password_prohibit_message:
+            self.write(parameters, constants.NSLCD_PAM_PERM_DENIED,
+                       cfg.pam_password_prohibit_message)
+            return
+        # check if the the user passed the rootpwmoddn
+        if parameters['asroot']:
+            binddn = cfg.rootpwmoddn
+            # check if rootpwmodpw should be used
+            if not parameters['oldpassword'] and calleruid == 0 and cfg.rootpwmoddn:
+                password = cfg.rootpwmoddn
+            else:
+                password = parameters['oldpassword']
+        else:
+            binddn = parameters['userdn']
+            password = parameters['oldpassword']
+            # TODO: check if shadow properties allow password change
+        # perform password modification
+        try:
+            conn, authz, msg = authenticate(binddn, password)
+            pwmod(conn, parameters['userdn'], parameters['oldpassword'], parameters['newpassword'])
+        except ldap.INVALID_CREDENTIALS, e:
+            try:
+                msg = e[0]['desc']
+            except:
+                msg = str(e)
+            logging.debug('pwmod failed: %s', msg)
+            self.write(constants.NSLCD_PAM_PERM_DENIED, msg)
+            return
+        logging.debug('pwmod successful')
+        self.write()
+
+
 #NSLCD_ACTION_PAM_SESS_O
 #NSLCD_ACTION_PAM_SESS_C
-#NSLCD_ACTION_PAM_PWMOD
