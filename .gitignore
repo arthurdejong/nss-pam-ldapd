@@ -37,6 +37,8 @@ stamp-*
 /splint.txt
 
 # /man/
+/man/chsh.ldap.1
+/man/chsh.ldap.1.html
 /man/getent.ldap.1
 /man/getent.ldap.1.html
 /man/nslcd.8

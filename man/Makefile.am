@@ -18,7 +18,7 @@
 # 02110-1301 USA
 
 PAM_MANS = pam_ldap.8
-UTILS_MANS = getent.ldap.1
+UTILS_MANS = getent.ldap.1 chsh.ldap.1
 NSLCD_MANS = nslcd.conf.5 nslcd.8
 PYNSLCD_MANS = nslcd.conf.5 pynslcd.8
 ALL_MANS = $(PAM_MANS) $(UTILS_MANS) $(NSLCD_MANS) $(PYNSLCD_MANS)

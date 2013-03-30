@@ -31,8 +31,8 @@ nslcd_SOURCES = nslcd.c ../nslcd.h ../common/nslcd-prot.h \
                 cfg.c cfg.h \
                 attmap.c attmap.h \
                 nsswitch.c nscd.c \
-                alias.c config.c ether.c group.c host.c netgroup.c network.c \
-                passwd.c protocol.c rpc.c service.c shadow.c pam.c
+                config.c alias.c ether.c group.c host.c netgroup.c network.c \
+                passwd.c protocol.c rpc.c service.c shadow.c pam.c usermod.c
 nslcd_LDADD = ../common/libtio.a ../common/libdict.a \
               ../common/libexpr.a ../compat/libcompat.a \
               @nslcd_LIBS@ @PTHREAD_LIBS@

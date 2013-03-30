@@ -19,7 +19,7 @@
 
 utilsdir = $(datadir)/nslcdutils
 
-utils_PYTHON = cmdline.py getent.py nslcd.py
+utils_PYTHON = cmdline.py nslcd.py getent.py chsh.py shells.py users.py
 nodist_utils_PYTHON = constants.py
 CLEANFILES = $(nodist_utils_PYTHON)
 
@@ -36,7 +36,7 @@ constants.py: ../pynslcd/constants.py
 # create symbolic links to the commands and fix permissions
 install-data-hook:
 	$(MKDIR_P) $(DESTDIR)$(bindir)
-	set -ex; for cmd in getent ; do \
+	set -ex; for cmd in getent chsh ; do \
 	  chmod a+rx $(DESTDIR)$(utilsdir)/$$cmd.py ; \
 	  [ -L $(DESTDIR)$(bindir)/$$cmd.ldap ] || $(LN_S) $(utilsdir)/$$cmd.py $(DESTDIR)$(bindir)/$$cmd.ldap ; \
 	done

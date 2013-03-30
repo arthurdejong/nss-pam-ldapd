@@ -240,6 +240,7 @@ int nslcd_pam_authz(TFILE *fp, MYLDAP_SESSION *session);
 int nslcd_pam_sess_o(TFILE *fp, MYLDAP_SESSION *session);
 int nslcd_pam_sess_c(TFILE *fp, MYLDAP_SESSION *session);
 int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid);
+int nslcd_usermod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid);
 
 /* macros for generating service handling code */
 #define NSLCD_HANDLE(db, fn, action, readfn, mkfilter, writefn)             \

@@ -48,3 +48,21 @@ class VersionAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         print version_string
         parser.exit()
+
+
+class ListShellsAction(argparse.Action):
+
+    def __init__(self, option_strings, dest,
+                 help='list the shells found in /etc/shells'):
+        super(ListShellsAction, self).__init__(
+            option_strings=option_strings,
+            dest=argparse.SUPPRESS,
+            default=argparse.SUPPRESS,
+            nargs=0,
+            help=help)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        import shells
+        for shell in shells.list_shells():
+            print shell
+        parser.exit()
