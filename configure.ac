@@ -801,7 +801,7 @@ fi
 if test "x$enable_pynslcd" = "xyes" || test "x$enable_utils" = "xyes"
 then
   # check Python interpreter
-  AM_PATH_PYTHON(2.5)
+  AM_PATH_PYTHON(2.5,, AC_MSG_ERROR([Python is required]))
 fi
 
 AM_CONDITIONAL([NSS_FLAVOUR_GLIBC], [test "x${with_nss_flavour}" = xglibc])
