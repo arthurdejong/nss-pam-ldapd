@@ -37,24 +37,23 @@ gid = None
 logs = []
 
 # the LDAP server to use
-# FIXME: support multiple servers and have a fail-over mechanism
-uri = None
+uri = None  # FIXME: support multiple servers and have a fail-over mechanism
 # LDAP protocol version to use (perhaps fix at 3?)
 ldap_version = ldap.VERSION3
 # the DN to use when binding
-binddn = None
-bindpw = None
+binddn = None  # FIXME: add support
+bindpw = None  # FIXME: add support
 # the DN to use to perform password modifications as root
 rootpwmoddn = None
 rootpwmodpw = None
 
 # SASL configuration
-sasl_mech = None
-sasl_realm = None
-sasl_authcid = None
-sasl_authzid = None
-sasl_secprops = None
-sasl_canonicalize = None
+sasl_mech = None  # FIXME: add support
+sasl_realm = None  # FIXME: add support
+sasl_authcid = None  # FIXME: add support
+sasl_authzid = None  # FIXME: add support
+sasl_secprops = None  # FIXME: add support
+sasl_canonicalize = None  # FIXME: add support
 
 # LDAP bases to search
 bases = []
@@ -65,10 +64,10 @@ deref = ldap.DEREF_NEVER
 referrals = True
 
 # timing configuration
-bind_timelimit = 10
+bind_timelimit = 10  # FIXME: add support
 timelimit = ldap.NO_LIMIT
-idle_timelimit = 0
-reconnect_sleeptime = 1
+idle_timelimit = 0  # FIXME: add support
+reconnect_sleeptime = 1  # FIXME: add support
 reconnect_retrytime = 10
 
 # SSL/TLS options
@@ -82,13 +81,13 @@ tls_cert = None
 tls_key = None
 
 # other options
-pagesize = 0
-nss_initgroups_ignoreusers = set()
-nss_min_uid = 0
+pagesize = 0  # FIXME: add support
+nss_initgroups_ignoreusers = set()  # FIXME: add support
+nss_min_uid = 0  # FIXME: add support
 nss_nested_groups = False
 validnames = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
 pam_authz_searches = []
-pam_password_prohibit_message = None
+pam_password_prohibit_message = None  # FIXME: add support
 nscd_invalidate = set()
 
 
