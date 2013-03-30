@@ -111,3 +111,26 @@ class NslcdClient(object):
 
     def __del__(self):
         self.close()
+
+
+def usermod(username, asroot=False, password=None, args=None):
+    # open a connection to nslcd
+    con = NslcdClient(constants.NSLCD_ACTION_USERMOD)
+    # write the request information
+    con.write_string(username)
+    con.write_int32(1 if asroot else 0)
+    con.write_string(password)
+    for k, v in args.items():
+        con.write_int32(k)
+        con.write_string(v)
+    con.write_int32(constants.NSLCD_USERMOD_END)
+    # read the response
+    assert con.get_response() == constants.NSLCD_RESULT_BEGIN
+    response = {}
+    while True:
+        key = con.read_int32()
+        if key == constants.NSLCD_USERMOD_END:
+            break
+        response[key] = con.read_string()
+    # return the response
+    return response

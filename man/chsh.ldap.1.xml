@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+
+<!--
+   chsh.ldap.1.xml - docbook manual page for chsh.ldap
+
+   Copyright (C) 2013 Arthur de Jong
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+   02110-1301 USA
+-->
+
+<refentry id="chshldap1">
+
+ <refentryinfo>
+  <author>
+   <firstname>Arthur</firstname>
+   <surname>de Jong</surname>
+  </author>
+ </refentryinfo>
+
+ <refmeta>
+  <refentrytitle>chsh.ldap</refentrytitle>
+  <manvolnum>1</manvolnum>
+  <refmiscinfo class="version">Version 0.8.11</refmiscinfo>
+  <refmiscinfo class="manual">User Commands</refmiscinfo>
+  <refmiscinfo class="date">Oct 2012</refmiscinfo>
+ </refmeta>
+
+ <refnamediv id="name">
+  <refname>chsh.ldap</refname>
+  <refpurpose>change login shell in LDAP</refpurpose>
+ </refnamediv>
+
+ <refsynopsisdiv id="synopsis">
+  <cmdsynopsis>
+   <command>chsh.ldap</command>
+   <arg choice="opt"><replaceable>options</replaceable></arg>
+   <arg choice="opt"><replaceable>LOGIN</replaceable></arg>
+  </cmdsynopsis>
+ </refsynopsisdiv>
+
+ <refsect1 id="description">
+  <title>Description</title>
+  <para>
+   The <command>chsh.ldap</command> command can be used to change user's
+   login shell (command interpreter).
+  </para>
+  <para>
+   The actual change in <acronym>LDAP</acronym> is performed by the
+   <command>nslcd</command> daemon and is subject to the access controls
+   configured in the <acronym>LDAP</acronym> server.
+  </para>
+ </refsect1>
+
+ <refsect1 id="options">
+  <title>Options</title>
+  <para>
+   The options that may be specified to the <command>chsh.ldap</command>
+   command are:
+  </para>
+  <variablelist remap="TP">
+
+   <varlistentry id="shell">
+    <term>
+     <option>-s</option>, <option>--shell</option>
+     <replaceable>SHELL</replaceable>
+    </term>
+    <listitem>
+     <para>
+      The name of the user's new login shell.
+      Setting this field to blank causes the system to select the default
+      login shell.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="listshells">
+    <term>
+     <option>-l</option>, <option>--list-shells</option>
+    </term>
+    <listitem>
+     <para>
+      Print the list of shells found in <file>/etc/shells</file> and exit.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="help">
+    <term>
+     <option>-h</option>, <option>--help</option>
+    </term>
+    <listitem>
+     <para>Display short help and exit.</para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="version">
+    <term>
+     <option>-V, --version</option>
+    </term>
+    <listitem>
+     <para>Output version information and exit.</para>
+    </listitem>
+   </varlistentry>
+
+  </variablelist>
+  <para>
+    If no option is specified <command>chsh.ldap</command> will prompt the
+    user to enter a value for the shell.
+  </para>
+ </refsect1>
+
+ <refsect1 id="files">
+  <title>Files</title>
+  <para>
+   <filename>/etc/shells</filename> - list of valid login shells
+  </para>
+ </refsect1>
+
+ <refsect1 id="see_also">
+  <title>See Also</title>
+  <para>
+   <citerefentry><refentrytitle>chsh</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+   <citerefentry><refentrytitle>shells</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
+   <citerefentry><refentrytitle>nslcd</refentrytitle><manvolnum>8</manvolnum></citerefentry>
+  </para>
+ </refsect1>
+
+ <refsect1 id="author">
+  <title>Author</title>
+  <para>This manual was written by Arthur de Jong &lt;arthur@arthurdejong.org&gt;.</para>
+ </refsect1>
+
+</refentry>
