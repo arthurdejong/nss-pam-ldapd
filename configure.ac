@@ -60,7 +60,7 @@ AC_PROG_RANLIB
 AM_PROG_CC_C_O
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_LN_S
-AM_PATH_PYTHON(2.5)
+AM_PATH_PYTHON(2.5,, [:])
 
 # checks for tool to convert docbook to man
 AC_PATH_PROGS(DOCBOOK2X_MAN, docbook2x-man)
