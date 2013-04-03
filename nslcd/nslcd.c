@@ -283,7 +283,7 @@ static int create_socket(const char *filename)
       log_log(LOG_WARNING, "problem closing socket: %s", strerror(errno));
     exit(EXIT_FAILURE);
   }
-  /* close the file descriptor on exit */
+  /* close the file descriptor on exec */
   if (fcntl(sock, F_SETFD, FD_CLOEXEC) < 0)
   {
     log_log(LOG_ERR, "fctnl(F_SETFL,FD_CLOEXEC) on %s failed: %s",
