@@ -94,7 +94,7 @@
     </term>
     <listitem>
      <para>
-      Print the list of shells found in <file>/etc/shells</file> and exit.
+      Print the list of shells found in <filename>/etc/shells</filename> and exit.
      </para>
     </listitem>
    </varlistentry>
