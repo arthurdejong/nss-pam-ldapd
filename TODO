@@ -12,15 +12,9 @@
 * make it possible to start nslcd real early in the boot process and have
   it become available when it determines it can (other timeout/retry mechanism
   on startup)
-* implement requesting and handling password policy information when binding
-  as a user (see pam_ldap)
-* implement nested groups
 * implement other services in nslcd: sudo and autofs are candidates
 * complete pynslcd implementation
-* implement chsh and chfn in nslcd PAM code and make chsh.ldap and chfn.ldap
-  binaries
-* have nslcd flush the nscd caches when reconnecting to the LDAP server after
-  an error
+* implement chfn functionality in nslcd and make chfn.ldap binary
 * add a max uid option for PAM module
 * support changing Samba password attributes on password change
 * while running NSS tests, check if nscd isn't running

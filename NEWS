@@ -1,3 +1,55 @@
+changes from 0.8.13 to 0.9.0
+----------------------------
+
+* backwards incompatible change to the communications protocol between nslcd
+  and NSS and PAM modules to use network byte order to be able to work on
+  mixed endian multiarch systems
+* netgroup lookups now makes a distinction between empty netgroups and
+  non-existing netgroups
+* the PAM protocol is now more consistent (cleaner support for password
+  modification by root, have all request parameters in the same order and
+  limit the information returned from the call)
+* request and handle password policy controls on LDAP authentication
+* implement support for nested groups which can be enabled with the
+  nss_nested_groups option (thanks Steve Hill)
+* add a log option to configure log level and logging to plain files
+* add an nscd_invalidate option to invalidate the nscd cache after recovering
+  from LDAP connection problems (to clear any negative cache entries)
+* allow trimming expressions with ${foo#bar} syntax in attribute mapping
+  expressions (thanks Thorsten Glaser)
+* pynslcd supports trimming expressions with full shell glob matching
+* support password modification in pynslcd
+* support children search scope for systems that have it
+* add a getent.ldap utility to perform nslcd queries bypassing the libc NSS
+  stack
+* implement functionality for changing user information and provide a
+  chsh.ldap utility to allow users to change their login shell
+* remove deprecated use_sasl, reconnect_tries, reconnect_maxsleeptime and
+  tls_checkpeer options which have been replaced long ago
+* allow names with one character in default validnames option and allow
+  parentheses (taken from Fedora packages)
+* fall back to updating the lastChange attribute with the normal LDAP
+  connection
+* dump full nslcd configuration at debug level on start-up
+* export an _nss_ldap_version symbol in the NSS module to make finding version
+  mismatches easier (the NSS module version is logged from nslcd)
+* documentation improvements
+* update the coding style for the C source code to follow a more modern and
+  commonly used coding convention
+* some parts of the code were refactored or rewritten to take into account the
+  changes within the software (e.g. configuration file handling, reduction in
+  the number of system calls for normal communication)
+* numerous smaller fixes
+* portability and robustness improvements to the tests
+* implement lookup_netgroup and lookup_shadow test commands for systems that
+  cannot use getent to query these
+* guess the value for --with-pam-seclib-dir configure option if it is not
+  specified
+* temporary disable the caching functionality of pynslcd
+* usability improvements in the pynslcd implementation
+* various fixes for Solaris
+
+
 changes from 0.8.11 to 0.8.12
 -----------------------------
 
