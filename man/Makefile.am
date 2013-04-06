@@ -20,24 +20,26 @@
 PAM_MANS = pam_ldap.8
 UTILS_MANS = getent.ldap.1 chsh.ldap.1
 NSLCD_MANS = nslcd.conf.5 nslcd.8
-PYNSLCD_MANS = nslcd.conf.5 pynslcd.8
+PYNSLCD_MANS = pynslcd.8
 ALL_MANS = $(PAM_MANS) $(UTILS_MANS) $(NSLCD_MANS) $(PYNSLCD_MANS)
 
 # figure out which manual pages to install
-INST_MANS =
+man_MANS =
 if ENABLE_PAM
-  INST_MANS += $(PAM_MANS)
+  man_MANS += $(PAM_MANS)
 endif
 if ENABLE_UTILS
-  INST_MANS += $(UTILS_MANS)
+  man_MANS += $(UTILS_MANS)
 endif
 if ENABLE_NSLCD
-  INST_MANS += $(NSLCD_MANS)
+  man_MANS += $(NSLCD_MANS)
 endif
 if ENABLE_PYNSLCD
-  INST_MANS += $(PYNSLCD_MANS)
+  man_MANS += $(PYNSLCD_MANS)
+if !ENABLE_NSLCD
+  man_MANS += nslcd.conf.5
 endif
-man_MANS = $(INST_MANS:u)
+endif
 noinst_DATA = $(ALL_MANS)
 EXTRA_DIST = $(ALL_MANS) $(ALL_MANS:=.xml)
 
