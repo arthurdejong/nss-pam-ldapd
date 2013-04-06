@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-utilsdir = $(datadir)/nslcdutils
+utilsdir = $(datadir)/nslcd-utils
 
 utils_PYTHON = cmdline.py nslcd.py getent.py chsh.py shells.py users.py
 nodist_utils_PYTHON = constants.py
