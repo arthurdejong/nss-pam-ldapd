@@ -36,7 +36,7 @@ class NslcdClient(object):
     def __init__(self, action):
         # set up the socket (store in class to avoid closing it)
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        #fcntl.fcntl(sock, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
+        fcntl.fcntl(self.sock, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
         # connect to nslcd
         self.sock.connect(constants.NSLCD_SOCKET)
         #self.sock.setblocking(1)
