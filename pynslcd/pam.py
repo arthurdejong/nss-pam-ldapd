@@ -283,8 +283,10 @@ class PAMPasswordModificationRequest(PAMRequest):
             # check if rootpwmodpw should be used
             if not parameters['oldpassword'] and self.calleruid == 0 and cfg.rootpwmoddn:
                 password = cfg.rootpwmoddn
-            else:
+            elif parameters['oldpassword']:
                 password = parameters['oldpassword']
+            else:
+                raise ValueError('password missing')
         else:
             binddn = parameters['userdn']
             password = parameters['oldpassword']
