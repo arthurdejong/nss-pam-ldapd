@@ -71,12 +71,12 @@ class NslcdClient(object):
         return _int32.unpack(self.read(_int32.size))[0]
 
     def read_string(self):
-        len = self.read_int32()
-        return self.read(len)
+        num = self.read_int32()
+        return self.read(num)
 
     def read_stringlist(self):
-        len = self.read_int32()
-        return [self.read_string() for x in xrange(len)]
+        num = self.read_int32()
+        return [self.read_string() for x in xrange(num)]
 
     def read_ether(self):
         value = self.fp.read(6)
@@ -87,8 +87,8 @@ class NslcdClient(object):
         return af, socket.inet_ntop(af, self.read_string())
 
     def read_addresslist(self):
-        len = self.read_int32()
-        return [self.read_address() for x in xrange(len)]
+        num = self.read_int32()
+        return [self.read_address() for x in xrange(num)]
 
     def get_response(self):
         # complete the request if required and check response header

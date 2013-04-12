@@ -26,9 +26,7 @@ import os.path
 
 import ldap
 
-import cache
 import cfg
-import common
 import constants
 import pam
 import passwd
@@ -94,10 +92,10 @@ class UserModRequest(pam.PAMRequest):
                 mods.append((ldap.MOD_REPLACE, passwd.attmap['homeDirectory'], [homedir]))
             elif not os.path.isabs(homedir):
                 self.write_result(constants.NSLCD_USERMOD_HOMEDIR,
-                    'should be an absolute path')
+                                  'should be an absolute path')
             elif not os.path.isdir(homedir):
                 self.write_result(constants.NSLCD_USERMOD_HOMEDIR,
-                    'not a directory')
+                                  'not a directory')
             else:
                 mods.append((ldap.MOD_REPLACE, passwd.attmap['homeDirectory'], [homedir]))
         # check login shell modification
@@ -107,10 +105,10 @@ class UserModRequest(pam.PAMRequest):
                 mods.append((ldap.MOD_REPLACE, passwd.attmap['loginShell'], [shell]))
             elif shell not in list_shells():
                 self.write_result(constants.NSLCD_USERMOD_SHELL,
-                    'unlisted shell')
+                                  'unlisted shell')
             elif not os.path.isfile(shell) or not os.access(shell, os.X_OK):
                 self.write_result(constants.NSLCD_USERMOD_SHELL,
-                    'not an executable')
+                                  'not an executable')
             else:
                 mods.append((ldap.MOD_REPLACE, passwd.attmap['loginShell'], [shell]))
         # get a connection and perform the modification

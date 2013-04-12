@@ -20,11 +20,8 @@
 
 import logging
 import re
-import sys
 
 import ldap
-
-from expr import Expression
 
 
 # the number of threads to start
@@ -134,6 +131,7 @@ def _get_maps():
     # separate function as not to pollute the namespace and avoid import loops
     import alias, ether, group, host, netgroup, network, passwd
     import protocol, rpc, service, shadow
+    import sys
     return dict(
             alias=alias, aliases=alias,
             ether=ether, ethers=ether,
@@ -274,6 +272,7 @@ def read(filename):
         # pam_authz_search <FILTER>
         m = re.match('pam_authz_search\s+(?P<value>\S.*)', line, re.IGNORECASE)
         if m:
+            from expr import Expression
             pam_authz_searches.append(Expression(m.group('value')))
             # TODO: check pam_authz_search expression to only contain
             # username, service, ruser, rhost, tty, hostname, fqdn, dn or

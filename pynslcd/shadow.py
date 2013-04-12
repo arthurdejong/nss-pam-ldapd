@@ -95,7 +95,7 @@ class ShadowRequest(common.Request):
         # return results
         for name in names:
             yield (name, passwd, lastchangedate, mindays, maxdays, warndays,
-                    inactdays, expiredate, flag)
+                   inactdays, expiredate, flag)
 
 
 class ShadowByNameRequest(ShadowRequest):

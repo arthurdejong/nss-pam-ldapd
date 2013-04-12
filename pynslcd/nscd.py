@@ -22,7 +22,6 @@ import fcntl
 import logging
 import os
 import subprocess
-import struct
 
 import cfg
 
@@ -74,9 +73,8 @@ def loop(fd):
     os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
     while True:
         db = os.read(fd, 1)
-        # FIXME: define the characters and maps somewhere
         if db == '':
-            break
+            break  # close process down
         db = _char_to_db.get(db, None)
         if db:
             exec_invalidate(db)

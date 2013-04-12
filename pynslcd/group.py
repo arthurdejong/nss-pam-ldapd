@@ -65,9 +65,11 @@ class Search(search.LDAPSearch):
             memberuid = self.parameters['memberUid']
             dn = uid2dn(self.conn, memberuid)
             if dn:
-                return '(&%s(|(%s=%s)(%s=%s)))' % (self.filter,
-                          attmap['memberUid'], escape_filter_chars(memberuid),
-                          attmap['member'], escape_filter_chars(dn))
+                return '(&%s(|(%s=%s)(%s=%s)))' % (
+                        self.filter,
+                        attmap['memberUid'], escape_filter_chars(memberuid),
+                        attmap['member'], escape_filter_chars(dn)
+                    )
         return super(Search, self).mk_filter()
 
 

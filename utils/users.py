@@ -34,8 +34,8 @@ class User(object):
         else:
             self.asroot = False
             userinfo = pwd.getpwuid(self.myuid)
-        (self.username, ignore, self.uid, self.gid, self.gecos, self.homedir,
-            self.shell) = userinfo
+        (self.username, self.password, self.uid, self.gid, self.gecos,
+            self.homedir, self.shell) = userinfo
         # if we are trying to modify another user we should be root
         self.asroot = self.myuid != self.uid
 

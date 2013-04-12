@@ -25,7 +25,6 @@ import ldap
 import ldap.ldapobject
 
 import cfg
-import nscd
 
 
 # global indicator that there was some error connection to an LDAP server
@@ -56,6 +55,7 @@ class Connection(ldap.ldapobject.ReconnectLDAPObject):
             self.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_HARD)
 
     def reconnect_after_fail(self):
+        import nscd
         logging.info('connected to LDAP server %s', cfg.uri)
         nscd.invalidate()
 

@@ -73,8 +73,8 @@ class MySysLogHandler(logging.Handler):
     def emit(self, record):
         priority = self.mapping.get(record.levelno, syslog.LOG_WARNING)
         msg = self.format(record)
-        for l in msg.splitlines():
-            syslog.syslog(priority, l)
+        for line in msg.splitlines():
+            syslog.syslog(priority, line)
 
 
 # configure logging
@@ -113,8 +113,9 @@ def parse_cmdline():
     global program_name
     program_name = sys.argv[0] or program_name
     try:
-        optlist, args = getopt.gnu_getopt(sys.argv[1:],
-          'cdhV', ('check', 'debug', 'help', 'version', ))
+        optlist, args = getopt.gnu_getopt(
+            sys.argv[1:], 'cdhV',
+            ('check', 'debug', 'help', 'version'))
         for flag, arg in optlist:
             if flag in ('-c', '--check'):
                 global checkonly
@@ -131,10 +132,12 @@ def parse_cmdline():
         if len(args):
             raise getopt.GetoptError('unrecognized option \'%s\'' % args[0], args[0])
     except getopt.GetoptError, reason:
-        sys.stderr.write("%(program_name)s: %(reason)s\n"
-                         "Try '%(program_name)s --help' for more information.\n"
-                          % {'program_name': program_name,
-                             'reason': reason, })
+        sys.stderr.write(
+            "%(program_name)s: %(reason)s\n"
+            "Try '%(program_name)s --help' for more information.\n" % {
+                'program_name': program_name,
+                'reason': reason,
+            })
         sys.exit(1)
 
 
@@ -168,7 +171,7 @@ def getpeercred(fd):
     """Return uid, gid and pid of calling application."""
     import struct
     import socket
-    SO_PEERCRED = 17
+    SO_PEERCRED = getattr(socket, 'SO_PEERCRED', 17)
     creds = fd.getsockopt(socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i'))
     pid, uid, gid = struct.unpack('3i', creds)
     return uid, gid, pid
@@ -181,12 +184,12 @@ handlers.update(common.get_handlers('group'))
 handlers.update(common.get_handlers('host'))
 handlers.update(common.get_handlers('netgroup'))
 handlers.update(common.get_handlers('network'))
-handlers.update(common.get_handlers('pam'))
 handlers.update(common.get_handlers('passwd'))
 handlers.update(common.get_handlers('protocol'))
 handlers.update(common.get_handlers('rpc'))
 handlers.update(common.get_handlers('service'))
 handlers.update(common.get_handlers('shadow'))
+handlers.update(common.get_handlers('pam'))
 handlers.update(common.get_handlers('usermod'))
 
 
@@ -196,8 +199,7 @@ def acceptconnection(session):
     # See: http://docs.python.org/library/socket.html#socket.socket.settimeout
     fp = None
     try:
-        # probably use finally
-        # indicate new connection to logging module (genrates unique id)
+        # indicate new connection to logging module (generates unique id)
         log_newsession()
         # log connection
         try:
@@ -292,9 +294,9 @@ if __name__ == '__main__':
         sys.exit(1)
     # daemonize
     if debugging:
-        daemon = pidfile
+        ctx = pidfile
     else:
-        daemon = daemon.DaemonContext(
+        ctx = daemon.DaemonContext(
                       pidfile=pidfile,
                       signal_map={
                           signal.SIGTERM: 'terminate',
@@ -302,7 +304,7 @@ if __name__ == '__main__':
                           signal.SIGPIPE: None,
                       })
     # start daemon
-    with daemon:
+    with ctx:
         try:
             # start normal logging as configured
             if not debugging:

@@ -1,7 +1,7 @@
 
 # tio.py - I/O functions
 #
-# Copyright (C) 2010, 2011 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -51,10 +51,10 @@ class TIOStream(object):
         return _int32.unpack(self.read(_int32.size))[0]
 
     def read_string(self, maxsize=None):
-        len = self.read_int32()
-        if maxsize and len >= maxsize:
+        num = self.read_int32()
+        if maxsize and num >= maxsize:
             raise TIOStreamError()
-        return self.read(len)
+        return self.read(num)
 
     def read_address(self):
         """Read an address (usually IPv4 or IPv6) from the stream and return

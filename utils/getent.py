@@ -33,14 +33,13 @@ from nslcd import NslcdClient
 
 # set up command line parser
 parser = argparse.ArgumentParser(
-        description='Query information in LDAP.',
-        epilog='Report bugs to <%s>.' % constants.PACKAGE_BUGREPORT
-    )
+    description='Query information in LDAP.',
+    epilog='Report bugs to <%s>.' % constants.PACKAGE_BUGREPORT)
 parser.add_argument('-V', '--version', action=VersionAction)
 parser.add_argument('database', metavar='DATABASE',
-    help='any of those supported by nslcd')
+                    help='any of those supported by nslcd')
 parser.add_argument('key', metavar='KEY', nargs='?',
-    help='information to lookup')
+                    help='information to lookup')
 
 
 def getent_aliases(database, key=None):
@@ -312,32 +311,33 @@ def getent_shadow(database, key=None):
             )
 
 
-args = parser.parse_args()
-try:
-    if args.database == 'aliases':
-        getent_aliases(args.database, args.key)
-    elif args.database == 'ethers':
-        getent_ethers(args.database, args.key)
-    elif args.database in ('group', 'group.bymember'):
-        getent_group(args.database, args.key)
-    elif args.database in ('hosts', 'hostsv4', 'hostsv6'):
-        getent_hosts(args.database, args.key)
-    elif args.database in ('netgroup', 'netgroup.norec'):
-        getent_netgroup(args.database, args.key)
-    elif args.database in ('networks', 'networksv4', 'networksv6'):
-        getent_networks(args.database, args.key)
-    elif args.database == 'passwd':
-        getent_passwd(args.database, args.key)
-    elif args.database == 'protocols':
-        getent_protocols(args.database, args.key)
-    elif args.database == 'rpc':
-        getent_rpc(args.database, args.key)
-    elif args.database == 'services':
-        getent_services(args.database, args.key)
-    elif args.database == 'shadow':
-        getent_shadow(args.database, args.key)
-    else:
-        parser.error('Unknown database: %s' % args.database)
-except struct.error:
-    print 'Problem contacting nslcd'
-    sys.exit(1)
+if __name__ == '__main__':
+    args = parser.parse_args()
+    try:
+        if args.database == 'aliases':
+            getent_aliases(args.database, args.key)
+        elif args.database == 'ethers':
+            getent_ethers(args.database, args.key)
+        elif args.database in ('group', 'group.bymember'):
+            getent_group(args.database, args.key)
+        elif args.database in ('hosts', 'hostsv4', 'hostsv6'):
+            getent_hosts(args.database, args.key)
+        elif args.database in ('netgroup', 'netgroup.norec'):
+            getent_netgroup(args.database, args.key)
+        elif args.database in ('networks', 'networksv4', 'networksv6'):
+            getent_networks(args.database, args.key)
+        elif args.database == 'passwd':
+            getent_passwd(args.database, args.key)
+        elif args.database == 'protocols':
+            getent_protocols(args.database, args.key)
+        elif args.database == 'rpc':
+            getent_rpc(args.database, args.key)
+        elif args.database == 'services':
+            getent_services(args.database, args.key)
+        elif args.database == 'shadow':
+            getent_shadow(args.database, args.key)
+        else:
+            parser.error('Unknown database: %s' % args.database)
+    except struct.error:
+        print 'Problem contacting nslcd'
+        sys.exit(1)

@@ -1,7 +1,7 @@
 
 # cache.py - caching layer for pynslcd
 #
-# Copyright (C) 2012 Arthur de Jong
+# Copyright (C) 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,8 +27,6 @@ import sqlite3
 
 
 # TODO: probably create a config table
-
-
 
 
 # FIXME: store the cache in the right place and make it configurable
