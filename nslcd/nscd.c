@@ -178,7 +178,7 @@ int nscd_start_invalidator(void)
   pid_t cpid;
   int i;
   /* set up a pipe for communication */
-  if (pipe(pipefds) == -1)
+  if (pipe(pipefds) < 0)
   {
     log_log(LOG_ERR, "pipe() failed: %s", strerror(errno));
     return -1;
@@ -201,7 +201,7 @@ int nscd_start_invalidator(void)
   }
   /* fork a child to perfrom the nscd invalidate commands */
   cpid = fork();
-  if (cpid == -1)
+  if (cpid < 0)
   {
     log_log(LOG_ERR, "fork() failed: %s", strerror(errno));
     close(pipefds[0]);
