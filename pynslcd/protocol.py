@@ -37,6 +37,19 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `protocol_cache`
+          ( `cn` TEXT PRIMARY KEY,
+            `ipProtocolNumber` INTEGER NOT NULL,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `protocol_1_cache`
+          ( `protocol` TEXT NOT NULL,
+            `cn` TEXT NOT NULL,
+            FOREIGN KEY(`protocol`) REFERENCES `protocol_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `protocol_1_idx` ON `protocol_1_cache`(`protocol`);
+    '''
+
     def retrieve(self, parameters):
         query = cache.CnAliasedQuery('protocol', parameters)
         for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', )):

@@ -27,170 +27,7 @@ import sqlite3
 
 
 # TODO: probably create a config table
-
-
-# FIXME: store the cache in the right place and make it configurable
-filename = '/tmp/cache.sqlite'
-dirname = os.path.dirname(filename)
-if not os.path.isdir(dirname):
-    os.mkdir(dirname)
-con = sqlite3.connect(filename,
-                detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
-con.row_factory = sqlite3.Row
-
 # FIXME: have some way to remove stale entries from the cache if all items from LDAP are queried (perhas use TTL from all request)
-
-# set up the database
-con.executescript('''
-
-    -- store temporary tables in memory
-    PRAGMA temp_store = MEMORY;
-
-    -- disable sync() on database (corruption on disk failure)
-    PRAGMA synchronous = OFF;
-
-    -- put journal in memory (corruption if crash during transaction)
-    PRAGMA journal_mode = MEMORY;
-
-    -- tables for alias cache
-    CREATE TABLE IF NOT EXISTS `alias_cache`
-      ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
-        `mtime` TIMESTAMP NOT NULL );
-    CREATE TABLE IF NOT EXISTS `alias_1_cache`
-      ( `alias` TEXT NOT NULL COLLATE NOCASE,
-        `rfc822MailMember` TEXT NOT NULL,
-        FOREIGN KEY(`alias`) REFERENCES `alias_cache`(`cn`)
-        ON DELETE CASCADE ON UPDATE CASCADE );
-    CREATE INDEX IF NOT EXISTS `alias_1_idx` ON `alias_1_cache`(`alias`);
-
-    -- table for ethernet cache
-    CREATE TABLE IF NOT EXISTS `ether_cache`
-      ( `cn` TEXT NOT NULL COLLATE NOCASE,
-        `macAddress` TEXT NOT NULL COLLATE NOCASE,
-        `mtime` TIMESTAMP NOT NULL,
-        UNIQUE (`cn`, `macAddress`) );
-
-    -- table for group cache
-    CREATE TABLE IF NOT EXISTS `group_cache`
-      ( `cn` TEXT PRIMARY KEY,
-        `userPassword` TEXT,
-        `gidNumber` INTEGER NOT NULL UNIQUE,
-        `mtime` TIMESTAMP NOT NULL );
-    CREATE TABLE IF NOT EXISTS `group_3_cache`
-      ( `group` TEXT NOT NULL,
-        `memberUid` TEXT NOT NULL,
-        FOREIGN KEY(`group`) REFERENCES `group_cache`(`cn`)
-        ON DELETE CASCADE ON UPDATE CASCADE );
-    CREATE INDEX IF NOT EXISTS `group_3_idx` ON `group_3_cache`(`group`);
-
-    -- tables for host cache
-    CREATE TABLE IF NOT EXISTS `host_cache`
-      ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
-        `mtime` TIMESTAMP NOT NULL );
-    CREATE TABLE IF NOT EXISTS `host_1_cache`
-      ( `host` TEXT NOT NULL COLLATE NOCASE,
-        `cn` TEXT NOT NULL COLLATE NOCASE,
-        FOREIGN KEY(`host`) REFERENCES `host_cache`(`cn`)
-        ON DELETE CASCADE ON UPDATE CASCADE );
-    CREATE INDEX IF NOT EXISTS `host_1_idx` ON `host_1_cache`(`host`);
-    CREATE TABLE IF NOT EXISTS `host_2_cache`
-      ( `host` TEXT NOT NULL COLLATE NOCASE,
-        `ipHostNumber` TEXT NOT NULL,
-        FOREIGN KEY(`host`) REFERENCES `host_cache`(`cn`)
-        ON DELETE CASCADE ON UPDATE CASCADE );
-    CREATE INDEX IF NOT EXISTS `host_2_idx` ON `host_2_cache`(`host`);
-
-    -- FIXME: this does not work as entries are never removed from the cache
-    CREATE TABLE IF NOT EXISTS `netgroup_cache`
-      ( `cn` TEXT NOT NULL,
-        `member` TEXT NOT NULL,
-        `mtime` TIMESTAMP NOT NULL,
-        UNIQUE (`cn`, `member`) );
-
-    -- tables for network cache
-    CREATE TABLE IF NOT EXISTS `network_cache`
-      ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
-        `mtime` TIMESTAMP NOT NULL );
-    CREATE TABLE IF NOT EXISTS `network_1_cache`
-      ( `network` TEXT NOT NULL COLLATE NOCASE,
-        `cn` TEXT NOT NULL COLLATE NOCASE,
-        FOREIGN KEY(`network`) REFERENCES `network_cache`(`cn`)
-        ON DELETE CASCADE ON UPDATE CASCADE );
-    CREATE INDEX IF NOT EXISTS `network_1_idx` ON `network_1_cache`(`network`);
-    CREATE TABLE IF NOT EXISTS `network_2_cache`
-      ( `network` TEXT NOT NULL,
-        `ipNetworkNumber` TEXT NOT NULL,
-        FOREIGN KEY(`network`) REFERENCES `network_cache`(`cn`)
-        ON DELETE CASCADE ON UPDATE CASCADE );
-    CREATE INDEX IF NOT EXISTS `network_2_idx` ON `network_2_cache`(`network`);
-
-    -- table for passwd cache
-    CREATE TABLE IF NOT EXISTS `passwd_cache`
-      ( `uid` TEXT PRIMARY KEY,
-        `userPassword` TEXT,
-        `uidNumber` INTEGER NOT NULL UNIQUE,
-        `gidNumber` INTEGER NOT NULL,
-        `gecos` TEXT,
-        `homeDirectory` TEXT,
-        `loginShell` TEXT,
-        `mtime` TIMESTAMP NOT NULL );
-
-    -- table for protocol cache
-    CREATE TABLE IF NOT EXISTS `protocol_cache`
-      ( `cn` TEXT PRIMARY KEY,
-        `ipProtocolNumber` INTEGER NOT NULL,
-        `mtime` TIMESTAMP NOT NULL );
-    CREATE TABLE IF NOT EXISTS `protocol_1_cache`
-      ( `protocol` TEXT NOT NULL,
-        `cn` TEXT NOT NULL,
-        FOREIGN KEY(`protocol`) REFERENCES `protocol_cache`(`cn`)
-        ON DELETE CASCADE ON UPDATE CASCADE );
-    CREATE INDEX IF NOT EXISTS `protocol_1_idx` ON `protocol_1_cache`(`protocol`);
-
-    -- table for rpc cache
-    CREATE TABLE IF NOT EXISTS `rpc_cache`
-      ( `cn` TEXT PRIMARY KEY,
-        `oncRpcNumber` INTEGER NOT NULL,
-        `mtime` TIMESTAMP NOT NULL );
-    CREATE TABLE IF NOT EXISTS `rpc_1_cache`
-      ( `rpc` TEXT NOT NULL,
-        `cn` TEXT NOT NULL,
-        FOREIGN KEY(`rpc`) REFERENCES `rpc_cache`(`cn`)
-        ON DELETE CASCADE ON UPDATE CASCADE );
-    CREATE INDEX IF NOT EXISTS `rpc_1_idx` ON `rpc_1_cache`(`rpc`);
-
-    -- tables for service cache
-    CREATE TABLE IF NOT EXISTS `service_cache`
-      ( `cn` TEXT NOT NULL,
-        `ipServicePort` INTEGER NOT NULL,
-        `ipServiceProtocol` TEXT NOT NULL,
-        `mtime` TIMESTAMP NOT NULL,
-        UNIQUE (`ipServicePort`, `ipServiceProtocol`) );
-    CREATE TABLE IF NOT EXISTS `service_1_cache`
-      ( `ipServicePort` INTEGER NOT NULL,
-        `ipServiceProtocol` TEXT NOT NULL,
-        `cn` TEXT NOT NULL,
-        FOREIGN KEY(`ipServicePort`) REFERENCES `service_cache`(`ipServicePort`)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-        FOREIGN KEY(`ipServiceProtocol`) REFERENCES `service_cache`(`ipServiceProtocol`)
-        ON DELETE CASCADE ON UPDATE CASCADE );
-    CREATE INDEX IF NOT EXISTS `service_1_idx1` ON `service_1_cache`(`ipServicePort`);
-    CREATE INDEX IF NOT EXISTS `service_1_idx2` ON `service_1_cache`(`ipServiceProtocol`);
-
-    -- table for shadow cache
-    CREATE TABLE IF NOT EXISTS `shadow_cache`
-      ( `uid` TEXT PRIMARY KEY,
-        `userPassword` TEXT,
-        `shadowLastChange` INTEGER,
-        `shadowMin` INTEGER,
-        `shadowMax` INTEGER,
-        `shadowWarning` INTEGER,
-        `shadowInactive` INTEGER,
-        `shadowExpire` INTEGER,
-        `shadowFlag` INTEGER,
-        `mtime` TIMESTAMP NOT NULL );
-
-    ''')
 
 
 class Query(object):
@@ -274,8 +111,13 @@ class RowGrouper(object):
 class Cache(object):
 
     def __init__(self):
-        self.con = con
+        self.con = _get_connection()
         self.table = sys.modules[self.__module__].__name__
+        self.create()
+
+    def create(self):
+        """Create the needed tables if neccesary."""
+        self.con.executescript(self.create_sql)
 
     def store(self, *values):
         """Store the values in the cache for the specified table."""
@@ -288,17 +130,17 @@ class Cache(object):
                 simple_values.append(v)
         simple_values.append(datetime.datetime.now())
         args = ', '.join(len(simple_values) * ('?', ))
-        con.execute('''
+        self.con.execute('''
             INSERT OR REPLACE INTO %s_cache
             VALUES
               (%s)
             ''' % (self.table, args), simple_values)
         for n, vlist in multi_values.items():
-            con.execute('''
+            self.con.execute('''
                 DELETE FROM %s_%d_cache
                 WHERE `%s` = ?
                 ''' % (self.table, n, self.table), (values[0], ))
-            con.executemany('''
+            self.con.executemany('''
                 INSERT INTO %s_%d_cache
                 VALUES
                   (?, ?)
@@ -311,3 +153,32 @@ class Cache(object):
             FROM %s_cache
             ''' % self.table, parameters)
         return (list(x)[:-1] for x in query.execute(self.con))
+
+
+# the connection to the sqlite database
+_connection = None
+
+
+# FIXME: make tread safe (is this needed the way the caches are initialised?)
+def _get_connection():
+    global _connection
+    if _connection is None:
+        filename = '/tmp/pynslcd_cache.sqlite'
+        dirname = os.path.dirname(filename)
+        if not os.path.isdir(dirname):
+            os.mkdir(dirname)
+        connection = sqlite3.connect(
+            filename, detect_types=sqlite3.PARSE_DECLTYPES,
+            check_same_thread=False)
+        connection.row_factory = sqlite3.Row
+        #  initialise connection properties
+        connection.executescript('''
+            -- store temporary tables in memory
+            PRAGMA temp_store = MEMORY;
+            -- disable sync() on database (corruption on disk failure)
+            PRAGMA synchronous = OFF;
+            -- put journal in memory (corruption if crash during transaction)
+            PRAGMA journal_mode = MEMORY;
+            ''')
+        _connection = connection
+    return _connection

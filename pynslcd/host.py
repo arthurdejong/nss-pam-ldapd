@@ -53,6 +53,24 @@ class HostQuery(cache.CnAliasedQuery):
 
 class Cache(cache.Cache):
 
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `host_cache`
+          ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `host_1_cache`
+          ( `host` TEXT NOT NULL COLLATE NOCASE,
+            `cn` TEXT NOT NULL COLLATE NOCASE,
+            FOREIGN KEY(`host`) REFERENCES `host_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `host_1_idx` ON `host_1_cache`(`host`);
+        CREATE TABLE IF NOT EXISTS `host_2_cache`
+          ( `host` TEXT NOT NULL COLLATE NOCASE,
+            `ipHostNumber` TEXT NOT NULL,
+            FOREIGN KEY(`host`) REFERENCES `host_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `host_2_idx` ON `host_2_cache`(`host`);
+    '''
+
     def retrieve(self, parameters):
         query = HostQuery(parameters)
         for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', 'ipHostNumber', )):

@@ -69,22 +69,41 @@ class ServiceQuery(cache.CnAliasedQuery):
 
 class Cache(cache.Cache):
 
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `service_cache`
+          ( `cn` TEXT NOT NULL,
+            `ipServicePort` INTEGER NOT NULL,
+            `ipServiceProtocol` TEXT NOT NULL,
+            `mtime` TIMESTAMP NOT NULL,
+            UNIQUE (`ipServicePort`, `ipServiceProtocol`) );
+        CREATE TABLE IF NOT EXISTS `service_1_cache`
+          ( `ipServicePort` INTEGER NOT NULL,
+            `ipServiceProtocol` TEXT NOT NULL,
+            `cn` TEXT NOT NULL,
+            FOREIGN KEY(`ipServicePort`) REFERENCES `service_cache`(`ipServicePort`)
+            ON DELETE CASCADE ON UPDATE CASCADE,
+            FOREIGN KEY(`ipServiceProtocol`) REFERENCES `service_cache`(`ipServiceProtocol`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `service_1_idx1` ON `service_1_cache`(`ipServicePort`);
+        CREATE INDEX IF NOT EXISTS `service_1_idx2` ON `service_1_cache`(`ipServiceProtocol`);
+    '''
+
     def store(self, name, aliases, port, protocol):
         self.con.execute('''
             INSERT OR REPLACE INTO `service_cache`
             VALUES
               (?, ?, ?, ?)
-            ''', (name, port, protocol, datetime.datetime.now()))
+        ''', (name, port, protocol, datetime.datetime.now()))
         self.con.execute('''
             DELETE FROM `service_1_cache`
             WHERE `ipServicePort` = ?
               AND `ipServiceProtocol` = ?
-            ''', (port, protocol))
+        ''', (port, protocol))
         self.con.executemany('''
             INSERT INTO `service_1_cache`
             VALUES
               (?, ?, ?)
-            ''', ((port, protocol, alias) for alias in aliases))
+        ''', ((port, protocol, alias) for alias in aliases))
 
     def retrieve(self, parameters):
         query = ServiceQuery(parameters)

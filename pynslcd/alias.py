@@ -37,13 +37,25 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `alias_cache`
+          ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `alias_1_cache`
+          ( `alias` TEXT NOT NULL COLLATE NOCASE,
+            `rfc822MailMember` TEXT NOT NULL,
+            FOREIGN KEY(`alias`) REFERENCES `alias_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `alias_1_idx` ON `alias_1_cache`(`alias`);
+    '''
+
     retrieve_sql = '''
         SELECT `alias_cache`.`cn` AS `cn`,
                `alias_1_cache`.`rfc822MailMember` AS `rfc822MailMember`
         FROM `alias_cache`
         LEFT JOIN `alias_1_cache`
           ON `alias_1_cache`.`alias` = `alias_cache`.`cn`
-        '''
+    '''
 
     def retrieve(self, parameters):
         query = cache.Query(self.retrieve_sql, parameters)

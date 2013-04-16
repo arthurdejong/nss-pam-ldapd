@@ -54,6 +54,24 @@ class NetworkQuery(cache.CnAliasedQuery):
 
 class Cache(cache.Cache):
 
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `network_cache`
+          ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `network_1_cache`
+          ( `network` TEXT NOT NULL COLLATE NOCASE,
+            `cn` TEXT NOT NULL COLLATE NOCASE,
+            FOREIGN KEY(`network`) REFERENCES `network_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `network_1_idx` ON `network_1_cache`(`network`);
+        CREATE TABLE IF NOT EXISTS `network_2_cache`
+          ( `network` TEXT NOT NULL,
+            `ipNetworkNumber` TEXT NOT NULL,
+            FOREIGN KEY(`network`) REFERENCES `network_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `network_2_idx` ON `network_2_cache`(`network`);
+    '''
+
     def retrieve(self, parameters):
         query = NetworkQuery(parameters)
         for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', 'ipNetworkNumber', )):

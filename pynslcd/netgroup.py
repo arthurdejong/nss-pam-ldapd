@@ -42,7 +42,15 @@ class Search(search.LDAPSearch):
 
 
 class Cache(cache.Cache):
-    pass
+
+    create_sql = '''
+        -- FIXME: this does not work as entries are never removed from the cache
+        CREATE TABLE IF NOT EXISTS `netgroup_cache`
+          ( `cn` TEXT NOT NULL,
+            `member` TEXT NOT NULL,
+            `mtime` TIMESTAMP NOT NULL,
+            UNIQUE (`cn`, `member`) );
+    '''
 
 
 class NetgroupRequest(common.Request):

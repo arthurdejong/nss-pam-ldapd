@@ -47,7 +47,18 @@ class Search(search.LDAPSearch):
 
 
 class Cache(cache.Cache):
-    pass
+
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `passwd_cache`
+          ( `uid` TEXT PRIMARY KEY,
+            `userPassword` TEXT,
+            `uidNumber` INTEGER NOT NULL UNIQUE,
+            `gidNumber` INTEGER NOT NULL,
+            `gecos` TEXT,
+            `homeDirectory` TEXT,
+            `loginShell` TEXT,
+            `mtime` TIMESTAMP NOT NULL );
+    '''
 
 
 class PasswdRequest(common.Request):
@@ -104,7 +115,6 @@ class PasswdByUidRequest(PasswdRequest):
             return super(PasswdByUidRequest, self).handle_request(parameters)
         # write the final result code to signify empty results
         self.fp.write_int32(constants.NSLCD_RESULT_END)
-
 
 
 class PasswdAllRequest(PasswdRequest):

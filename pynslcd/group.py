@@ -75,12 +75,26 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `group_cache`
+          ( `cn` TEXT PRIMARY KEY,
+            `userPassword` TEXT,
+            `gidNumber` INTEGER NOT NULL UNIQUE,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `group_3_cache`
+          ( `group` TEXT NOT NULL,
+            `memberUid` TEXT NOT NULL,
+            FOREIGN KEY(`group`) REFERENCES `group_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `group_3_idx` ON `group_3_cache`(`group`);
+    '''
+
     retrieve_sql = '''
         SELECT `cn`, `userPassword`, `gidNumber`, `memberUid`
         FROM `group_cache`
         LEFT JOIN `group_3_cache`
           ON `group_3_cache`.`group` = `group_cache`.`cn`
-        '''
+    '''
 
     def retrieve(self, parameters):
         query = cache.Query(self.retrieve_sql, parameters)
