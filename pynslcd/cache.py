@@ -161,6 +161,12 @@ class Cache(object):
             ''' % self.tables[0], parameters)
         return (list(x)[:-1] for x in query.execute(self.con))
 
+    def __enter__(self):
+        return self.con.__enter__();
+
+    def __exit__(self, *args):
+        return self.con.__exit__(*args);
+
 
 # the connection to the sqlite database
 _connection = None
