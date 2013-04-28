@@ -1193,7 +1193,8 @@ static void cfg_read(const char *filename,struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword,"nss_min_uid")==0)
     {
-      get_uid(filename,lnr,keyword,&line,&cfg->ldc_nss_min_uid,NULL,NULL);
+      get_int(filename,lnr,keyword,&line,&i);
+      cfg->ldc_nss_min_uid=i;
       get_eol(filename,lnr,keyword,&line);
     }
     else if (strcasecmp(keyword,"validnames")==0)
