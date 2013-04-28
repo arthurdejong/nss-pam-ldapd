@@ -2,7 +2,7 @@
    pam.c - pam module functions
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -443,7 +443,7 @@ int pam_sm_authenticate(pam_handle_t *pamh,int flags,int argc,const char **argv)
   /* save username */
   ctx->user=strdup(username);
   /* if password change is required, save old password in context */
-  if (ctx->authz==PAM_NEW_AUTHTOK_REQD)
+  if ((resp.res==PAM_NEW_AUTHTOK_REQD)||(ctx->saved_authz.res==PAM_NEW_AUTHTOK_REQD))
     ctx->oldpassword=strdup(passwd);
   /* update caller's idea of the user name */
   if ( ctx->tmpluser && ctx->tmpluser[0] && (strcmp(ctx->tmpluser,username)!=0) )
