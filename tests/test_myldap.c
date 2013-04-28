@@ -2,7 +2,7 @@
    test_myldap.c - simple test for the myldap module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2011 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -207,6 +207,7 @@ static void test_get_rdnvalues(void)
   const char *attrs[] = { "cn", "uid", NULL };
   int rc;
   char buf[80];
+  const char *rdnval;
   /* initialize session */
   printf("test_myldap: test_get_rdnvalues(): getting session...\n");
   session=myldap_create_session();
@@ -223,15 +224,21 @@ static void test_get_rdnvalues(void)
   assert(entry!=NULL);
   printf("test_myldap: test_get_rdnvalues(): got DN %s\n",myldap_get_dn(entry));
   /* get some values from DN */
-  printf("test_myldap: test_get_rdnvalues(): DN.uid=%s\n",myldap_get_rdn_value(entry,"uid"));
-  printf("test_myldap: test_get_rdnvalues(): DN.cn=%s\n",myldap_get_rdn_value(entry,"cn"));
-  printf("test_myldap: test_get_rdnvalues(): DN.uidNumber=%s\n",myldap_get_rdn_value(entry,"uidNumber"));
+  rdnval=myldap_get_rdn_value(entry,"uid");
+  printf("test_myldap: test_get_rdnvalues(): DN.uid=%s\n",rdnval==NULL?"NULL":rdnval);
+  rdnval=myldap_get_rdn_value(entry,"cn");
+  printf("test_myldap: test_get_rdnvalues(): DN.cn=%s\n",rdnval==NULL?"NULL":rdnval);
+  rdnval=myldap_get_rdn_value(entry,"uidNumber");
+  printf("test_myldap: test_get_rdnvalues(): DN.uidNumber=%s\n",rdnval==NULL?"NULL":rdnval);
   /* clean up */
   myldap_session_close(session);
   /* some tests */
-  printf("test_myldap: test_get_rdnvalues(): DN.uid=%s\n",myldap_cpy_rdn_value("cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld","uid",buf,sizeof(buf)));
-  printf("test_myldap: test_get_rdnvalues(): DN.cn=%s\n",myldap_cpy_rdn_value("cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld","cn",buf,sizeof(buf)));
-  printf("test_myldap: test_get_rdnvalues(): DN.uidNumber=%s\n",myldap_cpy_rdn_value("cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld","uidNumber",buf,sizeof(buf)));
+  rdnval=myldap_cpy_rdn_value("cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld","uid",buf,sizeof(buf));
+  printf("test_myldap: test_get_rdnvalues(): DN.uid=%s\n",rdnval==NULL?"NULL":rdnval);
+  rdnval=myldap_cpy_rdn_value("cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld","cn",buf,sizeof(buf));
+  printf("test_myldap: test_get_rdnvalues(): DN.cn=%s\n",rdnval==NULL?"NULL":rdnval);
+  rdnval=myldap_cpy_rdn_value("cn=Aka Ashbach+uid=aashbach,ou=lotsofpeople,dc=test,dc=tld","uidNumber",buf,sizeof(buf));
+  printf("test_myldap: test_get_rdnvalues(): DN.uidNumber=%s\n",rdnval==NULL?"NULL":rdnval);
 }
 
 /* this method tests to see if we can perform two searches within
