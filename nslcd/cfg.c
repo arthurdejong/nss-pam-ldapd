@@ -459,11 +459,14 @@ static void get_uid(const char *filename,int lnr,
   {
     /* get the name and gid from the passwd database */
     pwent=getpwuid(*var);
-    if ((gid!=NULL)&&(*gid==NOGID))
-      *gid=pwent->pw_gid;
-    if (str!=NULL)
-      *str=strdup(pwent->pw_name);
-    return;
+    if (pwent!=NULL)
+    {
+      if ((gid!=NULL)&&(*gid==NOGID))
+        *gid=pwent->pw_gid;
+      if (str!=NULL)
+        *str=strdup(pwent->pw_name);
+      return;
+    }
   }
   /* find by name */
   pwent=getpwnam(token);
