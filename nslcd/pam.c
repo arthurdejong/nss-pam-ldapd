@@ -2,7 +2,7 @@
    pam.c - pam processing routines
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -154,7 +154,7 @@ static int check_shadow(MYLDAP_SESSION *session,const char *username,
     return NSLCD_PAM_SUCCESS; /* no shadow entry found, nothing to check */
   /* get today's date */
   today=(long)(time(NULL)/(60*60*24));
-  /* get shadown information */
+  /* get shadow information */
   get_shadow_properties(entry,&lastchangedate,&mindays,&maxdays,&warndays,
                         &inactdays,&expiredate,&flag);
   /* check account expiry date */

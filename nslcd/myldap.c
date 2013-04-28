@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006, 2007 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -571,7 +571,7 @@ static int set_socket_timeout(LDAP *ld,time_t sec,suseconds_t usec)
 
 #ifdef LDAP_OPT_CONNECT_CB
 /* This function is called by the LDAP library once a connection was made to the server. We
-   set a timeout on the socket here, to catch netzwork timeouts during the ssl
+   set a timeout on the socket here, to catch network timeouts during the ssl
    handshake phase. It is configured with LDAP_OPT_CONNECT_CB. */
 static int connect_cb(LDAP *ld,Sockbuf UNUSED(*sb),LDAPURLDesc UNUSED(*srv),
         struct sockaddr UNUSED(*addr),struct ldap_conncb UNUSED(*ctx))
@@ -1348,7 +1348,7 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search,int *rcp)
 
 /* Get the DN from the entry. This function only returns NULL (and sets
    errno) if an incorrect entry is passed. If the DN value cannot be
-   retreived "unknown" is returned instead. */
+   retrieved "unknown" is returned instead. */
 const char *myldap_get_dn(MYLDAP_ENTRY *entry)
 {
   int rc;
@@ -1359,7 +1359,7 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
     errno=EINVAL;
     return "unknown";
   }
-  /* if we don't have it yet, retreive it */
+  /* if we don't have it yet, retrieve it */
   if ((entry->dn==NULL)&&(entry->search->valid))
   {
     entry->dn=ldap_get_dn(entry->search->session->ld,entry->search->msg);

@@ -1,7 +1,7 @@
 
-# alias.py - lookup functions for aliasnet addresses
+# alias.py - lookup functions for email aliases
 #
-# Copyright (C) 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public

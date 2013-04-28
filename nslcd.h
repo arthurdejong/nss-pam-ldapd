@@ -2,7 +2,7 @@
    nslcd.h - file describing client/server protocol
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -167,7 +167,9 @@
 #define NSLCD_ACTION_RPC_BYNUMBER      10002
 #define NSLCD_ACTION_RPC_ALL           10003
 
-/* Service (/etc/services) information requests. Result values are:
+/* Service (/etc/services) information requests. The BYNAME and BYNUMBER
+   requests contain an extra protocol string in the request which, if not
+   blank, will filter the services by this protocol. Result values are:
      STRING      service name
      STRINGLIST  service aliases
      INT32       service (port) number

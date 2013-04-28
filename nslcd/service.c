@@ -154,7 +154,7 @@ static int write_service(TFILE *fp,MYLDAP_ENTRY *entry,
   /* if the service name is not yet found, get the first entry */
   if (name==NULL)
     name=aliases[0];
-  /* check case of returned servies entry */
+  /* check case of returned services entry */
   if ((reqname!=NULL)&&(STR_CMP(reqname,name)!=0))
   {
     for (i=0;(aliases[i]!=NULL)&&(STR_CMP(reqname,aliases[i])!=0);i++)
