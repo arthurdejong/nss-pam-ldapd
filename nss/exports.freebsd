@@ -6,6 +6,9 @@ EXPORTED {
     # flag to enable or disable lookups
     _nss_ldap_enablelookups;
 
+    # version information of NSS module
+    _nss_ldap_version;
+
     # module init
     nss_module_register;
 

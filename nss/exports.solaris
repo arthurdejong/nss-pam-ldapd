@@ -6,6 +6,9 @@ nss_ldap.so.1 {
     # flag to enable or disable lookups
     _nss_ldap_enablelookups;
 
+    # version information of NSS module
+    _nss_ldap_version;
+
     # published NSS service module constructors
     _nss_ldap_ethers_constr;
     _nss_ldap_group_constr;
