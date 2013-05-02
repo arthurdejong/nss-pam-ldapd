@@ -186,7 +186,7 @@ static int tio_select(TFILE *fp, int readfd, const struct timeval *deadline)
     /* prepare our filedescriptorset */
     if (fp->fd>=FD_SETSIZE)
     {
-      errno=EBADFD;
+      errno=EBADF;
       return -1;
     }
     FD_ZERO(&fdset);
@@ -404,7 +404,7 @@ static int tio_flush_nonblock(TFILE *fp)
   /* prepare our filedescriptorset */
   if (fp->fd>=FD_SETSIZE)
   {
-    errno=EBADFD;
+    errno=EBADF;
     return -1;
   }
   FD_ZERO(&fdset);
