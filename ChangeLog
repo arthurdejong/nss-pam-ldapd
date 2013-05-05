@@ -1,3 +1,173 @@
+2013-05-05 11:50  arthur
+
+	* [r1958] ., compat/ldap_initialize.c: remove not needed define
+	  (r1897 from 0.9)
+
+2013-05-05 11:45  arthur
+
+	* [r1957] configure.ac: add some missing checks to the configure
+	  script (117327e from 0.9)
+
+2013-05-05 11:39  arthur
+
+	* [r1956] tests/test_nsscmds.sh: make the NSS tests dependant on
+	  the configuration of nsswitch.conf (302c2fa from 0.9)
+
+2013-05-05 10:59  arthur
+
+	* [r1955] tests/test_tio.c: support systems without ETIME (5e0bb05
+	  from 0.9)
+
+2013-05-05 10:55  arthur
+
+	* [r1954] tests/test_pamcmds.sh: small portability fix in
+	  test_pamcmds.sh (24c565c from 0.9)
+
+2013-05-05 10:53  arthur
+
+	* [r1953] configure.ac: guess the value for --with-pam-seclib-dir
+	  if it is not specified (0b5b4d1 from 0.9)
+
+2013-04-28 20:32  arthur
+
+	* [r1950] ., nslcd.h, nslcd/cfg.h, nslcd/common.h, nslcd/myldap.c,
+	  nslcd/nslcd.c, nslcd/pam.c, nslcd/service.c, pam/pam.c,
+	  pynslcd/alias.py, pynslcd/shadow.py: various typo and other
+	  comment fixes (4b01125, b0785de, bfdf7cd, 4689d5f, dba048b,
+	  ebe5705 and 122c38d from 0.9)
+
+2013-04-28 20:20  arthur
+
+	* [r1949] tests/test_myldap.c: do not rely on printf() being able
+	  to print NULL strings (8790b40 from 0.9)
+
+2013-04-28 14:56  arthur
+
+	* [r1948] nslcd/cfg.c: the argument to nss_min_uid must be numeric
+
+2013-04-28 14:50  arthur
+
+	* [r1947] nslcd/cfg.c: handle the case where getpwuid() returns
+	  NULL
+
+2013-04-28 14:16  arthur
+
+	* [r1946] man/Makefile.am: fix the way manual pages are installed
+	  (b5b4239 from 0.9)
+
+2013-04-28 13:26  arthur
+
+	* [r1945] nss/common.c, nss/exports.freebsd, nss/exports.glibc,
+	  nss/exports.solaris: define and export an _nss_ldap_version
+	  symbol (3155cdf and 11283a5 from 0.9)
+
+2013-04-28 13:14  arthur
+
+	* [r1944] nss/common.h: return NSS_STATUS_TRYAGAIN on zero-length
+	  (but not-NULL) buffer (thanks Jakub Hrozek) (f21efd6 from 0.9)
+
+2013-04-28 12:54  arthur
+
+	* [r1943] nslcd/service.c: only log protocol name if it is present
+	  (6a92621 and 402d3f3 from 0.9)
+
+2013-04-28 12:35  arthur
+
+	* [r1942] ., configure.ac: drop -Wcase-qual when using
+	  --enable-warnings because it was causing too much noise (r1908
+	  aka. 2a73fa1 from 0.9)
+
+2013-04-28 12:16  arthur
+
+	* [r1941] pam/pam.c: revert r1939 because it doesn't work on 0.8
+
+2013-04-28 11:29  arthur
+
+	* [r1940] nss/shadow.c: fix the text representation of shadow
+	  information for nscd on Solaris (7926326 from 0.9)
+
+2013-04-28 11:15  arthur
+
+	* [r1939] pam/pam.c: save the old password if either the
+	  authentication or the authorisation response is NEW_AUTHTOK_REQD
+	  (c89c41b from 0.9)
+
+2013-04-28 11:08  arthur
+
+	* [r1938] nslcd/pam.c: retry updating the lastChange attribute with
+	  the normal nslcd LDAP connection if the update with the user's
+	  connection failed (2f6f6a2 from 0.9)
+
+2013-02-23 21:40  arthur
+
+	* [r1935] nslcd/nslcd.c: extra sanity check to ensure not too many
+	  file descriptors are open
+	  (a9aea20f136026d6553295727350c88fe2431e0c from 0.9)
+
+2013-02-23 21:23  arthur
+
+	* [r1934] ., nslcd/cfg.c, nslcd/group.c, nslcd/passwd.c,
+	  nslcd/shadow.c: check result of set_tolist() to ensure that
+	  memory allocation problems are logged (r1911 from 0.9)
+
+2013-02-23 21:15  arthur
+
+	* [r1933] ., nslcd/myldap.c: fix memory leak in
+	  myldap_get_values_len() when using ranged attributes (very
+	  unlikely to occur) (r1910 from 0.9)
+
+2013-02-23 21:11  arthur
+
+	* [r1932] ., nslcd/myldap.c: fix a problem in memory handling in
+	  myldap_get_values_len() if malloc() would fail (r1909 from 0.9)
+
+2013-01-16 22:14  arthur
+
+	* [r1919] man/Makefile.am: fix the way manual pages are generated
+	  and distributed
+
+2013-01-11 12:21  arthur
+
+	* [r1907] nslcd/cfg.c: correctly handle the case where the gid
+	  option is before the uid option in the configuration (fixes
+	  r1723)
+
+2012-12-20 22:21  arthur
+
+	* [r1871] ., nslcd/passwd.c: don't process the passwd_byuid request
+	  at all for uids < nss_min_uid (r1870 from trunk)
+
+2012-12-20 17:14  arthur
+
+	* [r1869] ., nslcd/myldap.c: fix logic error (use && instead of &
+	  for logical and) (r1868 from trunk)
+
+2012-12-08 22:48  arthur
+
+	* [r1850] ., common/tio.c: fix setting deadline microsecond value
+	  (thanks Julien Cristau) (r1848 from trunk)
+
+2012-11-18 21:14  arthur
+
+	* [r1837] Makefile.am: fix the way ChangeLog is generated for
+	  branch
+
+2012-11-18 21:04  arthur
+
+	* [r1836] .: start a 0.8 maintenance branch
+
+2012-11-18 20:40  arthur
+
+	* [r1834] ChangeLog, NEWS, TODO, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml: get
+	  files ready for 0.8.12 release
+
+2012-11-18 20:13  arthur
+
+	* [r1833] configure.ac, nss/passwd.c: properly initialise
+	  passwd.pw_class on FreeBSD to empty string (was set to NULL due
+	  to the memset which was introduced in r1767)
+
 2012-11-17 16:40  arthur
 
 	* [r1832] pam/pam.c: use pam_modutil_getpwnam() instead of

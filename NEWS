@@ -1,3 +1,24 @@
+changes from 0.8.12 to 0.8.13
+-----------------------------
+
+* include an extra sanity check to ensure not too many file descriptors are
+  open
+* fix handling of gid configuration option if it listed before the uid option
+* fix microsecond timeout calculation (thanks Julien Cristau)
+* return NSS_STATUS_TRYAGAIN on zero-length (but not-NULL) buffer (thanks
+  Jakub Hrozek)
+* provide an _nss_ldap_version symbol in the NSS module to help debug problems
+  with a newer nslcd
+* retry updating the lastChange attribute with the normal nslcd LDAP
+  connection if the update with the user's connection failed
+* avoid processing passwd_byuid requests for uids below nss_min_uid
+* fix a few minor or very unlikely to occur memory leaks
+* fix the text representation of shadow information for nscd on Solaris
+* make the way manual pages are built and installed more consistent with
+  the chosen configure options
+* miscellaneous minor changes, fixes and compatibility improvements
+
+
 changes from 0.8.11 to 0.8.12
 -----------------------------
 
