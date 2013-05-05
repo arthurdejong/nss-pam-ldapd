@@ -2,7 +2,7 @@
    test_tio.c - simple test for the tio module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2011 Arthur de Jong
+   Copyright (C) 2007, 2008, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,11 @@
 #include "common.h"
 
 #include "common/tio.h"
+
+/* for platforms that don't have ETIME use ETIMEDOUT */
+#ifndef ETIME
+#define ETIME ETIMEDOUT
+#endif /* ETIME */
 
 /* structure for passing arguments to helper (is a thread) */
 struct helper_args {
