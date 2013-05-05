@@ -1,7 +1,7 @@
 /*
    ldap_initialize.c - replacement function for ldap_initialize()
 
-   Copyright (C) 2009 Arthur de Jong
+   Copyright (C) 2009, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,6 @@
 */
 
 #include "config.h"
-
-/* also include deprecated LDAP functions for now */
-#define LDAP_DEPRECATED 1
 
 #include <stdlib.h>
 #include <string.h>
