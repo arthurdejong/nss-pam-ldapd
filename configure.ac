@@ -216,11 +216,21 @@ AC_DEFINE_UNQUOTED(NSLCD_SOCKET,"$NSLCD_SOCKET",[The location of the socket used
 AC_SUBST(NSLCD_SOCKET)
 
 # the directory PAM librabries are expected to be placed into
+AC_MSG_CHECKING([location for PAM module])
 AC_ARG_WITH(pam-seclib-dir,
             AS_HELP_STRING([--with-pam-seclib-dir=PAM_SECLIB_DIR],
-                           [path to PAM security library @<:@/lib/security@:>@]),
+                           [path to PAM security library @<:@auto@:>@]),
             [ PAM_SECLIB_DIR="$with_pam_seclib_dir" ],
-            [ PAM_SECLIB_DIR="/lib/security" ])
+            [ PAM_SECLIB_DIR="auto" ])
+if test "x$PAM_SECLIB_DIR" = "xauto"
+then
+  case "$target_os" in
+    solaris*) PAM_SECLIB_DIR="/usr/lib/security" ;;
+    freebsd*) PAM_SECLIB_DIR="/usr/lib" ;;
+    *)        PAM_SECLIB_DIR="/lib/security" ;;
+  esac
+fi
+AC_MSG_RESULT($PAM_SECLIB_DIR)
 AC_DEFINE_UNQUOTED(PAM_SECLIB_DIR,"$PAM_SECLIB_DIR",[path to PAM security library])
 AC_SUBST(PAM_SECLIB_DIR)
 
