@@ -2,7 +2,7 @@
 
 # test_nsscmds.sh - simple test script to check output of name lookup commands
 #
-# Copyright (C) 2007, 2008, 2009, 2010, 2011 Arthur de Jong
+# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -57,6 +57,8 @@ check() {
 
 ###########################################################################
 
+if grep '^aliases.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing aliases..."
 
 # note that this doesn't work if /etc/aliases contains anything
@@ -83,8 +85,12 @@ check "getent aliases FOO" << EOM
 foo:            bar@example.com
 EOM
 
+fi  # end of aliases tests
+
 ###########################################################################
 
+if grep '^ethers.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing ether..."
 
 # get an entry by hostname
@@ -118,8 +124,12 @@ check "getent ethers" << EOM
 Enumeration not supported on ethers
 EOM
 
+fi  # end of ethers tests
+
 ###########################################################################
 
+if grep '^group.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing group..."
 
 # function to sort group members of a group
@@ -184,8 +194,12 @@ check "getent group hugegroup | sortgroup" << EOM
 hugegroup:*:1006:ablackstock,abortignon,achhor,ademosthenes,adenicola,adishaw,aesbensen,aferge,afredin,afuchs,agarbett,agimm,agordner,ahandy,ajaquess,akertzman,akomsthoeft,akraskouskas,akravetz,alamour,alat,alienhard,amanganelli,amaslyn,amayorga,amccroskey,amcgraw,amckinney,ameisinger,aponcedeleon,apurdon,areid,arosel,ascheno,ascovel,asemons,ashuey,asivley,astrunk,atollefsrud,atonkin,awhitt,aziernicki,badair,baigner,bbeckfield,bbrenton,bcoletta,bcolorado,bdadds,bdaughenbaugh,bdevera,bdominga,behrke,beon,bfishbeck,bgavagan,bguthary,bharnois,bhelverson,bjolly,blovig,bluellen,bmadamba,bmarlin,bmarszalek,bmicklos,bmoling,bouten,bphou,bpinedo,brodgerson,broher,bromano,bscadden,bsibal,bstrede,bswantak,btempel,btheim,bveeneman,bwinterton,bwynes,cabare,carguellez,cbarlup,cbartnick,cbelardo,cbleimehl,cbotdorf,cbourek,cbrechbill,cbrom,ccyganiewicz,cdeckard,cdegravelle,cdickes,cdrumm,cfasone,cflenner,cfleurantin,cgaler,cgalinol,cgaudette,cghianni,charriman,cjody,cjuntunen,ckerska,ckistenmacher,cklem,ckodish,clapenta,clewicki,clouder,cmafnas,cmanno,cmcanulty,cmellberg,cmiramon,cnabzdyk,cnoriego,cpaccione,cpalmios,cparee,cpencil,cpentreath,cpinela,cpluid,critchie,cscullion,csever,csoomaroo,cspilis,cswigert,ctenny,ctetteh,ctuzzo,cwank,cweiss,dasiedu,daubert,dbarriball,dbertels,dblazejewski,dcaltabiano,dciullo,ddeguire,ddigerolamo,denriquez,deshmon,dfirpo,dflore,dfollman,dgiacomazzi,dgivliani,dgosser,dhammontree,dhendon,dhindsman,dholdaway,dlablue,dlanois,dlargo,dledenbach,dlongbotham,dloubier,dmahapatra,dmarchizano,dmcgillen,dminozzi,dnegri,dpebbles,draymundo,dscheurer,dsharr,dsherard,dsteever,dtashjian,dtornow,dtuholski,dwittlinger,dzurek,eaguire,eathey,ebattee,ebeachem,eberkman,ebusk,ecelestin,ecolden,ecordas,ediga,edrinkwater,edurick,egospatrick,egrago,ehathcock,ehindbaugh,ejeppesen,ekalfas,ekenady,ekeuper,eklein,eklunder,ekurter,emanikowski,emargulis,emcquiddy,emehta,eorsten,eparham,epeterson,epoinelli,erathert,erostad,eserrett,esheehan,esonia,esproull,esthill,estockwin,etunby,ewicks,ewilles,ewismer,ewuitschick,eyounglas,eziebert,fagro,faleo,farquette,fbeatrice,fberra,fberyman,fbielecki,fburrough,fcha,fcunard,ffigert,fgoben,fgrashot,fhain,fhalon,fkeef,fmarchi,fmilsaps,fnottage,fparness,fplayfair,fsapien,fsavela,fsirianni,fsplinter,fsunderland,fsymmonds,fthein,fvallian,fvascones,fverfaille,fvinal,fwidhalm,gallanson,gapkin,garchambeault,gbitar,gbolay,gcarlini,gcervantez,gchounlapane,gclapham,gcobane,gconver,gcukaj,gcummer,gcurnutt,gdaub,gdeblasio,gdeyarmond,gdrilling,gearnshaw,gfaire,gfedewa,ggehrke,ggillim,ghann,ghelderman,ghumbles,gishii,gjankowiak,gkerens,glafontaine,gloebs,gmackinder,gmassi,gmilian,gmings,gmoen,gparkersmith,gpomerance,gportolese,greiff,gsantella,gschaumburg,gshrode,gtinnel,guresti,gvollrath,gwaud,habby,hbastidos,hbetterman,hbickford,hbraim,hbrandow,hbrehmer,hbukovsky,hcafourek,hcarrizal,hchaviano,hcintron,hcowles,hcusta,hdoiel,hdyner,hfludd,hgalavis,hhaffey,hhagee,hhartranft,hholyfield,hhysong,hkarney,hkinderknecht,hkippes,hkohlmeyer,hlauchaire,hlemon,hlichota,hliverman,hloftis,hlynema,hmateer,hmatonak,hmiazga,hmogush,hmuscaro,hpalmquist,hpimpare,hpolintan,hrapisura,hrenart,hriech,hsabol,hschelb,hschoepfer,hspiry,hstreitnatter,hsweezer,htilzer,htomlinson,htsuha,hvannette,hveader,hwestermark,hwoodert,hzagami,hzinda,iambrosino,ibeto,ibreitbart,ibuzo,ibyles,ichewning,icoard,ideveyra,ienglert,igizzi,ihalford,ihanneman,ihegener,ihernan,iherrarte,ihimmelwright,ihoa,iiffert,ikadar,ikulbida,ilacourse,ilamberth,ilawbaugh,ileaman,ilevian,imarungo,imcbay,imensah,imicthell,imillin,imuehl,inarain,iogasawara,iroiger,iseipel,isowder,isplonskowski,istallcup,istarring,isteinlicht,ithum,ivanschaack,iweibe,iyorgey,iyorks,jamber,jappleyard,jbielicki,jbjorkman,jcaroll,jdodge,jeuresti,jeverton,jglotzbecker,jherkenratt,jholzmiller,jjumalon,jkimpton,jknight,jlebouf,jlunney,jmartha,jmarugg,jmatty,joligee,jquicksall,jrees,jreigh,jroman,jscheitlin,jseen,jsegundo,jsenavanh,jskafec,jspohn,jsweezy,jvillaire,jwinterton,jzych,kaanerud,kalguire,kbarnthouse,kbartolet,kbattershell,kbrevitz,kbrugal,kcofrancesco,kcomparoni,kconkey,kdevincent,kepps,kfaure,kfend,kgarced,kgremminger,khartness,kheadlon,khovanesian,kjoslyn,klitehiser,klundsten,klurie,kmallach,kmandolfo,kmarzili,kmayoras,kmcardle,kmcguire,kmedcaf,kmeester,kmisove,kmoesch,kmosko,kmuros,kolexa,kottomaniello,kpalka,kpannunzio,kpenale,kpuebla,krahman,kseisler,kshippy,ksiering,ksollitto,ksparling,kstachurski,kthede,ktoni,ktriblett,ktuccio,ktuner,kwidrick,kwinterling,kwirght,laksamit,lautovino,lbanco,lbassin,lbove,lbuchtel,lcanestrini,lcaudell,lcavez,lcocherell,lcoulon,lcremer,leberhardt,lfarraj,lfichtner,lgadomski,lgandee,lgradilla,lhuggler,limbrogno,ljomes,lkimel,llarmore,llasher,lmadruga,lmauracher,lmcgeary,lmichaud,lmuehlberger,lnormand,lparrish,lpeagler,lpintor,lpitek,lpondexter,lrandall,lringuette,lschenkelberg,lschnorbus,lschollmeier,lseabold,lseehafer,lshilling,lsivic,lsobrino,lsous,lspielvogel,lvaleriano,lvanconant,lwedner,lyoula,mallmand,maustine,mbeagley,mbodley,mbravata,mcampagnone,mcaram,mcashett,mcasida,mcoch,mcolehour,mcontreras,mdanos,mdecourcey,mdedon,mdickinson,mdimaio,mdoering,mdyce,meconomides,mespinel,mfaeth,mfeil,mferandez,mfitzherbert,mgavet,mgayden,mground,mheilbrun,mhollings,mjeon,mkibler,mkofoed,mlaverde,mlenning,mlinak,mlinardi,mmangiamele,mmattu,mmcchristian,mmerriwether,mmesidor,mneubacher,moller,moser,mpanahon,mpark,mpellew,mpilon,mpizzaro,mpytko,mquigg,mredd,mrizer,mruppel,mrydelek,mskeele,mstirn,mswogger,mtanzi,mtintle,mvanbergen,mvanpelt,mvas,mvedder,mviverette,myokoyama,nagerton,nasmar,nbuford,nbugtong,ncermeno,nchrisman,nciucci,ndesautels,ndrumgole,nedgin,nendicott,nerbach,nevan,nforti,nfunchess,ngiesler,nglathar,ngrowney,ngullett,nhayer,nhelfinstine,nhija,ninnella,njordon,nkempon,nkubley,nlainhart,nlatchaw,nlemma,nlinarez,nlohmiller,nmccolm,nmoren,nnamanworth,nnickel,nousdahl,nphan,nramones,nranck,nridinger,nriofrio,nrybij,nrysavy,nschmig,nsiemonsma,nslaby,nspolar,nvyhnal,nwescott,nwiker,oahyou,oalthouse,obeaufait,obenallack,obercier,obihl,ocalleo,ochasten,oclunes,oconerly,ocrabbs,oebrani,ofelcher,ohatto,ohearl,ohedlund,ohoffert,ohove,ojerabek,okave,okveton,omalvaez,omasone,omatula,omcdaid,oolivarez,oosterhouse,opeet,opizzuti,opoch,oport,opuglisi,oreiss,osaber,oscarpello,oshough,ovibbert,owhelchel,owhitelow,pahles,pbascom,pbeckerdite,pbiggart,pbondroff,pbrentano,pcaposole,pcornn,pdauterman,pdech,pdischinger,pduitscher,pdulac,pdurando,pfavolise,pgiegerich,pgreenier,pgrybel,phalkett,pheathcock,phyer,pmineo,pminnis,ppedraja,ppeper,pphuaphes,prepasky,prowena,psabado,psalesky,pschrayter,psharits,psiroky,psundeen,pthornberry,ptoenjes,ptraweek,purquilla,pvierthaler,pvirelli,pviviani,pwademan,pwashuk,pwetherwax,pwhitmire,pwohlenhaus,pwutzke,qhanly,ralspach,rbernhagen,rbillingsly,rbloomstrand,rbrisby,rcheshier,rchevrette,rdubs,rdubuisson,redling,rfassinger,rfauerbach,rfidel,rginer,rgoonez,rgramby,rgriffies,rguinane,rheinzmann,rkraszewski,rlambertus,rlatessa,rlosinger,rmandril,rmcstay,rnordby,rpastorin,rpikes,rpinilla,rpitter,rramirez,rrasual,rschkade,rtole,rtooker,saben,sackles,sarndt,saycock,sbemo,sbettridge,sbloise,sbonnie,sbrabyn,scocuzza,sdebry,senrico,sestergard,sgefroh,sgirsh,sgropper,sgunder,sgurski,shaith,sherzberg,showe,sjankauskas,skanjirathinga,skoegler,slaningham,slaudeman,slerew,smccaie,smillian,smullowney,snotari,spolmer,srees,srubenfield,sscheiern,sskone,sskyers,sspagnuolo,sstough,sstuemke,svandewalle,svielle,svogler,svongal,swoodie,tabdelal,tairth,tbagne,tbattista,tboxx,tcacal,tcossa,tcrissinger,tdonathan,teliades,tfalconeri,tfetherston,tgelen,tgindhart,tguinnip,tharr,thelfritz,thoch,thynson,tkeala,tkelly,tkhora,tlana,tlowers,tmalecki,tmarkus,tmccaffity,tmccamish,tmcmickle,tmelland,tmorr,tmurata,tmysinger,tnaillon,tnitzel,tpaa,tplatko,tredfearn,tsablea,tsann,tschnepel,tsearle,tsepulueda,tsowells,tstalworth,tvehrs,tvrooman,tyounglas,ualway,uazatyan,ubenken,ubieniek,ubynum,udatu,uednilao,ueriks,uflander,ugerpheide,ugreenberg,uhayakawa,uholecek,ulanigan,umarbury,umosser,upater,upellam,uransford,urosentrance,uschweyen,usevera,uslavinski,uspittler,uvanmatre,uwalpole,uweyand,vbaldasaro,vbigalow,vbonder,vburton,vchevalier,vcrofton,vdesir,vdolan,veisenhardt,vemily,venfort,vfeigel,vglidden,vkrug,vlubic,vmaynard,vmedici,vnazzal,vnery,vpeairs,vpender,vpiraino,vrodick,vrunyon,vsefcovic,vstirman,vtowell,vtresch,vtrumpp,vwabasha,vwaltmann,vwisinger,vwokwicz,wbrill,wclokecloak,wconces,wconstantino,wcreggett,wdagrella,wdevenish,wdovey,wenglander,werrick,wesguerra,wganther,wkhazaleh,wleiva,wlynch,wmailey,wmendell,wnunziata,wottesen,wselim,wstjean,wtruman,wvalcin,wvermeulen,xeppley,xlantey,xrahaim,yautin,ycerasoli,ycobetto,ycostaneda,yduft,yeven,yfrymoyer,ygockel,yhenriques,ykimbel,yolivier,yschmuff,ysnock,yvdberg,zanderlik,zborgmeyer,zbuscaglia,zculp,zfarler,zhaulk,zkutchera,zmeeker,zneeb,zratti,zscammahorn,zvagt,zwinterbottom
 EOM
 
+fi  # end of group tests
+
 ###########################################################################
 
+if grep '^hosts.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing hosts..."
 
 check "getent hosts testhost" << EOM
@@ -211,8 +225,12 @@ EOM
 
 # TODO: add more tests for IPv6 support
 
+fi  # end of hosts tests
+
 ###########################################################################
 
+if grep '^netgroup.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing netgroup..."
 
 # check netgroup lookup of test netgroup
@@ -226,8 +244,12 @@ check "getent netgroup TSTNETGROUP" << EOM
 TSTNETGROUP
 EOM
 
+fi  # end of netgroup tests
+
 ###########################################################################
 
+if grep '^networks.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing networks..."
 
 check "getent networks testnet" << EOM
@@ -247,8 +269,12 @@ check "getent networks | grep testnet" << EOM
 testnet               10.0.0.0
 EOM
 
+fi  # end of networks tests
+
 ###########################################################################
 
+if grep '^passwd.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing passwd..."
 
 check "getent passwd ecolden" << EOM
@@ -272,8 +298,12 @@ check "getent passwd | grep -c ':x:[45][0-9][0-9][0-9]:'" << EOM
 2000
 EOM
 
+fi  # end of passwd tests
+
 ###########################################################################
 
+if grep '^protocols.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing protocols..."
 
 check "getent protocols protfoo" << EOM
@@ -304,8 +334,12 @@ check "getent protocols | grep protfoo" << EOM
 protfoo               253 protfooalias
 EOM
 
+fi  # end of protocols tests
+
 ###########################################################################
 
+if grep '^rpc.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing rpc..."
 
 check "getent rpc rpcfoo" << EOM
@@ -328,8 +362,12 @@ check "getent rpc | grep rpcfoo" << EOM
 rpcfoo          160002  rpcfooalias
 EOM
 
+fi  # end of rpc tests
+
 ###########################################################################
 
+if grep '^services.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing services..."
 
 check "getent services foosrv" << EOM
@@ -388,8 +426,12 @@ check "getent services | wc -l" << EOM
 `grep -c '^[^#].' /etc/services | awk '{print $1 + 4}'`
 EOM
 
+fi  # end of services tests
+
 ###########################################################################
 
+if grep '^shadow.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
+then
 echo "test_nsscmds.sh: testing shadow..."
 
 # NOTE: the output of this should depend on whether we are root or not
@@ -414,6 +456,8 @@ EOM
 # check if the names of users match between passwd and shadow
 getent passwd | sed 's/:.*//' | sort | \
   check "getent shadow | sed 's/:.*//' | sort"
+
+fi  # end of shadow tests
 
 ###########################################################################
 # determine the result
