@@ -229,7 +229,10 @@ def acceptconnection(session):
 def disable_nss_ldap():
     """Disable the nss_ldap module to avoid lookup loops."""
     import ctypes
-    lib = ctypes.CDLL(constants.NSS_LDAP_SONAME)
+    try:
+        lib = ctypes.CDLL(constants.NSS_LDAP_SONAME)
+    except OSError:
+        return  # ignore errors in opening NSS module
     try:
         ctypes.c_int.in_dll(lib, '_nss_ldap_enablelookups').value = 0
     except ValueError:
