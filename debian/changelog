@@ -1,3 +1,11 @@
+nss-pam-ldapd (0.7.15+squeeze4) squeeze-security; urgency=low
+
+  * fix FTBFS on kFreeBSD (see #690319)
+  * debian/nslcd.config: handle options that are specified multiple times
+    in nslcd.conf consistently (closes: #700971)
+
+ -- Arthur de Jong <adejong@debian.org>  Sun, 12 May 2013 12:00:00 +0200
+
 nss-pam-ldapd (0.7.15+squeeze3) stable-security; urgency=high
 
   * SECURITY FIX: Garth Mollett discovered that a file descriptor overflow
