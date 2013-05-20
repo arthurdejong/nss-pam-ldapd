@@ -41,7 +41,7 @@ static void print_shadow(struct spwd *result)
 {
   printf("%s:%s:", result->sp_namp, result->sp_pwdp);
   if (result->sp_lstchg >= 0)
-    printf("%d", result->sp_lstchg);
+    printf("%d", (int)result->sp_lstchg);
   printf(":");
   if (result->sp_min >= 0)
     printf("%d", (int)result->sp_min);
