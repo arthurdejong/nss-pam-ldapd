@@ -60,6 +60,8 @@ stamp-*
 /tests/lookup_netgroup
 /tests/lookup_shadow
 /tests/temp.cfg
+/tests/test*.log
+/tests/test*.trs
 /tests/test_cfg
 /tests/test_common
 /tests/test_dict
