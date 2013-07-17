@@ -42,7 +42,7 @@ _char_to_db = dict((reversed(item) for item in _db_to_char.items()))
 def exec_invalidate(db):
     logging.debug('nscd_invalidator: nscd -i %s', db)
     try:
-        p = subprocess.Popen(['nscd', '-i', 'passwd'],
+        p = subprocess.Popen(['nscd', '-i', db],
                              bufsize=4096, close_fds=True,
                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output, ignored = p.communicate()
