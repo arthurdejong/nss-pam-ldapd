@@ -527,6 +527,7 @@ static const char *print_map(enum ldap_map_selector map)
     case LM_RPC:       return "rpc";
     case LM_SERVICES:  return "services";
     case LM_SHADOW:    return "shadow";
+    case LM_NFSIDMAP:  return "nfsidmap";
     case LM_NONE:
     default:           return "???";
   }

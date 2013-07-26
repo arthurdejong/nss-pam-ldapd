@@ -67,6 +67,7 @@ enum ldap_map_selector {
   LM_RPC,
   LM_SERVICES,
   LM_SHADOW,
+  LM_NFSIDMAP, /* only used for cache invalidation */
   LM_NONE
 };
 

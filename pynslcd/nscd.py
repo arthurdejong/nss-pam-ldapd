@@ -34,31 +34,31 @@ signalfd = None
 _db_to_char = dict(
         aliases='A', ethers='E', group='G', hosts='H', netgroup='U',
         networks='N', passwd='P', protocols='L', rpc='R', services='V',
-        shadow='S',
+        shadow='S', nfsidmap='F',
     )
 _char_to_db = dict((reversed(item) for item in _db_to_char.items()))
 
 
-def exec_invalidate(db):
-    logging.debug('nscd_invalidator: nscd -i %s', db)
+def exec_invalidate(*args):
+    cmd = ' '.join(args)
+    logging.debug('nscd_invalidator: %s', cmd)
     try:
-        p = subprocess.Popen(['nscd', '-i', db],
-                             bufsize=4096, close_fds=True,
+        p = subprocess.Popen(args, bufsize=4096, close_fds=True,
                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output, ignored = p.communicate()
         if output:
             output = ': %s' % output[:1024].strip()
         if p.returncode == 0:
-            logging.debug('nscd_invalidator: nscd -i %s (pid %d) success%s',
-                          db, p.pid, output)
+            logging.debug('nscd_invalidator: %s (pid %d) success%s',
+                          cmd, p.pid, output)
         elif p.returncode > 0:
-            logging.debug('nscd_invalidator: nscd -i %s (pid %d) failed (%d)%s',
-                          db, p.pid, p.returncode, output)
+            logging.debug('nscd_invalidator: %s (pid %d) failed (%d)%s',
+                          cmd, p.pid, p.returncode, output)
         else:  # p.returncode < 0
-            logging.error('nscd_invalidator: nscd -i %s (pid %d) killed by signal %d%s',
-                          db, p.pid, -p.returncode, output)
+            logging.error('nscd_invalidator: %s (pid %d) killed by signal %d%s',
+                          cmd, p.pid, -p.returncode, output)
     except:
-        logging.warn('nscd_invalidator: nscd -i %s failed', db, exc_info=True)
+        logging.warn('nscd_invalidator: %s failed', cmd, exc_info=True)
 
 
 def loop(fd):
@@ -76,8 +76,10 @@ def loop(fd):
         if db == '':
             break  # close process down
         db = _char_to_db.get(db, None)
-        if db:
-            exec_invalidate(db)
+        if db == 'nfsidmap':
+            exec_invalidate('nfsidmap', '-c')
+        else if db:
+            exec_invalidate('nscd', '-i', db)
 
 
 def start_invalidator():
@@ -107,4 +109,4 @@ def invalidate(db=None):
     try:
         os.write(signalfd, db)
     except:
-        logging.warn('nscd_invalidator: nscd -i %s failed', db, exc_info=True)
+        logging.warn('requesting invalidation (%s) failed', db, exc_info=True)

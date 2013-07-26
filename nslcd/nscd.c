@@ -55,6 +55,7 @@ static const char *map2name(enum ldap_map_selector map)
     case LM_RPC:       return "rpc";
     case LM_SERVICES:  return "services";
     case LM_SHADOW:    return "shadow";
+    case LM_NFSIDMAP:  return "nfsidmap";
     case LM_NONE:
     default:           return NULL;
   }
@@ -65,7 +66,7 @@ static void exec_invalidate(const char *db)
 {
   pid_t cpid;
   int i, status;
-  char *argv[] = { "nscd", "-i", NULL, NULL };
+  char *argv[4];
 #ifdef HAVE_EXECVPE
   char *newenviron[] = { NULL };
 #endif
@@ -82,12 +83,25 @@ static void exec_invalidate(const char *db)
         i = 32;
       for (; i >= 0; i--)
         close(i);
+      /* build command line */
+      if (strcmp(db, "nfsidmap") == 0)
+      {
+        argv[0] = "nfsidmap";
+        argv[1] = "-c";
+        argv[2] = NULL;
+      }
+      else
+      {
+        argv[0] = "nscd";
+        argv[1] = "-i";
+        argv[2] = (char *)db;
+        argv[3] = NULL;
+      }
       /* execute command */
-      argv[2] = (char *)db;
 #ifdef HAVE_EXECVPE
-      execvpe("nscd", argv, newenviron);
+      execvpe(argv[0], argv, newenviron);
 #else
-      execvp("nscd", argv);
+      execvp(argv[0], argv);
 #endif
       /* if we are here there has been an error */
       /* we can't log since we don't have any useful file descriptors */
@@ -137,7 +151,7 @@ static void nscd_handle_requests(int fd)
   const char *db;
   log_log(LOG_DEBUG, "nscd_invalidator: starting");
   /* set up environment */
-  chdir("/");
+  (void)chdir("/");
   putenv("PATH=/usr/sbin:/usr/bin:/sbin:/bin");
   /* handle incoming requests */
   while (1)

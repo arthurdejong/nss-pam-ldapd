@@ -317,7 +317,7 @@ def read(filename):
         if m:
             dbs = re.split('[ ,]+', m.group('value').lower())
             for db in dbs:
-                if db not in maps:
+                if db not in maps.keys() + ['nfsidmap']:
                     raise ParseError(filename, lineno, 'map %s unknown' % db)
             nscd_invalidate.update(dbs)
             continue
