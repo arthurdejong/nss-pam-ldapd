@@ -250,8 +250,8 @@ void invalidator_do(enum ldap_map_selector map)
   if (map == LM_NONE)
   {
     for (map = 0; map < LM_NONE ; map++)
-        invalidator_do(map);
       if (nslcd_cfg->reconnect_invalidate[map])
+        invalidator_do(map);
     return;
   }
   /* write a single byte which should be atomic and not fill the PIPE

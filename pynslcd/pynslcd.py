@@ -324,7 +324,7 @@ if __name__ == '__main__':
                 logging.getLogger().removeHandler(stderrhandler)
             logging.info('version %s starting', constants.VERSION)
             # start invalidator sub-process if needed
-            if cfg.invalidator_invalidate:
+            if cfg.reconnect_invalidate:
                 invalidator.start_invalidator()
             # create socket
             nslcd_serversocket = create_socket()
