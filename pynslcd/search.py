@@ -53,6 +53,10 @@ class Connection(ldap.ldapobject.ReconnectLDAPObject):
         # TODO: register a connection callback (like dis?connect_cb() in myldap.c)
         if cfg.ssl or cfg.uri.startswith('ldaps://'):
             self.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_HARD)
+        # TODO: the following should probably be done on the first search
+        #       together with binding, not when creating the connection object
+        if cfg.ssl == 'STARTTLS':
+            self.start_tls_s()
 
     def reconnect_after_fail(self):
         import invalidator
