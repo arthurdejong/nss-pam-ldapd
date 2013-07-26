@@ -55,7 +55,7 @@ test_getpeercred_SOURCES = test_getpeercred.c common.h
 test_getpeercred_LDADD = ../compat/libcompat.a
 
 # common objects that are included for the tests of nslcd functionality
-common_nslcd_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/nscd.o \
+common_nslcd_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/invalidator.o \
                      ../nslcd/myldap.o ../nslcd/attmap.o ../nslcd/nsswitch.o \
                      ../nslcd/alias.o ../nslcd/ether.o ../nslcd/group.o \
                      ../nslcd/host.o ../nslcd/netgroup.o ../nslcd/network.o \

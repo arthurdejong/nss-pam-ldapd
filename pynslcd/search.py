@@ -55,9 +55,9 @@ class Connection(ldap.ldapobject.ReconnectLDAPObject):
             self.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_HARD)
 
     def reconnect_after_fail(self):
-        import nscd
+        import invalidator
         logging.info('connected to LDAP server %s', cfg.uri)
-        nscd.invalidate()
+        invalidator.invalidate()
 
     def search_s(self, *args, **kwargs):
         # wrapper function to keep the global server_error state

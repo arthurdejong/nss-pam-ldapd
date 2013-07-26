@@ -934,7 +934,7 @@ static void handle_pam_password_prohibit_message(
   cfg->pam_password_prohibit_message = value;
 }
 
-static void handle_nscd_invalidate(
+static void handle_reconnect_invalidate(
                 const char *filename, int lnr,
                 const char *keyword, char *line, struct ldap_config *cfg)
 {
@@ -963,7 +963,7 @@ static void handle_nscd_invalidate(
         log_log(LOG_ERR, "%s:%d: unknown map: '%s'", filename, lnr, name);
         exit(EXIT_FAILURE);
       }
-      cfg->nscd_invalidate[map] = 1;
+      cfg->reconnect_invalidate[map] = 1;
     }
   }
 }
@@ -1100,7 +1100,7 @@ static void cfg_defaults(struct ldap_config *cfg)
     cfg->pam_authz_searches[i] = NULL;
   cfg->pam_password_prohibit_message = NULL;
   for (i = 0; i < LM_NONE; i++)
-    cfg->nscd_invalidate[i] = 0;
+    cfg->reconnect_invalidate[i] = 0;
 }
 
 static void cfg_read(const char *filename, struct ldap_config *cfg)
@@ -1432,9 +1432,9 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       handle_pam_password_prohibit_message(filename, lnr, keyword, line, cfg);
     }
-    else if (strcasecmp(keyword, "nscd_invalidate") == 0)
+    else if (strcasecmp(keyword, "reconnect_invalidate") == 0)
     {
-      handle_nscd_invalidate(filename, lnr, keyword, line, cfg);
+      handle_reconnect_invalidate(filename, lnr, keyword, line, cfg);
     }
 #ifdef ENABLE_CONFIGFILE_CHECKING
     /* fallthrough */
@@ -1689,14 +1689,14 @@ static void cfg_dump(void)
   /* build a comma-separated list */
   buffer[0] = '\0';
   for (i = 0; i < LM_NONE ; i++)
-    if (nslcd_cfg->nscd_invalidate[i])
+    if (nslcd_cfg->reconnect_invalidate[i])
     {
       if (buffer[0] != '\0')
         strncat(buffer, ",", sizeof(buffer) - 1 - strlen(buffer));
       strncat(buffer, print_map(i), sizeof(buffer) - 1 - strlen(buffer));
     }
   if (buffer[0] != '\0')
-    log_log(LOG_DEBUG, "CFG: nscd_invalidate %s", buffer);
+    log_log(LOG_DEBUG, "CFG: reconnect_invalidate %s", buffer);
 }
 
 void cfg_init(const char *fname)

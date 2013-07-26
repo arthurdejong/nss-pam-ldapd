@@ -141,11 +141,11 @@ void nsswitch_check_reload(void);
 int nsswitch_shadow_uses_ldap(void);
 
 /* start a child process that holds onto the original privileges with the
-   sole purpose of running nscd -i commands */
-int nscd_start_invalidator(void);
+   purpose of running external cache invalidation commands */
+int invalidator_start(void);
 
-/* signal nscd to invalidate the selected map */
-void nscd_invalidate(enum ldap_map_selector map);
+/* signal invalidator to invalidate the selected external cache */
+void invalidator_do(enum ldap_map_selector map);
 
 /* fallback definition of HOST_NAME_MAX */
 #ifndef HOST_NAME_MAX

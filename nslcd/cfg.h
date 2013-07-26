@@ -126,7 +126,7 @@ struct ldap_config {
   int ignorecase; /* whether or not case should be ignored in lookups */
   char *pam_authz_searches[NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES]; /* the searches that should be performed to do autorisation checks */
   char *pam_password_prohibit_message;   /* whether password changing should be denied and user prompted with this message */
-  char nscd_invalidate[LM_NONE];  /* set to 1 if the corresponding map should be invalidated */
+  char reconnect_invalidate[LM_NONE];  /* set to 1 if the corresponding map should be invalidated */
 };
 
 /* this is a pointer to the global configuration, it should be available

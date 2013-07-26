@@ -818,8 +818,8 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="nscd_invalidate"> <!-- since 0.9.0 -->
-     <term><option>nscd_invalidate</option>
+    <varlistentry id="reconnect_invalidate"> <!-- since 0.9.1, was nscd_invalidate in 0.9.0 -->
+     <term><option>reconnect_invalidate</option>
            <replaceable>DB</replaceable>,<replaceable>DB</replaceable>,...</term>
      <listitem>
       <para>
