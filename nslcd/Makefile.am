@@ -30,7 +30,7 @@ nslcd_SOURCES = nslcd.c ../nslcd.h ../common/nslcd-prot.h \
                 myldap.c myldap.h \
                 cfg.c cfg.h \
                 attmap.c attmap.h \
-                nsswitch.c nscd.c \
+                nsswitch.c invalidator.c \
                 config.c alias.c ether.c group.c host.c netgroup.c network.c \
                 passwd.c protocol.c rpc.c service.c shadow.c pam.c usermod.c
 nslcd_LDADD = ../common/libtio.a ../common/libdict.a \

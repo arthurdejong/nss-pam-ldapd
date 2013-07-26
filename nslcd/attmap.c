@@ -57,6 +57,7 @@ const char **base_get_var(enum ldap_map_selector map)
     case LM_RPC:       return rpc_bases;
     case LM_SERVICES:  return service_bases;
     case LM_SHADOW:    return shadow_bases;
+    case LM_NFSIDMAP:
     case LM_NONE:
     default:           return NULL;
   }
@@ -90,6 +91,7 @@ int *scope_get_var(enum ldap_map_selector map)
     case LM_RPC:       return &rpc_scope;
     case LM_SERVICES:  return &service_scope;
     case LM_SHADOW:    return &shadow_scope;
+    case LM_NFSIDMAP:
     case LM_NONE:
     default:           return NULL;
   }
@@ -123,6 +125,7 @@ const char **filter_get_var(enum ldap_map_selector map)
     case LM_RPC:       return &rpc_filter;
     case LM_SERVICES:  return &service_filter;
     case LM_SHADOW:    return &shadow_filter;
+    case LM_NFSIDMAP:
     case LM_NONE:
     default:           return NULL;
   }

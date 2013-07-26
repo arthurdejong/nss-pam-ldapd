@@ -85,7 +85,7 @@ nss_nested_groups = False
 validnames = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
 pam_authz_searches = []
 pam_password_prohibit_message = None  # FIXME: add support
-nscd_invalidate = set()
+reconnect_invalidate = set()
 
 
 # allowed boolean values
@@ -311,15 +311,15 @@ def read(filename):
             flags = 0 | re.IGNORECASE if m.group('flags') == 'i' else 0
             validnames = re.compile(m.group('value'), flags=flags)
             continue
-        # nscd_invalidate <MAP>,<MAP>,...
-        m = re.match('nscd_invalidate\s+(?P<value>\S.*)',
+        # reconnect_invalidate <MAP>,<MAP>,...
+        m = re.match('reconnect_invalidate\s+(?P<value>\S.*)',
                      line, re.IGNORECASE)
         if m:
             dbs = re.split('[ ,]+', m.group('value').lower())
             for db in dbs:
-                if db not in maps:
+                if db not in maps.keys() + ['nfsidmap']:
                     raise ParseError(filename, lineno, 'map %s unknown' % db)
-            nscd_invalidate.update(dbs)
+            reconnect_invalidate.update(dbs)
             continue
         # unrecognised line
         raise ParseError(filename, lineno, 'error parsing line %r' % line)

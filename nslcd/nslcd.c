@@ -706,12 +706,12 @@ int main(int argc, char *argv[])
   if (!nslcd_debugging)
     log_startlogging();
   log_log(LOG_INFO, "version %s starting", VERSION);
-  /* start subprocess to do nscd invalidating if nscd_invalidate is set */
+  /* start subprocess to do invalidating if reconnect_invalidate is set */
   for (i = 0; i < LM_NONE; i++)
-    if (nslcd_cfg->nscd_invalidate[i])
+    if (nslcd_cfg->reconnect_invalidate[i])
       break;
   if (i < LM_NONE)
-    nscd_start_invalidator();
+    invalidator_start();
   /* write pidfile */
   create_pidfile(NSLCD_PIDFILE);
   /* install handler to close stuff off on exit and log notice */

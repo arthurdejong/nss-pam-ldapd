@@ -818,20 +818,28 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="nscd_invalidate"> <!-- since 0.9.0 -->
-     <term><option>nscd_invalidate</option>
+    <varlistentry id="reconnect_invalidate"> <!-- since 0.9.1, was nscd_invalidate in 0.9.0 -->
+     <term><option>reconnect_invalidate</option>
            <replaceable>DB</replaceable>,<replaceable>DB</replaceable>,...</term>
      <listitem>
       <para>
        If this option is set, on start-up and whenever a connection to the
        <acronym>LDAP</acronym> server is re-established after an error
-       <command>nscd</command> is contacted to flush it's cache for the
-       configured databases.
+       the specified cache is flushed.
       </para>
       <para>
-       Using this option ensures that <command>nscd</command> is not
-       caching absence of users that were not available if the LDAP server
-       was unavailable.
+       If <replaceable>DB</replaceable> is one of the nsswitch maps,
+       <command>nscd</command> is contacted to flush it's cache for the
+       specified database.
+      </para>
+      <para> <!-- since 0.9.1 -->
+       If <replaceable>DB</replaceable> is <literal>nfsidmap</literal>,
+       <command>nfsidmap</command> to contacted to clear it's cache.
+      </para>
+      <para>
+       Using this option ensures that external caches are cleared of
+       information (typically the absence of users) while the
+       <acronym>LDAP</acronym> server was unavailable.
       </para>
      </listitem>
     </varlistentry>

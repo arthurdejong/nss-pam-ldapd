@@ -1,5 +1,5 @@
 /*
-   nscd.c - functions for invalidating the nscd cache
+   invalidator.c - functions for invalidating external caches
 
    Copyright (C) 2013 Arthur de Jong
 
@@ -36,7 +36,7 @@
 #include "log.h"
 
 /* the write end of a pipe that is used to signal the child process
-   to call nscd to invalidate the cache */
+   to invalidate the cache */
 static int signalfd = -1;
 
 /* we have our own implementation because nscd could use different names */
@@ -55,21 +55,39 @@ static const char *map2name(enum ldap_map_selector map)
     case LM_RPC:       return "rpc";
     case LM_SERVICES:  return "services";
     case LM_SHADOW:    return "shadow";
+    case LM_NFSIDMAP:  return "nfsidmap";
     case LM_NONE:
     default:           return NULL;
   }
 }
 
-/* invalidate the specified database in nscd */
+/* invalidate the specified database */
 static void exec_invalidate(const char *db)
 {
   pid_t cpid;
   int i, status;
-  char *argv[] = { "nscd", "-i", NULL, NULL };
+  char *argv[4];
+  char cmdline[80];
 #ifdef HAVE_EXECVPE
   char *newenviron[] = { NULL };
 #endif
-  log_log(LOG_DEBUG, "nscd_invalidator: nscd -i %s", db);
+  /* build command line */
+  if (strcmp(db, "nfsidmap") == 0)
+  {
+    argv[0] = "nfsidmap";
+    argv[1] = "-c";
+    argv[2] = NULL;
+  }
+  else
+  {
+    argv[0] = "nscd";
+    argv[1] = "-i";
+    argv[2] = (char *)db;
+    argv[3] = NULL;
+  }
+  mysnprintf(cmdline, 80, "%s %s%s%s", argv[0], argv[1],
+             argv[2] != NULL ? " " : "", argv[2] != NULL ? argv[2] : "");
+  log_log(LOG_DEBUG, "invalidator: %s", cmdline);
   /* do fork/exec */
   switch (cpid=fork())
   {
@@ -83,18 +101,17 @@ static void exec_invalidate(const char *db)
       for (; i >= 0; i--)
         close(i);
       /* execute command */
-      argv[2] = (char *)db;
 #ifdef HAVE_EXECVPE
-      execvpe("nscd", argv, newenviron);
+      execvpe(argv[0], argv, newenviron);
 #else
-      execvp("nscd", argv);
+      execvp(argv[0], argv);
 #endif
       /* if we are here there has been an error */
       /* we can't log since we don't have any useful file descriptors */
       _exit(EXIT_FAILURE);
       break;
     case -1: /* we are the parent, but have an error */
-      log_log(LOG_ERR, "nscd_invalidator: fork() failed: %s", strerror(errno));
+      log_log(LOG_ERR, "invalidator: fork() failed: %s", strerror(errno));
       break;
     default: /* we are the parent */
       /* wait for child exit */
@@ -105,39 +122,39 @@ static void exec_invalidate(const char *db)
       }
       while ((i < 0) && (errno == EINTR));
       if (i < 0)
-        log_log(LOG_ERR, "nscd_invalidator: waitpid(%d) failed: %s", (int)cpid, strerror(errno));
+        log_log(LOG_ERR, "invalidator: waitpid(%d) failed: %s", (int)cpid, strerror(errno));
       else if (WIFEXITED(status))
       {
         i = WEXITSTATUS(status);
         if (i == 0)
-          log_log(LOG_DEBUG, "nscd_invalidator: nscd -i %s (pid %d) success",
-                  db, (int)cpid);
+          log_log(LOG_DEBUG, "invalidator: %s (pid %d) success",
+                  cmdline, (int)cpid);
         else
-          log_log(LOG_DEBUG, "nscd_invalidator: nscd -i %s (pid %d) failed (%d)",
-                  db, (int)cpid, i);
+          log_log(LOG_DEBUG, "invalidator: %s (pid %d) failed (%d)",
+                  cmdline, (int)cpid, i);
       }
       else if (WIFSIGNALED(status))
       {
         i = WTERMSIG(status);
-        log_log(LOG_ERR, "nscd_invalidator: nscd -i %s (pid %d) killed by %s (%d)",
-                db, (int)cpid, signame(i), i);
+        log_log(LOG_ERR, "invalidator: %s (pid %d) killed by %s (%d)",
+                cmdline, (int)cpid, signame(i), i);
       }
       else
-        log_log(LOG_ERR, "nscd_invalidator: nscd -i %s (pid %d) had unknown failure",
-                db, (int)cpid);
+        log_log(LOG_ERR, "invalidator: %s (pid %d) had unknown failure",
+                cmdline, (int)cpid);
       break;
   }
 }
 
 /* main loop for the invalidator process */
-static void nscd_handle_requests(int fd)
+static void handle_requests(int fd)
 {
   int i;
   uint8_t c;
   const char *db;
-  log_log(LOG_DEBUG, "nscd_invalidator: starting");
+  log_log(LOG_DEBUG, "invalidator: starting");
   /* set up environment */
-  chdir("/");
+  (void)chdir("/");
   putenv("PATH=/usr/sbin:/usr/bin:/sbin:/bin");
   /* handle incoming requests */
   while (1)
@@ -145,17 +162,17 @@ static void nscd_handle_requests(int fd)
     i = read(fd, &c, sizeof(uint8_t));
     if (i == 0)
     {
-      log_log(LOG_ERR, "nscd_invalidator: EOF");
+      log_log(LOG_ERR, "invalidator: EOF");
       _exit(EXIT_SUCCESS);
     }
     else if (i < 0)
     {
       if (errno == EINTR)
-        log_log(LOG_DEBUG, "nscd_invalidator: read failed (ignored): %s",
+        log_log(LOG_DEBUG, "invalidator: read failed (ignored): %s",
                 strerror(errno));
       else
       {
-        log_log(LOG_ERR, "nscd_invalidator: read failed: %s", strerror(errno));
+        log_log(LOG_ERR, "invalidator: read failed: %s", strerror(errno));
         _exit(EXIT_SUCCESS);
       }
     }
@@ -163,7 +180,7 @@ static void nscd_handle_requests(int fd)
     {
       db = map2name((enum ldap_map_selector)c);
       if (db == NULL)
-        log_log(LOG_ERR, "nscd_invalidator: invalid db received");
+        log_log(LOG_ERR, "invalidator: invalid db received");
       else
         exec_invalidate(db);
     }
@@ -171,8 +188,8 @@ static void nscd_handle_requests(int fd)
 }
 
 /* start a child process that holds onto the original privileges with the
-   sole purpose of running nscd -i commands */
-int nscd_start_invalidator(void)
+   purpose of running external cache invalidation commands */
+int invalidator_start(void)
 {
   int pipefds[2];
   pid_t cpid;
@@ -199,7 +216,7 @@ int nscd_start_invalidator(void)
     close(pipefds[1]);
     return -1;
   }
-  /* fork a child to perfrom the nscd invalidate commands */
+  /* fork a child to perfrom the invalidate commands */
   cpid = fork();
   if (cpid < 0)
   {
@@ -212,7 +229,7 @@ int nscd_start_invalidator(void)
   {
     /* we are the child: close the write end and handle requests */
     close(pipefds[1]);
-    nscd_handle_requests(pipefds[0]);
+    handle_requests(pipefds[0]);
     /* the handle function should't return */
     _exit(EXIT_FAILURE);
   }
@@ -222,19 +239,19 @@ int nscd_start_invalidator(void)
   return 0;
 }
 
-/* signal nscd to invalidate the selected map */
-void nscd_invalidate(enum ldap_map_selector map)
+/* signal invalidator to invalidate the selected external cache */
+void invalidator_do(enum ldap_map_selector map)
 {
   uint8_t c;
   int rc;
   if (signalfd < 0)
     return;
-  /* LM_NONE is used to signal all maps condigured in nscd_invalidate */
+  /* LM_NONE is used to signal all maps condigured in reconnect_invalidate */
   if (map == LM_NONE)
   {
     for (map = 0; map < LM_NONE ; map++)
-      if (nslcd_cfg->nscd_invalidate[map])
-        nscd_invalidate(map);
+        invalidator_do(map);
+      if (nslcd_cfg->reconnect_invalidate[map])
     return;
   }
   /* write a single byte which should be atomic and not fill the PIPE
@@ -243,6 +260,6 @@ void nscd_invalidate(enum ldap_map_selector map)
   c = (uint8_t)map;
   rc = write(signalfd, &c, sizeof(uint8_t));
   if (rc <= 0)
-    log_log(LOG_WARNING, "error signalling nscd invalidator: %s",
+    log_log(LOG_WARNING, "error signalling invalidator: %s",
             strerror(errno));
 }
