@@ -490,6 +490,8 @@ static enum ldap_map_selector parse_map(const char *value)
     return LM_SERVICES;
   else if (strcasecmp(value, "shadow") == 0)
     return LM_SHADOW;
+  else if (strcasecmp(value, "nfsidmap") == 0)
+    return LM_NFSIDMAP;
   /* unknown map */
   return LM_NONE;
 }

@@ -78,7 +78,7 @@ def loop(fd):
         db = _char_to_db.get(db, None)
         if db == 'nfsidmap':
             exec_invalidate('nfsidmap', '-c')
-        else if db:
+        elif db:
             exec_invalidate('nscd', '-i', db)
 
 
