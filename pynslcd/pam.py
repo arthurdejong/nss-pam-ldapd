@@ -19,6 +19,7 @@
 # 02110-1301 USA
 
 import logging
+import random
 import socket
 import time
 
@@ -32,6 +33,9 @@ import constants
 import passwd
 import search
 import shadow
+
+
+random = random.SystemRandom()
 
 
 def authenticate(binddn, password):
@@ -309,5 +313,60 @@ class PAMPasswordModificationRequest(PAMRequest):
         self.write()
 
 
-#NSLCD_ACTION_PAM_SESS_O
-#NSLCD_ACTION_PAM_SESS_C
+SESSION_ID_LENGTH = 25
+SESSION_ID_ALPHABET = (
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+    "abcdefghijklmnopqrstuvwxyz" +
+    "01234567890"
+)
+
+
+def generate_session_id():
+    return ''.join(
+        random.choice(SESSION_ID_ALPHABET)
+        for i in range(SESSION_ID_LENGTH)
+    )
+
+
+class PAMSessionOpenRequest(PAMRequest):
+
+    action = constants.NSLCD_ACTION_PAM_SESS_O
+
+    def read_parameters(self, fp):
+        return dict(username=fp.read_string(),
+                    service=fp.read_string(),
+                    ruser=fp.read_string(),
+                    rhost=fp.read_string(),
+                    tty=fp.read_string())
+        # TODO: log call with parameters
+
+    def write(self, sessionid):
+        self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+        self.fp.write_string(sessionid)
+        self.fp.write_int32(constants.NSLCD_RESULT_END)
+
+    def handle_request(self, parameters):
+        # generate a session id
+        session_id = generate_session_id()
+        self.write(session_id)
+
+
+class PAMSessionCloseRequest(PAMRequest):
+
+    action = constants.NSLCD_ACTION_PAM_SESS_C
+
+    def read_parameters(self, fp):
+        return dict(username=fp.read_string(),
+                    service=fp.read_string(),
+                    ruser=fp.read_string(),
+                    rhost=fp.read_string(),
+                    tty=fp.read_string(),
+                    session_id=fp.read_string())
+        # TODO: log call with parameters
+
+    def write(self):
+        self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+        self.fp.write_int32(constants.NSLCD_RESULT_END)
+
+    def handle_request(self, parameters):
+        self.write()
