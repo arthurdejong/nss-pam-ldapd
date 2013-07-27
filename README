@@ -76,7 +76,7 @@ The fork from nss_ldap was done to implement some major design changes to fix
 some structural problems in the library.
 
 One of those problems were host name lookups through LDAP which could cause
-deadlocks. Another is that nss_ldpa loaded an SSL library into an executable
+deadlocks. Another is that nss_ldap loaded an SSL library into an executable
 that may not be designed to load it (e.g. problem with suid applications).
 
 A number of refactoring steps were done to simplify the code and improve
@@ -119,18 +119,18 @@ Currently the following name databases are supported:
   aliases, ethers, group, hosts, netgroup, networks, passwd, protocols, rpc,
   services and shadow
 
-Note that for when using IPv6 hosts entries, the addresses in the LDAP
-directory must be in their preferred form. The same is true for mac addresses
-for the ethers database. Otherwise the address to entry lookups will not work.
-For more details on the preferred form see
-  http://ldap.akbkhome.com/index.php/attribute/ipHostNumber.html
-and
-  http://ldap.akbkhome.com/index.php/attribute/macAddress.html
+When using IPv6 ipHostNumber attributes, the address must be in the preferred
+form as defined in section 2.2 of RFC1884, specifically the format as returned
+by inet_ntop(3). All leading zeros should be omitted and the longest range of
+zeroes should be replaced with :: (e.g. fe80::218:bff:fe55:c9f).
 
-automounter map lookups (which are also defined in /etc/nsswitch.conf) are not
-supported because the NSS interface is not used for these. The common autofs
-implementation (on GNU/Linux) currently uses it's own method for getting the
-maps from LDAP.
+MAC addresses in the macAddress attribute should be in maximal, colon
+separated hex notation (e.g. 00:00:92:90:ee:e2).
+
+automounter map lookups (which are also defined in /etc/nsswitch.conf) are
+currently not supported because the NSS interface is not used for these. The
+common autofs implementation (on GNU/Linux) currently uses it's own method for
+getting the maps from LDAP.
 
 Although mail aliases are exposed through NSS, most mail servers parse
 /etc/aliases by themselves and getting aliases from LDAP requires some
@@ -159,11 +159,12 @@ Since nss-pam-ldapd was forked from nss_ldap most of the features that came
 with nss_ldap are available. The most important differences:
 - the configuration file formats are not fully compatible
 - rootbinddn/rootbindpw support is removed and is not likely to return
+  (the rootpwmoddn and rootpwmodpw work differently but accomplish the same
+  thing)
 
 For the PAM module some functionality is missing. Comparing it to pam_ldap:
 - only BIND authentication is supported
 - only LDAP password modify EXOP is supported as password changing mechanism
-- LDAP password policy is currently unsupported
 
 Some things work a little different in nss-pam-ldapd. For instance the
 attribute defaults and overrides of nss_ldap are implemented with mapping
