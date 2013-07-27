@@ -131,7 +131,7 @@ AM_CONDITIONAL([ENABLE_PAM], [test "x$enable_pam" = "xyes"])
 # check whether command-line utilities should be built
 AC_MSG_CHECKING([whether to build the command-line utilities])
 AC_ARG_ENABLE(utils,
-              AS_HELP_STRING([--enable-utils],
+              AS_HELP_STRING([--disable-utils],
                              [build the the command-line utilities @<:@auto@:>@]),,
               [enable_utils="auto"])
 if test "x$enable_utils" = "xauto"
