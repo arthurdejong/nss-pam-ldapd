@@ -278,7 +278,7 @@ class PAMPasswordModificationRequest(PAMRequest):
         self.validate(parameters)
         # check if pam_password_prohibit_message is set
         if cfg.pam_password_prohibit_message:
-            self.write(parameters, constants.NSLCD_PAM_PERM_DENIED,
+            self.write(constants.NSLCD_PAM_PERM_DENIED,
                        cfg.pam_password_prohibit_message)
             return
         # check if the the user passed the rootpwmoddn

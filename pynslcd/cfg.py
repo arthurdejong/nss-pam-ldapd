@@ -84,7 +84,7 @@ nss_min_uid = 0  # FIXME: add support
 nss_nested_groups = False
 validnames = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
 pam_authz_searches = []
-pam_password_prohibit_message = None  # FIXME: add support
+pam_password_prohibit_message = None
 reconnect_invalidate = set()
 
 
