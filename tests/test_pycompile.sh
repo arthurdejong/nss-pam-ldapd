@@ -26,5 +26,38 @@ srcdir="${srcdir-`dirname "$0"`}"
 top_srcdir="${top_srcdir-${srcdir}/..}"
 python="${PYTHON-python}"
 
-# compile all Python files
-${python} -m compileall -f -q "${top_srcdir}"
+# if Python is missing, ignore
+if ! ${python} --version > /dev/null 2> /dev/null
+then
+  echo "Python (${python}) not found"
+  exit 77
+fi
+
+# compile all Python files (without writing pyc files)
+${python} -c "
+import os
+import py_compile
+import sys
+import traceback
+
+top_srcdir = '$top_srcdir'
+errors_found = 0
+tmpfile = 'tmpfile.pyc'
+
+for root, dirs, files in os.walk(top_srcdir):
+    for f in files:
+        if f.endswith('.py'):
+            filename = os.path.join(root, f)
+            try:
+                py_compile.compile(filename, tmpfile, doraise=True)
+            except py_compile.PyCompileError, e:
+                print 'Compiling %s ...' % os.path.abspath(filename)
+                print e
+                errors_found += 1
+
+os.unlink(tmpfile)
+
+if errors_found:
+    print '%d errors found' % errors_found
+    sys.exit(1)
+"
