@@ -24,7 +24,7 @@ import logging
 from ldap.filter import escape_filter_chars
 import ldap
 
-from passwd import dn2uid, uid2dn
+import passwd
 import cache
 import cfg
 import common
@@ -63,12 +63,12 @@ class Search(search.LDAPSearch):
         # we still need a custom mk_filter because this is an | query
         if attmap['member'] and 'memberUid' in self.parameters:
             memberuid = self.parameters['memberUid']
-            dn = uid2dn(self.conn, memberuid)
-            if dn:
+            entry = passwd.uid2entry(self.conn, memberuid)
+            if entry:
                 return '(&%s(|(%s=%s)(%s=%s)))' % (
                         self.filter,
                         attmap['memberUid'], escape_filter_chars(memberuid),
-                        attmap['member'], escape_filter_chars(dn)
+                        attmap['member'], escape_filter_chars(entry[0])
                     )
         return super(Search, self).mk_filter()
 
@@ -109,7 +109,7 @@ class GroupRequest(common.Request):
             if memberdn in seen:
                 continue
             seen.add(memberdn)
-            member = dn2uid(self.conn, memberdn)
+            member = passwd.dn2uid(self.conn, memberdn)
             if member and common.isvalidname(member):
                 members.add(member)
             elif cfg.nss_nested_groups:

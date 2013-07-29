@@ -120,13 +120,6 @@ def uid2entry(conn, uid):
             return dn, attributes
 
 
-def uid2dn(conn, uid):
-    """Look up the user by uid and return the DN or None if the user was
-    not found."""
-    x = uid2entry(conn, uid)
-    if x is not None:
-        return x[0]
-
 # FIXME: use cache of dn2uid and try to use DN to get uid attribute
 
 
