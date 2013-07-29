@@ -178,6 +178,7 @@ def getpeercred(fd):
 
 
 handlers = {}
+handlers.update(common.get_handlers('config'))
 handlers.update(common.get_handlers('alias'))
 handlers.update(common.get_handlers('ether'))
 handlers.update(common.get_handlers('group'))
