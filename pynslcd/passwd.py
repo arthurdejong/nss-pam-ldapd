@@ -21,6 +21,7 @@
 import logging
 
 import cache
+import cfg
 import common
 import constants
 import search
@@ -76,7 +77,8 @@ class PasswdRequest(common.Request):
                 logging.warning('%s: %s: denied by validnames option', dn, attmap['uid'])
             else:
                 for uid in uids:
-                    yield (name, passwd, uid, gid, gecos, home, shell)
+                    if uid >= cfg.nss_min_uid:
+                        yield (name, passwd, uid, gid, gecos, home, shell)
 
 
 class PasswdByNameRequest(PasswdRequest):
@@ -96,6 +98,14 @@ class PasswdByUidRequest(PasswdRequest):
     def read_parameters(self, fp):
         return dict(uidNumber=fp.read_int32())
 
+    def handle_request(self, parameters):
+        # check requested numeric id
+        if parameters['uidNumber'] >= cfg.nss_min_uid:
+            return super(PasswdByUidRequest, self).handle_request(parameters)
+        # write the final result code to signify empty results
+        self.fp.write_int32(constants.NSLCD_RESULT_END)
+
+
 
 class PasswdAllRequest(PasswdRequest):
 
@@ -106,7 +116,8 @@ def uid2entry(conn, uid):
     """Look up the user by uid and return the LDAP entry or None if the user
     was not found."""
     for dn, attributes in Search(conn, parameters=dict(uid=uid)):
-        return dn, attributes
+        if any(int(x) >= cfg.nss_min_uid for x in attributes['uidNumber']])
+            return dn, attributes
 
 
 def uid2dn(conn, uid):
@@ -123,4 +134,5 @@ def dn2uid(conn, dn):
     """Look up the user by dn and return a uid or None if the user was
     not found."""
     for dn, attributes in Search(conn, base=dn):
-        return attributes['uid'][0]
+        if any(int(x) >= cfg.nss_min_uid for x in attributes['uidNumber']])
+            return attributes['uid'][0]
