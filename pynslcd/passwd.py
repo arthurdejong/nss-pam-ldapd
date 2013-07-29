@@ -116,7 +116,7 @@ def uid2entry(conn, uid):
     """Look up the user by uid and return the LDAP entry or None if the user
     was not found."""
     for dn, attributes in Search(conn, parameters=dict(uid=uid)):
-        if any(int(x) >= cfg.nss_min_uid for x in attributes['uidNumber']])
+        if any(int(x) >= cfg.nss_min_uid for x in attributes['uidNumber']):
             return dn, attributes
 
 
@@ -127,5 +127,5 @@ def dn2uid(conn, dn):
     """Look up the user by dn and return a uid or None if the user was
     not found."""
     for dn, attributes in Search(conn, base=dn):
-        if any(int(x) >= cfg.nss_min_uid for x in attributes['uidNumber']])
+        if any(int(x) >= cfg.nss_min_uid for x in attributes['uidNumber']):
             return attributes['uid'][0]
