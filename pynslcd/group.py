@@ -187,6 +187,14 @@ class GroupByMemberRequest(GroupRequest):
                         for result in self.convert(dn, attributes, parameters):
                             yield result
 
+    def handle_request(self, parameters):
+        # check whether requested user is in nss_initgroups_ignoreusers
+        if parameters['memberUid'] in cfg.nss_initgroups_ignoreusers:
+            # write the final result code to signify empty results
+            self.fp.write_int32(constants.NSLCD_RESULT_END)
+            return
+        return super(GroupByMemberRequest, self).handle_request(parameters)
+
 
 class GroupAllRequest(GroupRequest):
 

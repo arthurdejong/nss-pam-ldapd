@@ -79,7 +79,7 @@ tls_key = None
 
 # other options
 pagesize = 0  # FIXME: add support
-nss_initgroups_ignoreusers = set()  # FIXME: add support
+nss_initgroups_ignoreusers = set()
 nss_min_uid = 0  # FIXME: add support
 nss_nested_groups = False
 validnames = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
