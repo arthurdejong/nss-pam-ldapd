@@ -31,15 +31,25 @@ import constants
 from nslcd import NslcdClient
 
 
+epilog = '''
+supported databases:
+  aliases, ethers, group, group.bymember, hosts, hostsv4, hostsv6,
+  netgroup, netgroup.norec, networks, networksv4, networksv6, passwd,
+  protocols, rpc, services, shadow
+
+Report bugs to <%s>.
+'''.strip() % constants.PACKAGE_BUGREPORT
+
 # set up command line parser
 parser = argparse.ArgumentParser(
-    description='Query information in LDAP.',
-    epilog='Report bugs to <%s>.' % constants.PACKAGE_BUGREPORT)
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description='Query information in LDAP via nslcd.',
+    epilog=epilog)
 parser.add_argument('-V', '--version', action=VersionAction)
 parser.add_argument('database', metavar='DATABASE',
-                    help='any of those supported by nslcd')
+                    help='any database supported by nslcd')
 parser.add_argument('key', metavar='KEY', nargs='?',
-                    help='information to lookup')
+                    help='filter returned database values by key')
 
 
 def getent_aliases(database, key=None):
@@ -339,5 +349,5 @@ if __name__ == '__main__':
         else:
             parser.error('Unknown database: %s' % args.database)
     except struct.error:
-        print 'Problem contacting nslcd'
+        print 'Problem communicating with nslcd'
         sys.exit(1)
