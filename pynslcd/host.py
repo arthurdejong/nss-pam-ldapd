@@ -53,6 +53,8 @@ class HostQuery(cache.CnAliasedQuery):
 
 class Cache(cache.Cache):
 
+    tables = ('host_cache', 'host_1_cache', 'host_2_cache')
+
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `host_cache`
           ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,

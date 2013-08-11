@@ -112,7 +112,9 @@ class Cache(object):
 
     def __init__(self):
         self.con = _get_connection()
-        self.table = sys.modules[self.__module__].__name__
+        self.db = sys.modules[self.__module__].__name__
+        if not hasattr(self, 'tables'):
+            self.tables = ['%s_cache' % self.db]
         self.create()
 
     def create(self):
@@ -120,38 +122,43 @@ class Cache(object):
         self.con.executescript(self.create_sql)
 
     def store(self, *values):
-        """Store the values in the cache for the specified table."""
+        """Store the values in the cache for the specified table.
+        The order of the values is the order returned by the Reques.convert()
+        function."""
+        # split the values into simple (flat) values and one-to-many values
         simple_values = []
-        multi_values = {}
-        for n, v in enumerate(values):
+        multi_values = []
+        for v in values:
             if isinstance(v, (list, tuple, set)):
-                multi_values[n] = v
+                multi_values.append(v)
             else:
                 simple_values.append(v)
+        # insert the simple values
         simple_values.append(datetime.datetime.now())
         args = ', '.join(len(simple_values) * ('?', ))
         self.con.execute('''
-            INSERT OR REPLACE INTO %s_cache
+            INSERT OR REPLACE INTO %s
             VALUES
               (%s)
-            ''' % (self.table, args), simple_values)
-        for n, vlist in multi_values.items():
+            ''' % (self.tables[0], args), simple_values)
+        # insert the one-to-many values
+        for n, vlist in enumerate(multi_values):
             self.con.execute('''
-                DELETE FROM %s_%d_cache
+                DELETE FROM %s
                 WHERE `%s` = ?
-                ''' % (self.table, n, self.table), (values[0], ))
+                ''' % (self.tables[n + 1], self.db), (values[0], ))
             self.con.executemany('''
-                INSERT INTO %s_%d_cache
+                INSERT INTO %s
                 VALUES
                   (?, ?)
-                ''' % (self.table, n), ((values[0], x) for x in vlist))
+                ''' % (self.tables[n + 1]), ((values[0], x) for x in vlist))
 
     def retrieve(self, parameters):
         """Retrieve all items from the cache based on the parameters supplied."""
         query = Query('''
             SELECT *
-            FROM %s_cache
-            ''' % self.table, parameters)
+            FROM %s
+            ''' % self.tables[0], parameters)
         return (list(x)[:-1] for x in query.execute(self.con))
 
 

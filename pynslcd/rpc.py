@@ -37,6 +37,8 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
+    tables = ('rpc_cache', 'rpc_1_cache')
+
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `rpc_cache`
           ( `cn` TEXT PRIMARY KEY,

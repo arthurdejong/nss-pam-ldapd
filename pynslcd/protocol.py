@@ -37,6 +37,8 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
+    tables = ('protocol_cache', 'protocol_1_cache')
+
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `protocol_cache`
           ( `cn` TEXT PRIMARY KEY,

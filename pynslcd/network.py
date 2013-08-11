@@ -54,6 +54,8 @@ class NetworkQuery(cache.CnAliasedQuery):
 
 class Cache(cache.Cache):
 
+    tables = ('network_cache', 'network_1_cache', 'network_2_cache')
+
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `network_cache`
           ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,

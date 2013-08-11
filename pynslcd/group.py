@@ -75,6 +75,8 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
+    tables = ('group_cache', 'group_3_cache')
+
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `group_cache`
           ( `cn` TEXT PRIMARY KEY,

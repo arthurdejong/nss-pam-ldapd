@@ -37,6 +37,8 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
+    tables = ('alias_cache', 'alias_1_cache')
+
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `alias_cache`
           ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,

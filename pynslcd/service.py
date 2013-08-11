@@ -69,6 +69,8 @@ class ServiceQuery(cache.CnAliasedQuery):
 
 class Cache(cache.Cache):
 
+    tables = ('service_cache', 'service_1_cache')
+
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `service_cache`
           ( `cn` TEXT NOT NULL,
