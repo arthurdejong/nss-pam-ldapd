@@ -40,33 +40,6 @@ class Search(search.LDAPSearch):
     required = ('cn', 'ipServicePort', 'ipServiceProtocol')
 
 
-class ServiceQuery(cache.CnAliasedQuery):
-
-    sql = '''
-        SELECT `service_cache`.*,
-               `service_alias_cache`.`cn` AS `alias`
-        FROM `service_cache`
-        LEFT JOIN `service_alias_cache`
-          ON `service_alias_cache`.`ipServicePort` = `service_cache`.`ipServicePort`
-          AND `service_alias_cache`.`ipServiceProtocol` = `service_cache`.`ipServiceProtocol`
-        '''
-
-    cn_join = '''
-        LEFT JOIN `service_alias_cache` `cn_alias`
-          ON `cn_alias`.`ipServicePort` = `service_cache`.`ipServicePort`
-          AND `cn_alias`.`ipServiceProtocol` = `service_cache`.`ipServiceProtocol`
-        '''
-
-    def __init__(self, parameters):
-        super(ServiceQuery, self).__init__('service', {})
-        for k, v in parameters.items():
-            if k == 'cn':
-                self.add_query(self.cn_join)
-                self.add_where('(`service_cache`.`cn` = ? OR `cn_alias`.`cn` = ?)', [v, v])
-            else:
-                self.add_where('`service_cache`.`%s` = ?' % k, [v])
-
-
 class Cache(cache.Cache):
 
     tables = ('service_cache', 'service_alias_cache')
@@ -90,6 +63,34 @@ class Cache(cache.Cache):
         CREATE INDEX IF NOT EXISTS `service_alias_idx2` ON `service_alias_cache`(`ipServiceProtocol`);
     '''
 
+    retrieve_sql = '''
+        SELECT `service_cache`.`cn` AS `cn`,
+               `service_alias_cache`.`cn` AS `alias`,
+               `service_cache`.`ipServicePort`,
+               `service_cache`.`ipServiceProtocol`,
+               `mtime`
+        FROM `service_cache`
+        LEFT JOIN `service_alias_cache`
+          ON `service_alias_cache`.`ipServicePort` = `service_cache`.`ipServicePort`
+         AND `service_alias_cache`.`ipServiceProtocol` = `service_cache`.`ipServiceProtocol`
+    '''
+
+    retrieve_by = dict(
+        cn='''
+            ( `service_cache`.`cn` = ? OR
+              0 < (
+                  SELECT COUNT(*)
+                  FROM `service_alias_cache` `by_alias`
+                  WHERE `by_alias`.`cn` = ?
+                    AND `by_alias`.`ipServicePort` = `service_cache`.`ipServicePort`
+                    AND `by_alias`.`ipServiceProtocol` = `service_cache`.`ipServiceProtocol`
+                ))
+        ''',
+    )
+
+    group_by = (0, 2, 3)  # cn, ipServicePort, ipServiceProtocol
+    group_columns = (1, )  # alias
+
     def store(self, name, aliases, port, protocol):
         self.con.execute('''
             INSERT OR REPLACE INTO `service_cache`
@@ -106,11 +107,6 @@ class Cache(cache.Cache):
             VALUES
               (?, ?, ?)
         ''', ((port, protocol, alias) for alias in aliases))
-
-    def retrieve(self, parameters):
-        query = ServiceQuery(parameters)
-        for row in cache.RowGrouper(query.execute(self.con), ('cn', 'ipServicePort', 'ipServiceProtocol'), ('alias', )):
-            yield row['cn'], row['alias'], row['ipServicePort'], row['ipServiceProtocol']
 
 
 class ServiceRequest(common.Request):

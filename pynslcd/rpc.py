@@ -52,10 +52,26 @@ class Cache(cache.Cache):
         CREATE INDEX IF NOT EXISTS `rpc_alias_idx` ON `rpc_alias_cache`(`rpc`);
     '''
 
-    def retrieve(self, parameters):
-        query = cache.CnAliasedQuery('rpc', parameters)
-        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', )):
-            yield row['cn'], row['alias'], row['oncRpcNumber']
+    retrieve_sql = '''
+        SELECT `rpc_cache`.`cn` AS `cn`, `rpc_alias_cache`.`cn` AS `alias`,
+               `oncRpcNumber`, `mtime`
+        FROM `rpc_cache`
+        LEFT JOIN `rpc_alias_cache`
+          ON `rpc_alias_cache`.`rpc` = `rpc_cache`.`cn`
+    '''
+
+    retrieve_by = dict(
+        cn='''
+            ( `rpc_cache`.`cn` = ? OR
+              `rpc_cache`.`cn` IN (
+                  SELECT `by_alias`.`rpc`
+                  FROM `rpc_alias_cache` `by_alias`
+                  WHERE `by_alias`.`cn` = ?))
+        ''',
+    )
+
+    group_by = (0, )  # cn
+    group_columns = (1, )  # alias
 
 
 class RpcRequest(common.Request):

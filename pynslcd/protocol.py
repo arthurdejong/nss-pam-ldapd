@@ -52,10 +52,26 @@ class Cache(cache.Cache):
         CREATE INDEX IF NOT EXISTS `protocol_alias_idx` ON `protocol_alias_cache`(`protocol`);
     '''
 
-    def retrieve(self, parameters):
-        query = cache.CnAliasedQuery('protocol', parameters)
-        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', )):
-            yield row['cn'], row['alias'], row['ipProtocolNumber']
+    retrieve_sql = '''
+        SELECT `protocol_cache`.`cn` AS `cn`, `protocol_alias_cache`.`cn` AS `alias`,
+               `ipProtocolNumber`, `mtime`
+        FROM `protocol_cache`
+        LEFT JOIN `protocol_alias_cache`
+          ON `protocol_alias_cache`.`protocol` = `protocol_cache`.`cn`
+    '''
+
+    retrieve_by = dict(
+        cn='''
+            ( `protocol_cache`.`cn` = ? OR
+              `protocol_cache`.`cn` IN (
+                  SELECT `by_alias`.`protocol`
+                  FROM `protocol_alias_cache` `by_alias`
+                  WHERE `by_alias`.`cn` = ?))
+        ''',
+    )
+
+    group_by = (0, )  # cn
+    group_columns = (1, )  # alias
 
 
 class ProtocolRequest(common.Request):

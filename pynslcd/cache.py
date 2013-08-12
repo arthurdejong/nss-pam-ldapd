@@ -30,18 +30,50 @@ import sqlite3
 # FIXME: have some way to remove stale entries from the cache if all items from LDAP are queried (perhas use TTL from all request)
 
 
-class Query(object):
+class regroup(object):
 
-    def __init__(self, query, parameters=None):
+    def __init__(self, results, group_by=None, group_column=None):
+        """Regroup the results in the group column by the key columns."""
+        self.group_by = tuple(group_by)
+        self.group_column = group_column
+        self.it = iter(results)
+        self.tgtkey = self.currkey = self.currvalue = object()
+
+    def keyfunc(self, row):
+        return tuple(row[x] for x in self.group_by)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        # find a start row
+        while self.currkey == self.tgtkey:
+            self.currvalue = next(self.it)    # Exit on StopIteration
+            self.currkey = self.keyfunc(self.currvalue)
+        self.tgtkey = self.currkey
+        # turn the result row into a list of columns
+        row = list(self.currvalue)
+        # replace the group column
+        row[self.group_column] = list(self._grouper(self.tgtkey))
+        return row
+
+    def _grouper(self, tgtkey):
+        """Generate the group columns."""
+        while self.currkey == tgtkey:
+            value = self.currvalue[self.group_column]
+            if value is not None:
+                yield value
+            self.currvalue = next(self.it)    # Exit on StopIteration
+            self.currkey = self.keyfunc(self.currvalue)
+
+
+class Query(object):
+    """Helper class to build an SQL query for the cache."""
+
+    def __init__(self, query):
         self.query = query
         self.wheres = []
         self.parameters = []
-        if parameters:
-            for k, v in parameters.items():
-                self.add_where('`%s` = ?' % k, [v])
-
-    def add_query(self, query):
-        self.query += ' ' + query
 
     def add_where(self, where, parameters):
         self.wheres.append(where)
@@ -51,64 +83,17 @@ class Query(object):
         query = self.query
         if self.wheres:
             query += ' WHERE ' + ' AND '.join(self.wheres)
-        c = con.cursor()
-        return c.execute(query, self.parameters)
-
-
-class CnAliasedQuery(Query):
-
-    sql = '''
-        SELECT `%(table)s_cache`.*,
-               `%(table)s_alias_cache`.`cn` AS `alias`
-        FROM `%(table)s_cache`
-        LEFT JOIN `%(table)s_alias_cache`
-          ON `%(table)s_alias_cache`.`%(table)s` = `%(table)s_cache`.`cn`
-        '''
-
-    cn_join = '''
-        LEFT JOIN `%(table)s_alias_cache` `cn_alias`
-          ON `cn_alias`.`%(table)s` = `%(table)s_cache`.`cn`
-        '''
-
-    def __init__(self, table, parameters):
-        args = dict(table=table)
-        super(CnAliasedQuery, self).__init__(self.sql % args)
-        for k, v in parameters.items():
-            if k == 'cn':
-                self.add_query(self.cn_join % args)
-                self.add_where('(`%(table)s_cache`.`cn` = ? OR `cn_alias`.`cn` = ?)' % args, [v, v])
-            else:
-                self.add_where('`%s` = ?' % k, [v])
-
-
-class RowGrouper(object):
-    """Pass in query results and group the results by a certain specified
-    list of columns."""
-
-    def __init__(self, results, groupby, columns):
-        self.groupby = groupby
-        self.columns = columns
-        self.results = itertools.groupby(results, key=self.keyfunc)
-
-    def __iter__(self):
-        return self
-
-    def keyfunc(self, row):
-        return tuple(row[x] for x in self.groupby)
-
-    def next(self):
-        groupcols, rows = self.results.next()
-        tmp = dict((x, list()) for x in self.columns)
-        for row in rows:
-            for col in self.columns:
-                if row[col] is not None:
-                    tmp[col].append(row[col])
-        result = dict(row)
-        result.update(tmp)
-        return result
+        cursor = con.cursor()
+        return cursor.execute(query, self.parameters)
 
 
 class Cache(object):
+    """The description of the cache."""
+
+    retrieve_sql = None
+    retrieve_by = dict()
+    group_by = ()
+    group_columns = ()
 
     def __init__(self):
         self.con = _get_connection()
@@ -154,12 +139,25 @@ class Cache(object):
                 ''' % (self.tables[n + 1]), ((values[0], x) for x in vlist))
 
     def retrieve(self, parameters):
-        """Retrieve all items from the cache based on the parameters supplied."""
-        query = Query('''
+        """Retrieve all items from the cache based on the parameters
+        supplied."""
+        query = Query(self.retrieve_sql or '''
             SELECT *
             FROM %s
-            ''' % self.tables[0], parameters)
-        return (list(x)[:-1] for x in query.execute(self.con))
+            ''' % self.tables[0])
+        if parameters:
+            for k, v in parameters.items():
+                where = self.retrieve_by.get(k, '`%s`.`%s` = ?' % (self.tables[0], k))
+                query.add_where(where, where.count('?') * [v])
+        # group by
+        # FIXME: find a nice way to turn group_by and group_columns into names
+        results = query.execute(self.con)
+        group_by = list(self.group_by + self.group_columns)
+        for column in self.group_columns[::-1]:
+            group_by.pop()
+            results = regroup(results, group_by, column)
+        # strip the mtime from the results
+        return (list(x)[:-1] for x in results)
 
     def __enter__(self):
         return self.con.__enter__();

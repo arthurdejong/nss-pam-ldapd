@@ -35,23 +35,6 @@ class Search(search.LDAPSearch):
     required = ('cn', )
 
 
-class NetworkQuery(cache.CnAliasedQuery):
-
-    sql = '''
-        SELECT `network_cache`.`cn` AS `cn`,
-               `network_alias_cache`.`cn` AS `alias`,
-               `network_address_cache`.`ipNetworkNumber` AS `ipNetworkNumber`
-        FROM `network_cache`
-        LEFT JOIN `network_alias_cache`
-          ON `network_alias_cache`.`network` = `network_cache`.`cn`
-        LEFT JOIN `network_address_cache`
-          ON `network_address_cache`.`network` = `network_cache`.`cn`
-        '''
-
-    def __init__(self, parameters):
-        super(NetworkQuery, self).__init__('network', parameters)
-
-
 class Cache(cache.Cache):
 
     tables = ('network_cache', 'network_alias_cache', 'network_address_cache')
@@ -74,10 +57,36 @@ class Cache(cache.Cache):
         CREATE INDEX IF NOT EXISTS `network_address_idx` ON `network_address_cache`(`network`);
     '''
 
-    def retrieve(self, parameters):
-        query = NetworkQuery(parameters)
-        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', 'ipNetworkNumber', )):
-            yield row['cn'], row['alias'], row['ipNetworkNumber']
+    retrieve_sql = '''
+        SELECT `network_cache`.`cn` AS `cn`,
+               `network_alias_cache`.`cn` AS `alias`,
+               `network_address_cache`.`ipNetworkNumber` AS `ipNetworkNumber`,
+               `network_cache`.`mtime` AS `mtime`
+        FROM `network_cache`
+        LEFT JOIN `network_alias_cache`
+          ON `network_alias_cache`.`network` = `network_cache`.`cn`
+        LEFT JOIN `network_address_cache`
+          ON `network_address_cache`.`network` = `network_cache`.`cn`
+    '''
+
+    retrieve_by = dict(
+        cn='''
+            ( `network_cache`.`cn` = ? OR
+              `network_cache`.`cn` IN (
+                  SELECT `by_alias`.`network`
+                  FROM `network_alias_cache` `by_alias`
+                  WHERE `by_alias`.`cn` = ?))
+        ''',
+        ipNetworkNumber='''
+            `network_cache`.`cn` IN (
+                SELECT `by_ipNetworkNumber`.`network`
+                FROM `network_address_cache` `by_ipNetworkNumber`
+                WHERE `by_ipNetworkNumber`.`ipNetworkNumber` = ?)
+        ''',
+    )
+
+    group_by = (0, )  # cn
+    group_columns = (1, 2)  # alias, ipNetworkNumber
 
 
 class NetworkRequest(common.Request):

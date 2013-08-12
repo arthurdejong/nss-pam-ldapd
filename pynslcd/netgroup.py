@@ -63,6 +63,21 @@ class Cache(cache.Cache):
         CREATE INDEX IF NOT EXISTS `netgroup_membe_idx` ON `netgroup_member_cache`(`netgroup`);
     '''
 
+    retrieve_sql = '''
+        SELECT `netgroup_cache`.`cn` AS `cn`,
+               `netgroup_triple_cache`.`nisNetgroupTriple` AS `nisNetgroupTriple`,
+               `netgroup_member_cache`.`memberNisNetgroup` AS `memberNisNetgroup`,
+               `netgroup_cache`.`mtime` AS `mtime`
+        FROM `netgroup_cache`
+        LEFT JOIN `netgroup_triple_cache`
+          ON `netgroup_triple_cache`.`netgroup` = `netgroup_cache`.`cn`
+        LEFT JOIN `netgroup_member_cache`
+          ON `netgroup_member_cache`.`netgroup` = `netgroup_cache`.`cn`
+    '''
+
+    group_by = (0, )  # cn
+    group_columns = (1, 2)  # nisNetgroupTriple, memberNisNetgroup
+
 
 class NetgroupRequest(common.Request):
 

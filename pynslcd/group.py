@@ -99,13 +99,17 @@ class Cache(cache.Cache):
           ON `group_member_cache`.`group` = `group_cache`.`cn`
     '''
 
-    def retrieve(self, parameters):
-        query = cache.Query(self.retrieve_sql, parameters)
-        # return results returning the members as a set
-        q = itertools.groupby(query.execute(self.con),
-                key=lambda x: (x['cn'], x['userPassword'], x['gidNumber']))
-        for k, v in q:
-            yield k + (set(x['memberUid'] for x in v if x['memberUid'] is not None), )
+    retrieve_by = dict(
+        memberUid='''
+            `cn` IN (
+                SELECT `a`.`group`
+                FROM `group_member_cache` `a`
+                WHERE `a`.`memberUid` = ?)
+        ''',
+    )
+
+    group_by = (0, )  # cn
+    group_columns = (3, )  # memberUid
 
 
 class GroupRequest(common.Request):

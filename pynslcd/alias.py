@@ -60,11 +60,17 @@ class Cache(cache.Cache):
           ON `alias_member_cache`.`alias` = `alias_cache`.`cn`
     '''
 
-    def retrieve(self, parameters):
-        query = cache.Query(self.retrieve_sql, parameters)
-        # return results, returning the members as a list
-        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('rfc822MailMember', )):
-            yield row['cn'], row['rfc822MailMember']
+    retrieve_by = dict(
+        rfc822MailMember='''
+            `cn` IN (
+                SELECT `a`.`alias`
+                FROM `alias_member_cache` `a`
+                WHERE `a`.`rfc822MailMember` = ?)
+        ''',
+    )
+
+    group_by = (0, )  # cn
+    group_columns = (1, )  # rfc822MailMember
 
 
 class AliasRequest(common.Request):
