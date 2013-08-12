@@ -44,15 +44,15 @@ class ServiceQuery(cache.CnAliasedQuery):
 
     sql = '''
         SELECT `service_cache`.*,
-               `service_1_cache`.`cn` AS `alias`
+               `service_alias_cache`.`cn` AS `alias`
         FROM `service_cache`
-        LEFT JOIN `service_1_cache`
-          ON `service_1_cache`.`ipServicePort` = `service_cache`.`ipServicePort`
-          AND `service_1_cache`.`ipServiceProtocol` = `service_cache`.`ipServiceProtocol`
+        LEFT JOIN `service_alias_cache`
+          ON `service_alias_cache`.`ipServicePort` = `service_cache`.`ipServicePort`
+          AND `service_alias_cache`.`ipServiceProtocol` = `service_cache`.`ipServiceProtocol`
         '''
 
     cn_join = '''
-        LEFT JOIN `service_1_cache` `cn_alias`
+        LEFT JOIN `service_alias_cache` `cn_alias`
           ON `cn_alias`.`ipServicePort` = `service_cache`.`ipServicePort`
           AND `cn_alias`.`ipServiceProtocol` = `service_cache`.`ipServiceProtocol`
         '''
@@ -69,7 +69,7 @@ class ServiceQuery(cache.CnAliasedQuery):
 
 class Cache(cache.Cache):
 
-    tables = ('service_cache', 'service_1_cache')
+    tables = ('service_cache', 'service_alias_cache')
 
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `service_cache`
@@ -78,7 +78,7 @@ class Cache(cache.Cache):
             `ipServiceProtocol` TEXT NOT NULL,
             `mtime` TIMESTAMP NOT NULL,
             UNIQUE (`ipServicePort`, `ipServiceProtocol`) );
-        CREATE TABLE IF NOT EXISTS `service_1_cache`
+        CREATE TABLE IF NOT EXISTS `service_alias_cache`
           ( `ipServicePort` INTEGER NOT NULL,
             `ipServiceProtocol` TEXT NOT NULL,
             `cn` TEXT NOT NULL,
@@ -86,8 +86,8 @@ class Cache(cache.Cache):
             ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY(`ipServiceProtocol`) REFERENCES `service_cache`(`ipServiceProtocol`)
             ON DELETE CASCADE ON UPDATE CASCADE );
-        CREATE INDEX IF NOT EXISTS `service_1_idx1` ON `service_1_cache`(`ipServicePort`);
-        CREATE INDEX IF NOT EXISTS `service_1_idx2` ON `service_1_cache`(`ipServiceProtocol`);
+        CREATE INDEX IF NOT EXISTS `service_alias_idx1` ON `service_alias_cache`(`ipServicePort`);
+        CREATE INDEX IF NOT EXISTS `service_alias_idx2` ON `service_alias_cache`(`ipServiceProtocol`);
     '''
 
     def store(self, name, aliases, port, protocol):
@@ -97,12 +97,12 @@ class Cache(cache.Cache):
               (?, ?, ?, ?)
         ''', (name, port, protocol, datetime.datetime.now()))
         self.con.execute('''
-            DELETE FROM `service_1_cache`
+            DELETE FROM `service_alias_cache`
             WHERE `ipServicePort` = ?
               AND `ipServiceProtocol` = ?
         ''', (port, protocol))
         self.con.executemany('''
-            INSERT INTO `service_1_cache`
+            INSERT INTO `service_alias_cache`
             VALUES
               (?, ?, ?)
         ''', ((port, protocol, alias) for alias in aliases))

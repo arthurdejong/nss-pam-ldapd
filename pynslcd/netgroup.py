@@ -43,13 +43,24 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
+    tables = ('netgroup_cache', 'netgroup_triple_cache', 'netgroup_member_cache')
+
     create_sql = '''
-        -- FIXME: this does not work as entries are never removed from the cache
         CREATE TABLE IF NOT EXISTS `netgroup_cache`
-          ( `cn` TEXT NOT NULL,
-            `member` TEXT NOT NULL,
-            `mtime` TIMESTAMP NOT NULL,
-            UNIQUE (`cn`, `member`) );
+          ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `netgroup_triple_cache`
+          ( `netgroup` TEXT NOT NULL COLLATE NOCASE,
+            `nisNetgroupTriple` TEXT NOT NULL COLLATE NOCASE,
+            FOREIGN KEY(`netgroup`) REFERENCES `netgroup_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `netgroup_triple_idx` ON `netgroup_triple_cache`(`netgroup`);
+        CREATE TABLE IF NOT EXISTS `netgroup_member_cache`
+          ( `netgroup` TEXT NOT NULL COLLATE NOCASE,
+            `memberNisNetgroup` TEXT NOT NULL,
+            FOREIGN KEY(`netgroup`) REFERENCES `netgroup_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `netgroup_membe_idx` ON `netgroup_member_cache`(`netgroup`);
     '''
 
 

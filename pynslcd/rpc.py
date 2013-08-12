@@ -37,19 +37,19 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
-    tables = ('rpc_cache', 'rpc_1_cache')
+    tables = ('rpc_cache', 'rpc_alias_cache')
 
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `rpc_cache`
           ( `cn` TEXT PRIMARY KEY,
             `oncRpcNumber` INTEGER NOT NULL,
             `mtime` TIMESTAMP NOT NULL );
-        CREATE TABLE IF NOT EXISTS `rpc_1_cache`
+        CREATE TABLE IF NOT EXISTS `rpc_alias_cache`
           ( `rpc` TEXT NOT NULL,
             `cn` TEXT NOT NULL,
             FOREIGN KEY(`rpc`) REFERENCES `rpc_cache`(`cn`)
             ON DELETE CASCADE ON UPDATE CASCADE );
-        CREATE INDEX IF NOT EXISTS `rpc_1_idx` ON `rpc_1_cache`(`rpc`);
+        CREATE INDEX IF NOT EXISTS `rpc_alias_idx` ON `rpc_alias_cache`(`rpc`);
     '''
 
     def retrieve(self, parameters):

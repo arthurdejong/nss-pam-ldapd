@@ -59,14 +59,14 @@ class CnAliasedQuery(Query):
 
     sql = '''
         SELECT `%(table)s_cache`.*,
-               `%(table)s_1_cache`.`cn` AS `alias`
+               `%(table)s_alias_cache`.`cn` AS `alias`
         FROM `%(table)s_cache`
-        LEFT JOIN `%(table)s_1_cache`
-          ON `%(table)s_1_cache`.`%(table)s` = `%(table)s_cache`.`cn`
+        LEFT JOIN `%(table)s_alias_cache`
+          ON `%(table)s_alias_cache`.`%(table)s` = `%(table)s_cache`.`cn`
         '''
 
     cn_join = '''
-        LEFT JOIN `%(table)s_1_cache` `cn_alias`
+        LEFT JOIN `%(table)s_alias_cache` `cn_alias`
           ON `cn_alias`.`%(table)s` = `%(table)s_cache`.`cn`
         '''
 

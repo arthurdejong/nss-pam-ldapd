@@ -37,19 +37,19 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
-    tables = ('protocol_cache', 'protocol_1_cache')
+    tables = ('protocol_cache', 'protocol_alias_cache')
 
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `protocol_cache`
           ( `cn` TEXT PRIMARY KEY,
             `ipProtocolNumber` INTEGER NOT NULL,
             `mtime` TIMESTAMP NOT NULL );
-        CREATE TABLE IF NOT EXISTS `protocol_1_cache`
+        CREATE TABLE IF NOT EXISTS `protocol_alias_cache`
           ( `protocol` TEXT NOT NULL,
             `cn` TEXT NOT NULL,
             FOREIGN KEY(`protocol`) REFERENCES `protocol_cache`(`cn`)
             ON DELETE CASCADE ON UPDATE CASCADE );
-        CREATE INDEX IF NOT EXISTS `protocol_1_idx` ON `protocol_1_cache`(`protocol`);
+        CREATE INDEX IF NOT EXISTS `protocol_alias_idx` ON `protocol_alias_cache`(`protocol`);
     '''
 
     def retrieve(self, parameters):

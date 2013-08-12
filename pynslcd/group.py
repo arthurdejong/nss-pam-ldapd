@@ -75,7 +75,7 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
-    tables = ('group_cache', 'group_3_cache')
+    tables = ('group_cache', 'group_member_cache')
 
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `group_cache`
@@ -83,19 +83,20 @@ class Cache(cache.Cache):
             `userPassword` TEXT,
             `gidNumber` INTEGER NOT NULL UNIQUE,
             `mtime` TIMESTAMP NOT NULL );
-        CREATE TABLE IF NOT EXISTS `group_3_cache`
+        CREATE TABLE IF NOT EXISTS `group_member_cache`
           ( `group` TEXT NOT NULL,
             `memberUid` TEXT NOT NULL,
             FOREIGN KEY(`group`) REFERENCES `group_cache`(`cn`)
             ON DELETE CASCADE ON UPDATE CASCADE );
-        CREATE INDEX IF NOT EXISTS `group_3_idx` ON `group_3_cache`(`group`);
+        CREATE INDEX IF NOT EXISTS `group_member_idx` ON `group_member_cache`(`group`);
     '''
 
     retrieve_sql = '''
-        SELECT `cn`, `userPassword`, `gidNumber`, `memberUid`
+        SELECT `group_cache`.`cn` AS `cn`, `userPassword`, `gidNumber`,
+               `memberUid`, `mtime`
         FROM `group_cache`
-        LEFT JOIN `group_3_cache`
-          ON `group_3_cache`.`group` = `group_cache`.`cn`
+        LEFT JOIN `group_member_cache`
+          ON `group_member_cache`.`group` = `group_cache`.`cn`
     '''
 
     def retrieve(self, parameters):

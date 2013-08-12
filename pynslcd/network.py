@@ -39,13 +39,13 @@ class NetworkQuery(cache.CnAliasedQuery):
 
     sql = '''
         SELECT `network_cache`.`cn` AS `cn`,
-               `network_1_cache`.`cn` AS `alias`,
-               `network_2_cache`.`ipNetworkNumber` AS `ipNetworkNumber`
+               `network_alias_cache`.`cn` AS `alias`,
+               `network_address_cache`.`ipNetworkNumber` AS `ipNetworkNumber`
         FROM `network_cache`
-        LEFT JOIN `network_1_cache`
-          ON `network_1_cache`.`network` = `network_cache`.`cn`
-        LEFT JOIN `network_2_cache`
-          ON `network_2_cache`.`network` = `network_cache`.`cn`
+        LEFT JOIN `network_alias_cache`
+          ON `network_alias_cache`.`network` = `network_cache`.`cn`
+        LEFT JOIN `network_address_cache`
+          ON `network_address_cache`.`network` = `network_cache`.`cn`
         '''
 
     def __init__(self, parameters):
@@ -54,24 +54,24 @@ class NetworkQuery(cache.CnAliasedQuery):
 
 class Cache(cache.Cache):
 
-    tables = ('network_cache', 'network_1_cache', 'network_2_cache')
+    tables = ('network_cache', 'network_alias_cache', 'network_address_cache')
 
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `network_cache`
           ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
             `mtime` TIMESTAMP NOT NULL );
-        CREATE TABLE IF NOT EXISTS `network_1_cache`
+        CREATE TABLE IF NOT EXISTS `network_alias_cache`
           ( `network` TEXT NOT NULL COLLATE NOCASE,
             `cn` TEXT NOT NULL COLLATE NOCASE,
             FOREIGN KEY(`network`) REFERENCES `network_cache`(`cn`)
             ON DELETE CASCADE ON UPDATE CASCADE );
-        CREATE INDEX IF NOT EXISTS `network_1_idx` ON `network_1_cache`(`network`);
-        CREATE TABLE IF NOT EXISTS `network_2_cache`
-          ( `network` TEXT NOT NULL,
+        CREATE INDEX IF NOT EXISTS `network_alias_idx` ON `network_alias_cache`(`network`);
+        CREATE TABLE IF NOT EXISTS `network_address_cache`
+          ( `network` TEXT NOT NULL COLLATE NOCASE,
             `ipNetworkNumber` TEXT NOT NULL,
             FOREIGN KEY(`network`) REFERENCES `network_cache`(`cn`)
             ON DELETE CASCADE ON UPDATE CASCADE );
-        CREATE INDEX IF NOT EXISTS `network_2_idx` ON `network_2_cache`(`network`);
+        CREATE INDEX IF NOT EXISTS `network_address_idx` ON `network_address_cache`(`network`);
     '''
 
     def retrieve(self, parameters):

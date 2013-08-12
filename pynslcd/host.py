@@ -38,13 +38,13 @@ class HostQuery(cache.CnAliasedQuery):
 
     sql = '''
         SELECT `host_cache`.`cn` AS `cn`,
-               `host_1_cache`.`cn` AS `alias`,
-               `host_2_cache`.`ipHostNumber` AS `ipHostNumber`
+               `host_alias_cache`.`cn` AS `alias`,
+               `host_address_cache`.`ipHostNumber` AS `ipHostNumber`
         FROM `host_cache`
-        LEFT JOIN `host_1_cache`
-          ON `host_1_cache`.`host` = `host_cache`.`cn`
-        LEFT JOIN `host_2_cache`
-          ON `host_2_cache`.`host` = `host_cache`.`cn`
+        LEFT JOIN `host_alias_cache`
+          ON `host_alias_cache`.`host` = `host_cache`.`cn`
+        LEFT JOIN `host_address_cache`
+          ON `host_address_cache`.`host` = `host_cache`.`cn`
         '''
 
     def __init__(self, parameters):
@@ -53,24 +53,24 @@ class HostQuery(cache.CnAliasedQuery):
 
 class Cache(cache.Cache):
 
-    tables = ('host_cache', 'host_1_cache', 'host_2_cache')
+    tables = ('host_cache', 'host_alias_cache', 'host_address_cache')
 
     create_sql = '''
         CREATE TABLE IF NOT EXISTS `host_cache`
           ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
             `mtime` TIMESTAMP NOT NULL );
-        CREATE TABLE IF NOT EXISTS `host_1_cache`
+        CREATE TABLE IF NOT EXISTS `host_alias_cache`
           ( `host` TEXT NOT NULL COLLATE NOCASE,
             `cn` TEXT NOT NULL COLLATE NOCASE,
             FOREIGN KEY(`host`) REFERENCES `host_cache`(`cn`)
             ON DELETE CASCADE ON UPDATE CASCADE );
-        CREATE INDEX IF NOT EXISTS `host_1_idx` ON `host_1_cache`(`host`);
-        CREATE TABLE IF NOT EXISTS `host_2_cache`
+        CREATE INDEX IF NOT EXISTS `host_alias_idx` ON `host_alias_cache`(`host`);
+        CREATE TABLE IF NOT EXISTS `host_address_cache`
           ( `host` TEXT NOT NULL COLLATE NOCASE,
             `ipHostNumber` TEXT NOT NULL,
             FOREIGN KEY(`host`) REFERENCES `host_cache`(`cn`)
             ON DELETE CASCADE ON UPDATE CASCADE );
-        CREATE INDEX IF NOT EXISTS `host_2_idx` ON `host_2_cache`(`host`);
+        CREATE INDEX IF NOT EXISTS `host_address_idx` ON `host_address_cache`(`host`);
     '''
 
     def retrieve(self, parameters):
