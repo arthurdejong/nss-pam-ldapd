@@ -59,7 +59,14 @@ class Search(search.LDAPSearch):
 
 
 class Cache(cache.Cache):
-    pass
+
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `ether_cache`
+          ( `cn` TEXT NOT NULL COLLATE NOCASE,
+            `macAddress` TEXT NOT NULL COLLATE NOCASE,
+            `mtime` TIMESTAMP NOT NULL,
+            UNIQUE (`cn`, `macAddress`) );
+    '''
 
 
 class EtherRequest(common.Request):

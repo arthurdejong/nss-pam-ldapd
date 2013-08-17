@@ -61,6 +61,7 @@ AM_PROG_CC_C_O
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_LN_S
 AM_PATH_PYTHON(2.5,, [:])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
 AM_PROG_AR
 
 # checks for tool to convert docbook to man

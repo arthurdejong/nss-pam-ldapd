@@ -37,19 +37,40 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
+    tables = ('alias_cache', 'alias_member_cache')
+
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `alias_cache`
+          ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `alias_member_cache`
+          ( `alias` TEXT NOT NULL COLLATE NOCASE,
+            `rfc822MailMember` TEXT NOT NULL,
+            FOREIGN KEY(`alias`) REFERENCES `alias_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `alias_member_idx` ON `alias_member_cache`(`alias`);
+    '''
+
     retrieve_sql = '''
         SELECT `alias_cache`.`cn` AS `cn`,
-               `alias_1_cache`.`rfc822MailMember` AS `rfc822MailMember`
+               `alias_member_cache`.`rfc822MailMember` AS `rfc822MailMember`,
+               `alias_cache`.`mtime` AS `mtime`
         FROM `alias_cache`
-        LEFT JOIN `alias_1_cache`
-          ON `alias_1_cache`.`alias` = `alias_cache`.`cn`
-        '''
+        LEFT JOIN `alias_member_cache`
+          ON `alias_member_cache`.`alias` = `alias_cache`.`cn`
+    '''
 
-    def retrieve(self, parameters):
-        query = cache.Query(self.retrieve_sql, parameters)
-        # return results, returning the members as a list
-        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('rfc822MailMember', )):
-            yield row['cn'], row['rfc822MailMember']
+    retrieve_by = dict(
+        rfc822MailMember='''
+            `cn` IN (
+                SELECT `a`.`alias`
+                FROM `alias_member_cache` `a`
+                WHERE `a`.`rfc822MailMember` = ?)
+        ''',
+    )
+
+    group_by = (0, )  # cn
+    group_columns = (1, )  # rfc822MailMember
 
 
 class AliasRequest(common.Request):

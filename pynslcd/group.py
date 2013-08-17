@@ -75,20 +75,41 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
-    retrieve_sql = '''
-        SELECT `cn`, `userPassword`, `gidNumber`, `memberUid`
-        FROM `group_cache`
-        LEFT JOIN `group_3_cache`
-          ON `group_3_cache`.`group` = `group_cache`.`cn`
-        '''
+    tables = ('group_cache', 'group_member_cache')
 
-    def retrieve(self, parameters):
-        query = cache.Query(self.retrieve_sql, parameters)
-        # return results returning the members as a set
-        q = itertools.groupby(query.execute(self.con),
-                key=lambda x: (x['cn'], x['userPassword'], x['gidNumber']))
-        for k, v in q:
-            yield k + (set(x['memberUid'] for x in v if x['memberUid'] is not None), )
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `group_cache`
+          ( `cn` TEXT PRIMARY KEY,
+            `userPassword` TEXT,
+            `gidNumber` INTEGER NOT NULL UNIQUE,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `group_member_cache`
+          ( `group` TEXT NOT NULL,
+            `memberUid` TEXT NOT NULL,
+            FOREIGN KEY(`group`) REFERENCES `group_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `group_member_idx` ON `group_member_cache`(`group`);
+    '''
+
+    retrieve_sql = '''
+        SELECT `group_cache`.`cn` AS `cn`, `userPassword`, `gidNumber`,
+               `memberUid`, `mtime`
+        FROM `group_cache`
+        LEFT JOIN `group_member_cache`
+          ON `group_member_cache`.`group` = `group_cache`.`cn`
+    '''
+
+    retrieve_by = dict(
+        memberUid='''
+            `cn` IN (
+                SELECT `a`.`group`
+                FROM `group_member_cache` `a`
+                WHERE `a`.`memberUid` = ?)
+        ''',
+    )
+
+    group_by = (0, )  # cn
+    group_columns = (3, )  # memberUid
 
 
 class GroupRequest(common.Request):

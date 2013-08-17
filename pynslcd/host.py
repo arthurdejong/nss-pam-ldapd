@@ -34,29 +34,58 @@ class Search(search.LDAPSearch):
     required = ('cn', )
 
 
-class HostQuery(cache.CnAliasedQuery):
-
-    sql = '''
-        SELECT `host_cache`.`cn` AS `cn`,
-               `host_1_cache`.`cn` AS `alias`,
-               `host_2_cache`.`ipHostNumber` AS `ipHostNumber`
-        FROM `host_cache`
-        LEFT JOIN `host_1_cache`
-          ON `host_1_cache`.`host` = `host_cache`.`cn`
-        LEFT JOIN `host_2_cache`
-          ON `host_2_cache`.`host` = `host_cache`.`cn`
-        '''
-
-    def __init__(self, parameters):
-        super(HostQuery, self).__init__('host', parameters)
-
-
 class Cache(cache.Cache):
 
-    def retrieve(self, parameters):
-        query = HostQuery(parameters)
-        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', 'ipHostNumber', )):
-            yield row['cn'], row['alias'], row['ipHostNumber']
+    tables = ('host_cache', 'host_alias_cache', 'host_address_cache')
+
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `host_cache`
+          ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `host_alias_cache`
+          ( `host` TEXT NOT NULL COLLATE NOCASE,
+            `cn` TEXT NOT NULL COLLATE NOCASE,
+            FOREIGN KEY(`host`) REFERENCES `host_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `host_alias_idx` ON `host_alias_cache`(`host`);
+        CREATE TABLE IF NOT EXISTS `host_address_cache`
+          ( `host` TEXT NOT NULL COLLATE NOCASE,
+            `ipHostNumber` TEXT NOT NULL,
+            FOREIGN KEY(`host`) REFERENCES `host_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `host_address_idx` ON `host_address_cache`(`host`);
+    '''
+
+    retrieve_sql = '''
+        SELECT `host_cache`.`cn` AS `cn`,
+               `host_alias_cache`.`cn` AS `alias`,
+               `host_address_cache`.`ipHostNumber` AS `ipHostNumber`,
+               `host_cache`.`mtime` AS `mtime`
+        FROM `host_cache`
+        LEFT JOIN `host_alias_cache`
+          ON `host_alias_cache`.`host` = `host_cache`.`cn`
+        LEFT JOIN `host_address_cache`
+          ON `host_address_cache`.`host` = `host_cache`.`cn`
+    '''
+
+    retrieve_by = dict(
+        cn='''
+            ( `host_cache`.`cn` = ? OR
+              `host_cache`.`cn` IN (
+                  SELECT `by_alias`.`host`
+                  FROM `host_alias_cache` `by_alias`
+                  WHERE `by_alias`.`cn` = ?))
+        ''',
+        ipHostNumber='''
+            `host_cache`.`cn` IN (
+                SELECT `by_ipHostNumber`.`host`
+                FROM `host_address_cache` `by_ipHostNumber`
+                WHERE `by_ipHostNumber`.`ipHostNumber` = ?)
+        ''',
+    )
+
+    group_by = (0, )  # cn
+    group_columns = (1, 2)  # alias, ipHostNumber
 
 
 class HostRequest(common.Request):

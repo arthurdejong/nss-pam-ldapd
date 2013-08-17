@@ -37,10 +37,41 @@ class Search(search.LDAPSearch):
 
 class Cache(cache.Cache):
 
-    def retrieve(self, parameters):
-        query = cache.CnAliasedQuery('protocol', parameters)
-        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', )):
-            yield row['cn'], row['alias'], row['ipProtocolNumber']
+    tables = ('protocol_cache', 'protocol_alias_cache')
+
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `protocol_cache`
+          ( `cn` TEXT PRIMARY KEY,
+            `ipProtocolNumber` INTEGER NOT NULL,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `protocol_alias_cache`
+          ( `protocol` TEXT NOT NULL,
+            `cn` TEXT NOT NULL,
+            FOREIGN KEY(`protocol`) REFERENCES `protocol_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `protocol_alias_idx` ON `protocol_alias_cache`(`protocol`);
+    '''
+
+    retrieve_sql = '''
+        SELECT `protocol_cache`.`cn` AS `cn`, `protocol_alias_cache`.`cn` AS `alias`,
+               `ipProtocolNumber`, `mtime`
+        FROM `protocol_cache`
+        LEFT JOIN `protocol_alias_cache`
+          ON `protocol_alias_cache`.`protocol` = `protocol_cache`.`cn`
+    '''
+
+    retrieve_by = dict(
+        cn='''
+            ( `protocol_cache`.`cn` = ? OR
+              `protocol_cache`.`cn` IN (
+                  SELECT `by_alias`.`protocol`
+                  FROM `protocol_alias_cache` `by_alias`
+                  WHERE `by_alias`.`cn` = ?))
+        ''',
+    )
+
+    group_by = (0, )  # cn
+    group_columns = (1, )  # alias
 
 
 class ProtocolRequest(common.Request):

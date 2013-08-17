@@ -44,7 +44,20 @@ class Search(search.LDAPSearch):
 
 
 class Cache(cache.Cache):
-    pass
+
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `shadow_cache`
+          ( `uid` TEXT PRIMARY KEY,
+            `userPassword` TEXT,
+            `shadowLastChange` INTEGER,
+            `shadowMin` INTEGER,
+            `shadowMax` INTEGER,
+            `shadowWarning` INTEGER,
+            `shadowInactive` INTEGER,
+            `shadowExpire` INTEGER,
+            `shadowFlag` INTEGER,
+            `mtime` TIMESTAMP NOT NULL );
+    '''
 
 
 class ShadowRequest(common.Request):

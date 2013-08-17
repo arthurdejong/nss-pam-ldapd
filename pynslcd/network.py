@@ -35,29 +35,58 @@ class Search(search.LDAPSearch):
     required = ('cn', )
 
 
-class NetworkQuery(cache.CnAliasedQuery):
-
-    sql = '''
-        SELECT `network_cache`.`cn` AS `cn`,
-               `network_1_cache`.`cn` AS `alias`,
-               `network_2_cache`.`ipNetworkNumber` AS `ipNetworkNumber`
-        FROM `network_cache`
-        LEFT JOIN `network_1_cache`
-          ON `network_1_cache`.`network` = `network_cache`.`cn`
-        LEFT JOIN `network_2_cache`
-          ON `network_2_cache`.`network` = `network_cache`.`cn`
-        '''
-
-    def __init__(self, parameters):
-        super(NetworkQuery, self).__init__('network', parameters)
-
-
 class Cache(cache.Cache):
 
-    def retrieve(self, parameters):
-        query = NetworkQuery(parameters)
-        for row in cache.RowGrouper(query.execute(self.con), ('cn', ), ('alias', 'ipNetworkNumber', )):
-            yield row['cn'], row['alias'], row['ipNetworkNumber']
+    tables = ('network_cache', 'network_alias_cache', 'network_address_cache')
+
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS `network_cache`
+          ( `cn` TEXT PRIMARY KEY COLLATE NOCASE,
+            `mtime` TIMESTAMP NOT NULL );
+        CREATE TABLE IF NOT EXISTS `network_alias_cache`
+          ( `network` TEXT NOT NULL COLLATE NOCASE,
+            `cn` TEXT NOT NULL COLLATE NOCASE,
+            FOREIGN KEY(`network`) REFERENCES `network_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `network_alias_idx` ON `network_alias_cache`(`network`);
+        CREATE TABLE IF NOT EXISTS `network_address_cache`
+          ( `network` TEXT NOT NULL COLLATE NOCASE,
+            `ipNetworkNumber` TEXT NOT NULL,
+            FOREIGN KEY(`network`) REFERENCES `network_cache`(`cn`)
+            ON DELETE CASCADE ON UPDATE CASCADE );
+        CREATE INDEX IF NOT EXISTS `network_address_idx` ON `network_address_cache`(`network`);
+    '''
+
+    retrieve_sql = '''
+        SELECT `network_cache`.`cn` AS `cn`,
+               `network_alias_cache`.`cn` AS `alias`,
+               `network_address_cache`.`ipNetworkNumber` AS `ipNetworkNumber`,
+               `network_cache`.`mtime` AS `mtime`
+        FROM `network_cache`
+        LEFT JOIN `network_alias_cache`
+          ON `network_alias_cache`.`network` = `network_cache`.`cn`
+        LEFT JOIN `network_address_cache`
+          ON `network_address_cache`.`network` = `network_cache`.`cn`
+    '''
+
+    retrieve_by = dict(
+        cn='''
+            ( `network_cache`.`cn` = ? OR
+              `network_cache`.`cn` IN (
+                  SELECT `by_alias`.`network`
+                  FROM `network_alias_cache` `by_alias`
+                  WHERE `by_alias`.`cn` = ?))
+        ''',
+        ipNetworkNumber='''
+            `network_cache`.`cn` IN (
+                SELECT `by_ipNetworkNumber`.`network`
+                FROM `network_address_cache` `by_ipNetworkNumber`
+                WHERE `by_ipNetworkNumber`.`ipNetworkNumber` = ?)
+        ''',
+    )
+
+    group_by = (0, )  # cn
+    group_columns = (1, 2)  # alias, ipNetworkNumber
 
 
 class NetworkRequest(common.Request):
