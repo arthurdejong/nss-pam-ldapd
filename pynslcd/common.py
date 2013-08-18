@@ -115,7 +115,7 @@ class Request(object):
         parameters = dict(parameters)
         for param in ('password', 'oldpassword', 'newpassword'):
             if parameters.get(param):
-                parameters['param'] = '***'
+                parameters[param] = '***'
         logging.debug('%s(%r)', self.__class__.__name__, parameters)
 
     def __call__(self):
