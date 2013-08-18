@@ -141,6 +141,7 @@ static struct option const nslcd_options[] = {
   {"debug",   no_argument, NULL, 'd'},
   {"nofork",  no_argument, NULL, 'n'},
   {"help",    no_argument, NULL, 'h'},
+  {"nofork",  no_argument, NULL, 'n'},
   {"version", no_argument, NULL, 'V'},
   {NULL,      0,           NULL, 0}
 };
