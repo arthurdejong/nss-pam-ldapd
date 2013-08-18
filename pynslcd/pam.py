@@ -285,8 +285,8 @@ class PAMPasswordModificationRequest(PAMRequest):
         if parameters['asroot']:
             binddn = cfg.rootpwmoddn
             # check if rootpwmodpw should be used
-            if not parameters['oldpassword'] and self.calleruid == 0 and cfg.rootpwmoddn:
-                password = cfg.rootpwmoddn
+            if not parameters['oldpassword'] and self.calleruid == 0 and cfg.rootpwmodpw:
+                password = cfg.rootpwmodpw
             elif parameters['oldpassword']:
                 password = parameters['oldpassword']
             else:
