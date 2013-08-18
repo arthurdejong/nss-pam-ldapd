@@ -22,9 +22,9 @@ entryUUID: 3a042f10-7031-102c-8abf-e7971ee3e994
 creatorsName:
 createTimestamp: 20080215164557Z
 userPassword:: e1NTSEF9YVY0NmREb0ZqNk1uaklvTnJXR2htYnVHamFaa2J3YUE=
-entryCSN: 20100108211946.865226Z#000000#000#000000
-modifiersName: cn=admin,dc=test,dc=tld
-modifyTimestamp: 20100108211946Z
+entryCSN: 20130728180631.658724Z#000000#000#000000
+modifiersName:
+modifyTimestamp: 20130728180631Z
 
 dn: ou=people,dc=test,dc=tld
 objectClass: top
@@ -53428,11 +53428,6 @@ modifyTimestamp: 20080215164610Z
 entryCSN: 20080215164610.377224Z#000000#000#000000
 
 dn: uid=ecolden,ou=lotsofpeople,dc=test,dc=tld
-objectClass: top
-objectClass: posixAccount
-objectClass: shadowAccount
-objectClass: person
-objectClass: inetOrgPerson
 uid: ecolden
 uidNumber: 5972
 gidNumber: 1000
@@ -53444,15 +53439,20 @@ gecos: Estelle Colden
 shadowWarning: 7
 shadowInactive: 2
 shadowLastChange: 12302
-userPassword:: e1NNRDV9TnpXMUMwVWV2ZGpkOUFWcXhNN1g2L3B4dXowPQ==
 loginShell: /bin/bash
 structuralObjectClass: inetOrgPerson
 entryUUID: 416fdcea-7031-102c-927f-e7971ee3e994
 creatorsName:
-modifiersName:
 createTimestamp: 20080215164610Z
-modifyTimestamp: 20080215164610Z
-entryCSN: 20080215164610.382725Z#000000#000#000000
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: person
+objectClass: inetOrgPerson
+userPassword:: e0NSWVBUfWt2aG8xRXlxR25CZEU=
+entryCSN: 20121122212849.394124Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20121122212849Z
 
 dn: cn=Veronica Sefcovic+uid=vsefcovic,ou=lotsofpeople,dc=test,dc=tld
 objectClass: top
@@ -53995,19 +53995,10 @@ modifyTimestamp: 20080215164610Z
 entryCSN: 20080215164610.501209Z#000000#000#000000
 
 dn: uid=lgutenberg,ou=lotsofpeople,dc=test,dc=tld
-objectClass: top
-objectClass: posixAccount
-objectClass: shadowAccount
-objectClass: person
-objectClass: inetOrgPerson
 uid: lgutenberg
 uidNumber: 5993
 gidNumber: 1000
 givenName: Loke
-sn: Gutenberg
-cn: Loke Gutenberg
-homeDirectory: /home/lgutenberg
-gecos: Loke Gutenberg
 shadowWarning: 7
 shadowInactive: 2
 shadowLastChange: 12302
@@ -54016,10 +54007,19 @@ loginShell: /bin/bash
 structuralObjectClass: inetOrgPerson
 entryUUID: 418327e6-7031-102c-9294-e7971ee3e994
 creatorsName:
-modifiersName:
 createTimestamp: 20080215164610Z
-modifyTimestamp: 20080215164610Z
-entryCSN: 20080215164610.509163Z#000000#000#000000
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: person
+objectClass: inetOrgPerson
+cn: Loke GutenberC
+homeDirectory: /home/lgutenberH
+gecos: Loke GutenberG
+sn: GutenberG
+entryCSN: 20120914220036.671368Z#000000#000#000000
+modifiersName: cn=admin,dc=test,dc=tld
+modifyTimestamp: 20120914220036Z
 
 dn: uid=fsumrall,ou=lotsofpeople,dc=test,dc=tld
 objectClass: top
@@ -54187,9 +54187,7 @@ dn: uid=arthur,ou=people,dc=test,dc=tld
 uid: arthur
 gidNumber: 100
 givenName: Arthur
-cn: Arthur de Jong
 homeDirectory: /home/arthur
-gecos: Arthur de Jong
 trustModel: fullaccess
 sambaLMPassword: 25ABFCD2391656AFEDCB213712461263
 sambaNTPassword: 7213BCD02736ABC64564ABCDFF766DE3
@@ -54198,7 +54196,6 @@ sambaSID: S-1-5-21-2656270644-2771678393-2525940785-3000
 sambaPwdLastSet: 2043613290
 sambaPwdMustChange: 3043613290
 sambaAcctFlags: [UX         ]
-loginShell: /bin/bash
 sn: de Jong
 description: rarthur
 structuralObjectClass: inetOrgPerson
@@ -54210,8 +54207,6 @@ shadowInactive: 2
 uidNumber: 1000
 title:: c3V4AAA=
 title: su
-userPassword:: e1NTSEF9cFZuV0podUFoWkVITDRwWU15L0thejFUcVJxdFY3YXQ=
-shadowLastChange: 14302
 labeledURI: http://arthurdejong.org/ Arthur's homepage
 mail: arthur@arthurdejong.org
 objectClass: top
@@ -54222,9 +54217,25 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: trustAccount
 objectClass: sambaSamAccount
-entryCSN: 20110306150217.133434Z#000000#000#000000
+cn: Arthur de Jong
+gecos: Arthur de Jong
+pwdHistory: 20121231162542Z#1.3.6.1.4.1.1466.115.121.1.40#38#{SSHA}X8X9Wv1aiFh
+ XaU26Zjw+frJK3ideCxbK
+pwdHistory: 20121231171205Z#1.3.6.1.4.1.1466.115.121.1.40#38#{SSHA}QtBGll2tgRG
+ QHEFlfbKZmp5jAbwjP5CB
+pwdHistory: 20121231171242Z#1.3.6.1.4.1.1466.115.121.1.40#38#{SSHA}qDaO+b09SW4
+ lgLPA9L6NcwWaetfwvfJf
+pwdHistory: 20121231171823Z#1.3.6.1.4.1.1466.115.121.1.40#38#{SSHA}FHMVCFxHLQ/
+ 6Jm9PVaP5xcMj8nIjdv6k
+pwdHistory: 20130101190306Z#1.3.6.1.4.1.1466.115.121.1.40#38#{SSHA}YeTgVbD8nP8
+ fuHbc1jLtgbI7b+2xT0DL
+loginShell: /bin/bash
+userPassword:: e1NTSEF9RWJ0Qm1vWWhtcXM1RExuYTlpa29TWmRBcWNCbG1NNXc=
+pwdChangedTime: 20130818152331Z
+shadowLastChange: 15935
+entryCSN: 20130818152331.602207Z#000000#000#000000
 modifiersName: cn=admin,dc=test,dc=tld
-modifyTimestamp: 20110306150217Z
+modifyTimestamp: 20130818152331Z
 
 dn: cn=Test User3,ou=extra,ou=people,dc=test,dc=tld
 objectClass: top
@@ -55903,12 +55914,12 @@ pwdMinAge: 1
 pwdGraceAuthNLimit: 10
 pwdLockoutDuration: 30
 pwdMustChange: TRUE
-pwdExpireWarning: 600
-pwdMaxAge: 660
 pwdInHistory: 0
-entryCSN: 20130106105309.705361Z#000000#000#000000
+pwdExpireWarning: 600000
+pwdMaxAge: 660000
+entryCSN: 20130330211902.764111Z#000000#000#000000
 modifiersName: cn=admin,dc=test,dc=tld
-modifyTimestamp: 20130106105309Z
+modifyTimestamp: 20130330211902Z
 
 dn:: Y2495Y+v5piv5b2T6L+Z5LiqVeebmOWcqCxvdT1wZW9wbGUsZGM9dGVzdCxkYz10bGQ=
 uid: tstchinese
