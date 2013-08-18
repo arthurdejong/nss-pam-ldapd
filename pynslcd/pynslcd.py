@@ -44,6 +44,9 @@ program_name = 'pynslcd'
 # flag to indicate whether we are in debugging mode
 debugging = 0
 
+# flag to indicate we shouldn't daemonize
+nofork = False
+
 # flag to indicate user requested the --check option
 checkonly = False
 
@@ -103,6 +106,7 @@ def display_usage(fp):
              "Name Service LDAP connection daemon.\n"
              "  -c, --check        check if the daemon already is running\n"
              "  -d, --debug        don't fork and print debugging to stderr\n"
+             "  -n, --nofork       don't fork\n"
              "      --help         display this help and exit\n"
              "      --version      output version information and exit\n"
              "\n"
@@ -118,7 +122,7 @@ def parse_cmdline():
     program_name = sys.argv[0] or program_name
     try:
         optlist, args = getopt.gnu_getopt(sys.argv[1:],
-          'cdhV', ('check', 'debug', 'help', 'version', ))
+          'cdnhV', ('check', 'debug', 'nofork', 'help', 'version', ))
         for flag, arg in optlist:
             if flag in ('-c', '--check'):
                 global checkonly
@@ -126,6 +130,9 @@ def parse_cmdline():
             elif flag in ('-d', '--debug'):
                 global debugging
                 debugging += 1
+            elif flag in ('-n', '--nofork'):
+                global nofork
+                nofork = True
             elif flag in ('-h', '--help'):
                 display_usage(sys.stdout)
                 sys.exit(0)
@@ -309,7 +316,7 @@ if __name__ == '__main__':
                       config.NSLCD_PIDFILE)
         sys.exit(1)
     # daemonize
-    if debugging:
+    if debugging or nofork:
         daemon = pidfile
     else:
         daemon = daemon.DaemonContext(

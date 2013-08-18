@@ -104,6 +104,18 @@
     </listitem>
    </varlistentry>
 
+   <varlistentry id="nofork">
+    <term>
+     <option>-n</option>, <option>--nofork</option>
+    </term>
+    <listitem>
+     <para>
+      Do not fork or daemonise and run <command>nslcd</command> in the
+      foreground.
+     </para>
+    </listitem>
+   </varlistentry>
+
    <varlistentry id="help">
     <term>
      <option>--help</option>
