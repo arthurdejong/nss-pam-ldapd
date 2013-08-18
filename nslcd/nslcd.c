@@ -81,6 +81,9 @@
 /* flag to indicate if we are in debugging mode */
 static int nslcd_debugging = 0;
 
+/* flag to indicate we shouldn't daemonize */
+static int nslcd_nofork = 0;
+
 /* flag to indicate user requested the --check option */
 static int nslcd_checkonly = 0;
 
@@ -126,6 +129,7 @@ static void display_usage(FILE *fp, const char *program_name)
   fprintf(fp, "Name Service LDAP connection daemon.\n");
   fprintf(fp, "  -c, --check        check if the daemon already is running\n");
   fprintf(fp, "  -d, --debug        don't fork and print debugging to stderr\n");
+  fprintf(fp, "  -n, --nofork       don't fork\n");
   fprintf(fp, "      --help         display this help and exit\n");
   fprintf(fp, "      --version      output version information and exit\n");
   fprintf(fp, "\n" "Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
@@ -136,10 +140,11 @@ static struct option const nslcd_options[] = {
   {"check",   no_argument, NULL, 'c'},
   {"debug",   no_argument, NULL, 'd'},
   {"help",    no_argument, NULL, 'h'},
+  {"nofork",  no_argument, NULL, 'n'},
   {"version", no_argument, NULL, 'V'},
   {NULL,      0,           NULL, 0}
 };
-#define NSLCD_OPTIONSTRING "cdhV"
+#define NSLCD_OPTIONSTRING "cndhV"
 
 /* parse command line options and save settings in struct  */
 static void parse_cmdline(int argc, char *argv[])
@@ -155,6 +160,9 @@ static void parse_cmdline(int argc, char *argv[])
       case 'd': /* -d, --debug        don't fork and print debugging to stderr */
         nslcd_debugging++;
         log_setdefaultloglevel(LOG_DEBUG);
+        break;
+      case 'n': /* -n, --nofork       don't fork */
+        nslcd_nofork++;
         break;
       case 'h': /*     --help         display this help and exit */
         display_usage(stdout, argv[0]);
@@ -697,7 +705,7 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
   /* daemonize */
-  if ((!nslcd_debugging) && (daemon(0, 0) < 0))
+  if ((!nslcd_debugging) && (!nslcd_nofork) && (daemon(0, 0) < 0))
   {
     log_log(LOG_ERR, "unable to daemonize: %s", strerror(errno));
     exit(EXIT_FAILURE);
