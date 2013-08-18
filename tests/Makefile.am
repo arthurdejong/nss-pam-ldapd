@@ -21,7 +21,7 @@
 TESTS = test_dict test_set test_tio test_expr test_getpeercred test_cfg \
         test_myldap.sh test_common test_nsscmds.sh test_pamcmds.sh
 if HAVE_PYTHON
-TESTS += test_pycompile.sh test_pynslcd_cache.py
+TESTS += test_pycompile.sh test_pylint.sh test_pynslcd_cache.py
 endif
 
 AM_TESTS_ENVIRONMENT = PYTHON='@PYTHON@'; export PYTHON;
@@ -31,8 +31,8 @@ check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
                  lookup_netgroup lookup_shadow
 
 EXTRA_DIST = nslcd-test.conf test_myldap.sh test_nsscmds.sh test_pamcmds.sh \
-             test_pycompile.sh in_testenv.sh test_pamcmds.expect \
-             usernames.txt test_pynslcd_cache.py
+             test_pycompile.sh test_pylint.sh pylint.rc in_testenv.sh \
+             test_pamcmds.expect usernames.txt test_pynslcd_cache.py
 
 CLEANFILES = $(EXTRA_PROGRAMS)
 
