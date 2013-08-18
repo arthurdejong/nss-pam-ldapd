@@ -131,7 +131,7 @@ class PAMRequest(common.Request):
                 logging.warning('%s: is missing a %s attribute', entry[0], passwd.attmap['uid'])
             value = values[0]
         # check the username
-        if value and not common.isvalidname(value):
+        if value and not common.is_valid_name(value):
             raise ValueError('%s: has invalid %s attribute', entry[0], passwd.attmap['uid'])
         # check if the username is different and update it if needed
         if value != parameters['username']:

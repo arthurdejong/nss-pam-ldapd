@@ -84,7 +84,7 @@ class PasswdRequest(common.Request):
         home = attributes['homeDirectory'][0]
         shell = attributes['loginShell'][0]
         for name in names:
-            if not common.isvalidname(name):
+            if not common.is_valid_name(name):
                 logging.warning('%s: %s: denied by validnames option', dn, attmap['uid'])
             else:
                 for uid in uids:

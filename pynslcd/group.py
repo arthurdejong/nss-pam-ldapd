@@ -123,7 +123,7 @@ class GroupRequest(common.Request):
     def get_members(self, attributes, members, subgroups, seen):
         # add the memberUid values
         for member in clean(attributes['memberUid']):
-            if common.isvalidname(member):
+            if common.is_valid_name(member):
                 members.add(member)
         # translate and add the member values
         for memberdn in clean(attributes['member']):
@@ -131,7 +131,7 @@ class GroupRequest(common.Request):
                 continue
             seen.add(memberdn)
             member = passwd.dn2uid(self.conn, memberdn)
-            if member and common.isvalidname(member):
+            if member and common.is_valid_name(member):
                 members.add(member)
             elif cfg.nss_nested_groups:
                 subgroups.append(memberdn)
@@ -155,7 +155,7 @@ class GroupRequest(common.Request):
                 self.get_members(attributes2, members, subgroups, seen)
         # actually return the results
         for name in names:
-            if not common.isvalidname(name):
+            if not common.is_valid_name(name):
                 logging.warning('%s: %s: denied by validnames option', dn,
                                 attmap['cn'])
             else:

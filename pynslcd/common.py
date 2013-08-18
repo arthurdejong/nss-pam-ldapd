@@ -29,7 +29,7 @@ import cfg
 import constants
 
 
-def isvalidname(name):
+def is_valid_name(name):
     """Checks to see if the specified name seems to be a valid user or group
     name.
 
@@ -47,7 +47,7 @@ def isvalidname(name):
 
 def validate_name(name):
     """Checks to see if the specified name seems to be a valid user or group
-    name. See isvalidname()."""
+    name. See is_valid_name()."""
     if not cfg.validnames.search(name):
         raise ValueError('%r: denied by validnames option' % name)
 
