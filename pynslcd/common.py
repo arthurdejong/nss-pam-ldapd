@@ -111,9 +111,16 @@ class Request(object):
         # write the final result code
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 
+    def log(self, parameters):
+        parameters = dict(parameters)
+        for param in ('password', 'oldpassword', 'newpassword'):
+            if parameters.get(param):
+                parameters['param'] = '***'
+        logging.debug('%s(%r)', self.__class__.__name__, parameters)
+
     def __call__(self):
         parameters = self.read_parameters(self.fp) or {}
-        logging.debug('%s(%r)', self.__class__.__name__, parameters)
+        self.log(parameters)
         self.fp.write_int32(constants.NSLCD_VERSION)
         self.fp.write_int32(self.action)
         self.handle_request(parameters)
