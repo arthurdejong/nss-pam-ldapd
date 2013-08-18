@@ -503,7 +503,7 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags,
   if (cfg.debug)
     pam_syslog(pamh, LOG_DEBUG, "authentication succeeded");
   /* if password change is required, save old password in context */
-  if ((resp.res == PAM_NEW_AUTHTOK_REQD) || (ctx->saved_authz.res == PAM_NEW_AUTHTOK_REQD))
+  if ((ctx->saved_authz.res == PAM_NEW_AUTHTOK_REQD) && (ctx->oldpassword == NULL))
     ctx->oldpassword = strdup(passwd);
   /* update caller's idea of the user name */
   if ((resp.msg[0] != '\0') && (strcmp(resp.msg, username) != 0))
