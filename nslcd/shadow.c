@@ -216,7 +216,8 @@ void get_shadow_properties(MYLDAP_ENTRY *entry, long *lastchangedate,
   }
 }
 
-static int write_shadow(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser)
+static int write_shadow(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
+                        uid_t calleruid)
 {
   int32_t tmpint32;
   const char **usernames;
@@ -241,7 +242,7 @@ static int write_shadow(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser)
   /* get password */
   passwd = get_userpassword(entry, attmap_shadow_userPassword,
                             passbuffer, sizeof(passbuffer));
-  if (passwd == NULL)
+  if ((passwd == NULL) || (calleruid != 0))
     passwd = default_shadow_userPassword;
   /* get expiry properties */
   get_shadow_properties(entry, &lastchangedate, &mindays, &maxdays, &warndays,
@@ -299,20 +300,20 @@ MYLDAP_ENTRY *shadow_uid2entry(MYLDAP_SESSION *session, const char *username,
   return NULL;
 }
 
-NSLCD_HANDLE(
+NSLCD_HANDLE_UID(
   shadow, byname, NSLCD_ACTION_SHADOW_BYNAME,
   char name[256];
   char filter[4096];
   READ_STRING(fp, name);
   log_setrequest("shadow=\"%s\"", name);,
   mkfilter_shadow_byname(name, filter, sizeof(filter)),
-  write_shadow(fp, entry, name)
+  write_shadow(fp, entry, name, calleruid)
 )
 
-NSLCD_HANDLE(
+NSLCD_HANDLE_UID(
   shadow, all, NSLCD_ACTION_SHADOW_ALL,
   const char *filter;
   log_setrequest("shadow(all)");,
   (filter = shadow_filter, 0),
-  write_shadow(fp, entry, NULL)
+  write_shadow(fp, entry, NULL, calleruid)
 )
