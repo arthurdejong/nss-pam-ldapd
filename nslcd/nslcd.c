@@ -87,8 +87,8 @@ static int nslcd_nofork = 0;
 /* flag to indicate user requested the --check option */
 static int nslcd_checkonly = 0;
 
-/* the exit flag to indicate that a signal was received */
-static volatile int nslcd_exitsignal = 0;
+/* the flag to indicate that a signal was received */
+static volatile int nslcd_receivedsignal = 0;
 
 /* the server socket used for communication */
 static int nslcd_serversocket = -1;
@@ -186,11 +186,11 @@ static void parse_cmdline(int argc, char *argv[])
   }
 }
 
-/* signal handler for closing down */
-static void sigexit_handler(int signum)
+/* signal handler for storing information on received signals */
+static void sig_handler(int signum)
 {
   /* just save the signal to indicate that we're stopping */
-  nslcd_exitsignal = signum;
+  nslcd_receivedsignal = signum;
 }
 
 /* do some cleaning up before terminating */
@@ -803,22 +803,29 @@ int main(int argc, char *argv[])
   }
   pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
   /* install signalhandlers for some signals */
-  install_sighandler(SIGHUP, sigexit_handler);
-  install_sighandler(SIGINT, sigexit_handler);
-  install_sighandler(SIGQUIT, sigexit_handler);
-  install_sighandler(SIGABRT, sigexit_handler);
+  install_sighandler(SIGHUP, sig_handler);
+  install_sighandler(SIGINT, sig_handler);
+  install_sighandler(SIGQUIT, sig_handler);
+  install_sighandler(SIGABRT, sig_handler);
   install_sighandler(SIGPIPE, SIG_IGN);
-  install_sighandler(SIGTERM, sigexit_handler);
-  install_sighandler(SIGUSR1, sigexit_handler);
-  install_sighandler(SIGUSR2, sigexit_handler);
+  install_sighandler(SIGTERM, sig_handler);
+  install_sighandler(SIGUSR1, sig_handler);
+  install_sighandler(SIGUSR2, sig_handler);
   /* wait until we received a signal */
-  while (nslcd_exitsignal == 0)
+  while ((nslcd_receivedsignal == 0) || (nslcd_receivedsignal == SIGUSR1))
   {
     sleep(INT_MAX); /* sleep as long as we can or until we receive a signal */
+    if (nslcd_receivedsignal == SIGUSR1)
+    {
+      log_log(LOG_INFO, "caught signal %s (%d), refresh retries",
+              signame(nslcd_receivedsignal), nslcd_receivedsignal);
+      myldap_immediate_reconnect();
+      nslcd_receivedsignal = 0;
+    }
   }
   /* print something about received signal */
   log_log(LOG_INFO, "caught signal %s (%d), shutting down",
-          signame(nslcd_exitsignal), nslcd_exitsignal);
+          signame(nslcd_receivedsignal), nslcd_receivedsignal);
   /* cancel all running threads */
   for (i = 0; i < nslcd_cfg->threads; i++)
     if (pthread_cancel(nslcd_threads[i]))

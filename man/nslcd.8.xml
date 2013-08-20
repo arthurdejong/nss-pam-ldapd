@@ -137,6 +137,26 @@
   </variablelist>
  </refsect1>
 
+ <refsect1 id="signals">
+  <title>Signals</title>
+  <variablelist remap="IP">
+   <varlistentry id="sigterm">
+    <term><option>SIGTERM</option>/<option>SIGINT</option></term>
+    <listitem>
+     <para>Cancel any running queries and exit.</para>
+    </listitem>
+   </varlistentry>
+   <varlistentry id="sigusr1"> <!-- since 0.9.1 -->
+    <term><option>SIGUSR1</option></term>
+    <listitem>
+     <para>Cause <command>nslcd</command> to retry any failing connections
+     to the LDAP server, regardless of the <option>reconnect_sleeptime</option>
+     and <option>reconnect_retrytime</option> options.</para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
  <refsect1 id="files">
   <title>Files</title>
   <para>
