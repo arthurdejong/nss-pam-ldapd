@@ -139,8 +139,13 @@ class GroupRequest(common.Request):
     def convert(self, dn, attributes, parameters):
         # get group names and check against requested group name
         names = attributes['cn']
-        # get group group password
-        passwd = attributes['userPassword'][0]
+        # get group password
+        try:
+            passwd = attributes['userPassword'][0]
+        except IndexError:
+            passwd = None
+        if not passwd or self.calleruid != 0:
+            passwd = '*'
         # get group id(s)
         gids = [int(x) for x in attributes['gidNumber']]
         # build member list

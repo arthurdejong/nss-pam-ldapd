@@ -76,7 +76,10 @@ class ShadowRequest(common.Request):
 
     def convert(self, dn, attributes, parameters):
         names = attributes['uid']
-        passwd = attributes['userPassword'][0]
+        try:
+            passwd = attributes['userPassword'][0]
+        except IndexError:
+            passwd = None
         if not passwd or self.calleruid != 0:
             passwd = '*'
         # function for making an int

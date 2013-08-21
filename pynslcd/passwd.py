@@ -77,7 +77,12 @@ class PasswdRequest(common.Request):
         if 'shadowAccount' in attributes['objectClass']:
             passwd = 'x'
         else:
-            passwd = attributes['userPassword'][0]
+            try:
+                passwd = attributes['userPassword'][0]
+            except IndexError:
+                passwd = None
+            if not passwd or self.calleruid != 0:
+                passwd = '*'
         uids = [int(x) for x in attributes['uidNumber']]
         gid = int(attributes['gidNumber'][0])
         gecos = attributes['gecos'][0]
