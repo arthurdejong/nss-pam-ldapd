@@ -90,6 +90,10 @@ void myldap_session_check(MYLDAP_SESSION *session);
    After a call to this function the referenced handle is invalid. */
 void myldap_session_close(MYLDAP_SESSION *session);
 
+/* Mark all failing LDAP servers as needing quick retries. This ensures that the
+   reconnect_sleeptime and reconnect_retrytime sleeping period is cut short. */
+void myldap_immediate_reconnect(void);
+
 /* Do an LDAP search and return a reference to the results (returns NULL on
    error). This function uses paging, and does reconnects to the configured
    URLs transparently. The function returns an LDAP status code in the

@@ -1257,6 +1257,28 @@ static int do_retry_search(MYLDAP_SEARCH *search)
   }
 }
 
+/* force quick retries of all failing LDAP servers */
+void myldap_immediate_reconnect(void)
+{
+  int i;
+  time_t t;
+  t = time(NULL) - nslcd_cfg->reconnect_retrytime;
+  pthread_mutex_lock(&uris_mutex);
+  for (i = 0; i < (NSS_LDAP_CONFIG_MAX_URIS + 1); i++)
+  {
+    /* only adjust failing connections that are in a hard fail state */
+    if ((nslcd_cfg->uris[i].lastfail > t) &&
+        (nslcd_cfg->uris[i].lastfail > (nslcd_cfg->uris[i].firstfail + nslcd_cfg->reconnect_retrytime)))
+    {
+      /* move lastfail back to ensure quick retry */
+      log_log(LOG_DEBUG, "moving lastfail of %s %d second(s) back to force retry",
+              nslcd_cfg->uris[i].uri, (int)(nslcd_cfg->uris[i].lastfail - t));
+      nslcd_cfg->uris[i].lastfail = t;
+    }
+  }
+  pthread_mutex_unlock(&uris_mutex);
+}
+
 MYLDAP_SEARCH *myldap_search(MYLDAP_SESSION *session,
                              const char *base, int scope, const char *filter,
                              const char **attrs, int *rcp)
