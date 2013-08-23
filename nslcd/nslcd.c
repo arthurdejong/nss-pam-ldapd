@@ -835,8 +835,8 @@ int main(int argc,char *argv[])
   install_sighandler(SIGABRT,sigexit_handler);
   install_sighandler(SIGPIPE,SIG_IGN);
   install_sighandler(SIGTERM,sigexit_handler);
-  install_sighandler(SIGUSR1,sigexit_handler);
-  install_sighandler(SIGUSR2,sigexit_handler);
+  install_sighandler(SIGUSR1,SIG_IGN);
+  install_sighandler(SIGUSR2,SIG_IGN);
   /* wait until we received a signal */
   while (nslcd_exitsignal==0)
   {
