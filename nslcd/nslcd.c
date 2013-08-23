@@ -810,7 +810,7 @@ int main(int argc, char *argv[])
   install_sighandler(SIGPIPE, SIG_IGN);
   install_sighandler(SIGTERM, sig_handler);
   install_sighandler(SIGUSR1, sig_handler);
-  install_sighandler(SIGUSR2, sig_handler);
+  install_sighandler(SIGUSR2, SIG_IGN);
   /* wait until we received a signal */
   while ((nslcd_receivedsignal == 0) || (nslcd_receivedsignal == SIGUSR1))
   {
