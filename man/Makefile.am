@@ -45,8 +45,7 @@ EXTRA_DIST = $(ALL_MANS) $(ALL_MANS:=.xml)
 
 if GENMAN
 
-MAINTAINERCLEANFILES = $(ALL_MANS)
-CLEANFILES = $(ALL_MANS:=.html)
+MAINTAINERCLEANFILES = $(ALL_MANS) $(ALL_MANS:=.html)
 
 SUFFIXES = .xml
 .xml:
@@ -60,6 +59,3 @@ SUFFIXES = .xml
 	xmlto xhtml-nochunks $<
 
 endif
-
-# when running the test convert all manuals to HTML for extra testing
-check_DATA = $(ALL_MANS:=.html)
