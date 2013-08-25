@@ -27,8 +27,8 @@ import struct
 import sys
 
 from cmdline import VersionAction
-import constants
 from nslcd import NslcdClient
+import constants
 
 
 epilog = '''

@@ -18,9 +18,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import struct
 import os
 import socket
+import struct
 
 
 # definition for reading and writing INT32 values

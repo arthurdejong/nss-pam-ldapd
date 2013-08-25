@@ -19,7 +19,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-import daemon
 import logging
 import logging.handlers
 import os
@@ -28,14 +27,15 @@ import sys
 import syslog
 import threading
 
+import daemon
 import ldap
 
 from tio import TIOStream
 import cfg
 import common
 import constants
-import mypidfile
 import invalidator
+import mypidfile
 import search
 
 

@@ -37,9 +37,10 @@ True
 '"${gecos:-$cn}"'
 """
 
+import re
+
 from ldap.filter import escape_filter_chars
 import ldap.dn
-import re
 
 from expr import Expression
 

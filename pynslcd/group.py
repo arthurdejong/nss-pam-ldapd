@@ -24,11 +24,11 @@ import logging
 from ldap.filter import escape_filter_chars
 import ldap
 
-import passwd
 import cache
 import cfg
 import common
 import constants
+import passwd
 import search
 
 
