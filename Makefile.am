@@ -69,8 +69,11 @@ dist-hook:
 
 # target for generating the ChangeLog file
 changelog:
-	git log --pretty --numstat --summary '47f7fd10f87bfcb5240cf5b794ce9380bf671044...' | \
-	  grep -v 'git-svn-id:' | git2cl > ChangeLog
+	git log --date=short --name-only \
+	    --format="%x0c%ad  %aN <%aE>%n%n%x09* [%h]%x00%s%n%x00%+b%x00" \
+	    47f7fd10f87bfcb5240cf5b794ce9380bf671044... | \
+	  awk 'BEGIN { RS="\f"; FS="\0" } { if ($$1) { gsub(/\n*$$/, "", $$4); gsub(/^\n*/, "", $$4); gsub(/\n/, ", ", $$4); gsub(/\n/, "\n\t  ", $$3); print $$1 " " $$4 ": "; print "\t  " $$2 $$3 }}' | \
+	  fmt --width=78 -c > ChangeLog
 
 flawfinder.html:
 	flawfinder --quiet --html --context --followdotdir . > $@
