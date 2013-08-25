@@ -22,7 +22,10 @@ TESTS = test_dict test_set test_tio test_expr test_getpeercred test_cfg \
         test_myldap.sh test_common test_nsscmds.sh test_pamcmds.sh \
         test_manpages.sh
 if HAVE_PYTHON
-TESTS += test_pycompile.sh test_pylint.sh test_pynslcd_cache.py
+  TESTS += test_pycompile.sh test_pylint.sh
+endif
+if ENABLE_PYNSLCD
+  TESTS += test_pynslcd_cache.py
 endif
 
 AM_TESTS_ENVIRONMENT = PYTHON='@PYTHON@'; export PYTHON;
