@@ -60,8 +60,6 @@ AC_PROG_RANLIB
 AM_PROG_CC_C_O
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_LN_S
-AM_PATH_PYTHON(2.5,, [:])
-AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
 AM_PROG_AR
 
 # checks for tool to convert docbook to man
@@ -71,6 +69,14 @@ then
   AC_MSG_WARN([docbook2x-man not found: not generating man pages])
 fi
 AM_CONDITIONAL([GENMAN], [test "x${DOCBOOK2X_MAN}" != x])
+
+# check for Python and modules
+AM_PATH_PYTHON(2.5,, [:])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
+if test "x$PYTHON" != "x:"
+then
+  AX_PYTHON_MODULE(argparse)
+fi
 
 # check for debugging options
 AC_ARG_ENABLE(debug,
@@ -137,11 +143,11 @@ AC_ARG_ENABLE(utils,
               [enable_utils="auto"])
 if test "x$enable_utils" = "xauto"
 then
-  if test "x$PYTHON" = "x:"
+  if test "x$PYTHON" != "x:" && test "$HAVE_PYMOD_ARGPARSE" = "yes"
   then
-    enable_utils="no"
-  else
     enable_utils="yes"
+  else
+    enable_utils="no"
   fi
 fi
 AC_MSG_RESULT($enable_utils)
@@ -577,6 +583,18 @@ then
   LIBS="$pam_save_LIBS"
 fi
 
+# utils-specific tests
+if test "x$enable_utils" = "xyes"
+then
+  # check Python interpreter
+  AM_PATH_PYTHON(2.5,, AC_MSG_ERROR([Python is required]))
+  AX_PYTHON_MODULE(argparse)
+  if test "x$HAVE_PYMOD_ARGPARSE" != "xyes"
+  then
+    AC_MSG_ERROR(Required Python modules missing)
+  fi
+fi
+
 # nslcd daemon-specific tests
 if test "x$enable_nslcd" = "xyes"
 then
@@ -799,11 +817,24 @@ then
   AC_SUBST(nslcd_LIBS)
 fi
 
-# Python-specific tests
-if test "x$enable_pynslcd" = "xyes" || test "x$enable_utils" = "xyes"
+# pynslcd-specific tests
+if test "x$enable_pynslcd" = "xyes"
 then
   # check Python interpreter
   AM_PATH_PYTHON(2.5,, AC_MSG_ERROR([Python is required]))
+  AX_PYTHON_MODULE(daemon)
+  AX_PYTHON_MODULE(fcntl)
+  AX_PYTHON_MODULE(fnmatch)
+  AX_PYTHON_MODULE(ldap)
+  AX_PYTHON_MODULE(sqlite3)
+  if test "x$HAVE_PYMOD_DAEMON" != "xyes" || \
+     test "x$HAVE_PYMOD_FCNTL" != "xyes" || \
+     test "x$HAVE_PYMOD_FNMATCH" != "xyes" || \
+     test "x$HAVE_PYMOD_LDAP" != "xyes" || \
+     test "x$HAVE_PYMOD_SQLITE3" != "xyes"
+  then
+    AC_MSG_ERROR(Required Python modules missing)
+  fi
 fi
 
 AM_CONDITIONAL([NSS_FLAVOUR_GLIBC], [test "x${with_nss_flavour}" = xglibc])
