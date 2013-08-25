@@ -1,3 +1,33 @@
+changes from 0.9.0 to 0.9.1
+---------------------------
+
+* rename the nscd_invalidate option to reconnect_invalidate and allow flushing
+  the nfsidmap cache with the new option
+* implement an -n switch to not daemonise (by Caleb Callaway)
+* nslcd will now return partial shadow information to non-root users to avoid
+  authorisation problems with setgid shadow authentication helpers with some
+  PAM stacks
+* nslcd will now retry failing LDAP connections after receiving SIGUSR1
+  (SIGUSR1 could be sent after re-establishing a network connection)
+* fix the way manual pages are installed in some situations
+* the code for the nslcd utilities (getent.ldap and chsh.ldap) is now
+  installed in {prefix}/share/nslcd-utils
+* improve error and help output of the getent.ldap command
+* documentation updates
+* a number of tests were added and existing tests were extended
+* fix for a potential, small memory leak in PAM module regarding temporary
+  saving of old password
+* a large number of bug fixes and improvements in pynslcd
+* hide passwords from the pynslcd debug output
+* support start_tls, pam_password_prohibit_message, nss_initgroups_ignoreusers
+  and nss_min_uid in pynslcd
+* fix rootpwmodpw handling in pynslcd
+* complete a basic PAM implementation in pynslcd (some things such as shadow
+  attribute checking remain to be implemented)
+* clean up the caching functionality in pynslcd (functionality is still
+  disabled)
+
+
 changes from 0.8.13 to 0.9.0
 ----------------------------
 
