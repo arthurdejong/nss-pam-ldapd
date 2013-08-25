@@ -178,10 +178,13 @@ def getpeercred(fd):
     """Return uid, gid and pid of calling application."""
     import struct
     import socket
-    SO_PEERCRED = getattr(socket, 'SO_PEERCRED', 17)
-    creds = fd.getsockopt(socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i'))
-    pid, uid, gid = struct.unpack('3i', creds)
-    return uid, gid, pid
+    try:
+        SO_PEERCRED = getattr(socket, 'SO_PEERCRED', 17)
+        creds = fd.getsockopt(socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i'))
+        pid, uid, gid = struct.unpack('3i', creds)
+        return uid, gid, pid
+    except socket.error:
+        return None, None, None
 
 
 handlers = {}
@@ -210,11 +213,8 @@ def acceptconnection(session):
         # indicate new connection to logging module (generates unique id)
         log_newsession()
         # log connection
-        try:
-            uid, gid, pid = getpeercred(conn)
-            logging.debug('connection from pid=%r uid=%r gid=%r', pid, uid, gid)
-        except:
-            raise  # FIXME: handle exception gracefully
+        uid, gid, pid = getpeercred(conn)
+        logging.debug('connection from pid=%r uid=%r gid=%r', pid, uid, gid)
         # create a stream object
         fp = TIOStream(conn)
         # read request
