@@ -261,7 +261,7 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
   gid_t gids[MAXGIDS_PER_ENTRY];
   int numgids;
   char *tmp;
-  char passbuffer[64];
+  char passbuffer[256];
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry2;
   int rc;
