@@ -829,12 +829,12 @@
       </para>
       <para>
        If <replaceable>DB</replaceable> is one of the nsswitch maps,
-       <command>nscd</command> is contacted to flush it's cache for the
+       <command>nscd</command> is contacted to flush its cache for the
        specified database.
       </para>
       <para> <!-- since 0.9.1 -->
        If <replaceable>DB</replaceable> is <literal>nfsidmap</literal>,
-       <command>nfsidmap</command> to contacted to clear it's cache.
+       <command>nfsidmap</command> is contacted to clear its cache.
       </para>
       <para>
        Using this option ensures that external caches are cleared of

@@ -160,7 +160,7 @@ changes from 0.8.6 to 0.8.7
   ports
 * make whether or not to do case-sensitive filtering configurable (patch by
   Matthew L. Dailey)
-* document the fact that each thread opens it's own connection (patch by
+* document the fact that each thread opens its own connection (patch by
   Chris Hiestand)
 * some small portability improvements
 * try to prevent some of the Broken pipe messages in nslcd

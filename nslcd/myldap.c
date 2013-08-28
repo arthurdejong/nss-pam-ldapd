@@ -799,7 +799,7 @@ static int do_set_options(MYLDAP_SESSION *session)
   int rc;
   struct timeval tv;
 #ifdef LDAP_OPT_CONNECT_CB
-  /* make this static because OpenLDAP doesn't make it's own copy */
+  /* make this static because OpenLDAP doesn't make its own copy */
   static struct ldap_conncb cb;
 #endif /* LDAP_OPT_CONNECT_CB */
 #ifdef LDAP_OPT_X_TLS
