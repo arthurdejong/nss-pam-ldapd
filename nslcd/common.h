@@ -44,7 +44,10 @@
    stream */
 
 #define ERROR_OUT_WRITEERROR(fp)                                            \
-  log_log(LOG_WARNING, "error writing to client: %s", strerror(errno));     \
+  if (errno == EPIPE)                                                       \
+    log_log(LOG_DEBUG, "error writing to client: %s", strerror(errno));     \
+  else                                                                      \
+    log_log(LOG_WARNING, "error writing to client: %s", strerror(errno));   \
   return -1;
 
 #define ERROR_OUT_READERROR(fp)                                             \
