@@ -59,7 +59,7 @@ int tio_read(TFILE *fp, void *buf, size_t count);
 int tio_skip(TFILE *fp, size_t count);
 
 /* Read all available data from the stream and empty the read buffer. */
-int tio_skipall(TFILE *fp, int skiptimeout);
+int tio_skipall(TFILE *fp, int timeout);
 
 /* Write the specified buffer to the stream. */
 int tio_write(TFILE *fp, const void *buf, size_t count);

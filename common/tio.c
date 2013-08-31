@@ -282,9 +282,9 @@ int tio_skip(TFILE *fp, size_t count)
 }
 
 /* Read all available data from the stream and empty the read buffer. */
-int tio_skipall(TFILE *fp, int skiptimeout)
+int tio_skipall(TFILE *fp, int timeout)
 {
-  struct pollfd fds[1];
+  struct timeval deadline = {0, 0};
   int rv;
   size_t len;
   /* clear the read buffer */
@@ -299,17 +299,9 @@ int tio_skipall(TFILE *fp, int skiptimeout)
 #endif /* SSIZE_MAX */
   while (1)
   {
-    /* see if any data is available */
-    fds[0].fd = fp->fd;
-    fds[0].events = POLLIN;
-    rv = poll(fds, 1, skiptimeout);
-    /* check the poll() result */
-    if (rv == 0)
-      return 0; /* no file descriptor ready */
-    if ((rv < 0) && ((errno == EINTR) || (errno == EAGAIN)))
-      continue; /* interrupted, try again */
-    if (rv < 0)
-      return -1; /* something went wrong */
+    /* wait until we have input */
+    if (tio_wait(fp->fd, POLLIN, timeout, &deadline))
+      return -1;
     /* read data from the stream */
     rv = read(fp->fd, fp->readbuffer.buffer, len);
     if (rv == 0)
