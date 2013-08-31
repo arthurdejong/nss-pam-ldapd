@@ -145,37 +145,27 @@ TFILE *tio_fdopen(int fd, int readtimeout, int writetimeout,
 
 /* wait for any activity on the specified file descriptor using
    the specified deadline */
-static int tio_wait(TFILE *fp, int readfd, struct timeval *deadline)
+static int tio_wait(int fd, short events, int timeout,
+                    struct timeval *deadline)
 {
-  int timeout, max_timeout;
+  int t;
   struct pollfd fds[1];
   int rv;
   while (1)
   {
-    /* figure out which values to use */
-    if (readfd)
-    {
-      fds[0].fd = fp->fd;
-      fds[0].events = POLLIN;
-      max_timeout = fp->readtimeout;
-    }
-    else
-    {
-      fds[0].fd = fp->fd;
-      fds[0].events = POLLOUT;
-      max_timeout = fp->writetimeout;
-    }
+    fds[0].fd = fd;
+    fds[0].events = events;
     /* figure out the time we need to wait */
-    if ((timeout = tio_time_remaining(deadline, max_timeout)) < 0)
+    if ((t = tio_time_remaining(deadline, timeout)) < 0)
     {
       errno = ETIME;
       return -1;
     }
     /* sanitiy check for moving clock */
-    if (timeout > max_timeout)
-      timeout = max_timeout;
+    if (t > timeout)
+      t = timeout;
     /* wait for activity */
-    rv = poll(fds, 1, timeout);
+    rv = poll(fds, 1, t);
     if (rv > 0)
       return 0; /* we have activity */
     else if (rv == 0)
@@ -260,7 +250,7 @@ int tio_read(TFILE *fp, void *buf, size_t count)
       }
     }
     /* wait until we have input */
-    if (tio_wait(fp, 1, &deadline))
+    if (tio_wait(fp->fd, POLLIN, fp->readtimeout, &deadline))
       return -1;
     /* read the input in the buffer */
     len = fp->readbuffer.size - fp->readbuffer.start;
@@ -395,7 +385,7 @@ int tio_flush(TFILE *fp)
   while (fp->writebuffer.len > 0)
   {
     /* wait until we can write */
-    if (tio_wait(fp, 0, &deadline))
+    if (tio_wait(fp->fd, POLLOUT, fp->writetimeout, &deadline))
       return -1;
     /* write one block */
     if (tio_writebuf(fp))
