@@ -322,6 +322,7 @@ AC_CHECK_FUNCS([strcasecmp strncasecmp strchr strcspn strspn strtol strtoul strt
 AC_CHECK_FUNCS([malloc realloc atexit])
 AC_FUNC_FORK
 AC_CHECK_FUNCS(__assert_fail)
+AC_SEARCH_LIBS(clock_gettime, rt)
 
 # checks for types
 AC_TYPE_MODE_T

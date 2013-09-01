@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <poll.h>
+#include <time.h>
 
 #include "tio.h"
 
@@ -75,28 +76,36 @@ struct tio_fileinfo {
 #endif /* DEBUG_TIO_STATS */
 };
 
+/* some older versions of Solaris don't provide CLOCK_MONOTONIC but do have
+   a CLOCK_HIGHRES that has the same properties we need */
+#ifndef CLOCK_MONOTONIC
+#ifdef CLOCK_HIGHRES
+#define CLOCK_MONOTONIC CLOCK_HIGHRES
+#endif /* CLOCK_HIGHRES */
+#endif /* not CLOCK_MONOTONIC */
+
 /* update the timeout to the value that is remaining before the deadline
    returns the number of milliseconds before the deadline (or a negative
    value of the deadline has expired) */
-static inline int tio_time_remaining(struct timeval *deadline, int timeout)
+static inline int tio_time_remaining(struct timespec *deadline, int timeout)
 {
-  struct timeval tv;
+  struct timespec tv;
   /* if this is the first call, set the deadline and return the full time */
-  if ((deadline->tv_sec == 0) && (deadline->tv_usec == 0))
+  if ((deadline->tv_sec == 0) && (deadline->tv_nsec == 0))
   {
-    if (gettimeofday(deadline, NULL) == 0)
+    if (clock_gettime(CLOCK_MONOTONIC, deadline) == 0)
     {
       deadline->tv_sec += timeout / 1000;
-      deadline->tv_usec += (timeout % 1000) * 1000;
+      deadline->tv_nsec += (timeout % 1000) * 1000000;
     }
     return timeout;
   }
   /* get the current time (fall back to full time on error) */
-  if (gettimeofday(&tv, NULL))
+  if (clock_gettime(CLOCK_MONOTONIC, &tv))
     return timeout;
-  /* calculate time remaining in miliseconds */
+  /* calculate time remaining in milliseconds */
   return (deadline->tv_sec - tv.tv_sec) * 1000 +
-         (deadline->tv_usec - tv.tv_usec) / 1000;
+         (deadline->tv_nsec - tv.tv_nsec) / 1000000;
 }
 
 /* open a new TFILE based on the file descriptor */
@@ -146,7 +155,7 @@ TFILE *tio_fdopen(int fd, int readtimeout, int writetimeout,
 /* wait for any activity on the specified file descriptor using
    the specified deadline */
 static int tio_wait(int fd, short events, int timeout,
-                    struct timeval *deadline)
+                    struct timespec *deadline)
 {
   int t;
   struct pollfd fds[1];
@@ -185,7 +194,7 @@ static int tio_wait(int fd, short events, int timeout,
    if no data was read in the specified time an error is returned */
 int tio_read(TFILE *fp, void *buf, size_t count)
 {
-  struct timeval deadline = {0, 0};
+  struct timespec deadline = {0, 0};
   int rv;
   uint8_t *tmp;
   size_t newsz;
@@ -284,7 +293,7 @@ int tio_skip(TFILE *fp, size_t count)
 /* Read all available data from the stream and empty the read buffer. */
 int tio_skipall(TFILE *fp, int timeout)
 {
-  struct timeval deadline = {0, 0};
+  struct timespec deadline = {0, 0};
   int rv;
   size_t len;
   /* clear the read buffer */
@@ -372,7 +381,7 @@ static int tio_writebuf(TFILE *fp)
 /* write all the data in the buffer to the stream */
 int tio_flush(TFILE *fp)
 {
-  struct timeval deadline = {0, 0};
+  struct timespec deadline = {0, 0};
   /* loop until we have written our buffer */
   while (fp->writebuffer.len > 0)
   {
