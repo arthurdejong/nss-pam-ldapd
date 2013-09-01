@@ -26,14 +26,17 @@ srcdir="${srcdir-`dirname "$0"`}"
 top_srcdir="${top_srcdir-${srcdir}/..}"
 
 # if xmlto is missing, ignore
-if ! xmlto  --version > /dev/null 2> /dev/null
+if xmlto --version > /dev/null 2> /dev/null
 then
+  :
+else
   echo "xmlto not found"
   exit 77
 fi
 
 # set up a temporary directory
 tmpdir="test_manpages.tmp"
+rm -rf "$tmpdir"
 mkdir "$tmpdir"
 
 # generate HTML for all manual pages
