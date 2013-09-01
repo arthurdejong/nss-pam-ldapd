@@ -283,8 +283,8 @@ int tio_read(TFILE *fp, void *buf, size_t count)
     }
     else if ((rv<0)&&(errno!=EINTR)&&(errno!=EAGAIN))
       return -1; /* something went wrong with the read */
-    /* skip the read part in the buffer */
-    fp->readbuffer.len=rv;
+    else if (rv>0)
+      fp->readbuffer.len=rv; /* skip the read part in the buffer */
 #ifdef DEBUG_TIO_STATS
     fp->bytesread+=rv;
 #endif /* DEBUG_TIO_STATS */
