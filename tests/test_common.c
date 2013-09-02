@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <sys/stat.h>
 
 #include "nslcd/common.h"
 #include "nslcd/cfg.h"
@@ -54,6 +55,9 @@ int main(int UNUSED(argc), char UNUSED(*argv[]))
     srcdir = ".";
   snprintf(fname, sizeof(fname), "%s/nslcd-test.conf", srcdir);
   fname[sizeof(fname) - 1] = '\0';
+  /* ensure that file is not world readable for configuration parsing to
+     succeed */
+  (void)chmod(fname, (mode_t)0660);
   /* initialize configuration */
   cfg_init(fname);
   /* partially initialize logging */
