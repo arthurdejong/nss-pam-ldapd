@@ -63,6 +63,7 @@ stamp-*
 /tests/test*.log
 /tests/test*.trs
 /tests/test_cfg
+/tests/test_clock
 /tests/test_common
 /tests/test_dict
 /tests/test_expr

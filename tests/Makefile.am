@@ -20,7 +20,7 @@
 
 TESTS = test_dict test_set test_tio test_expr test_getpeercred test_cfg \
         test_myldap.sh test_common test_nsscmds.sh test_pamcmds.sh \
-        test_manpages.sh
+        test_manpages.sh test_clock
 if HAVE_PYTHON
   TESTS += test_pycompile.sh test_pylint.sh
 endif
@@ -31,7 +31,7 @@ endif
 AM_TESTS_ENVIRONMENT = PYTHON='@PYTHON@'; export PYTHON;
 
 check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
-                 test_cfg test_myldap test_common \
+                 test_cfg test_myldap test_common test_clock \
                  lookup_netgroup lookup_shadow
 
 EXTRA_DIST = nslcd-test.conf usernames.txt in_testenv.sh test_myldap.sh \
@@ -84,6 +84,8 @@ test_myldap_LDADD = ../nslcd/cfg.o $(common_nslcd_LDADD)
 
 test_common_SOURCES = test_common.c ../nslcd/common.h
 test_common_LDADD = ../nslcd/cfg.o $(common_nslcd_LDADD)
+
+test_clock_SOURCES = test_clock.c
 
 lookup_netgroup_SOURCES = lookup_netgroup.c
 
