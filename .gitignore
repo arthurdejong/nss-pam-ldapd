@@ -72,6 +72,7 @@ stamp-*
 /tests/test_pamcmds.log
 /tests/test_set
 /tests/test_tio
+/tests/test_tio_timeout
 
 # /utils/
 /utils/constants.py
