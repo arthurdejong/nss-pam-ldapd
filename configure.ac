@@ -63,12 +63,33 @@ AC_PROG_LN_S
 AM_PROG_AR
 
 # checks for tool to convert docbook to man
+genman="no"
 AC_PATH_PROGS(DOCBOOK2X_MAN, docbook2x-man)
-if test "x${DOCBOOK2X_MAN}" = x
+AC_MSG_CHECKING([for tool to (re)generate man pages])
+if test "x${DOCBOOK2X_MAN}" != x
 then
-  AC_MSG_WARN([docbook2x-man not found: not generating man pages])
+  genman="${DOCBOOK2X_MAN}"
 fi
-AM_CONDITIONAL([GENMAN], [test "x${DOCBOOK2X_MAN}" != x])
+AC_MSG_RESULT($genman)
+AM_CONDITIONAL([GENMAN], [test "x${genman}" != "xno"])
+if test "x${genman}" = "xno"
+then
+  AC_MSG_WARN([docbook2x-man not found: not (re)generating man pages])
+fi
+
+# check whether to install manual pages
+AC_MSG_CHECKING([whether to install man pages])
+instman="no"
+if [test "x${genman}" != "xno" || ls  "${srcdir}/man/"*.? > /dev/null 2>&1]
+then
+  instman="yes"
+fi
+AC_MSG_RESULT($instman)
+AM_CONDITIONAL([INSTMAN], [test "x${instman}" != "xno"])
+if test "x${instman}" = "xno"
+then
+  AC_MSG_WARN([not installing man pages (no generator and not pre-generated)])
+fi
 
 # check for Python and modules
 AM_PATH_PYTHON(2.5,, [:])

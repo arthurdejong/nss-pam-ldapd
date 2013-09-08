@@ -24,6 +24,7 @@ PYNSLCD_MANS = pynslcd.8
 ALL_MANS = $(PAM_MANS) $(UTILS_MANS) $(NSLCD_MANS) $(PYNSLCD_MANS)
 
 # figure out which manual pages to install
+if INSTMAN
 man_MANS =
 if ENABLE_PAM
   man_MANS += $(PAM_MANS)
@@ -42,6 +43,7 @@ endif
 endif
 noinst_DATA = $(ALL_MANS)
 EXTRA_DIST = $(ALL_MANS) $(ALL_MANS:=.xml)
+endif
 
 if GENMAN
 
