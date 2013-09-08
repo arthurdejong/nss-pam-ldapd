@@ -75,7 +75,7 @@
 /* buffer sizes for I/O */
 #define READBUFFER_MINSIZE 32
 #define READBUFFER_MAXSIZE 64
-#define WRITEBUFFER_MINSIZE 64
+#define WRITEBUFFER_MINSIZE 1024
 #define WRITEBUFFER_MAXSIZE 1 * 1024 * 1024
 
 /* flag to indicate if we are in debugging mode */
