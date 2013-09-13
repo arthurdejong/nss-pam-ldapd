@@ -19,7 +19,6 @@
 # 02110-1301 USA
 
 import datetime
-import itertools
 import os
 import sys
 
