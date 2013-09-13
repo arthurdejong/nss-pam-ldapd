@@ -850,14 +850,21 @@ then
   AX_PYTHON_MODULE(fnmatch)
   AX_PYTHON_MODULE(ldap)
   AX_PYTHON_MODULE(sqlite3)
+  # required by ldap.controls.ppolicy:
+  AX_PYTHON_MODULE(pyasn1)
+  AX_PYTHON_MODULE(pyasn1_modules)
   if test "x$HAVE_PYMOD_DAEMON" != "xyes" || \
      test "x$HAVE_PYMOD_FCNTL" != "xyes" || \
      test "x$HAVE_PYMOD_FNMATCH" != "xyes" || \
      test "x$HAVE_PYMOD_LDAP" != "xyes" || \
-     test "x$HAVE_PYMOD_SQLITE3" != "xyes"
+     test "x$HAVE_PYMOD_SQLITE3" != "xyes" || \
+     test "x$HAVE_PYMOD_PYASN1" != "xyes" || \
+     test "x$HAVE_PYMOD_PYASN1_MODULES" != "xyes"
   then
     AC_MSG_WARN(Required Python modules missing)
   fi
+  # optional modules
+  AX_PYTHON_MODULE(setproctitle)
 fi
 
 AM_CONDITIONAL([NSS_FLAVOUR_GLIBC], [test "x${with_nss_flavour}" = xglibc])
