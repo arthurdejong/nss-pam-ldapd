@@ -63,10 +63,6 @@ install-nslcd_conf:
 uninstall-nslcd_conf:
 	-rm -f $(DESTDIR)$(NSLCD_CONF_PATH)
 
-# fix permissions before distributing
-dist-hook:
-	chmod -R a+rX $(distdir)
-
 # target for generating the ChangeLog file
 changelog:
 	git log --date=short --name-only \
