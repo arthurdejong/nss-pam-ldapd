@@ -614,7 +614,7 @@ then
   AX_PYTHON_MODULE(argparse)
   if test "x$HAVE_PYMOD_ARGPARSE" != "xyes"
   then
-    AC_MSG_ERROR(Required Python modules missing)
+    AC_MSG_WARN(Required Python modules missing)
   fi
 fi
 
@@ -856,7 +856,7 @@ then
      test "x$HAVE_PYMOD_LDAP" != "xyes" || \
      test "x$HAVE_PYMOD_SQLITE3" != "xyes"
   then
-    AC_MSG_ERROR(Required Python modules missing)
+    AC_MSG_WARN(Required Python modules missing)
   fi
 fi
 
