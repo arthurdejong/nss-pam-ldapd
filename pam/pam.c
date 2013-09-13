@@ -539,7 +539,7 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh, int flags,
   const char *username, *service;
   const char *ruser = NULL, *rhost = NULL, *tty = NULL;
   struct nslcd_resp authz_resp;
-  const char *msg;
+  const char *msg = NULL;
   /* set up configuration */
   cfg_init(pamh, flags, argc, argv, &cfg);
   rc = init(pamh, &cfg, &ctx, &username, &service, &ruser, &rhost, &tty);
