@@ -183,10 +183,10 @@ static int tio_wait(int fd, short events, int timeout,
       errno = ETIME;
       return -1;
     }
-    else if (errno != EINTR)
+    else if ((errno != EINTR) && (errno != EAGAIN))
       /* some error ocurred */
       return -1;
-    /* we just try again on EINTR */
+    /* we just try again on EINTR or EAGAIN */
   }
 }
 
@@ -407,7 +407,7 @@ static int tio_flush_nonblock(TFILE *fp)
   rv = poll(fds, 1, 0);
   /* check if any file descriptors were ready (timeout) or we were
      interrupted */
-  if ((rv == 0) || ((rv < 0) && (errno == EINTR)))
+  if ((rv == 0) || ((rv < 0) && ((errno == EINTR) || (errno == EAGAIN))))
     return 0;
   /* any other errors? */
   if (rv < 0)
