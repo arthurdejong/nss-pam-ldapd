@@ -2,7 +2,7 @@
    tio.c - timed io functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2007, 2008, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -298,7 +298,7 @@ int tio_skip(TFILE *fp, size_t count)
 }
 
 /* Read all available data from the stream and empty the read buffer. */
-int tio_skipall(TFILE *fp)
+int tio_skipall(TFILE *fp,int skiptimeout)
 {
   struct pollfd fds[1];
   int rv;
@@ -318,7 +318,7 @@ int tio_skipall(TFILE *fp)
     /* see if any data is available */
     fds[0].fd=fp->fd;
     fds[0].events=POLLIN;
-    rv=poll(fds,1,0);
+    rv=poll(fds,1,skiptimeout);
     /* check the poll() result */
     if (rv==0)
       return 0; /* no file descriptor ready */

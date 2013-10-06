@@ -2,7 +2,7 @@
    common.h - common functions for NSS lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,10 @@
 #ifdef NSS_FLAVOUR_SOLARIS
 #include "solnss.h"
 #endif /* NSS_FLAVOUR_SOLARIS */
+
+/* skip timeout determines the maximum time to wait when closing the
+   connection and reading whatever data that is available */
+#define SKIP_TIMEOUT 500
 
 /* These are macros for handling read and write problems, they are
    NSS specific due to the return code so are defined here. They
@@ -127,7 +131,7 @@
   /* close socket and we're done */ \
   if ((retv==NSS_STATUS_SUCCESS)||(retv==NSS_STATUS_TRYAGAIN)) \
   { \
-    (void)tio_skipall(fp); \
+    (void)tio_skipall(fp,SKIP_TIMEOUT); \
     (void)tio_close(fp); \
   } \
   return retv;
@@ -203,7 +207,7 @@
   NSS_AVAILCHECK; \
   if (fp!=NULL) \
   { \
-    (void)tio_skipall(fp); \
+    (void)tio_skipall(fp,SKIP_TIMEOUT); \
     (void)tio_close(fp); \
     fp=NULL; \
   } \
