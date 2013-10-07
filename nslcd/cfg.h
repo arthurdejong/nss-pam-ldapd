@@ -43,7 +43,7 @@
 #define NSS_LDAP_CONFIG_MAX_URIS 31
 
 /* maximum number of search bases */
-#define NSS_LDAP_CONFIG_MAX_BASES 7
+#define NSS_LDAP_CONFIG_MAX_BASES 31
 
 /* maximum number of pam_authz_search options */
 #define NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES 8
