@@ -2,7 +2,7 @@
    dict.c - dictionary functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2010, 2012 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -72,9 +72,10 @@ struct dictionary {
 /* Simple hash function that computes the hash value of a string. */
 static uint32_t stringhash(const char *str)
 {
-  uint32_t hash = 0;
-  while (*str != '\0')
-    hash = 3 * hash + *str++;
+  uint32_t hash = 5381;
+  uint32_t c;
+  while ((c = *str++) != '\0')
+    hash = 33 * hash + c;
   return hash;
 }
 
