@@ -136,8 +136,8 @@ echo "test_nsscmds.sh: testing group..."
 sortgroup() {
   while read line
   do
-    group="$(echo "$line" | sed 's/^\(.*:.*:.*:\).*/\1/')"
-    members="$(echo "$line" | sed 's/^.*:.*:.*://' | tr ',' '\n' | sort | tr '\n' ',' | sed 's/,$//')"
+    group="$(echo "$line" | sed 's/^\([^:]*:[^:]*:[^:]*\)\(:\(.*\)\)*$/\1:/')"
+    members="$(echo "$line" | sed -n 's/^\([^:]*:[^:]*:[^:]*\)\(:\(.*\)\)*$/\3/p' | tr ',' '\n' | sort | tr '\n' ',' | sed 's/,$//')"
     echo "${group}${members}"
   done
 }
@@ -175,7 +175,7 @@ users:*:100:arthur,test
 EOM
 
 check "getent group | wc -l" << EOM
-`grep -c : /etc/group | awk '{print $1 + 23}'`
+`grep -c '^[^#].*:' /etc/group | awk '{print $1 + 23}'`
 EOM
 
 check "getent group | grep ^largegroup | sortgroup" << EOM
