@@ -25,7 +25,7 @@ set -e
 srcdir="${srcdir-`dirname "$0"`}"
 
 # ensure that we are running in the test environment
-. "$srcdir/in_testenv.sh"
+"$srcdir/testenv.sh" check || exit 77
 
 # check if we have expect installed
 EXPECT="$(which expect 2> /dev/null || true)"

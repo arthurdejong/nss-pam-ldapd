@@ -34,7 +34,7 @@ check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
                  test_cfg test_myldap test_common test_clock test_tio_timeout \
                  lookup_netgroup lookup_shadow
 
-EXTRA_DIST = nslcd-test.conf usernames.txt in_testenv.sh test_myldap.sh \
+EXTRA_DIST = nslcd-test.conf usernames.txt testenv.sh test_myldap.sh \
              test_nsscmds.sh  test_pamcmds.sh test_pamcmds.expect \
              test_manpages.sh \
              test_pycompile.sh test_pylint.sh pylint.rc test_pynslcd_cache.py

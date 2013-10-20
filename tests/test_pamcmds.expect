@@ -2,7 +2,7 @@
 
 # test_pamcmds.expect - test script to check output of PAM commands
 #
-# Copyright (C) 2011 Arthur de Jong
+# Copyright (C) 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -58,13 +58,12 @@ if { [exec id -u] != "0" } {
   exit 77
 }
 # ensure that we are running in the test environment
-spawn $env(srcdir)/in_testenv.sh
-expect {
-  "in_testenv.sh: using LDAP server" { expect eof }
-  eof {
-    send_user "test_pamcmds.expect: not running in test environment\n"
-    exit 77
-  }
+spawn $env(srcdir)/testenv.sh check
+expect eof
+catch wait result
+if { [lindex $result 3] } {
+  send_user "test_pamcmds.expect: not running in test environment\n"
+  exit 77
 }
 
 # ensure that a correct password is set

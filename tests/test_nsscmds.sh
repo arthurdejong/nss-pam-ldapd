@@ -30,11 +30,14 @@ set -e
 srcdir="${srcdir-`dirname "$0"`}"
 
 # ensure that we are running in the test environment
-. "$srcdir/in_testenv.sh"
+"$srcdir/testenv.sh" check || exit 77
 
 # preload our own NSS module
-LD_PRELOAD="$srcdir/../nss/nss_ldap.so"
-export LD_PRELOAD
+if [ -e "$srcdir/../nss/nss_ldap.so" ]
+then
+  LD_PRELOAD="$srcdir/../nss/nss_ldap.so"
+  export LD_PRELOAD
+fi
 
 # the total number of errors
 FAIL=0
