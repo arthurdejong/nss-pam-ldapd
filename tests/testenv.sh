@@ -105,24 +105,36 @@ check_pam() {
   return 0
 }
 
+# perform an LDAP search
+do_ldap_search() {
+  uri="$1"
+  base="$2"
+  host=`echo "$uri/" | sed -n 's|:368||;s|ldap://\([^/]*\)/.*$|\1|p'`
+  ldapsearch -b "$base" -s base -x -H "$uri" '(objectClass=*)' 2> /dev/null || \
+    ([ -n "$host" ] && LDAPSASL_MECH=none ldapsearch -b "$base" -s base -h "$host" '(objectClass=*)' 2> /dev/null) || \
+    true
+}
+
 # check whether the LDAP server is available
 check_ldap_server() {
-  if [ -r "$nslcd_cfg" ]
-  then
-    :
-  else
-    echo "$script: ERROR: $nslcd_cfg: not found"
-    return 1
-  fi
-  uri=`sed -n 's/^uri *//p' "$nslcd_cfg" | head -n 1`
-  base="dc=test,dc=tld"
-  # try to fetch the base DN
-  ldapsearch -b "$base" -s base -x -H "$uri" > /dev/null 2>&1 || {
-    echo "$script: ERROR: LDAP server $uri not available for $base"
+  # see if we can find ldapsearch
+  [ -x "`which ldapsearch 2> /dev/null || true`" ] || {
+    echo "$script: ERROR: ldapsearch not found" >&2
     return 1
   }
-  echo "$script: using LDAP server $uri"
-  return 0
+  # get first URI from config
+  uri="${1:-`sed -n 's/^uri *//p' "$nslcd_cfg" 2>/dev/null | head -n 1`}"
+  uri="${uri:-`sed -n 's/^uri *//p' "$srcdir"/nslcd-test.conf 2>/dev/null | head -n 1`}"
+  uri="${uri:-ldap://127.0.0.1}"
+  base="${2:-dc=test,dc=tld}"
+  # try to fetch the base DN
+  if do_ldap_search "$uri" "$base" < /dev/null | grep "^dn: $base\$" > /dev/null
+  then
+    echo "$script: LDAP server $uri providing $base"
+    return 0
+  fi
+  echo "$script: ERROR: LDAP server $uri not available for $base" >&2
+  return 1
 }
 
 # check nslcd.conf file for presence and correct configuration
@@ -174,8 +186,13 @@ case "$1" in
     check_nsswitch "$*" || exit 1
     exit 0
     ;;
+  check_ldap)
+    shift
+    check_ldap_server "$@" || exit 1
+    exit 0
+    ;;
   *)
-    echo "Usage: $0 {nss_enable|check|check_nss}" >&2
+    echo "Usage: $0 {nss_enable|check|check_nss|check_ldap}" >&2
     exit 1
     ;;
 esac

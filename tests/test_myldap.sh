@@ -32,11 +32,7 @@ uri=`sed -n 's/^uri *//p' "$cfgfile" | head -n 1`
 base="dc=test,dc=tld"
 
 # try to fetch the base DN (fail with exit 77 to indicate problem)
-ldapsearch -b "$base" -s base -x -H "$uri" > /dev/null 2>&1 || {
-  echo "test_myldap.sh: LDAP server $uri not available for $base"
-  exit 77
-}
-echo "test_myldap.sh: using LDAP server $uri"
+"$srcdir/testenv.sh" check_ldap "$uri" "$base" || exit 77
 
 # just execute test_myldap
 exec ./test_myldap
