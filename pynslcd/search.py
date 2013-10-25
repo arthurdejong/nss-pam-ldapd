@@ -30,6 +30,9 @@ import cfg
 # global indicator that there was some error connection to an LDAP server
 server_error = False
 
+# global indicator of first search operation
+first_search = True
+
 
 class Connection(ldap.ldapobject.ReconnectLDAPObject):
 
@@ -65,15 +68,16 @@ class Connection(ldap.ldapobject.ReconnectLDAPObject):
 
     def search_s(self, *args, **kwargs):
         # wrapper function to keep the global server_error state
-        global server_error
+        global server_error, first_search
         try:
             res = ldap.ldapobject.ReconnectLDAPObject.search_s(self, *args, **kwargs)
         except ldap.SERVER_DOWN:
             server_error = True
             raise
-        if server_error:
+        if server_error or first_search:
             self.reconnect_after_fail()
             server_error = False
+            first_search = False
         return res
 
 

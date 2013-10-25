@@ -150,6 +150,9 @@ struct myldap_entry {
   char **rangedattributevalues[MAX_RANGED_ATTRIBUTES_PER_ENTRY];
 };
 
+/* Flag to record first search operation */
+int first_search = 1;
+
 static void myldap_err(int pri, LDAP *ld, int rc, const char *format, ...)
 {
   char message[200];
@@ -1159,6 +1162,7 @@ static int do_retry_search(MYLDAP_SEARCH *search)
   int rc = LDAP_UNAVAILABLE;
   struct myldap_uri *current_uri;
   int dotry[NSS_LDAP_CONFIG_MAX_URIS];
+  int do_invalidate = 0;
   /* clear time stamps */
   for (start_uri = 0; start_uri < NSS_LDAP_CONFIG_MAX_URIS; start_uri++)
     dotry[start_uri] = 1;
@@ -1197,8 +1201,12 @@ static int do_retry_search(MYLDAP_SEARCH *search)
           if ((current_uri->lastfail > 0) || (search->session->current_uri != start_uri))
           {
             log_log(LOG_INFO, "connected to LDAP server %s", current_uri->uri);
-            /* signal external invalidation of configured caches */
-            invalidator_do(LM_NONE);
+            do_invalidate = 1;
+          }
+          if (first_search)
+          {
+            do_invalidate = 1;
+            first_search = 0;
           }
           /* update ok time */
           current_uri->firstfail = 0;
@@ -1206,6 +1214,9 @@ static int do_retry_search(MYLDAP_SEARCH *search)
           pthread_mutex_unlock(&uris_mutex);
           /* flag the search as valid */
           search->valid = 1;
+          /* signal external invalidation of configured caches */
+          if (do_invalidate)
+            invalidator_do(LM_NONE);
           return LDAP_SUCCESS;
         }
         /* close the current connection */
