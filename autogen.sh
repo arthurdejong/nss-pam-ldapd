@@ -15,7 +15,7 @@ do
 done
 
 # generate aclocal.m4 from configure.ac
-aclocal -I m4
+aclocal
 
 # generate config.h.in from configure.ac
 autoheader --warnings=all --force

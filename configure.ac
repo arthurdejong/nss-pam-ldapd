@@ -39,6 +39,7 @@ AC_INIT([nss-pam-ldapd],
 RELEASE_MONTH="Aug 2013"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 # some initialisation
 AC_CANONICAL_TARGET
