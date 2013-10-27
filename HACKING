@@ -1,4 +1,3 @@
-
 This document tries to describe the software layout and design of
 nss-pam-ldapd. It should provide some help for contributing code to this
 package.
@@ -11,8 +10,9 @@ will be done on a best-effort basis and can be made easier if the following
 are considered:
 
 * for large changes it is a good idea to send an email first
-* send your patches in unified diff (diff -u) format
-* try to use the svn version of the software to develop the patch
+* send your patches in unified diff (diff -u) format, Git patches or Git pull
+  requests
+* try to use the Git version of the software to develop the patch
 * clearly state which problem you're trying to solve and how this is
   accomplished
 * please follow the existing coding conventions
@@ -30,28 +30,28 @@ contribute. All contributions will be acknowledged in the AUTHORS file.
 BUILD DEPENDENCIES
 ==================
 
-For building svn snapshots the following tools are needed:
+For building Git snapshots the following tools are needed:
 
-* autoconf (2.65 is used but 2.61 is minimal)
-* automake (1.11 is used)
+* autoconf (2.65 is currently used but 2.61 is minimal)
+* automake (1.14 is currently used but older versions may also work)
 * OpenLDAP libraries (2.4 is generally used)
 * PAM libraries
 * optionally a Kerberos library (MIT Kerberos is tested)
 * optionally a SASL library (only Cyrus SASL is tested)
 * docbook2x for generating the manual pages
 
-To build the svn snapshot run the autogen.sh shell script to build the
+To build the Git snapshot run the autogen.sh shell script to build the
 configure script. When developing patches please use --enable-warnings with
-configure and don't introduce too many new warnings.
+configure and avoid introducing new warnings.
 
 
 RELEASE VERSIONING
 ==================
 
 The versioning scheme of nss-pam-ldapd is a simple major.minor.micro
-numbering. The idea is to keep a stable (x.y) branch that only gets bug
-fixes and small enhancements while development goes in another branch.
-Backwards incompatible changes should be announced clearly.
+numbering. The idea is to keep a stable (x.y) branch that only gets bug fixes
+and small enhancements while development goes in another branch. Backwards
+incompatible changes should be announced clearly.
 
 
 GENERAL DESIGN
@@ -63,10 +63,11 @@ requests (e.g. "get user with name test", "get group with gid 101" or "get all
 shadow entries").
 
 Another part is the PAM module which handles authentication requests from the
-system.
+system. The PAM operations are also translated into atomic, stateless
+requests.
 
-Both these parts translate the queries in a higher-level simple protocol used
-to communicate with the nslcd daemon. This daemon translates the requests into
+Both these parts translate the queries in a simple protocol used to
+communicate with the nslcd daemon. This daemon translates the requests into
 LDAP searches. As a result, the NSS and PAM modules don't need to known
 anything about LDAP (in fact replacing it with another lookup method should be
 very simple) and don't have to link with the LDAP libraries.
@@ -77,6 +78,11 @@ very simple) and don't have to link with the LDAP libraries.
                  /
   PAM stack -> pam_ldap.so
 
+An alternative implementation of nslcd in Python is provided as pynslcd. This
+implementation is less mature but it easier to add advanced features there. A
+collection of utilities is also provided that communicate with nslcd that can
+provide additional functions.
+
 design goals
 ------------
 * make it as simple as possible
@@ -84,7 +90,7 @@ design goals
 * simpler, clearer and completer documentation
 * split source code into manageable parts
 * get rid of unneeded code and complexity
-* have a stable, easily maintainable piece of quality software
+* have a stable, easily maintainable piece of high quality software
 
 
 NSS MODULE
@@ -115,9 +121,9 @@ Currently a number of macros are used to build most of the function bodies for
 these functions. Part of this is defined in the common/nslcd-prot.h file and
 the NSS-specific stuff is in nss/common.h.
 
-For memory management, the general mechanism that is expected to be used is
-to return NSS_STATUS_TRYAGAIN and set errno to ERANGE. This causes glibc to
-retry the request with a larger buffer.
+For memory management, the general mechanism that is expected to be used is to
+return NSS_STATUS_TRYAGAIN and set errno to ERANGE. This causes glibc to retry
+the request with a larger buffer.
 
 Some useful links:
 http://www.gnu.org/software/libc/manual/html_node/index.html
@@ -137,14 +143,17 @@ back-end can presumably also be created.
 Earlier versions of Solaris expected the NSS functions to return the binary
 representation of the lookups (e.g. struct passwd) but later versions expect a
 string representation of the data to be returned (just like a single line out
-of /etc/passwd was read) but only if running from nscd. If args->buf.result
-is NULL a string representation is requested (except for ether by address
-lookup which is special).
+of /etc/passwd was read) but only if running from nscd. If args->buf.result is
+NULL a string representation is requested (except for ether by address lookup
+which is special).
 
 Source and documentation pointers for Solaris NSS:
-http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/lib/nsswitch/
-http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/head/nss_common.h
-http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/head/nss_dbdefs.h
+https://java.net/projects/solaris/sources/on-src/show/usr/src/lib/nsswitch
+https://java.net/projects/solaris/sources/on-src/content/usr/src/head/nss_common.h
+https://java.net/projects/solaris/sources/on-src/content/usr/src/head/nss_dbdefs.h
+https://hg.openindiana.org/upstream/illumos/illumos-gate/file/tip/usr/src/lib/nsswitch
+https://hg.openindiana.org/upstream/illumos/illumos-gate/file/tip/usr/src/head/nss_common.h
+https://hg.openindiana.org/upstream/illumos/illumos-gate/file/tip/usr/src/head/nss_dbdefs.h
 
 FreeBSD C Libarary notes
 ------------------------
@@ -155,15 +164,15 @@ implement NSS support on FreeBSD.
 
 Pointers for more documentation on this is welcome. Some information is
 available here:
-http://nixdoc.net/man-pages/FreeBSD/man3/nsdispatch.3.html
-ftp://ftp8.tw.freebsd.org/pub/branches/-current/src/include/nss.h
+http://www.freebsd.org/cgi/man.cgi?query=nsdispatch
+https://github.com/freebsd/freebsd/blob/master/include/nss.h
 
 
 PAM MODULE
 ==========
 
 The PAM module is implemented in the pam directory. Implementation is fairly
-straight-forward. The PAM module stores some state between PAM calls in a
+straight-forward. The PAM module stores some state between calls to nslcd in a
 struct. The calls to nslcd are however stateless. The PAM module may supply
 some information that help lookups (most notably DNs of user entries).
 
@@ -194,14 +203,14 @@ If the protocol is changed in an incompatible way the protocol version should
 be incremented in nslcd.h. There is currently no versioning scheme available
 for this.
 
-A special module (common/tio.c) was made so we can define simpler semantics
-for time-out values and buffer sizes. All components use this module which
-means that it includes functionality that is needed for both (e.g. large write
-buffers for the server part and large resettable read buffers for the NSS
-part). Maybe building two modules from the same source with different features
-in them is an option (e.g. the NSS part needs the read buffers and handling of
-SIGPIPE and the nslcd part needs the write buffers and possibly flushing in
-the background).
+A communications module (common/tio.c) was made so we can define simpler
+semantics for time-out values and buffer sizes. All components use this module
+which means that it includes functionality that is needed for both (e.g. large
+write buffers for the server part and large resettable read buffers for the
+NSS part). Maybe building two modules from the same source with different
+features in them is an option (e.g. the NSS part needs the read buffers and
+handling of SIGPIPE and the nslcd part needs the write buffers and possibly
+flushing in the background).
 
 The common directory also contains some other generally useful modules that
 are used in some components.
@@ -217,15 +226,18 @@ nslcd_FUNCION(...)
   This functions fills in the correct parameters from the request. This
   function should write responses to the stream.
 
+Big parts of the request handling functions are generated by macros because
+the structure is very similar across the different NSS requests.
+
 
 SECURITY NOTES
 ==============
 
-This design does open up the system to more potential security issues because
-there is now a local interface to a daemon with privileges. Before (with
-nss_ldap) processes could only potentially exploit bugs in the library and
-gain the privileges of the process that was doing the name lookups. In this
-case the privileges of the daemon are potentially exposed.
+This design does open up the system to more potential security issues
+(relative to nss_ldap) because there is now a local interface to a daemon with
+privileges. With nss_ldad, processes could only potentially exploit bugs in
+the library and gain the privileges of the process that was doing the name
+lookups. In this case the privileges of the daemon are potentially exposed.
 
 Extra care should be taken with processes that normally require extra
 privileges (getting shadow entries, authentication, updating session
@@ -234,6 +246,11 @@ information, etc).
 Any user on the system can perform nslcd queries so either the nslcd daemon
 needs to check the userid of the caller or the request needs to contain the
 needed credentials itself.
+
+On the other hand the design also offers some security improvements. It is
+much easier to handle security updates of the LDAP, SSL or related libraries
+and access to privileged LDAP configuration information can be much better
+constrained.
 
 
 TEST SET-UP

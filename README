@@ -64,7 +64,7 @@ It is also possible to use the thin NSS and PAM modules together with the
 nssov overlay in the OpenLDAP server (slapd).
 
 The three parts (NSS module, PAM module, and nslcd server) can be built
-separately and are not srtongly tied together. This means that for instance
+separately and are not strongly tied together. This means that for instance
 you can still use pam_ldap and use the NSS module from nss-pam-ldapd or use an
 alternative implementation of nslcd (for instance with the nssov slapd overlay
 or the pynslcd implementation).
@@ -76,13 +76,13 @@ The fork from nss_ldap was done to implement some major design changes to fix
 some structural problems in the library.
 
 One of those problems were host name lookups through LDAP which could cause
-deadlocks. Another is that nss_ldap loaded an SSL library into an executable
+deadlocks. Another is that nss_ldap loaded an SSL library into executables
 that may not be designed to load it (e.g. problem with suid applications).
 
 A number of refactoring steps were done to simplify the code and improve
 maintainability. Legacy code was removed and support for non-Linux operating
 systems was initially removed to make the code more readable. Portability was
-re-added after the refactoring.
+re-added using compatibility wrappers.
 
 The most practical improvements over nss_ldap are:
 - the LDAP library is not loaded for every process doing LDAP lookups
@@ -92,8 +92,8 @@ The most practical improvements over nss_ldap are:
   no longer looked up using the ldap method
 - avoid problems with TLS connections in suid binaries and other process-local
   configuration
-- the setup is easier to debug because logging on the server component can be
-  enabled without affecting running processes
+- it is easier to debug because logging in nslcd can be enabled without
+  the need to restart all processes doing name lookups
 - unavailability timeouts are global instead of per-process
 
 comparison to pam_ldap
@@ -119,10 +119,11 @@ Currently the following name databases are supported:
   aliases, ethers, group, hosts, netgroup, networks, passwd, protocols, rpc,
   services and shadow
 
-When using IPv6 ipHostNumber attributes, the address must be in the preferred
-form as defined in section 2.2 of RFC1884, specifically the format as returned
-by inet_ntop(3). All leading zeros should be omitted and the longest range of
-zeroes should be replaced with :: (e.g. fe80::218:bff:fe55:c9f).
+When using IPv6 ipHostNumber attributes, the address in LDAP must be in the
+preferred form as defined in section 2.2 of RFC1884, specifically the format
+as returned by inet_ntop(3). All leading zeros should be omitted and the
+longest range of zeroes should be replaced with :: (e.g.
+fe80::218:bff:fe55:c9f).
 
 MAC addresses in the macAddress attribute should be in maximal, colon
 separated hex notation (e.g. 00:00:92:90:ee:e2).
@@ -133,8 +134,8 @@ common autofs implementation (on GNU/Linux) currently uses its own method for
 getting the maps from LDAP.
 
 Although mail aliases are exposed through NSS, most mail servers parse
-/etc/aliases by themselves and getting aliases from LDAP requires some
-configuration in the mail server.
+/etc/aliases themselves (bypassing NSS) and getting aliases from LDAP requires
+some configuration in the mail server.
 
 The publickey, bootparams and netmasks are currently unsupported. Some
 investigation should be done if these are needed for anything, which
