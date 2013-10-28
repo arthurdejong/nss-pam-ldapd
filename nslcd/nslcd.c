@@ -711,15 +711,10 @@ int main(int argc, char *argv[])
   /* intilialize logging */
   if (!nslcd_debugging)
     log_startlogging();
-  log_log(LOG_INFO, "version %s starting", VERSION);
-  /* start subprocess to do invalidating if reconnect_invalidate is set */
-  for (i = 0; i < LM_NONE; i++)
-    if (nslcd_cfg->reconnect_invalidate[i])
-      break;
-  if (i < LM_NONE)
-    invalidator_start();
   /* write pidfile */
   create_pidfile(NSLCD_PIDFILE);
+  /* log start */
+  log_log(LOG_INFO, "version %s starting", VERSION);
   /* install handler to close stuff off on exit and log notice */
   if (atexit(exithandler))
   {
@@ -728,6 +723,13 @@ int main(int argc, char *argv[])
   }
   /* create socket */
   nslcd_serversocket = create_socket(NSLCD_SOCKET);
+  /* start subprocess to do invalidating if reconnect_invalidate is set */
+  for (i = 0; i < LM_NONE; i++)
+    if (nslcd_cfg->reconnect_invalidate[i])
+      break;
+  if (i < LM_NONE)
+    invalidator_start();
+  /* change nslcd group and supplemental groups */
   if ((nslcd_cfg->gid != NOGID) && (nslcd_cfg->uidname != NULL))
   {
 #ifdef HAVE_INITGROUPS
