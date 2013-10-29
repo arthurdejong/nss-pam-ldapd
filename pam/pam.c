@@ -270,8 +270,8 @@ static int nslcd2pam_rc(pam_handle_t *pamh, int rc)
 }
 
 /* check whether the specified user is handled by nslcd */
-static int nslcd_request_exists(pam_handle_t *pamh, struct pld_ctx *ctx,
-                                struct pld_cfg *cfg, const char *username)
+static int nslcd_request_exists(pam_handle_t *pamh, struct pld_cfg *cfg,
+                                const char *username)
 {
   PAM_REQUEST(
     NSLCD_ACTION_PASSWD_BYNAME,
@@ -675,7 +675,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh, int flags,
     return remap_pam_rc(PAM_PERM_DENIED, &cfg);
   }
   /* see if we are dealing with an LDAP user first */
-  rc = nslcd_request_exists(pamh, ctx, &cfg, username);
+  rc = nslcd_request_exists(pamh, &cfg, username);
   if (rc != PAM_SUCCESS)
     return remap_pam_rc(rc, &cfg);
   /* preliminary check, just see if we can authenticate with the current password */

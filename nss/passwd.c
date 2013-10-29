@@ -106,7 +106,7 @@ static char *passwd2str(struct passwd *result, char *buffer, size_t buflen)
                  result->pw_name, result->pw_passwd, (int)result->pw_uid,
                  (int)result->pw_gid, result->pw_gecos, result->pw_dir,
                  result->pw_shell);
-  if ((res < 0) || (res >= buflen))
+  if ((res < 0) || (res >= (int)buflen))
     return NULL;
   return buffer;
 }

@@ -170,7 +170,7 @@ static char *netent2str(struct netent *result, char *buffer, size_t buflen)
   struct in_addr priv_in_addr;
   priv_in_addr.s_addr = result->n_net;
   res = snprintf(buffer, buflen, "%s %s", result->n_name, inet_ntoa(priv_in_addr));
-  if ((res < 0) || (res >= buflen))
+  if ((res < 0) || (res >= (int)buflen))
     return NULL;
   if (result->n_aliases)
     for (i = 0; result->n_aliases[i]; i++)

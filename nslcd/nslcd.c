@@ -250,7 +250,7 @@ static int create_socket(const char *filename)
     log_log(LOG_ERR, "cannot create socket: %s", strerror(errno));
     exit(EXIT_FAILURE);
   }
-  if (sock >= FD_SETSIZE)
+  if (sock >= (int)FD_SETSIZE)
   {
     log_log(LOG_ERR, "socket file descriptor number too high (%d)", sock);
     exit(EXIT_FAILURE);

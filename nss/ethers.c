@@ -107,7 +107,7 @@ static char *etherent2str(struct etherent *result, char *buffer,
   int res;
   res = snprintf(buffer, buflen, "%s %s", ether_ntoa(&result->e_addr),
                  result->e_name);
-  if ((res < 0) || (res >= buflen))
+  if ((res < 0) || (res >= (int)buflen))
     return NULL;
   return buffer;
 }

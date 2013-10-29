@@ -194,7 +194,7 @@ static char *group2str(struct group *result, char *buffer, size_t buflen)
   int res, i;
   res = snprintf(buffer, buflen, "%s:%s:%d:", result->gr_name,
                  result->gr_passwd, (int)result->gr_gid);
-  if ((res < 0) || (res >= buflen))
+  if ((res < 0) || (res >= (int)buflen))
     return NULL;
   if (result->gr_mem)
     for (i = 0; result->gr_mem[i]; i++)

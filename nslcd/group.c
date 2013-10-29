@@ -136,8 +136,7 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
                     attmap_group_member, safedn);
 }
 
-static int mkfilter_group_bymemberdn(MYLDAP_SESSION *session,
-                                     const char *dn,
+static int mkfilter_group_bymemberdn(const char *dn,
                                      char *buffer, size_t buflen)
 {
   char safedn[300];
@@ -481,7 +480,7 @@ int nslcd_group_bymember(TFILE *fp, MYLDAP_SESSION *session)
     while ((dn = set_pop(tocheck)) != NULL)
     {
       /* make filter for finding groups with our group as member */
-      if (mkfilter_group_bymemberdn(session, dn, filter, sizeof(filter)))
+      if (mkfilter_group_bymemberdn(dn, filter, sizeof(filter)))
       {
         log_log(LOG_WARNING, "nslcd_group_bymember(): filter buffer too small");
         set_free(seen);

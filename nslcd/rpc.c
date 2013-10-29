@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -105,7 +105,7 @@ static int write_rpc(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname)
   const char **aliases;
   const char **numbers;
   char *tmp;
-  long number;
+  unsigned long number;
   int i;
   /* get the most canonical name */
   name = myldap_get_rdn_value(entry, attmap_rpc_cn);

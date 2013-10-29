@@ -6,7 +6,7 @@
    Copyright (C) 2003 Jacques Vidrine
    Copyright (C) 2006 Artem Kazakov
    Copyright (C) 2009 Alexander V. Chernikov
-   Copyright (C) 2011, 2012 Arthur de Jong
+   Copyright (C) 2011, 2012, 2013 Arthur de Jong
    Copyright (C) 2011 Tom Judge
 
    This library is free software; you can redistribute it and/or
@@ -85,7 +85,7 @@ static ns_mtab methods[] = {
   { NSDB_PASSWD_COMPAT, "endpwent",   __nss_compat_endpwent,   _nss_ldap_endpwent },
 };
 
-int __nss_compat_gethostbyname(void *retval, void *mdata, va_list ap)
+int __nss_compat_gethostbyname(void UNUSED(*retval), void *mdata, va_list ap)
 {
   nss_status_t (*fn)(const char *, struct hostent *, char *, size_t, int *, int *);
   const char *name;
@@ -105,7 +105,7 @@ int __nss_compat_gethostbyname(void *retval, void *mdata, va_list ap)
   return status;
 }
 
-int __nss_compat_gethostbyname2(void *retval, void *mdata, va_list ap)
+int __nss_compat_gethostbyname2(void UNUSED(*retval), void *mdata, va_list ap)
 {
   nss_status_t (*fn)(const char *, struct hostent *, char *, size_t, int *, int *);
   const char *name;
@@ -125,7 +125,7 @@ int __nss_compat_gethostbyname2(void *retval, void *mdata, va_list ap)
   return status;
 }
 
-int __nss_compat_gethostbyaddr(void *retval, void *mdata, va_list ap)
+int __nss_compat_gethostbyaddr(void UNUSED(*retval), void *mdata, va_list ap)
 {
   struct in_addr *addr;
   int len;
@@ -165,7 +165,8 @@ static int __gr_addgid(gid_t gid, gid_t *groups, int maxgrp, int *groupc)
   return ret;
 }
 
-int __freebsd_getgroupmembership(void *retval, void *mdata, va_list ap)
+int __freebsd_getgroupmembership(void UNUSED(*retval), void UNUSED(*mdata_),
+                                 va_list ap)
 {
   int err;
   nss_status_t s;
@@ -199,7 +200,7 @@ int __freebsd_getgroupmembership(void *retval, void *mdata, va_list ap)
   return __nss_compat_result(s, 0);
 }
 
-ns_mtab *nss_module_register(const char *source, unsigned int *mtabsize,
+ns_mtab *nss_module_register(const char UNUSED(*source), unsigned int *mtabsize,
                              nss_module_unregister_fn *unreg)
 {
   *mtabsize = sizeof(methods) / sizeof(methods[0]);

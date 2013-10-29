@@ -1,7 +1,7 @@
 /*
    config.c - routines for getting configuration information
 
-   Copyright (C) 2012 Arthur de Jong
+   Copyright (C) 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -33,7 +33,7 @@
 #include "log.h"
 #include "cfg.h"
 
-int nslcd_config_get(TFILE *fp, MYLDAP_SESSION *session)
+int nslcd_config_get(TFILE *fp, MYLDAP_SESSION UNUSED(*session))
 {
   int32_t tmpint32;
   int32_t cfgopt;

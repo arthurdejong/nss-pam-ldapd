@@ -46,7 +46,7 @@
 
 int ldap_parse_passwordpolicy_control(LDAP UNUSED(*ld), LDAPControl *ctrl,
                                       ber_int_t *expirep, ber_int_t *gracep,
-                                      LDAPPasswordPolicyError *errorp)
+                                      LDAPPasswordPolicyError UNUSED(*errorp))
 {
   BerElement *ber;
   ber_tag_t tag;

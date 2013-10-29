@@ -546,7 +546,7 @@ int nslcd_pam_authz(TFILE *fp, MYLDAP_SESSION *session)
   return 0;
 }
 
-int nslcd_pam_sess_o(TFILE *fp, MYLDAP_SESSION *session)
+int nslcd_pam_sess_o(TFILE *fp, MYLDAP_SESSION UNUSED(*session))
 {
   int32_t tmpint32;
   char username[256], service[64], ruser[256], rhost[HOST_NAME_MAX + 1], tty[64];
@@ -554,7 +554,7 @@ int nslcd_pam_sess_o(TFILE *fp, MYLDAP_SESSION *session)
   static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                  "abcdefghijklmnopqrstuvwxyz"
                                  "01234567890";
-  int i;
+  unsigned int i;
   /* read request parameters */
   READ_STRING(fp, username);
   READ_STRING(fp, service);
@@ -579,7 +579,7 @@ int nslcd_pam_sess_o(TFILE *fp, MYLDAP_SESSION *session)
   return 0;
 }
 
-int nslcd_pam_sess_c(TFILE *fp, MYLDAP_SESSION *session)
+int nslcd_pam_sess_c(TFILE *fp, MYLDAP_SESSION UNUSED(*session))
 {
   int32_t tmpint32;
   char username[256], service[64], ruser[256], rhost[HOST_NAME_MAX + 1], tty[64];

@@ -106,7 +106,7 @@ static char *servent2str(struct servent *result, char *buffer, size_t buflen)
   int res, i;
   res = snprintf(buffer, buflen, "%s %d/%s", result->s_name, result->s_port,
                  result->s_proto);
-  if ((res < 0) || (res >= buflen))
+  if ((res < 0) || (res >= (int)buflen))
     return NULL;
   if (result->s_aliases)
     for (i = 0; result->s_aliases[i]; i++)

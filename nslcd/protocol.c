@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -150,7 +150,7 @@ static int write_protocol(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname)
             myldap_get_dn(entry), attmap_protocol_ipProtocolNumber);
     return 0;
   }
-  else if ((errno != 0) || (proto < 0) || (proto > UINT8_MAX))
+  else if ((errno != 0) || (proto < 0) || (proto > (long)UINT8_MAX))
   {
     log_log(LOG_WARNING, "%s: %s: out of range",
             myldap_get_dn(entry), attmap_protocol_ipProtocolNumber);

@@ -173,7 +173,7 @@ static int write_service(TFILE *fp, MYLDAP_ENTRY *entry,
             myldap_get_dn(entry), attmap_service_ipServicePort);
     return 0;
   }
-  else if ((errno != 0) || (port <= 0) || (port > UINT16_MAX))
+  else if ((errno != 0) || (port <= 0) || (port > (long)UINT16_MAX))
   {
     log_log(LOG_WARNING, "%s: %s: out of range",
             myldap_get_dn(entry), attmap_service_ipServicePort);

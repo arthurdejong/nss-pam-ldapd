@@ -321,7 +321,8 @@ static nss_backend_op_t netgroup_setnetgrent_ops[] = {
   netgroup_setnetgrent_getnetgrent,
 };
 
-static nss_status_t netgroup_setnetgrent_constructor(nss_backend_t *be, void *args)
+static nss_status_t netgroup_setnetgrent_constructor(nss_backend_t UNUSED(*be),
+                                                     void *args)
 {
   struct setnetgrent_backend *ngbe;
   nss_status_t retv;

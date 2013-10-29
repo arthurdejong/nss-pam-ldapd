@@ -98,7 +98,7 @@ static char *protoent2str(struct protoent *result, char *buffer, size_t buflen)
 {
   int res, i;
   res = snprintf(buffer, buflen, "%s\t\t%d", result->p_name, result->p_proto);
-  if ((res < 0) || (res >= buflen))
+  if ((res < 0) || (res >= (int)buflen))
     return NULL;
   if (result->p_aliases)
     for (i = 0; result->p_aliases[i]; i++)

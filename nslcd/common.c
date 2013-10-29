@@ -238,8 +238,8 @@ int write_address(TFILE *fp, MYLDAP_ENTRY *entry, const char *attr,
     /* failure, log but write simple invalid address
        (otherwise the address list is messed up) */
     /* TODO: have error message in correct format */
-    log_log(LOG_WARNING, "%s: %s: \"%s\" unparseble",
-            myldap_get_dn(entry), attmap_ether_cn, addr);
+    log_log(LOG_WARNING, "%s: %s: \"%s\" unparsable",
+            myldap_get_dn(entry), attr, addr);
     /* write an illegal address type */
     WRITE_INT32(fp, -1);
     /* write an emtpy address */

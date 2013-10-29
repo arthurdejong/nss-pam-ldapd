@@ -97,7 +97,7 @@ static char *rpcent2str(struct rpcent *result, char *buffer, size_t buflen)
 {
   int res, i;
   res = snprintf(buffer, buflen, "%s %d", result->r_name, result->r_number);
-  if ((res < 0) || (res >= buflen))
+  if ((res < 0) || (res >= (int)buflen))
     return NULL;
   if (result->r_aliases)
     for (i = 0; result->r_aliases[i]; i++)
