@@ -26,7 +26,7 @@
 set -e
 
 # get LDAP config
-srcdir="${srcdir-"."}"
+srcdir="${srcdir-`dirname "$0"`}"
 cfgfile="$srcdir/nslcd-test.conf"
 uri=`sed -n 's/^uri *//p' "$cfgfile" | head -n 1`
 base="dc=test,dc=tld"
@@ -35,4 +35,5 @@ base="dc=test,dc=tld"
 "$srcdir/testenv.sh" check_ldap "$uri" "$base" || exit 77
 
 # just execute test_myldap
-exec ./test_myldap
+export srcdir
+exec "$srcdir/test_myldap"

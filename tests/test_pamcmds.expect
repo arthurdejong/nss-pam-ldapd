@@ -36,7 +36,7 @@ proc abort {} {
 proc reset_password {} {
   global expect_out
   send_user "test_pamcmds.expect: resetting passwd...\n"
-  spawn passwd arthur
+  spawn passwd vsefcovic
   expect {
     "LDAP administrator password" { send "test\r"; exp_continue }
     -regexp "(New|Retype new)( UNIX)? password:" { send "test\r"; exp_continue }
@@ -44,6 +44,10 @@ proc reset_password {} {
     "passwd: all authentication tokens updated successfully." {}
     "Invalid credentials" abort
     "Authentication token manipulation error" abort
+    "passwd: Sorry, `passwd' can only change passwords for local or NIS users." {
+      send_user "test_pamcmds.expect: passwd not using PAM\n"
+      exit 77
+    }
     default abort
   }
   #close
@@ -126,11 +130,11 @@ proc test_login_unknown {uid passwd} {
 
 # test incorrect password
 send_user "test_pamcmds.expect: testing incorrect password...\n"
-test_login_authfail arthur wrongpassword
+test_login_authfail vsefcovic wrongpassword
 
 # test correct password
 send_user "test_pamcmds.expect: testing correct password...\n"
-test_login_ok arthur test
+test_login_ok vsefcovic test
 
 # change password using incorrect old password
 send_user "test_pamcmds.expect: testing password change with incorrect password...\n"
@@ -174,11 +178,11 @@ expect "\$ "
 
 # logging in with the old password should fail now
 send_user "test_pamcmds.expect: testing old password...\n"
-test_login_authfail arthur test
+test_login_authfail vsefcovic test
 
 # test correct password
 send_user "test_pamcmds.expect: testing new password...\n"
-test_login_ok arthur DuhevOlNoz5
+test_login_ok vsefcovic DuhevOlNoz5
 
 # test invalid username
 send_user "test_pamcmds.expect: testing with unknown username...\n"
@@ -192,7 +196,7 @@ test_login_authfail root anypassword
 send_user "test_pamcmds.expect: testing with nobody...\n"
 test_login_authfail nobody anypassword
 
-# close the shell (first log of arthur)
+# close the shell (first log off vsefcovic)
 send "exit\r"
 expect "\$ "
 send "exit\r"

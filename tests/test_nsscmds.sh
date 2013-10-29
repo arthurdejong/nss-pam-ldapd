@@ -139,8 +139,9 @@ echo "test_nsscmds.sh: testing group..."
 sortgroup() {
   while read line
   do
-    group="$(echo "$line" | sed 's/^\([^:]*:[^:]*:[^:]*\)\(:\(.*\)\)*$/\1:/')"
-    members="$(echo "$line" | sed -n 's/^\([^:]*:[^:]*:[^:]*\)\(:\(.*\)\)*$/\3/p' | tr ',' '\n' | sort | tr '\n' ',' | sed 's/,$//')"
+    group="`echo "$line" | sed 's/^\([^:]*:[^:]*:[^:]*\).*$/\1:/'`"
+    members="`echo "$line" | sed -n 's/^[^:]*:[^:]*:[^:]*:\(.*\)$/\1/p' | tr ',' '\n' | sort | tr '\n' ','`"
+    members="`echo "$members" | sed 's/,$//'`"
     echo "${group}${members}"
   done
 }
@@ -171,8 +172,8 @@ check "groups testuser4 | sed 's/^.* *: *//'" << EOM
 users testgroup testgroup2
 EOM
 
-check "getent group | egrep '^(testgroup|users):' | sortgroup" << EOM
-users:x:100:
+check "getent group | egrep '^(testgroup|users|root):' | sortgroup" << EOM
+$(egrep '^(testgroup|users|root):' /etc/group)
 testgroup:*:6100:arthur,test,testuser4
 users:*:100:arthur,test
 EOM
