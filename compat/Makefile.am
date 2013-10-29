@@ -25,6 +25,7 @@ AM_CFLAGS = -fPIC
 EXTRA_DIST = getopt_long.c getopt_long.h \
              daemon.c daemon.h \
              ether.c ether.h \
+             shell.h \
              strndup.c strndup.h \
              nss_compat.h socket.h \
              ldap_compat.h pagectrl.c ldap_passwd_s.c ldap_initialize.c \

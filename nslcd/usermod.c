@@ -36,6 +36,7 @@
 #include "myldap.h"
 #include "cfg.h"
 #include "attmap.h"
+#include "compat/shell.h"
 
 /* ensure that both userdn and username are filled in from the entry,
    returns an LDAP result code */
