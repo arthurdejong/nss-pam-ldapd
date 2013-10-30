@@ -1,3 +1,360 @@
+2013-10-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ef0edda] tests/test_myldap.sh, tests/test_nsscmds.sh,
+	  tests/test_pamcmds.expect: Portability fixes to environment tests
+
+	  This mostly tries to reduce the influences of the test environment
+	  (local users and groups) on the tests. This uses another username
+	  (vsefcovic) in the PAM tests instead of the user arthur to avoid
+	  clashes with existing users.
+
+	  The PAM tests are skipped if passwd claims that it cannot modify
+	  LDAP passwords (for FreeBSD).
+
+2013-10-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f8af48f] compat/ldap_parse_passwordpolicy_control.c,
+	  nslcd/common.c, nslcd/config.c, nslcd/group.c, nslcd/nslcd.c,
+	  nslcd/pam.c, nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c,
+	  nss/bsdnss.c, nss/ethers.c, nss/group.c, nss/netgroup.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/rpc.c,
+	  nss/services.c, pam/pam.c: Fix a number of compiler warnings
+
+	  This includes a number of small fixes for issues that were
+	  formerly masked by the incorrect AC_LANG_PROGRAM check.
+
+2013-10-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [88801f9] configure.ac: Add -Werror=implicit if compiler
+	  supports it
+
+2013-10-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [933bf8e] configure.ac: Fix usage of AC_LANG_PROGRAM
+
+	  Apparently the macro got changed a long time ago to provide a
+	  main() definition. This bug caused the extra warning flags to
+	  not be added.
+
+2013-10-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6028226] compat/Makefile.am, compat/shell.h, configure.ac,
+	  nslcd/usermod.c: Compatibility definitions for
+	  {set,get,end}usershell()
+
+	  This provides compatibility definitions for systems that don't
+	  have these functions (some Solaris flavours).
+
+2013-10-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ed4cf47] nslcd/nslcd.c: Start invalidator after locking pidfile
+
+	  This causes the pidfile to be written as the first thing after
+	  daemonising nslcd to minimise the race between service script
+	  completion and pidfile being locked.
+
+2013-10-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [503644b] HACKING, README: Update documentation
+
+2013-10-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6be316e] autogen.sh, configure.ac: Specify m4 directory in
+	  configure script
+
+2013-10-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1d8db24] nslcd/myldap.c, pynslcd/search.py: Also run invalidators
+	  on initial connect
+
+	  This also invalidates the caches configured with
+	  reconnect_invalidate on the first successful search. This should
+	  handle the case more gracefully where caches were filled with
+	  negative hits before nslcd was running.
+
+2013-10-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ee8737f] tests/Makefile.am: Distribute setup_slapd.sh and
+	  associated files
+
+2013-10-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e28e937] tests/test_myldap.sh, tests/testenv.sh: Improve
+	  portability of ldap test
+
+	  This supports old ldapsearch commands that don't support the -x
+	  and -H options and ldapsearch commands that don't exit with a
+	  failure code if nothing is found.
+
+	  This also switches the test_myldap test to use the testenv check
+	  for the LDAP server.
+
+2013-10-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8cc354a] tests/test_pamcmds.expect: Handle other responses
+	  in test_pamcmds
+
+	  This extends test_pamcmds to handle other pam/su/passwd errors
+	  and responses (as seen on CentOS 5). Also switch to stronger
+	  password when changing the test user's password to avoid problems
+	  with password strength checks.
+
+2013-10-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0a95557] tests/Makefile.am, tests/in_testenv.sh,
+	  tests/test_nsscmds.sh, tests/test_pamcmds.expect,
+	  tests/test_pamcmds.sh, tests/testenv.sh: Make script to check
+	  test environment
+
+	  This changes the in_testenv.sh script into testenv.sh which has
+	  more checks and a few functions to configure the test environment.
+
+2013-10-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1899e9a] tests/test.ldif: Remove unnecessary attributes from
+	  test.ldif
+
+2013-10-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cebc2a1] tests/README: Update tests README
+
+	  This refreshes the documentation of the tests, especially the
+	  test environment.
+
+2013-10-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7cbb439] tests/config.ldif, tests/setup_slapd.sh: Provide a
+	  script for setting up slapd
+
+	  The setup_slapd.sh script can be used to set up and start a
+	  slapd instance in a single (temporary) directory. The slapd
+	  instance is configured and loaded with test data for use in the
+	  test environment.
+
+2013-10-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [aeccbfe] tests/test_nsscmds.sh: Fix sortgroup function
+
+	  This fixes an issue with the sortgroup function which failed to
+	  handle a group line with only two colons correctly. Such group
+	  entries have been seen in the wild on FreeBSD.
+
+	  Also, comment lines in group files are now ignored (also seen
+	  on FreeBSD).
+
+2013-10-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0697347] common/dict.c: Use djb2 hash in dict module
+
+	  This slightly modifies the string hashing function to use the
+	  djb2 hash.  This hash is supposed to be reasonably fast and have
+	  reasonably few collisions.
+
+2013-10-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [61e96bf] nslcd/cfg.h: Increase NSS_LDAP_CONFIG_MAX_BASES to 31
+
+	  This allows more search bases which may be useful in some
+	  environments.
+
+2013-09-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2f088ec] common/tio.c: Also support poll() returning EAGAIN
+
+2013-09-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [173d768] configure.ac: Add more python module checks to configure
+
+2013-09-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b7ca95a] configure.ac: Make missing Python modules a waring
+
+	  This avoids having to have all modules installed in the build
+	  environment. A Python version is still required during build.
+
+2013-09-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f36bb81] pynslcd/cache.py, pynslcd/group.py: Remove unneeded
+	  imports
+
+2013-09-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8ae8b9a] Makefile.am, configure.ac, tests/Makefile.am: Cleanups
+	  and fixes related to automake upgrade
+
+	  This removes a few legacy workarounds and fixes for older versions
+	  of automake. This also removes adding specific DEBUG flags for
+	  tests since subdir objects are handled differently now.
+
+2013-09-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2bd2bc4] pam/pam.c: Initialise msg to avoid potential NULL
+	  pointer dereference
+
+	  The NULL pointer dereference in the PAM module should not occur due
+	  to the relationship with the rc value that is handled alongside
+	  it. This change mostly silences the compiler and protects from
+	  future changes.
+
+2013-09-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [dccc9cf] configure.ac: Add configure test for
+	  {set,get,end}usershell() availability
+
+2013-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4fc4197] autogen.sh: Upgrade to automake 1.14
+
+2013-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [bc6a18e] nslcd/nslcd.c: Use larger nslcd send buffers
+
+	  By using bigger write buffers in nslcd we reduce the number of
+	  writes in nslcd and consequently the number of reads in the NSS
+	  and PAM modules for bigger responses.
+
+	  This reduces the number of system calls that are made during
+	  a request and brings a small performance improvement that is
+	  mainly measurable in the NSS module. A measurement showed 30-80%
+	  reduction in the number of system calls in the NSS module and
+	  around 10% reduction in CPU usage (CPU time, only small reduction
+	  in wallclock time).
+
+	  Thanks John Sullivan for pointing this out.
+
+2013-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [58d50bf] configure.ac, man/Makefile.am: Add configure check to
+	  see whether to install manual pages
+
+	  This also reworks the manual page generation check in the configure
+	  script and avoids build errors if no tool for generating manual
+	  pages is present when working on a Git checkout.
+
+2013-09-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ce95b41] ldapns.ldif: Reformat LDIF file to follow OpenLDAP format
+
+	  This fixes a wrapping problem. Thanks to Paul Boven for pointing
+	  this out.
+
+2013-09-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8b169f1] tests/test_common.c: Fix permissions of test
+	  configuration
+
+	  This sets the permissions on the nslcd-test.conf file while
+	  running the tests to ensure that the permission checks for the
+	  bindpwn and rootpwmodpw options do not fail the test.
+
+2013-09-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [560e5de] .gitignore, tests/Makefile.am, tests/test_tio_timeout.c:
+	  Add a test for tio timeout calculations
+
+	  This test checks whether the proposed remaining time to sleep
+	  is reasonable.
+
+2013-09-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [db5382e] .gitignore, tests/Makefile.am, tests/test_clock.c:
+	  Add a test for clock_gettime() supported clocks
+
+	  This probes the system for available clocks to see if they can
+	  be reliably used to get a monotonic-like timer (the test doesn't
+	  verify the monotonic part, just usability).
+
+2013-09-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7895739] AUTHORS, common/tio.c, configure.ac: Use clock_gettime()
+	  instead of gettimeofday()
+
+	  This avoids problems with system clock changes (though there
+	  are some safeguards in place to avoid waiting too long on clock
+	  changes).
+
+	  Thanks to John Sullivan for pointing this out.
+
+	  We can't easily use CLOCK_MONOTONIC_RAW or CLOCK_MONOTONIC_COARSE
+	  even on platforms that define the clock because we can get
+	  runtime errors.  CLOCK_MONOTONIC seems to work on all tested
+	  platforms that provide it.
+
+2013-09-02  Arthur de Jong <arthur@west.nl>
+
+	* [a683aa8] tests/test_manpages.sh: Small protability fix
+
+2013-09-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c8800eb] tests/test_manpages.sh: Improve robustness of
+	  test_manpages
+
+2013-08-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [644df52] common/tio.c, common/tio.h: Use normal timeout handling
+	  in tio_skipall()
+
+	  Use the same mechanism in tio_skipall() as in tio_read(), except
+	  use a different timeout value.
+
+2013-08-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0787d45] common/tio.c: Refactor tio_wait()
+
+	  This changes the function to accept a file descriptor, an event
+	  and timeout parameter directly instead of a confusing flag.
+
+2013-08-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [07a8170] common/tio.c: Fix buffer overflow on interupted read
+
+	  The tio_read() function will read past its buffer and return
+	  garbadge to the calling function if the call to read() was
+	  interrupted by a signal.
+
+	  The likelyhood of read() being interupted is low because previously
+	  a call to poll() has determined that data is available to be read.
+
+	  Thanks to John Sullivan for pointing this out.
+
+	  See: https://bugzilla.redhat.com/show_bug.cgi?id=1003011
+
+2013-08-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4897033] nslcd/common.h: In nslcd, log EPIPE only on debug level
+
+	  See: https://bugzilla.redhat.com/show_bug.cgi?id=1003011
+
+2013-08-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c9e2f97] common/tio.c, common/tio.h, nss/common.h: Use a timeout
+	  when skipping remaining result data
+
+	  When the NSS modules closes the connection and skips any remaining
+	  result data, wait for up to 500 msec to read any available data.
+
+	  See: https://bugzilla.redhat.com/show_bug.cgi?id=1003011
+
+2013-08-27  Bersl <bersl2@bersl2.info>
+
+	* [7140d21] AUTHORS, nslcd/group.c, nslcd/passwd.c, nslcd/shadow.c:
+	  Increase password buffer size
+
+	  With the smaller buffers some password hashes would be truncated.
+
+2013-08-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8571bc1] NEWS, README, common/dict.c, compat/attrs.h,
+	  compat/nss_compat.h, man/nslcd.conf.5.xml, nslcd/myldap.c:
+	  Fix for common spelling mistake
+
+2013-08-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [890d227] AUTHORS, ChangeLog, NEWS, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml:
+	  Get files ready for 0.9.1 release
+
 2013-08-25  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [f9b4b43] Makefile.am: Have a nicer way of generating the ChangeLog

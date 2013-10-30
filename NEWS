@@ -1,3 +1,29 @@
+changes from 0.9.1 to 0.9.2
+---------------------------
+
+* increase password value buffer size (by Bersl)
+* avoid more broken pipe errors by using a low timeout when aborting reading
+  requested information from nslcd (thanks John Sullivan)
+* only log broken pipe errors in debugging mode
+* fix buffer overflow on interrupted read that is hard to trigger (thanks
+  John Sullivan)
+* use clock_gettime() with CLOCK_MONOTONIC for timeout calculations to avoid
+  clock adjustments errors (thanks John Sullivan)
+* extend test suite to test for CLOCK_MONOTONIC and timed IO timeout
+  calculations
+* increase the maximum number of base statements per map to 31
+* use larger nslcd send buffers to reduce the number of write operations in
+  nslcd and consequently the number of reads in the NSS and PAM modules
+  (thanks John Sullivan)
+* also run invalidators after first successful search
+* various clean-ups, portability improvements and fixes for compiler warnings
+* import configure checks of Python modules
+* provide a script for setting up slapd in a test environment, automatically
+  loaded with the required test data
+* add script for evaluating test environment availability
+* portability improvements in the test scripts and test environment
+
+
 changes from 0.9.0 to 0.9.1
 ---------------------------
 
@@ -28,7 +54,7 @@ changes from 0.9.0 to 0.9.1
   disabled)
 
 
-changes from 0.8.13 to 0.9.0
+changes from 0.8.12 to 0.9.0
 ----------------------------
 
 * backwards incompatible change to the communications protocol between nslcd
