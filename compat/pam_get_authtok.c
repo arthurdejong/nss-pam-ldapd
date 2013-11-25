@@ -44,7 +44,7 @@ int pam_get_authtok(pam_handle_t *pamh, int item, const char **authtok,
   char retype_prompt[80];
   /* first try to see if the value is already on the stack */
   *authtok = NULL;
-  rc = pam_get_item(pamh, item, (const void **)authtok);
+  rc = pam_get_item(pamh, item, (PAM_ITEM_CONST void **)authtok);
   if ((rc == PAM_SUCCESS) && (*authtok != NULL))
     return PAM_SUCCESS;
   /* check what to prompt for and provide default prompt */
@@ -53,7 +53,7 @@ int pam_get_authtok(pam_handle_t *pamh, int item, const char **authtok,
     prompt = (prompt != NULL) ? prompt : "Old Password: ";
   else
   {
-    rc = pam_get_item(pamh, PAM_OLDAUTHTOK, (const void **)&oldauthtok);
+    rc = pam_get_item(pamh, PAM_OLDAUTHTOK, (PAM_ITEM_CONST void **)&oldauthtok);
     if ((rc == PAM_SUCCESS) && (oldauthtok != NULL))
     {
       prompt = (prompt != NULL) ? prompt : "New Password: ";
@@ -90,5 +90,5 @@ int pam_get_authtok(pam_handle_t *pamh, int item, const char **authtok,
   if (rc != PAM_SUCCESS)
     return rc;
   /* return token from the stack */
-  return pam_get_item(pamh, item, (const void **)authtok);
+  return pam_get_item(pamh, item, (PAM_ITEM_CONST void **)authtok);
 }

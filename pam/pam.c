@@ -228,7 +228,7 @@ static int init(pam_handle_t *pamh, struct pld_cfg *cfg, struct pld_ctx **ctx,
   if (rc != PAM_SUCCESS)
     return rc;
   /* get service name */
-  rc = pam_get_item(pamh, PAM_SERVICE, (const void **)service);
+  rc = pam_get_item(pamh, PAM_SERVICE, (PAM_ITEM_CONST void **)service);
   if (rc != PAM_SUCCESS)
   {
     pam_syslog(pamh, LOG_ERR, "failed to get service name: %s",
@@ -236,9 +236,9 @@ static int init(pam_handle_t *pamh, struct pld_cfg *cfg, struct pld_ctx **ctx,
     return rc;
   }
   /* get more PAM information (ignore errors) */
-  pam_get_item(pamh, PAM_RUSER, (const void **)ruser);
-  pam_get_item(pamh, PAM_RHOST, (const void **)rhost);
-  pam_get_item(pamh, PAM_TTY, (const void **)tty);
+  pam_get_item(pamh, PAM_RUSER, (PAM_ITEM_CONST void **)ruser);
+  pam_get_item(pamh, PAM_RHOST, (PAM_ITEM_CONST void **)rhost);
+  pam_get_item(pamh, PAM_TTY, (PAM_ITEM_CONST void **)tty);
   return PAM_SUCCESS;
 }
 
@@ -746,7 +746,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh, int flags,
     return remap_pam_rc(resp.res, &cfg);
   }
   /* get the old password (from the previous call) */
-  rc = pam_get_item(pamh, PAM_OLDAUTHTOK, (const void **)&oldpassword);
+  rc = pam_get_item(pamh, PAM_OLDAUTHTOK, (PAM_ITEM_CONST void **)&oldpassword);
   if (rc != PAM_SUCCESS)
     return rc;
   /* prompt for new password */

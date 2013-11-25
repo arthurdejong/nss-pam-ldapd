@@ -38,7 +38,7 @@ int pam_prompt(pam_handle_t *pamh, int style, char **response,
   struct pam_message msg, *pmsg;
   struct pam_response *resp;
   /* the the conversion function */
-  rc = pam_get_item(pamh, PAM_CONV, (const void **)&aconv);
+  rc = pam_get_item(pamh, PAM_CONV, (PAM_ITEM_CONST void **)&aconv);
   if (rc != PAM_SUCCESS)
     return rc;
   /* make the message string */

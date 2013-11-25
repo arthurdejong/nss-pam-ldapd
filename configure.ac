@@ -603,6 +603,38 @@ then
   AC_SUBST(pam_ldap_so_LDFLAGS)
   AC_SUBST(pam_ldap_so_LINK)
 
+  # check argument type of pam_get_item()
+  AC_CACHE_CHECK(
+      [argument type of pam_get_item],
+      nss_pam_ldapd_cv_pam_get_item_arg3_type,
+      [AC_COMPILE_IFELSE(
+          [AC_LANG_PROGRAM([[
+              #ifdef HAVE_SECURITY_PAM_APPL_H
+              #include <security/pam_appl.h>
+              #endif
+              #ifndef HAVE_PAM_PAM_MODULES_H
+              #include <security/pam_modules.h>
+              #ifdef HAVE_SECURITY_PAM_EXT_H
+              #include <security/pam_ext.h>
+              #endif
+              #else
+              #include <pam/pam_modules.h>
+              #endif
+              #ifdef HAVE_SECURITY_PAM_MODUTIL_H
+              #include <security/pam_modutil.h>
+              #endif
+              extern int pam_get_item(const pam_handle_t *pamh, int item_type, const void **item);
+              ]], [])],
+          [nss_pam_ldapd_cv_pam_get_item_arg3_type="const void **"],
+          [nss_pam_ldapd_cv_pam_get_item_arg3_type="void **"]) ])
+  PAM_ITEM_CONST=""
+  if test "$nss_pam_ldapd_cv_pam_get_item_arg3_type" = "const void **"
+  then
+    PAM_ITEM_CONST="const"
+  fi
+  AC_DEFINE_UNQUOTED(PAM_ITEM_CONST, [$PAM_ITEM_CONST],
+                     [Define to empty if pam_get_item() doesn't take `const` parameter.])
+
   # restore CFLAGS and LIBS
   CFLAGS="$pam_save_CFLAGS"
   LIBS="$pam_save_LIBS"
