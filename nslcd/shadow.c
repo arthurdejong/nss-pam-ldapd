@@ -294,7 +294,7 @@ static int write_shadow(TFILE *fp,MYLDAP_ENTRY *entry,const char *requser)
   long expiredate;
   unsigned long flag;
   int i;
-  char passbuffer[64];
+  char passbuffer[256];
   /* get username */
   usernames=myldap_get_values(entry,attmap_shadow_uid);
   if ((usernames==NULL)||(usernames[0]==NULL))
