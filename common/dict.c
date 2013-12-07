@@ -33,7 +33,7 @@
 #include "dict.h"
 
 /*
-   This module uses a hashtable to store it's key to value mappings. The
+   This module uses a hashtable to store its key to value mappings. The
    structure is basically as follows:
 
    [struct dictionary]
