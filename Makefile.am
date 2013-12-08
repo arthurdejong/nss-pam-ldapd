@@ -60,10 +60,6 @@ install-nslcd_conf:
 uninstall-nslcd_conf:
 	-rm -f $(DESTDIR)$(NSLCD_CONF_PATH)
 
-# fix permissions before distributing
-dist-hook:
-	chmod -R a+rX $(distdir)
-
 # target for generating the ChangeLog file
 changelog:
 	( svn2cl -i --stdout -r HEAD:1835 ; \

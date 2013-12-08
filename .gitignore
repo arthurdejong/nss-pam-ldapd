@@ -31,7 +31,7 @@ stamp-*
 /configure.lineno
 /conftest.tail
 /flawfinder.html
-/nss-ldapd-*.tar.gz
+/nss-pam-ldapd-*
 /pscan.txt
 /rats.html
 /splint.txt
@@ -55,6 +55,8 @@ stamp-*
 
 # /tests/
 /tests/temp.cfg
+/tests/test*.log
+/tests/test*.trs
 /tests/test_cfg
 /tests/test_common
 /tests/test_dict

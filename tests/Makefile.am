@@ -32,19 +32,14 @@ CLEANFILES = $(EXTRA_PROGRAMS)
 AM_CPPFLAGS = -I$(top_srcdir)
 AM_CFLAGS = $(PTHREAD_CFLAGS) -g
 
-# the following enables verbose protocol debugging information to be dumped
-#AM_CPPFLAGS += -DDEBUG_PROT -DDEBUG_PROT_DUMP
-
-# the following enabled verbose tio stats logging
-#AM_CPPFLAGS += -DDEBUG_TIO_STATS
-
-test_dict_SOURCES = test_dict.c ../common/dict.h ../common/dict.c
-#test_dict_LDADD = ../common/dict.o
+test_dict_SOURCES = test_dict.c ../common/dict.h
+test_dict_LDADD = ../common/libdict.a
 
 test_set_SOURCES = test_set.c ../common/set.h
 test_set_LDADD = ../common/libdict.a
 
-test_tio_SOURCES = test_tio.c common.h ../common/tio.h ../common/tio.c
+test_tio_SOURCES = test_tio.c common.h ../common/tio.h
+test_tio_LDADD = ../common/tio.o
 test_tio_LDFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 test_expr_SOURCES = test_expr.c common.h

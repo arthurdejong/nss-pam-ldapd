@@ -39,6 +39,7 @@ AC_INIT([nss-pam-ldapd],
 RELEASE_MONTH="May 2013"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 # some initialisation
 AC_CANONICAL_TARGET
@@ -47,7 +48,7 @@ AC_CONFIG_LIBOBJ_DIR([compat])
 
 # display notice and initialize automake
 AC_MSG_NOTICE([configuring AC_PACKAGE_TARNAME AC_PACKAGE_VERSION])
-AM_INIT_AUTOMAKE(AC_PACKAGE_TARNAME,AC_PACKAGE_VERSION)
+AM_INIT_AUTOMAKE([1.11.2 check-news gnu std-options color-tests --warnings=all])
 
 # create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AC_CONFIG_HEADERS([config.h])
@@ -60,6 +61,7 @@ AC_PROG_RANLIB
 AM_PROG_CC_C_O
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_LN_S
+AM_PROG_AR
 
 # checks for tool to convert docbook to man
 AC_PATH_PROGS(DOCBOOK2X_MAN, docbook2x-man)
