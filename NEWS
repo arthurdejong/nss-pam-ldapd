@@ -1,3 +1,12 @@
+changes from 0.7.18 to 0.7.19
+-----------------------------
+
+* use the more portable EBADF instead of EBADFD (thanks Steven Chamberlain)
+* fix buffer overflow on interrupted read that is hard to trigger (thanks
+  John Sullivan)
+* extra sanity check to ensure not too many file descriptors are open
+
+
 changes from 0.7.17 to 0.7.18
 -----------------------------
 
