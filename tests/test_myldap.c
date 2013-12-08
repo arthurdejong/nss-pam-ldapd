@@ -2,7 +2,7 @@
    test_myldap.c - simple test for the myldap module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009 Arthur de Jong
+   Copyright (C) 2007, 2008, 2009, 2010, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -130,7 +130,7 @@ static void test_get(void)
   MYLDAP_SESSION *session;
   MYLDAP_SEARCH *search1,*search2;
   MYLDAP_ENTRY *entry;
-  const char *attrs1[] = { "cn", "userPassword", "memberUid", "gidNumber", "uniqueMember", NULL };
+  const char *attrs1[] = { "cn", "userPassword", "memberUid", "gidNumber", "member", NULL };
   const char *attrs2[] = { "uid", NULL };
   int rc;
   /* initialize session */
@@ -141,7 +141,7 @@ static void test_get(void)
   printf("test_myldap: test_get(): doing search...\n");
   search1=myldap_search(session,nslcd_cfg->ldc_bases[0],
                         LDAP_SCOPE_SUBTREE,
-                        "(&(|(objectClass=posixGroup)(objectClass=groupOfUniqueNames))(cn=testgroup2))",
+                        "(&(|(objectClass=posixGroup)(objectClass=groupOfNames))(cn=testgroup2))",
                         attrs1,NULL);
   assert(search1!=NULL);
   /* get one entry */
@@ -152,7 +152,7 @@ static void test_get(void)
   (void)myldap_get_values(entry,"gidNumber");
   (void)myldap_get_values(entry,"userPassword");
   (void)myldap_get_values(entry,"memberUid");
-  (void)myldap_get_values(entry,"uniqueMember");
+  (void)myldap_get_values(entry,"member");
   /* perform another search */
   printf("test_myldap: test_get(): doing get...\n");
   search2=myldap_search(session,"cn=Test User2,ou=people,dc=test,dc=tld",
