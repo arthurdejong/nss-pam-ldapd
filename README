@@ -86,7 +86,7 @@ be re-added once the architecture stabilises.
 The most practical improvements over nss_ldap are:
 - the LDAP library is not loaded for every process doing LDAP lookups
 - the number of connections to the LDAP server is limited, because not every
-  process will open it's own connection (this problem is also mitigated by
+  process will open its own connection (this problem is also mitigated by
   using nscd)
 - hostname lookups should now be deadlock-free because the LDAP server name is
   no longer looked up using the ldap method
@@ -135,7 +135,7 @@ and
 
 automounter map lookups (which are also defined in /etc/nsswitch.conf) are not
 supported because the NSS interface is not used for these. The common autofs
-implementation (on GNU/Linux) currently uses it's own method for getting the
+implementation (on GNU/Linux) currently uses its own method for getting the
 maps from LDAP.
 
 Although aliases are exposed through NSS, most mail servers parse /etc/aliases

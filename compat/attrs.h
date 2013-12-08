@@ -49,7 +49,7 @@
 #define LIKE_PRINTF(format_idx,arg_idx) /* no attribute */
 #endif
 
-/* indicates that the function is "pure": it's result is purely based on
+/* indicates that the function is "pure": its result is purely based on
    the parameters and has no side effects or used static data */
 #if GCC_VERSION(3,0)
 #define PURE        __attribute__((__pure__))

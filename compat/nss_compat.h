@@ -85,7 +85,7 @@ struct etherent
 };
 #endif /* not HAVE_STRUCT_ETHERENT */
 
-/* We also define struct __netgrent because it's definition is
+/* We also define struct __netgrent because its definition is
    not publically available. This is taken from inet/netgroup.h
    of the glibc (2.3.6) source tarball.
    The first part of the struct is the only part that is modified
