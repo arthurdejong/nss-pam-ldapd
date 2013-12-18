@@ -66,7 +66,7 @@ static const char *rpc_attrs[3];
 
 static int mkfilter_rpc_byname(const char *name, char *buffer, size_t buflen)
 {
-  char safename[300];
+  char safename[BUFLEN_SAFENAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
@@ -165,8 +165,8 @@ static int write_rpc(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname)
 
 NSLCD_HANDLE(
   rpc, byname, NSLCD_ACTION_RPC_BYNAME,
-  char name[256];
-  char filter[4096];
+  char name[BUFLEN_NAME];
+  char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
   log_setrequest("rpc=\"%s\"", name);,
   mkfilter_rpc_byname(name, filter, sizeof(filter)),
@@ -176,7 +176,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   rpc, bynumber, NSLCD_ACTION_RPC_BYNUMBER,
   int number;
-  char filter[4096];
+  char filter[BUFLEN_FILTER];
   READ_INT32(fp, number);
   log_setrequest("rpc=%lu", (unsigned long int)number);,
   mkfilter_rpc_bynumber(number, filter, sizeof(filter)),

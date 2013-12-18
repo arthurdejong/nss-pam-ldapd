@@ -87,7 +87,7 @@ static const char **passwd_attrs = NULL;
 static int mkfilter_passwd_byname(const char *name,
                                   char *buffer, size_t buflen)
 {
-  char safename[300];
+  char safename[BUFLEN_SAFENAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
@@ -340,7 +340,7 @@ MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session, const char *uid, int *rcp)
   const char *base;
   int i;
   static const char *attrs[3];
-  char filter[4096];
+  char filter[BUFLEN_FILTER];
   /* if it isn't a valid username, just bail out now */
   if (!isvalidname(uid))
   {
@@ -407,7 +407,7 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
   char gecos[1024];
   char homedir[256];
   char shell[64];
-  char passbuffer[256];
+  char passbuffer[BUFLEN_PASSWORDHASH];
   int i, j;
   /* get the usernames for this entry */
   usernames = myldap_get_values(entry, attmap_passwd_uid);
@@ -545,8 +545,8 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
 
 NSLCD_HANDLE_UID(
   passwd, byname, NSLCD_ACTION_PASSWD_BYNAME,
-  char name[256];
-  char filter[4096];
+  char name[BUFLEN_NAME];
+  char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
   log_setrequest("passwd=\"%s\"", name);
   if (!isvalidname(name))
@@ -562,7 +562,7 @@ NSLCD_HANDLE_UID(
 NSLCD_HANDLE_UID(
   passwd, byuid, NSLCD_ACTION_PASSWD_BYUID,
   uid_t uid;
-  char filter[4096];
+  char filter[BUFLEN_FILTER];
   READ_INT32(fp, uid);
   log_setrequest("passwd=%lu", (unsigned long int)uid);
   if (uid < nslcd_cfg->nss_min_uid)

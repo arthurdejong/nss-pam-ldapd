@@ -83,7 +83,7 @@ static const char **group_attrs = NULL;
 static int mkfilter_group_byname(const char *name,
                                  char *buffer, size_t buflen)
 {
-  char safename[300];
+  char safename[BUFLEN_SAFENAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
@@ -116,9 +116,9 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
                                    const char *uid,
                                    char *buffer, size_t buflen)
 {
-  char dn[256];
-  char safeuid[300];
-  char safedn[300];
+  char dn[BUFLEN_DN];
+  char safeuid[BUFLEN_SAFENAME];
+  char safedn[BUFLEN_SAFEDN];
   /* escape attribute */
   if (myldap_escape(uid, safeuid, sizeof(safeuid)))
     return -1;
@@ -139,7 +139,7 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
 static int mkfilter_group_bymemberdn(const char *dn,
                                      char *buffer, size_t buflen)
 {
-  char safedn[300];
+  char safedn[BUFLEN_SAFEDN];
   /* escape DN */
   if (myldap_escape(dn, safedn, sizeof(safedn)))
     return -1;
@@ -215,7 +215,7 @@ static int do_write_group(TFILE *fp, MYLDAP_ENTRY *entry,
 static void getmembers(MYLDAP_ENTRY *entry, MYLDAP_SESSION *session,
                        SET *members, SET *seen, SET *subgroups)
 {
-  char buf[256];
+  char buf[BUFLEN_NAME];
   int i;
   const char **values;
   /* add the memberUid values */
@@ -260,7 +260,7 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
   gid_t gids[MAXGIDS_PER_ENTRY];
   int numgids;
   char *tmp;
-  char passbuffer[256];
+  char passbuffer[BUFLEN_PASSWORDHASH];
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry2;
   int rc;
@@ -359,8 +359,8 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
 
 NSLCD_HANDLE(
   group, byname, NSLCD_ACTION_GROUP_BYNAME,
-  char name[256];
-  char filter[4096];
+  char name[BUFLEN_NAME];
+  char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
   log_setrequest("group=\"%s\"", name);
   if (!isvalidname(name))
@@ -375,7 +375,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   group, bygid, NSLCD_ACTION_GROUP_BYGID,
   gid_t gid;
-  char filter[4096];
+  char filter[BUFLEN_FILTER];
   READ_INT32(fp, gid);
   log_setrequest("group=%lu", (unsigned long int)gid);,
   mkfilter_group_bygid(gid, filter, sizeof(filter)),
@@ -391,8 +391,8 @@ int nslcd_group_bymember(TFILE *fp, MYLDAP_SESSION *session)
   const char *dn;
   const char *base;
   int rc, i;
-  char name[256];
-  char filter[4096];
+  char name[BUFLEN_NAME];
+  char filter[BUFLEN_FILTER];
   SET *seen=NULL, *tocheck=NULL;
   /* read request parameters */
   READ_STRING(fp, name);

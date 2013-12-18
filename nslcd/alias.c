@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -64,7 +64,7 @@ static const char *alias_attrs[3];
 static int mkfilter_alias_byname(const char *name,
                                  char *buffer, size_t buflen)
 {
-  char safename[300];
+  char safename[BUFLEN_SAFENAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
@@ -119,8 +119,8 @@ static int write_alias(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqalias)
 
 NSLCD_HANDLE(
   alias, byname, NSLCD_ACTION_ALIAS_BYNAME,
-  char name[256];
-  char filter[4096];
+  char name[BUFLEN_NAME];
+  char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
   log_setrequest("alias=\"%s\"", name);,
   mkfilter_alias_byname(name, filter, sizeof(filter)),

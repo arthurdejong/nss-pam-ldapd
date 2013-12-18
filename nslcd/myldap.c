@@ -91,13 +91,13 @@ struct ldap_session {
   /* a list of searches registered with this session */
   struct myldap_search *searches[MAX_SEARCHES_IN_SESSION];
   /* the username to bind with */
-  char binddn[256];
+  char binddn[BUFLEN_DN];
   /* the password to bind with if any */
-  char bindpw[64];
+  char bindpw[BUFLEN_PASSWORD];
   /* the authentication result (NSLCD_PAM_* code) */
   int policy_response;
   /* the authentication message */
-  char policy_message[1024];
+  char policy_message[BUFLEN_MESSAGE];
 };
 
 /* A search description set as returned by myldap_search(). */
@@ -155,7 +155,7 @@ int first_search = 1;
 
 static void myldap_err(int pri, LDAP *ld, int rc, const char *format, ...)
 {
-  char message[200];
+  char message[BUFLEN_MESSAGE];
   char *msg_ldap = NULL;
   char *msg_diag = NULL;
   char *msg_errno = NULL;

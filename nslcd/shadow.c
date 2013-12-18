@@ -72,7 +72,7 @@ static const char **shadow_attrs = NULL;
 
 static int mkfilter_shadow_byname(const char *name, char *buffer, size_t buflen)
 {
-  char safename[300];
+  char safename[BUFLEN_SAFENAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
@@ -230,7 +230,7 @@ static int write_shadow(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
   long expiredate;
   unsigned long flag;
   int i;
-  char passbuffer[256];
+  char passbuffer[BUFLEN_PASSWORDHASH];
   /* get username */
   usernames = myldap_get_values(entry, attmap_shadow_uid);
   if ((usernames == NULL) || (usernames[0] == NULL))
@@ -271,7 +271,7 @@ MYLDAP_ENTRY *shadow_uid2entry(MYLDAP_SESSION *session, const char *username,
   MYLDAP_SEARCH *search = NULL;
   MYLDAP_ENTRY *entry = NULL;
   const char *base;
-  char filter[4096];
+  char filter[BUFLEN_FILTER];
   int i;
   /* if it isn't a valid username, just bail out now */
   if (!isvalidname(username))
@@ -302,8 +302,8 @@ MYLDAP_ENTRY *shadow_uid2entry(MYLDAP_SESSION *session, const char *username,
 
 NSLCD_HANDLE_UID(
   shadow, byname, NSLCD_ACTION_SHADOW_BYNAME,
-  char name[256];
-  char filter[4096];
+  char name[BUFLEN_NAME];
+  char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
   log_setrequest("shadow=\"%s\"", name);,
   mkfilter_shadow_byname(name, filter, sizeof(filter)),

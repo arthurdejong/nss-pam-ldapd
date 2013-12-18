@@ -68,7 +68,7 @@ static const char *service_attrs[4];
 static int mkfilter_service_byname(const char *name, const char *protocol,
                                    char *buffer, size_t buflen)
 {
-  char safename[300], safeprotocol[300];
+  char safename[BUFLEN_SAFENAME], safeprotocol[BUFLEN_SAFENAME];
   /* escape attributes */
   if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
@@ -89,7 +89,7 @@ static int mkfilter_service_byname(const char *name, const char *protocol,
 static int mkfilter_service_bynumber(int number, const char *protocol,
                                      char *buffer, size_t buflen)
 {
-  char safeprotocol[300];
+  char safeprotocol[BUFLEN_SAFENAME];
   if (*protocol != '\0')
   {
     if (myldap_escape(protocol, safeprotocol, sizeof(safeprotocol)))
@@ -204,9 +204,9 @@ static int write_service(TFILE *fp, MYLDAP_ENTRY *entry,
 
 NSLCD_HANDLE(
   service, byname, NSLCD_ACTION_SERVICE_BYNAME,
-  char name[256];
-  char protocol[256];
-  char filter[4096];
+  char name[BUFLEN_NAME];
+  char protocol[BUFLEN_NAME];
+  char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
   READ_STRING(fp, protocol);
   log_setrequest("service=\"%s\"%s%s", name,
@@ -218,8 +218,8 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   service, bynumber, NSLCD_ACTION_SERVICE_BYNUMBER,
   int number;
-  char protocol[256];
-  char filter[4096];
+  char protocol[BUFLEN_NAME];
+  char filter[BUFLEN_FILTER];
   READ_INT32(fp, number);
   READ_STRING(fp, protocol);
   log_setrequest("service=%lu%s%s", (unsigned long int)number,

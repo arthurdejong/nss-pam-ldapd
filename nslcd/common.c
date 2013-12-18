@@ -118,7 +118,7 @@ const char *signame(int signum)
 const char *getfqdn(void)
 {
   static char *fqdn = NULL;
-  char hostname[HOST_NAME_MAX + 1];
+  char hostname[BUFLEN_HOSTNAME];
   int hostnamelen;
   int i;
   struct hostent *host = NULL;

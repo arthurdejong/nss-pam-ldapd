@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -66,7 +66,7 @@ static const char *host_attrs[3];
    by name, return -1 on errors */
 static int mkfilter_host_byname(const char *name, char *buffer, size_t buflen)
 {
-  char safename[300];
+  char safename[BUFLEN_HOSTNAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
@@ -148,8 +148,8 @@ static int write_host(TFILE *fp, MYLDAP_ENTRY *entry)
 
 NSLCD_HANDLE(
   host, byname, NSLCD_ACTION_HOST_BYNAME,
-  char name[256];
-  char filter[4096];
+  char name[BUFLEN_HOSTNAME];
+  char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
   log_setrequest("host=\"%s\"", name);,
   mkfilter_host_byname(name, filter, sizeof(filter)),
@@ -162,7 +162,7 @@ NSLCD_HANDLE(
   char addr[64];
   int len = sizeof(addr);
   char addrstr[64];
-  char filter[4096];
+  char filter[BUFLEN_FILTER];
   READ_ADDRESS(fp, addr, len, af);
   /* translate the address to a string */
   if (inet_ntop(af, addr, addrstr, sizeof(addrstr)) == NULL)

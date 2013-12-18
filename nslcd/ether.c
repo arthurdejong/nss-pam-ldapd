@@ -66,7 +66,7 @@ static const char *ether_attrs[3];
 static int mkfilter_ether_byname(const char *name,
                                  char *buffer, size_t buflen)
 {
-  char safename[300];
+  char safename[BUFLEN_HOSTNAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
@@ -155,8 +155,8 @@ static int write_ether(TFILE *fp, MYLDAP_ENTRY *entry,
 
 NSLCD_HANDLE(
   ether, byname, NSLCD_ACTION_ETHER_BYNAME,
-  char name[256];
-  char filter[4096];
+  char name[BUFLEN_HOSTNAME];
+  char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
   log_setrequest("ether=\"%s\"", name);,
   mkfilter_ether_byname(name, filter, sizeof(filter)),
@@ -167,7 +167,7 @@ NSLCD_HANDLE(
   ether, byether, NSLCD_ACTION_ETHER_BYETHER,
   struct ether_addr addr;
   char addrstr[20];
-  char filter[4096];
+  char filter[BUFLEN_FILTER];
   READ(fp, &addr, sizeof(uint8_t[6]));
   if (ether_ntoa_r(&addr, addrstr) == NULL)
     return -1;

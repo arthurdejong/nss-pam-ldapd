@@ -260,12 +260,12 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
 {
   int32_t tmpint32;
   int rc;
-  char username[256], service[64], ruser[256], rhost[HOST_NAME_MAX + 1], tty[64];
-  char password[64];
+  char username[BUFLEN_NAME], service[BUFLEN_NAME], ruser[BUFLEN_NAME], rhost[BUFLEN_HOSTNAME], tty[64];
+  char password[BUFLEN_PASSWORD];
   const char *userdn;
   MYLDAP_ENTRY *entry;
   int authzrc = NSLCD_PAM_SUCCESS;
-  char authzmsg[1024];
+  char authzmsg[BUFLEN_MESSAGE];
   authzmsg[0] = '\0';
   /* read request parameters */
   READ_STRING(fp, username);
@@ -438,10 +438,10 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
                           const char *ruser, const char *rhost,
                           const char *tty)
 {
-  char hostname[HOST_NAME_MAX + 1];
+  char hostname[BUFLEN_HOSTNAME];
   const char *fqdn;
   DICT *dict = NULL;
-  char filter[4096];
+  char filter[BUFLEN_FILTER];
   int rc = LDAP_SUCCESS;
   const char *res;
   int i;
@@ -497,9 +497,9 @@ int nslcd_pam_authz(TFILE *fp, MYLDAP_SESSION *session)
 {
   int32_t tmpint32;
   int rc;
-  char username[256], service[64], ruser[256], rhost[HOST_NAME_MAX + 1], tty[64];
+  char username[BUFLEN_NAME], service[BUFLEN_NAME], ruser[BUFLEN_NAME], rhost[BUFLEN_HOSTNAME], tty[64];
   MYLDAP_ENTRY *entry;
-  char authzmsg[1024];
+  char authzmsg[BUFLEN_MESSAGE];
   authzmsg[0] = '\0';
   /* read request parameters */
   READ_STRING(fp, username);
@@ -549,7 +549,7 @@ int nslcd_pam_authz(TFILE *fp, MYLDAP_SESSION *session)
 int nslcd_pam_sess_o(TFILE *fp, MYLDAP_SESSION UNUSED(*session))
 {
   int32_t tmpint32;
-  char username[256], service[64], ruser[256], rhost[HOST_NAME_MAX + 1], tty[64];
+  char username[BUFLEN_NAME], service[BUFLEN_NAME], ruser[BUFLEN_NAME], rhost[BUFLEN_HOSTNAME], tty[64];
   char sessionid[25];
   static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                  "abcdefghijklmnopqrstuvwxyz"
@@ -582,7 +582,7 @@ int nslcd_pam_sess_o(TFILE *fp, MYLDAP_SESSION UNUSED(*session))
 int nslcd_pam_sess_c(TFILE *fp, MYLDAP_SESSION UNUSED(*session))
 {
   int32_t tmpint32;
-  char username[256], service[64], ruser[256], rhost[HOST_NAME_MAX + 1], tty[64];
+  char username[BUFLEN_NAME], service[BUFLEN_NAME], ruser[BUFLEN_NAME], rhost[BUFLEN_HOSTNAME], tty[64];
   char sessionid[64];
   /* read request parameters */
   READ_STRING(fp, username);
@@ -679,7 +679,7 @@ static int try_pwmod(MYLDAP_SESSION *oldsession,
                      char *authzmsg, size_t authzmsg_len)
 {
   MYLDAP_SESSION *session;
-  char buffer[1024];
+  char buffer[BUFLEN_MESSAGE];
   int rc;
   /* set up a new connection */
   session = myldap_create_session();
@@ -723,13 +723,13 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
 {
   int32_t tmpint32;
   int rc;
-  char username[256], service[64], ruser[256], rhost[HOST_NAME_MAX + 1], tty[64];
+  char username[BUFLEN_NAME], service[BUFLEN_NAME], ruser[BUFLEN_NAME], rhost[BUFLEN_HOSTNAME], tty[64];
   int asroot;
-  char oldpassword[64];
-  char newpassword[64];
+  char oldpassword[BUFLEN_PASSWORD];
+  char newpassword[BUFLEN_PASSWORD];
   const char *binddn = NULL; /* the user performing the modification */
   MYLDAP_ENTRY *entry;
-  char authzmsg[1024];
+  char authzmsg[BUFLEN_MESSAGE];
   authzmsg[0] = '\0';
   /* read request parameters */
   READ_STRING(fp, username);

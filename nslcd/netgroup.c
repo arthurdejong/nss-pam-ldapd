@@ -65,7 +65,7 @@ static const char *netgroup_attrs[4];
 static int mkfilter_netgroup_byname(const char *name,
                                     char *buffer, size_t buflen)
 {
-  char safename[300];
+  char safename[BUFLEN_SAFENAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
@@ -237,8 +237,8 @@ static int write_netgroup(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname)
 
 NSLCD_HANDLE(
   netgroup, byname, NSLCD_ACTION_NETGROUP_BYNAME,
-  char name[256];
-  char filter[4096];
+  char name[BUFLEN_NAME];
+  char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
   log_setrequest("netgroup=\"%s\"", name);,
   mkfilter_netgroup_byname(name, filter, sizeof(filter)),

@@ -108,7 +108,7 @@ static MYLDAP_SESSION *get_session(const char *binddn, const char *userdn,
                                    const char *password, int *rcp)
 {
   MYLDAP_SESSION *session;
-  char buffer[256];
+  char buffer[BUFLEN_DN];
   /* set up a new connection */
   session = myldap_create_session();
   if (session == NULL)
@@ -161,9 +161,9 @@ int nslcd_usermod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
 {
   int32_t tmpint32;
   int rc = LDAP_SUCCESS;
-  char username[256];
+  char username[BUFLEN_NAME];
   int asroot, isroot;
-  char password[64];
+  char password[BUFLEN_PASSWORD];
   int32_t param;
   char buffer[4096];
   size_t buflen = sizeof(buffer);
@@ -175,7 +175,7 @@ int nslcd_usermod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
   const char *binddn = NULL; /* the user performing the modification */
   MYLDAP_ENTRY *entry;
   MYLDAP_SESSION *newsession;
-  char errmsg[1024];
+  char errmsg[BUFLEN_MESSAGE];
   /* read request parameters */
   READ_STRING(fp, username);
   READ_INT32(fp, asroot);

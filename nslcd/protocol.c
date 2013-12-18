@@ -65,7 +65,7 @@ static const char *protocol_attrs[3];
 static int mkfilter_protocol_byname(const char *name,
                                     char *buffer, size_t buflen)
 {
-  char safename[300];
+  char safename[BUFLEN_SAFENAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
     return -1;
@@ -167,8 +167,8 @@ static int write_protocol(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname)
 
 NSLCD_HANDLE(
   protocol, byname, NSLCD_ACTION_PROTOCOL_BYNAME,
-  char name[256];
-  char filter[4096];
+  char name[BUFLEN_NAME];
+  char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
   log_setrequest("protocol=\"%s\"", name);,
   mkfilter_protocol_byname(name, filter, sizeof(filter)),
@@ -178,7 +178,7 @@ NSLCD_HANDLE(
 NSLCD_HANDLE(
   protocol, bynumber, NSLCD_ACTION_PROTOCOL_BYNUMBER,
   int protocol;
-  char filter[4096];
+  char filter[BUFLEN_FILTER];
   READ_INT32(fp, protocol);
   log_setrequest("protocol=%lu", (unsigned long int)protocol);,
   mkfilter_protocol_bynumber(protocol, filter, sizeof(filter)),

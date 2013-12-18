@@ -159,6 +159,17 @@ void invalidator_do(enum ldap_map_selector map);
 #endif /* _POSIX_HOST_NAME_MAX */
 #endif /* not HOST_NAME_MAX */
 
+/* common buffer lengths */
+#define BUFLEN_NAME         256  /* user, group names and such */
+#define BUFLEN_SAFENAME     300  /* escaped name */
+#define BUFLEN_PASSWORD      64  /* passwords */
+#define BUFLEN_PASSWORDHASH 256  /* passwords hashes */
+#define BUFLEN_DN           256  /* distinguished names */
+#define BUFLEN_SAFEDN       300  /* escapedd dn */
+#define BUFLEN_FILTER      4096  /* search filters */
+#define BUFLEN_HOSTNAME (HOST_NAME_MAX + 1)  /* host names (+ escaped) */
+#define BUFLEN_MESSAGE     1024  /* message strings */
+
 /* provide strtouid() function alias */
 #if SIZEOF_UID_T == SIZEOF_UNSIGNED_LONG_INT
 #define strtouid (uid_t)strtoul
