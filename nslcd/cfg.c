@@ -618,6 +618,9 @@ static const char *print_scope(int scope)
     case LDAP_SCOPE_SUBTREE:  return "sub";
     case LDAP_SCOPE_ONELEVEL: return "one";
     case LDAP_SCOPE_BASE:     return "base";
+#ifdef LDAP_SCOPE_CHILDREN
+    case LDAP_SCOPE_CHILDREN: return "children";
+#endif /* LDAP_SCOPE_CHILDREN */
     default:                  return "???";
   }
 }
