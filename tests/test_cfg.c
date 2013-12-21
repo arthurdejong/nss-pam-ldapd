@@ -206,7 +206,8 @@ static void test_read(void)
           "map passwd homeDirectory \"${homeDirectory:-/home/$uid}\"\n"
           "filter group (&(objeclClass=posixGroup)(gid=1*))\n"
           "\n"
-          "scope passwd one\n");
+          "scope passwd one\n"
+          "cache dn2uid 10m 1s\n");
   fclose(fp);
   /* parse the file */
   cfg_defaults(&cfg);
@@ -224,6 +225,8 @@ static void test_read(void)
   assertstreq(attmap_passwd_uid, "sAMAccountName");
   assertstreq(group_filter, "(&(objeclClass=posixGroup)(gid=1*))");
   assert(passwd_scope == LDAP_SCOPE_ONELEVEL);
+  assert(cfg.cache_dn2uid_positive == 10 * 60);
+  assert(cfg.cache_dn2uid_negative == 1);
   /* remove temporary file */
   remove("temp.cfg");
 }
