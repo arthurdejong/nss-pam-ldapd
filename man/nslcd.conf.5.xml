@@ -844,6 +844,39 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="cache"> <!-- since 0.9.3 -->
+     <term><option>cache</option>
+           <replaceable>CACHE</replaceable>
+           <replaceable>TIME</replaceable>
+           <optional><replaceable>TIME</replaceable></optional></term>
+     <listitem>
+      <para>
+       Configure the time entries are kept in the specified cache.
+      </para>
+      <para>
+        The first <replaceable>TIME</replaceable> value specifies the time
+        to keep found entries in the cache.
+        The second <replaceable>TIME</replaceable> value specifies to the
+        time to remember that a particular entry was not found.
+        If the second parameter is absent, it is assumed to be the same as
+        the first.
+      </para>
+      <para>
+       Time values are specified as a number followed by an
+       <literal>s</literal> for seconds, <literal>m</literal> for minutes,
+       <literal>h</literal> for hours or <literal>d</literal> for days.
+       Use <literal>0</literal> or <literal>off</literal> to disable the
+       cache.
+      </para>
+      <para>
+       Currently, only the <literal>dn2uid</literal> cache is supported
+       that is used to remember DN to username lookups that are used when the
+       <literal>member</literal> attribute is used.
+       The default time value for this cache is <literal>15m</literal>.
+      </para>
+     </listitem>
+    </varlistentry>
+
    </variablelist>
   </refsect2>
 

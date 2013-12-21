@@ -213,6 +213,63 @@ static const char *print_boolean(int bool)
   else      return "no";
 }
 
+#define TIME_MINUTES 60
+#define TIME_HOURS (60 * 60)
+#define TIME_DAYS (60 * 60 * 24)
+
+static time_t parse_time(const char *filename, int lnr, const char *value)
+{
+  time_t t;
+  char *tmp = NULL;
+  if (strcasecmp(value, "off") == 0)
+    return 0;
+  errno = 0;
+  t = strtol(value, &tmp, 10);
+  if (errno != 0)
+  {
+    log_log(LOG_ERR, "%s:%d: value out of range: '%s'",
+            filename, lnr, value);
+    exit(EXIT_FAILURE);
+  }
+  if ((strcasecmp(tmp, "") == 0) || (strcasecmp(tmp, "s") == 0))
+    return t;
+  else if (strcasecmp(tmp, "m") == 0)
+    return t * TIME_MINUTES;
+  else if (strcasecmp(tmp, "h") == 0)
+    return t * TIME_HOURS;
+  else if (strcasecmp(tmp, "d") == 0)
+    return t * TIME_DAYS;
+  else
+  {
+    log_log(LOG_ERR, "%s:%d: invalid time value: '%s'",
+            filename, lnr, value);
+    exit(EXIT_FAILURE);
+  }
+}
+
+static time_t get_time(const char *filename, int lnr,
+                       const char *keyword, char **line)
+{
+  char token[32];
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(line, token, sizeof(token)) != NULL);
+  return parse_time(filename, lnr, token);
+}
+
+static void print_time(time_t t, char *buffer, size_t buflen)
+{
+  if (t == 0)
+    mysnprintf(buffer, buflen, "off");
+  else if ((t % TIME_DAYS) == 0)
+    mysnprintf(buffer, buflen, "%ldd", (long)(t / TIME_DAYS));
+  else if ((t % TIME_HOURS) == 0)
+    mysnprintf(buffer, buflen, "%ldh", (long)(t / TIME_HOURS));
+  else if ((t % TIME_MINUTES) == 0)
+    mysnprintf(buffer, buflen, "%ldm", (long)(t / TIME_MINUTES));
+  else
+    mysnprintf(buffer, buflen, "%lds", (long)t);
+}
+
 static void handle_uid(const char *filename, int lnr,
                        const char *keyword, char *line,
                        struct ldap_config *cfg)
@@ -973,6 +1030,34 @@ static void handle_reconnect_invalidate(
   }
 }
 
+static void handle_cache(const char *filename, int lnr,
+                         const char *keyword, char *line,
+                         struct ldap_config *cfg)
+{
+  char cache[16];
+  time_t value1, value2;
+  /* get cache map and values */
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(&line, cache, sizeof(cache)) != NULL);
+  value1 = get_time(filename, lnr, keyword, &line);
+  if ((line != NULL) && (*line != '\0'))
+    value2 = get_time(filename, lnr, keyword, &line);
+  else
+    value2 = value1;
+  get_eol(filename, lnr, keyword, &line);
+  /* check the cache */
+  if (strcasecmp(cache, "dn2uid") == 0)
+  {
+    cfg->cache_dn2uid_positive = value1;
+    cfg->cache_dn2uid_negative = value2;
+  }
+  else
+  {
+    log_log(LOG_ERR, "%s:%d: unknown cache: '%s'", filename, lnr, cache);
+    exit(EXIT_FAILURE);
+  }
+}
+
 /* This function tries to get the LDAP search base from the LDAP server.
    Note that this returns a string that has been allocated with strdup().
    For this to work the myldap module needs enough configuration information
@@ -1106,6 +1191,8 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->pam_password_prohibit_message = NULL;
   for (i = 0; i < LM_NONE; i++)
     cfg->reconnect_invalidate[i] = 0;
+  cfg->cache_dn2uid_positive = 15 * TIME_MINUTES;
+  cfg->cache_dn2uid_negative = 15 * TIME_MINUTES;
 }
 
 static void cfg_read(const char *filename, struct ldap_config *cfg)
@@ -1441,6 +1528,10 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       handle_reconnect_invalidate(filename, lnr, keyword, line, cfg);
     }
+    else if (strcasecmp(keyword, "cache") == 0)
+    {
+      handle_cache(filename, lnr, keyword, line, cfg);
+    }
 #ifdef ENABLE_CONFIGFILE_CHECKING
     /* fallthrough */
     else
@@ -1702,6 +1793,9 @@ static void cfg_dump(void)
     }
   if (buffer[0] != '\0')
     log_log(LOG_DEBUG, "CFG: reconnect_invalidate %s", buffer);
+  print_time(nslcd_cfg->cache_dn2uid_positive, buffer, sizeof(buffer) / 2);
+  print_time(nslcd_cfg->cache_dn2uid_positive, buffer + (sizeof(buffer) / 2), sizeof(buffer) / 2);
+  log_log(LOG_DEBUG, "CFG: cache dn2uid %s %s", buffer, buffer + (sizeof(buffer) / 2));
 }
 
 void cfg_init(const char *fname)

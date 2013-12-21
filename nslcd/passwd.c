@@ -162,7 +162,6 @@ struct dn2uid_cache_entry {
   time_t timestamp;
   char *uid;
 };
-#define DN2UID_CACHE_TIMEOUT (15 * 60)
 
 /* checks whether the entry has a valid uidNumber attribute
    (>= nss_min_uid) */
@@ -279,23 +278,36 @@ char *dn2uid(MYLDAP_SESSION *session, const char *dn, char *buf, size_t buflen)
       return NULL;
     return buf;
   }
+  /* if we don't use the cache, just lookup and return */
+  if ((nslcd_cfg->cache_dn2uid_positive == 0) && (nslcd_cfg->cache_dn2uid_negative == 0))
+    return lookup_dn2uid(session, dn, NULL, buf, buflen);
   /* see if we have a cached entry */
   pthread_mutex_lock(&dn2uid_cache_mutex);
   if (dn2uid_cache == NULL)
     dn2uid_cache = dict_new();
   if ((dn2uid_cache != NULL) && ((cacheentry = dict_get(dn2uid_cache, dn)) != NULL))
   {
-    /* if the cached entry is still valid, return that */
-    if (time(NULL) < (cacheentry->timestamp + DN2UID_CACHE_TIMEOUT))
+    if ((cacheentry->uid != NULL) && (strlen(cacheentry->uid) < buflen))
     {
-      if ((cacheentry->uid != NULL) && (strlen(cacheentry->uid) < buflen))
+      /* if the cached entry is still valid, return that */
+      if ((nslcd_cfg->cache_dn2uid_positive > 0) &&
+          (time(NULL) < (cacheentry->timestamp + nslcd_cfg->cache_dn2uid_positive)))
+      {
         strcpy(buf, cacheentry->uid);
-      else
-        buf = NULL;
-      pthread_mutex_unlock(&dn2uid_cache_mutex);
-      return buf;
+        pthread_mutex_unlock(&dn2uid_cache_mutex);
+        return buf;
+      }
     }
-    /* leave the entry intact, just replace the uid below */
+    else
+    {
+      if ((nslcd_cfg->cache_dn2uid_negative > 0) &&
+           (time(NULL) < (cacheentry->timestamp + nslcd_cfg->cache_dn2uid_negative)))
+      /* if the cached entry is still valid, return that */
+      {
+        pthread_mutex_unlock(&dn2uid_cache_mutex);
+        return NULL;
+      }
+    }
   }
   pthread_mutex_unlock(&dn2uid_cache_mutex);
   /* look up the uid using an LDAP query */
