@@ -803,10 +803,10 @@ then
   AC_CHECK_FUNCS(ldap_get_values ldap_value_free)
   AC_CHECK_FUNCS(ldap_get_values_len ldap_count_values_len ldap_value_free_len)
   AC_CHECK_FUNCS(ldap_err2string ldap_abandon)
-  AC_CHECK_FUNCS(ldap_create_control ldap_control_find)
+  AC_CHECK_FUNCS(ldap_control_create ldap_create_control ldap_control_find)
   AC_CHECK_FUNCS(ldap_controls_free ldap_control_free)
   AC_CHECK_FUNCS(ldap_parse_passwordpolicy_control ldap_passwordpolicy_err2txt)
-  AC_CHECK_FUNCS(ldap_create_deref_control)
+  AC_CHECK_FUNCS(ldap_create_deref_control ldap_create_deref_control_value)
 
   # replace ldap_create_page_control() and ldap_parse_page_control()
   AC_CHECK_FUNCS(ldap_create_page_control ldap_parse_page_control,, [AC_LIBOBJ(pagectrl)])
@@ -859,6 +859,64 @@ then
   then
     AC_DEFINE(LDAP_SET_REBIND_PROC_RETURNS_VOID, 1,
               [Define to 1 if ldap_set_rebind_proc() returns void.])
+  fi
+
+  # check for broken implementations of ldap_create_deref_control()
+  if test "x$ac_cv_func_ldap_create_deref_control" = "xyes"
+  then
+    # this bug cannot be determined on compile time so we run a
+    # small test program
+    AC_CACHE_CHECK(
+        [ldap_create_deref_control() implementation],
+        nslcd_cv_ldap_create_deref_control_working,
+            [AC_RUN_IFELSE(
+                [AC_LANG_PROGRAM([[
+                    #include <stdio.h>
+                    #include <lber.h>
+                    #include <ldap.h>
+                    ]], [[
+                    int rc;
+                    LDAP *ld;
+                    LDAPControl *ctrls[2] = {NULL, NULL};
+                    struct LDAPDerefSpec ds[2];
+                    char *attrs[2] = {"uid", NULL};
+                    ld = ldap_init("localhost", LDAP_PORT);
+                    if (ld == NULL)
+                    {
+                      fprintf(stderr, "ldap_init() failed\n");
+                      return 2;
+                    }
+                    ds[0].derefAttr = "member";
+                    ds[0].attributes = attrs;
+                    ds[1].derefAttr = NULL;
+                    rc = ldap_create_deref_control(ld, ds, 0, &ctrls[0]);
+                    if (rc != LDAP_SUCCESS)
+                    {
+                      fprintf(stderr, "ldap_create_deref_control() failed: %s\n",
+                              ldap_err2string(rc));
+                      return 2;
+                    }
+                    if (ldap_control_find(LDAP_CONTROL_X_DEREF, ctrls, NULL) != NULL)
+                      return 0;
+                    if (ldap_control_find(LDAP_CONTROL_PAGEDRESULTS, ctrls, NULL) != NULL)
+                    {
+                      fprintf(stderr, "ldap_create_deref_control() created LDAP_CONTROL_PAGEDRESULTS control\n");
+                      return 3;
+                    }
+                    fprintf(stderr, "ldap_create_deref_control() created unknown control\n");
+                    return 2;
+                    ]])],
+                [nslcd_cv_ldap_create_deref_control_working=ok],
+                [if test "$?" -eq 3; then nslcd_cv_ldap_create_deref_control_working=broken
+                 else nslcd_cv_ldap_create_deref_control_working=unknown; fi],
+                [nslcd_cv_ldap_create_deref_control_working=cross])])
+    if test "x$nslcd_cv_ldap_create_deref_control_working" != "xok"
+    then
+      AC_MSG_NOTICE([using replacement ldap_create_deref_control()])
+      AC_LIBOBJ(derefctrl)
+      AC_DEFINE(REPLACE_LDAP_CREATE_DEREF_CONTROL, 1,
+                [Define to 1 if ldap_create_deref_control() is broken.])
+    fi
   fi
 
   # save nslcd LIBS and CFLAGS and restore originals

@@ -1,7 +1,7 @@
 /*
    ldap_compat.h - provide a replacement definitions for some ldap functions
 
-   Copyright (C) 2009, 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2009-2013 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -80,6 +80,14 @@ int ldap_parse_passwordpolicy_control(LDAP *ld, LDAPControl *ctrl,
 const char *ldap_passwordpolicy_err2txt(LDAPPasswordPolicyError error);
 #endif /* HAVE_LDAP_PASSWORDPOLICY_ERR2TXT */
 
+#ifdef REPLACE_LDAP_CREATE_DEREF_CONTROL
+/* provide a replacement implementation of ldap_create_deref_control() */
+int replacement_ldap_create_deref_control(LDAP *ld, LDAPDerefSpec *ds,
+      int iscritical, LDAPControl **ctrlp);
+#define ldap_create_deref_control(ld, dc, iscritical, ctrlp) \
+      replacement_ldap_create_deref_control(ld, dc, iscritical, ctrlp)
+#endif /* REPLACE_LDAP_CREATE_DEREF_CONTROL */
+
 /* compatibility definition */
 #ifndef LDAP_SASL_QUIET
 #define LDAP_SASL_QUIET 2U
@@ -106,5 +114,8 @@ const char *ldap_passwordpolicy_err2txt(LDAPPasswordPolicyError error);
 #ifndef LDAP_CONTROL_PASSWORDPOLICYRESPONSE
 #define LDAP_CONTROL_PASSWORDPOLICYRESPONSE "1.3.6.1.4.1.42.2.27.8.5.1"
 #endif /* LDAP_CONTROL_PASSWORDPOLICYRESPONSE */
+#ifndef LDAP_CONTROL_X_DEREF
+#define LDAP_CONTROL_X_DEREF "1.3.6.1.4.1.4203.666.5.16"
+#endif /* LDAP_CONTROL_X_DEREF */
 
 #endif /* COMPAT__LDAP_COMPAT_H */
