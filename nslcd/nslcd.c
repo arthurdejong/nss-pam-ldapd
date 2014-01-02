@@ -2,7 +2,7 @@
    nslcd.c - ldap local connection daemon
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -53,7 +53,6 @@
 #ifndef HAVE_GETOPT_LONG
 #include "compat/getopt_long.h"
 #endif /* not HAVE_GETOPT_LONG */
-#include "compat/daemon.h"
 #include <dlfcn.h>
 #include <libgen.h>
 #include <limits.h>
@@ -65,6 +64,7 @@
 #include "compat/attrs.h"
 #include "compat/getpeercred.h"
 #include "compat/socket.h"
+#include "daemonize.h"
 
 /* read timeout is half a second because clients should send their request
    quickly, write timeout is 60 seconds because clients could be taking some
@@ -117,7 +117,7 @@ static void display_version(FILE *fp)
 {
   fprintf(fp, "%s\n", PACKAGE_STRING);
   fprintf(fp, "Written by Luke Howard and Arthur de Jong.\n\n");
-  fprintf(fp, "Copyright (C) 1997-2013 Luke Howard, Arthur de Jong and West Consulting\n"
+  fprintf(fp, "Copyright (C) 1997-2014 Luke Howard, Arthur de Jong and West Consulting\n"
               "This is free software; see the source for copying conditions.  There is NO\n"
               "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
@@ -649,13 +649,7 @@ int main(int argc, char *argv[])
   struct timespec ts;
 #endif /* HAVE_PTHREAD_TIMEDJOIN_NP */
   /* close all file descriptors (except stdin/out/err) */
-  i = sysconf(_SC_OPEN_MAX) - 1;
-  /* if the system does not have OPEN_MAX just close the first 32 and
-     hope we closed enough */
-  if (i < 0)
-    i = 32;
-  for (; i > 3; i--)
-    close(i);
+  daemonize_closefds();
   /* parse the command line */
   parse_cmdline(argc, argv);
   /* clean the environment */
@@ -695,22 +689,34 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
   }
+  /* change directory */
+  if (chdir("/") != 0)
+  {
+    log_log(LOG_ERR, "chdir failed: %s", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
   /* normal check for pidfile locked */
   if (is_locked(NSLCD_PIDFILE))
   {
-    log_log(LOG_ERR, "daemon may already be active, cannot acquire lock (%s): %s",
+    log_log(LOG_ERR, "nslcd may already be active, cannot acquire lock (%s): %s",
             NSLCD_PIDFILE, strerror(errno));
     exit(EXIT_FAILURE);
   }
   /* daemonize */
-  if ((!nslcd_debugging) && (!nslcd_nofork) && (daemon(0, 0) < 0))
+  if ((!nslcd_debugging) && (!nslcd_nofork))
   {
-    log_log(LOG_ERR, "unable to daemonize: %s", strerror(errno));
-    exit(EXIT_FAILURE);
+    if (daemonize_daemon() != 0)
+    {
+      log_log(LOG_ERR, "unable to daemonize: %s", strerror(errno));
+      exit(EXIT_FAILURE);
+    }
   }
   /* intilialize logging */
   if (!nslcd_debugging)
+  {
+    daemonize_redirect_stdio();
     log_startlogging();
+  }
   /* write pidfile */
   create_pidfile(NSLCD_PIDFILE);
   /* log start */
@@ -719,6 +725,7 @@ int main(int argc, char *argv[])
   if (atexit(exithandler))
   {
     log_log(LOG_ERR, "atexit() failed: %s", strerror(errno));
+    daemonize_ready(EXIT_FAILURE, "atexit() failed\n");
     exit(EXIT_FAILURE);
   }
   /* create socket */
@@ -760,6 +767,7 @@ int main(int argc, char *argv[])
     {
       log_log(LOG_ERR, "cannot setgid(%d): %s",
               (int)nslcd_cfg->gid, strerror(errno));
+      daemonize_ready(EXIT_FAILURE, "cannot setgid()\n");
       exit(EXIT_FAILURE);
     }
     log_log(LOG_DEBUG, "setgid(%d) done", (int)nslcd_cfg->gid);
@@ -771,6 +779,7 @@ int main(int argc, char *argv[])
     {
       log_log(LOG_ERR, "cannot setuid(%d): %s",
               (int)nslcd_cfg->uid, strerror(errno));
+      daemonize_ready(EXIT_FAILURE, "cannot setuid()\n");
       exit(EXIT_FAILURE);
     }
     log_log(LOG_DEBUG, "setuid(%d) done", (int)nslcd_cfg->uid);
@@ -792,6 +801,7 @@ int main(int argc, char *argv[])
   if (nslcd_threads == NULL)
   {
     log_log(LOG_CRIT, "main(): malloc() failed to allocate memory");
+    daemonize_ready(EXIT_FAILURE, "malloc() failed to allocate memory\n");
     exit(EXIT_FAILURE);
   }
   for (i = 0; i < nslcd_cfg->threads; i++)
@@ -800,6 +810,7 @@ int main(int argc, char *argv[])
     {
       log_log(LOG_ERR, "unable to start worker thread %d: %s",
               i, strerror(errno));
+      daemonize_ready(EXIT_FAILURE, "unable to start worker thread\n");
       exit(EXIT_FAILURE);
     }
   }
@@ -813,6 +824,8 @@ int main(int argc, char *argv[])
   install_sighandler(SIGTERM, sig_handler);
   install_sighandler(SIGUSR1, sig_handler);
   install_sighandler(SIGUSR2, SIG_IGN);
+  /* signal the starting process to exit because we can provide services now */
+  daemonize_ready(EXIT_SUCCESS, NULL);
   /* wait until we received a signal */
   while ((nslcd_receivedsignal == 0) || (nslcd_receivedsignal == SIGUSR1))
   {
