@@ -1,7 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2006, 2007 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2006-2007 West Consulting
+# Copyright (C) 2006-2014 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -26,6 +26,7 @@ AM_CFLAGS = $(PTHREAD_CFLAGS)
 nslcd_SOURCES = nslcd.c ../nslcd.h ../common/nslcd-prot.h \
                 ../compat/attrs.h \
                 log.c log.h \
+                daemonize.c daemonize.h \
                 common.c common.h \
                 myldap.c myldap.h \
                 cfg.c cfg.h \
