@@ -697,13 +697,6 @@ then
   AC_REPLACE_FUNCS(getopt_long)
   AC_REPLACE_FUNCS(strndup)
 
-  # replace daemon() function if it is not on the system
-  AC_SEARCH_LIBS(daemon, bsd)
-  AC_REPLACE_FUNCS(daemon)
-  AC_CHECK_DECLS([daemon],,, [
-      #include <unistd.h>
-      #include <stdlib.h>])
-
   # replace ether_aton_r() and ether_ntoa_r() if they are not found
   AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,, [AC_LIBOBJ(ether)])
 

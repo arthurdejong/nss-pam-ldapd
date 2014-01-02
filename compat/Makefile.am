@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2008-2014 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,6 @@ AM_CPPFLAGS=-I$(top_srcdir)
 AM_CFLAGS = -fPIC
 
 EXTRA_DIST = getopt_long.c getopt_long.h \
-             daemon.c daemon.h \
              ether.c ether.h \
              shell.h \
              strndup.c strndup.h \
