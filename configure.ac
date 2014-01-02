@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2006-2014 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ AC_PREREQ(2.61)
 AC_COPYRIGHT(
 [Copyright (C) 2006 Luke Howard
 Copyright (C) 2006 West Consulting
-Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+Copyright (C) 2006-2014 Arthur de Jong
 
 This configure script is derived from configure.ac which is free software;
 you can redistribute it and/or modify it under the terms of the GNU Lesser
@@ -726,7 +726,7 @@ then
   pthread_save_LIBS="$LIBS"
   CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
   LIBS="$LIBS $PTHREAD_LIBS"
-  AC_CHECK_FUNCS([pthread_mutex_lock pthread_join pthread_timedjoin_np])
+  AC_CHECK_FUNCS([pthread_mutex_lock pthread_join pthread_timedjoin_np pthread_atfork])
   CFLAGS="$pthread_save_CFLAGS"
   LIBS="$pthread_save_LIBS"
 

@@ -29,6 +29,9 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif /* HAVE_PTHREAD_H */
 
 #include "daemonize.h"
 
@@ -105,6 +108,15 @@ static int wait_for_response(int fd)
   _exit(rc);
 }
 
+static void closefd(void)
+{
+  if (daemonizefd >= 0)
+  {
+    close(daemonizefd);
+    daemonizefd = -1;
+  }
+}
+
 int daemonize_daemon(void)
 {
   int pipefds[2];
@@ -165,6 +177,12 @@ int daemonize_daemon(void)
       _exit(EXIT_SUCCESS);
   }
   daemonizefd = pipefds[1];
+  /* close the file descriptor on exec (ignore errors) */
+  fcntl(daemonizefd, F_SETFD, FD_CLOEXEC);
+#ifdef HAVE_PTHREAD_ATFORK
+  /* handle any other forks by closing daemonizefd first */
+  (void)pthread_atfork(NULL, NULL, closefd);
+#endif /* HAVE_PTHREAD_ATFORK */
   return 0;
 }
 
