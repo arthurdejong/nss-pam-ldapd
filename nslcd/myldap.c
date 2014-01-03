@@ -4,8 +4,8 @@
    which has been forked into the nss-pam-ldapd library.
 
    Copyright (C) 1997-2006 Luke Howard
-   Copyright (C) 2006, 2007 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2007 West Consulting
+   Copyright (C) 2006-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -1053,9 +1053,9 @@ void myldap_get_policy_response(MYLDAP_SESSION *session, int *response,
 
 static int do_try_search(MYLDAP_SEARCH *search)
 {
+  int ctrlidx = 0;
   int rc;
-  LDAPControl *serverCtrls[2];
-  LDAPControl **pServerCtrls;
+  LDAPControl *serverctrls[2];
   int msgid;
   /* ensure that we have an open connection */
   rc = do_open(search->session);
@@ -1065,35 +1065,36 @@ static int do_try_search(MYLDAP_SEARCH *search)
   if ((nslcd_cfg->pagesize > 0) && (search->scope != LDAP_SCOPE_BASE))
   {
     rc = ldap_create_page_control(search->session->ld, nslcd_cfg->pagesize,
-                                  NULL, 0, &serverCtrls[0]);
+                                  search->cookie, 0, &serverctrls[ctrlidx]);
     if (rc == LDAP_SUCCESS)
-    {
-      serverCtrls[1] = NULL;
-      pServerCtrls = serverCtrls;
-    }
+      ctrlidx++;
     else
     {
       myldap_err(LOG_WARNING, search->session->ld, rc,
                  "ldap_create_page_control() failed");
-      /* clear error flag */
-      rc = LDAP_SUCCESS;
-      if (ldap_set_option(search->session->ld, LDAP_OPT_ERROR_NUMBER, &rc) != LDAP_SUCCESS)
-        log_log(LOG_WARNING, "failed to clear the error flag");
-      pServerCtrls = NULL;
+      serverctrls[ctrlidx] = NULL;
+      /* if we were paging, failure building the second control is fatal */
+      if (search->cookie != NULL)
+        return rc;
     }
   }
-  else
-    pServerCtrls = NULL;
+  /* NULL terminate control list */
+  serverctrls[ctrlidx] = NULL;
+  /* clear error flag (perhaps control setting failed) */
+  if (ctrlidx > 0)
+  {
+    rc = LDAP_SUCCESS;
+    if (ldap_set_option(search->session->ld, LDAP_OPT_ERROR_NUMBER, &rc) != LDAP_SUCCESS)
+      log_log(LOG_WARNING, "failed to clear the error flag");
+  }
   /* perform the search */
   rc = ldap_search_ext(search->session->ld, search->base, search->scope,
                        search->filter, (char **)(search->attrs),
-                       0, pServerCtrls, NULL, NULL, LDAP_NO_LIMIT, &msgid);
+                       0, serverctrls[0] == NULL ? NULL : serverctrls,
+                       NULL, NULL, LDAP_NO_LIMIT, &msgid);
   /* free the controls if we had them */
-  if (pServerCtrls != NULL)
-  {
-    ldap_control_free(serverCtrls[0]);
-    serverCtrls[0] = NULL;
-  }
+  for (ctrlidx = 0; serverctrls[ctrlidx] != NULL; ctrlidx++)
+    ldap_control_free(serverctrls[ctrlidx]);
   /* handle errors */
   if (rc != LDAP_SUCCESS)
   {
@@ -1381,10 +1382,8 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
 {
   int rc;
   int parserc;
-  int msgid;
   struct timeval tv, *tvp;
   LDAPControl **resultcontrols;
-  LDAPControl *serverctrls[2];
   ber_int_t count;
   /* check parameters */
   if ((search == NULL) || (search->session == NULL) || (search->session->ld == NULL))
@@ -1526,29 +1525,9 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
           return NULL;
         }
         /* try the next page */
-        serverctrls[0] = NULL;
-        serverctrls[1] = NULL;
-        rc = ldap_create_page_control(search->session->ld, nslcd_cfg->pagesize,
-                                      search->cookie, 0, &serverctrls[0]);
+        rc = do_try_search(search);
         if (rc != LDAP_SUCCESS)
         {
-          if (serverctrls[0] != NULL)
-            ldap_control_free(serverctrls[0]);
-          myldap_err(LOG_WARNING, search->session->ld, rc, "ldap_create_page_control() failed");
-          myldap_search_close(search);
-          if (rcp != NULL)
-            *rcp = rc;
-          return NULL;
-        }
-        /* set up a new search for the next page */
-        rc = ldap_search_ext(search->session->ld,
-                             search->base, search->scope, search->filter,
-                             search->attrs, 0, serverctrls, NULL, NULL,
-                             LDAP_NO_LIMIT, &msgid);
-        ldap_control_free(serverctrls[0]);
-        if (rc != LDAP_SUCCESS)
-        {
-          myldap_err(LOG_WARNING, search->session->ld, rc, "ldap_search_ext() failed");
           /* close connection on connection problems */
           if ((rc == LDAP_UNAVAILABLE) || (rc == LDAP_SERVER_DOWN))
             do_close(search->session);
@@ -1557,7 +1536,6 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
             *rcp = rc;
           return NULL;
         }
-        search->msgid = msgid;
         /* we continue with another pass */
         break;
       case LDAP_RES_SEARCH_REFERENCE:
