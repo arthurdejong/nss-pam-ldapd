@@ -1499,7 +1499,8 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
                                        &count, &(search->cookie));
           if (rc != LDAP_SUCCESS)
           {
-            myldap_err(LOG_WARNING, search->session->ld, rc, "ldap_parse_page_control() failed");
+            if (rc != LDAP_CONTROL_NOT_FOUND)
+              myldap_err(LOG_WARNING, search->session->ld, rc, "ldap_parse_page_control() failed");
             /* clear error flag */
             rc = LDAP_SUCCESS;
             if (ldap_set_option(search->session->ld, LDAP_OPT_ERROR_NUMBER,
