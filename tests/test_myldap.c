@@ -2,7 +2,7 @@
    test_myldap.c - simple test for the myldap module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2011, 2012 Arthur de Jong
+   Copyright (C) 2007-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -120,10 +120,9 @@ static void test_get(void)
   assert(entry != NULL);
   printf("test_myldap: test_get(): got DN %s\n", myldap_get_dn(entry));
   /* get some attribute values */
-  (void)myldap_get_values(entry, "gidNumber");
-  (void)myldap_get_values(entry, "userPassword");
-  (void)myldap_get_values(entry, "memberUid");
-  (void)myldap_get_values(entry, "member");
+  assert(myldap_get_values(entry, "gidNumber") != NULL);
+  assert(myldap_get_values(entry, "memberUid") == NULL);
+  assert(myldap_get_values(entry, "member") != NULL);
   /* perform another search */
   printf("test_myldap: test_get(): doing get...\n");
   search2 = myldap_search(session, "cn=Test User2,ou=people,dc=test,dc=tld",
@@ -413,7 +412,7 @@ static void test_escape(void)
 }
 
 /* the main program... */
-int main(int argc, char *argv[])
+int main(int UNUSED(argc), char UNUSED(*argv[]))
 {
   char *srcdir;
   char fname[100];
