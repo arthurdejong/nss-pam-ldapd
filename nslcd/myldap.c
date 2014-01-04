@@ -130,9 +130,9 @@ struct myldap_search {
    done per returned entry. */
 #define MAX_ATTRIBUTES_PER_ENTRY 16
 
-/* The maximum number of ranged attribute values that may be stoted
-   per entry. */
-#define MAX_RANGED_ATTRIBUTES_PER_ENTRY 8
+/* The maximum number of buffers (used for ranged attribute values and
+   values returned by bervalues_to_values()) that may be stored per entry. */
+#define MAX_BUFFERS_PER_ENTRY 8
 
 /* A single entry from the LDAP database as returned by
    myldap_get_entry(). */
@@ -146,8 +146,8 @@ struct myldap_entry {
   char **exploded_rdn;
   /* a cache of attribute to value list */
   char **attributevalues[MAX_ATTRIBUTES_PER_ENTRY];
-  /* a reference to ranged attribute values so we can free() them later on */
-  char **rangedattributevalues[MAX_RANGED_ATTRIBUTES_PER_ENTRY];
+  /* a reference to buffers so we can free() them later on */
+  char **buffers[MAX_BUFFERS_PER_ENTRY];
 };
 
 /* Flag to record first search operation */
@@ -206,8 +206,8 @@ static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search)
   entry->exploded_rdn = NULL;
   for (i = 0; i < MAX_ATTRIBUTES_PER_ENTRY; i++)
     entry->attributevalues[i] = NULL;
-  for (i = 0; i < MAX_RANGED_ATTRIBUTES_PER_ENTRY; i++)
-    entry->rangedattributevalues[i] = NULL;
+  for (i = 0; i < MAX_BUFFERS_PER_ENTRY; i++)
+    entry->buffers[i] = NULL;
   /* return the fresh entry */
   return entry;
 }
@@ -225,10 +225,10 @@ static void myldap_entry_free(MYLDAP_ENTRY *entry)
   for (i = 0; i < MAX_ATTRIBUTES_PER_ENTRY; i++)
     if (entry->attributevalues[i] != NULL)
       ldap_value_free(entry->attributevalues[i]);
-  /* free all ranged attribute values */
-  for (i = 0; i < MAX_RANGED_ATTRIBUTES_PER_ENTRY; i++)
-    if (entry->rangedattributevalues[i] != NULL)
-      free(entry->rangedattributevalues[i]);
+  /* free all buffers */
+  for (i = 0; i < MAX_BUFFERS_PER_ENTRY; i++)
+    if (entry->buffers[i] != NULL)
+      free(entry->buffers[i]);
   /* we don't need the result anymore, ditch it. */
   ldap_msgfree(entry->search->msg);
   entry->search->msg = NULL;
@@ -1769,14 +1769,14 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry, const char *attr)
       if (values == NULL)
         return NULL;
       /* store values entry so we can free it later on */
-      for (i = 0; i < MAX_RANGED_ATTRIBUTES_PER_ENTRY; i++)
-        if (entry->rangedattributevalues[i] == NULL)
+      for (i = 0; i < MAX_BUFFERS_PER_ENTRY; i++)
+        if (entry->buffers[i] == NULL)
         {
-          entry->rangedattributevalues[i] = values;
-          return (const char **)entry->rangedattributevalues[i];
+          entry->buffers[i] = values;
+          return (const char **)entry->buffers[i];
         }
       /* we found no room to store the values */
-      log_log(LOG_ERR, "ldap_get_values() couldn't store results, increase MAX_RANGED_ATTRIBUTES_PER_ENTRY");
+      log_log(LOG_ERR, "ldap_get_values() couldn't store results, increase MAX_BUFFERS_PER_ENTRY");
       free(values);
       return NULL;
     }
@@ -1893,14 +1893,14 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *attr)
   if (values == NULL)
     return NULL;
   /* store values entry so we can free it later on */
-  for (i = 0; i < MAX_RANGED_ATTRIBUTES_PER_ENTRY; i++)
-    if (entry->rangedattributevalues[i] == NULL)
+  for (i = 0; i < MAX_BUFFERS_PER_ENTRY; i++)
+    if (entry->buffers[i] == NULL)
     {
-      entry->rangedattributevalues[i] = (char **)values;
+      entry->buffers[i] = (char **)values;
       return values;
     }
   /* we found no room to store the values */
-  log_log(LOG_ERR, "myldap_get_values_len() couldn't store results, increase MAX_RANGED_ATTRIBUTES_PER_ENTRY");
+  log_log(LOG_ERR, "myldap_get_values_len() couldn't store results, increase MAX_BUFFERS_PER_ENTRY");
   free(values);
   return NULL;
 }
