@@ -78,6 +78,9 @@ static const char *default_group_userPassword = "*"; /* unmatchable */
 /* the attribute list to request with searches */
 static const char **group_attrs = NULL;
 
+/* the attribute list for bymember searches (without member attributes) */
+static const char **group_bymember_attrs = NULL;
+
 /* create a search filter for searching a group entry
    by name, return -1 on errors */
 static int mkfilter_group_byname(const char *name,
@@ -176,6 +179,18 @@ void group_init(void)
   attmap_add_attributes(set, attmap_group_member);
   group_attrs = set_tolist(set);
   if (group_attrs == NULL)
+  {
+    log_log(LOG_CRIT, "malloc() failed to allocate memory");
+    exit(EXIT_FAILURE);
+  }
+  set_free(set);
+  /* set up bymember attribute list */
+  set = set_new();
+  attmap_add_attributes(set, attmap_group_cn);
+  attmap_add_attributes(set, attmap_group_userPassword);
+  attmap_add_attributes(set, attmap_group_gidNumber);
+  group_bymember_attrs = set_tolist(set);
+  if (group_bymember_attrs == NULL)
   {
     log_log(LOG_CRIT, "malloc() failed to allocate memory");
     exit(EXIT_FAILURE);
@@ -447,7 +462,7 @@ int nslcd_group_bymember(TFILE *fp, MYLDAP_SESSION *session)
   {
     /* do the LDAP search */
     search = myldap_search(session, base, group_scope, filter,
-                           group_attrs, NULL);
+                           group_bymember_attrs, NULL);
     if (search == NULL)
     {
       if (seen != NULL)
@@ -497,7 +512,7 @@ int nslcd_group_bymember(TFILE *fp, MYLDAP_SESSION *session)
       /* do the LDAP searches */
       for (i = 0; (base = group_bases[i]) != NULL; i++)
       {
-        search = myldap_search(session, base, group_scope, filter, group_attrs, NULL);
+        search = myldap_search(session, base, group_scope, filter, group_bymember_attrs, NULL);
         if (search != NULL)
         {
           while ((entry = myldap_get_entry(search, NULL)) != NULL)
