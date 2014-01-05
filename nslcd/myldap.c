@@ -4,8 +4,8 @@
    which has been forked into the nss-pam-ldapd library.
 
    Copyright (C) 1997-2006 Luke Howard
-   Copyright (C) 2006, 2007 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2007 West Consulting
+   Copyright (C) 2006-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -72,6 +72,7 @@
 #include "cfg.h"
 #include "common/set.h"
 #include "compat/ldap_compat.h"
+#include "attmap.h"
 
 /* the maximum number of searches per session */
 #define MAX_SEARCHES_IN_SESSION 4
@@ -130,9 +131,9 @@ struct myldap_search {
    done per returned entry. */
 #define MAX_ATTRIBUTES_PER_ENTRY 16
 
-/* The maximum number of ranged attribute values that may be stoted
-   per entry. */
-#define MAX_RANGED_ATTRIBUTES_PER_ENTRY 8
+/* The maximum number of buffers (used for ranged attribute values and
+   values returned by bervalues_to_values()) that may be stored per entry. */
+#define MAX_BUFFERS_PER_ENTRY 8
 
 /* A single entry from the LDAP database as returned by
    myldap_get_entry(). */
@@ -146,8 +147,8 @@ struct myldap_entry {
   char **exploded_rdn;
   /* a cache of attribute to value list */
   char **attributevalues[MAX_ATTRIBUTES_PER_ENTRY];
-  /* a reference to ranged attribute values so we can free() them later on */
-  char **rangedattributevalues[MAX_RANGED_ATTRIBUTES_PER_ENTRY];
+  /* a reference to buffers so we can free() them later on */
+  char **buffers[MAX_BUFFERS_PER_ENTRY];
 };
 
 /* Flag to record first search operation */
@@ -206,8 +207,8 @@ static MYLDAP_ENTRY *myldap_entry_new(MYLDAP_SEARCH *search)
   entry->exploded_rdn = NULL;
   for (i = 0; i < MAX_ATTRIBUTES_PER_ENTRY; i++)
     entry->attributevalues[i] = NULL;
-  for (i = 0; i < MAX_RANGED_ATTRIBUTES_PER_ENTRY; i++)
-    entry->rangedattributevalues[i] = NULL;
+  for (i = 0; i < MAX_BUFFERS_PER_ENTRY; i++)
+    entry->buffers[i] = NULL;
   /* return the fresh entry */
   return entry;
 }
@@ -225,10 +226,10 @@ static void myldap_entry_free(MYLDAP_ENTRY *entry)
   for (i = 0; i < MAX_ATTRIBUTES_PER_ENTRY; i++)
     if (entry->attributevalues[i] != NULL)
       ldap_value_free(entry->attributevalues[i]);
-  /* free all ranged attribute values */
-  for (i = 0; i < MAX_RANGED_ATTRIBUTES_PER_ENTRY; i++)
-    if (entry->rangedattributevalues[i] != NULL)
-      free(entry->rangedattributevalues[i]);
+  /* free all buffers */
+  for (i = 0; i < MAX_BUFFERS_PER_ENTRY; i++)
+    if (entry->buffers[i] != NULL)
+      free(entry->buffers[i]);
   /* we don't need the result anymore, ditch it. */
   ldap_msgfree(entry->search->msg);
   entry->search->msg = NULL;
@@ -1053,9 +1054,14 @@ void myldap_get_policy_response(MYLDAP_SESSION *session, int *response,
 
 static int do_try_search(MYLDAP_SEARCH *search)
 {
+  int ctrlidx = 0;
   int rc;
-  LDAPControl *serverCtrls[2];
-  LDAPControl **pServerCtrls;
+  LDAPControl *serverctrls[3];
+#ifdef HAVE_LDAP_CREATE_DEREF_CONTROL
+  int i;
+  struct LDAPDerefSpec ds[2];
+  char *deref_attrs[2];
+#endif /* HAVE_LDAP_CREATE_DEREF_CONTROL */
   int msgid;
   /* ensure that we have an open connection */
   rc = do_open(search->session);
@@ -1065,35 +1071,63 @@ static int do_try_search(MYLDAP_SEARCH *search)
   if ((nslcd_cfg->pagesize > 0) && (search->scope != LDAP_SCOPE_BASE))
   {
     rc = ldap_create_page_control(search->session->ld, nslcd_cfg->pagesize,
-                                  NULL, 0, &serverCtrls[0]);
+                                  search->cookie, 0, &serverctrls[ctrlidx]);
     if (rc == LDAP_SUCCESS)
-    {
-      serverCtrls[1] = NULL;
-      pServerCtrls = serverCtrls;
-    }
+      ctrlidx++;
     else
     {
       myldap_err(LOG_WARNING, search->session->ld, rc,
                  "ldap_create_page_control() failed");
-      /* clear error flag */
-      rc = LDAP_SUCCESS;
-      if (ldap_set_option(search->session->ld, LDAP_OPT_ERROR_NUMBER, &rc) != LDAP_SUCCESS)
-        log_log(LOG_WARNING, "failed to clear the error flag");
-      pServerCtrls = NULL;
+      serverctrls[ctrlidx] = NULL;
+      /* if we were paging, failure building the second control is fatal */
+      if (search->cookie != NULL)
+        return rc;
     }
   }
-  else
-    pServerCtrls = NULL;
+#ifdef HAVE_LDAP_CREATE_DEREF_CONTROL
+  /* if doing group searches, add deref control to search request
+     (this is currently a bit of a hack and hard-coded for group searches
+     which are detected by requesting the attmap_group_member member
+     attribute) */
+  for (i = 0; search->attrs[i] != NULL; i++)
+    if (strcasecmp(search->attrs[i], attmap_group_member) == 0)
+    {
+      /* attributes from dereff'd entries */
+      deref_attrs[0] = (void *)attmap_passwd_uid;
+      deref_attrs[1] = NULL;
+      /* build deref control */
+      ds[0].derefAttr = (void *)attmap_group_member;
+      ds[0].attributes = deref_attrs;
+      ds[1].derefAttr = NULL;
+      ds[1].attributes = NULL;
+      rc = ldap_create_deref_control(search->session->ld, ds, 0, &serverctrls[ctrlidx]);
+      if (rc == LDAP_SUCCESS)
+        ctrlidx++;
+      else
+      {
+        myldap_err(LOG_WARNING, search->session->ld, rc,
+                   "ldap_create_deref_control() failed");
+        serverctrls[ctrlidx] = NULL;
+      }
+    }
+#endif /* HAVE_LDAP_CREATE_DEREF_CONTROL */
+  /* NULL terminate control list */
+  serverctrls[ctrlidx] = NULL;
+  /* clear error flag (perhaps control setting failed) */
+  if (ctrlidx > 0)
+  {
+    rc = LDAP_SUCCESS;
+    if (ldap_set_option(search->session->ld, LDAP_OPT_ERROR_NUMBER, &rc) != LDAP_SUCCESS)
+      log_log(LOG_WARNING, "failed to clear the error flag");
+  }
   /* perform the search */
   rc = ldap_search_ext(search->session->ld, search->base, search->scope,
                        search->filter, (char **)(search->attrs),
-                       0, pServerCtrls, NULL, NULL, LDAP_NO_LIMIT, &msgid);
+                       0, serverctrls[0] == NULL ? NULL : serverctrls,
+                       NULL, NULL, LDAP_NO_LIMIT, &msgid);
   /* free the controls if we had them */
-  if (pServerCtrls != NULL)
-  {
-    ldap_control_free(serverCtrls[0]);
-    serverCtrls[0] = NULL;
-  }
+  for (ctrlidx = 0; serverctrls[ctrlidx] != NULL; ctrlidx++)
+    ldap_control_free(serverctrls[ctrlidx]);
   /* handle errors */
   if (rc != LDAP_SUCCESS)
   {
@@ -1381,10 +1415,8 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
 {
   int rc;
   int parserc;
-  int msgid;
   struct timeval tv, *tvp;
   LDAPControl **resultcontrols;
-  LDAPControl *serverctrls[2];
   ber_int_t count;
   /* check parameters */
   if ((search == NULL) || (search->session == NULL) || (search->session->ld == NULL))
@@ -1500,7 +1532,8 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
                                        &count, &(search->cookie));
           if (rc != LDAP_SUCCESS)
           {
-            myldap_err(LOG_WARNING, search->session->ld, rc, "ldap_parse_page_control() failed");
+            if (rc != LDAP_CONTROL_NOT_FOUND)
+              myldap_err(LOG_WARNING, search->session->ld, rc, "ldap_parse_page_control() failed");
             /* clear error flag */
             rc = LDAP_SUCCESS;
             if (ldap_set_option(search->session->ld, LDAP_OPT_ERROR_NUMBER,
@@ -1526,29 +1559,9 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
           return NULL;
         }
         /* try the next page */
-        serverctrls[0] = NULL;
-        serverctrls[1] = NULL;
-        rc = ldap_create_page_control(search->session->ld, nslcd_cfg->pagesize,
-                                      search->cookie, 0, &serverctrls[0]);
+        rc = do_try_search(search);
         if (rc != LDAP_SUCCESS)
         {
-          if (serverctrls[0] != NULL)
-            ldap_control_free(serverctrls[0]);
-          myldap_err(LOG_WARNING, search->session->ld, rc, "ldap_create_page_control() failed");
-          myldap_search_close(search);
-          if (rcp != NULL)
-            *rcp = rc;
-          return NULL;
-        }
-        /* set up a new search for the next page */
-        rc = ldap_search_ext(search->session->ld,
-                             search->base, search->scope, search->filter,
-                             search->attrs, 0, serverctrls, NULL, NULL,
-                             LDAP_NO_LIMIT, &msgid);
-        ldap_control_free(serverctrls[0]);
-        if (rc != LDAP_SUCCESS)
-        {
-          myldap_err(LOG_WARNING, search->session->ld, rc, "ldap_search_ext() failed");
           /* close connection on connection problems */
           if ((rc == LDAP_UNAVAILABLE) || (rc == LDAP_SERVER_DOWN))
             do_close(search->session);
@@ -1557,7 +1570,6 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
             *rcp = rc;
           return NULL;
         }
-        search->msgid = msgid;
         /* we continue with another pass */
         break;
       case LDAP_RES_SEARCH_REFERENCE:
@@ -1790,14 +1802,14 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry, const char *attr)
       if (values == NULL)
         return NULL;
       /* store values entry so we can free it later on */
-      for (i = 0; i < MAX_RANGED_ATTRIBUTES_PER_ENTRY; i++)
-        if (entry->rangedattributevalues[i] == NULL)
+      for (i = 0; i < MAX_BUFFERS_PER_ENTRY; i++)
+        if (entry->buffers[i] == NULL)
         {
-          entry->rangedattributevalues[i] = values;
-          return (const char **)entry->rangedattributevalues[i];
+          entry->buffers[i] = values;
+          return (const char **)entry->buffers[i];
         }
       /* we found no room to store the values */
-      log_log(LOG_ERR, "ldap_get_values() couldn't store results, increase MAX_RANGED_ATTRIBUTES_PER_ENTRY");
+      log_log(LOG_ERR, "ldap_get_values() couldn't store results, increase MAX_BUFFERS_PER_ENTRY");
       free(values);
       return NULL;
     }
@@ -1914,14 +1926,14 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *attr)
   if (values == NULL)
     return NULL;
   /* store values entry so we can free it later on */
-  for (i = 0; i < MAX_RANGED_ATTRIBUTES_PER_ENTRY; i++)
-    if (entry->rangedattributevalues[i] == NULL)
+  for (i = 0; i < MAX_BUFFERS_PER_ENTRY; i++)
+    if (entry->buffers[i] == NULL)
     {
-      entry->rangedattributevalues[i] = (char **)values;
+      entry->buffers[i] = (char **)values;
       return values;
     }
   /* we found no room to store the values */
-  log_log(LOG_ERR, "myldap_get_values_len() couldn't store results, increase MAX_RANGED_ATTRIBUTES_PER_ENTRY");
+  log_log(LOG_ERR, "myldap_get_values_len() couldn't store results, increase MAX_BUFFERS_PER_ENTRY");
   free(values);
   return NULL;
 }
@@ -2067,6 +2079,154 @@ int myldap_has_objectclass(MYLDAP_ENTRY *entry, const char *objectclass)
   }
   return 0;
 }
+
+#ifdef HAVE_LDAP_PARSE_DEREF_CONTROL
+const char ***myldap_get_deref_values(MYLDAP_ENTRY *entry,
+                const char *derefattr, const char *getattr)
+{
+  LDAPControl **entryctrls;
+  LDAPDerefRes *deref, *d;
+  LDAPDerefVal *a;
+  int i, pass;
+  int rc;
+  int found;
+  int counts[2];
+  size_t sizes[2], size;
+  char *buffer = NULL;
+  char ***results = NULL;
+  rc = ldap_get_entry_controls(entry->search->session->ld, entry->search->msg,
+                                &entryctrls);
+  if (rc != LDAP_SUCCESS)
+  {
+    myldap_err(LOG_WARNING, entry->search->session->ld, rc,
+               "ldap_get_entry_controls() failed");
+    return NULL;
+  }
+  if (entryctrls == NULL)
+    return NULL;
+  /* see if we can find a deref control */
+  rc = ldap_parse_deref_control(entry->search->session->ld, entryctrls,
+                                &deref);
+  if ((rc != LDAP_SUCCESS) || (deref == NULL))
+  {
+    if ((rc != LDAP_SUCCESS) && (rc != LDAP_CONTROL_NOT_FOUND))
+      myldap_err(LOG_WARNING, entry->search->session->ld, rc,
+                 "ldap_parse_deref_control() failed");
+    /* clear error flag */
+    rc = LDAP_SUCCESS;
+    if (ldap_set_option(entry->search->session->ld, LDAP_OPT_ERROR_NUMBER,
+                        &rc) != LDAP_SUCCESS)
+      log_log(LOG_WARNING, "failed to clear the error flag");
+    ldap_controls_free(entryctrls);
+    return NULL;
+  }
+  /* two passes: one to calculate size, one to store data */
+  for (pass=0; pass < 2; pass++)
+  {
+    /* reset counters and size */
+    for (i = 0; i < 2; i++)
+    {
+      counts[i] = 0;
+      sizes[i] = 0;
+    }
+    /* go over all deref'd attributes and find the one we're looking for */
+    for (d = deref; d != NULL; d = d->next)
+      if ((d->derefAttr != NULL) && (d->derefVal.bv_val != NULL) &&
+          (strcasecmp(derefattr, d->derefAttr) == 0))
+      {
+        /* we should have one d per original attribute value */
+        found = 0;
+        /* go over deref'd attribute values to find the ones we're looking for */
+        for (a = d->attrVals; a != NULL; a = a->next)
+          if ((a->type != NULL) && (a->vals != NULL) &&
+              (strcasecmp(getattr, a->type) == 0))
+            for (i=0; a->vals[i].bv_val != NULL; i++)
+            {
+              found = 1;
+              if (results == NULL)
+              {
+                log_log(LOG_DEBUG, "deref %s %s=%s -> %s=%s",
+                        myldap_get_dn(entry),  d->derefAttr, d->derefVal.bv_val,
+                        a->type, a->vals[i].bv_val);
+                counts[0]++;
+                sizes[0] += strlen(a->vals[i].bv_val) + 1;
+              }
+              else
+              {
+                strcpy(buffer, a->vals[i].bv_val);
+                results[0][counts[0]++] = buffer;
+                buffer += strlen(buffer) + 1;
+              }
+            }
+        if (!found)
+        {
+          if (results == NULL)
+          {
+            log_log(LOG_DEBUG, "no %s deref %s %s=%s", getattr,
+                    myldap_get_dn(entry),  d->derefAttr, d->derefVal.bv_val);
+            counts[1]++;
+            sizes[1] += strlen(d->derefVal.bv_val) + 1;
+          }
+          else
+          {
+            strcpy(buffer, d->derefVal.bv_val);
+            results[1][counts[1]++] = buffer;
+            buffer += strlen(buffer) + 1;
+          }
+        }
+      }
+    /* allocate memory after first pass */
+    if (results == NULL)
+    {
+      size = sizeof(char **) * 3;
+      for (i = 0; i < 2; i++)
+        size += sizeof(char *) * (counts[i] + 1);
+      for (i = 0; i < 2; i++)
+        size += sizeof(char) * sizes[i];
+      buffer = (char *)malloc(size);
+      if (buffer == NULL)
+      {
+        log_log(LOG_CRIT, "myldap_get_deref_values(): malloc() failed to allocate memory");
+        return NULL;
+      }
+      /* allocate the list of lists */
+      results = (void *)buffer;
+      buffer += sizeof(char **) * 3;
+      /* allocate the lists */
+      for (i = 0; i < 2; i++)
+      {
+        results[i] = (char **)buffer;
+        buffer += sizeof(char *) * (counts[i] + 1);
+      }
+      results[i] = NULL;
+    }
+  }
+  /* NULL terminate the lists */
+  results[0][counts[0]] = NULL;
+  results[1][counts[1]] = NULL;
+  /* free control data */
+  ldap_derefresponse_free(deref);
+  ldap_controls_free(entryctrls);
+  /* store results so we can free it later on */
+  for (i = 0; i < MAX_BUFFERS_PER_ENTRY; i++)
+    if (entry->buffers[i] == NULL)
+    {
+      entry->buffers[i] = (void *)results;
+      return (const char ***)results;
+    }
+  /* we found no room to store the values */
+  log_log(LOG_ERR, "myldap_get_deref_values() couldn't store results, "
+          "increase MAX_BUFFERS_PER_ENTRY");
+  free(results);
+  return NULL;
+}
+#else /* not HAVE_LDAP_PARSE_DEREF_CONTROL */
+const char ***myldap_get_deref_values(MYLDAP_ENTRY UNUSED(*entry),
+                const char UNUSED(*derefattr), const char UNUSED(*getattr))
+{
+  return NULL;
+}
+#endif /* not HAVE_LDAP_PARSE_DEREF_CONTROL */
 
 int myldap_escape(const char *src, char *buffer, size_t buflen)
 {

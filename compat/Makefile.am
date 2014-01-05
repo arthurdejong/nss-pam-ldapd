@@ -29,6 +29,7 @@ EXTRA_DIST = getopt_long.c getopt_long.h \
              nss_compat.h socket.h \
              ldap_compat.h pagectrl.c ldap_passwd_s.c ldap_initialize.c \
              ldap_parse_passwordpolicy_control.c ldap_passwordpolicy_err2txt.c \
+             derefctrl.c \
              pam_compat.h pam_get_authtok.c pam_prompt.c
 
 libcompat_a_SOURCES = getpeercred.c getpeercred.h
