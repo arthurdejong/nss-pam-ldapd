@@ -2,7 +2,7 @@
    test_set.c - simple test for the set module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008, 2009, 2010, 2012 Arthur de Jong
+   Copyright (C) 2008-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -43,6 +43,7 @@ int main(int UNUSED(argc), char UNUSED(*argv[]))
   SET *set;
   const char **list;
   int i;
+  const char *v;
 
   /* initialize */
   set = set_new();
@@ -68,9 +69,12 @@ int main(int UNUSED(argc), char UNUSED(*argv[]))
   }
 
   /* remove keys from the set */
-  assert(isknownvalue(set_pop(set)));
-  assert(isknownvalue(set_pop(set)));
-  assert(isknownvalue(set_pop(set)));
+  assert(isknownvalue(v = set_pop(set)));
+  free((void *)v);
+  assert(isknownvalue(v = set_pop(set)));
+  free((void *)v);
+  assert(isknownvalue(v = set_pop(set)));
+  free((void *)v);
   assert(set_pop(set) == NULL);
 
   /* free set */

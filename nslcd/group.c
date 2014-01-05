@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2014 Arthur de Jong
    Copyright (C) 2013 Steve Hill
 
    This library is free software; you can redistribute it and/or
@@ -337,6 +337,7 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
           if (search != NULL)
             while ((entry2 = myldap_get_entry(search, NULL)) != NULL)
               getmembers(entry2, session, set, seen, subgroups);
+          free(tmp);
         }
       }
       members = set_tolist(set);
@@ -483,10 +484,12 @@ int nslcd_group_bymember(TFILE *fp, MYLDAP_SESSION *session)
       if (mkfilter_group_bymemberdn(dn, filter, sizeof(filter)))
       {
         log_log(LOG_WARNING, "nslcd_group_bymember(): filter buffer too small");
+        free((void *)dn);
         set_free(seen);
         set_free(tocheck);
         return -1;
       }
+      free((void *)dn);
       /* do the LDAP searches */
       for (i = 0; (base = group_bases[i]) != NULL; i++)
       {
@@ -495,7 +498,8 @@ int nslcd_group_bymember(TFILE *fp, MYLDAP_SESSION *session)
         {
           while ((entry = myldap_get_entry(search, NULL)) != NULL)
           {
-            if (!set_contains(seen, dn = myldap_get_dn(entry)))
+            dn = myldap_get_dn(entry);
+            if (!set_contains(seen, dn))
             {
               set_add(seen, dn);
               set_add(tocheck, dn);

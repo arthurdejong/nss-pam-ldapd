@@ -2,7 +2,7 @@
    netgroup.c - NSS lookup functions for netgroup entries
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2014 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -178,7 +178,8 @@ struct setnetgrent_backend {
 #define SETNETGRENT_ARGS(args) ((struct nss_setnetgrent_args *)(args))
 #define GETNETGRENT_ARGS(args) ((struct nss_getnetgrent_args *)(args))
 
-/* return a netgroup that has not been traversed */
+/* return a netgroup that has not been traversed (the caller should use
+   free() to free it) */
 static char *find_unseen_netgroup(struct setnetgrent_backend *be)
 {
   char *group;
@@ -189,6 +190,7 @@ static char *find_unseen_netgroup(struct setnetgrent_backend *be)
       return NULL;
     if (!set_contains(be->seen_groups, group))
       return group;
+    free(group);
   }
 }
 
