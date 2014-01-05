@@ -1,7 +1,7 @@
 
 # group.py - group entry lookup routines
 #
-# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2010-2014 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -55,8 +55,10 @@ class Search(search.LDAPSearch):
         if 'memberUid' in self.parameters or 'member' in self.parameters:
             # set up our own attributes that leave out membership attributes
             self.attributes = list(self.attributes)
-            self.attributes.remove(attmap['memberUid'])
-            self.attributes.remove(attmap['member'])
+            if attmap['memberUid'] in self.attributes:
+                self.attributes.remove(attmap['memberUid'])
+            if attmap['member'] in self.attributes:
+                self.attributes.remove(attmap['member'])
 
     def mk_filter(self):
         # we still need a custom mk_filter because this is an | query
@@ -125,15 +127,16 @@ class GroupRequest(common.Request):
             if common.is_valid_name(member):
                 members.add(member)
         # translate and add the member values
-        for memberdn in clean(attributes['member']):
-            if memberdn in seen:
-                continue
-            seen.add(memberdn)
-            member = passwd.dn2uid(self.conn, memberdn)
-            if member and common.is_valid_name(member):
-                members.add(member)
-            elif cfg.nss_nested_groups:
-                subgroups.append(memberdn)
+        if attmap['member']:
+            for memberdn in clean(attributes['member']):
+                if memberdn in seen:
+                    continue
+                seen.add(memberdn)
+                member = passwd.dn2uid(self.conn, memberdn)
+                if member and common.is_valid_name(member):
+                    members.add(member)
+                elif cfg.nss_nested_groups:
+                    subgroups.append(memberdn)
 
     def convert(self, dn, attributes, parameters):
         # get group names and check against requested group name
@@ -200,7 +203,7 @@ class GroupByMemberRequest(GroupRequest):
             seen.add(dn)
             for values in self.convert(dn, attributes, parameters):
                 yield values
-        if cfg.nss_nested_groups:
+        if cfg.nss_nested_groups and attmap['member']:
             tocheck = list(seen)
             # find parent groups
             while tocheck:

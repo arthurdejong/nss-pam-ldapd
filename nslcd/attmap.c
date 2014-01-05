@@ -2,7 +2,7 @@
    attmap.c - attribute mapping values and functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2007-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -217,6 +217,7 @@ const char *attmap_set_mapping(const char **var, const char *value)
        (note that this needs to match the functionality in the specific
        lookup module) */
     if ((var != &attmap_group_userPassword) &&
+        (var != &attmap_group_member) &&
         (var != &attmap_passwd_userPassword) &&
         (var != &attmap_passwd_gidNumber) &&
         (var != &attmap_passwd_gecos) &&
@@ -230,6 +231,9 @@ const char *attmap_set_mapping(const char **var, const char *value)
         (var != &attmap_shadow_shadowInactive) &&
         (var != &attmap_shadow_shadowExpire) &&
         (var != &attmap_shadow_shadowFlag))
+      return NULL;
+    /* the member attribute may only be set to an empty string */
+    if ((var == attmap_group_member) && (strcmp(value, "\"\"") != 0))
       return NULL;
   }
   /* check if the value will be changed */

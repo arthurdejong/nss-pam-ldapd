@@ -123,7 +123,8 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
   if (myldap_escape(uid, safeuid, sizeof(safeuid)))
     return -1;
   /* try to translate uid to DN */
-  if (uid2dn(session, uid, dn, sizeof(dn)) == NULL)
+  if ((strcasecmp(attmap_group_member, "\"\"") == 0) ||
+      (uid2dn(session, uid, dn, sizeof(dn)) == NULL))
     return mysnprintf(buffer, buflen, "(&%s(%s=%s))",
                       group_filter, attmap_group_memberUid, safeuid);
   /* escape DN */
@@ -227,6 +228,9 @@ static void getmembers(MYLDAP_ENTRY *entry, MYLDAP_SESSION *session,
       if (isvalidname(values[i]))
         set_add(members, values[i]);
     }
+  /* skip rest if attmap_group_member is blank */
+  if (strcasecmp(attmap_group_member, "\"\"") == 0)
+    return;
   /* add the member values */
   values = myldap_get_values(entry, attmap_group_member);
   if (values != NULL)
@@ -423,7 +427,7 @@ int nslcd_group_bymember(TFILE *fp, MYLDAP_SESSION *session)
     log_log(LOG_WARNING, "nslcd_group_bymember(): filter buffer too small");
     return -1;
   }
-  if (nslcd_cfg->nss_nested_groups)
+  if ((nslcd_cfg->nss_nested_groups) && (strcasecmp(attmap_group_member, "\"\"") != 0))
   {
     seen = set_new();
     tocheck = set_new();
