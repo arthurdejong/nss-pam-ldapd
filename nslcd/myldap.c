@@ -72,6 +72,7 @@
 #include "cfg.h"
 #include "common/set.h"
 #include "compat/ldap_compat.h"
+#include "attmap.h"
 
 /* the maximum number of searches per session */
 #define MAX_SEARCHES_IN_SESSION 4
@@ -1055,7 +1056,12 @@ static int do_try_search(MYLDAP_SEARCH *search)
 {
   int ctrlidx = 0;
   int rc;
-  LDAPControl *serverctrls[2];
+  LDAPControl *serverctrls[3];
+#ifdef HAVE_LDAP_CREATE_DEREF_CONTROL
+  int i;
+  struct LDAPDerefSpec ds[2];
+  char *deref_attrs[2];
+#endif /* HAVE_LDAP_CREATE_DEREF_CONTROL */
   int msgid;
   /* ensure that we have an open connection */
   rc = do_open(search->session);
@@ -1078,6 +1084,33 @@ static int do_try_search(MYLDAP_SEARCH *search)
         return rc;
     }
   }
+#ifdef HAVE_LDAP_CREATE_DEREF_CONTROL
+  /* if doing group searches, add deref control to search request
+     (this is currently a bit of a hack and hard-coded for group searches
+     which are detected by requesting the attmap_group_member member
+     attribute) */
+  for (i = 0; search->attrs[i] != NULL; i++)
+    if (strcasecmp(search->attrs[i], attmap_group_member) == 0)
+    {
+      /* attributes from dereff'd entries */
+      deref_attrs[0] = (void *)attmap_passwd_uid;
+      deref_attrs[1] = NULL;
+      /* build deref control */
+      ds[0].derefAttr = (void *)attmap_group_member;
+      ds[0].attributes = deref_attrs;
+      ds[1].derefAttr = NULL;
+      ds[1].attributes = NULL;
+      rc = ldap_create_deref_control(search->session->ld, ds, 0, &serverctrls[ctrlidx]);
+      if (rc == LDAP_SUCCESS)
+        ctrlidx++;
+      else
+      {
+        myldap_err(LOG_WARNING, search->session->ld, rc,
+                   "ldap_create_deref_control() failed");
+        serverctrls[ctrlidx] = NULL;
+      }
+    }
+#endif /* HAVE_LDAP_CREATE_DEREF_CONTROL */
   /* NULL terminate control list */
   serverctrls[ctrlidx] = NULL;
   /* clear error flag (perhaps control setting failed) */

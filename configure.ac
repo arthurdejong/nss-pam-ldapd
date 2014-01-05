@@ -806,6 +806,7 @@ then
   AC_CHECK_FUNCS(ldap_create_control ldap_control_find)
   AC_CHECK_FUNCS(ldap_controls_free ldap_control_free)
   AC_CHECK_FUNCS(ldap_parse_passwordpolicy_control ldap_passwordpolicy_err2txt)
+  AC_CHECK_FUNCS(ldap_create_deref_control)
 
   # replace ldap_create_page_control() and ldap_parse_page_control()
   AC_CHECK_FUNCS(ldap_create_page_control ldap_parse_page_control,, [AC_LIBOBJ(pagectrl)])
