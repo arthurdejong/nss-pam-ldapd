@@ -2,7 +2,7 @@
    myldap.h - simple interface to do LDAP requests
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2007-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -132,6 +132,13 @@ MUST_USE const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *att
 
 /* Checks to see if the entry has the specified object class. */
 MUST_USE int myldap_has_objectclass(MYLDAP_ENTRY *entry, const char *objectclass);
+
+/* See if the entry has any deref controls attached to it and deref attr
+   derefattr to get the getattr values. Will return two lists of attribute
+   values. One list of deref'ed attribute values and one list of original
+   attribute values that could not be deref'ed. */
+MUST_USE const char ***myldap_get_deref_values(MYLDAP_ENTRY *entry,
+                const char *derefattr, const char *getattr);
 
 /* Get the RDN's value: eg. if the DN was cn=lukeh, ou=People, dc=example,
    dc=com getrdnvalue(entry, cn) would return lukeh. If the attribute was not

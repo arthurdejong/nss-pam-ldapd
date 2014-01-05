@@ -2080,6 +2080,154 @@ int myldap_has_objectclass(MYLDAP_ENTRY *entry, const char *objectclass)
   return 0;
 }
 
+#ifdef HAVE_LDAP_PARSE_DEREF_CONTROL
+const char ***myldap_get_deref_values(MYLDAP_ENTRY *entry,
+                const char *derefattr, const char *getattr)
+{
+  LDAPControl **entryctrls;
+  LDAPDerefRes *deref, *d;
+  LDAPDerefVal *a;
+  int i, pass;
+  int rc;
+  int found;
+  int counts[2];
+  size_t sizes[2], size;
+  char *buffer = NULL;
+  char ***results = NULL;
+  rc = ldap_get_entry_controls(entry->search->session->ld, entry->search->msg,
+                                &entryctrls);
+  if (rc != LDAP_SUCCESS)
+  {
+    myldap_err(LOG_WARNING, entry->search->session->ld, rc,
+               "ldap_get_entry_controls() failed");
+    return NULL;
+  }
+  if (entryctrls == NULL)
+    return NULL;
+  /* see if we can find a deref control */
+  rc = ldap_parse_deref_control(entry->search->session->ld, entryctrls,
+                                &deref);
+  if ((rc != LDAP_SUCCESS) || (deref == NULL))
+  {
+    if ((rc != LDAP_SUCCESS) && (rc != LDAP_CONTROL_NOT_FOUND))
+      myldap_err(LOG_WARNING, entry->search->session->ld, rc,
+                 "ldap_parse_deref_control() failed");
+    /* clear error flag */
+    rc = LDAP_SUCCESS;
+    if (ldap_set_option(entry->search->session->ld, LDAP_OPT_ERROR_NUMBER,
+                        &rc) != LDAP_SUCCESS)
+      log_log(LOG_WARNING, "failed to clear the error flag");
+    ldap_controls_free(entryctrls);
+    return NULL;
+  }
+  /* two passes: one to calculate size, one to store data */
+  for (pass=0; pass < 2; pass++)
+  {
+    /* reset counters and size */
+    for (i = 0; i < 2; i++)
+    {
+      counts[i] = 0;
+      sizes[i] = 0;
+    }
+    /* go over all deref'd attributes and find the one we're looking for */
+    for (d = deref; d != NULL; d = d->next)
+      if ((d->derefAttr != NULL) && (d->derefVal.bv_val != NULL) &&
+          (strcasecmp(derefattr, d->derefAttr) == 0))
+      {
+        /* we should have one d per original attribute value */
+        found = 0;
+        /* go over deref'd attribute values to find the ones we're looking for */
+        for (a = d->attrVals; a != NULL; a = a->next)
+          if ((a->type != NULL) && (a->vals != NULL) &&
+              (strcasecmp(getattr, a->type) == 0))
+            for (i=0; a->vals[i].bv_val != NULL; i++)
+            {
+              found = 1;
+              if (results == NULL)
+              {
+                log_log(LOG_DEBUG, "deref %s %s=%s -> %s=%s",
+                        myldap_get_dn(entry),  d->derefAttr, d->derefVal.bv_val,
+                        a->type, a->vals[i].bv_val);
+                counts[0]++;
+                sizes[0] += strlen(a->vals[i].bv_val) + 1;
+              }
+              else
+              {
+                strcpy(buffer, a->vals[i].bv_val);
+                results[0][counts[0]++] = buffer;
+                buffer += strlen(buffer) + 1;
+              }
+            }
+        if (!found)
+        {
+          if (results == NULL)
+          {
+            log_log(LOG_DEBUG, "no %s deref %s %s=%s", getattr,
+                    myldap_get_dn(entry),  d->derefAttr, d->derefVal.bv_val);
+            counts[1]++;
+            sizes[1] += strlen(d->derefVal.bv_val) + 1;
+          }
+          else
+          {
+            strcpy(buffer, d->derefVal.bv_val);
+            results[1][counts[1]++] = buffer;
+            buffer += strlen(buffer) + 1;
+          }
+        }
+      }
+    /* allocate memory after first pass */
+    if (results == NULL)
+    {
+      size = sizeof(char **) * 3;
+      for (i = 0; i < 2; i++)
+        size += sizeof(char *) * (counts[i] + 1);
+      for (i = 0; i < 2; i++)
+        size += sizeof(char) * sizes[i];
+      buffer = (char *)malloc(size);
+      if (buffer == NULL)
+      {
+        log_log(LOG_CRIT, "myldap_get_deref_values(): malloc() failed to allocate memory");
+        return NULL;
+      }
+      /* allocate the list of lists */
+      results = (void *)buffer;
+      buffer += sizeof(char **) * 3;
+      /* allocate the lists */
+      for (i = 0; i < 2; i++)
+      {
+        results[i] = (char **)buffer;
+        buffer += sizeof(char *) * (counts[i] + 1);
+      }
+      results[i] = NULL;
+    }
+  }
+  /* NULL terminate the lists */
+  results[0][counts[0]] = NULL;
+  results[1][counts[1]] = NULL;
+  /* free control data */
+  ldap_derefresponse_free(deref);
+  ldap_controls_free(entryctrls);
+  /* store results so we can free it later on */
+  for (i = 0; i < MAX_BUFFERS_PER_ENTRY; i++)
+    if (entry->buffers[i] == NULL)
+    {
+      entry->buffers[i] = (void *)results;
+      return (const char ***)results;
+    }
+  /* we found no room to store the values */
+  log_log(LOG_ERR, "myldap_get_deref_values() couldn't store results, "
+          "increase MAX_BUFFERS_PER_ENTRY");
+  free(results);
+  return NULL;
+}
+#else /* not HAVE_LDAP_PARSE_DEREF_CONTROL */
+const char ***myldap_get_deref_values(MYLDAP_ENTRY UNUSED(*entry),
+                const char UNUSED(*derefattr), const char UNUSED(*getattr))
+{
+  return NULL;
+}
+#endif /* not HAVE_LDAP_PARSE_DEREF_CONTROL */
+
 int myldap_escape(const char *src, char *buffer, size_t buflen)
 {
   size_t pos = 0;
