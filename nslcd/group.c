@@ -315,7 +315,7 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
                             passbuffer, sizeof(passbuffer));
   if (passwd == NULL)
     passwd = default_group_userPassword;
-  /* get group memebers (memberUid&member) */
+  /* get group members (memberUid&member) */
   if (wantmembers)
   {
     set = set_new();
