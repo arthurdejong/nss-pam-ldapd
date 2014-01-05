@@ -234,6 +234,7 @@ static void getmembers(MYLDAP_ENTRY *entry, MYLDAP_SESSION *session,
   char buf[BUFLEN_NAME];
   int i;
   const char **values;
+  const char ***derefs;
   /* add the memberUid values */
   values = myldap_get_values(entry, attmap_group_memberUid);
   if (values != NULL)
@@ -246,6 +247,26 @@ static void getmembers(MYLDAP_ENTRY *entry, MYLDAP_SESSION *session,
   /* skip rest if attmap_group_member is blank */
   if (strcasecmp(attmap_group_member, "\"\"") == 0)
     return;
+  /* add deref'd entries if we have them*/
+  derefs = myldap_get_deref_values(entry, attmap_group_member, attmap_passwd_uid);
+  if (derefs != NULL)
+  {
+    /* add deref'd uid attributes */
+    for (i = 0; derefs[0][i] != NULL; i++)
+      set_add(members, derefs[0][i]);
+    /* add non-deref'd attribute values as subgroups */
+    for (i = 0; derefs[1][i] != NULL; i++)
+    {
+      if ((seen == NULL) || (!set_contains(seen, derefs[1][i])))
+      {
+        if (seen != NULL)
+          set_add(seen, derefs[1][i]);
+        if (subgroups != NULL)
+          set_add(subgroups, derefs[1][i]);
+      }
+    }
+    return; /* no need to parse the member attribute ourselves */
+  }
   /* add the member values */
   values = myldap_get_values(entry, attmap_group_member);
   if (values != NULL)
