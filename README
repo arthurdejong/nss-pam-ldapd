@@ -15,7 +15,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006-2007 West Consulting
-   Copyright (C) 2006-2013 Arthur de Jong
+   Copyright (C) 2006-2014 Arthur de Jong
    Copyright (C) 2009 Howard Chu
    Copyright (C) 2010 Symas Corporation
 
@@ -344,18 +344,25 @@ group membership
 
 Currently, two ways of specifying group membership are supported. The first,
 by using the memberUid attribute, is the simplest and by far the fastest
-(takes the least number of lookups). This attribute maps to user names with
-the same values as the uid attribute would hold for posixAccount entries.
+(takes the least number of lookups). The attribute values are user names with
+the format as the uid attribute for posixAccount entries and are returned
+without further processing.
 
-The second method is to use DN values in the member attribute (attribute
-names can be changed by using the attribute mapping options as described in
-the manual page). This is potentially a lot slower because in the worst case
-every DN has to be looked up in the LDAP server to find the proper value for
-the uid attribute.
+The second method is to use DN values in the member attribute (attribute names
+can be changed by using the attribute mapping options as described in the
+manual page). This is potentially a lot slower because in the worst case every
+DN has to be looked up in the LDAP server to find the proper value for the uid
+attribute.
+
+If the LDAP server supports the deref control (provided by the deref overlay
+in OpenLDAP) the DN to uid expansing is performed by the LDAP server.
 
 If the DN value already contains a uid value (e.g. uid=arthur, dc=example,
-dc=com) the lookup is skipped and the value from the DN is used. A cache is
-maintained that saves the DN to uid translations for 15 minutes.
+dc=com) a further lookup is skipped and the uid value from the DN is used.
+
+For other DN values an extra lookup is performed to expand it to a uid. These
+lookups are cached and are configurable with the cache dn2uid configuration
+option.
 
 The member attribute may also contain the DN of another group entry. These
 nested groups are parsed recursively depending on the nss_nested_groups
