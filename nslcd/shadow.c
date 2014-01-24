@@ -132,7 +132,7 @@ static long to_date(const char *dn, const char *date, const char *attr)
     strncpy(buffer, date, l);
     buffer[l] = '\0';
     errno = 0;
-    value = strtol(date, &tmp, 10);
+    value = strtol(buffer, &tmp, 10);
     if ((*date == '\0') || (*tmp != '\0'))
     {
       log_log(LOG_WARNING, "%s: %s: non-numeric", dn, attr);
