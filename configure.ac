@@ -505,7 +505,7 @@ then
     # do the guessing game
     case "$target_os" in
       solaris*) with_nss_flavour=solaris ;;
-      freebsd*) with_nss_flavour=freebsd ;;
+      freebsd*|dragonfly*) with_nss_flavour=freebsd ;;
       *)        with_nss_flavour=glibc ;;
     esac
   fi
