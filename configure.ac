@@ -675,7 +675,7 @@ then
   fi
   if test "x$enable_kerberos" = "xyes"
   then
-    AC_CHECK_HEADERS(gssapi/gssapi.h gssapi/gssapi_generic.h gssapi/gssapi_krb5.h gssapi.h)
+    AC_CHECK_HEADERS(gssapi/gssapi.h gssapi/gssapi_generic.h gssapi/gssapi_krb5.h gssapi.h krb5.h)
   fi
   AC_CHECK_HEADERS(regex.h)
 
@@ -788,6 +788,41 @@ then
   then
     AC_SEARCH_LIBS(gss_krb5_ccache_name, gssapi gssapi_krb5)
     AC_CHECK_FUNCS(gss_krb5_ccache_name)
+
+    # save CFLAGS and LIBS to restore later
+    krb5_save_CFLAGS="$CFLAGS"
+    krb5_save_LIBS="$LIBS"
+
+    # find library that contains krb5_is_thread_safe
+    AC_SEARCH_LIBS(krb5_sendauth, [krb5 'krb5 -lcrypto -ldes -lasn1 -lroken'])
+    AC_CHECK_FUNCS(krb5_is_thread_safe)
+
+    # see if krb5 is thread safe
+    if test "x$ac_cv_func_krb5_is_thread_safe" == "xyes"
+    then
+      AC_CACHE_CHECK(
+          [krb5 thread safety],
+          nslcd_cv_krb5_is_thread_safe,
+              [AC_RUN_IFELSE(
+                  [AC_LANG_PROGRAM([[
+                      #include <krb5.h>
+                      ]], [[
+                      if (!krb5_is_thread_safe())
+                        return 1;
+                      ]])],
+                  [nslcd_cv_krb5_is_thread_safe=yes],
+                  [nslcd_cv_krb5_is_thread_safe=no],
+                  [nslcd_cv_krb5_is_thread_safe=unknown])])
+      if test "x$nslcd_cv_krb5_is_thread_safe" == "xno"
+      then
+        AC_MSG_WARN([krb5 is NOT thread safe])
+      fi
+    fi
+
+    # restore CFLAGS and LIBS because we don't directly use krb5
+    CFLAGS="$krb5_save_CFLAGS"
+    LIBS="$krb5_save_LIBS"
+
   fi
 
   # check for ldap function availability
