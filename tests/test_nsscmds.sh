@@ -2,7 +2,7 @@
 
 # test_nsscmds.sh - simple test script to check output of name lookup commands
 #
-# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2013 Arthur de Jong
+# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -26,13 +26,44 @@
 
 set -e
 
-# find source directory
-srcdir="${srcdir-`dirname "$0"`}"
+# check if LDAP is configured correctly
+cfgfile="/etc/nslcd.conf"
+if [ -r "$cfgfile" ]
+then
+  :
+else
+  echo "test_nsscmds.sh: $cfgfile: not found"
+  exit 77
+fi
 
-# ensure that we are running in the test environment
-. "$srcdir/in_testenv.sh"
+uri=`sed -n 's/^uri *//p' "$cfgfile" | head -n 1`
+base="dc=test,dc=tld"
+
+# try to fetch the base DN (fail with exit 77 to indicate problem)
+ldapsearch -b "$base" -s base -x -H "$uri" > /dev/null 2>&1 || {
+  echo "test_nsscmds.sh: LDAP server $uri not available for $base"
+  exit 77
+}
+
+# basic check to see if nslcd is running
+if [ -S /var/run/nslcd/socket ] && \
+   [ -f /var/run/nslcd/nslcd.pid ] && \
+   kill -s 0 `cat /var/run/nslcd/nslcd.pid` > /dev/null 2>&1
+then
+  :
+else
+  echo "test_nsscmds.sh: nslcd not running"
+  exit 77
+fi
+
+# TODO: check if nscd is running
+
+# TODO: check if /etc/nsswitch.conf is correct
+
+echo "test_nsscmds.sh: using LDAP server $uri"
 
 # preload our own NSS module
+srcdir="${srcdir-"."}"
 LD_PRELOAD="$srcdir/../nss/nss_ldap.so"
 export LD_PRELOAD
 
@@ -136,8 +167,9 @@ echo "test_nsscmds.sh: testing group..."
 sortgroup() {
   while read line
   do
-    group="$(echo "$line" | sed 's/^\(.*:.*:.*:\).*/\1/')"
-    members="$(echo "$line" | sed 's/^.*:.*:.*://' | tr ',' '\n' | sort | tr '\n' ',' | sed 's/,$//')"
+    group="`echo "$line" | sed 's/^\([^:]*:[^:]*:[^:]*\).*$/\1:/'`"
+    members="`echo "$line" | sed -n 's/^[^:]*:[^:]*:[^:]*:\(.*\)$/\1/p' | tr ',' '\n' | sort | tr '\n' ','`"
+    members="`echo "$members" | sed 's/,$//'`"
     echo "${group}${members}"
   done
 }
@@ -164,18 +196,18 @@ check "groups arthur | sed 's/^.*://'" << EOM
 users testgroup testgroup2 grp4 grp5 grp6 grp7 grp8 grp9 grp10 grp11 grp12 grp13 grp14 grp15 grp16 grp17 grp18
 EOM
 
-check "groups testuser4 | sed 's/^.*://'" << EOM
+check "groups testuser4 | sed 's/^.* *: *//'" << EOM
 users testgroup testgroup2
 EOM
 
-check "getent group | egrep '^(testgroup|users):' | sortgroup" << EOM
-users:x:100:
+check "getent group | egrep '^(testgroup|users|root):' | sortgroup" << EOM
+$(egrep '^(testgroup|users|root):' /etc/group)
 testgroup:*:6100:arthur,test,testuser4
 users:*:100:arthur,test
 EOM
 
 check "getent group | wc -l" << EOM
-`grep -c : /etc/group | awk '{print $1 + 20}'`
+`grep -c '^[^#].*:' /etc/group | awk '{print $1 + 23}'`
 EOM
 
 check "getent group | grep ^largegroup | sortgroup" << EOM
