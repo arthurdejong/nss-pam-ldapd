@@ -51,8 +51,6 @@
 
 #undef ERROR_OUT_BUFERROR
 #define ERROR_OUT_BUFERROR(fp)                                              \
-  (void)tio_close(fp);                                                      \
-  fp = NULL;                                                                \
   *errnop = ERANGE;                                                         \
   *h_errnop = TRY_AGAIN;                                                    \
   return NSS_STATUS_TRYAGAIN;
