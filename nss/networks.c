@@ -52,7 +52,7 @@
 #undef ERROR_OUT_BUFERROR
 #define ERROR_OUT_BUFERROR(fp)                                              \
   *errnop = ERANGE;                                                         \
-  *h_errnop = TRY_AGAIN;                                                    \
+  *h_errnop = NETDB_INTERNAL;                                               \
   return NSS_STATUS_TRYAGAIN;
 
 #undef ERROR_OUT_WRITEERROR
