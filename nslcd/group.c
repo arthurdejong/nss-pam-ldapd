@@ -72,6 +72,11 @@ const char *attmap_group_member       = "member";
    (these are already LDAP-escaped strings) */
 static char *gidSid = NULL;
 
+/* BUILTIN SID definitions */
+static char *builtinSid = NULL;
+const gid_t min_builtin_rid = 544;
+const gid_t max_builtin_rid = 552;
+
 /* default values for attributes */
 static const char *default_group_userPassword = "*"; /* unmatchable */
 
@@ -99,8 +104,15 @@ static int mkfilter_group_byname(const char *name,
    by gid, return -1 on errors */
 static int mkfilter_group_bygid(gid_t gid, char *buffer, size_t buflen)
 {
+  /* if searching for a Windows domain SID */
   if (gidSid != NULL)
   {
+    /* the given gid is a BUILTIN gid, the SID prefix is not the domain SID */
+    if ((gid >= min_builtin_rid) && (gid <= max_builtin_rid))
+      return mysnprintf(buffer, buflen, "(&%s(%s=%s\\%02x\\%02x\\%02x\\%02x))",
+                        group_filter, attmap_group_gidNumber, builtinSid,
+                        (int)(gid & 0xff), (int)((gid >> 8) & 0xff),
+                        (int)((gid >> 16) & 0xff), (int)((gid >> 24) & 0xff));
     return mysnprintf(buffer, buflen, "(&%s(%s=%s\\%02x\\%02x\\%02x\\%02x))",
                       group_filter, attmap_group_gidNumber, gidSid,
                       (int)(gid & 0xff), (int)((gid >> 8) & 0xff),
@@ -168,6 +180,7 @@ void group_init(void)
   if (strncasecmp(attmap_group_gidNumber, "objectSid:", 10) == 0)
   {
     gidSid = sid2search(attmap_group_gidNumber + 10);
+    builtinSid = sid2search("S-1-5-32");
     attmap_group_gidNumber = strndup(attmap_group_gidNumber, 9);
   }
   /* set up attribute list */
