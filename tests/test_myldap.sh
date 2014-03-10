@@ -34,6 +34,9 @@ base="dc=test,dc=tld"
 # try to fetch the base DN (fail with exit 77 to indicate problem)
 "$srcdir/testenv.sh" check_ldap "$uri" "$base" || exit 77
 
+# fix configuration file permissions for test to pass
+chmod o-rwx "$cfgfile"
+
 # just execute test_myldap
 export srcdir
 exec "$srcdir/test_myldap"
