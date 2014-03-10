@@ -2,7 +2,7 @@
 
 # test_nsscmds.sh - simple test script to check output of name lookup commands
 #
-# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2007-2014 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -28,14 +28,16 @@ set -e
 
 # find source directory
 srcdir="${srcdir-`dirname "$0"`}"
+builddir="${builddir-`dirname "$0"`}"
+top_builddir="${top_builddir-${builddir}/..}"
 
 # ensure that we are running in the test environment
 "$srcdir/testenv.sh" check || exit 77
 
 # preload our own NSS module
-if [ -e "$srcdir/../nss/nss_ldap.so" ]
+if [ -e "$top_builddir/nss/nss_ldap.so" ]
 then
-  LD_PRELOAD="$srcdir/../nss/nss_ldap.so"
+  LD_PRELOAD="$top_builddir/nss/nss_ldap.so"
   export LD_PRELOAD
 fi
 

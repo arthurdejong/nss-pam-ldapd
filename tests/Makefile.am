@@ -1,7 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2006-2014 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,8 @@ if ENABLE_PYNSLCD
   TESTS += test_pynslcd_cache.py
 endif
 
-AM_TESTS_ENVIRONMENT = PYTHON='@PYTHON@'; export PYTHON;
+AM_TESTS_ENVIRONMENT = PYTHON='@PYTHON@'; export PYTHON; \
+                       builddir=$(builddir); export builddir;
 
 check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
                  test_cfg test_myldap test_common test_clock test_tio_timeout \

@@ -2,7 +2,7 @@
 
 # test_myldap.sh - simple wrapper test script for test_myldap
 #
-# Copyright (C) 2007 Arthur de Jong
+# Copyright (C) 2007-2014 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,7 @@ set -e
 
 # get LDAP config
 srcdir="${srcdir-`dirname "$0"`}"
+builddir="${builddir-`dirname "$0"`}"
 cfgfile="$srcdir/nslcd-test.conf"
 uri=`sed -n 's/^uri *//p' "$cfgfile" | head -n 1`
 base="dc=test,dc=tld"
@@ -39,4 +40,4 @@ chmod o-rwx "$cfgfile"
 
 # just execute test_myldap
 export srcdir
-exec "$srcdir/test_myldap"
+exec "$builddir/test_myldap"
