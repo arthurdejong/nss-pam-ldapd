@@ -1,3 +1,28 @@
+changes from 0.9.2 to 0.9.3
+---------------------------
+
+* make the dn2uid cache lifetime configurable with the cache configuration
+  option
+* have the nslcd process only exit after the service is completely available
+  to avoid race conditions in the init script
+* the nslcd daemon now properly daemonises (double fork)
+* support mapping the member attribute to an empty string to disable the
+  functionality to do extra lookups for member DN to member uid translations
+* implement deref control handling to request the LDAP server to dereference
+  group member attribute values to uid values
+* support getting built-in groups from Active Directory (thanks Davy Defaud)
+* fix for pwdLastSet attribute value handling (thanks Joshua Shire)
+* fix a possible crash in the NSS module when retrieving large networks
+  entries (thanks Lukas Slebodnik)
+* correct NSS h_errnop return value to indicate buffer too small (thanks
+  Nalin Dahyabhai)
+* fix a bug with shadow values on 64-bit architectures
+* automatically detect DragonFly as using the FreeBSD NSS interface (thanks
+  Francois Tigeot)
+* add a build-time test to see if krb5 is thread-safe
+* various minor bug fixes
+
+
 changes from 0.9.1 to 0.9.2
 ---------------------------
 
