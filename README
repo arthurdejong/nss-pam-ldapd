@@ -15,7 +15,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006-2007 West Consulting
-   Copyright (C) 2006-2012 Arthur de Jong
+   Copyright (C) 2006-2014 Arthur de Jong
    Copyright (C) 2009 Howard Chu
    Copyright (C) 2010 Symas Corporation
 
@@ -64,7 +64,7 @@ It is also possible to use the thin NSS and PAM modules together with the
 nssov overlay in the OpenLDAP server (slapd).
 
 The three parts (NSS module, PAM module, and nslcd server) can be built
-separately and are not srtongly tied together. This means that for instance
+separately and are not strongly tied together. This means that for instance
 you can still use pam_ldap and use the NSS module from nss-pam-ldapd or use an
 alternative implementation of nslcd (for instance with the nssov slapd overlay
 or the pynslcd implementation).
@@ -76,13 +76,13 @@ The fork from nss_ldap was done to implement some major design changes to fix
 some structural problems in the library.
 
 One of those problems were host name lookups through LDAP which could cause
-deadlocks. Another is that nss_ldpa loaded an SSL library into an executable
+deadlocks. Another is that nss_ldap loaded an SSL library into executables
 that may not be designed to load it (e.g. problem with suid applications).
 
 A number of refactoring steps were done to simplify the code and improve
 maintainability. Legacy code was removed and support for non-Linux operating
 systems was initially removed to make the code more readable. Portability was
-re-added after the refactoring.
+re-added using compatibility wrappers.
 
 The most practical improvements over nss_ldap are:
 - the LDAP library is not loaded for every process doing LDAP lookups
@@ -92,8 +92,8 @@ The most practical improvements over nss_ldap are:
   no longer looked up using the ldap method
 - avoid problems with TLS connections in suid binaries and other process-local
   configuration
-- the setup is easier to debug because logging on the server component can be
-  enabled without affecting running processes
+- it is easier to debug because logging in nslcd can be enabled without
+  the need to restart all processes doing name lookups
 - unavailability timeouts are global instead of per-process
 
 comparison to pam_ldap
@@ -119,22 +119,23 @@ Currently the following name databases are supported:
   aliases, ethers, group, hosts, netgroup, networks, passwd, protocols, rpc,
   services and shadow
 
-Note that for when using IPv6 hosts entries, the addresses in the LDAP
-directory must be in their preferred form. The same is true for mac addresses
-for the ethers database. Otherwise the address to entry lookups will not work.
-For more details on the preferred form see
-  http://ldap.akbkhome.com/index.php/attribute/ipHostNumber.html
-and
-  http://ldap.akbkhome.com/index.php/attribute/macAddress.html
+When using IPv6 ipHostNumber attributes, the address in LDAP must be in the
+preferred form as defined in section 2.2 of RFC1884, specifically the format
+as returned by inet_ntop(3). All leading zeros should be omitted and the
+longest range of zeroes should be replaced with :: (e.g.
+fe80::218:bff:fe55:c9f).
 
-automounter map lookups (which are also defined in /etc/nsswitch.conf) are not
-supported because the NSS interface is not used for these. The common autofs
-implementation (on GNU/Linux) currently uses its own method for getting the
-maps from LDAP.
+MAC addresses in the macAddress attribute should be in maximal, colon
+separated hex notation (e.g. 00:00:92:90:ee:e2).
+
+automounter map lookups (which are also defined in /etc/nsswitch.conf) are
+currently not supported because the NSS interface is not used for these. The
+common autofs implementation (on GNU/Linux) currently uses its own method for
+getting the maps from LDAP.
 
 Although mail aliases are exposed through NSS, most mail servers parse
-/etc/aliases by themselves and getting aliases from LDAP requires some
-configuration in the mail server.
+/etc/aliases themselves (bypassing NSS) and getting aliases from LDAP requires
+some configuration in the mail server.
 
 The publickey, bootparams and netmasks are currently unsupported. Some
 investigation should be done if these are needed for anything, which
@@ -160,6 +161,8 @@ with nss_ldap are available. The most important differences:
 - the configuration file formats are not fully compatible
 - nested groups are currently unsupported
 - rootbinddn/rootbindpw support is removed and is not likely to return
+  (the rootpwmoddn and rootpwmodpw work differently but accomplish the same
+  thing)
 
 For the PAM module some functionality is missing. Comparing it to pam_ldap:
 - only BIND authentication is supported
@@ -343,18 +346,21 @@ group membership
 
 Currently, two ways of specifying group membership are supported. The first,
 by using the memberUid attribute, is the simplest and by far the fastest
-(takes the least number of lookups). This attribute maps to user names with
-the same values as the uid attribute would hold for posixAccount entries.
+(takes the least number of lookups). The attribute values are user names (same
+as the uid attribute for posixAccount entries) and are returned without
+further processing.
 
-The second method is to use DN values in the member attribute (attribute
-names can be changed by using the attribute mapping options as described in
-the manual page). This is potentially a lot slower because in the worst case
-every DN has to be looked up in the LDAP server to find the proper value for
-the uid attribute.
+The second method is to use DN values in the member attribute (attribute names
+can be changed by using the attribute mapping options as described in the
+manual page). This is potentially a lot slower because in the worst case every
+DN has to be looked up in the LDAP server to find the proper value for the uid
+attribute.
 
 If the DN value already contains a uid value (e.g. uid=arthur, dc=example,
-dc=com) the lookup is skipped and the value from the DN is used. A cache is
-maintained that saves the DN to uid translations for 15 minutes.
+dc=com) a further lookup is skipped and the uid value from the DN is used.
+
+For other DN values an extra lookup is performed to expand it to a uid. These
+lookups are cached for 15 minutes.
 
 Currently, having nested groups by member values pointing to other groups,
 as well as the memberOf attribute in posixAccount entries are unsupported.
