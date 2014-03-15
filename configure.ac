@@ -89,7 +89,7 @@ AC_ARG_ENABLE(warnings,
                  DESIRED_CFLAGS="$DESIRED_CFLAGS -Wextra -Wdeclaration-after-statement -Werror-implicit-function-declaration"
                fi])
 test_gcc_flag() {
-  AC_LANG_CONFTEST([AC_LANG_PROGRAM([int main() {}])])
+  AC_LANG_CONFTEST([AC_LANG_PROGRAM()])
   $CC -c conftest.c $CFLAGS $@ > /dev/null 2> /dev/null
   ret=$?
   rm -f conftest.o
