@@ -1,3 +1,93 @@
+2014-03-15 20:35  arthur
+
+	* [r2077] README: update README (mostly from 0.9 branch)
+
+2014-03-15 20:24  arthur
+
+	* [r2076] INSTALL, config.guess, config.sub, missing, test-driver:
+	  update from latest automake
+
+2014-03-15 20:07  arthur
+
+	* [r2075] common/tio.c: also support poll() returning EAGAIN
+	  (2f088ec from 0.9)
+
+2014-03-15 19:36  arthur
+
+	* [r2074] configure.ac: fix usage of AC_LANG_PROGRAM (933bf8e from
+	  0.9)
+
+2014-03-02 21:40  arthur
+
+	* [r2067] nss/hosts.c, nss/networks.c: fix crash when retrieving
+	  large networks entries (8532f40 from 0.9, thanks Lukas Slebodnik)
+
+2014-01-26 18:40  arthur
+
+	* [r2066] tests/nslcd-test.conf, tests/test_nsscmds.sh: update test
+	  script and configuration from 0.9 branch
+
+2014-01-26 17:05  arthur
+
+	* [r2065] nslcd/shadow.c: fix pwdLastSet calcuation (2181cca from
+	  0.9, thanks Joshua Shire)
+
+2013-12-08 16:01  arthur
+
+	* [r2058] .gitignore, INSTALL, Makefile.am, ar-lib, autogen.sh,
+	  compile, config.guess, config.sub, configure.ac, depcomp,
+	  install-sh, missing, mkinstalldirs, py-compile, test-driver,
+	  tests, tests/Makefile.am: upgrade to automake 1.14 (eefe25d,
+	  2a5d37e, 5b78508, 4fc4197, 8ae8b9a and 6be316e from 0.9)
+
+2013-12-07 22:07  arthur
+
+	* [r2057] ldapns.ldif: reformat LDIF file to follow OpenLDAP format
+	  (ce95b41 from 0.9)
+
+2013-12-07 22:04  arthur
+
+	* [r2056] AUTHORS, nslcd/group.c, nslcd/passwd.c, nslcd/shadow.c:
+	  increase password buffer size (thanks Bersl) (7140d21 from 0.9)
+
+2013-12-07 22:00  arthur
+
+	* [r2055] NEWS, README, common/dict.c, compat/attrs.h,
+	  compat/nss_compat.h, nslcd/myldap.c: fix for common spelling
+	  mistake (8571bc1 from 0.9)
+
+2013-10-06 14:14  arthur
+
+	* [r2032] nslcd/common.h: in nslcd, log EPIPE only on debug level
+	  (4897033 from 0.9)
+
+2013-10-06 14:11  arthur
+
+	* [r2031] common/tio.c, common/tio.h, nss/common.h: use a timeout
+	  when skipping remaining result data (c9e2f97 from 0.9)
+
+2013-09-01 09:47  arthur
+
+	* [r2029] AUTHORS, common/tio.c: fix buffer overflow on interrupted
+	  read (thanks John Sullivan) (07a8170 from 0.9)
+
+2013-08-23 21:58  arthur
+
+	* [r2021] nslcd/nslcd.c: ignore SIGUSR1 and SIGUSR2 for future
+	  compatibility
+
+2013-08-18 13:12  arthur
+
+	* [r2020] man/nslcd.8.xml, man/pynslcd.8.xml, nslcd/nslcd.c,
+	  pynslcd/pynslcd.py: implement a -n, --nofork option to run in the
+	  foreground (cda6dcd from 0.9)
+
+2013-05-05 15:34  arthur
+
+	* [r1959] ChangeLog, NEWS, configure.ac, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml: get
+	  files ready for 0.8.13 release
+
 2013-05-05 11:50  arthur
 
 	* [r1958] ., compat/ldap_initialize.c: remove not needed define
