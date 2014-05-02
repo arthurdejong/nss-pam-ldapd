@@ -162,7 +162,7 @@ void invalidator_do(enum ldap_map_selector map);
 /* common buffer lengths */
 #define BUFLEN_NAME         256  /* user, group names and such */
 #define BUFLEN_SAFENAME     300  /* escaped name */
-#define BUFLEN_PASSWORD      64  /* passwords */
+#define BUFLEN_PASSWORD     128  /* passwords */
 #define BUFLEN_PASSWORDHASH 256  /* passwords hashes */
 #define BUFLEN_DN           256  /* distinguished names */
 #define BUFLEN_SAFEDN       300  /* escapedd dn */
