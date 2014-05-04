@@ -344,9 +344,9 @@ group membership
 
 Currently, two ways of specifying group membership are supported. The first,
 by using the memberUid attribute, is the simplest and by far the fastest
-(takes the least number of lookups). The attribute values are user names with
-the format as the uid attribute for posixAccount entries and are returned
-without further processing.
+(takes the least number of lookups). The attribute values are user names (same
+as the uid attribute for posixAccount entries) and are returned without
+further processing.
 
 The second method is to use DN values in the member attribute (attribute names
 can be changed by using the attribute mapping options as described in the

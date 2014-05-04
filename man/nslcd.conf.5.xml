@@ -372,7 +372,7 @@
     <varlistentry id="scope"> <!-- since 0.3 -->
      <term><option>scope</option>
            <optional><replaceable>MAP</replaceable></optional>
-           sub<optional>tree</optional>|one<optional>level</optional>|base</term>
+           sub<optional>tree</optional>|one<optional>level</optional>|base|children</term>
      <listitem>
       <para>
        Specifies the search scope (subtree, onelevel, base or children).
@@ -825,14 +825,13 @@
       <para>
        If this option is set, on start-up and whenever a connection to the
        <acronym>LDAP</acronym> server is re-established after an error
-       the specified cache is flushed.
+       the specified caches are flushed.
       </para>
       <para>
        If <replaceable>DB</replaceable> is one of the nsswitch maps,
        <command>nscd</command> is contacted to flush its cache for the
        specified database.
-      </para>
-      <para> <!-- since 0.9.1 -->
+       <!-- since 0.9.1 -->
        If <replaceable>DB</replaceable> is <literal>nfsidmap</literal>,
        <command>nfsidmap</command> is contacted to clear its cache.
       </para>
@@ -851,7 +850,7 @@
            <optional><replaceable>TIME</replaceable></optional></term>
      <listitem>
       <para>
-       Configure the time entries are kept in the specified cache.
+       Configure the time entries are kept in the specified internal cache.
       </para>
       <para>
         The first <replaceable>TIME</replaceable> value specifies the time
