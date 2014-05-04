@@ -34,6 +34,7 @@
 #endif /* HAVE_PTHREAD_H */
 
 #include "daemonize.h"
+#include "log.h"
 
 /* the write end of a pipe that is used to signal the fact that the child
    process has finished initialising (see daemonize_daemon() and
@@ -80,7 +81,10 @@ static int read_response(int fd, char *buffer, size_t bufsz)
     else if ((errno == EINTR) || (errno == EAGAIN))
       continue; /* ignore these errors and try again */
     else
+    {
+      log_log(LOG_ERR, "read_response(): read() failed: %s", strerror(errno));
       return -1;
+    }
   }
   return r;
 }
@@ -123,17 +127,22 @@ int daemonize_daemon(void)
   int i;
   /* set up a pipe for communication */
   if (pipe(pipefds) < 0)
+  {
+    log_log(LOG_ERR, "pipe() failed: %s", strerror(errno));
     return -1;
+  }
   /* set O_NONBLOCK on the write end to ensure that a call to
      daemonize_ready() will not lock the application */
   if ((i = fcntl(pipefds[1], F_GETFL, 0)) < 0)
   {
+    log_log(LOG_ERR, "fcntl() failed: %s", strerror(errno));
     close(pipefds[0]);
     close(pipefds[1]);
     return -1;
   }
   if (fcntl(pipefds[1], F_SETFL, i | O_NONBLOCK) < 0)
   {
+    log_log(LOG_ERR, "fcntl() failed: %s", strerror(errno));
     close(pipefds[0]);
     close(pipefds[1]);
     return -1;
@@ -147,6 +156,7 @@ int daemonize_daemon(void)
       break;
     case -1:
       /* we are the parent, but have an error */
+      log_log(LOG_ERR, "fork() failed: %s", strerror(errno));
       close(pipefds[0]);
       close(pipefds[1]);
       return -1;
@@ -158,6 +168,7 @@ int daemonize_daemon(void)
   /* become process leader */
   if (setsid() < 0)
   {
+    log_log(LOG_ERR, "setsid() failed: %s", strerror(errno));
     close(pipefds[1]);
     _exit(EXIT_FAILURE);
   }
@@ -169,6 +180,7 @@ int daemonize_daemon(void)
       break;
     case -1:
       /* we are the parent, but have an error */
+      log_log(LOG_ERR, "fork() failed: %s", strerror(errno));
       close(pipefds[1]);
       _exit(EXIT_FAILURE);
     default:

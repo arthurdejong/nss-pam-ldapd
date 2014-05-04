@@ -705,6 +705,7 @@ int main(int argc, char *argv[])
   /* daemonize */
   if ((!nslcd_debugging) && (!nslcd_nofork))
   {
+    errno = 0;
     if (daemonize_daemon() != 0)
     {
       log_log(LOG_ERR, "unable to daemonize: %s", strerror(errno));
