@@ -19,8 +19,8 @@
 # 02110-1301 USA
 
 TESTS = test_dict test_set test_tio test_expr test_getpeercred test_cfg \
-        test_myldap.sh test_common test_nsscmds.sh test_pamcmds.sh \
-        test_manpages.sh test_clock test_tio_timeout
+        test_attmap test_myldap.sh test_common test_nsscmds.sh \
+        test_pamcmds.sh test_manpages.sh test_clock test_tio_timeout
 if HAVE_PYTHON
   TESTS += test_pycompile.sh test_pylint.sh
 endif
@@ -32,8 +32,8 @@ AM_TESTS_ENVIRONMENT = PYTHON='@PYTHON@'; export PYTHON; \
                        builddir=$(builddir); export builddir;
 
 check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
-                 test_cfg test_myldap test_common test_clock test_tio_timeout \
-                 lookup_netgroup lookup_shadow
+                 test_cfg test_attmap test_myldap test_common test_clock \
+                 test_tio_timeout lookup_netgroup lookup_shadow
 
 EXTRA_DIST = README nslcd-test.conf usernames.txt testenv.sh test_myldap.sh \
              test_nsscmds.sh  test_pamcmds.sh test_pamcmds.expect \
@@ -75,6 +75,9 @@ common_nslcd_LDADD = ../nslcd/log.o ../nslcd/common.o ../nslcd/invalidator.o \
 
 test_cfg_SOURCES = test_cfg.c common.h
 test_cfg_LDADD = $(common_nslcd_LDADD)
+
+test_attmap_SOURCES = test_attmap.c common.h
+test_attmap_LDADD = ../nslcd/cfg.o $(common_nslcd_LDADD)
 
 test_myldap_SOURCES = test_myldap.c common.h
 test_myldap_LDADD = ../nslcd/cfg.o $(common_nslcd_LDADD)
