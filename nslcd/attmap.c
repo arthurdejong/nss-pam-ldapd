@@ -233,7 +233,7 @@ const char *attmap_set_mapping(const char **var, const char *value)
         (var != &attmap_shadow_shadowFlag))
       return NULL;
     /* the member attribute may only be set to an empty string */
-    if ((var == attmap_group_member) && (strcmp(value, "\"\"") != 0))
+    if ((var == &attmap_group_member) && (strcmp(value, "\"\"") != 0))
       return NULL;
   }
   /* check if the value will be changed */
