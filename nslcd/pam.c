@@ -69,7 +69,7 @@ static int try_bind(const char *userdn, const char *password,
   {
     if (rc == LDAP_SUCCESS)
       rc = LDAP_LOCAL_ERROR;
-    log_log(LOG_WARNING, "%s: lookup failed: %s", userdn, ldap_err2string(rc));
+    log_log(LOG_WARNING, "%s: %s", userdn, ldap_err2string(rc));
   }
   else
   {
@@ -78,7 +78,7 @@ static int try_bind(const char *userdn, const char *password,
     {
       if (rc == LDAP_SUCCESS)
         rc = LDAP_NO_RESULTS_RETURNED;
-      log_log(LOG_WARNING, "%s: lookup failed: %s", userdn, ldap_err2string(rc));
+      log_log(LOG_WARNING, "%s: %s", userdn, ldap_err2string(rc));
     }
   }
   /* get any policy response from the bind */
