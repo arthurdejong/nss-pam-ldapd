@@ -86,7 +86,7 @@ struct ldap_session
   /* the connection */
   LDAP *ld;
   /* the username to bind with */
-  char binddn[256];
+  char binddn[512];
   /* the password to bind with if any */
   char bindpw[128];
   /* timestamp of last activity */

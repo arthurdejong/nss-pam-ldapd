@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -122,9 +122,9 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
                                    const char *uid,
                                    char *buffer,size_t buflen)
 {
-  char dn[256];
+  char dn[512];
   char safeuid[300];
-  char safedn[300];
+  char safedn[600];
   /* escape attribute */
   if(myldap_escape(uid,safeuid,sizeof(safeuid)))
     return -1;
