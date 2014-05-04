@@ -2,7 +2,7 @@
    usermod.c - routines for changing user information such as full name,
                login shell, etc
 
-   Copyright (C) 2013 Arthur de Jong
+   Copyright (C) 2013-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -117,7 +117,8 @@ static MYLDAP_SESSION *get_session(const char *binddn, const char *userdn,
     return NULL;
   }
   /* set up credentials for the session */
-  myldap_set_credentials(session, binddn, password);
+  if (myldap_set_credentials(session, binddn, password))
+    return NULL;
   /* perform search for own object (just to do any kind of search to set
      up the connection with fail-over) */
   if ((lookup_dn2uid(session, userdn, rcp, buffer, sizeof(buffer)) == NULL) ||

@@ -2,7 +2,7 @@
    pam.c - pam processing routines
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2009-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -55,7 +55,11 @@ static int try_bind(const char *userdn, const char *password,
   if (session == NULL)
     return LDAP_UNAVAILABLE;
   /* set up credentials for the session */
-  myldap_set_credentials(session, userdn, password);
+  if (myldap_set_credentials(session, userdn, password))
+  {
+    myldap_session_close(session);
+    return LDAP_LOCAL_ERROR;
+  }
   /* perform search for own object (just to do any kind of search) */
   attrs[0] = "dn";
   attrs[1] = NULL;
@@ -686,7 +690,11 @@ static int try_pwmod(MYLDAP_SESSION *oldsession,
   if (session == NULL)
     return LDAP_UNAVAILABLE;
   /* set up credentials for the session */
-  myldap_set_credentials(session, binddn, oldpassword);
+  if (myldap_set_credentials(session, userdn, oldpassword))
+  {
+    myldap_session_close(session);
+    return LDAP_LOCAL_ERROR;
+  }
   /* perform search for own object (just to do any kind of search) */
   if ((lookup_dn2uid(session, userdn, &rc, buffer, sizeof(buffer)) != NULL) &&
       (rc == LDAP_SUCCESS))

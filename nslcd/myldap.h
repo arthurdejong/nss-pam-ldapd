@@ -68,9 +68,9 @@ typedef struct myldap_entry MYLDAP_ENTRY;
    uses the configuration to find the URLs to attempt connections to. */
 MUST_USE MYLDAP_SESSION *myldap_create_session(void);
 
-/* Set alternative credentials for the session. */
-void myldap_set_credentials(MYLDAP_SESSION *session, const char *dn,
-                            const char *password);
+/* Set alternative credentials for the session. Returns 0 on success. */
+MUST_USE int myldap_set_credentials(MYLDAP_SESSION *session, const char *dn,
+                                    const char *password);
 
 /* Get bind ppolicy results from the last bind operation. This function
    returns a NSLCD_PAM_* code and optional message. */

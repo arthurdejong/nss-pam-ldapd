@@ -1031,14 +1031,30 @@ static int do_open(MYLDAP_SESSION *session)
 }
 
 /* Set alternative credentials for the session. */
-void myldap_set_credentials(MYLDAP_SESSION *session, const char *dn,
+int myldap_set_credentials(MYLDAP_SESSION *session, const char *dn,
                             const char *password)
 {
+  /* error out when buffers are too small */
+  if (strlen(dn) >= sizeof(session->binddn))
+  {
+    log_log(LOG_ERR,
+            "myldap_set_credentials(): binddn buffer too small (%d required)",
+            strlen(dn));
+    return -1;
+  }
+  if (strlen(password) >= sizeof(session->bindpw))
+  {
+    log_log(LOG_ERR,
+            "myldap_set_credentials(): bindpw buffer too small (%d required)",
+            strlen(password));
+    return -1;
+  }
   /* copy dn and password into session */
   strncpy(session->binddn, dn, sizeof(session->binddn));
   session->binddn[sizeof(session->binddn) - 1] = '\0';
   strncpy(session->bindpw, password, sizeof(session->bindpw));
   session->bindpw[sizeof(session->bindpw) - 1] = '\0';
+  return 0;
 }
 
 /* Get bind ppolicy results from the last bind operation. This function
