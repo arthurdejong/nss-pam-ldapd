@@ -2,7 +2,7 @@
    pam.c - pam processing routines
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2009-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -246,7 +246,7 @@ int nslcd_pam_authc(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   int rc;
   char username[256];
   char servicename[64];
-  char password[64];
+  char password[128];
   const char *userdn;
   MYLDAP_ENTRY *entry;
   int authzrc=NSLCD_PAM_SUCCESS;
@@ -617,8 +617,8 @@ int nslcd_pam_pwmod(TFILE *fp,MYLDAP_SESSION *session,uid_t calleruid)
   char userdn[256];
   int asroot;
   char servicename[64];
-  char oldpassword[64];
-  char newpassword[64];
+  char oldpassword[128];
+  char newpassword[128];
   const char *binddn=NULL; /* the user performing the modification */
   MYLDAP_ENTRY *entry;
   char authzmsg[1024];
