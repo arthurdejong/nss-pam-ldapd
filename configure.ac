@@ -275,7 +275,7 @@ if test "x$PAM_SECLIB_DIR" = "xauto"
 then
   case "$target_os" in
     solaris*) PAM_SECLIB_DIR="/usr/lib/security" ;;
-    freebsd*) PAM_SECLIB_DIR="/usr/lib" ;;
+    freebsd*|dragonfly*) PAM_SECLIB_DIR="/usr/lib" ;;
     *)        PAM_SECLIB_DIR="/lib/security" ;;
   esac
 fi
@@ -294,7 +294,7 @@ if test "x$NSS_LDAP_SONAME" = "xauto"
 then
   case "$target_os" in
     solaris*) NSS_LDAP_SONAME="nss_ldap.so.1" ;;
-    freebsd*) NSS_LDAP_SONAME="nss_ldap.so.1" ;;
+    freebsd*|dragonfly*) NSS_LDAP_SONAME="nss_ldap.so.1" ;;
     *)        NSS_LDAP_SONAME="libnss_ldap.so.2" ;;
   esac
 fi
