@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -69,7 +69,10 @@ static int mkfilter_rpc_byname(const char *name, char *buffer, size_t buflen)
   char safename[BUFLEN_SAFENAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
+  {
+    log_log(LOG_ERR, "mkfilter_rpc_byname(): safename buffer too small");
     return -1;
+  }
   /* build filter */
   return mysnprintf(buffer, buflen, "(&%s(%s=%s))",
                     rpc_filter, attmap_rpc_cn, safename);

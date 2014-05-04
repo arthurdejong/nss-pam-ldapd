@@ -1,7 +1,7 @@
 /*
    invalidator.c - functions for invalidating external caches
 
-   Copyright (C) 2013 Arthur de Jong
+   Copyright (C) 2013-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -85,8 +85,12 @@ static void exec_invalidate(const char *db)
     argv[2] = (char *)db;
     argv[3] = NULL;
   }
-  mysnprintf(cmdline, 80, "%s %s%s%s", argv[0], argv[1],
-             argv[2] != NULL ? " " : "", argv[2] != NULL ? argv[2] : "");
+  if (mysnprintf(cmdline, 80, "%s %s%s%s", argv[0], argv[1],
+                 argv[2] != NULL ? " " : "", argv[2] != NULL ? argv[2] : ""))
+  {
+    log_log(LOG_ERR, "exec_invalidate(): cmdline buffer too small");
+    return;
+  }
   log_log(LOG_DEBUG, "invalidator: %s", cmdline);
   /* do fork/exec */
   switch (cpid=fork())

@@ -1701,7 +1701,11 @@ static char **myldap_get_ranged_values(MYLDAP_ENTRY *entry, const char *attr)
   SET *set = NULL;
   /* build the attribute name to find */
   if (mysnprintf(attbuf, sizeof(attbuf), "%s;range=0-*", attr))
+  {
+    log_log(LOG_ERR, "myldap_get_ranged_values(): attbuf buffer too small (%d required)",
+            strlen(attr) + 10);
     return NULL;
+  }
   /* keep doing lookups untul we can't get any more results */
   while (1)
   {
@@ -1749,7 +1753,10 @@ static char **myldap_get_ranged_values(MYLDAP_ENTRY *entry, const char *attr)
     startat = nxt;
     /* build attributes for a new search */
     if (mysnprintf(attbuf, sizeof(attbuf), "%s;range=%d-*", attr, startat))
+    {
+      log_log(LOG_ERR, "myldap_get_ranged_values(): attbuf buffer too small");
       break;
+    }
     attrs[0] = attbuf;
     attrs[1] = NULL;
     /* close the previous search, if any */

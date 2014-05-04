@@ -274,6 +274,12 @@ const char *attmap_get_value(MYLDAP_ENTRY *entry, const char *attr,
     values = myldap_get_values(entry, attr);
     if ((values == NULL) || (values[0] == NULL))
       return NULL;
+    if (strlen(values[0]) >= buflen)
+    {
+      log_log(LOG_ERR, "attmap_get_value(): buffer too small (%d required)",
+              strlen(values[0]));
+      return NULL;
+    }
     strncpy(buffer, values[0], buflen);
     buffer[buflen - 1] = '\0';
     return buffer;

@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -71,12 +71,18 @@ static int mkfilter_service_byname(const char *name, const char *protocol,
   char safename[BUFLEN_SAFENAME], safeprotocol[BUFLEN_SAFENAME];
   /* escape attributes */
   if (myldap_escape(name, safename, sizeof(safename)))
+  {
+    log_log(LOG_ERR, "mkfilter_service_byname(): safename buffer too small");
     return -1;
+  }
   /* build filter */
   if (*protocol != '\0')
   {
     if (myldap_escape(protocol, safeprotocol, sizeof(safeprotocol)))
+    {
+      log_log(LOG_ERR, "mkfilter_service_byname(): safeprotocol buffer too small");
       return -1;
+    }
     return mysnprintf(buffer, buflen, "(&%s(%s=%s)(%s=%s))",
                       service_filter, attmap_service_cn, safename,
                       attmap_service_ipServiceProtocol, safeprotocol);
@@ -93,7 +99,10 @@ static int mkfilter_service_bynumber(int number, const char *protocol,
   if (*protocol != '\0')
   {
     if (myldap_escape(protocol, safeprotocol, sizeof(safeprotocol)))
+    {
+      log_log(LOG_ERR, "mkfilter_service_bynumber(): safeprotocol buffer too small");
       return -1;
+    }
     return mysnprintf(buffer, buflen, "(&%s(%s=%d)(%s=%s))",
                       service_filter, attmap_service_ipServicePort, number,
                       attmap_service_ipServiceProtocol, safeprotocol);

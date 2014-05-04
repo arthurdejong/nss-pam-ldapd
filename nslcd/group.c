@@ -94,7 +94,10 @@ static int mkfilter_group_byname(const char *name,
   char safename[BUFLEN_SAFENAME];
   /* escape attribute */
   if (myldap_escape(name, safename, sizeof(safename)))
+  {
+    log_log(LOG_ERR, "mkfilter_group_byname(): safename buffer too small");
     return -1;
+  }
   /* build filter */
   return mysnprintf(buffer, buflen, "(&%s(%s=%s))",
                     group_filter, attmap_group_cn, safename);
@@ -136,7 +139,10 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
   char safedn[BUFLEN_SAFEDN];
   /* escape attribute */
   if (myldap_escape(uid, safeuid, sizeof(safeuid)))
+  {
+    log_log(LOG_ERR, "mkfilter_group_bymember(): safeuid buffer too small");
     return -1;
+  }
   /* try to translate uid to DN */
   if ((strcasecmp(attmap_group_member, "\"\"") == 0) ||
       (uid2dn(session, uid, dn, sizeof(dn)) == NULL))
@@ -144,7 +150,10 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
                       group_filter, attmap_group_memberUid, safeuid);
   /* escape DN */
   if (myldap_escape(dn, safedn, sizeof(safedn)))
+  {
+    log_log(LOG_ERR, "mkfilter_group_bymember(): safedn buffer too small");
     return -1;
+  }
   /* also lookup using user DN */
   return mysnprintf(buffer, buflen, "(&%s(|(%s=%s)(%s=%s)))",
                     group_filter,
@@ -158,7 +167,10 @@ static int mkfilter_group_bymemberdn(const char *dn,
   char safedn[BUFLEN_SAFEDN];
   /* escape DN */
   if (myldap_escape(dn, safedn, sizeof(safedn)))
+  {
+    log_log(LOG_ERR, "mkfilter_group_bymemberdn(): safedn buffer too small");
     return -1;
+  }
   return mysnprintf(buffer, buflen,
                     "(&%s(%s=%s))",
                     group_filter,

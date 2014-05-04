@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2007-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -455,14 +455,24 @@ static void add_uris_from_dns(const char *filename, int lnr,
     if ((strlen(hostlist) > 4) && (strcmp(hostlist + strlen(hostlist) - 4, ":636") == 0))
     {
       hostlist[strlen(hostlist) - 4] = '\0';
-      mysnprintf(buf, sizeof(buf), "ldaps://%s", hostlist);
+      if (mysnprintf(buf, sizeof(buf), "ldaps://%s", hostlist))
+      {
+        log_log(LOG_ERR, "add_uris_from_dns(): buf buffer too small (%d required)",
+                strlen(hostlist) + 8);
+        exit(EXIT_FAILURE);
+      }
     }
     else
     {
       /* strip default port number */
       if ((strlen(hostlist) > 4) && (strcmp(hostlist + strlen(hostlist) - 4, ":389") == 0))
         hostlist[strlen(hostlist) - 4] = '\0';
-      mysnprintf(buf, sizeof(buf), "ldap://%s", hostlist);
+      if (mysnprintf(buf, sizeof(buf), "ldap://%s", hostlist))
+      {
+        log_log(LOG_ERR, "add_uris_from_dns(): buf buffer too small (%d required)",
+                strlen(hostlist) + 7);
+        exit(EXIT_FAILURE);
+      }
     }
     log_log(LOG_DEBUG, "add_uris_from_dns(): found uri: %s", buf);
     add_uri(filename, lnr, cfg, buf);
