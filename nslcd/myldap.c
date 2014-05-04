@@ -566,7 +566,7 @@ static int do_ppolicy_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
       ldap_msgfree(result);
     return LDAP_TIMEOUT;
   }
-  /* parse the result from the bind operation (frees result, get controls) */
+  /* parse the result from the bind operation (frees result, gets controls) */
   responsectrls = NULL;
   parserc = ldap_parse_result(ld, result, &rc, NULL, NULL, NULL, &responsectrls, 1);
   if (parserc != LDAP_SUCCESS)
@@ -576,20 +576,19 @@ static int do_ppolicy_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
       ldap_controls_free(responsectrls);
     return parserc;
   }
-  if (rc != LDAP_SUCCESS)
-  {
-    myldap_err(LOG_ERR, ld, rc, "ldap_parse_result() failed");
-    if (responsectrls != NULL)
-      ldap_controls_free(responsectrls);
-    return rc;
-  }
-  /* check the returned controls */
+  /* handle any returned controls */
   if (responsectrls != NULL)
   {
     handle_ppasswd_controls(session, ld, responsectrls);
-    /* free controls */
     ldap_controls_free(responsectrls);
   }
+  /* return the result of the BIND operation */
+  if (rc != LDAP_SUCCESS)
+  {
+    myldap_err(LOG_DEBUG, ld, rc, "ldap_parse_result() result");
+    return rc;
+  }
+  /* check the returned controls */
   return LDAP_SUCCESS;
 }
 #endif /* no SASL, so no ppolicy */
