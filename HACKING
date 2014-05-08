@@ -16,12 +16,12 @@ are considered:
 * clearly state which problem you're trying to solve and how this is
   accomplished
 * please follow the existing coding conventions
-* please test the patch and include information on testing with the patch
-  (platforms tested, etc)
+* please test the patch and include information on tested platforms, etc.
 * add a copyright statement with the patch if you feel the contribution is
   significant enough (e.g. more than a few lines)
-* when including third-party code, retain copyright information (copyright
-  holder and license) and ensure that the license is LGPL compatible
+* ensure that the code you contribute can be integrated in the project
+  under the LGPL (when including third-party code, retain copyright
+  information license, you have permission to distribute the code, etc.)
 
 Please email nss-pam-ldapd-users@lists.arthurdejong.org if you want to
 contribute. All contributions will be acknowledged in the AUTHORS file.
