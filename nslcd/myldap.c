@@ -318,6 +318,7 @@ static MYLDAP_SESSION *myldap_session_new(void)
   for (i = 0; i < MAX_SEARCHES_IN_SESSION; i++)
     session->searches[i] = NULL;
   session->binddn[0] = '\0';
+  memset(session->bindpw, 0, sizeof(session->bindpw));
   session->bindpw[0] = '\0';
   session->policy_response = NSLCD_PAM_SUCCESS;
   session->policy_message[0] = '\0';
@@ -1195,6 +1196,7 @@ void myldap_session_close(MYLDAP_SESSION *session)
   /* close any open connections */
   do_close(session);
   /* free allocated memory */
+  memset(session->bindpw, 0, sizeof(session->bindpw));
   free(session);
 }
 

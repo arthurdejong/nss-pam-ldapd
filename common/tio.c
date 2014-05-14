@@ -2,7 +2,7 @@
    tio.c - timed io functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2008, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2007-2014 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -485,6 +485,8 @@ int tio_close(TFILE *fp)
   if (close(fp->fd))
     retv = -1;
   /* free any allocated buffers */
+  memset(fp->readbuffer.buffer, 0, sizeof(fp->readbuffer.size));
+  memset(fp->writebuffer.buffer, 0, sizeof(fp->writebuffer.size));
   free(fp->readbuffer.buffer);
   free(fp->writebuffer.buffer);
   /* free the tio struct itself */

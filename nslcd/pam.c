@@ -293,6 +293,7 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
     {
       log_log(LOG_NOTICE, "rootpwmoddn not configured");
       /* we break the protocol */
+      memset(password, 0, sizeof(password));
       return -1;
     }
     userdn = nslcd_cfg->rootpwmoddn;
@@ -302,6 +303,7 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
       if (strlen(nslcd_cfg->rootpwmodpw) >= sizeof(password))
       {
         log_log(LOG_ERR, "nslcd_pam_authc(): rootpwmodpw will not fit in password");
+        memset(password, 0, sizeof(password));
         return -1;
       }
       strcpy(password, nslcd_cfg->rootpwmodpw);
@@ -318,6 +320,7 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
       {
         WRITE_INT32(fp, NSLCD_RESULT_END);
       }
+      memset(password, 0, sizeof(password));
       return -1;
     }
     userdn = myldap_get_dn(entry);
@@ -344,6 +347,7 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
   WRITE_INT32(fp, authzrc);
   WRITE_STRING(fp, authzmsg);
   WRITE_INT32(fp, NSLCD_RESULT_END);
+  memset(password, 0, sizeof(password));
   return 0;
 }
 
@@ -765,6 +769,8 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
     {
       WRITE_INT32(fp, NSLCD_RESULT_END);
     }
+    memset(oldpassword, 0, sizeof(oldpassword));
+    memset(newpassword, 0, sizeof(newpassword));
     return -1;
   }
   /* check if pam_password_prohibit_message is set */
@@ -775,6 +781,8 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
     WRITE_INT32(fp, NSLCD_PAM_PERM_DENIED);
     WRITE_STRING(fp, nslcd_cfg->pam_password_prohibit_message);
     WRITE_INT32(fp, NSLCD_RESULT_END);
+    memset(oldpassword, 0, sizeof(oldpassword));
+    memset(newpassword, 0, sizeof(newpassword));
     return 0;
   }
   /* check if the the user passed the rootpwmoddn */
@@ -788,6 +796,8 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
       if (strlen(nslcd_cfg->rootpwmodpw) >= sizeof(oldpassword))
       {
         log_log(LOG_ERR, "nslcd_pam_pwmod(): rootpwmodpw will not fit in oldpassword");
+        memset(oldpassword, 0, sizeof(oldpassword));
+        memset(newpassword, 0, sizeof(newpassword));
         return -1;
       }
       strcpy(oldpassword, nslcd_cfg->rootpwmodpw);
@@ -804,6 +814,8 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
       WRITE_INT32(fp, rc);
       WRITE_STRING(fp, authzmsg);
       WRITE_INT32(fp, NSLCD_RESULT_END);
+      memset(oldpassword, 0, sizeof(oldpassword));
+      memset(newpassword, 0, sizeof(newpassword));
       return 0;
     }
   }
@@ -819,6 +831,8 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
     WRITE_INT32(fp, NSLCD_PAM_PERM_DENIED);
     WRITE_STRING(fp, authzmsg);
     WRITE_INT32(fp, NSLCD_RESULT_END);
+    memset(oldpassword, 0, sizeof(oldpassword));
+    memset(newpassword, 0, sizeof(newpassword));
     return 0;
   }
   /* write response */
@@ -827,5 +841,7 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
   WRITE_INT32(fp, NSLCD_PAM_SUCCESS);
   WRITE_STRING(fp, "");
   WRITE_INT32(fp, NSLCD_RESULT_END);
+  memset(oldpassword, 0, sizeof(oldpassword));
+  memset(newpassword, 0, sizeof(newpassword));
   return 0;
 }
