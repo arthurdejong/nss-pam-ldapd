@@ -33,7 +33,8 @@ AM_TESTS_ENVIRONMENT = PYTHON='@PYTHON@'; export PYTHON; \
 
 check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
                  test_cfg test_attmap test_myldap test_common test_clock \
-                 test_tio_timeout lookup_netgroup lookup_shadow
+                 test_tio_timeout lookup_netgroup lookup_shadow \
+                 lookup_groupbyuser
 
 EXTRA_DIST = README nslcd-test.conf usernames.txt testenv.sh test_myldap.sh \
              test_nsscmds.sh  test_pamcmds.sh test_pamcmds.expect \
@@ -92,3 +93,5 @@ test_tio_timeout_SOURCES = test_tio_timeout.c ../common/tio.h
 lookup_netgroup_SOURCES = lookup_netgroup.c
 
 lookup_shadow_SOURCES = lookup_shadow.c
+
+lookup_groupbyuser_SOURCES = lookup_groupbyuser.c

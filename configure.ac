@@ -345,7 +345,7 @@ AC_CHECK_FUNCS([malloc realloc atexit])
 AC_FUNC_FORK
 AC_CHECK_FUNCS(__assert_fail)
 AC_SEARCH_LIBS(clock_gettime, rt)
-AC_CHECK_FUNCS([setusershell getusershell endusershell])
+AC_CHECK_FUNCS([setusershell getusershell endusershell getgrouplist])
 AC_CHECK_DECLS([setusershell, getusershell, endusershell])
 
 # checks for types
