@@ -181,7 +181,7 @@ def _get_connection():
             filename, detect_types=sqlite3.PARSE_DECLTYPES,
             check_same_thread=False)
         connection.row_factory = sqlite3.Row
-        #  initialise connection properties
+        # initialise connection properties
         connection.executescript('''
             -- store temporary tables in memory
             PRAGMA temp_store = MEMORY;
