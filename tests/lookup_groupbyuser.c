@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
-
+#include <unistd.h>
 #include <grp.h>
 
 #ifndef HAVE_GETGROUPLIST
