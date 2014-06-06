@@ -1,3 +1,22 @@
+changes from 0.9.3 to 0.9.4
+---------------------------
+
+* also handle password policy information on BIND failure (this makes it
+  possible to distinguish between a wrong password and an expired password)
+* fix mapping the member attribute to an empty string
+* any buffers that may have held passwords are cleared before the memory is
+  released
+* increase buffer size for passwords to support extremely long passwords
+  (thanks ushi)
+* increase buffer size for DN to support very long names or names with
+  non-ASCII characters
+* log an error in almost all places where a defined buffer is not large
+  enough to hold the provided data instead of just (sometimes silently)
+  failing
+* logging improvements (start-up problems, login failures)
+* small improvement for Solaris
+
+
 changes from 0.9.2 to 0.9.3
 ---------------------------
 

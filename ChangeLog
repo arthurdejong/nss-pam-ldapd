@@ -1,3 +1,154 @@
+2014-06-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [abb2452] nss/services.c: Return correct port number on Solaris
+
+	  This is a small fix for when using nscd (which still does not
+	  seem to work completely). The port is stored in network byte
+	  order but should be printed in host byte order.
+
+2014-06-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b977d3f] tests/lookup_groupbyuser.c: Add missing include
+	  for FreeBSD
+
+2014-06-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [258d671] nslcd/pam.c: Fix password modification by root
+
+	  This fixes 15fc13c.
+
+2014-06-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8eeb1cc] common/tio.c: Clear proper buffer length
+
+	  This fixes 3d29861.
+
+2014-06-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3d65b84] nslcd/common.h: Fix code indentation
+
+	  This fixes 2274b41.
+
+2014-06-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e867727] config.guess, config.sub: Update files from latest
+	  automake
+
+2014-06-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f5ee208] pynslcd/cache.py: Fix comment
+
+2014-06-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [13483f9] .gitignore, configure.ac, tests/Makefile.am,
+	  tests/lookup_groupbyuser.c: Introduce lookup_groupbyuser test
+	  command
+
+	  This command can be used to perform a lookup using getgrouplist()
+	  to present a list of returned numeric group ids. This can be
+	  used to avoid the additional lookups that are done with the id
+	  and groups commands.
+
+2014-05-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3d29861] common/tio.c, nslcd/myldap.c, nslcd/pam.c: Clear
+	  buffers before free-ing
+
+	  This clears most buffers that may hold credentials at one point
+	  before free()ing the memory.
+
+2014-05-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [aa1d810] HACKING: Clarify code contribution
+
+2014-05-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [94eacb5] nslcd/pam.c: Improve error logging of user login failures
+
+2014-05-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ca36a50] nslcd/myldap.c: Also extract policy controls on
+	  BIND failure
+
+	  This ensures that controls returned by an LDAP server as part of
+	  a failed BIND operation are also returned. This makes it possible
+	  to distinguish between a wrong password and an expired password.
+
+	  This also only logs the BIND operation result on DEBUG level
+	  (the error is logged later on).
+
+2014-05-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d6163e2] configure.ac: Use FreeBSD lib directory and SONAME
+	  on Dragonfly
+
+2014-05-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f6f3730] README, man/nslcd.conf.5.xml: Small documentation
+	  improvements
+
+	  This includes a number of minor changes to the documentation. This
+	  also documents the children search scope (related to 2caeef4).
+
+2014-05-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ed79110] nslcd/daemonize.c, nslcd/nslcd.c: Log daemonising
+	  failures
+
+	  This also clears errno in the main function to ensure that no
+	  incorrect errno value is logged on errors.
+
+2014-05-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [18d05b0] .gitignore, tests/Makefile.am, tests/test_attmap.c:
+	  Add a test for setting member attribute mapping
+
+2014-05-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fbea2a5] nslcd/attmap.c: Fix mapping group member attribute to
+	  empty string
+
+	  This fixes be94912.
+
+2014-05-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2274b41] nslcd/alias.c, nslcd/attmap.c, nslcd/cfg.c,
+	  nslcd/common.h, nslcd/ether.c, nslcd/group.c, nslcd/host.c,
+	  nslcd/invalidator.c, nslcd/myldap.c, nslcd/netgroup.c,
+	  nslcd/network.c, nslcd/pam.c, nslcd/passwd.c, nslcd/protocol.c,
+	  nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c: Make buffer size
+	  error logging consistent
+
+	  This adds logging of most cases where a defined buffer is not
+	  large enough to hold provided data on error log level.
+
+2014-05-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [15fc13c] nslcd/myldap.c, nslcd/myldap.h, nslcd/pam.c,
+	  nslcd/usermod.c: Warn when binddn buffer is too small
+
+2014-05-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f987891] nslcd/common.h: Grow DN buffer size
+
+	  The buffer size seems to be a problem in environments with long
+	  names or environments with non-ASCII characters.
+
+2014-05-02  ushi <ushi@honkgong.info>
+
+	* [119cebf] nslcd/common.h: Use larger nslcd password buffer
+
+	  I had some edge cases where 64 bytes were not enough. People
+	  are using password managers with long generated passwords. I
+	  increased the buffer size to 128.
+
+2014-03-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8f12c15] AUTHORS, ChangeLog, NEWS, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml,
+	  pynslcd/pynslcd.py: Get files ready for 0.9.3 release
+
 2014-03-12  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [1ec7739] INSTALL, missing, test-driver: Update files from
