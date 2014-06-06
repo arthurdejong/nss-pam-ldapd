@@ -485,8 +485,8 @@ int tio_close(TFILE *fp)
   if (close(fp->fd))
     retv = -1;
   /* free any allocated buffers */
-  memset(fp->readbuffer.buffer, 0, sizeof(fp->readbuffer.size));
-  memset(fp->writebuffer.buffer, 0, sizeof(fp->writebuffer.size));
+  memset(fp->readbuffer.buffer, 0, fp->readbuffer.size);
+  memset(fp->writebuffer.buffer, 0, fp->writebuffer.size);
   free(fp->readbuffer.buffer);
   free(fp->writebuffer.buffer);
   /* free the tio struct itself */
