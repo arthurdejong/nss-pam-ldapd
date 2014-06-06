@@ -694,7 +694,7 @@ static int try_pwmod(MYLDAP_SESSION *oldsession,
   if (session == NULL)
     return LDAP_UNAVAILABLE;
   /* set up credentials for the session */
-  if (myldap_set_credentials(session, userdn, oldpassword))
+  if (myldap_set_credentials(session, binddn, oldpassword))
   {
     myldap_session_close(session);
     return LDAP_LOCAL_ERROR;
