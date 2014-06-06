@@ -279,7 +279,7 @@ int nslcd_usermod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid);
     /* prepare the search filter */                                         \
     if (mkfilter)                                                           \
     {                                                                       \
-      log_log(LOG_ERR, "nslcd_" __STRING(db) "_" __STRING(fn)           \
+      log_log(LOG_ERR, "nslcd_" __STRING(db) "_" __STRING(fn)               \
               "(): filter buffer too small");                               \
       return -1;                                                            \
     }                                                                       \
