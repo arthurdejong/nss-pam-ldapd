@@ -2,7 +2,7 @@
    service.c - NSS lookup functions for services database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2014 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -104,7 +104,7 @@ nss_status_t _nss_ldap_endservent(void)
 static char *servent2str(struct servent *result, char *buffer, size_t buflen)
 {
   int res, i;
-  res = snprintf(buffer, buflen, "%s %d/%s", result->s_name, result->s_port,
+  res = snprintf(buffer, buflen, "%s %d/%s", result->s_name, ntohs(result->s_port),
                  result->s_proto);
   if ((res < 0) || (res >= (int)buflen))
     return NULL;
