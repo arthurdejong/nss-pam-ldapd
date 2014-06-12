@@ -40174,7 +40174,7 @@ objectClass: ieee802Device
 objectClass: device
 cn: testhost
 cn: testhostalias
-ipHostNumber: 10.0.0.1
+ipHostNumber: 192.0.2.123
 macAddress: 0:18:8a:54:1a:8e
 
 dn: cn=testhost2,ou=hosts,dc=test,dc=tld
@@ -40193,7 +40193,7 @@ dn: cn=testnet,ou=networks,dc=test,dc=tld
 objectClass: top
 objectClass: ipNetwork
 cn: testnet
-ipNetworkNumber: 10.0.0.0
+ipNetworkNumber: 192.0.2.0
 
 dn: ou=protocols,dc=test,dc=tld
 objectClass: top

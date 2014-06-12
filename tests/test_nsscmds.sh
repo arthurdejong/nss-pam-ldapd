@@ -120,7 +120,7 @@ EOM
 
 # get entry by ip address
 # this does not currently work, but maybe it should
-#check "getent ethers 10.0.0.1" << EOM
+#check "getent ethers 192.0.2.123" << EOM
 #0:18:8a:54:1a:8e testhost
 #EOM
 
@@ -229,24 +229,24 @@ then
 echo "test_nsscmds.sh: testing hosts..."
 
 check "getent hosts testhost" << EOM
-10.0.0.1        testhost testhostalias
+192.0.2.123        testhost testhostalias
 EOM
 
 check "getent hosts testhostalias" << EOM
-10.0.0.1        testhost testhostalias
+192.0.2.123        testhost testhostalias
 EOM
 
 # check hostname with different case
 check "getent hosts TESTHOST" << EOM
-10.0.0.1        testhost testhostalias
+192.0.2.123        testhost testhostalias
 EOM
 
-check "getent hosts 10.0.0.1" << EOM
-10.0.0.1        testhost testhostalias
+check "getent hosts 192.0.2.123" << EOM
+192.0.2.123        testhost testhostalias
 EOM
 
 check "getent hosts | grep testhost" << EOM
-10.0.0.1        testhost testhostalias
+192.0.2.123        testhost testhostalias
 EOM
 
 # TODO: add more tests for IPv6 support
@@ -277,20 +277,20 @@ then
 echo "test_nsscmds.sh: testing networks..."
 
 check "getent networks testnet" << EOM
-testnet               10.0.0.0
+testnet               192.0.2.0
 EOM
 
 # check network name with different case
 check "getent networks TESTNET" << EOM
-testnet               10.0.0.0
+testnet               192.0.2.0
 EOM
 
-check "getent networks 10.0.0.0" << EOM
-testnet               10.0.0.0
+check "getent networks 192.0.2.0" << EOM
+testnet               192.0.2.0
 EOM
 
 check "getent networks | grep testnet" << EOM
-testnet               10.0.0.0
+testnet               192.0.2.0
 EOM
 
 fi  # end of networks tests
