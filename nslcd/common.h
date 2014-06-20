@@ -182,7 +182,7 @@ void invalidator_do(enum ldap_map_selector map);
 #error unable to find implementation for strtouid()
 #endif
 
-/* provide strtouid() function alias */
+/* provide strtogid() function alias */
 #if SIZEOF_GID_T == SIZEOF_UNSIGNED_LONG_INT
 #define strtogid (gid_t)strtoul
 #elif SIZEOF_GID_T == SIZEOF_UNSIGNED_LONG_LONG_INT
@@ -191,7 +191,7 @@ void invalidator_do(enum ldap_map_selector map);
 #ifndef WANT_STRTOUI
 #define WANT_STRTOUI 1
 #endif
-#define strtogid (uid_t)strtoui
+#define strtogid (gid_t)strtoui
 #else
 #error unable to find implementation for strtogid()
 #endif
