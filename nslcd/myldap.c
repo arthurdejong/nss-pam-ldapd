@@ -1402,7 +1402,7 @@ MYLDAP_SEARCH *myldap_search(MYLDAP_SESSION *session,
       *rcp = LDAP_OPERATIONS_ERROR;
     return NULL;
   }
-  /* regsiter search with the session so we can free it later on */
+  /* register search with the session so we can free it later on */
   session->searches[i] = search;
   /* do the search with retries to all configured servers */
   rc = do_retry_search(search);
