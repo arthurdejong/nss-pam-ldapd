@@ -952,6 +952,10 @@ void myldap_session_check(MYLDAP_SESSION *session)
 {
   int i;
   time_t current_time;
+  int sd;
+  int rc;
+  struct sockaddr sa;
+  socklen_t salen = sizeof(sa);
   /* check parameters */
   if (session == NULL)
   {
@@ -959,19 +963,41 @@ void myldap_session_check(MYLDAP_SESSION *session)
     errno = EINVAL;
     return;
   }
-  /* check if we should time out the connection */
-  if ((session->ld != NULL) && (nslcd_cfg->idle_timelimit > 0))
+  if (session->ld != NULL)
   {
-    /* if we have any running searches, don't time out */
-    for (i = 0; i < MAX_SEARCHES_IN_SESSION; i++)
-      if ((session->searches[i] != NULL) && (session->searches[i]->valid))
-        return;
-    /* consider timeout (there are no running searches) */
-    time(&current_time);
-    if ((session->lastactivity + nslcd_cfg->idle_timelimit) < current_time)
+    rc = ldap_get_option(session->ld, LDAP_OPT_DESC, &sd);
+    if (rc != LDAP_SUCCESS)
     {
-      log_log(LOG_DEBUG, "myldap_session_check(): idle_timelimit reached");
-      do_close(session);
+      myldap_err(LOG_WARNING, session->ld, rc,
+                 "ldap_get_option(LDAP_OPT_DESC) failed (ignored)");
+    }
+    else
+    {
+      /* check if the connection was closed by the peer */
+      if (getpeername(sd, &sa, &salen) == -1)
+      {
+        if (errno == ENOTCONN)
+        {
+          log_log(LOG_DEBUG, "myldap_session_check(): connection reset by peer");
+          do_close(session);
+          return;
+        }
+      }
+    }
+    /* check if we should time out the connection */
+    if (nslcd_cfg->idle_timelimit > 0)
+    {
+      /* if we have any running searches, don't time out */
+      for (i = 0; i < MAX_SEARCHES_IN_SESSION; i++)
+        if ((session->searches[i] != NULL) && (session->searches[i]->valid))
+          return;
+      /* consider timeout (there are no running searches) */
+      time(&current_time);
+      if ((session->lastactivity + nslcd_cfg->idle_timelimit) < current_time)
+      {
+        log_log(LOG_DEBUG, "myldap_session_check(): idle_timelimit reached");
+        do_close(session);
+      }
     }
   }
 }
