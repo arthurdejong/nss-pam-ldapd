@@ -1626,11 +1626,11 @@ static void cfg_dump(void)
   if (nslcd_cfg->uidname != NULL)
     log_log(LOG_DEBUG, "CFG: uid %s", nslcd_cfg->uidname);
   else if (nslcd_cfg->uid != NOUID)
-    log_log(LOG_DEBUG, "CFG: uid %d", (int)nslcd_cfg->uid);
+    log_log(LOG_DEBUG, "CFG: uid %lu", (unsigned long int)nslcd_cfg->uid);
   else
     log_log(LOG_DEBUG, "CFG: # uid not set");
   if (nslcd_cfg->gid != NOGID)
-    log_log(LOG_DEBUG, "CFG: gid %d", (int)nslcd_cfg->gid);
+    log_log(LOG_DEBUG, "CFG: gid %lu", (unsigned long int)nslcd_cfg->gid);
   else
     log_log(LOG_DEBUG, "CFG: # gid not set");
   log_log_config();
@@ -1783,7 +1783,7 @@ static void cfg_dump(void)
       strcpy(buffer + sizeof(buffer) - 4, "...");
     log_log(LOG_DEBUG, "CFG: nss_initgroups_ignoreusers %s", buffer);
   }
-  log_log(LOG_DEBUG, "CFG: nss_min_uid %d", (int)nslcd_cfg->nss_min_uid);
+  log_log(LOG_DEBUG, "CFG: nss_min_uid %lu", (unsigned long int)nslcd_cfg->nss_min_uid);
   log_log(LOG_DEBUG, "CFG: nss_nested_groups %s", print_boolean(nslcd_cfg->nss_nested_groups));
   log_log(LOG_DEBUG, "CFG: validnames %s", nslcd_cfg->validnames_str);
   log_log(LOG_DEBUG, "CFG: ignorecase %s", print_boolean(nslcd_cfg->ignorecase));

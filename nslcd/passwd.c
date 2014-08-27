@@ -112,8 +112,8 @@ static int mkfilter_passwd_byuid(uid_t uid, char *buffer, size_t buflen)
   }
   else
   {
-    return mysnprintf(buffer, buflen, "(&%s(%s=%d))",
-                      passwd_filter, attmap_passwd_uidNumber, (int)uid);
+    return mysnprintf(buffer, buflen, "(&%s(%s=%lu))",
+                      passwd_filter, attmap_passwd_uidNumber, (unsigned long int)uid);
   }
 }
 

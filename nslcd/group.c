@@ -123,8 +123,8 @@ static int mkfilter_group_bygid(gid_t gid, char *buffer, size_t buflen)
   }
   else
   {
-    return mysnprintf(buffer, buflen, "(&%s(%s=%d))",
-                      group_filter, attmap_group_gidNumber, (int)gid);
+    return mysnprintf(buffer, buflen, "(&%s(%s=%lu))",
+                      group_filter, attmap_group_gidNumber, (unsigned long int)gid);
   }
 }
 

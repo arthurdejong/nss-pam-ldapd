@@ -356,8 +356,8 @@ static void handleconnection(int sock, MYLDAP_SESSION *session)
   if (getpeercred(sock, &uid, &gid, &pid))
     log_log(LOG_DEBUG, "connection from unknown client: %s", strerror(errno));
   else
-    log_log(LOG_DEBUG, "connection from pid=%d uid=%d gid=%d",
-            (int)pid, (int)uid, (int)gid);
+    log_log(LOG_DEBUG, "connection from pid=%lu uid=%lu gid=%lu",
+            (unsigned long int)pid, (unsigned long int)uid, (unsigned long int)gid);
   /* create a stream object */
   if ((fp = tio_fdopen(sock, READ_TIMEOUT, WRITE_TIMEOUT,
                        READBUFFER_MINSIZE, READBUFFER_MAXSIZE,
@@ -477,7 +477,7 @@ static void create_pidfile(const char *filename)
               filename, strerror(errno));
       exit(EXIT_FAILURE);
     }
-    mysnprintf(buffer, sizeof(buffer), "%d\n", (int)getpid());
+    mysnprintf(buffer, sizeof(buffer), "%lu\n", (unsigned long int)getpid());
     if (write(fd, buffer, strlen(buffer)) != (int)strlen(buffer))
     {
       log_log(LOG_ERR, "error writing pid file (%s): %s",
@@ -743,11 +743,11 @@ int main(int argc, char *argv[])
 #ifdef HAVE_INITGROUPS
     /* load supplementary groups */
     if (initgroups(nslcd_cfg->uidname, nslcd_cfg->gid) < 0)
-      log_log(LOG_WARNING, "cannot initgroups(\"%s\",%d) (ignored): %s",
-              nslcd_cfg->uidname, (int)nslcd_cfg->gid, strerror(errno));
+      log_log(LOG_WARNING, "cannot initgroups(\"%s\",%lu) (ignored): %s",
+              nslcd_cfg->uidname, (unsigned long int)nslcd_cfg->gid, strerror(errno));
     else
-      log_log(LOG_DEBUG, "initgroups(\"%s\",%d) done",
-              nslcd_cfg->uidname, (int)nslcd_cfg->gid);
+      log_log(LOG_DEBUG, "initgroups(\"%s\",%lu) done",
+              nslcd_cfg->uidname, (unsigned long int)nslcd_cfg->gid);
 #else /* not HAVE_INITGROUPS */
 #ifdef HAVE_SETGROUPS
     /* just drop all supplemental groups */
@@ -766,24 +766,24 @@ int main(int argc, char *argv[])
   {
     if (setgid(nslcd_cfg->gid) != 0)
     {
-      log_log(LOG_ERR, "cannot setgid(%d): %s",
-              (int)nslcd_cfg->gid, strerror(errno));
+      log_log(LOG_ERR, "cannot setgid(%lu): %s",
+              (unsigned long int)nslcd_cfg->gid, strerror(errno));
       daemonize_ready(EXIT_FAILURE, "cannot setgid()\n");
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG, "setgid(%d) done", (int)nslcd_cfg->gid);
+    log_log(LOG_DEBUG, "setgid(%ul) done", (unsigned long int)nslcd_cfg->gid);
   }
   /* change to nslcd uid */
   if (nslcd_cfg->uid != NOUID)
   {
     if (setuid(nslcd_cfg->uid) != 0)
     {
-      log_log(LOG_ERR, "cannot setuid(%d): %s",
-              (int)nslcd_cfg->uid, strerror(errno));
+      log_log(LOG_ERR, "cannot setuid(%ul): %s",
+              (unsigned long int)nslcd_cfg->uid, strerror(errno));
       daemonize_ready(EXIT_FAILURE, "cannot setuid()\n");
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG, "setuid(%d) done", (int)nslcd_cfg->uid);
+    log_log(LOG_DEBUG, "setuid(%ul) done", (unsigned long int)nslcd_cfg->uid);
   }
   /* block all these signals so our worker threads won't handle them */
   sigemptyset(&signalmask);
