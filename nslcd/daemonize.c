@@ -57,13 +57,13 @@ void daemonize_closefds(void)
 void daemonize_redirect_stdio(void)
 {
   /* close stdin, stdout and stderr */
-  close(0);   /* stdin */
-  close(1);   /* stdout */
-  close(2);   /* stderr */
+  (void)close(0);   /* stdin */
+  (void)close(1);   /* stdout */
+  (void)close(2);   /* stderr */
   /* reconnect to /dev/null */
-  open("/dev/null", O_RDWR);  /* stdin, fd=0 */
-  dup(0);     /* stdout, fd=1 */
-  dup(0);     /* stderr, fd=2 */
+  (void)open("/dev/null", O_RDWR);  /* stdin, fd=0 */
+  (void)dup(0);     /* stdout, fd=1 */
+  (void)dup(0);     /* stderr, fd=2 */
 }
 
 /* try to fill the buffer until EOF or error */
@@ -95,18 +95,27 @@ static int wait_for_response(int fd)
   int i, l, rc;
   char buffer[1024];
   /* read return code */
+  errno = 0;
   i = read_response(fd, (void *)&rc, sizeof(int));
+  log_log(LOG_DEBUG, "DEBUG: wait_for_response(): i=%d, rc=%d", i, rc);
   if (i != sizeof(int))
+  {
+    log_log(LOG_ERR, "wait_for_response(): read_response() returned %d (expected %d)",
+            i, (int)sizeof(int));
+    if (errno == 0)
+      errno = ENODATA;
     return -1;
+  }
   /* read string length */
   i = read_response(fd, (void *)&l, sizeof(int));
+  log_log(LOG_DEBUG, "DEBUG: wait_for_response(): i=%d, l=%d", i, l);
   if ((i != sizeof(int)) || (l <= 0))
     _exit(rc);
   /* read string */
   if ((size_t)l > (sizeof(buffer) - 1))
     l = sizeof(buffer) - 1;
   i = read_response(fd, buffer, l);
-  buffer[sizeof(buffer) - 1] = '\0';
+  buffer[l] = '\0';
   if (i == l)
     fprintf(stderr, "%s", buffer);
   _exit(rc);
@@ -200,22 +209,23 @@ int daemonize_daemon(void)
 
 void daemonize_ready(int status, const char *message)
 {
+  int l;
   if (daemonizefd >= 0)
   {
     /* we ignore any errors writing */
-    write(daemonizefd, &status, sizeof(int));
+    (void)write(daemonizefd, &status, sizeof(int));
     if ((message == NULL) || (message[0] == '\0'))
     {
-      status = 0;
-      write(daemonizefd, &status, sizeof(int));
+      l = 0;
+      (void)write(daemonizefd, &l, sizeof(int));
     }
     else
     {
-      status = strlen(message);
-      write(daemonizefd, &status, sizeof(int));
-      write(daemonizefd, message, status);
+      l = strlen(message);
+      (void)write(daemonizefd, &l, sizeof(int));
+      (void)write(daemonizefd, message, l);
     }
-    close(daemonizefd);
+    (void)close(daemonizefd);
     daemonizefd = -1;
   }
 }
