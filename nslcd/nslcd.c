@@ -648,6 +648,17 @@ int main(int argc, char *argv[])
 #ifdef HAVE_PTHREAD_TIMEDJOIN_NP
   struct timespec ts;
 #endif /* HAVE_PTHREAD_TIMEDJOIN_NP */
+  /* block all these signals so our worker threads won't handle them */
+  sigemptyset(&signalmask);
+  sigaddset(&signalmask, SIGHUP);
+  sigaddset(&signalmask, SIGINT);
+  sigaddset(&signalmask, SIGQUIT);
+  sigaddset(&signalmask, SIGABRT);
+  sigaddset(&signalmask, SIGPIPE);
+  sigaddset(&signalmask, SIGTERM);
+  sigaddset(&signalmask, SIGUSR1);
+  sigaddset(&signalmask, SIGUSR2);
+  pthread_sigmask(SIG_BLOCK, &signalmask, &oldmask);
   /* close all file descriptors (except stdin/out/err) */
   daemonize_closefds();
   /* parse the command line */
@@ -785,17 +796,6 @@ int main(int argc, char *argv[])
     }
     log_log(LOG_DEBUG, "setuid(%ul) done", (unsigned long int)nslcd_cfg->uid);
   }
-  /* block all these signals so our worker threads won't handle them */
-  sigemptyset(&signalmask);
-  sigaddset(&signalmask, SIGHUP);
-  sigaddset(&signalmask, SIGINT);
-  sigaddset(&signalmask, SIGQUIT);
-  sigaddset(&signalmask, SIGABRT);
-  sigaddset(&signalmask, SIGPIPE);
-  sigaddset(&signalmask, SIGTERM);
-  sigaddset(&signalmask, SIGUSR1);
-  sigaddset(&signalmask, SIGUSR2);
-  pthread_sigmask(SIG_BLOCK, &signalmask, &oldmask);
   /* start worker threads */
   log_log(LOG_INFO, "accepting connections");
   nslcd_threads = (pthread_t *)malloc(nslcd_cfg->threads * sizeof(pthread_t));
