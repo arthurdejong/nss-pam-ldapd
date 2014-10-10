@@ -782,19 +782,19 @@ int main(int argc, char *argv[])
       daemonize_ready(EXIT_FAILURE, "cannot setgid()\n");
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG, "setgid(%ul) done", (unsigned long int)nslcd_cfg->gid);
+    log_log(LOG_DEBUG, "setgid(%lu) done", (unsigned long int)nslcd_cfg->gid);
   }
   /* change to nslcd uid */
   if (nslcd_cfg->uid != NOUID)
   {
     if (setuid(nslcd_cfg->uid) != 0)
     {
-      log_log(LOG_ERR, "cannot setuid(%ul): %s",
+      log_log(LOG_ERR, "cannot setuid(%lu): %s",
               (unsigned long int)nslcd_cfg->uid, strerror(errno));
       daemonize_ready(EXIT_FAILURE, "cannot setuid()\n");
       exit(EXIT_FAILURE);
     }
-    log_log(LOG_DEBUG, "setuid(%ul) done", (unsigned long int)nslcd_cfg->uid);
+    log_log(LOG_DEBUG, "setuid(%lu) done", (unsigned long int)nslcd_cfg->uid);
   }
   /* start worker threads */
   log_log(LOG_INFO, "accepting connections");
