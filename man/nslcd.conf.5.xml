@@ -223,6 +223,10 @@
        Specifies the distinguished name to use when the root user tries to
        modify a user's password using the PAM module.
       </para>
+      <para>
+       Note that currently this DN needs to exist as a real entry in the
+       LDAP directory.
+      </para>
      </listitem>
     </varlistentry>
 
