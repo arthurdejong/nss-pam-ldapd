@@ -1391,7 +1391,7 @@ MYLDAP_SEARCH *myldap_search(MYLDAP_SESSION *session,
   /* allocate a new search entry */
   search = myldap_search_new(session, base, scope, filter, attrs);
   /* find a place in the session where we can register our search */
-  for (i = 0; (session->searches[i] != NULL) && (i < MAX_SEARCHES_IN_SESSION); i++)
+  for (i = 0; (i < MAX_SEARCHES_IN_SESSION) && (session->searches[i] != NULL); i++)
     /* nothing */ ;
   if (i >= MAX_SEARCHES_IN_SESSION)
   {
