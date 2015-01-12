@@ -99,7 +99,7 @@ static nss_status_t read_one_hostent(TFILE *fp, struct hostent *result,
     }
     else
     {
-      SKIP(fp, tmpint32);
+      SKIP(fp, tmp2int32);
     }
   }
   /* null-terminate address list */
