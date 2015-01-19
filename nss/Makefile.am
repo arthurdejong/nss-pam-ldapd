@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006, 2007, 2009, 2010, 2011 Arthur de Jong
+# Copyright (C) 2006-2015 Arthur de Jong
 # Copyright (C) 2010 Symas Corporation
 #
 # This library is free software; you can redistribute it and/or
@@ -39,9 +39,13 @@ if NSS_FLAVOUR_FREEBSD
 nss_ldap_so_LDADD += bsdnss.$(OBJEXT)
 endif
 nss_ldap_so_LDADD += ../common/libtio.a ../common/libprot.a
-nss_ldap_so_DEPENDENCIES = $(nss_ldap_so_LDADD)
+nss_ldap_so_DEPENDENCIES = $(nss_ldap_so_LDADD) exports.map
 
 EXTRA_DIST = exports.glibc exports.solaris exports.freebsd
+CLEANFILES = exports.map
+
+exports.map: $(EXTRA_DIST)
+	sed 's/ldap/@MODULE_NAME@/' < $(srcdir)/exports.$(NSS_FLAVOUR) > exports.map
 
 install-exec-local: install-nss_ldap_so
 uninstall-local: uninstall-nss_ldap_so

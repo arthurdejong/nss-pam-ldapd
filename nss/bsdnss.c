@@ -6,7 +6,7 @@
    Copyright (C) 2003 Jacques Vidrine
    Copyright (C) 2006 Artem Kazakov
    Copyright (C) 2009 Alexander V. Chernikov
-   Copyright (C) 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2011-2015 Arthur de Jong
    Copyright (C) 2011 Tom Judge
 
    This library is free software; you can redistribute it and/or
@@ -55,34 +55,34 @@ NSS_METHOD_PROTOTYPE(__nss_compat_gethostbyname2);
 NSS_METHOD_PROTOTYPE(__nss_compat_gethostbyaddr);
 
 static ns_mtab methods[] = {
-  { NSDB_GROUP, "getgrnam_r", __nss_compat_getgrnam_r, _nss_ldap_getgrnam_r },
-  { NSDB_GROUP, "getgrgid_r", __nss_compat_getgrgid_r, _nss_ldap_getgrgid_r },
-  { NSDB_GROUP, "getgrent_r", __nss_compat_getgrent_r, _nss_ldap_getgrent_r },
-  { NSDB_GROUP, "setgrent",   __nss_compat_setgrent,   _nss_ldap_setgrent },
-  { NSDB_GROUP, "endgrent",   __nss_compat_endgrent,   _nss_ldap_endgrent },
+  { NSDB_GROUP, "getgrnam_r", __nss_compat_getgrnam_r, NSS_NAME(getgrnam_r) },
+  { NSDB_GROUP, "getgrgid_r", __nss_compat_getgrgid_r, NSS_NAME(getgrgid_r) },
+  { NSDB_GROUP, "getgrent_r", __nss_compat_getgrent_r, NSS_NAME(getgrent_r) },
+  { NSDB_GROUP, "setgrent",   __nss_compat_setgrent,   NSS_NAME(setgrent) },
+  { NSDB_GROUP, "endgrent",   __nss_compat_endgrent,   NSS_NAME(endgrent) },
   { NSDB_GROUP, "getgroupmembership", __freebsd_getgroupmembership, NULL },
 
-  { NSDB_PASSWD, "getpwnam_r", __nss_compat_getpwnam_r, _nss_ldap_getpwnam_r },
-  { NSDB_PASSWD, "getpwuid_r", __nss_compat_getpwuid_r, _nss_ldap_getpwuid_r },
-  { NSDB_PASSWD, "getpwent_r", __nss_compat_getpwent_r, _nss_ldap_getpwent_r },
-  { NSDB_PASSWD, "setpwent",   __nss_compat_setpwent,   _nss_ldap_setpwent },
-  { NSDB_PASSWD, "endpwent",   __nss_compat_endpwent,   _nss_ldap_endpwent },
+  { NSDB_PASSWD, "getpwnam_r", __nss_compat_getpwnam_r, NSS_NAME(getpwnam_r) },
+  { NSDB_PASSWD, "getpwuid_r", __nss_compat_getpwuid_r, NSS_NAME(getpwuid_r) },
+  { NSDB_PASSWD, "getpwent_r", __nss_compat_getpwent_r, NSS_NAME(getpwent_r) },
+  { NSDB_PASSWD, "setpwent",   __nss_compat_setpwent,   NSS_NAME(setpwent) },
+  { NSDB_PASSWD, "endpwent",   __nss_compat_endpwent,   NSS_NAME(endpwent) },
 
-  { NSDB_HOSTS, "gethostbyname",  __nss_compat_gethostbyname,  _nss_ldap_gethostbyname_r },
-  { NSDB_HOSTS, "gethostbyaddr",  __nss_compat_gethostbyaddr,  _nss_ldap_gethostbyaddr_r },
-  { NSDB_HOSTS, "gethostbyname2", __nss_compat_gethostbyname2, _nss_ldap_gethostbyname2_r },
+  { NSDB_HOSTS, "gethostbyname",  __nss_compat_gethostbyname,  NSS_NAME(gethostbyname_r) },
+  { NSDB_HOSTS, "gethostbyaddr",  __nss_compat_gethostbyaddr,  NSS_NAME(gethostbyaddr_r) },
+  { NSDB_HOSTS, "gethostbyname2", __nss_compat_gethostbyname2, NSS_NAME(gethostbyname2_r) },
 
-  { NSDB_GROUP_COMPAT, "getgrnam_r", __nss_compat_getgrnam_r, _nss_ldap_getgrnam_r },
-  { NSDB_GROUP_COMPAT, "getgrgid_r", __nss_compat_getgrgid_r, _nss_ldap_getgrgid_r },
-  { NSDB_GROUP_COMPAT, "getgrent_r", __nss_compat_getgrent_r, _nss_ldap_getgrent_r },
-  { NSDB_GROUP_COMPAT, "setgrent",   __nss_compat_setgrent,   _nss_ldap_setgrent },
-  { NSDB_GROUP_COMPAT, "endgrent",   __nss_compat_endgrent,   _nss_ldap_endgrent },
+  { NSDB_GROUP_COMPAT, "getgrnam_r", __nss_compat_getgrnam_r, NSS_NAME(getgrnam_r) },
+  { NSDB_GROUP_COMPAT, "getgrgid_r", __nss_compat_getgrgid_r, NSS_NAME(getgrgid_r) },
+  { NSDB_GROUP_COMPAT, "getgrent_r", __nss_compat_getgrent_r, NSS_NAME(getgrent_r) },
+  { NSDB_GROUP_COMPAT, "setgrent",   __nss_compat_setgrent,   NSS_NAME(setgrent) },
+  { NSDB_GROUP_COMPAT, "endgrent",   __nss_compat_endgrent,   NSS_NAME(endgrent) },
 
-  { NSDB_PASSWD_COMPAT, "getpwnam_r", __nss_compat_getpwnam_r, _nss_ldap_getpwnam_r },
-  { NSDB_PASSWD_COMPAT, "getpwuid_r", __nss_compat_getpwuid_r, _nss_ldap_getpwuid_r },
-  { NSDB_PASSWD_COMPAT, "getpwent_r", __nss_compat_getpwent_r, _nss_ldap_getpwent_r },
-  { NSDB_PASSWD_COMPAT, "setpwent",   __nss_compat_setpwent,   _nss_ldap_setpwent },
-  { NSDB_PASSWD_COMPAT, "endpwent",   __nss_compat_endpwent,   _nss_ldap_endpwent },
+  { NSDB_PASSWD_COMPAT, "getpwnam_r", __nss_compat_getpwnam_r, NSS_NAME(getpwnam_r) },
+  { NSDB_PASSWD_COMPAT, "getpwuid_r", __nss_compat_getpwuid_r, NSS_NAME(getpwuid_r) },
+  { NSDB_PASSWD_COMPAT, "getpwent_r", __nss_compat_getpwent_r, NSS_NAME(getpwent_r) },
+  { NSDB_PASSWD_COMPAT, "setpwent",   __nss_compat_setpwent,   NSS_NAME(setpwent) },
+  { NSDB_PASSWD_COMPAT, "endpwent",   __nss_compat_endpwent,   NSS_NAME(endpwent) },
 };
 
 int __nss_compat_gethostbyname(void UNUSED(*retval), void *mdata, va_list ap)
@@ -189,7 +189,7 @@ int __freebsd_getgroupmembership(void UNUSED(*retval), void UNUSED(*mdata_),
   __gr_addgid(group, groups, maxgrp, grpcnt);
   lstart = 0;
   lsize = maxgrp;
-  s = _nss_ldap_initgroups_dyn(user, group, &lstart, &lsize, &tmpgroups, 0, &err);
+  s = NSS_NAME(initgroups_dyn)(user, group, &lstart, &lsize, &tmpgroups, 0, &err);
   if (s == NSS_STATUS_SUCCESS)
   {
     for (i = 0; i < lstart; i++)

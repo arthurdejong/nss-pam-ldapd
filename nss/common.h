@@ -2,7 +2,7 @@
    common.h - common functions for NSS lookups
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -80,7 +80,7 @@
 
 /* check to see if we should answer NSS requests */
 #define NSS_AVAILCHECK                                                      \
-  if (!_nss_ldap_enablelookups)                                             \
+  if (!NSS_NAME(enablelookups))                                             \
     return NSS_STATUS_UNAVAIL;
 
 #ifdef NSS_FLAVOUR_GLIBC

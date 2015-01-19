@@ -2,7 +2,7 @@
    service.c - NSS lookup functions for services database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2014 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -50,7 +50,7 @@ static nss_status_t read_servent(TFILE *fp, struct servent *result,
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* get a service entry by name and protocol */
-nss_status_t _nss_ldap_getservbyname_r(const char *name, const char *protocol,
+nss_status_t NSS_NAME(getservbyname_r)(const char *name, const char *protocol,
                                        struct servent *result, char *buffer,
                                        size_t buflen, int *errnop)
 {
@@ -61,7 +61,7 @@ nss_status_t _nss_ldap_getservbyname_r(const char *name, const char *protocol,
 }
 
 /* get a service entry by port and protocol */
-nss_status_t _nss_ldap_getservbyport_r(int port, const char *protocol,
+nss_status_t NSS_NAME(getservbyport_r)(int port, const char *protocol,
                                        struct servent *result, char *buffer,
                                        size_t buflen, int *errnop)
 {
@@ -77,13 +77,13 @@ nss_status_t _nss_ldap_getservbyport_r(int port, const char *protocol,
 static TLS TFILE *serventfp;
 
 /* open request to get all services */
-nss_status_t _nss_ldap_setservent(int UNUSED(stayopen))
+nss_status_t NSS_NAME(setservent)(int UNUSED(stayopen))
 {
   NSS_SETENT(serventfp);
 }
 
 /* read a single returned service definition */
-nss_status_t _nss_ldap_getservent_r(struct servent *result,
+nss_status_t NSS_NAME(getservent_r)(struct servent *result,
                                     char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETENT(serventfp, NSLCD_ACTION_SERVICE_ALL,
@@ -91,7 +91,7 @@ nss_status_t _nss_ldap_getservent_r(struct servent *result,
 }
 
 /* close the stream opened by setservent() above */
-nss_status_t _nss_ldap_endservent(void)
+nss_status_t NSS_NAME(endservent)(void)
 {
   NSS_ENDENT(serventfp);
 }
@@ -166,7 +166,7 @@ static nss_backend_op_t services_ops[] = {
   services_getservbyport
 };
 
-nss_backend_t *_nss_ldap_services_constr(const char UNUSED(*db_name),
+nss_backend_t *NSS_NAME(services_constr)(const char UNUSED(*db_name),
                                          const char UNUSED(*src_name),
                                          const char UNUSED(*cfg_args))
 {

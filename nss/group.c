@@ -2,7 +2,7 @@
    group.c - NSS lookup functions for group database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -115,7 +115,7 @@ static nss_status_t read_gids(TFILE *fp, gid_t skipgroup, long int *start,
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* get a group entry by name */
-nss_status_t _nss_ldap_getgrnam_r(const char *name, struct group *result,
+nss_status_t NSS_NAME(getgrnam_r)(const char *name, struct group *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETONE(NSLCD_ACTION_GROUP_BYNAME,
@@ -124,7 +124,7 @@ nss_status_t _nss_ldap_getgrnam_r(const char *name, struct group *result,
 }
 
 /* get a group entry by numeric gid */
-nss_status_t _nss_ldap_getgrgid_r(gid_t gid, struct group *result,
+nss_status_t NSS_NAME(getgrgid_r)(gid_t gid, struct group *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETONE(NSLCD_ACTION_GROUP_BYGID,
@@ -136,13 +136,13 @@ nss_status_t _nss_ldap_getgrgid_r(gid_t gid, struct group *result,
 static TLS TFILE *grentfp;
 
 /* start a request to read all groups */
-nss_status_t _nss_ldap_setgrent(int UNUSED(stayopen))
+nss_status_t NSS_NAME(setgrent)(int UNUSED(stayopen))
 {
   NSS_SETENT(grentfp);
 }
 
 /* read a single group from the stream */
-nss_status_t _nss_ldap_getgrent_r(struct group *result,
+nss_status_t NSS_NAME(getgrent_r)(struct group *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETENT(grentfp, NSLCD_ACTION_GROUP_ALL,
@@ -150,7 +150,7 @@ nss_status_t _nss_ldap_getgrent_r(struct group *result,
 }
 
 /* close the stream opened with setgrent() above */
-nss_status_t _nss_ldap_endgrent(void)
+nss_status_t NSS_NAME(endgrent)(void)
 {
   NSS_ENDENT(grentfp);
 }
@@ -167,7 +167,7 @@ nss_status_t _nss_ldap_endgrent(void)
    limit     IN     - the maxium size of the array
    *errnop   OUT    - for returning errno
 */
-nss_status_t _nss_ldap_initgroups_dyn(const char *user, gid_t skipgroup,
+nss_status_t NSS_NAME(initgroups_dyn)(const char *user, gid_t skipgroup,
                                       long int *start, long int *size,
                                       gid_t **groupsp, long int limit,
                                       int *errnop)
@@ -267,7 +267,7 @@ static nss_backend_op_t group_ops[] = {
   group_getgroupsbymember
 };
 
-nss_backend_t *_nss_ldap_group_constr(const char UNUSED(*db_name),
+nss_backend_t *NSS_NAME(group_constr)(const char UNUSED(*db_name),
                                       const char UNUSED(*src_name),
                                       const char UNUSED(*cfg_args))
 {

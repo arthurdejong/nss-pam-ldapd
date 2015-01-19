@@ -2,7 +2,7 @@
    hosts.c - NSS lookup functions for hosts database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -151,7 +151,7 @@ static nss_status_t read_hostent(TFILE *fp, struct hostent *result,
    result          - OUT - entry found
    buffer,buflen   - OUT - buffer to store allocated stuff on
    errnop,h_errnop - OUT - for reporting errors */
-nss_status_t _nss_ldap_gethostbyname2_r(const char *name, int af,
+nss_status_t NSS_NAME(gethostbyname2_r)(const char *name, int af,
                                         struct hostent *result, char *buffer,
                                         size_t buflen, int *errnop,
                                         int *h_errnop)
@@ -163,12 +163,12 @@ nss_status_t _nss_ldap_gethostbyname2_r(const char *name, int af,
 
 /* this function just calls the gethostbyname2() variant with the address
    familiy set */
-nss_status_t _nss_ldap_gethostbyname_r(const char *name,
+nss_status_t NSS_NAME(gethostbyname_r)(const char *name,
                                        struct hostent *result, char *buffer,
                                        size_t buflen, int *errnop,
                                        int *h_errnop)
 {
-  return _nss_ldap_gethostbyname2_r(name, AF_INET, result, buffer, buflen,
+  return NSS_NAME(gethostbyname2_r)(name, AF_INET, result, buffer, buflen,
                                     errnop, h_errnop);
 }
 
@@ -180,7 +180,7 @@ nss_status_t _nss_ldap_gethostbyname_r(const char *name,
    result          - OUT - entry found
    buffer,buflen   - OUT - buffer to store allocated stuff on
    errnop,h_errnop - OUT - for reporting errors */
-nss_status_t _nss_ldap_gethostbyaddr_r(const void *addr, socklen_t len,
+nss_status_t NSS_NAME(gethostbyaddr_r)(const void *addr, socklen_t len,
                                        int af, struct hostent *result,
                                        char *buffer, size_t buflen,
                                        int *errnop, int *h_errnop)
@@ -193,13 +193,13 @@ nss_status_t _nss_ldap_gethostbyaddr_r(const void *addr, socklen_t len,
 /* thread-local file pointer to an ongoing request */
 static TLS TFILE *hostentfp;
 
-nss_status_t _nss_ldap_sethostent(int UNUSED(stayopen))
+nss_status_t NSS_NAME(sethostent)(int UNUSED(stayopen))
 {
   NSS_SETENT(hostentfp);
 }
 
 /* this function only returns addresses of the AF_INET address family */
-nss_status_t _nss_ldap_gethostent_r(struct hostent *result,
+nss_status_t NSS_NAME(gethostent_r)(struct hostent *result,
                                     char *buffer, size_t buflen, int *errnop,
                                     int *h_errnop)
 {
@@ -209,7 +209,7 @@ nss_status_t _nss_ldap_gethostent_r(struct hostent *result,
 }
 
 /* close the stream opened with sethostent() above */
-nss_status_t _nss_ldap_endhostent(void)
+nss_status_t NSS_NAME(endhostent)(void)
 {
   NSS_ENDENT(hostentfp);
 }
@@ -302,7 +302,7 @@ static nss_backend_op_t hosts_ops[] = {
   hosts_gethostbyaddr
 };
 
-nss_backend_t *_nss_ldap_hosts_constr(const char UNUSED(*db_name),
+nss_backend_t *NSS_NAME(hosts_constr)(const char UNUSED(*db_name),
                                       const char UNUSED(*src_name),
                                       const char UNUSED(*cfg_args))
 {

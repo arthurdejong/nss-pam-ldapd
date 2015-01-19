@@ -2,7 +2,7 @@
 # constants.py - configured information and constants, this file is processed
 #                and extended by the configure script
 #
-# Copyright (C) 2012 Arthur de Jong
+# Copyright (C) 2012-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -49,3 +49,6 @@ NSLCD_SOCKET = '''@NSLCD_SOCKET@'''
 
 # The SONAME of the NSS library module.
 NSS_LDAP_SONAME = '''@NSS_LDAP_SONAME@'''
+
+# The name of the NSS and PAM modules.
+MODULE_NAME = '''@MODULE_NAME@'''

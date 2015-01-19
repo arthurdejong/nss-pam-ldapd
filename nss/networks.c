@@ -2,7 +2,7 @@
    networks.c - NSS lookup functions for networks database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -111,7 +111,7 @@ static nss_status_t read_netent(TFILE *fp, struct netent *result,
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* get a network entry by name */
-nss_status_t _nss_ldap_getnetbyname_r(const char *name,
+nss_status_t NSS_NAME(getnetbyname_r)(const char *name,
                                       struct netent *result, char *buffer,
                                       size_t buflen, int *errnop,
                                       int *h_errnop)
@@ -123,7 +123,7 @@ nss_status_t _nss_ldap_getnetbyname_r(const char *name,
 
 /* Note: the af parameter is ignored and is assumed to be AF_INET */
 /* TODO: implement handling of af parameter */
-nss_status_t _nss_ldap_getnetbyaddr_r(uint32_t addr, int UNUSED(af),
+nss_status_t NSS_NAME(getnetbyaddr_r)(uint32_t addr, int UNUSED(af),
                                       struct netent *result, char *buffer,
                                       size_t buflen, int *errnop,
                                       int *h_errnop)
@@ -137,13 +137,13 @@ nss_status_t _nss_ldap_getnetbyaddr_r(uint32_t addr, int UNUSED(af),
 static TLS TFILE *netentfp;
 
 /* start a request to read all networks */
-nss_status_t _nss_ldap_setnetent(int UNUSED(stayopen))
+nss_status_t NSS_NAME(setnetent)(int UNUSED(stayopen))
 {
   NSS_SETENT(netentfp);
 }
 
 /* get a single network entry from the stream */
-nss_status_t _nss_ldap_getnetent_r(struct netent *result,
+nss_status_t NSS_NAME(getnetent_r)(struct netent *result,
                                    char *buffer, size_t buflen, int *errnop,
                                    int *h_errnop)
 {
@@ -152,7 +152,7 @@ nss_status_t _nss_ldap_getnetent_r(struct netent *result,
 }
 
 /* close the stream opened by setnetent() above */
-nss_status_t _nss_ldap_endnetent(void)
+nss_status_t NSS_NAME(endnetent)(void)
 {
   NSS_ENDENT(netentfp);
 }
@@ -229,7 +229,7 @@ static nss_backend_op_t networks_ops[] = {
   networks_getnetbyaddr
 };
 
-nss_backend_t *_nss_ldap_networks_constr(const char UNUSED(*db_name),
+nss_backend_t *NSS_NAME(networks_constr)(const char UNUSED(*db_name),
                                          const char UNUSED(*src_name),
                                          const char UNUSED(*cfg_args))
 {

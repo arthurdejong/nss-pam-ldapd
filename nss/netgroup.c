@@ -2,7 +2,7 @@
    netgroup.c - NSS lookup functions for netgroup entries
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2014 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -82,7 +82,7 @@ static nss_status_t read_netgrent_line(TFILE *fp, struct __netgrent *result,
     return NSS_STATUS_SUCCESS;
   }
   else if (type == NSLCD_NETGROUP_TYPE_END)
-    /* make _nss_ldap_getnetgrent_r() indicate the end of the netgroup */
+    /* make NSS_NAME(getnetgrent_r)() indicate the end of the netgroup */
     return NSS_STATUS_RETURN;
   /* we got something unexpected */
   ERROR_OUT_NOSUCCESS(fp);
@@ -95,7 +95,7 @@ static nss_status_t read_netgrent_line(TFILE *fp, struct __netgrent *result,
 static TLS TFILE *netgrentfp;
 
 /* start a request to get a netgroup by name */
-nss_status_t _nss_ldap_setnetgrent(const char *group,
+nss_status_t NSS_NAME(setnetgrent)(const char *group,
                                    struct __netgrent UNUSED(*result))
 {
   /* we cannot use NSS_SETENT() here because we have a parameter that is only
@@ -118,7 +118,7 @@ nss_status_t _nss_ldap_setnetgrent(const char *group,
 }
 
 /* get a single netgroup tuple from the stream */
-nss_status_t _nss_ldap_getnetgrent_r(struct __netgrent *result,
+nss_status_t NSS_NAME(getnetgrent_r)(struct __netgrent *result,
                                      char *buffer, size_t buflen, int *errnop)
 {
   nss_status_t retv;
@@ -153,7 +153,7 @@ nss_status_t _nss_ldap_getnetgrent_r(struct __netgrent *result,
 }
 
 /* close the stream opened with setnetgrent() above */
-nss_status_t _nss_ldap_endnetgrent(struct __netgrent UNUSED(*result))
+nss_status_t NSS_NAME(endnetgrent)(struct __netgrent UNUSED(*result))
 {
   NSS_ENDENT(netgrentfp);
 }
@@ -356,11 +356,11 @@ static nss_backend_op_t netgroup_ops[] = {
   NULL,
   NULL,
   NULL,
-  NULL, /* TODO:_nss_ldap_netgr_in */
+  NULL, /* TODO:NSS_NAME(netgr_in) */
   netgroup_setnetgrent_constructor
 };
 
-nss_backend_t *_nss_ldap_netgroup_constr(const char UNUSED(*db_name),
+nss_backend_t *NSS_NAME(netgroup_constr)(const char UNUSED(*db_name),
                                          const char UNUSED(*src_name),
                                          const char UNUSED(*cfg_args))
 {

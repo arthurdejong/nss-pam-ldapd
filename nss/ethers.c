@@ -2,7 +2,7 @@
    ethers.c - NSS lookup functions for ethers database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -45,7 +45,7 @@ static nss_status_t read_etherent(TFILE *fp, struct etherent *result,
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* map a hostname to the corresponding ethernet address */
-nss_status_t _nss_ldap_gethostton_r(const char *name,
+nss_status_t NSS_NAME(gethostton_r)(const char *name,
                                     struct etherent *result, char *buffer,
                                     size_t buflen, int *errnop)
 {
@@ -55,7 +55,7 @@ nss_status_t _nss_ldap_gethostton_r(const char *name,
 }
 
 /* map an ethernet address to the corresponding hostname */
-nss_status_t _nss_ldap_getntohost_r(const struct ether_addr *addr,
+nss_status_t NSS_NAME(getntohost_r)(const struct ether_addr *addr,
                                     struct etherent *result, char *buffer,
                                     size_t buflen, int *errnop)
 {
@@ -68,13 +68,13 @@ nss_status_t _nss_ldap_getntohost_r(const struct ether_addr *addr,
 static TLS TFILE *etherentfp;
 
 /* open a connection to read all ether entries */
-nss_status_t _nss_ldap_setetherent(int UNUSED(stayopen))
+nss_status_t NSS_NAME(setetherent)(int UNUSED(stayopen))
 {
   NSS_SETENT(etherentfp);
 }
 
 /* read a single ethernet entry from the stream */
-nss_status_t _nss_ldap_getetherent_r(struct etherent *result,
+nss_status_t NSS_NAME(getetherent_r)(struct etherent *result,
                                      char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETENT(etherentfp, NSLCD_ACTION_ETHER_ALL,
@@ -82,7 +82,7 @@ nss_status_t _nss_ldap_getetherent_r(struct etherent *result,
 }
 
 /* close the stream opened with setetherent() above */
-nss_status_t _nss_ldap_endetherent(void)
+nss_status_t NSS_NAME(endetherent)(void)
 {
   NSS_ENDENT(etherentfp);
 }
@@ -174,7 +174,7 @@ static nss_backend_op_t ethers_ops[] = {
   ethers_getntohost
 };
 
-nss_backend_t *_nss_ldap_ethers_constr(const char UNUSED(*db_name),
+nss_backend_t *NSS_NAME(ethers_constr)(const char UNUSED(*db_name),
                                        const char UNUSED(*src_name),
                                        const char UNUSED(*cfg_args))
 {

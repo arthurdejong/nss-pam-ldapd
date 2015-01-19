@@ -53,6 +53,9 @@ stamp-*
 # /nslcd/
 /nslcd/nslcd
 
+# /nss/
+/nss/exports.map
+
 # /pynslcd/
 /pynslcd/constants.py
 

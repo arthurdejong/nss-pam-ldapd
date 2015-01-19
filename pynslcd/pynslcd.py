@@ -2,7 +2,7 @@
 
 # pynslcd.py - main daemon module
 #
-# Copyright (C) 2010-2014 Arthur de Jong
+# Copyright (C) 2010-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -91,7 +91,7 @@ def display_version(fp):
     fp.write('%(PACKAGE_STRING)s\n'
              'Written by Arthur de Jong.\n'
              '\n'
-             'Copyright (C) 2010-2014 Arthur de Jong\n'
+             'Copyright (C) 2010-2015 Arthur de Jong\n'
              'This is free software; see the source for copying conditions.  There is NO\n'
              'warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n'
              % {'PACKAGE_STRING': constants.PACKAGE_STRING, })
@@ -242,7 +242,8 @@ def disable_nss_ldap():
     except OSError:
         return  # ignore errors in opening NSS module
     try:
-        ctypes.c_int.in_dll(lib, '_nss_ldap_enablelookups').value = 0
+        ctypes.c_int.in_dll(
+            lib, '_nss_%s_enablelookups' % constants.MODULE_NAME).value = 0
     except ValueError:
         logging.warn('probably older NSS module loaded', exc_info=True)
     try:

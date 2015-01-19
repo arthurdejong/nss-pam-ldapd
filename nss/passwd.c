@@ -2,7 +2,7 @@
    passwd.c - NSS lookup functions for passwd database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -54,7 +54,7 @@ static nss_status_t read_passwd(TFILE *fp, struct passwd *result,
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* get a single passwd entry by name */
-nss_status_t _nss_ldap_getpwnam_r(const char *name, struct passwd *result,
+nss_status_t NSS_NAME(getpwnam_r)(const char *name, struct passwd *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETONE(NSLCD_ACTION_PASSWD_BYNAME,
@@ -63,7 +63,7 @@ nss_status_t _nss_ldap_getpwnam_r(const char *name, struct passwd *result,
 }
 
 /* get a single passwd entry by uid */
-nss_status_t _nss_ldap_getpwuid_r(uid_t uid, struct passwd *result,
+nss_status_t NSS_NAME(getpwuid_r)(uid_t uid, struct passwd *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETONE(NSLCD_ACTION_PASSWD_BYUID,
@@ -75,13 +75,13 @@ nss_status_t _nss_ldap_getpwuid_r(uid_t uid, struct passwd *result,
 static TLS TFILE *pwentfp;
 
 /* open a connection to read all passwd entries */
-nss_status_t _nss_ldap_setpwent(int UNUSED(stayopen))
+nss_status_t NSS_NAME(setpwent)(int UNUSED(stayopen))
 {
   NSS_SETENT(pwentfp);
 }
 
 /* read password data from an opened stream */
-nss_status_t _nss_ldap_getpwent_r(struct passwd *result,
+nss_status_t NSS_NAME(getpwent_r)(struct passwd *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETENT(pwentfp, NSLCD_ACTION_PASSWD_ALL,
@@ -89,7 +89,7 @@ nss_status_t _nss_ldap_getpwent_r(struct passwd *result,
 }
 
 /* close the stream opened with setpwent() above */
-nss_status_t _nss_ldap_endpwent(void)
+nss_status_t NSS_NAME(endpwent)(void)
 {
   NSS_ENDENT(pwentfp);
 }
@@ -159,7 +159,7 @@ static nss_backend_op_t passwd_ops[] = {
   passwd_getpwuid
 };
 
-nss_backend_t *_nss_ldap_passwd_constr(const char UNUSED(*db_name),
+nss_backend_t *NSS_NAME(passwd_constr)(const char UNUSED(*db_name),
                                        const char UNUSED(*src_name),
                                        const char UNUSED(*cfg_args))
 {

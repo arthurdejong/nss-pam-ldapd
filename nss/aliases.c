@@ -2,7 +2,7 @@
    aliases.c - NSS lookup functions for aliases database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -48,7 +48,7 @@ static nss_status_t read_aliasent(TFILE *fp, struct aliasent *result,
 }
 
 /* get an alias entry by name */
-nss_status_t _nss_ldap_getaliasbyname_r(const char *name,
+nss_status_t NSS_NAME(getaliasbyname_r)(const char *name,
                                         struct aliasent *result,
                                         char *buffer, size_t buflen,
                                         int *errnop)
@@ -62,13 +62,13 @@ nss_status_t _nss_ldap_getaliasbyname_r(const char *name,
 static TLS TFILE *aliasentfp;
 
 /* start a request to read all aliases */
-nss_status_t _nss_ldap_setaliasent(void)
+nss_status_t NSS_NAME(setaliasent)(void)
 {
   NSS_SETENT(aliasentfp);
 }
 
 /* read a single alias entry from the stream */
-nss_status_t _nss_ldap_getaliasent_r(struct aliasent *result,
+nss_status_t NSS_NAME(getaliasent_r)(struct aliasent *result,
                                      char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETENT(aliasentfp, NSLCD_ACTION_ALIAS_ALL,
@@ -76,7 +76,7 @@ nss_status_t _nss_ldap_getaliasent_r(struct aliasent *result,
 }
 
 /* close the stream opened with setaliasent() above */
-nss_status_t _nss_ldap_endaliasent(void)
+nss_status_t NSS_NAME(endaliasent)(void)
 {
   NSS_ENDENT(aliasentfp);
 }

@@ -2,7 +2,7 @@
    nslcd.c - ldap local connection daemon
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2014 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -117,7 +117,7 @@ static void display_version(FILE *fp)
 {
   fprintf(fp, "%s\n", PACKAGE_STRING);
   fprintf(fp, "Written by Luke Howard and Arthur de Jong.\n\n");
-  fprintf(fp, "Copyright (C) 1997-2014 Luke Howard, Arthur de Jong and West Consulting\n"
+  fprintf(fp, "Copyright (C) 1997-2015 Luke Howard, Arthur de Jong and West Consulting\n"
               "This is free software; see the source for copying conditions.  There is NO\n"
               "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
@@ -617,7 +617,7 @@ static void disable_nss_ldap(void)
   /* clear any existing errors */
   dlerror();
   /* try to look up the flag */
-  enable_flag = (int *)dlsym(handle, "_nss_ldap_enablelookups");
+  enable_flag = (int *)dlsym(handle, "_nss_" MODULE_NAME "_enablelookups");
   error = dlerror();
   if ((enable_flag == NULL) || (error != NULL))
   {

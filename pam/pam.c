@@ -2,7 +2,7 @@
    pam.c - pam module functions
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2009-2015 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -779,8 +779,8 @@ int pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 }
 
 #ifdef PAM_STATIC
-struct pam_module _pam_ldap_modstruct = {
-  "pam_ldap",
+struct pam_module PAM_NAME(modstruct) = {
+  "pam_" MODULE_NAME,
   pam_sm_authenticate,
   pam_sm_setcred,
   pam_sm_acct_mgmt,

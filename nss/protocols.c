@@ -2,7 +2,7 @@
    protocols.c - NSS lookup functions for protocol database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -46,7 +46,7 @@ static nss_status_t read_protoent(TFILE *fp, struct protoent *result,
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* get a protocol entry by name */
-nss_status_t _nss_ldap_getprotobyname_r(const char *name,
+nss_status_t NSS_NAME(getprotobyname_r)(const char *name,
                                         struct protoent *result,
                                         char *buffer, size_t buflen,
                                         int *errnop)
@@ -57,7 +57,7 @@ nss_status_t _nss_ldap_getprotobyname_r(const char *name,
 }
 
 /* get a protocol entry by number */
-nss_status_t _nss_ldap_getprotobynumber_r(int number, struct protoent *result,
+nss_status_t NSS_NAME(getprotobynumber_r)(int number, struct protoent *result,
                                           char *buffer, size_t buflen,
                                           int *errnop)
 {
@@ -70,13 +70,13 @@ nss_status_t _nss_ldap_getprotobynumber_r(int number, struct protoent *result,
 static TLS TFILE *protoentfp;
 
 /* start a request to read all protocol entries */
-nss_status_t _nss_ldap_setprotoent(int UNUSED(stayopen))
+nss_status_t NSS_NAME(setprotoent)(int UNUSED(stayopen))
 {
   NSS_SETENT(protoentfp);
 }
 
 /* get a single protocol entry */
-nss_status_t _nss_ldap_getprotoent_r(struct protoent *result,
+nss_status_t NSS_NAME(getprotoent_r)(struct protoent *result,
                                      char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETENT(protoentfp, NSLCD_ACTION_PROTOCOL_ALL,
@@ -84,7 +84,7 @@ nss_status_t _nss_ldap_getprotoent_r(struct protoent *result,
 }
 
 /* close the stream opened by setprotoent() above */
-nss_status_t _nss_ldap_endprotoent(void)
+nss_status_t NSS_NAME(endprotoent)(void)
 {
   NSS_ENDENT(protoentfp);
 }
@@ -156,7 +156,7 @@ static nss_backend_op_t protocols_ops[] = {
   protocols_getprotobynumber
 };
 
-nss_backend_t *_nss_ldap_protocols_constr(const char UNUSED(*db_name),
+nss_backend_t *NSS_NAME(protocols_constr)(const char UNUSED(*db_name),
                                           const char UNUSED(*src_name),
                                           const char UNUSED(*cfg_args))
 {

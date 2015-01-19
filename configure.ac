@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006-2014 Arthur de Jong
+# Copyright (C) 2006-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ AC_PREREQ(2.61)
 AC_COPYRIGHT(
 [Copyright (C) 2006 Luke Howard
 Copyright (C) 2006 West Consulting
-Copyright (C) 2006-2014 Arthur de Jong
+Copyright (C) 2006-2015 Arthur de Jong
 
 This configure script is derived from configure.ac which is free software;
 you can redistribute it and/or modify it under the terms of the GNU Lesser
@@ -283,8 +283,22 @@ AC_MSG_RESULT($PAM_SECLIB_DIR)
 AC_DEFINE_UNQUOTED(PAM_SECLIB_DIR, "$PAM_SECLIB_DIR", [path to PAM security library])
 AC_SUBST(PAM_SECLIB_DIR)
 
+# the name to use for the NSS module
+AC_MSG_CHECKING([name of NSS and PAM modules])
+AC_ARG_WITH(module-name,
+            AS_HELP_STRING([--with-module-name=NAME],
+                           [name of NSS and PAM modules @<:@ldap@:>@]),
+            [ MODULE_NAME="$with_module_name" ],
+            [ MODULE_NAME="ldap" ])
+            # FIXME: this does not work
+AC_MSG_RESULT($MODULE_NAME)
+AC_DEFINE_UNQUOTED(MODULE_NAME, "$MODULE_NAME", [The name of the NSS and PAM modules.])
+AC_DEFINE_UNQUOTED(NSS_NAME(NAME), [_nss_${MODULE_NAME}_##NAME], [Expand to NSS symbol name.])
+AC_DEFINE_UNQUOTED(PAM_NAME(NAME), [_pam_${MODULE_NAME}_##NAME], [Expand to PAM symbol name.])
+AC_SUBST(MODULE_NAME)
+
 # the SONAME to use for the NSS module
-AC_MSG_CHECKING([name of NSS module])
+AC_MSG_CHECKING([soname of NSS module])
 AC_ARG_WITH(nss-ldap-soname,
             AS_HELP_STRING([--with-nss-ldap-soname=SONAME],
                            [name of NSS module @<:@auto@:>@]),
@@ -293,9 +307,9 @@ AC_ARG_WITH(nss-ldap-soname,
 if test "x$NSS_LDAP_SONAME" = "xauto"
 then
   case "$target_os" in
-    solaris*) NSS_LDAP_SONAME="nss_ldap.so.1" ;;
-    freebsd*|dragonfly*) NSS_LDAP_SONAME="nss_ldap.so.1" ;;
-    *)        NSS_LDAP_SONAME="libnss_ldap.so.2" ;;
+    solaris*) NSS_LDAP_SONAME="nss_$MODULE_NAME.so.1" ;;
+    freebsd*|dragonfly*) NSS_LDAP_SONAME="nss_$MODULE_NAME.so.1" ;;
+    *)        NSS_LDAP_SONAME="libnss_$MODULE_NAME.so.2" ;;
   esac
 fi
 AC_MSG_RESULT($NSS_LDAP_SONAME)
@@ -303,7 +317,7 @@ AC_DEFINE_UNQUOTED(NSS_LDAP_SONAME, "$NSS_LDAP_SONAME", [The SONAME of the NSS l
 AC_SUBST(NSS_LDAP_SONAME)
 
 # the SONAME to use for the PAM module
-AC_MSG_CHECKING([name of PAM module])
+AC_MSG_CHECKING([soname of PAM module])
 AC_ARG_WITH(pam-ldap-soname,
             AS_HELP_STRING([--with-pam-ldap-soname=SONAME],
                            [name of PAM module @<:@auto@:>@]),
@@ -312,8 +326,8 @@ AC_ARG_WITH(pam-ldap-soname,
 if test "x$PAM_LDAP_SONAME" = "xauto"
 then
   case "$target_os" in
-    solaris*) PAM_LDAP_SONAME="pam_ldap.so.1" ;;
-    *)        PAM_LDAP_SONAME="pam_ldap.so" ;;
+    solaris*) PAM_LDAP_SONAME="pam_$MODULE_NAME.so.1" ;;
+    *)        PAM_LDAP_SONAME="pam_$MODULE_NAME.so" ;;
   esac
 fi
 AC_MSG_RESULT($PAM_LDAP_SONAME)
@@ -515,6 +529,8 @@ then
     solaris) AC_DEFINE(NSS_FLAVOUR_SOLARIS, 1, [Whether to use the Solaris NSS interface flavour.]) ;;
     freebsd) AC_DEFINE(NSS_FLAVOUR_FREEBSD, 1, [Whether to use the FreeBSD NSS interface flavour.]) ;;
   esac
+  NSS_FLAVOUR="$with_nss_flavour"
+  AC_SUBST(NSS_FLAVOUR)
 
   # check which module source files to use
   AC_MSG_CHECKING([which NSS maps to build])
@@ -536,13 +552,13 @@ then
   solaris*)
     if test "x$GCC" = xyes
     then
-      nss_ldap_so_LINK="/usr/ccs/bin/ld -Bdirect -z nodelete -Bdynamic -M \$(srcdir)/exports.solaris -G -o \$@"
+      nss_ldap_so_LINK="/usr/ccs/bin/ld -Bdirect -z nodelete -Bdynamic -M exports.map -G -o \$@"
     else
-      nss_ldap_so_LDFLAGS="-Wl,-Bdirect -Wl,-z,nodelete -Wl,-Bdynamic -Wl,-M,\$(srcdir)/exports.solaris -Wl,-G"
+      nss_ldap_so_LDFLAGS="-Wl,-Bdirect -Wl,-z,nodelete -Wl,-Bdynamic -Wl,-M,exports.map -Wl,-G"
     fi
     ;;
   *)
-    nss_ldap_so_LDFLAGS="-shared -Wl,-h,\$(NSS_LDAP_SONAME) -Wl,--version-script,\$(srcdir)/exports.$with_nss_flavour"
+    nss_ldap_so_LDFLAGS="-shared -Wl,-h,\$(NSS_LDAP_SONAME) -Wl,--version-script,exports.map"
     ;;
   esac
   AC_SUBST(nss_ldap_so_LDFLAGS)

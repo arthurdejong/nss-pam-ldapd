@@ -1,7 +1,7 @@
 /*
    common.c - common definitions
 
-   Copyright (C) 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2010-2015 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@
 
 #include <stddef.h>
 
-int _nss_ldap_enablelookups = 1;
+int NSS_NAME(enablelookups) = 1;
 
 /* version information about the NSS module */
-char *_nss_ldap_version[3] = { PACKAGE, VERSION, NULL };
+char *NSS_NAME(version)[3] = { PACKAGE, VERSION, NULL };

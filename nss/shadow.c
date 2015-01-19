@@ -2,7 +2,7 @@
    shadow.c - NSS lookup functions for shadow database
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2010, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
    Copyright (C) 2010 Symas Corporation
 
    This library is free software; you can redistribute it and/or
@@ -52,7 +52,7 @@ static nss_status_t read_spwd(TFILE *fp, struct spwd *result,
 #ifdef NSS_FLAVOUR_GLIBC
 
 /* get a shadow entry by name */
-nss_status_t _nss_ldap_getspnam_r(const char *name, struct spwd *result,
+nss_status_t NSS_NAME(getspnam_r)(const char *name, struct spwd *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETONE(NSLCD_ACTION_SHADOW_BYNAME,
@@ -64,13 +64,13 @@ nss_status_t _nss_ldap_getspnam_r(const char *name, struct spwd *result,
 static TLS TFILE *spentfp;
 
 /* start listing all shadow users */
-nss_status_t _nss_ldap_setspent(int UNUSED(stayopen))
+nss_status_t NSS_NAME(setspent)(int UNUSED(stayopen))
 {
   NSS_SETENT(spentfp);
 }
 
 /* return a single shadow entry read from the stream */
-nss_status_t _nss_ldap_getspent_r(struct spwd *result,
+nss_status_t NSS_NAME(getspent_r)(struct spwd *result,
                                   char *buffer, size_t buflen, int *errnop)
 {
   NSS_GETENT(spentfp, NSLCD_ACTION_SHADOW_ALL,
@@ -78,7 +78,7 @@ nss_status_t _nss_ldap_getspent_r(struct spwd *result,
 }
 
 /* close the stream opened by setspent() above */
-nss_status_t _nss_ldap_endspent(void)
+nss_status_t NSS_NAME(endspent)(void)
 {
   NSS_ENDENT(spentfp);
 }
@@ -154,7 +154,7 @@ static nss_backend_op_t shadow_ops[] = {
   shadow_getspnam
 };
 
-nss_backend_t *_nss_ldap_shadow_constr(const char UNUSED(*db_name),
+nss_backend_t *NSS_NAME(shadow_constr)(const char UNUSED(*db_name),
                                        const char UNUSED(*src_name),
                                        const char UNUSED(*cfg_args))
 {
