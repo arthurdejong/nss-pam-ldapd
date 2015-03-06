@@ -177,6 +177,7 @@ struct setnetgrent_backend {
 /* access arguments */
 #define SETNETGRENT_ARGS(args) ((struct nss_setnetgrent_args *)(args))
 #define GETNETGRENT_ARGS(args) ((struct nss_getnetgrent_args *)(args))
+#define INNETGR_ARGS(ARGS)     ((struct nss_innetgr_args *)(args))
 
 /* return a netgroup that has not been traversed (the caller should use
    free() to free it) */
@@ -246,9 +247,9 @@ static nss_status_t netgroup_setnetgrent_getnetgrent(nss_backend_t *be,
     {
       /* a netgroup line we can return */
       GETNETGRENT_ARGS(args)->status = NSS_NETGR_FOUND;
-      GETNETGRENT_ARGS(args)->retp[NSS_NETGR_MACHINE] = result.val.triple.host;
-      GETNETGRENT_ARGS(args)->retp[NSS_NETGR_USER] = result.val.triple.user;
-      GETNETGRENT_ARGS(args)->retp[NSS_NETGR_DOMAIN] = result.val.triple.domain;
+      GETNETGRENT_ARGS(args)->retp[NSS_NETGR_MACHINE] = (char *)result.val.triple.host;
+      GETNETGRENT_ARGS(args)->retp[NSS_NETGR_USER] = (char *)result.val.triple.user;
+      GETNETGRENT_ARGS(args)->retp[NSS_NETGR_DOMAIN] = (char *)result.val.triple.domain;
       return NSS_STATUS_SUCCESS;
     }
     else if (retv == NSS_STATUS_TRYAGAIN)
@@ -297,8 +298,7 @@ static nss_status_t netgroup_setnetgrent_getnetgrent(nss_backend_t *be,
   }
 }
 
-static nss_status_t netgroup_setnetgrent_endnetgrent(nss_backend_t
-                                                     UNUSED(*be),
+static nss_status_t netgroup_setnetgrent_endnetgrent(nss_backend_t *be,
                                                      void UNUSED(*args))
 {
   NSS_ENDENT(NETGROUP_BE(be)->fp);
@@ -351,12 +351,69 @@ static nss_status_t netgroup_setnetgrent_constructor(nss_backend_t UNUSED(*be),
   return NSS_STATUS_SUCCESS;
 }
 
+static nss_status_t netgroup_innetgr(nss_backend_t UNUSED(*be),
+                                     void *args)
+{
+  unsigned int i;
+  nss_status_t res = NSS_SUCCESS;
+  struct nss_setnetgrent_args set_args;
+  struct nss_getnetgrent_args get_args;
+  const char *host = NULL, *user = NULL, *domain = NULL;
+  /* get the host, user and domain arguments */
+  if ((args == NULL) ||
+      (INNETGR_ARGS(args)->arg[NSS_NETGR_MACHINE].argc > 1) ||
+      (INNETGR_ARGS(args)->arg[NSS_NETGR_USER].argc > 1) ||
+      (INNETGR_ARGS(args)->arg[NSS_NETGR_DOMAIN].argc > 1))
+    return NSS_STATUS_UNAVAIL;
+  if (INNETGR_ARGS(args)->arg[NSS_NETGR_MACHINE].argc == 1)
+    host = INNETGR_ARGS(args)->arg[NSS_NETGR_MACHINE].argv[0];
+  if (INNETGR_ARGS(args)->arg[NSS_NETGR_USER].argc == 1)
+    user = INNETGR_ARGS(args)->arg[NSS_NETGR_USER].argv[0];
+  if (INNETGR_ARGS(args)->arg[NSS_NETGR_DOMAIN].argc == 1)
+    domain = INNETGR_ARGS(args)->arg[NSS_NETGR_DOMAIN].argv[0];
+  /* go over the list of provided groups */
+  INNETGR_ARGS(args)->status = NSS_NETGR_NO;
+  for (i = 0; i < INNETGR_ARGS(args)->groups.argc; i++)
+  {
+    /* prepare calling {set,get,end}netgrent() */
+    set_args.netgroup = INNETGR_ARGS(args)->groups.argv[i];
+    res = netgroup_setnetgrent_constructor(NULL, &set_args);
+    if (res != NSS_SUCCESS)
+      break;
+    /* we skip setnetgrent because it does nothing in our case */
+    /* call getnetgrent until we find an error, no more or a match */
+    while (1)
+    {
+      res = netgroup_setnetgrent_getnetgrent(set_args.iterator, &get_args);
+      /* see if we have an error or are at the end of the results */
+      if ((res != NSS_SUCCESS) || (get_args.status != NSS_NETGR_FOUND))
+        break;
+      /* see if we have a match */
+      if (((host == NULL) || (strcmp(host, get_args.retp[NSS_NETGR_MACHINE]) == 0)) &&
+          ((user == NULL) || (strcmp(user, get_args.retp[NSS_NETGR_USER]) == 0)) &&
+          ((domain == NULL) || (strcmp(domain, get_args.retp[NSS_NETGR_DOMAIN]) == 0)))
+      {
+        INNETGR_ARGS(args)->status = NSS_NETGR_FOUND;
+        break;
+      }
+    }
+    (void)netgroup_setnetgrent_endnetgrent(set_args.iterator, NULL);
+    (void)netgroup_setnetgrent_destructor(set_args.iterator, NULL);
+    if (res != NSS_SUCCESS)
+      break;
+    /* check if we have a match */
+    if (INNETGR_ARGS(args)->status == NSS_NETGR_FOUND)
+      break;
+  }
+  return res;
+}
+
 static nss_backend_op_t netgroup_ops[] = {
   nss_ldap_destructor,
   NULL,
   NULL,
   NULL,
-  NULL, /* TODO:NSS_NAME(netgr_in) */
+  netgroup_innetgr,
   netgroup_setnetgrent_constructor
 };
 
