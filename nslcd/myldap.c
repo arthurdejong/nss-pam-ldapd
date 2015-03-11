@@ -534,10 +534,10 @@ static int do_ppolicy_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
   requestctrls[1] = NULL;
   /* build password berval */
   cred.bv_val = (char *)session->bindpw;
-  cred.bv_len = (session->bindpw == NULL) ? 0 : strlen(session->bindpw);
+  cred.bv_len = strlen(session->bindpw);
   /* do a SASL simple bind with the binddn and bindpw */
   log_log(LOG_DEBUG, "ldap_sasl_bind(\"%s\",%s) (uri=\"%s\")", session->binddn,
-          ((session->bindpw != NULL) && (session->bindpw[0] != '\0')) ? "\"***\"" : "\"\"", uri);
+          (session->bindpw[0] != '\0') ? "\"***\"" : "\"\"", uri);
   rc = ldap_sasl_bind(ld, session->binddn, LDAP_SASL_SIMPLE, &cred, requestctrls, NULL, &msgid);
   if (rc != LDAP_SUCCESS)
     return rc;
@@ -622,7 +622,7 @@ static int do_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
   }
 #endif /* LDAP_OPT_X_TLS */
   /* check if the binddn and bindpw are overwritten in the session */
-  if ((session->binddn != NULL) && (session->binddn[0] != '\0'))
+  if (session->binddn[0] != '\0')
   {
 #if defined(HAVE_LDAP_SASL_BIND) && defined(LDAP_SASL_SIMPLE)
     return do_ppolicy_bind(session, ld, uri);
@@ -630,7 +630,7 @@ static int do_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
     /* do a simple bind */
     log_log(LOG_DEBUG, "ldap_simple_bind_s(\"%s\",%s) (uri=\"%s\")",
             session->binddn,
-            ((session->bindpw != NULL) && (session->bindpw[0] != '\0')) ? "\"***\"" : "\"\"",
+            (session->bindpw[0] != '\0') ? "\"***\"" : "\"\"",
             uri);
     return ldap_simple_bind_s(ld, session->binddn, session->bindpw);
 #endif

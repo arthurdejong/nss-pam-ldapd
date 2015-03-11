@@ -462,7 +462,7 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags,
   {
     rc = nslcd_request_config_get(pamh, &cfg, NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE,
                                   &resp);
-    if ((rc == PAM_SUCCESS) && (resp.msg != NULL) && (resp.msg[0] != '\0'))
+    if ((rc == PAM_SUCCESS) && (resp.msg[0] != '\0'))
     {
       /* we silently ignore errors to get the configuration option */
       pam_syslog(pamh, LOG_NOTICE, "password change prohibited: %s; user=%s",
@@ -665,7 +665,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh, int flags,
   /* check if password modification is allowed */
   rc = nslcd_request_config_get(pamh, &cfg, NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE,
                                 &resp);
-  if ((rc == PAM_SUCCESS) && (resp.msg != NULL) && (resp.msg[0] != '\0'))
+  if ((rc == PAM_SUCCESS) && (resp.msg[0] != '\0'))
   {
     /* we silently ignore errors to get the configuration option */
     pam_syslog(pamh, LOG_NOTICE, "password change prohibited: %s; user=%s",
