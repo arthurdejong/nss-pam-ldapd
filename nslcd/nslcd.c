@@ -78,6 +78,10 @@
 #define WRITEBUFFER_MINSIZE 1024
 #define WRITEBUFFER_MAXSIZE 1 * 1024 * 1024
 
+/* adjust the oom killer score */
+#define OOM_SCORE_ADJ_FILE "/proc/self/oom_score_adj"
+#define OOM_SCORE_ADJ "-1000"
+
 /* flag to indicate if we are in debugging mode */
 static int nslcd_debugging = 0;
 
@@ -640,6 +644,24 @@ static void disable_nss_ldap(void)
 #endif /* RTLD_NODELETE */
 }
 
+/* poke the OOM killer so nslcd will never get killed */
+static void adjust_oom_score(void)
+{
+  int oom_adj_fd;
+  if ((oom_adj_fd = open(OOM_SCORE_ADJ_FILE, O_WRONLY)) >= 0)
+  {
+    if (write(oom_adj_fd, OOM_SCORE_ADJ, strlen(OOM_SCORE_ADJ)) < 0)
+      log_log(LOG_WARNING, "writing oom score adjustment of %s failed: %s",
+        OOM_SCORE_ADJ, strerror(errno));
+    close(oom_adj_fd);
+  }
+  else
+  {
+    log_log(LOG_DEBUG, "could not open %s to adjust the OOM score: %s",
+      OOM_SCORE_ADJ_FILE, strerror(errno));
+  }
+}
+
 /* the main program... */
 int main(int argc, char *argv[])
 {
@@ -740,6 +762,7 @@ int main(int argc, char *argv[])
     daemonize_ready(EXIT_FAILURE, "atexit() failed\n");
     exit(EXIT_FAILURE);
   }
+  adjust_oom_score();
   /* create socket */
   nslcd_serversocket = create_socket(NSLCD_SOCKET);
   /* start subprocess to do invalidating if reconnect_invalidate is set */
