@@ -457,8 +457,8 @@ static void add_uris_from_dns(const char *filename, int lnr,
       hostlist[strlen(hostlist) - 4] = '\0';
       if (mysnprintf(buf, sizeof(buf), "ldaps://%s", hostlist))
       {
-        log_log(LOG_ERR, "add_uris_from_dns(): buf buffer too small (%d required)",
-                strlen(hostlist) + 8);
+        log_log(LOG_ERR, "add_uris_from_dns(): buf buffer too small (%lu required)",
+                (unsigned long) strlen(hostlist) + 8);
         exit(EXIT_FAILURE);
       }
     }
@@ -469,8 +469,8 @@ static void add_uris_from_dns(const char *filename, int lnr,
         hostlist[strlen(hostlist) - 4] = '\0';
       if (mysnprintf(buf, sizeof(buf), "ldap://%s", hostlist))
       {
-        log_log(LOG_ERR, "add_uris_from_dns(): buf buffer too small (%d required)",
-                strlen(hostlist) + 7);
+        log_log(LOG_ERR, "add_uris_from_dns(): buf buffer too small (%lu required)",
+                (unsigned long) strlen(hostlist) + 7);
         exit(EXIT_FAILURE);
       }
     }

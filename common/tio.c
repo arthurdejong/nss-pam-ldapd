@@ -478,8 +478,8 @@ int tio_close(TFILE *fp)
   retv = tio_flush(fp);
 #ifdef DEBUG_TIO_STATS
   /* dump statistics to stderr */
-  fprintf(stderr, "DEBUG_TIO_STATS READ=%d WRITTEN=%d\n", fp->bytesread,
-          fp->byteswritten);
+  fprintf(stderr, "DEBUG_TIO_STATS READ=%lu WRITTEN=%lu\n",
+          (unsigned long)fp->bytesread, (unsigned long)fp->byteswritten);
 #endif /* DEBUG_TIO_STATS */
   /* close file descriptor */
   if (close(fp->fd))

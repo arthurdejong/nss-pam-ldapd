@@ -1064,15 +1064,15 @@ int myldap_set_credentials(MYLDAP_SESSION *session, const char *dn,
   if (strlen(dn) >= sizeof(session->binddn))
   {
     log_log(LOG_ERR,
-            "myldap_set_credentials(): binddn buffer too small (%d required)",
-            strlen(dn));
+            "myldap_set_credentials(): binddn buffer too small (%lu required)",
+            (unsigned long) strlen(dn));
     return -1;
   }
   if (strlen(password) >= sizeof(session->bindpw))
   {
     log_log(LOG_ERR,
-            "myldap_set_credentials(): bindpw buffer too small (%d required)",
-            strlen(password));
+            "myldap_set_credentials(): bindpw buffer too small (%lu required)",
+            (unsigned long) strlen(password));
     return -1;
   }
   /* copy dn and password into session */
@@ -1729,8 +1729,8 @@ static char **myldap_get_ranged_values(MYLDAP_ENTRY *entry, const char *attr)
   /* build the attribute name to find */
   if (mysnprintf(attbuf, sizeof(attbuf), "%s;range=0-*", attr))
   {
-    log_log(LOG_ERR, "myldap_get_ranged_values(): attbuf buffer too small (%d required)",
-            strlen(attr) + 10);
+    log_log(LOG_ERR, "myldap_get_ranged_values(): attbuf buffer too small (%lu required)",
+            (unsigned long) strlen(attr) + 10);
     return NULL;
   }
   /* keep doing lookups untul we can't get any more results */
