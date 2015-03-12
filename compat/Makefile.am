@@ -20,7 +20,7 @@
 noinst_LIBRARIES = libcompat.a
 
 AM_CPPFLAGS=-I$(top_srcdir)
-AM_CFLAGS = -fPIC
+AM_CFLAGS = $(PIC_CFLAGS)
 
 EXTRA_DIST = getopt_long.c getopt_long.h \
              ether.c ether.h \

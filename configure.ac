@@ -106,9 +106,8 @@ AC_ARG_ENABLE(debug,
                              [enable extensive debugging and logging]),
               [if test "x$enableval" != "xno" ; then CFLAGS="-g -DDEBUG $CFLAGS" ; fi])
 
-DESIRED_CFLAGS=""
-
 # check for extra compiler warnings
+DESIRED_CFLAGS=""
 AC_ARG_ENABLE(warnings,
               AS_HELP_STRING([--enable-warnings],
                              [enable extra compiler warnings (gcc)]),
@@ -135,6 +134,18 @@ do
     AC_MSG_RESULT([no])
   fi
 done
+
+# check for Position Independent Code compiler option
+PIC_CFLAGS=""
+if test "$ac_cv_prog_gcc" = "yes"
+then
+  PIC_CFLAGS="-fPIC"
+else
+  case "$target_os" in
+    sysv5*) PIC_CFLAGS="-KPIC" ;;
+  esac
+fi
+AC_SUBST(PIC_CFLAGS)
 
 # add --disable-maintainer-mode option
 AM_MAINTAINER_MODE([enable])
