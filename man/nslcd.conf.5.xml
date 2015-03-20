@@ -140,7 +140,7 @@
    <variablelist>
 
     <varlistentry id="uri"> <!-- since 0.1 -->
-     <term><option>uri</option> <replaceable>URI</replaceable></term>
+     <term><option>uri</option> <replaceable>URI</replaceable> ...</term>
      <listitem>
       <para>
        Specifies the <acronym>LDAP</acronym> <acronym>URI</acronym> of the
@@ -166,7 +166,8 @@
        time this should not be needed.
       </para>
       <para>
-       This option may be specified multiple times. Normally, only the first
+       This option may be specified multiple times and/or with more
+       URIs on the line, separated by space. Normally, only the first
        server will be used with the following servers as fall-back (see
        <option>bind_timelimit</option> below).
       </para>
