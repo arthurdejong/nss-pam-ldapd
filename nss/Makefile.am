@@ -44,7 +44,7 @@ nss_ldap_so_DEPENDENCIES = $(nss_ldap_so_LDADD) exports.map
 EXTRA_DIST = exports.glibc exports.solaris exports.freebsd
 CLEANFILES = exports.map
 
-exports.map: $(EXTRA_DIST)
+exports.map: $(EXTRA_DIST) Makefile
 	sed 's/ldap/@MODULE_NAME@/' < $(srcdir)/exports.$(NSS_FLAVOUR) > exports.map
 
 install-exec-local: install-nss_ldap_so

@@ -2,7 +2,7 @@
 
 # testenv.sh - script to check test environment
 #
-# Copyright (C) 2011, 2013 Arthur de Jong
+# Copyright (C) 2011-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,16 +24,24 @@ set -e
 # get the script name
 script="`basename "$0"`"
 
-# find source directory (used for finding auxiliary files)
+# find source and build directory (used for finding auxiliary files)
 srcdir="${srcdir-`dirname "$0"`}"
+builddir="${builddir-`dirname "$0"`}"
 
 # location of nslcd configuration file
 nslcd_cfg="${nslcd_cfg-/etc/nslcd.conf}"
 
+# the configured module name (usually ldap)
+if [ -f "$builddir"/../config.h ]
+then
+  module_name=`sed -n 's/^#define MODULE_NAME "\(.*\)"$/\1/p' "$builddir"/../config.h`
+fi
+module_name="${module_name-ldap}"
+
 # find the names of services that are configured to use LDAP
 nss_list_configured()
 {
-  sed -n 's/^[ \t]*\([a-z]*\)[ \t]*:.*[ \t]ldap.*$/\1/p' /etc/nsswitch.conf \
+  sed -n 's/^[ \t]*\([a-z]*\)[ \t]*:.*[ \t]'$module_name'.*$/\1/p' /etc/nsswitch.conf \
     | xargs
 }
 
@@ -41,7 +49,7 @@ nss_list_configured()
 nss_is_enabled()
 {
   name="$1"
-  grep '^[ \t]*'$name'[ \t]*:.*ldap.*' /etc/nsswitch.conf > /dev/null
+  grep '^[ \t]*'$name'[ \t]*:.*'$module_name'.*' /etc/nsswitch.conf > /dev/null
 }
 
 # check to see if name is configured to do lookups through
@@ -57,10 +65,10 @@ nss_enable()
     if grep -q '^[ \t]*'$name'[ \t]*:' /etc/nsswitch.conf
     then
       # modify an existing entry by just adding ldap to the end
-      sed -i 's/^\([ \t]*'$name'[ \t]*:.*[^ \t]\)[ \t]*$/\1 ldap/' /etc/nsswitch.conf
+      sed -i 's/^\([ \t]*'$name'[ \t]*:.*[^ \t]\)[ \t]*$/\1 '$module_name'/' /etc/nsswitch.conf
     else
       # append a new line
-      printf '%-15s ldap\n' $name':' >> /etc/nsswitch.conf
+      printf '%-15s '$module_name'\n' $name':' >> /etc/nsswitch.conf
     fi
     # invalidate nscd cache
     nscd -i "$name" > /dev/null 2>&1 || true

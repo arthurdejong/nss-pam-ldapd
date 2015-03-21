@@ -612,7 +612,7 @@ static void disable_nss_ldap(void)
   /* clear any existing errors */
   dlerror();
   /* lookup the NSS version if possible */
-  version_info = (char **)dlsym(handle, "_nss_ldap_version");
+  version_info = (char **)dlsym(handle, "_nss_" MODULE_NAME "_version");
   error = dlerror();
   if ((version_info != NULL) && (error == NULL))
     log_log(LOG_DEBUG, "NSS_LDAP %s %s", version_info[0], version_info[1]);

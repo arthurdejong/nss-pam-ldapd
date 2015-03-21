@@ -1,7 +1,7 @@
 /*
    nsswitch.c - functions for parsing /etc/nsswitch.conf
 
-   Copyright (C) 2011, 2012 Arthur de Jong
+   Copyright (C) 2011-2015 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -151,7 +151,7 @@ static int shadow_uses_ldap(void)
     if (services != NULL)
     {
       shadow_found = 1;
-      if (has_service(services, "ldap", NSSWITCH_FILE, lnr))
+      if (has_service(services, MODULE_NAME, NSSWITCH_FILE, lnr))
       {
         fclose(fp);
         return 1;
@@ -160,7 +160,7 @@ static int shadow_uses_ldap(void)
     /* see if we have a passwd line */
     services = find_db(linebuf, "passwd");
     if (services != NULL)
-      passwd_has_ldap = has_service(services, "ldap", NSSWITCH_FILE, lnr);
+      passwd_has_ldap = has_service(services, MODULE_NAME, NSSWITCH_FILE, lnr);
   }
   fclose(fp);
   if (shadow_found)
