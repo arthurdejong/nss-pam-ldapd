@@ -2,7 +2,7 @@
    test_clock.c - tests for finding usable system clocks
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2013 Arthur de Jong
+   Copyright (C) 2013-2015 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -73,7 +73,7 @@ static int test_clock_gettime(clockid_t c, const char *cname)
   else
     printf("OK   clock %s time: %ld.%09ld\n", cname, (long)t4.tv_sec, (long)t4.tv_nsec);
   /* calculate difference */
-  diff = ((long)t4.tv_sec - (long)t2.tv_sec - (long)t3.tv_sec) * (long)1000000000 +
+  diff = ((long)t4.tv_sec - (long)t2.tv_sec - (long)t3.tv_sec) * 1000000000L +
          ((long)t4.tv_nsec - (long)t2.tv_nsec - (long)t3.tv_nsec);
   if ((diff < (-10 * 1000 * 1000)) || (diff > (20 * 1000 * 1000)))
   {
@@ -84,7 +84,7 @@ static int test_clock_gettime(clockid_t c, const char *cname)
     printf("OK   ");
   printf("clock %s time diff: %s%ld.%09ld %.1f%%\n", cname, (diff < 0) ? "-" : "",
          (labs(diff) / 1000000000L), (labs(diff) % 1000000000L),
-         labs(100L * diff) / (float)((long)t3.tv_sec * 1000000000L + (long)t3.tv_nsec));
+         (float)labs(diff) / (float)((long)t3.tv_sec * 10000000L + (long)t3.tv_nsec / 100));
   return result;
 }
 
