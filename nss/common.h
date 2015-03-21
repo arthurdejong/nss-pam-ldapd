@@ -35,6 +35,13 @@
 #include "solnss.h"
 #endif /* NSS_FLAVOUR_SOLARIS */
 
+/* If not TLS (thread local storage) is available on the platform
+   don't use it. This should not be a problem on most platforms because
+   get*ent() is not expected to be thread-safe (at least not on Glibc). */
+#ifndef TLS
+#define TLS
+#endif /* not TLS */
+
 /* skip timeout determines the maximum time to wait when closing the
    connection and reading whatever data that is available */
 #define SKIP_TIMEOUT 500
