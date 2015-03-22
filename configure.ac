@@ -485,9 +485,6 @@ then
       #endif
       #ifdef HAVE_NSSWITCH_H
       #include <nsswitch.h>
-      #endif
-      #ifdef HAVE_IRS_NSS_H
-      #include "irs-nss.h"
       #endif])
 
   # check if struct nss_XbyY_args has a returnlen attribute
@@ -503,9 +500,6 @@ then
       #endif
       #ifdef HAVE_NSSWITCH_H
       #include <nsswitch.h>
-      #endif
-      #ifdef HAVE_IRS_NSS_H
-      #include "irs-nss.h"
       #endif]])
 
   # check which NSS flavour to build
