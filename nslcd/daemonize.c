@@ -1,7 +1,7 @@
 /*
    daemoninze.c - functions for properly daemonising an application
 
-   Copyright (C) 2014 Arthur de Jong
+   Copyright (C) 2014-2015 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -103,7 +103,11 @@ static int wait_for_response(int fd)
     log_log(LOG_ERR, "wait_for_response(): read_response() returned %d (expected %d)",
             i, (int)sizeof(int));
     if (errno == 0)
+#ifdef ENODATA
       errno = ENODATA;
+#else
+      errno = ENOATTR;
+#endif
     return -1;
   }
   /* read string length */
