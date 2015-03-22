@@ -377,6 +377,7 @@ AC_CHECK_SIZEOF(unsigned long long int)
 AC_CHECK_SIZEOF(uid_t)
 AC_CHECK_SIZEOF(gid_t)
 AX_TLS()
+AC_CHECK_TYPES(suseconds_t)
 
 # check for support for the struct ether_addr structure
 AC_CHECK_TYPES(struct ether_addr,,, [
@@ -702,6 +703,7 @@ then
   AC_CHECK_FUNCS(getenv putenv clearenv)
   AC_CHECK_FUNCS(dlopen dlsym dlerror)
   AC_CHECK_FUNCS(regcomp regexec regerror)
+  AC_CHECK_FUNCS(hstrerror)
 
   # replace some functions if they are not on the system
   AC_REPLACE_FUNCS(getopt_long)
