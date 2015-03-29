@@ -1,3 +1,21 @@
+changes from 0.9.4 to 0.9.5
+---------------------------
+
+* improve test suite (change IP range)
+* handle situation better when server (or firewall) closed the connection
+  (thanks Tim Harder)
+* make daemonising a little more robust and try to log more failures
+* fix integer format strings (thanks Jianhai Luan and Patrick McLean)
+* documentation updates (thanks Dalibor Pospíšil)
+* fix range check for search access (thanks David Binderma)
+* fix a bug in the NSS library when encountering IPv6 addresses in
+  the hosts map (thanks Mark R Bannister)
+* allow configuring the name of the NSS and PAM modules (--with-module-name)
+* adjust the Linux OOM (Out-Of-Memory) killer score to avoid killing nslcd
+  (thanks Patrick McLean)
+* portability improvements (thanks Tim Rice)
+
+
 changes from 0.9.3 to 0.9.4
 ---------------------------
 

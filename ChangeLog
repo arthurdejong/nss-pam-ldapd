@@ -1,3 +1,206 @@
+2015-03-11  Tim Rice <tim@multitalents.net>
+
+	* [ae08830] common/Makefile.am, compat/Makefile.am, configure.ac,
+	  nss/Makefile.am, pam/Makefile.am: Use correct PIC arg for
+	  non-GCC compilers
+
+2015-03-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fdbca17] config.sub: Update files from latest automake
+
+2015-03-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9f9a5c5] nss/networks.c: Fix for networks lookup under Solaris
+
+	  This fixes a byte order issue when nscd is running.
+
+2015-03-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [52ea3f5] configure.ac: Add checks to configure
+
+	  This adds tests for a function and type used in the code.
+
+2015-03-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4ec1c08] nslcd/daemonize.c: ENODATA is missing on FreeBSD
+
+	  FreeBSD doesn't have ENODATA so we use ENOATTR instead.
+
+2015-03-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b2563b0] compat/nss_compat.h, configure.ac: Remove use of
+	  irs-nss.h
+
+	  This was a compatibility leftover from the nss_ldap days.
+
+2015-03-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4c5a3c9] tests/test_clock.c: Prevent numer overflow in test_clock
+
+2015-03-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0420232] nslcd/nslcd.c, nslcd/nsswitch.c, nss/Makefile.am,
+	  tests/testenv.sh: Various small fixes when using --with-module-name
+
+	  This updates the test framework to support --with-module-name,
+	  ensures that exports.map is rebuilt when configure is re-ran,
+	  fixes parsing of nsswitch.conf (to determine what to return for
+	  passwd lookups) and fixes the check for _nss_ldap_version.
+
+2015-03-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [788475f] nss/common.h: Also support platforms without TLS
+
+	  This disables the use of thread-local storage in the NSS module
+	  when it is not available in libc. This results in the get*ent()
+	  functions not being thread-safe. However, on most platforms they
+	  are not expected to be thread-safe anyway.
+
+2015-03-20  Dalibor Pospíšil <dapospis@redhat.com>
+
+	* [95d621e] man/nslcd.conf.5.xml: Document that multiple URIs can
+	  be specified
+
+	  Update nslcd.conf man page that multiple URIs can be set by
+	  using more uri lines or more URIs defined on one uri line.
+
+	  https://bugzilla.redhat.com/show_bug.cgi?id=1204195
+
+2015-03-11  Patrick McLean <chutzpah@gentoo.org>
+
+	* [fa6affc] common/tio.c, nslcd/attmap.c, nslcd/cfg.c,
+	  nslcd/myldap.c: Fix formatting of size_t values
+
+	  In several places the code used a %d format to print a size_t
+	  variable.  On amd64 at least size_t is an unsigned long, so use
+	  %lu instead.
+
+	  An alternative would be to use %ud for size_t and %zd fo ssize_t
+	  but not all platforms seem to support that formatter.
+
+2015-03-11  Patrick McLean <chutzpah@gentoo.org>
+
+	* [246aba5] nslcd/myldap.c, pam/pam.c: Avoid comparison of static
+	  array to null pointer
+
+	  There are several places where a static length array in a struct
+	  is compared to a null pointer. These comparisons will always
+	  be false, since an array in a struct is not actually a pointer,
+	  so they can be removed.
+
+2015-03-10  Patrick McLean <chutzpah@gentoo.org>
+
+	* [d0f896a] AUTHORS, nslcd/nslcd.c: Don't let the oom killer
+	  kill nslcd
+
+	  Adjust the Linux OOM (Out-Of-Memory) killer score by -1000 for
+	  nslcd so that it should not be killed.
+
+2015-01-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ee82d2f] .gitignore, configure.ac, nslcd/nslcd.c,
+	  nss/Makefile.am, nss/aliases.c, nss/bsdnss.c, nss/common.c,
+	  nss/common.h, nss/ethers.c, nss/group.c, nss/hosts.c,
+	  nss/netgroup.c, nss/networks.c, nss/passwd.c, nss/protocols.c,
+	  nss/prototypes.h, nss/rpc.c, nss/services.c, nss/shadow.c,
+	  pam/pam.c, pynslcd/constants.py.in, pynslcd/pynslcd.py: Allow
+	  configuration of NSS and PAM names
+
+	  This introduces the --with-module-name configure option to
+	  allow building of NSS and PAM modules with different namespaces
+	  than ldap.
+2015-01-12  Mark R Bannister <dbis@proseconsulting.co.uk>
+
+	* [ed8b312] nss/hosts.c: Fix uninitialised variable
+
+	  This fixes a bug in the NSS library when encountering IPv6
+	  addresses in the hosts map.
+
+2014-12-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8b33057] nslcd/myldap.c: Avoid accessing searches outside array
+
+	  Thanks David Binderma for pointing this out.
+
+	  Note that in practical situations this should not result in any
+	  errors due to the position of searches within the ldap_session
+	  struct.
+
+2014-11-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9ee854e] man/nslcd.conf.5.xml: Document that rootpwmoddn needs
+	  to exist
+
+	  See
+http://lists.arthurdejong.org/nss-pam-ldapd-users/2014/msg00166.html
+2014-10-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4262122] nslcd/nslcd.c: Fix format string
+
+	  Thanks Jianhai Luan.	2014-10-04  Arthur de Jong
+<arthur@arthurdejong.org>
+
+	* [1d3b19b] nslcd/nslcd.c: Block signals sooner to avoid race
+	  conditions
+
+2014-08-27  Jason Luan <jianhai.luan@oracle.com>
+
+	* [78627c9] nslcd/cfg.c, nslcd/group.c, nslcd/nslcd.c,
+	  nslcd/passwd.c: uid_t/gid_t should be formatted as unsigned long
+
+	  mmkfilter_passwd_byuid()/mkfilter_group_bygid() get wrong filter
+	  string because "%d" will return negative when uid/gid larger
+	  than 2^31, and result to "Authentiction failure".
+
+	  This also changes the other places where uid_t or gid_t values
+	  are formatted.
+
+2014-09-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a726d29] nslcd/daemonize.c: Fix issues with daemonising
+
+	  This fixes a problem with a buffer that could end up padded
+	  with garbage.
+
+	  This also clarifies the code a bit and adds extra logging for
+	  errors that could occur during daemonising.
+
+2014-06-30  Tim Harder <radhermit@gmail.com>
+
+	* [82e4423] nslcd/myldap.c: Minor comment spelling fix
+
+2014-06-30  Tim Harder <radhermit@gmail.com>
+
+	* [2950797] AUTHORS, nslcd/myldap.c: Check a socket's connectivity
+	  before trying to use it
+
+	  This alleviates some cases where multi-second lag occurs before a
+	  query returns due to some or all connections having been closed
+	  by the peer, e.g. a load balancer timing out old connections,
+	  but they are all tried before opening new connections.
+
+	  Tested and working on Linux.
+
+2014-06-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1765e34] nslcd/common.h: Fix copy-pasto
+
+2014-06-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9516479] tests/test.ldif, tests/test_nsscmds.sh: Use other IP
+	  range for tests
+
+	  This uses IP addresses from the RFC 5737 TEST-NET-1 range that is
+	  meant for use in documentation. This avoids issues with running
+	  the tests environments that also use the 10.0.0.0/8 range.
+
+2014-06-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b3cf0aa] AUTHORS, ChangeLog, NEWS, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml:
+	  Get files ready for 0.9.4 release
+
 2014-06-06  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [abb2452] nss/services.c: Return correct port number on Solaris
