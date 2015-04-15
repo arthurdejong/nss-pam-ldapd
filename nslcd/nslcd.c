@@ -838,8 +838,7 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
   }
-  pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
-  /* install signalhandlers for some signals */
+  /* install signal handlers for some signals */
   install_sighandler(SIGHUP, sig_handler);
   install_sighandler(SIGINT, sig_handler);
   install_sighandler(SIGQUIT, sig_handler);
@@ -850,6 +849,8 @@ int main(int argc, char *argv[])
   install_sighandler(SIGUSR2, SIG_IGN);
   /* signal the starting process to exit because we can provide services now */
   daemonize_ready(EXIT_SUCCESS, NULL);
+  /* enable receiving of signals */
+  pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
   /* wait until we received a signal */
   while ((nslcd_receivedsignal == 0) || (nslcd_receivedsignal == SIGUSR1))
   {

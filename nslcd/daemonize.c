@@ -89,7 +89,7 @@ static int read_response(int fd, char *buffer, size_t bufsz)
   return r;
 }
 
-/* ihe process calling daemonize_daemon() will end up here on success */
+/* The parent process calling daemonize_daemon() will end up here on success */
 static int wait_for_response(int fd)
 {
   int i, l, rc;
