@@ -1,7 +1,7 @@
 
 # cfg.py - module for accessing configuration information
 #
-# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2010-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -82,6 +82,7 @@ pagesize = 0  # FIXME: add support
 nss_initgroups_ignoreusers = set()
 nss_min_uid = 0
 nss_nested_groups = False
+nss_getgrent_skipmembers = False
 validnames = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
 pam_authz_searches = []
 pam_password_prohibit_message = None
@@ -175,7 +176,7 @@ def read(filename):
             globals()[m.group('keyword').lower()] = int(m.group('value'))
             continue
         # parse options with a single boolean argument
-        m = re.match('(?P<keyword>referrals|nss_nested_groups)\s+(?P<value>%s)' %
+        m = re.match('(?P<keyword>referrals|nss_nested_groups|nss_getgrent_skipmembers)\s+(?P<value>%s)' %
                          '|'.join(_boolean_options.keys()),
                      line, re.IGNORECASE)
         if m:

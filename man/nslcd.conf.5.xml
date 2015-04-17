@@ -6,7 +6,7 @@
    nslcd.conf.5.xml - docbook manual page for nslcd.conf
 
    Copyright (C) 1997-2005 Luke Howard
-   Copyright (C) 2007-2014 Arthur de Jong
+   Copyright (C) 2007-2015 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -734,6 +734,25 @@
        Members of nested groups are also returned in the higher level group
        and parent groups are returned when finding groups for a specific user.
        The default is not to perform extra searches for nested groups.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry id="nss_getgrent_skipmembers"> <!-- since 0.9.6 -->
+     <term><option>nss_getgrent_skipmembers</option> yes|no</term>
+     <listitem>
+      <para>
+       If this option is set, the group member list is not retrieved when
+       looking up groups.
+       Lookups for finding which groups a user belongs to will remain
+       functional so the user will likely still get the correct groups
+       assigned on login.
+      </para>
+      <para>
+       This can offer a speed-up on systems that have very large groups.
+       It has the downside of returning inconsistent information about
+       group membership which may confuse some applications.
+       This option is not recommended for most configurations.
       </para>
      </listitem>
     </varlistentry>

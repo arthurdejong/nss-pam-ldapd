@@ -1,7 +1,7 @@
 
 # group.py - group entry lookup routines
 #
-# Copyright (C) 2010-2014 Arthur de Jong
+# Copyright (C) 2010-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -52,7 +52,9 @@ class Search(search.LDAPSearch):
 
     def __init__(self, *args, **kwargs):
         super(Search, self).__init__(*args, **kwargs)
-        if 'memberUid' in self.parameters or 'member' in self.parameters:
+        if (cfg.nss_getgrent_skipmembers or
+                'memberUid' in self.parameters or
+                'member' in self.parameters):
             # set up our own attributes that leave out membership attributes
             self.attributes = list(self.attributes)
             if attmap['memberUid'] in self.attributes:

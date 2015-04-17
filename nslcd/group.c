@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2014 Arthur de Jong
+   Copyright (C) 2006-2015 Arthur de Jong
    Copyright (C) 2013 Steve Hill
 
    This library is free software; you can redistribute it and/or
@@ -199,9 +199,12 @@ void group_init(void)
   set = set_new();
   attmap_add_attributes(set, attmap_group_cn);
   attmap_add_attributes(set, attmap_group_userPassword);
-  attmap_add_attributes(set, attmap_group_memberUid);
   attmap_add_attributes(set, attmap_group_gidNumber);
-  attmap_add_attributes(set, attmap_group_member);
+  if (!nslcd_cfg->nss_getgrent_skipmembers)
+  {
+    attmap_add_attributes(set, attmap_group_memberUid);
+    attmap_add_attributes(set, attmap_group_member);
+  }
   group_attrs = set_tolist(set);
   if (group_attrs == NULL)
   {
