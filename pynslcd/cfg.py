@@ -83,6 +83,7 @@ nss_initgroups_ignoreusers = set()
 nss_min_uid = 0
 nss_nested_groups = False
 nss_getgrent_skipmembers = False
+nss_disable_enumeration = False
 validnames = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
 pam_authz_searches = []
 pam_password_prohibit_message = None
@@ -254,6 +255,12 @@ def read(filename):
         if m:
             global deref
             deref = _deref_options[m.group('value').lower()]
+            continue
+        # nss_disable_enumeration
+        m = re.match('nss_disable_enumeration',
+                     line, re.IGNORECASE)
+        if m:
+            globals()['nss_disable_enumeration'] = True
             continue
         # nss_initgroups_ignoreusers <USER,USER>|<ALLLOCAL>
         m = re.match('nss_initgroups_ignoreusers\s+(?P<value>\S.*)',

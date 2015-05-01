@@ -126,6 +126,12 @@ class PasswdAllRequest(PasswdRequest):
 
     action = constants.NSLCD_ACTION_PASSWD_ALL
 
+    def handle_request(self, parameters):
+        if cfg.nss_disable_enumeration:
+            return
+        else:
+            return super(PasswdAllRequest, self).handle_request(parameters)
+
 
 def uid2entry(conn, uid):
     """Look up the user by uid and return the LDAP entry or None if the user

@@ -1148,6 +1148,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   int i;
   memset(cfg, 0, sizeof(struct ldap_config));
   cfg->threads = 5;
+  cfg->enumeration = 1;
   cfg->uidname = NULL;
   cfg->uid = NOUID;
   cfg->gid = NOGID;
@@ -1254,6 +1255,10 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       cfg->threads = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
+    }
+    else if (strcasecmp(keyword, "nss_disable_enumeration") == 0)
+    {
+      cfg->enumeration = 0;
     }
     else if (strcasecmp(keyword, "uid") == 0)
     {
@@ -1629,6 +1634,7 @@ static void cfg_dump(void)
   char buffer[1024];
   int *scopep;
   log_log(LOG_DEBUG, "CFG: threads %d", nslcd_cfg->threads);
+  log_log(LOG_DEBUG, "CFG: enumeration %d", nslcd_cfg->enumeration);
   if (nslcd_cfg->uidname != NULL)
     log_log(LOG_DEBUG, "CFG: uid %s", nslcd_cfg->uidname);
   else if (nslcd_cfg->uid != NOUID)

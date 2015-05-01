@@ -82,6 +82,7 @@ struct myldap_uri {
 
 struct ldap_config {
   int threads;    /* the number of threads to start */
+  int enumeration; /* enumeration turned on or off */
   char *uidname;  /* the user name specified in the uid option */
   uid_t uid;      /* the user id nslcd should be run as */
   gid_t gid;      /* the group id nslcd should be run as */
