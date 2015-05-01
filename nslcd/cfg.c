@@ -1256,7 +1256,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       cfg->threads = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
-    else if (strcasecmp(keyword, "disable_enumeration") == 0)
+    else if (strcasecmp(keyword, "nss_disable_enumeration") == 0)
     {
       cfg->enumeration = 0;
     }

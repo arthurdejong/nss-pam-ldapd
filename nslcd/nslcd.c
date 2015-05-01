@@ -392,7 +392,7 @@ static void handleconnection(int sock, MYLDAP_SESSION *session)
     case NSLCD_ACTION_GROUP_BYMEMBER:   (void)nslcd_group_bymember(fp, session); break;
     case NSLCD_ACTION_GROUP_ALL:
       if (nslcd_cfg->enumeration == 1) {
-	(void)nslcd_group_all(fp, session); 
+	(void)nslcd_group_all(fp, session);
       }
       break;
     case NSLCD_ACTION_HOST_BYNAME:      (void)nslcd_host_byname(fp, session); break;
@@ -405,7 +405,7 @@ static void handleconnection(int sock, MYLDAP_SESSION *session)
     case NSLCD_ACTION_NETWORK_ALL:      (void)nslcd_network_all(fp, session); break;
     case NSLCD_ACTION_PASSWD_BYNAME:    (void)nslcd_passwd_byname(fp, session, uid); break;
     case NSLCD_ACTION_PASSWD_BYUID:     (void)nslcd_passwd_byuid(fp, session, uid); break;
-    case NSLCD_ACTION_PASSWD_ALL:       
+    case NSLCD_ACTION_PASSWD_ALL:
       if (nslcd_cfg->enumeration == 1) {
 	(void)nslcd_passwd_all(fp, session, uid);
       }
