@@ -738,6 +738,23 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="disable_enumeration">
+     <term><option>disable_enumeration</option></term>
+     <listitem>
+      <para>
+       If this option is present, functions which cause all user/group entries
+       to be loaded (getpwent(), getgrent()) from the directory will not
+       succeed in doing so. Applications that depend on being able to
+       sequentially read all users and/or groups may fail to operate correctly.
+      </para>
+      <para>
+       This can dramatically reduce ldap server load in situations where there
+       are a great number of users and/or groups.
+       This option is not recommended for most configurations.
+      </para>
+     </listitem>
+    </varlistentry>
+
     <varlistentry id="nss_getgrent_skipmembers"> <!-- since 0.9.6 -->
      <term><option>nss_getgrent_skipmembers</option> yes|no</term>
      <listitem>
