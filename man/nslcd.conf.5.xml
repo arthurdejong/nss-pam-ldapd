@@ -757,6 +757,27 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="nss_disable_enumeration"> <!-- since 0.9.6 -->
+     <term><option>nss_disable_enumeration</option> yes|no</term>
+     <listitem>
+      <para>
+       If this option is set, functions which cause all user/group entries to
+       be loaded (getpwent(), getgrent(), setspent()) from the directory will
+       not succeed in doing so.
+       Applications that depend on being able to sequentially read all users
+       and/or groups may fail to operate correctly.
+      </para>
+      <para>
+       This can dramatically reduce <acronym>LDAP</acronym> server load in
+       situations where there are a great number of users and/or groups.
+       This is typically used in situations where user/program access to
+       enumerate the entire directory is undesirable, and changing the
+       behavior of the user/program is not possible.
+       This option is not recommended for most configurations.
+      </para>
+     </listitem>
+    </varlistentry>
+
     <varlistentry id="validnames"> <!-- since 0.8.2 -->
      <term><option>validnames</option> <replaceable>REGEX</replaceable></term>
      <listitem>

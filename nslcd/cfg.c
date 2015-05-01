@@ -1192,6 +1192,7 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->nss_min_uid = 0;
   cfg->nss_nested_groups = 0;
   cfg->nss_getgrent_skipmembers = 0;
+  cfg->nss_disable_enumeration = 0;
   cfg->validnames_str = NULL;
   handle_validnames(__FILE__, __LINE__, "",
                     "/^[a-z0-9._@$()]([a-z0-9._@$() \\~-]*[a-z0-9._@$()~-])?$/i",
@@ -1523,6 +1524,11 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       cfg->nss_getgrent_skipmembers = get_boolean(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
+    else if (strcasecmp(keyword, "nss_disable_enumeration") == 0)
+    {
+      cfg->nss_getgrent_skipmembers = get_boolean(filename, lnr, keyword, &line);
+      get_eol(filename, lnr, keyword, &line);
+    }
     else if (strcasecmp(keyword, "validnames") == 0)
     {
       handle_validnames(filename, lnr, keyword, line, cfg);
@@ -1792,6 +1798,7 @@ static void cfg_dump(void)
   log_log(LOG_DEBUG, "CFG: nss_min_uid %lu", (unsigned long int)nslcd_cfg->nss_min_uid);
   log_log(LOG_DEBUG, "CFG: nss_nested_groups %s", print_boolean(nslcd_cfg->nss_nested_groups));
   log_log(LOG_DEBUG, "CFG: nss_getgrent_skipmembers %s", print_boolean(nslcd_cfg->nss_getgrent_skipmembers));
+  log_log(LOG_DEBUG, "CFG: nss_disable_enumeration %s", print_boolean(nslcd_cfg->nss_disable_enumeration));
   log_log(LOG_DEBUG, "CFG: validnames %s", nslcd_cfg->validnames_str);
   log_log(LOG_DEBUG, "CFG: ignorecase %s", print_boolean(nslcd_cfg->ignorecase));
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)

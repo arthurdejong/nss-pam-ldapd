@@ -123,6 +123,7 @@ struct ldap_config {
   uid_t nss_min_uid;  /* minimum uid for users retrieved from LDAP */
   int nss_nested_groups; /* whether to expand nested groups */
   int nss_getgrent_skipmembers;  /* whether to skip member lookups */
+  int nss_disable_enumeration;  /* enumeration turned on or off */
   regex_t validnames; /* the regular expression to determine valid names */
   char *validnames_str; /* string version of validnames regexp */
   int ignorecase; /* whether or not case should be ignored in lookups */

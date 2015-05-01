@@ -83,6 +83,7 @@ nss_initgroups_ignoreusers = set()
 nss_min_uid = 0
 nss_nested_groups = False
 nss_getgrent_skipmembers = False
+nss_disable_enumeration = False
 validnames = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
 pam_authz_searches = []
 pam_password_prohibit_message = None
@@ -176,7 +177,7 @@ def read(filename):
             globals()[m.group('keyword').lower()] = int(m.group('value'))
             continue
         # parse options with a single boolean argument
-        m = re.match('(?P<keyword>referrals|nss_nested_groups|nss_getgrent_skipmembers)\s+(?P<value>%s)' %
+        m = re.match('(?P<keyword>referrals|nss_nested_groups|nss_getgrent_skipmembers|nss_disable_enumeration)\s+(?P<value>%s)' %
                          '|'.join(_boolean_options.keys()),
                      line, re.IGNORECASE)
         if m:

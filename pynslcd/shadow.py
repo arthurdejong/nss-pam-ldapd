@@ -19,6 +19,7 @@
 # 02110-1301 USA
 
 import cache
+import cfg
 import common
 import constants
 import search
@@ -125,3 +126,7 @@ class ShadowByNameRequest(ShadowRequest):
 class ShadowAllRequest(ShadowRequest):
 
     action = constants.NSLCD_ACTION_SHADOW_ALL
+
+    def handle_request(self, parameters):
+        if not cfg.nss_disable_enumeration:
+            return super(ShadowAllRequest, self).handle_request(parameters)

@@ -229,3 +229,7 @@ class GroupByMemberRequest(GroupRequest):
 class GroupAllRequest(GroupRequest):
 
     action = constants.NSLCD_ACTION_GROUP_ALL
+
+    def handle_request(self, parameters):
+        if not cfg.nss_disable_enumeration:
+            return super(GroupAllRequest, self).handle_request(parameters)
