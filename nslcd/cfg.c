@@ -143,7 +143,7 @@ static char *get_token(char **line, char *buf, size_t buflen)
 static char *get_strdup(const char *filename, int lnr,
                         const char *keyword, char **line)
 {
-  char token[64];
+  char token[MAX_LINE_LENGTH];
   check_argumentcount(filename, lnr, keyword,
                       get_token(line, token, sizeof(token)) != NULL);
   return xstrdup(token);
@@ -165,7 +165,7 @@ static void get_eol(const char *filename, int lnr,
 {
   if ((line != NULL) && (*line != NULL) && (**line != '\0'))
   {
-    log_log(LOG_ERR, "%s:%d: %s: too may arguments", filename, lnr, keyword);
+    log_log(LOG_ERR, "%s:%d: %s: too many arguments", filename, lnr, keyword);
     exit(EXIT_FAILURE);
   }
 }
