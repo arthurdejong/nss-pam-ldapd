@@ -282,7 +282,7 @@ char *sid2search(const char *sid)
   const char *tmpsid = sid;
   char *res, *tmp;
   int i = 0;
-  long int l;
+  long unsigned int l;
   /* check the beginning of the string */
   if (strncasecmp(sid, "S-", 2) != 0)
   {
@@ -304,20 +304,20 @@ char *sid2search(const char *sid)
     exit(1);
   }
   /* build the first part */
-  l = strtol(sid + 2, &tmp, 10);
-  sprintf(res, "\\%02x\\%02x", (int)l & 0xff, (int)i);
+  l = strtoul(sid + 2, &tmp, 10);
+  sprintf(res, "\\%02x\\%02x", (unsigned int)l & 0xff, (unsigned int)i);
   /* build authority part (we only handle 32 of the 48 bits) */
-  l = strtol(tmp + 1, &tmp, 10);
+  l = strtoul(tmp + 1, &tmp, 10);
   sprintf(res + strlen(res), "\\00\\00\\%02x\\%02x\\%02x\\%02x",
-          (int)((l >> 24) & 0xff), (int)((l >> 16) & 0xff),
-          (int)((l >> 8) & 0xff), (int)(l & 0xff));
+          (unsigned int)((l >> 24) & 0xff), (unsigned int)((l >> 16) & 0xff),
+          (unsigned int)((l >> 8) & 0xff), (unsigned int)(l & 0xff));
   /* go over the rest of the bits */
   while (*tmp != '\0')
   {
-    l = strtol(tmp + 1, &tmp, 10);
+    l = strtoul(tmp + 1, &tmp, 10);
     sprintf(res + strlen(res), "\\%02x\\%02x\\%02x\\%02x",
-            (int)(l & 0xff), (int)((l >> 8) & 0xff), (int)((l >> 16) & 0xff),
-            (int)((l >> 24) & 0xff));
+            (unsigned int)(l & 0xff), (unsigned int)((l >> 8) & 0xff), (unsigned int)((l >> 16) & 0xff),
+            (unsigned int)((l >> 24) & 0xff));
   }
   return res;
 }
@@ -327,11 +327,11 @@ long int binsid2id(const char *binsid)
 {
   int i;
   /* find the position of the last security id */
-  i = 2 + 6 + ((((int)binsid[1]) & 0xff) - 1) * 4;
-  return (((long int)binsid[i]) & 0xff) |
-         ((((long int)binsid[i + 1]) & 0xff) << 8) |
-         ((((long int)binsid[i + 2]) & 0xff) << 16) |
-         ((((long int)binsid[i + 3]) & 0xff) << 24);
+  i = 2 + 6 + ((((unsigned int)binsid[1]) & 0xff) - 1) * 4;
+  return (((long unsigned int)binsid[i]) & 0xff) |
+         ((((long unsigned int)binsid[i + 1]) & 0xff) << 8) |
+         ((((long unsigned int)binsid[i + 2]) & 0xff) << 16) |
+         ((((long unsigned int)binsid[i + 3]) & 0xff) << 24);
 }
 
 #ifdef WANT_STRTOUI
