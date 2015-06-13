@@ -805,7 +805,7 @@
        netgroup, passwd, protocols, rpc, services and shadow maps using
        case-insensitive matching.
        Setting this to <literal>yes</literal> could open up the system
-       to authorisation vulnerabilities and introduce nscd cache poisoning
+       to authorisation bypass vulnerabilities and introduce nscd cache poisoning
        vulnerabilities which allow denial of service.
        The default is to perform case-sensitve filtering of LDAP search
        results for the above maps.
@@ -868,22 +868,22 @@
            <replaceable>DB</replaceable>,<replaceable>DB</replaceable>,...</term>
      <listitem>
       <para>
-       If this option is set, on start-up and whenever a connection to the
-       <acronym>LDAP</acronym> server is re-established after an error
-       the specified caches are flushed.
+       If this option is set, <command>nslcd</command> will try to flush the
+       specified external caches on start-up and whenever a connection to the
+       <acronym>LDAP</acronym> server is re-established after an error.
       </para>
       <para>
-       If <replaceable>DB</replaceable> is one of the nsswitch maps,
-       <command>nscd</command> is contacted to flush its cache for the
-       specified database.
+       <replaceable>DB</replaceable> can refer to one of the nsswitch maps,
+       in which case <command>nscd</command> is contacted to flush its cache
+       for the specified database.
        <!-- since 0.9.1 -->
        If <replaceable>DB</replaceable> is <literal>nfsidmap</literal>,
        <command>nfsidmap</command> is contacted to clear its cache.
       </para>
       <para>
        Using this option ensures that external caches are cleared of
-       information (typically the absence of users) while the
-       <acronym>LDAP</acronym> server was unavailable.
+       incorrect information (typically the absence of users) that may
+       be present due to unavailability of the <acronym>LDAP</acronym> server.
       </para>
      </listitem>
     </varlistentry>
@@ -1059,8 +1059,8 @@
    backslash (<literal>\</literal>).
   </para>
   <para>
-   The expressions are checked to figure out which attributes to fetch
-   from <acronym>LDAP</acronym>.
+   The expressions are inspected to automatically fetch the appropriate
+   attributes from <acronym>LDAP</acronym>.
    Some examples to demonstrate how these expressions may be used in
    attribute mapping:
   </para>
