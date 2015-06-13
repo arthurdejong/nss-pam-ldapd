@@ -327,7 +327,7 @@ char *sid2search(const char *sid)
 }
 
 /* return the last security identifier of the binary sid */
-long int binsid2id(const char *binsid)
+unsigned long int binsid2id(const char *binsid)
 {
   int i;
   /* find the position of the last security id */

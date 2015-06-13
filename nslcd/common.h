@@ -104,7 +104,7 @@ int read_address(TFILE *fp, char *addr, int *addrlen, int *af);
 MUST_USE char *sid2search(const char *sid);
 
 /* return the last security identifier of the binary sid */
-MUST_USE long int binsid2id(const char *binsid);
+MUST_USE unsigned long int binsid2id(const char *binsid);
 
 /* checks to see if the specified string is a valid user or group name */
 MUST_USE int isvalidname(const char *name);
