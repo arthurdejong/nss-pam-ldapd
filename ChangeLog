@@ -1,3 +1,81 @@
+2015-06-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4236dd6] Makefile.am: Correctly insert emtpy lines in ChangeLog
+
+2015-06-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e916a2b] man/nslcd.conf.5.xml: Manual page improvements
+
+2015-06-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9a7921f] nslcd/common.c, nslcd/common.h: Also fix signed integer
+	  bug in binsid2id()
+
+	  This should have been part of d217632.
+
+2015-06-11  Geoffrey McRae <gnif@xbmc.org>
+
+	* [d217632] nslcd/common.c: Fixed signed 32bit overflow bug on
+	  32bit systems
+
+2015-05-23  Jed Liu <jed-nss-pam-ldapd-users@uma.litech.org>
+
+	* [3add5f0] nslcd/cfg.c: Allow configuration values longer than
+	  63 characters
+
+2015-03-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d58fba9] nss/netgroup.c: Provide innetgr function on Solaris
+
+	  This implements a function in the Solaris version of the NSS module
+	  to check if a specifc netgroup triplet is part of a netgroup.
+
+	  This also avoids a compiler warning and includes improvements
+	  and testing by Mark R Bannister.
+
+2015-05-01  Andrew Elble <aweits@rit.edu>
+
+	* [c0366d8] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/nslcd.c, pynslcd/cfg.py, pynslcd/group.py, pynslcd/passwd.py,
+	  pynslcd/shadow.py: Implement disable_enumeration
+
+	  If this option is present, functions which cause all user/group
+	  entries to be loaded (getpwent(), getgrent()) from the directory
+	  will not succeed in doing so. This can dramatically reduce
+	  ldap server load in situations where there are a great number
+	  of users and/or groups.  Applications that depend on being able
+	  to sequentially read all users and/or groups may fail to operate
+	  correctly. This option is not recommended for most configurations.
+
+2015-04-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [96045d2] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/group.c, pynslcd/cfg.py, pynslcd/group.py: Implement
+	  nss_getgrent_skipmembers
+
+	  This option allows skipping group member list retrieval to
+	  improve performance with very large groups. This option results
+	  in inconsistent group membership information being presented
+	  that may confuse some applications.
+
+2015-04-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [530cc24] nslcd/daemonize.c, nslcd/nslcd.c: Avoid signal race
+	  condition on start-up
+
+	  This only restores the signal mask after signal handlers are in
+	  place and the daemon has completely daemonised to avoid a race
+	  condition in the start-up phase of nslcd where a signal could
+	  be sent to nslcd causing it to quit or fail to write information
+	  to the parent process.
+
+2015-03-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [16fd8c6] AUTHORS, ChangeLog, NEWS, README, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/pam_ldap.8.xml, man/pynslcd.8.xml: Get files ready for
+	  0.9.5 release
+
 2015-03-11  Tim Rice <tim@multitalents.net>
 
 	* [ae08830] common/Makefile.am, compat/Makefile.am, configure.ac,
@@ -109,6 +187,7 @@
 	  This introduces the --with-module-name configure option to
 	  allow building of NSS and PAM modules with different namespaces
 	  than ldap.
+
 2015-01-12  Mark R Bannister <dbis@proseconsulting.co.uk>
 
 	* [ed8b312] nss/hosts.c: Fix uninitialised variable
@@ -132,13 +211,15 @@
 	  to exist
 
 	  See
-http://lists.arthurdejong.org/nss-pam-ldapd-users/2014/msg00166.html
+	  http://lists.arthurdejong.org/nss-pam-ldapd-users/2014/msg00166.html
+
 2014-10-10  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [4262122] nslcd/nslcd.c: Fix format string
 
-	  Thanks Jianhai Luan.	2014-10-04  Arthur de Jong
-<arthur@arthurdejong.org>
+	  Thanks Jianhai Luan.
+
+2014-10-04  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [1d3b19b] nslcd/nslcd.c: Block signals sooner to avoid race
 	  conditions
@@ -1349,6 +1430,7 @@ http://lists.arthurdejong.org/nss-pam-ldapd-users/2014/msg00166.html
 
 	  This allows the PAM module to request the
 	  pam_password_prohibit_message option for denying password change.
+
 2013-07-27  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [a3acbec] pynslcd/pam.py: Implement PAM session handling in pynslcd
@@ -1434,6 +1516,7 @@ http://lists.arthurdejong.org/nss-pam-ldapd-users/2014/msg00166.html
 
 	  This introduces an nfsidmap value for nscd_invalidate which will
 	  cause the nfsidmap -c command to be run.
+
 2013-07-17  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [d2e2e40] pynslcd/nscd.py: Fix nscd cache flushing bug in pynslcd

@@ -35,9 +35,9 @@
  <refmeta>
   <refentrytitle>chsh.ldap</refentrytitle>
   <manvolnum>1</manvolnum>
-  <refmiscinfo class="version">Version 0.9.5</refmiscinfo>
+  <refmiscinfo class="version">Version 0.9.6</refmiscinfo>
   <refmiscinfo class="manual">User Commands</refmiscinfo>
-  <refmiscinfo class="date">Mar 2015</refmiscinfo>
+  <refmiscinfo class="date">Jun 2015</refmiscinfo>
  </refmeta>
 
  <refnamediv id="name">

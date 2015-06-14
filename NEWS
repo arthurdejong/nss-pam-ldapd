@@ -1,3 +1,20 @@
+changes from 0.9.5 to 0.9.6
+---------------------------
+
+* fix a race condition in signal handling during start-up that would cause
+  nslcd to exit if a signal (such as SIGUSR1 that can be sent when network
+  status changes) is received
+* fix signed integer overflow on 32bit systems when using objectSid (thanks
+  Geoffrey McRae)
+* allow longer configuration values (thanks Jed Liu)
+* add an nss_getgrent_skipmembers option to disable retrieving group members
+  to improve performance in specific environments
+* add an nss_disable_enumeration option to disable full listing of all users
+  and groups to improve performance in specific environments (thanks Andrew
+  Elble)
+* implement an innetgr function in the Solaris NSS module
+
+
 changes from 0.9.4 to 0.9.5
 ---------------------------
 
