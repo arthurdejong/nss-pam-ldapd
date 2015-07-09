@@ -467,7 +467,7 @@ static void handle_ppasswd_controls(MYLDAP_SESSION *session, LDAP *ld, LDAPContr
             ((session->policy_response == NSLCD_PAM_SUCCESS) ||
              (session->policy_response == NSLCD_PAM_NEW_AUTHTOK_REQD)))
         {
-          session->policy_response = NSLCD_PAM_AUTHTOK_EXPIRED;
+          session->policy_response = NSLCD_PAM_NEW_AUTHTOK_REQD;
           mysnprintf(session->policy_message, sizeof(session->policy_message),
                      "%s", ldap_passwordpolicy_err2txt(error));
         }
@@ -498,14 +498,12 @@ static void handle_ppasswd_controls(MYLDAP_SESSION *session, LDAP *ld, LDAPContr
                  ((session->policy_response == NSLCD_PAM_SUCCESS) ||
                   (session->policy_response == NSLCD_PAM_NEW_AUTHTOK_REQD)))
         {
-          session->policy_response = NSLCD_PAM_NEW_AUTHTOK_REQD;
           mysnprintf(session->policy_message, sizeof(session->policy_message),
                      "Password will expire in %d seconds", expire);
         }
         else if ((grace >= 0) &&
                  (session->policy_response == NSLCD_PAM_SUCCESS))
         {
-          session->policy_response = NSLCD_PAM_NEW_AUTHTOK_REQD;
           mysnprintf(session->policy_message, sizeof(session->policy_message),
                      "Password expired, %d grace logins left", grace);
         }
