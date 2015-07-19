@@ -10,12 +10,12 @@
 for fname in INSTALL ar-lib compile depcomp install-sh missing \
              mkinstalldirs py-compile test-driver
 do
-  [ -r /usr/share/automake-1.14/$fname ] && \
-    cp -f /usr/share/automake-1.14/$fname $fname
+  [ -r /usr/share/automake-1.15/$fname ] && \
+    cp -f /usr/share/automake-1.15/$fname $fname
 done
 
 # generate aclocal.m4 from configure.ac
-aclocal
+aclocal -I m4
 
 # generate config.h.in from configure.ac
 autoheader --warnings=all --force

@@ -137,7 +137,7 @@ done
 
 # check for Position Independent Code compiler option
 PIC_CFLAGS=""
-if test "$ac_cv_prog_gcc" = "yes"
+if test "$ac_cv_c_compiler_gnu" = "yes"
 then
   PIC_CFLAGS="-fPIC"
 else
