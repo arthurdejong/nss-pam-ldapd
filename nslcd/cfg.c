@@ -1142,6 +1142,44 @@ static void check_permissions(const char *filename, const char *keyword)
   }
 }
 
+/* check whether the specified path is a file */
+static void check_file(const char *filename, int lnr,
+                       const char *keyword, const char *path)
+{
+  struct stat sb;
+  if (stat(path, &sb))
+  {
+    log_log(LOG_ERR, "%s:%d: %s: cannot stat() %s: %s",
+            filename, lnr, keyword, path, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  if (!S_ISREG(sb.st_mode))
+  {
+    log_log(LOG_ERR, "%s:%d: %s: %s is not a file",
+            filename, lnr, keyword, path);
+    exit(EXIT_FAILURE);
+  }
+}
+
+/* check whether the specified path is a directory */
+static void check_dir(const char *filename, int lnr,
+                      const char *keyword, const char *path)
+{
+  struct stat sb;
+  if (stat(path, &sb))
+  {
+    log_log(LOG_ERR, "%s:%d: %s: cannot stat() %s: %s",
+            filename, lnr, keyword, path, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  if (!S_ISDIR(sb.st_mode))
+  {
+    log_log(LOG_ERR, "%s:%d: %s: %s is not a directory",
+            filename, lnr, keyword, path);
+    exit(EXIT_FAILURE);
+  }
+}
+
 /* set the configuration information to the defaults */
 static void cfg_defaults(struct ldap_config *cfg)
 {
@@ -1442,7 +1480,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       value = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
-      /* TODO: check that the path is valid */
+      check_dir(filename, lnr, token, value);
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CACERTDIR,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CACERTDIR, value);
@@ -1453,7 +1491,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       value = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
-      /* TODO: check that the path is valid */
+      check_file(filename, lnr, keyword, value);
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CACERTFILE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CACERTFILE, value);
@@ -1463,7 +1501,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       value = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
-      /* TODO: check that the path is valid */
+      check_file(filename, lnr, keyword, value);
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_RANDOM_FILE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_RANDOM_FILE, value);
@@ -1481,7 +1519,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       value = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
-      /* TODO: check that the path is valid */
+      check_file(filename, lnr, keyword, value);
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CERTFILE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CERTFILE, value);
@@ -1491,7 +1529,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       value = get_strdup(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
-      /* TODO: check that the path is valid */
+      check_file(filename, lnr, keyword, value);
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_KEYFILE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_KEYFILE, value);
