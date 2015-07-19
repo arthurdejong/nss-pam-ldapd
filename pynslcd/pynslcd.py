@@ -311,8 +311,8 @@ if __name__ == '__main__':
         ctx = daemon.DaemonContext(
                       pidfile=pidfile,
                       signal_map={
-                          signal.SIGTERM: 'terminate',
-                          signal.SIGINT: 'terminate',
+                          signal.SIGTERM: u'terminate',
+                          signal.SIGINT: u'terminate',
                           signal.SIGPIPE: None,
                       })
     # start daemon
