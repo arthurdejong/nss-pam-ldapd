@@ -70,5 +70,5 @@ AC_DEFUN([AX_TLS], [
   AS_IF([test "$ac_cv_tls" != "none"],
     [AC_DEFINE_UNQUOTED([TLS],[$ac_cv_tls],[If the compiler supports a TLS storage class define it to that here])
      m4_ifnblank([$1],[$1])],
-    [m4_ifnblank([$2],[$2])])
+    m4_ifnblank([$2],[$2]))
 ])
