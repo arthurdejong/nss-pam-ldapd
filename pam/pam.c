@@ -581,9 +581,17 @@ int pam_sm_acct_mgmt(pam_handle_t *pamh, int flags,
     pam_syslog(pamh, LOG_DEBUG, "authorization succeeded");
   /* present any informational messages to the user */
   if ((authz_resp.msg[0] != '\0') && (!cfg.no_warn))
+  {
     pam_info(pamh, "%s", authz_resp.msg);
+    pam_syslog(pamh, LOG_INFO, "%s; user=%s",
+               authz_resp.msg, username);
+  }
   if ((ctx->saved_authz.msg[0] != '\0') && (!cfg.no_warn))
+  {
     pam_info(pamh, "%s", ctx->saved_authz.msg);
+    pam_syslog(pamh, LOG_INFO, "%s; user=%s",
+               ctx->saved_authz.msg, username);
+  }
   return PAM_SUCCESS;
 }
 
