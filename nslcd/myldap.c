@@ -1098,6 +1098,7 @@ void myldap_get_policy_response(MYLDAP_SESSION *session, int *response,
     *message = session->policy_message;
 }
 
+/* perform a search operation, the connection is assumed to be open */
 static int do_try_search(MYLDAP_SEARCH *search)
 {
   int ctrlidx = 0;
@@ -1109,10 +1110,6 @@ static int do_try_search(MYLDAP_SEARCH *search)
   char *deref_attrs[2];
 #endif /* HAVE_LDAP_CREATE_DEREF_CONTROL */
   int msgid;
-  /* ensure that we have an open connection */
-  rc = do_open(search->session);
-  if (rc != LDAP_SUCCESS)
-    return rc;
   /* if we're using paging, build a page control */
   if ((nslcd_cfg->pagesize > 0) && (search->scope != LDAP_SCOPE_BASE))
   {
@@ -1274,7 +1271,10 @@ static int do_retry_search(MYLDAP_SEARCH *search)
       {
         /* try to start the search */
         pthread_mutex_unlock(&uris_mutex);
-        rc = do_try_search(search);
+        /* ensure that we have an open connection and start a search */
+        rc = do_open(search->session);
+        if (rc == LDAP_SUCCESS)
+          rc = do_try_search(search);
         if (rc == LDAP_SUCCESS)
         {
           pthread_mutex_lock(&uris_mutex);
