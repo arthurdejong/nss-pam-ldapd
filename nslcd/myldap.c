@@ -1645,7 +1645,10 @@ MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp)
         /* close connection on some connection problems */
         if ((rc == LDAP_UNAVAILABLE) || (rc == LDAP_SERVER_DOWN) ||
             (rc == LDAP_SUCCESS) || (rc == LDAP_TIMELIMIT_EXCEEDED) ||
-            (rc == LDAP_OPERATIONS_ERROR) || (rc == LDAP_PROTOCOL_ERROR))
+            (rc == LDAP_OPERATIONS_ERROR) || (rc == LDAP_PROTOCOL_ERROR) ||
+            (rc == LDAP_BUSY) || (rc == LDAP_UNWILLING_TO_PERFORM) ||
+            (rc == LDAP_TIMEOUT) || (rc == LDAP_CONNECT_ERROR) ||
+            (rc == LDAP_NOT_SUPPORTED))
         {
           do_close(search->session);
           /* retry once if no data has been received yet */
