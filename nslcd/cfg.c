@@ -1205,6 +1205,9 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->scope = LDAP_SCOPE_SUBTREE;
   cfg->deref = LDAP_DEREF_NEVER;
   cfg->referrals = 1;
+#if defined(HAVE_LDAP_SASL_BIND) && defined(LDAP_SASL_SIMPLE)
+  cfg->pam_authc_ppolicy = 1;
+#endif
   cfg->bind_timelimit = 10;
   cfg->timelimit = LDAP_NO_LIMIT;
   cfg->idle_timelimit = 0;
@@ -1420,6 +1423,17 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     else if (strcasecmp(keyword, "map") == 0)
     {
       handle_map(filename, lnr, keyword, line);
+    }
+    else if (strcasecmp(keyword, "pam_authc_ppolicy") == 0)
+    {
+#if defined(HAVE_LDAP_SASL_BIND) && defined(LDAP_SASL_SIMPLE)
+      cfg->pam_authc_ppolicy = get_boolean(filename, lnr, keyword, &line);
+      get_eol(filename, lnr, keyword, &line);
+#else
+      log_log(LOG_ERR, "%s:%d: value %s not supported on platform",
+              filename, lnr, value);
+      exit(EXIT_FAILURE);
+#endif
     }
     /* timing/reconnect options */
     else if (strcasecmp(keyword, "bind_timelimit") == 0)
@@ -1770,6 +1784,9 @@ static void cfg_dump(void)
   LOG_ATTMAP(LM_SHADOW, shadow, shadowInactive);
   LOG_ATTMAP(LM_SHADOW, shadow, shadowExpire);
   LOG_ATTMAP(LM_SHADOW, shadow, shadowFlag);
+#if defined(HAVE_LDAP_SASL_BIND) && defined(LDAP_SASL_SIMPLE)
+  log_log(LOG_DEBUG, "CFG: pam_authc_ppolicy %s", print_boolean(nslcd_cfg->pam_authc_ppolicy));
+#endif
   log_log(LOG_DEBUG, "CFG: bind_timelimit %d", nslcd_cfg->bind_timelimit);
   log_log(LOG_DEBUG, "CFG: timelimit %d", nslcd_cfg->timelimit);
   log_log(LOG_DEBUG, "CFG: idle_timelimit %d", nslcd_cfg->idle_timelimit);

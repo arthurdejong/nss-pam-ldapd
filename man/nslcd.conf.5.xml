@@ -813,6 +813,18 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="pam_authc_ppolicy"> <!-- since 0.9.7 -->
+     <term><option>pam_authc_ppolicy</option> yes|no</term>
+     <listitem>
+      <para>
+       This option specifies whether password policy controls are requested
+       and handled from the <acronym>LDAP</acronym> server when performing
+       user authentication.
+       By default the controls are requested and handled if available.
+      </para>
+     </listitem>
+    </varlistentry>
+
     <varlistentry id="pam_authz_search"> <!-- since 0.7.4 -->
      <term><option>pam_authz_search</option>
            <replaceable>FILTER</replaceable></term>

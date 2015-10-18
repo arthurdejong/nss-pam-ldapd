@@ -529,19 +529,25 @@ static int do_ppolicy_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
   int msgid;
   struct timeval timeout;
   LDAPMessage *result;
-  /* build password policy request control */
-  passwd_policy_req.ldctl_oid = LDAP_CONTROL_PASSWORDPOLICYREQUEST;
-  passwd_policy_req.ldctl_value.bv_val = NULL; /* none */
-  passwd_policy_req.ldctl_value.bv_len = 0;
-  passwd_policy_req.ldctl_iscritical = 0; /* not critical */
-  requestctrls[0] = &passwd_policy_req;
+  /* build policy request if pam_authc_ppolicy is set */
+  if (nslcd_cfg->pam_authc_ppolicy)
+  {
+    passwd_policy_req.ldctl_oid = LDAP_CONTROL_PASSWORDPOLICYREQUEST;
+    passwd_policy_req.ldctl_value.bv_val = NULL; /* none */
+    passwd_policy_req.ldctl_value.bv_len = 0;
+    passwd_policy_req.ldctl_iscritical = 0; /* not critical */
+    requestctrls[0] = &passwd_policy_req;
+  }
+  else
+    requestctrls[0] = NULL;
   requestctrls[1] = NULL;
   /* build password berval */
   cred.bv_val = (char *)session->bindpw;
   cred.bv_len = strlen(session->bindpw);
   /* do a SASL simple bind with the binddn and bindpw */
-  log_log(LOG_DEBUG, "ldap_sasl_bind(\"%s\",%s) (uri=\"%s\")", session->binddn,
-          (session->bindpw[0] != '\0') ? "\"***\"" : "\"\"", uri);
+  log_log(LOG_DEBUG, "ldap_sasl_bind(\"%s\",%s) (uri=\"%s\") (ppolicy=%s)",
+          session->binddn, (session->bindpw[0] != '\0') ? "\"***\"" : "\"\"",
+          uri, (requestctrls[0] == NULL) ? "no" : "yes");
   rc = ldap_sasl_bind(ld, session->binddn, LDAP_SASL_SIMPLE, &cred, requestctrls, NULL, &msgid);
   if (rc != LDAP_SUCCESS)
     return rc;
@@ -571,21 +577,25 @@ static int do_ppolicy_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
       ldap_msgfree(result);
     return LDAP_TIMEOUT;
   }
-  /* parse the result from the bind operation (frees result, gets controls) */
   responsectrls = NULL;
-  parserc = ldap_parse_result(ld, result, &rc, NULL, NULL, NULL, &responsectrls, 1);
-  if (parserc != LDAP_SUCCESS)
+  /* ignore any response controls unless we're interested in ppolicy */
+  if (nslcd_cfg->pam_authc_ppolicy)
   {
-    myldap_err(LOG_ERR, ld, parserc, "ldap_parse_result() failed");
+    /* parse the result from the bind operation (frees result, gets controls) */
+    parserc = ldap_parse_result(ld, result, &rc, NULL, NULL, NULL, &responsectrls, 1);
+    if (parserc != LDAP_SUCCESS)
+    {
+      myldap_err(LOG_ERR, ld, parserc, "ldap_parse_result() failed");
+      if (responsectrls != NULL)
+        ldap_controls_free(responsectrls);
+      return parserc;
+    }
+    /* handle any returned controls */
     if (responsectrls != NULL)
+    {
+      handle_ppolicy_controls(session, ld, responsectrls);
       ldap_controls_free(responsectrls);
-    return parserc;
-  }
-  /* handle any returned controls */
-  if (responsectrls != NULL)
-  {
-    handle_ppolicy_controls(session, ld, responsectrls);
-    ldap_controls_free(responsectrls);
+    }
   }
   /* return the result of the BIND operation */
   if (rc != LDAP_SUCCESS)

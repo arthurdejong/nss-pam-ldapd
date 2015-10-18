@@ -107,6 +107,9 @@ struct ldap_config {
   int deref;      /* dereference aliases/links */
   int referrals;  /* chase referrals */
 
+#if defined(HAVE_LDAP_SASL_BIND) && defined(LDAP_SASL_SIMPLE)
+  int pam_authc_ppolicy;    /* whether to send password policy controls on bind */
+#endif
   int bind_timelimit;       /* bind timelimit */
   int timelimit;            /* search timelimit */
   int idle_timelimit;       /* idle timeout */
