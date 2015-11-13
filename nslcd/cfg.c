@@ -508,17 +508,10 @@ static void check_permissions(const char *filename, const char *keyword)
 static void check_readable(const char *filename, int lnr,
                        const char *keyword, const char *path)
 {
-  struct stat sb;
-  if (stat(path, &sb))
+  if (access(path, R_OK) != 0)
   {
-    log_log(LOG_ERR, "%s:%d: %s: cannot stat() %s: %s",
+    log_log(LOG_ERR, "%s:%d: %s: error accessing %s: %s",
             filename, lnr, keyword, path, strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-  if (!S_ISREG(sb.st_mode))
-  {
-    log_log(LOG_ERR, "%s:%d: %s: %s is not a file",
-            filename, lnr, keyword, path);
     exit(EXIT_FAILURE);
   }
 }
