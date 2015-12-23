@@ -3,6 +3,7 @@
 
    Copyright (C) 2009 Howard Chu
    Copyright (C) 2009-2014 Arthur de Jong
+   Copyright (C) 2015 Nokia Solutions and Networks
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -711,6 +712,14 @@ static int try_pwmod(MYLDAP_SESSION *oldsession,
     rc = myldap_passwd(session, userdn, oldpassword, newpassword);
     if (rc == LDAP_SUCCESS)
     {
+      /* if user modifies own password, update credentials for the session */
+      if (binddn == userdn)
+        if (myldap_set_credentials(session, binddn, newpassword)) {
+          log_log(LOG_WARNING, "%s: shadowLastChange: modification failed: %s",
+                  userdn, ldap_err2string(LDAP_LOCAL_ERROR));
+          myldap_session_close(session);
+          return rc;
+        }
       /* try to update the shadowLastChange attribute */
       if (update_lastchange(session, userdn) != LDAP_SUCCESS)
         /* retry with the normal session */
