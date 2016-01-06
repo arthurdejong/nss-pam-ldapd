@@ -714,9 +714,11 @@ static int try_pwmod(MYLDAP_SESSION *oldsession,
     {
       /* if user modifies own password, update credentials for the session */
       if (binddn == userdn)
-        if (myldap_set_credentials(session, binddn, newpassword)) {
+        if (myldap_set_credentials(session, binddn, newpassword))
+        {
+          rc = LDAP_LOCAL_ERROR;
           log_log(LOG_WARNING, "%s: shadowLastChange: modification failed: %s",
-                  userdn, ldap_err2string(LDAP_LOCAL_ERROR));
+                  userdn, ldap_err2string(rc));
           myldap_session_close(session);
           return rc;
         }
