@@ -40181,8 +40181,26 @@ dn: cn=testhost2,ou=hosts,dc=test,dc=tld
 objectClass: top
 objectClass: ieee802Device
 objectClass: device
+objectClass: ipHost
 cn: testhost2
 macAddress: 0:18:8a:54:1a:8b
+ipHostNumber: 192.0.2.124
+ipHostNumber: 2001:db8::dead:beef
+
+dn: cn=testhost3,ou=hosts,dc=test,dc=tld
+objectClass: top
+objectClass: device
+objectClass: ipHost
+cn: testhost3
+ipHostNumber: 2001:db8::feed:c0de
+
+dn: cn=testhost4,ou=hosts,dc=test,dc=tld
+objectClass: top
+objectClass: device
+objectClass: ipHost
+cn: testhost4
+ipHostNumber: 2001:db8::7e27:ac1d
+ipHostNumber: 192.0.2.126
 
 dn: ou=networks,dc=test,dc=tld
 objectClass: top

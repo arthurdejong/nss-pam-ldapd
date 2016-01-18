@@ -245,11 +245,43 @@ check "getent hosts 192.0.2.123" << EOM
 192.0.2.123        testhost testhostalias
 EOM
 
-check "getent hosts | grep testhost" << EOM
+check "getent hosts | grep testhost | sort" << EOM
 192.0.2.123        testhost testhostalias
+192.0.2.124        testhost2
+192.0.2.126        testhost4
 EOM
 
-# TODO: add more tests for IPv6 support
+check "getent hosts 2001:db8::dead:beef" << EOM
+2001:db8::dead:beef testhost2
+EOM
+
+check "getent ahosts testhost2" << EOM
+2001:db8::dead:beef STREAM testhost2
+2001:db8::dead:beef DGRAM
+2001:db8::dead:beef RAW
+192.0.2.124     STREAM
+192.0.2.124     DGRAM
+192.0.2.124     RAW
+EOM
+
+check "getent hosts testhost3" << EOM
+2001:db8::feed:c0de testhost3
+EOM
+
+check "getent ahosts testhost3" << EOM
+2001:db8::feed:c0de STREAM testhost3
+2001:db8::feed:c0de DGRAM
+2001:db8::feed:c0de RAW
+EOM
+
+check "getent ahosts testhost4" << EOM
+2001:db8::7e27:ac1d STREAM testhost4
+2001:db8::7e27:ac1d DGRAM
+2001:db8::7e27:ac1d RAW
+192.0.2.126     STREAM
+192.0.2.126     DGRAM
+192.0.2.126     RAW
+EOM
 
 fi  # end of hosts tests
 
