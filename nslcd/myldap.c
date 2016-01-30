@@ -406,6 +406,63 @@ static int do_sasl_interact(LDAP UNUSED(*ld), unsigned UNUSED(flags),
   }
 
 #if defined(HAVE_LDAP_SASL_BIND) && defined(LDAP_SASL_SIMPLE)
+static void print_ppolicy_expiry(MYLDAP_SESSION *session, unsigned int sec)
+{
+  unsigned int days = 0;
+  unsigned int hours = 0;
+  unsigned int minutes = 0;
+  /* return this warning so PAM can present it to the user */
+  if (strlen(session->policy_message) != 0)
+    return;
+  if (sec > 24 * 3600)
+  {
+    days = sec / (24 * 3600);
+    sec -= days * 24 * 3600;
+  }
+  if (sec > 3600)
+  {
+    hours = sec / 3600;
+    sec -= (hours * 3600);
+  }
+  if (sec > 60)
+  {
+    minutes = sec / 60;
+    sec -= minutes * 60;
+  }
+  if (days > 1)
+    mysnprintf(session->policy_message, sizeof(session->policy_message),
+               "Password will expires in %u days", days);
+  else if (days > 0)
+    mysnprintf(session->policy_message, sizeof(session->policy_message),
+               "Password will expires in %u hours", hours + 24);
+  else if (hours > 1)
+  {
+    if (minutes > 1)
+      mysnprintf(session->policy_message, sizeof(session->policy_message),
+                 "Password will expires in %u hours and %u minutes",
+                 hours, minutes);
+    else
+      mysnprintf(session->policy_message, sizeof(session->policy_message),
+                 "Password will expires in %u hours", hours);
+  }
+  else if (hours > 0)
+    mysnprintf(session->policy_message, sizeof(session->policy_message),
+               "Password will expires in %u minutes", minutes + 60);
+  else if (minutes > 1)
+  {
+    if (sec > 1)
+      mysnprintf(session->policy_message, sizeof(session->policy_message),
+                 "Password will expires in %u minutes and %u seconds",
+                 minutes, sec);
+    else
+      mysnprintf(session->policy_message, sizeof(session->policy_message),
+                 "Password will expires in %u minutes", minutes);
+  }
+  else
+    mysnprintf(session->policy_message, sizeof(session->policy_message),
+               "Password will expires in %u seconds", sec);
+}
+
 static void handle_ppolicy_controls(MYLDAP_SESSION *session, LDAP *ld, LDAPControl **ctrls)
 {
   int i;
@@ -434,12 +491,7 @@ static void handle_ppolicy_controls(MYLDAP_SESSION *session, LDAP *ld, LDAPContr
       sec = atol(seconds);
       log_log(LOG_DEBUG, "got LDAP_CONTROL_PWEXPIRING (password will expire in %ld seconds)",
               sec);
-      /* return this warning so PAM can present it to the user */
-      if (strlen(session->policy_message) == 0)
-      {
-        mysnprintf(session->policy_message, sizeof(session->policy_message),
-                   "password will expire in %ld seconds",  sec);
-      }
+      print_ppolicy_expiry(session, (unsigned int)sec);
     }
     else if (strcmp(ctrls[i]->ldctl_oid, LDAP_CONTROL_PASSWORDPOLICYRESPONSE) == 0)
     {
@@ -503,8 +555,7 @@ static void handle_ppolicy_controls(MYLDAP_SESSION *session, LDAP *ld, LDAPContr
         {
           /* if no other error has happened, this indicates that the password
              will soon expire (number of seconds) */
-          mysnprintf(session->policy_message, sizeof(session->policy_message),
-                     "Password will expire in %d seconds", expire);
+          print_ppolicy_expiry(session, (unsigned int)expire);
         }
         else if ((grace >= 0) && (strlen(session->policy_message) == 0))
         {
