@@ -1566,7 +1566,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     }
     else if (strcasecmp(keyword, "nss_disable_enumeration") == 0)
     {
-      cfg->nss_getgrent_skipmembers = get_boolean(filename, lnr, keyword, &line);
+      cfg->nss_disable_enumeration = get_boolean(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
     else if (strcasecmp(keyword, "validnames") == 0)
