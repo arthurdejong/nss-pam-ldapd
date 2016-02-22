@@ -512,7 +512,7 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags,
                username, resp.msg);
     rc = pam_set_item(pamh, PAM_USER, resp.msg);
     /* empty the username in the context to not loose our context */
-    if (ctx->username == NULL)
+    if (ctx->username != NULL)
     {
       free(ctx->username);
       ctx->username = NULL;
