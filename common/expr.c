@@ -2,7 +2,7 @@
    expr.c - limited shell-like expression parsing functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2009-2016 Arthur de Jong
    Copyright (c) 2012 Thorsten Glaser <t.glaser@tarent.de>
 
    This library is free software; you can redistribute it and/or
@@ -81,6 +81,99 @@ MUST_USE static const char *parse_expression(
               const char *str, int *ptr, int endat, char *buffer, size_t buflen,
               expr_expander_func expander, void *expander_arg);
 
+/* handle ${attr:-word} expressions */
+MUST_USE static const char *parse_dollar_default(
+              const char *str, int *ptr, char *buffer, size_t buflen,
+              expr_expander_func expander, void *expander_arg,
+              const char *varvalue)
+{
+  if ((varvalue != NULL) && (*varvalue != '\0'))
+  {
+    /* value is set, skip rest of expression and use value */
+    if (parse_expression(str, ptr, '}', buffer, buflen, empty_expander, NULL) == NULL)
+      return NULL;
+    if (strlen(varvalue) >= buflen)
+      return NULL;
+    strcpy(buffer, varvalue);
+  }
+  else
+  {
+    /* value is not set, evaluate rest of expression */
+    if (parse_expression(str, ptr, '}', buffer, buflen, expander, expander_arg) == NULL)
+      return NULL;
+  }
+  return buffer;
+}
+
+/* handle ${attr:+word} expressions */
+MUST_USE static const char *parse_dollar_alternative(
+              const char *str, int *ptr, char *buffer, size_t buflen,
+              expr_expander_func expander, void *expander_arg,
+              const char *varvalue)
+{
+  if ((varvalue != NULL) && (*varvalue != '\0'))
+  {
+    /* value is set, evaluate rest of expression */
+    if (parse_expression(str, ptr, '}', buffer, buflen, expander, expander_arg) == NULL)
+      return NULL;
+  }
+  else
+  {
+    /* value is not set, skip rest of expression and blank */
+    if (parse_expression(str, ptr, '}', buffer, buflen, empty_expander, NULL) == NULL)
+      return NULL;
+    buffer[0] = '\0';
+  }
+  return buffer;
+}
+
+/* handle ${attr#word} expressions */
+MUST_USE static const char *parse_dollar_match(
+              const char *str, int *ptr, char *buffer, size_t buflen,
+              const char *varvalue)
+{
+  char c;
+  const char *cp, *vp;
+  int ismatch;
+  size_t vallen;
+  cp = str + *ptr;
+  vp = varvalue;
+  ismatch = 1;
+  while (((c = *cp++) != '\0') && (c != '}'))
+  {
+    if (ismatch && (*vp =='\0'))
+      ismatch = 0; /* varvalue shorter than trim string */
+    if (c == '?')
+    {
+      /* match any one character */
+      vp++;
+      continue;
+    }
+    if (c == '\\')
+    {
+      if ((c = *cp++) == '\0')
+        return NULL; /* end of input: syntax error */
+      /* escape the next character c */
+    }
+    if (ismatch && (*vp != c))
+      ismatch = 0; /* they differ */
+    vp++;
+  }
+  if (c == '\0')
+    return NULL; /* end of input: syntax error */
+  /* at this point, cp points to after the closing } */
+  (*ptr) = cp - str - 1;
+  /* if ismatch, vp points to the beginning of the
+     data after trimming, otherwise vp is invalid */
+  if (!ismatch)
+    vp = varvalue;
+  /* now copy the (trimmed or not) value to the buffer */
+  if ((vallen = strlen(vp) + 1) > buflen)
+    return NULL;
+  memcpy(buffer, vp, vallen);
+  return buffer;
+}
+
 MUST_USE static const char *parse_dollar_expression(
               const char *str, int *ptr, char *buffer, size_t buflen,
               expr_expander_func expander, void *expander_arg)
@@ -109,82 +202,22 @@ MUST_USE static const char *parse_dollar_expression(
     {
       /* if variable is not set or empty, substitute remainder */
       (*ptr) += 2;
-      if ((varvalue != NULL) && (*varvalue != '\0'))
-      {
-        /* value is set, skip rest of expression and use value */
-        if (parse_expression(str, ptr, '}', buffer, buflen, empty_expander, NULL) == NULL)
-          return NULL;
-        if (strlen(varvalue) >= buflen)
-          return NULL;
-        strcpy(buffer, varvalue);
-      }
-      else
-      {
-        /* value is not set, evaluate rest of expression */
-        if (parse_expression(str, ptr, '}', buffer, buflen, expander, expander_arg) == NULL)
-          return NULL;
-      }
+      if (parse_dollar_default(str, ptr, buffer, buflen, expander, expander_arg, varvalue) == NULL)
+        return NULL;
     }
     else if (strncmp(str + *ptr, ":+", 2) == 0)
     {
-      /* if variable is set, substitute remainer */
+      /* if variable is set, substitute remainder */
       (*ptr) += 2;
-      if ((varvalue != NULL) && (*varvalue != '\0'))
-      {
-        /* value is set, evaluate rest of expression */
-        if (parse_expression(str, ptr, '}', buffer, buflen, expander, expander_arg) == NULL)
-          return NULL;
-      }
-      else
-      {
-        /* value is not set, skip rest of expression and blank */
-        if (parse_expression(str, ptr, '}', buffer, buflen, empty_expander, NULL) == NULL)
-          return NULL;
-        buffer[0] = '\0';
-      }
+      if (parse_dollar_alternative(str, ptr, buffer, buflen, expander, expander_arg, varvalue) == NULL)
+        return NULL;
     }
     else if (str[*ptr] == '#')
     {
-      char c;
-      const char *cp, *vp;
-      int ismatch;
-      size_t vallen;
+      /* try to strip the remainder value from variable beginning */
       (*ptr) += 1;
-      cp = str + *ptr;
-      vp = varvalue;
-      ismatch = 1;
-      while (((c = *cp++) != '\0') && (c != '}'))
-      {
-        if (ismatch && (*vp =='\0'))
-          ismatch = 0; /* varvalue shorter than trim string */
-        if (c == '?')
-        {
-          /* match any one character */
-          vp++;
-          continue;
-        }
-        if (c == '\\')
-        {
-          if ((c = *cp++) == '\0')
-            return NULL; /* end of input: syntax error */
-          /* escape the next character c */
-        }
-        if (ismatch && (*vp != c))
-          ismatch = 0; /* they differ */
-        vp++;
-      }
-      if (c == '\0')
-        return NULL; /* end of input: syntax error */
-      /* at this point, cp points to after the closing } */
-      (*ptr) = cp - str - 1;
-      /* if ismatch, vp points to the beginning of the
-         data after trimming, otherwise vp is invalid */
-      if (!ismatch)
-        vp = varvalue;
-      /* now copy the (trimmed or not) value to the buffer */
-      if ((vallen = strlen(vp) + 1) > buflen)
+      if (parse_dollar_match(str, ptr, buffer, buflen, varvalue) == NULL)
         return NULL;
-      memcpy(buffer, vp, vallen);
     }
     else
       return NULL;
