@@ -3,6 +3,7 @@
    This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2009, 2011, 2012, 2013 Arthur de Jong
+   Copyright (c) 2016 Giovanni Mascellani
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -104,6 +105,21 @@ static void test_expr_parse(void)
   assertstreq(buffer, "foobar");
   assert(expr_parse("${userPassword#{crypt\\}}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
   assertstreq(buffer, "HASH");
+  /* test ${var:offset:length} */
+  assert(expr_parse("${test1:0:6}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "foobar");
+  assert(expr_parse("${test1:0:10}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "foobar");
+  assert(expr_parse("${test1:0:3}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "foo");
+  assert(expr_parse("${test1:3:0}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "");
+  assert(expr_parse("${test1:3:6}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "bar");
+  assert(expr_parse("${test1:7:0}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "");
+  assert(expr_parse("${test1:7:3}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "");
   /* these are errors */
   assert(expr_parse("$&", buffer, sizeof(buffer), expanderfn, NULL) == NULL);
   assert(expr_parse("${a", buffer, sizeof(buffer), expanderfn, NULL) == NULL);

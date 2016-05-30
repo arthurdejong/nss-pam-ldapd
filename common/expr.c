@@ -4,6 +4,7 @@
 
    Copyright (C) 2009-2016 Arthur de Jong
    Copyright (c) 2012 Thorsten Glaser <t.glaser@tarent.de>
+   Copyright (c) 2016 Giovanni Mascellani <gio@debian.org>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -26,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include "expr.h"
 #include "compat/attrs.h"
@@ -36,6 +38,11 @@
 static inline int my_isalpha(const char c)
 {
   return ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z'));
+}
+
+static inline int my_isdigit(const char c)
+{
+  return (c >= '0') && (c <= '9');
 }
 
 static inline int my_isalphanum(const char c)
@@ -127,6 +134,43 @@ MUST_USE static const char *parse_dollar_alternative(
   return buffer;
 }
 
+/* handle ${attr:offset:length} expressions */
+MUST_USE static const char *parse_dollar_substring(
+              const char *str, int *ptr, char *buffer, size_t buflen,
+              const char *varvalue)
+{
+  char *tmp;
+  unsigned long int offset, length;
+  size_t varlen;
+  /* parse input */
+  tmp = (char *)str + *ptr;
+  if (!my_isdigit(*tmp))
+    return NULL;
+  errno = 0;
+  offset = strtoul(tmp, &tmp, 10);
+  if ((*tmp != ':') || (errno != 0))
+    return NULL;
+  tmp += 1;
+  errno = 0;
+  length = strtoul(tmp, &tmp, 10);
+  if ((*tmp != '}') || (errno != 0))
+    return NULL;
+  /* don't skip closing '}' here, because it will be skipped later */
+  *ptr += tmp - (str + *ptr);
+  varlen = strlen(varvalue);
+  if (offset > varlen)
+    offset = varlen;
+  if (offset + length > varlen)
+    length = varlen - offset;
+  if (length >= buflen)
+    return NULL;
+  /* everything's ok, copy data; we use memcpy instead of strncpy
+     because we already know the exact lenght in play */
+  memcpy(buffer, varvalue + offset, length);
+  buffer[length] = '\0';
+  return buffer;
+}
+
 /* handle ${attr#word} expressions */
 MUST_USE static const char *parse_dollar_match(
               const char *str, int *ptr, char *buffer, size_t buflen,
@@ -210,6 +254,13 @@ MUST_USE static const char *parse_dollar_expression(
       /* if variable is set, substitute remainder */
       (*ptr) += 2;
       if (parse_dollar_alternative(str, ptr, buffer, buflen, expander, expander_arg, varvalue) == NULL)
+        return NULL;
+    }
+    else if (str[*ptr] == ':')
+    {
+      /* substitute substring of variable */
+      (*ptr) += 1;
+      if (parse_dollar_substring(str, ptr, buffer, buflen, varvalue) == NULL)
         return NULL;
     }
     else if (str[*ptr] == '#')

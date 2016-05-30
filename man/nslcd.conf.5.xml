@@ -1031,6 +1031,17 @@
      is set, otherwise substitute the empty string
     </para></listitem>
    </varlistentry>
+   <varlistentry> <!-- since 0.9.7 -->
+     <term><literal>${attr:offset:length}</literal></term>
+     <listitem><para>
+       will substitute <literal>length</literal> characters (actually
+       bytes) starting from position <literal>offset</literal> (which
+       is counted starting at zero); the substituted string is
+       truncated if it is too long; in particular, it can be of length
+       zero (if <literal>length</literal> is zero or
+       <literal>offset</literal> falls out of the original string)
+     </para></listitem>
+   </varlistentry>
    <varlistentry> <!-- since 0.9.0 -->
     <term><literal>${attr#word}</literal></term>
     <listitem><para>
