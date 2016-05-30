@@ -1027,7 +1027,7 @@
    <varlistentry>
     <term><literal>${attr:+word}</literal></term>
     <listitem><para>
-     (use alternative) will substitbute <literal>word</literal> if attribute
+     (use alternative) will substitute <literal>word</literal> if attribute
      is set, otherwise substitute the empty string
     </para></listitem>
    </varlistentry>
