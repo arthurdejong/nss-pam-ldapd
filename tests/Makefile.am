@@ -22,7 +22,7 @@ TESTS = test_dict test_set test_tio test_expr test_getpeercred test_cfg \
         test_attmap test_myldap.sh test_common test_nsscmds.sh \
         test_pamcmds.sh test_manpages.sh test_clock test_tio_timeout
 if HAVE_PYTHON
-  TESTS += test_pycompile.sh test_pylint.sh
+  TESTS += test_pycompile.sh test_pylint.sh test_doctest.sh
 endif
 if ENABLE_PYNSLCD
   TESTS += test_pynslcd_cache.py
@@ -39,7 +39,8 @@ check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
 EXTRA_DIST = README nslcd-test.conf usernames.txt testenv.sh test_myldap.sh \
              test_nsscmds.sh  test_pamcmds.sh test_pamcmds.expect \
              test_manpages.sh \
-             test_pycompile.sh test_pylint.sh pylint.rc test_pynslcd_cache.py \
+             test_pycompile.sh test_pylint.sh pylint.rc test_doctest.sh \
+             test_pynslcd_cache.py \
              setup_slapd.sh config.ldif test.ldif
 
 CLEANFILES = $(EXTRA_PROGRAMS)
