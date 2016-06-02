@@ -77,7 +77,7 @@ class ExpressionMapping(str):
 
     def __init__(self, value):
         """Parse the expression as a string."""
-        self.expression = Expression(value)
+        self.expression = Expression(value[1:-1])
         super(ExpressionMapping, self).__init__(value)
 
     def values(self, variables):
@@ -127,7 +127,7 @@ class Attributes(dict):
     def __setitem__(self, attribute, mapping):
         # translate the mapping into a mapping object
         if mapping[0] == '"' and mapping[-1] == '"':
-            mapping = ExpressionMapping(mapping[1:-1])
+            mapping = ExpressionMapping(mapping)
         elif '(' in mapping:
             mapping = FunctionMapping(mapping)
         else:
