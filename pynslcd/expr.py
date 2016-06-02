@@ -48,6 +48,22 @@
 'this is a '
 >>> Expression('${var%%t*st}').value(dict(var='this is a test'))
 ''
+
+>>> Expression('${test1:0:6}').value(dict(test1='foobar'))
+'foobar'
+>>> Expression('${test1:0:10}').value(dict(test1='foobar'))
+'foobar'
+>>> Expression('${test1:0:3}').value(dict(test1='foobar'))
+'foo'
+>>> Expression('${test1:3:0}').value(dict(test1='foobar'))
+''
+>>> Expression('${test1:3:6}').value(dict(test1='foobar'))
+'bar'
+>>> Expression('${test1:7:0}').value(dict(test1='foobar'))
+''
+>>> Expression('${test1:7:3}').value(dict(test1='foobar'))
+''
+
 """
 
 import fnmatch
@@ -74,6 +90,9 @@ class MyIter(object):
             return self.value[self.pos - 1]
         except IndexError:
             return None
+
+    def startswith(self, value):
+        return self.value[self.pos].startswith(value)
 
     def back(self):
         self.pos -= 1
@@ -107,7 +126,12 @@ class DollarExpression(object):
             if c == '}':
                 return
             elif c == ':':
-                self.op = c + value.next()
+                if value.startswith('-') or value.startswith('+'):
+                    # ${attr:-word} or ${attr:+word}
+                    self.op = c + value.next()
+                else:
+                    # ${attr:offset:length}
+                    self.op = c
             elif c in ('#', '%'):
                 c2 = value.next()
                 if c2 in ('#', '%'):
@@ -145,6 +169,10 @@ class DollarExpression(object):
             return value if value else self.expr.value(variables)
         elif self.op == ':+':
             return self.expr.value(variables) if value else ''
+        elif self.op == ':':
+            offset, length = self.expr.value(variables).split(':')
+            offset, length = int(offset), int(length)
+            return value[offset:offset + length]
         elif self.op in ('#', '##', '%', '%%'):
             match = fnmatch.translate(self.expr.value(variables))
             if self.op == '#':
