@@ -149,7 +149,7 @@ static void update_username(MYLDAP_ENTRY *entry, char *username,
     return;
   }
   /* check if the username is different and update it if needed */
-  if (strcmp(username, value) != 0)
+  if (STR_CMP(username, value) != 0)
   {
     log_log(LOG_INFO, "username changed from \"%s\" to \"%s\"",
             username, value);
