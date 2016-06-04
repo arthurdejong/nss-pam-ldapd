@@ -23,7 +23,9 @@ set -e
 
 # find source directory
 srcdir="${srcdir-`dirname "$0"`}"
+builddir="${builddir-`dirname "$0"`}"
 top_srcdir="${top_srcdir-${srcdir}/..}"
+top_builddir="${top_builddir-${builddir}/..}"
 python="${PYTHON-python}"
 
 # if Python is missing, ignore
@@ -34,8 +36,8 @@ then
 fi
 
 # run doctests
-for dir in "$top_srcdir"/pynslcd "$top_srcdir"/utils
+for dir in pynslcd utils
 do
-  echo "Running doctests in `basename $dir`..."
-  (cd "$dir"; ${python} -m doctest -v *.py)
+  echo "Running doctests in $dir..."
+  PYTHONPATH="${top_builddir}/${dir}" ${python} -m doctest -v "${top_srcdir}/${dir}"/*.py
 done
