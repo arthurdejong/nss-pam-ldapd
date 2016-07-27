@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2016 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -38,5 +38,5 @@ install-data-hook:
 	$(MKDIR_P) $(DESTDIR)$(bindir)
 	set -ex; for cmd in getent chsh ; do \
 	  chmod a+rx $(DESTDIR)$(utilsdir)/$$cmd.py ; \
-	  [ -L $(DESTDIR)$(bindir)/$$cmd.ldap ] || $(LN_S) $(utilsdir)/$$cmd.py $(DESTDIR)$(bindir)/$$cmd.ldap ; \
+	  [ -L $(DESTDIR)$(bindir)/$$cmd.$(MODULE_NAME) ] || $(LN_S) $(utilsdir)/$$cmd.py $(DESTDIR)$(bindir)/$$cmd.$(MODULE_NAME) ; \
 	done

@@ -3,7 +3,7 @@
 
 # getent.py - program for querying nslcd
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2016 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -43,7 +43,8 @@ Report bugs to <%s>.
 # set up command line parser
 parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter,
-    description='Query information in LDAP via nslcd.',
+    description='Query information in %s via nslcd.' %
+    constants.MODULE_NAME.upper(),
     epilog=epilog)
 parser.add_argument('-V', '--version', action=VersionAction)
 parser.add_argument('database', metavar='DATABASE',
