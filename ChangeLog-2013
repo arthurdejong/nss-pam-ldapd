@@ -1,0 +1,1274 @@
+2013-12-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e3f0453] configure.ac: Re-organise ldap function tests
+
+2013-12-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3ce5ef9] : Make dn2uid cache tuneable
+
+	  This introduces a new cache configuration option that allows
+	  setting positive and negative cache lifetimes for the dn2uid cache.
+
+	* [19f3cc3] tests/test_cfg.c: Add a test for new configuration option
+
+	* [09969cf] man/nslcd.conf.5.xml: Document cache option in
+	  manual page
+
+	* [a0c90d2] nslcd/passwd.c: Use dn2uid cache options
+
+	  The configuration values are used in the cache to determine
+	  positive and negative hit TTLs. This also allows completely
+	  disabling the cache.
+
+	* [99ad1b4] nslcd/cfg.c, nslcd/cfg.h: Implement a cache configuration
+	  option
+
+	  This adds the cache nslcd.conf configuration option to configure
+	  the dn2uid cache in nslcd with a positive and negative cache
+	  lifetime.
+
+2013-12-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [82bac61] nslcd/passwd.c: Have positive and negative cache timeouts
+
+	  The positive value determines the time a found entry is valid,
+	  the negative timeout determines the lifetime of not found entries.
+
+	* [b9ec6df] nslcd/cfg.c: Support printing children search scope
+
+	  This fixes 2caeef4.
+
+2013-12-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9f02853] nslcd/alias.c, nslcd/common.c, nslcd/common.h,
+	  nslcd/ether.c, nslcd/group.c, nslcd/host.c, nslcd/myldap.c,
+	  nslcd/netgroup.c, nslcd/network.c, nslcd/pam.c, nslcd/passwd.c,
+	  nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c,
+	  nslcd/usermod.c: Centralise buffer sizes
+
+	  Common buffer sizes are now stored centrally so it can be easily
+	  and consistently updated if required. Some buffers remain with
+	  locally defined sizes that do not match a global buffer size.
+
+2013-11-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [23a41ce] compat/pam_get_authtok.c, compat/pam_prompt.c,
+	  configure.ac, pam/pam.c: Add a test for pam_get_item() argument
+	  type
+
+	  This checks whether pam_get_item() takes a const void ** or void
+	  ** item value argument and defines a PAM_ITEM_CONST macro that
+	  is const when it should. This avoids some compiler warnings.
+
+2013-10-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [81bfb8b] ChangeLog, NEWS, configure.ac, man/chsh.ldap.1.xml,
+	  man/getent.ldap.1.xml, man/nslcd.8.xml, man/nslcd.conf.5.xml,
+	  man/pam_ldap.8.xml, man/pynslcd.8.xml: Get files ready for
+	  0.9.2 release
+
+2013-10-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ef0edda] tests/test_myldap.sh, tests/test_nsscmds.sh,
+	  tests/test_pamcmds.expect: Portability fixes to environment tests
+
+	  This mostly tries to reduce the influences of the test environment
+	  (local users and groups) on the tests. This uses another username
+	  (vsefcovic) in the PAM tests instead of the user arthur to avoid
+	  clashes with existing users.
+
+	  The PAM tests are skipped if passwd claims that it cannot modify
+	  LDAP passwords (for FreeBSD).
+
+	* [f8af48f] compat/ldap_parse_passwordpolicy_control.c,
+	  nslcd/common.c, nslcd/config.c, nslcd/group.c, nslcd/nslcd.c,
+	  nslcd/pam.c, nslcd/protocol.c, nslcd/rpc.c, nslcd/service.c,
+	  nss/bsdnss.c, nss/ethers.c, nss/group.c, nss/netgroup.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/rpc.c,
+	  nss/services.c, pam/pam.c: Fix a number of compiler warnings
+
+	  This includes a number of small fixes for issues that were
+	  formerly masked by the incorrect AC_LANG_PROGRAM check.
+
+	* [88801f9] configure.ac: Add -Werror=implicit if compiler
+	  supports it
+
+	* [933bf8e] configure.ac: Fix usage of AC_LANG_PROGRAM
+
+	  Apparently the macro got changed a long time ago to provide a
+	  main() definition. This bug caused the extra warning flags to
+	  not be added.
+
+	* [6028226] compat/Makefile.am, compat/shell.h, configure.ac,
+	  nslcd/usermod.c: Compatibility definitions for
+	  {set,get,end}usershell()
+
+	  This provides compatibility definitions for systems that don't
+	  have these functions (some Solaris flavours).
+
+2013-10-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ed4cf47] nslcd/nslcd.c: Start invalidator after locking pidfile
+
+	  This causes the pidfile to be written as the first thing after
+	  daemonising nslcd to minimise the race between service script
+	  completion and pidfile being locked.
+
+2013-10-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [503644b] HACKING, README: Update documentation
+
+	* [6be316e] autogen.sh, configure.ac: Specify m4 directory in
+	  configure script
+
+2013-10-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1d8db24] nslcd/myldap.c, pynslcd/search.py: Also run invalidators
+	  on initial connect
+
+	  This also invalidates the caches configured with
+	  reconnect_invalidate on the first successful search. This should
+	  handle the case more gracefully where caches were filled with
+	  negative hits before nslcd was running.
+
+	* [ee8737f] tests/Makefile.am: Distribute setup_slapd.sh and
+	  associated files
+
+2013-10-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e28e937] tests/test_myldap.sh, tests/testenv.sh: Improve
+	  portability of ldap test
+
+	  This supports old ldapsearch commands that don't support the -x
+	  and -H options and ldapsearch commands that don't exit with a
+	  failure code if nothing is found.
+
+	  This also switches the test_myldap test to use the testenv check
+	  for the LDAP server.
+
+2013-10-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8cc354a] tests/test_pamcmds.expect: Handle other responses
+	  in test_pamcmds
+
+	  This extends test_pamcmds to handle other pam/su/passwd errors
+	  and responses (as seen on CentOS 5). Also switch to stronger
+	  password when changing the test user's password to avoid problems
+	  with password strength checks.
+
+	* [0a95557] tests/Makefile.am, tests/in_testenv.sh,
+	  tests/test_nsscmds.sh, tests/test_pamcmds.expect,
+	  tests/test_pamcmds.sh, tests/testenv.sh: Make script to check
+	  test environment
+
+	  This changes the in_testenv.sh script into testenv.sh which has
+	  more checks and a few functions to configure the test environment.
+
+	* [1899e9a] tests/test.ldif: Remove unnecessary attributes from
+	  test.ldif
+
+	* [cebc2a1] tests/README: Update tests README
+
+	  This refreshes the documentation of the tests, especially the
+	  test environment.
+
+	* [7cbb439] tests/config.ldif, tests/setup_slapd.sh: Provide a
+	  script for setting up slapd
+
+	  The setup_slapd.sh script can be used to set up and start a
+	  slapd instance in a single (temporary) directory. The slapd
+	  instance is configured and loaded with test data for use in the
+	  test environment.
+
+2013-10-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [aeccbfe] tests/test_nsscmds.sh: Fix sortgroup function
+
+	  This fixes an issue with the sortgroup function which failed to
+	  handle a group line with only two colons correctly. Such group
+	  entries have been seen in the wild on FreeBSD.
+
+	  Also, comment lines in group files are now ignored (also seen
+	  on FreeBSD).
+
+2013-10-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0697347] common/dict.c: Use djb2 hash in dict module
+
+	  This slightly modifies the string hashing function to use the
+	  djb2 hash.  This hash is supposed to be reasonably fast and have
+	  reasonably few collisions.
+
+2013-10-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [61e96bf] nslcd/cfg.h: Increase NSS_LDAP_CONFIG_MAX_BASES to 31
+
+	  This allows more search bases which may be useful in some
+	  environments.
+
+2013-09-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2f088ec] common/tio.c: Also support poll() returning EAGAIN
+
+2013-09-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [173d768] configure.ac: Add more python module checks to configure
+
+	* [b7ca95a] configure.ac: Make missing Python modules a waring
+
+	  This avoids having to have all modules installed in the build
+	  environment. A Python version is still required during build.
+
+	* [f36bb81] pynslcd/cache.py, pynslcd/group.py: Remove unneeded
+	  imports
+
+	* [8ae8b9a] Makefile.am, configure.ac, tests/Makefile.am: Cleanups
+	  and fixes related to automake upgrade
+
+	  This removes a few legacy workarounds and fixes for older versions
+	  of automake. This also removes adding specific DEBUG flags for
+	  tests since subdir objects are handled differently now.
+
+	* [2bd2bc4] pam/pam.c: Initialise msg to avoid potential NULL
+	  pointer dereference
+
+	  The NULL pointer dereference in the PAM module should not occur due
+	  to the relationship with the rc value that is handled alongside
+	  it. This change mostly silences the compiler and protects from
+	  future changes.
+
+	* [dccc9cf] configure.ac: Add configure test for
+	  {set,get,end}usershell() availability
+
+2013-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4fc4197] autogen.sh: Upgrade to automake 1.14
+
+	* [bc6a18e] nslcd/nslcd.c: Use larger nslcd send buffers
+
+	  By using bigger write buffers in nslcd we reduce the number of
+	  writes in nslcd and consequently the number of reads in the NSS
+	  and PAM modules for bigger responses.
+
+	  This reduces the number of system calls that are made during
+	  a request and brings a small performance improvement that is
+	  mainly measurable in the NSS module. A measurement showed 30-80%
+	  reduction in the number of system calls in the NSS module and
+	  around 10% reduction in CPU usage (CPU time, only small reduction
+	  in wallclock time).
+
+	  Thanks John Sullivan for pointing this out.
+
+	* [58d50bf] configure.ac, man/Makefile.am: Add configure check to
+	  see whether to install manual pages
+
+	  This also reworks the manual page generation check in the configure
+	  script and avoids build errors if no tool for generating manual
+	  pages is present when working on a Git checkout.
+
+2013-09-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ce95b41] ldapns.ldif: Reformat LDIF file to follow OpenLDAP format
+
+	  This fixes a wrapping problem. Thanks to Paul Boven for pointing
+	  this out.
+
+2013-09-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8b169f1] tests/test_common.c: Fix permissions of test
+	  configuration
+
+	  This sets the permissions on the nslcd-test.conf file while
+	  running the tests to ensure that the permission checks for the
+	  bindpwn and rootpwmodpw options do not fail the test.
+
+	* [560e5de] .gitignore, tests/Makefile.am, tests/test_tio_timeout.c:
+	  Add a test for tio timeout calculations
+
+	  This test checks whether the proposed remaining time to sleep
+	  is reasonable.
+
+	* [db5382e] .gitignore, tests/Makefile.am, tests/test_clock.c:
+	  Add a test for clock_gettime() supported clocks
+
+	  This probes the system for available clocks to see if they can
+	  be reliably used to get a monotonic-like timer (the test doesn't
+	  verify the monotonic part, just usability).
+
+	* [7895739] AUTHORS, common/tio.c, configure.ac: Use clock_gettime()
+	  instead of gettimeofday()
+
+	  This avoids problems with system clock changes (though there
+	  are some safeguards in place to avoid waiting too long on clock
+	  changes).
+
+	  Thanks to John Sullivan for pointing this out.
+
+	  We can't easily use CLOCK_MONOTONIC_RAW or CLOCK_MONOTONIC_COARSE
+	  even on platforms that define the clock because we can get
+	  runtime errors.  CLOCK_MONOTONIC seems to work on all tested
+	  platforms that provide it.
+
+	* [a683aa8] tests/test_manpages.sh: Small protability fix
+
+	* [c8800eb] tests/test_manpages.sh: Improve robustness of
+	  test_manpages
+
+2013-08-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [644df52] common/tio.c, common/tio.h: Use normal timeout handling
+	  in tio_skipall()
+
+	  Use the same mechanism in tio_skipall() as in tio_read(), except
+	  use a different timeout value.
+
+	* [0787d45] common/tio.c: Refactor tio_wait()
+
+	  This changes the function to accept a file descriptor, an event
+	  and timeout parameter directly instead of a confusing flag.
+
+	* [07a8170] common/tio.c: Fix buffer overflow on interupted read
+
+	  The tio_read() function will read past its buffer and return
+	  garbadge to the calling function if the call to read() was
+	  interrupted by a signal.
+
+	  The likelyhood of read() being interupted is low because previously
+	  a call to poll() has determined that data is available to be read.
+
+	  Thanks to John Sullivan for pointing this out.
+
+	  See: https://bugzilla.redhat.com/show_bug.cgi?id=1003011
+
+2013-08-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4897033] nslcd/common.h: In nslcd, log EPIPE only on debug level
+
+	  See: https://bugzilla.redhat.com/show_bug.cgi?id=1003011
+
+	* [c9e2f97] common/tio.c, common/tio.h, nss/common.h: Use a timeout
+	  when skipping remaining result data
+
+	  When the NSS modules closes the connection and skips any remaining
+	  result data, wait for up to 500 msec to read any available data.
+
+	  See: https://bugzilla.redhat.com/show_bug.cgi?id=1003011
+
+2013-08-27  Bersl <bersl2@bersl2.info>
+
+	* [7140d21] AUTHORS, nslcd/group.c, nslcd/passwd.c, nslcd/shadow.c:
+	  Increase password buffer size
+
+	  With the smaller buffers some password hashes would be truncated.
+
+2013-08-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8571bc1] NEWS, README, common/dict.c, compat/attrs.h,
+	  compat/nss_compat.h, man/nslcd.conf.5.xml, nslcd/myldap.c:
+	  Fix for common spelling mistake
+
+2013-08-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [890d227] AUTHORS, ChangeLog, NEWS, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml:
+	  Get files ready for 0.9.1 release
+
+	* [f9b4b43] Makefile.am: Have a nicer way of generating the ChangeLog
+
+	  This adds the commit id, improves the line wrapping and also
+	  gets rid of the external dependency.
+
+	* [321d8a3] pynslcd/pynslcd.py: Handle failure of getpeercred
+	  more gracefully
+
+	* [f18729e] tests/Makefile.am: Only run pynslcd tests if it
+	  is enabled
+
+	* [f54f2ad] configure.ac, m4/ax_python_module.m4: Add configure
+	  test for Python modules
+
+	  This uses the AX_PYTHON_MODULE test to check for availability
+	  of used Python modules. All third-party modules and modules that
+	  are not a builtin for Python 2.5 are tested.
+
+	  This also splits the tests for the utils and pynslcd.
+
+	* [6f61482] pynslcd/attmap.py, pynslcd/group.py, pynslcd/pynslcd.py,
+	  pynslcd/tio.py, utils/getent.py, utils/nslcd.py: Rearrange
+	  Python imports
+
+2013-08-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f6c20ee] nslcd/nslcd.c: Ignore SIGUSR2 for future compatibility
+
+	* [27abbbb] man/Makefile.am, tests/Makefile.am,
+	  tests/test_manpages.sh: Add a test for the manual pages
+
+	  This replaces e0491d2 to run xmlto from the man directory. This
+	  handles the case more gracefully if xmlto is not available.
+
+2013-08-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [494833d] config.guess, config.sub: Update files from latest
+	  automake
+
+2013-08-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7b474d0] pynslcd/group.py, pynslcd/passwd.py, pynslcd/shadow.py:
+	  Have pynslcd handle mapped userPassword
+
+	  This fixes an error that could occur when the userPassword was
+	  retrieved from LDAP and insufficient privileges were available
+	  for reading the attribute.
+
+	* [b0358f7] : Retry LDAP servers quickly after receiving SIGUSR1
+
+	  When nslcd receives the SIGUSR1 signal it will retry connecting
+	  to unavailable LDAP servers sooner.
+
+	  This signal can for example be sent when (re)stablishing a
+	  network connection.
+
+2013-08-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ebbe8a6] man/nslcd.8.xml, nslcd/nslcd.c: Handle SIGUSR1 by
+	  resetting the retry timer
+
+	  This implements and documents handling of the SIGUSR1 signal in
+	  nslcd to reset the reconnect_sleeptime and reconnect_retrytime
+	  timers to re-check availability of the LDAP server.
+
+	* [8bdb289] nslcd/myldap.c, nslcd/myldap.h: Implement function
+	  for resetting reconnect times
+
+	  This implemens a myldap_immediate_reconnect() function that
+	  resets the reconnect timer to retry failing connections to the
+	  LDAP server upon the next search.
+
+	  This can be used to cut the reconnect_sleeptime and
+	  reconnect_retrytime sleeping periodss short if we have some
+	  indication that the LDAP server is available again.
+
+	* [d58f163] nslcd/common.h, nslcd/nslcd.c, nslcd/shadow.c: Return
+	  partial shadow information to non-root users
+
+	  This also returns everything except the password hash from
+	  the shadow database to non-root users (nothing was returned
+	  before). This allows non-root users to do PAM authentication in
+	  some configurations.
+
+	  On some systems there is a setgid executable that is allowed to
+	  read /etc/shadow for authentication by e.g. screensavers. Returning
+	  no shadow information will cause pam_unix to deny authorisation
+	  in common configurations.
+
+	  See: http://bugs.debian.org/706913
+
+	* [34365b4] nslcd/cfg.c: Add cast to int when logging configuration
+	  summary
+
+2013-08-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [44a38eb] pam/pam.c: Small fix in NEW_AUTHTOK_REQD handling
+
+	  There is a potential memory leak if the old password is saved
+	  multiple times. Furthermore, PAM_NEW_AUTHTOK_REQD is only allowed
+	  as a result of the authorisation phase, not the authentication
+	  phase so there is no use in checking.
+
+	* [d8637bb] pynslcd/pam.py: Fix rootpwmodpw handling in pynslcd
+
+	* [13d31b7] pynslcd/common.py: Fix not logging passwords in pynslcd
+	  (7108b1f)
+
+	* [7e90541] tests/nslcd-test.conf, tests/test.ldif: Update files
+	  from test environment
+
+2013-07-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [724a75f] utils/getent.py: Improve error and help output of
+	  getent command
+
+2013-08-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [882f7be] tests/Makefile.am, tests/pylint.rc, tests/test_pylint.sh:
+	  Run pylint as a test
+
+	  This runs a somewhat limited pylint run against the source
+	  files. It should at least catch some issues.
+
+	* [79209ee] pynslcd/common.py, pynslcd/group.py, pynslcd/pam.py,
+	  pynslcd/passwd.py: Rename isvalidname() to is_valid_name()
+	  in pynslcd
+
+2013-08-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e0491d2] man/Makefile.am: Run xmlto on manual pages as part of
+	  the tests
+
+2013-08-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7108b1f] pynslcd/common.py: Do not log passwords in pynslcd
+
+	* [cda6dcd] : Implement an option to run in the foreground
+
+	  This introduces a -n, --nofork option that skips the deamonising
+	  step on start-up. This may be required for running nslcd from
+	  upstart.
+
+	  See: https://bugs.launchpad.net/bugs/806761
+
+	* [1825be6] man/nslcd.8.xml, man/pynslcd.8.xml: Document -n,
+	  --nofork option
+
+	* [82bcfd7] pynslcd/pynslcd.py: -n switch for pynslcd
+
+2013-08-17  Caleb Callaway <enlightened.despot@gmail.com>
+
+	* [14b93b9] nslcd/nslcd.c: -n switch for nslcd (prevents process
+	  from forking)
+
+2013-08-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8a3f0f5] : Improvements to pynslcd caching functionality
+
+	  This fixes most of the existing caching functionality. Cache
+	  expiry, negative hits and entries going away remain to be
+	  implemented.
+
+2013-08-16  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a066bcb] configure.ac, tests/Makefile.am,
+	  tests/test_pynslcd_cache.py: Implement tests for caching
+	  functionality
+
+2013-08-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d66162a] pynslcd/alias.py, pynslcd/cache.py, pynslcd/group.py,
+	  pynslcd/host.py, pynslcd/netgroup.py, pynslcd/network.py,
+	  pynslcd/protocol.py, pynslcd/rpc.py, pynslcd/service.py: Use
+	  retrieve_by, group_by and group_columns in the cache
+
+	  This removes custom retrieve() functions and Query classes from
+	  the database modules and uses retrieve_sql retrieve_by, group_by
+	  and group_columns to make a custom retrieval query.
+
+	  In the cache module this completely replaces how the query grouping
+	  is done. The Query class is now only used inside the cache and the
+	  CnAliasedQuery, RowGrouper and related classed have been removed.
+
+2013-04-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [bfe22cc] pynslcd/cache.py: Make Cache a context manager
+
+2013-08-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1b89df5] pynslcd/alias.py, pynslcd/cache.py, pynslcd/group.py,
+	  pynslcd/host.py, pynslcd/netgroup.py, pynslcd/network.py,
+	  pynslcd/protocol.py, pynslcd/rpc.py, pynslcd/service.py: Give
+	  cache tables friendlier names
+
+	  This also defined the tables for netgroup storage.
+
+2013-08-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7671276] pynslcd/alias.py, pynslcd/cache.py, pynslcd/group.py,
+	  pynslcd/host.py, pynslcd/network.py, pynslcd/protocol.py,
+	  pynslcd/rpc.py, pynslcd/service.py: Explicitly define tables
+	  used for cache
+
+	  This introduces the tables property in the Cache object that is
+	  used to define the used tables.
+
+	  This also fixes the storing of mulit-valued attributes in
+	  the cache.
+
+2013-04-16  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b0b5723] pynslcd/alias.py, pynslcd/cache.py, pynslcd/ether.py,
+	  pynslcd/group.py, pynslcd/host.py, pynslcd/netgroup.py,
+	  pynslcd/network.py, pynslcd/passwd.py, pynslcd/protocol.py,
+	  pynslcd/rpc.py, pynslcd/service.py, pynslcd/shadow.py: Move
+	  cache table creation to modules
+
+	  This also moves the creation of a SQLite database connection to
+	  a _get_connection() function to ensure the cache is only created
+	  when the caches are instantiated.
+
+2013-07-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [84d22e6] pynslcd/passwd.py: Fix missing part of d659e83
+
+2013-07-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ec53918] pynslcd/group.py, pynslcd/passwd.py: Use cleaner import
+	  and get rid of uid2dn function in pynslcd
+
+	* [d659e83] pynslcd/cfg.py, pynslcd/passwd.py: Handle the nss_min_uid
+	  option in pynslcd
+
+	* [7092d40] pynslcd/cfg.py, pynslcd/group.py: Handle the
+	  nss_initgroups_ignoreusers option in pynslcd
+
+	* [a0e12e6] pynslcd/cfg.py, pynslcd/pam.py: Fix handling of
+	  pam_password_prohibit_message in pynslcd
+
+	* [fa97bcc] pynslcd/Makefile.am, pynslcd/config.py,
+	  pynslcd/pynslcd.py: Implement config request handling in pynslcd
+
+	  This allows the PAM module to request the
+	  pam_password_prohibit_message option for denying password change.
+
+	* [a3acbec] pynslcd/pam.py: Implement PAM session handling in pynslcd
+
+	  Just like in nslcd this doesn't actually do anything with the
+	  session ids except generating them.
+
+2013-07-26  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4031750] pynslcd/search.py: Properly handle start_tls in pynslcd
+
+2013-07-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5d3f681] configure.ac: Have configure show --disable-utils
+	  by default
+
+	  Since the utils are automatically built if Python is available
+	  --disable is more appropriate a default then --enable.
+
+	* [5adc2ca] tests/test_pycompile.sh: Have test_pycompile not write
+	  any pyc files
+
+	  We need to avoid writing pyc files because during make distcheck,
+	  the source directory is read-only.
+
+	  This also ensures that the test is skipped if the Python
+	  interpreter is not found.
+
+	* [e17730f] README: Dcoumentation updates
+
+	  This fixes a typo, clarifies the section on the LDAP schema
+	  values that are supported and updates the differences between
+	  nss-pam-ldapd and nss_ldap and pam_ldap.
+
+2013-07-26  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [30ffdb2] tests/Makefile.am, tests/test_pycompile.sh: Test Python
+	  syntax on make check
+
+	* [10eec70] : Merge fixes for reconnect_invalidate option
+
+	  The branch accidentally got merged before it was fully tested.
+
+	* [dce98a5] nslcd/cfg.c, nslcd/invalidator.c, pynslcd/invalidator.py,
+	  pynslcd/pynslcd.py: Fix errors in invalidator changes
+
+	  This fixes a few typos and an omission in the configuration file
+	  parsing code.
+
+	* [7c85202] : Make cache invalidation more generic
+
+	  This changes the nscd_invalidate option into a more generic
+	  reconnect_invalidate and also allows clearing the nfsidmap cache.
+
+	* [e1b0399] man/nslcd.conf.5.xml, nslcd/Makefile.am, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/common.h, nslcd/invalidator.c, nslcd/myldap.c,
+	  nslcd/nscd.c, nslcd/nslcd.c, pynslcd/Makefile.am, pynslcd/cfg.py,
+	  pynslcd/invalidator.py, pynslcd/nscd.py, pynslcd/pynslcd.py,
+	  pynslcd/search.py, tests/Makefile.am: Rename nscd_invalidate
+	  option to reconnect_invalidate
+
+	  This also renames the internal nscd module to invalidator for
+	  both nslcd and pynslcd. The new invalidator module is now no
+	  longer nscd-specific.
+
+	* [6054499] man/nslcd.conf.5.xml, nslcd/attmap.c, nslcd/cfg.c,
+	  nslcd/cfg.h, nslcd/nscd.c, pynslcd/cfg.py, pynslcd/nscd.py:
+	  Allow invalidating the nfsidmap cache
+
+	  This introduces an nfsidmap value for nscd_invalidate which will
+	  cause the nfsidmap -c command to be run.
+
+2013-07-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d2e2e40] pynslcd/nscd.py: Fix nscd cache flushing bug in pynslcd
+
+	  The pynslcd implementation would always clear the passwd nscd
+	  cache regardless of the provided map.
+
+2013-07-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5b78508] .gitignore, INSTALL, ar-lib, autogen.sh, compile,
+	  config.guess, config.sub, configure.ac, depcomp, install-sh,
+	  missing, mkinstalldirs, py-compile, test-driver: Upgrade to
+	  automake 1.13
+
+2013-05-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ee7b2e9] tests/lookup_shadow.c: Add an explicit cast to int
+	  in lookup_shadow
+
+2013-04-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b6f5047] nslcd/nscd.c: Make tests for system call failures a
+	  little more robustly
+
+2013-05-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [97d35f3] pynslcd/pynslcd.py: Ignore errors in opening NSS module
+
+2013-04-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b15dc66] pynslcd/cache.py, pynslcd/cfg.py, pynslcd/group.py,
+	  pynslcd/nscd.py, pynslcd/pynslcd.py, pynslcd/search.py,
+	  pynslcd/shadow.py, pynslcd/tio.py, pynslcd/usermod.py,
+	  utils/chsh.py, utils/getent.py, utils/nslcd.py, utils/users.py:
+	  Python style changes
+
+	  This tries to conform more closely to PEP8. Imports have been
+	  checked and, if used only once, moved closer to the use to avoid
+	  potential import loops. This also includes a few other minor
+	  changes, like using __main__ for utility scripts and variable
+	  renames to avoid name clashes.
+
+	* [d3c6a66] pynslcd/pam.py: Raise an error with a missing old
+	  password on password modification
+
+	* [f45b24d] utils/nslcd.py: Set FD_CLOEXEC on the client socket
+	  in utilities
+
+	* [bc35197] pynslcd/pam.py: Fix getting caller's uid on password
+	  change (pynslcd)
+
+2013-04-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [84402e5] utils/Makefile.am: Install utilities in share/nslcd-utils
+
+	* [b5b4239] man/Makefile.am: Fix the way manual pages are installed
+
+	  The :u flag apparently isn't portable across versions of make
+	  and automake rules complain if a manual page is added twice to
+	  a target.
+
+2013-04-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [187c626] ChangeLog, NEWS, TODO, configure.ac,
+	  man/getent.ldap.1.xml, man/nslcd.8.xml, man/nslcd.conf.5.xml,
+	  man/pam_ldap.8.xml, man/pynslcd.8.xml: Get files ready for
+	  0.9.0 release
+
+	* [2616f43] pynslcd/Makefile.am: Include the usermod.py file in
+	  the distribution
+
+	* [c519729] man/chsh.ldap.1.xml: Fix docbook validation
+
+2013-04-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1c31305] configure.ac: Ignore missing Python in initial test
+
+	* [4b01125] nslcd/nslcd.c: Fix comment
+
+2013-03-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d7990de] pynslcd/pam.py: Update the shadowLastChange on password
+	  change in pynslcd
+
+	* [ea6bff3] pynslcd/pam.py: Implement password modification
+	  in pynslcd
+
+	* [62a409c] : Implement used modification functionality
+
+	  This adds user information modification functionality to nslcd
+	  and pynslcd and implements a chsh.ldap utility that can be
+	  used to change the login shell of a user (similar to the normal
+	  chsh command).
+
+	  The user modification functionality should allow for generic
+	  modifications of user information. More utility commands to
+	  perform modifications remain to be implemented.
+
+	* [012b185] .gitignore, man/Makefile.am, man/chsh.ldap.1.xml,
+	  utils/Makefile.am, utils/chsh.py, utils/cmdline.py, utils/nslcd.py,
+	  utils/shells.py, utils/users.py: Initial version of a chsh.ldap
+	  utility
+
+	* [d0482fb] pynslcd/pynslcd.py, pynslcd/usermod.py: Handle user
+	  modification requests in pynslcd
+
+	  Similar to the nslcd implementation, this currently only covers
+	  modifying the homeDirectory and loginShell attributes.
+
+	* [f1895f9] nslcd/Makefile.am, nslcd/common.h, nslcd/nslcd.c,
+	  nslcd/usermod.c: Handle user modification requests in nslcd
+
+	  This is currently limited to supporting modification of the
+	  homeDirectory and loginShell attributes.
+
+	  Modifications as root currently use the rootpwmoddn and rootpwmodpw
+	  options.
+
+	* [8fb5eb1] nslcd.h: Define a NSLCD_ACTION_USERMOD request
+
+	  The modification can either be requested by root or by the
+	  user itself.
+
+	  Modifications by the user should be done by connecting to the
+	  LDAP server with the user-supplied credentials. It is expected
+	  that access controls in the LDAP server prevent unwanted
+	  modifications. The nslcd process is expected to check whether
+	  supplied values are sensible.
+
+	* [aae36cf] pynslcd/pam.py: Rename authentication function and
+	  return connection
+
+	* [355c2af] configure.ac: Fix test for absence of Python
+
+	* [f478830] pynslcd/cfg.py: Mark unsupported pynslcd configuration
+	  options
+
+	* [2b097f7] configure.ac: Preset default configure values
+	  consistently
+
+	* [6ceb1df] configure.ac: Give an error when the Python interpreter
+	  is missing
+
+2013-03-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a47b20f] configure.ac: Build command-line utilities by default
+	  if Python is available
+
+	* [adde1d4] : Implement clearing of nscd cache in pynslcd
+
+	* [a75cfb9] pynslcd/nscd.py, pynslcd/search.py: Detect and handle
+	  connection failure and recovery
+
+	  Logs a connection recovery message and run a nscd cache
+	  invalidation if configured.
+
+	* [585d388] pynslcd/pynslcd.py: Start the nscd invalidator process
+	  if needed
+
+	* [d4c5c96] pynslcd/cfg.py: Parse the nscd_invalidate option
+
+	* [11b1739] pynslcd/Makefile.am, pynslcd/nscd.py: Functionality
+	  for clearing the nscd cache in pynslcd
+
+	* [65a65ad] pynslcd/pynslcd.py: Switch to using os.environ instead
+	  of os.putenv()
+
+	  The os.putenv() call doesn't update os.environ and Python
+	  documentation recommends using os.environ.
+
+	* [46cf240] pynslcd/pam.py: Rename validate_request to validate
+
+	* [7d1e492] pynslcd/pam.py: Also perform authentication search
+	  using LDAPSearch class
+
+2013-03-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [302c2fa] tests/test_nsscmds.sh: Make the NSS tests dependant
+	  on the configuration of nsswitch.conf
+
+	* [8790b40] tests/test_myldap.c: Do not rely on printf() being
+	  able to print NULL strings
+
+2013-03-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [932c641] man/nslcd.conf.5.xml: Fix manual page generation
+
+	* [07ca836] nslcd/cfg.h: Fix comment for nss_nested_groups config
+	  option
+
+	* [3daa68d] : Implement support for nested groups
+
+	* [642064c] tests/test.ldif, tests/test_nsscmds.sh: Add tests for
+	  nested group functionality
+
+	  This also includes some changes to the test directory contents
+	  that were for other tests and functionality.
+
+	* [b1b7648] README, man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/group.c, pynslcd/cfg.py, pynslcd/group.py: Implement a
+	  nss_nested_groups configuration option
+
+	  This option can be used in both nslcd and pynslcd to enable
+	  recursive group member lookups. By default the functionality is
+	  disabled. This also updates the documentation.
+
+	* [d6a6e8b] pynslcd/common.py, pynslcd/group.py: Implement support
+	  for nested groups in pynslcd
+
+	* [41ba574] nslcd/group.c: Implement support for nested groups
+	  in nslcd
+
+	  This differs from the code provided by Steve Hill in that it avoids
+	  (recursively) performing parallel LDAP searches by queueing groups
+	  and check for extra members per queued group (in the forward
+	  lookup) or check for extra parents (for the user to groups lookup).
+
+	  For the reverse lookup handling the NSLCD_HANDLE macro could no
+	  longer be used because extra care should be taken to free the
+	  sets before returning and two search phases are needed.
+
+2013-03-20  Steve Hill <steve@opendium.com>
+
+	* [08f5301] AUTHORS, nslcd/group.c: Implement a
+	  mkfilter_group_bymemberdn() function
+
+	  This was part of a bigger change to implement nested groups,
+	  however most of the other parts were re-implemented differently.
+
+	  For the original changes, see:
+	  http://lists.arthurdejong.org/nss-pam-ldapd-users/2013/msg00034.html
+
+2013-03-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [edd119c] tests/test.ldif, tests/test.ldif.gz: Unpack the LDIF
+	  file to make diffs clearer
+
+	* [b0785de] nslcd/cfg.h, nslcd/myldap.c: spelling fixes
+
+2013-03-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [402d3f3] nslcd/service.c: fix service request logging
+
+2013-03-19  Jakub Hrozek <jhrozek@redhat.com>
+
+	* [f21efd6] nss/common.h: NSS: Return TRYAGAIN on zero-length buffer
+
+	  One of our customers was running into a situation where glibc
+	  provided a zero buffer, which is a condition that is retriable
+	  and the nss module should return NSS_STATUS_TRYAGAIN not
+	  NSS_STATUS_UNAVAIL.
+
+2013-03-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7926326] nss/shadow.c: fix the text representation of shadow
+	  information for nscd on Solaris
+
+	* [83c5788] .gitignore, tests/Makefile.am, tests/lookup_shadow.c:
+	  implement a lookup_shadow test command for use on systems that
+	  don't allow querying shadow via getent
+
+2013-03-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fa27d94] nslcd/cfg.c, nslcd/nscd.c: fix a few compiler warnings
+
+	* [0b5b4d1] configure.ac: guess the value for --with-pam-seclib-dir
+	  if it is not specified
+
+2013-03-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [24c565c] tests/test_pamcmds.sh: small portability fix in
+	  test_pamcmds.sh
+
+	* [6a92621] nslcd/service.c: only log protocol name if it is present
+
+	* [f7c6771] compat/ldap_parse_passwordpolicy_control.c, configure.ac:
+	  also support systems without bet_get_enum()
+
+2013-03-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ba5f39f] pynslcd/pynslcd.py: log hex value of action id to make
+	  debugging easier
+
+	* [11ca816] pynslcd/pam.py: ensure consistent naming of DN variables
+
+	* [116d215] pynslcd/attmap.py, pynslcd/group.py,
+	  pynslcd/netgroup.py, pynslcd/pam.py, pynslcd/search.py,
+	  pynslcd/service.py, pynslcd/shadow.py: clean up imports and use
+	  ldap.filter.escape_filter_chars() directly
+
+	* [ac30060] pynslcd/pam.py, pynslcd/pynslcd.py, pynslcd/search.py:
+	  move get_connection function to search module as Connection class
+	  as subclass of ReconnectLDAPObject to automatically reconnect
+	  to the LDAP server
+
+	* [4e60340] pynslcd/Makefile.am, pynslcd/alias.py, pynslcd/common.py,
+	  pynslcd/ether.py, pynslcd/group.py, pynslcd/host.py,
+	  pynslcd/netgroup.py, pynslcd/network.py, pynslcd/pam.py,
+	  pynslcd/passwd.py, pynslcd/protocol.py, pynslcd/rpc.py,
+	  pynslcd/search.py, pynslcd/service.py, pynslcd/shadow.py: move
+	  Search class to search module
+
+	* [975ee2c] pynslcd/cfg.py: fix default logging configuration
+	  setting in pynslcd
+
+	* [8a67c9f] common/tio.c: fix the description of the
+	  tio_time_remaining() function
+
+	* [d19f1df] man/nslcd.conf.5.xml: document the nscd_invalidate option
+
+	* [bf64710] nslcd/myldap.c, nslcd/nscd.c, nslcd/nslcd.c: start the
+	  nscd invalidator and invalidate the nscd cache after reconnecting
+	  to the LDAP server after failure
+
+	* [d413a64] nslcd/cfg.c, nslcd/cfg.h: implement parsing of the
+	  nscd_invalidate option
+
+	* [008f8a9] configure.ac, nslcd/Makefile.am, nslcd/common.h,
+	  nslcd/nscd.c, tests/Makefile.am: implement functionality to send
+	  a cache invalidation signal to nscd
+
+	* [9a6f5b2] nslcd/common.c, nslcd/common.h, nslcd/nslcd.c: move
+	  signame() function to common.c to make it available to all modules
+
+2013-03-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [646dfa8] man/nslcd.conf.5.xml: document the trimming expressions
+	  in the nslcd.conf(5) manual page
+
+	* [54a3dba] pynslcd/expr.py: support trimming expressions with
+	  full shell glob matching in pynslcd
+
+	* [8655355] tests/test_expr.c: add tests for trimming expressions
+
+2013-01-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6c05b76] common/expr.c: update the trimming expressions code
+	  to follow the new coding style
+
+2012-12-03  Thorsten Glaser <t.glaser@tarent.de>
+
+	* [3731964] AUTHORS, common/expr.c: allow trimming expressions
+	  with ${foo#bar} syntax in nslcd
+
+2013-03-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f56f926] nslcd/myldap.c, nslcd/myldap.h, nslcd/pam.c: return
+	  the password policy bind information via PAM
+
+2013-01-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5fce062] compat/Makefile.am, compat/ldap_compat.h,
+	  compat/ldap_passwordpolicy_err2txt.c, configure.ac: provide a
+	  basic replacement implementation of ldap_passwordpolicy_err2txt()
+	  for systems that don't have it
+
+	* [37151df] compat/Makefile.am, compat/ldap_compat.h,
+	  compat/ldap_parse_passwordpolicy_control.c, configure.ac: provide
+	  a replacement implementation of ldap_parse_passwordpolicy_control()
+	  for systems that don't have it
+
+2013-03-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1c2ab50] compat/ldap_compat.h, configure.ac, nslcd/myldap.c:
+	  request and parse password policy controls when doing user
+	  authentication in nslcd
+
+2013-01-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f2c49e6] nslcd/myldap.c: pass the session along to the do_bind()
+	  function
+
+2013-03-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [117327e] configure.ac: add some missing checks to the configure
+	  script
+
+2013-03-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b4afe7c] nslcd/pam.c: log a more meaningful error in nslcd when
+	  trying to authenticate as administrator when rootpwmoddn is not set
+
+	* [31f9098] nslcd/common.h, nslcd/pam.c, nslcd/shadow.c: move
+	  update_lastchange() function from shadow to pam code
+
+	* [1a1bb07] utils/getent.py: move parsing to command line arguments
+	  to main body
+
+2013-02-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [38fb524] TODO: update TODO (setnetgrent() returns an error
+	  since r1874)
+
+2013-02-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [798820e] man/nslcd.conf.5.xml: include information about when
+	  some of the options were added
+
+	* [11283a5] nss/common.c: add missing include statement for NULL
+	  definition
+
+2013-02-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [12076c7] nslcd/nslcd.c, pynslcd/pynslcd.py: log version
+	  information from the NSS module
+
+	* [3155cdf] nss/common.c, nss/exports.freebsd, nss/exports.glibc,
+	  nss/exports.solaris: define and export an _nss_ldap_version symbol
+
+	* [61a3fce] pynslcd/ether.py: also search for alternative macAddress
+	  representation in pynslcd
+
+2013-02-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a9aea20] nslcd/nslcd.c: extra sanity check to ensure not too
+	  many file descriptors are open
+
+2013-02-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [bfdf7cd] nslcd.h: clarify NSLCD_ACTION_SERVICE_* request
+	  parameter description
+
+	* [1c6d856] man/nslcd.conf.5.xml, nslcd/cfg.c, tests/test_common.c:
+	  allow names with one character in default validnames option and
+	  allow parentheses (taken from Fedora packages)
+
+	* [d54243a] man/nslcd.conf.5.xml: document the log option
+
+	* [c75599d] pynslcd/cfg.py, pynslcd/pynslcd.py: handle the log
+	  configuration option in pynslcd
+
+	* [efca5ca] nslcd/cfg.c, nslcd/log.c, nslcd/log.h, nslcd/nslcd.c:
+	  handle the log configuration option in nslcd
+
+	* [22be9b0] nslcd/log.c, nslcd/log.h: implement functions for
+	  configuring alternative logging
+
+2013-02-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c12768a] man/getent.ldap.1.xml: fix docbook tag for file name
+
+2013-01-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [60f1d85] Makefile.am: generate ChangeLog with git2cl
+
+	* [ba93d8f] ChangeLog, ChangeLog-2012: archive 2012 changelog
+	  messages into a year file including the change from Subversion
+
+2013-01-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [91440f7] .gitignore, man/Makefile.am, man/getent.ldap.1.xml:
+	  add getent.ldap(1) manual page
+
+	* [ded7bd2] utils/Makefile.am, utils/cmdline.py, utils/getent.py,
+	  utils/nslcd.py: implement a getent command to query nslcd while
+	  bypassing NSS stack
+
+2013-01-26  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3117668] .gitignore, Makefile.am, configure.ac, utils/Makefile.am:
+	  add an --enable-utils option to configure to build command-line
+	  utilities
+
+2013-01-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7c01898] pynslcd/cache.py, pynslcd/common.py: disable pynslcd
+	  cache for now
+
+2013-01-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b9395c8] nslcd.h, nslcd/common.h, nslcd/netgroup.c, nslcd/nslcd.c,
+	  pynslcd/netgroup.py: implement a netgroup_all request
+
+2013-01-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0ae8e56] nslcd/nslcd.c: make checking dlsym() result a little
+	  safer
+
+	* [fb5d587] compat/ldap_passwd_s.c: fix copyright year
+
+	* [16db596] common/tio.c: restructure timeout calculation in tio
+	  to reduce the number of times gettimeofday() is called
+
+	* [b01cd22] nslcd/log.c: use pthreads thread-local storage as
+	  fallback mechanism if compiler doesn't provide a keyword for TLS
+
+	* [d86497b] configure.ac, m4/ax_tls.m4, nslcd/log.c, nss/aliases.c,
+	  nss/ethers.c, nss/group.c, nss/hosts.c, nss/netgroup.c,
+	  nss/networks.c, nss/passwd.c, nss/protocols.c, nss/rpc.c,
+	  nss/services.c, nss/shadow.c: use the AX_TLS macro to find
+	  correct thread-local storage class compiler directive
+
+	* [fa62cd3] nslcd/cfg.c, nslcd/cfg.h: dump full nslcd configuration
+	  at debug level on start-up
+
+2013-01-16  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2765100] man/Makefile.am: fix the way manual pages are generated
+	  and distributed
+
+2013-01-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2caeef4] man/nslcd.conf.5.xml, nslcd/cfg.c, pynslcd/cfg.py,
+	  tests/test_cfg.c: support children search scope for systems that
+	  have it
+
+	* [4197ec3] pynslcd/cfg.py: fix parsing of scope option in pynslcd
+
+	* [5e0bb05] tests/test_tio.c: support systems without ETIME
+
+	* [b5b6c48] configure.ac, tests/lookup_netgroup.c: check whether
+	  setnetgrent() returns int or void (for FreeBSD)
+
+2013-01-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0a5ac8b] nslcd/cfg.c, tests/test_cfg.c: reorganise configuration
+	  file parsing code
+
+	* [82b31fe] nslcd/myldap.c: have myldap_get_ranged_values() return
+	  a list of values instead of a set
+
+	* [388821a] nslcd/cfg.c, nslcd/group.c, nslcd/passwd.c,
+	  nslcd/shadow.c: check result of set_tolist() to ensure that
+	  memory allocation problems are logged
+
+	* [cdae946] nslcd/myldap.c: fix memory leak in
+	  myldap_get_values_len() when using ranged attributes (very
+	  unlikely to occur)
+
+	* [9b11d41] nslcd/myldap.c: fix a problem in memory handling in
+	  myldap_get_values_len() if malloc() would fail
+
+	* [2a73fa1] configure.ac: drop -Wcase-qual when using
+	  --enable-warnings because it was causing too much noise
+
+2013-01-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4689d5f] nslcd/myldap.c: fix typo in comment
+
+2013-01-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [eb86f87] pynslcd/pam.py: request and parse password policy
+	  controls when doing user authentication in pynslcd
+
+	* [28aeaa4] pam/pam.c: do not recheck the user password in first
+	  password phase if it was stored in the authentication phase
+
+	* [ba18be7] nslcd/pam.c: perform search for pam_authz_search on
+	  all search bases
+
+2013-01-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [65e184d] pynslcd/pam.py: some simplifications in the current
+	  pynslcd PAM request handling
+
+	* [8d054c8] nslcd/myldap.c, tests/test_cfg.c: update FIXMEs
+
+	* [086a1a5] nslcd/ether.c: change ethernet address formatting from
+	  FIXME to note
+
+	* [c89c41b] pam/pam.c: save the old password if either the
+	  authentication or the authorisation response is NEW_AUTHTOK_REQD
+
+	* [33518d5] nslcd/myldap.c: inline most is_valid_...() functions
+
+	* [5242233] compat/ldap_initialize.c: remove not needed define
+
+	* [7a2b63f] common/nslcd-prot.h: log hex values when debugging
+	  the protocol
+
+2013-01-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [82010e2] nslcd/myldap.c, nslcd/myldap.h, nslcd/pam.c: log and
+	  return a diagnostic message instead of just the LDAP error on
+	  password change failure
+
+	* [2f6f6a2] nslcd/pam.c: retry updating the lastChange attribute
+	  with the normal nslcd LDAP connection if the update with the
+	  user's connection failed
+
+	* [864c522] pynslcd/pam.py: update pynslcd PAM protocol handling
+	  to be in line with r1865
