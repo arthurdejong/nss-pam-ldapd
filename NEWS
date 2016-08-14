@@ -1,3 +1,22 @@
+changes from 0.9.6 to 0.9.7
+---------------------------
+
+* check existence of TLS certificate and key files on start-up
+* fix password policy expiration handling when password was about to expire
+  (thanks Mathieu Baeumler for tracking this down)
+* fix updating of shadowLastChange attribute when chasing referrals
+  (thanks Vasilis Tsiligiannis)
+* add an pam_authc_ppolicy option to allows completely disabling ppolicy
+  handling (thanks Mathieu Baeumler)
+* fix handling of nss_disable_enumeration (thanks Andrew W Elble for pointing
+  this out)
+* display human readable password expiry messages (thanks Mathieu Baeumler)
+* fix error when changing PAM user name (thanks 依云)
+* support substring expressions ${var:offset:length} in attribute mapping
+  (thanks Giovanni Mascellani)
+* also honor the ignorecase option in PAM
+
+
 changes from 0.9.5 to 0.9.6
 ---------------------------
 

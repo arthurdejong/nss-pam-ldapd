@@ -1,3 +1,266 @@
+2016-08-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [db9494e] tests/Makefile.am: Only run doctests when building
+	  pynslcd
+
+2016-08-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cb16e4c] nss/bsdnss.c: Avoid some warnings on FreeBSD
+
+	  This adds casts to and from void * for the function pointers
+	  that are passed around.
+
+2016-07-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b7a0b23] ChangeLog, ChangeLog-2013, Makefile.am: Archive 2013
+	  ChangeLog entries
+
+2016-07-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e4df12c] config.guess, config.sub, install-sh: Update files
+	  from latest automake
+
+2016-07-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [db8034a] man/Makefile.am, utils/Makefile.am, utils/getent.py:
+	  Also use module-name in utilities and man pages
+
+	  This ensures that getent.ldap, chsh.ldap and manual pages with
+	  ldap in the name will be installed with the name as specified
+	  with --with-module-name.
+
+	  Note that the manual page content still describes the working
+	  within nss-pam-ldapd and still mention the ldap name.
+
+2016-06-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [281b0ec] tests/test_doctest.sh: Ensure doctest also run in
+	  distcheck
+
+	  This fixes test_doctest.sh to also work when the build directory
+	  is different from the source directory. This is needed because
+	  constants.py is only available in the build directory.
+
+2016-06-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a89eda7] nslcd/pam.c: Also honor ignorecase in PAM
+
+	  This avoids changing the cannonical username to the value as
+	  specified in LDAP when ignorecase is used.
+
+	  See https://github.com/arthurdejong/nss-pam-ldapd/issues/12
+
+2016-06-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7eb1d69] pynslcd/expr.py: Support ${var:offset:length} in pynslcd
+
+2016-06-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c90a537] pynslcd/attmap.py: Fix pynslcd expression representation
+
+	  The problem was that the ExpressionMapping string value did not
+	  include the quotes which will cause problems when printing the
+	  expression (e.g.  when logging or dumping config, etc.).
+
+2016-06-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fd61bb6] tests/Makefile.am, tests/test_doctest.sh: Add test
+	  for running doctests
+
+2016-05-30  Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+
+	* [2ba9560] common/expr.c, man/nslcd.conf.5.xml, tests/test_expr.c:
+	  Support substituting expresions of type ${var:offset:length}
+
+2016-05-30  Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+
+	* [3a4860c] man/nslcd.conf.5.xml: Fix small typo
+
+2016-05-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [917ded7] common/expr.c: Refactor out expression parsing to
+	  functions
+
+	  This moves the parsing of the various ${var...} expressions to
+	  separate functions so they can be extended more easily.
+
+2016-02-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4be9c59] pam/pam.c: Fix logic error
+
+	  This could result in a free(NULL) call. This code path can
+	  only be triggered if pam_ldap changes the logged-in username
+	  (introduced in 6a74d8d).
+
+	  Thanks 依云, see
+	  https://github.com/arthurdejong/nss-pam-ldapd/issues/11
+
+2016-01-30  Mathieu Baeumler <mathieu.baeumler@gmail.com>
+
+	* [985aec3] nslcd/myldap.c: Display human readable expiry message
+
+	  Display a human readable message (days+hours, or hours+minutes,
+	  or seconds) when the password expiring warning is issued.
+
+2016-02-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b795f6c] nslcd/cfg.c: Fix nss_disable_enumeration configuration
+
+	  This fixes a copy-paste bug where nss_disable_enumeration was
+	  incorrectly handled. Fixes c0366d8.
+
+	  Thanks Andrew W Elble for pointing this out.
+
+2016-01-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [525c996] tests/test.ldif, tests/test_nsscmds.sh: Add a few
+	  IPv6 tests
+
+	  This adds a few test hosts that have IPv6 addresses. This
+	  ensures that we have an IPv6-only host and hosts which have
+	  address values in different order in the ipHostNumber attribute
+	  (although attribute order is probably not guaranteed).
+
+2015-10-18  Mathieu Baeumler <mathieu.baeumler@gmail.com>
+
+	* [31cd2cf] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/myldap.c: Add pam_authc_ppolicy option
+
+	  This option allows completely disabling ppolicy handling.
+
+2016-01-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [117c9cb] nslcd/pam.c: Fix error handling on credential change
+
+	  This fixes setting the correct LDAP error code and also fixes
+	  formatting in 027df03.
+
+2015-12-23  Vasilis Tsiligiannis <vasilis.tsiligiannis@nokia.com>
+
+	* [027df03] nslcd/pam.c: Fix updating of 'shadowLastChange'
+	  attribute when chasing referrals
+
+	  This fixes a bug where 'shadowLastChange' attribute cannot be
+	  updated when chasing a referral. After a password is succesfully
+	  changed, the credentials for binding should also be updated with
+	  the new password for the session.
+
+	  Signed-off-by: Vasilis Tsiligiannis
+	  <vasilis.tsiligiannis@nokia.com>
+
+2015-11-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fcea92d] nslcd/cfg.c: Correct file readability check
+
+	  This uses access() instead of stat() to see if the file is
+	  readable by the current process. This fixes f089e01.
+
+2015-09-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c879485] nslcd/myldap.c: Fail-over and retry on more errors
+
+	  Also try to fail over to another LDAP server on a larger number
+	  of errors. Specifically errors that point to problems connecting
+	  to the LDAP server.
+
+2015-08-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3d09e28] nslcd/myldap.c: Open connection before do_try_search()
+
+	  This is in preparation for splitting the BIND from the search
+	  phase for authentication.
+
+2015-08-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f089e01] nslcd/cfg.c: Loosen up file existence check
+
+	  This changes the check (for configuration options that specify
+	  file names) to just check that the specified path is readable
+	  instead of ensisting that it points to a file.
+
+	  This allows tls_randfile to point to /dev/urandom (a character
+	  device) or a pipe. This fixes 6779a51.
+
+	  This also applies the same check to the krb5_ccname option.
+
+	  Thanks to Patrick McLean for pointing this out.
+
+2015-08-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [309f127] pam/pam.c: Have PAM module log messages to syslog
+
+	  This logs informational messages that are presented to the user
+	  tot syslog. This normally includes password expiry and grace
+	  login information which may be useful to log.
+
+2015-08-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [263a443] nslcd/myldap.c: Simplify password policy message handling
+
+	  This simplifies the check for overwriging pending password
+	  expiry and grace logins warnigns and updates handling of the
+	  LDAP_CONTROL_PWEXPIRING control to be consistent with that of
+	  the expire value of LDAP_CONTROL_PASSWORDPOLICYRESPONSE.
+
+	  This also corrects the function name, also logs empty password
+	  policy responses in debug mode and documents the meaning of the
+	  various password policy values.
+
+2015-07-09  Mathieu Baeumler <mathieu.baeumler@gmail.com>
+
+	* [4302901] nslcd/myldap.c: Fix password policy expiration warnings
+
+	  If a password expiration warning (pwdExpireWarning) is set in
+	  slapd, and the password is about to expire, slapd sends the
+	  timeBeforeExpiration value as part of the passwordPolicyResponse.
+
+	  nslcd would incorrectly instruct the PAM module to require
+	  immediate password change. This has been fixed for both
+	  timeBeforeExpiration and graceLoginsRemaining.
+
+2015-07-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [89b471b] ar-lib, autogen.sh, compile, configure.ac, depcomp,
+	  install-sh, missing, py-compile, test-driver: Update files from
+	  automake 1.15
+
+	  This also includes the m4 directory when invoking aclocal because
+	  not all versions seem to handle AC_CONFIG_MACRO_DIR.
+
+2015-07-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [86a4618] m4/ax_tls.m4: Disable quoting in AX_TLS notfound case
+
+	  This ensures that AS_IF does not generate an empty else clause
+	  which will result in an invalid configure script.
+
+2015-07-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6779a51] nslcd/cfg.c: Check file existence for configuration
+	  options
+
+	  This adds addition checks to the tls_cacertdir, tls_cacertfile,
+	  tls_randfile, tls_cert and tls_key options to ensure that they
+	  point to an existing file when parsing nslcd.conf.
+
+2015-07-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a6c7c63] pynslcd/pynslcd.py: Work around bug in python-daemon
+
+	  See https://bugs.debian.org/792871
+
+2015-07-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c32e8c0] m4/ax_pthread.m4, m4/ax_tls.m4: Update macros from
+	  autoconf-archive
+
+2015-06-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d949bd4] AUTHORS, ChangeLog, NEWS, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml:
+	  Get files ready for 0.9.6 release
+
 2015-06-14  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [4236dd6] Makefile.am: Correctly insert emtpy lines in ChangeLog
