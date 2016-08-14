@@ -6,7 +6,7 @@
    Copyright (C) 2003 Jacques Vidrine
    Copyright (C) 2006 Artem Kazakov
    Copyright (C) 2009 Alexander V. Chernikov
-   Copyright (C) 2011-2015 Arthur de Jong
+   Copyright (C) 2011-2016 Arthur de Jong
    Copyright (C) 2011 Tom Judge
 
    This library is free software; you can redistribute it and/or
@@ -55,39 +55,42 @@ NSS_METHOD_PROTOTYPE(__nss_compat_gethostbyname2);
 NSS_METHOD_PROTOTYPE(__nss_compat_gethostbyaddr);
 
 static ns_mtab methods[] = {
-  { NSDB_GROUP, "getgrnam_r", __nss_compat_getgrnam_r, NSS_NAME(getgrnam_r) },
-  { NSDB_GROUP, "getgrgid_r", __nss_compat_getgrgid_r, NSS_NAME(getgrgid_r) },
-  { NSDB_GROUP, "getgrent_r", __nss_compat_getgrent_r, NSS_NAME(getgrent_r) },
-  { NSDB_GROUP, "setgrent",   __nss_compat_setgrent,   NSS_NAME(setgrent) },
-  { NSDB_GROUP, "endgrent",   __nss_compat_endgrent,   NSS_NAME(endgrent) },
+  { NSDB_GROUP, "getgrnam_r", __nss_compat_getgrnam_r, (void *)NSS_NAME(getgrnam_r) },
+  { NSDB_GROUP, "getgrgid_r", __nss_compat_getgrgid_r, (void *)NSS_NAME(getgrgid_r) },
+  { NSDB_GROUP, "getgrent_r", __nss_compat_getgrent_r, (void *)NSS_NAME(getgrent_r) },
+  { NSDB_GROUP, "setgrent",   __nss_compat_setgrent,   (void *)NSS_NAME(setgrent) },
+  { NSDB_GROUP, "endgrent",   __nss_compat_endgrent,   (void *)NSS_NAME(endgrent) },
   { NSDB_GROUP, "getgroupmembership", __freebsd_getgroupmembership, NULL },
 
-  { NSDB_PASSWD, "getpwnam_r", __nss_compat_getpwnam_r, NSS_NAME(getpwnam_r) },
-  { NSDB_PASSWD, "getpwuid_r", __nss_compat_getpwuid_r, NSS_NAME(getpwuid_r) },
-  { NSDB_PASSWD, "getpwent_r", __nss_compat_getpwent_r, NSS_NAME(getpwent_r) },
-  { NSDB_PASSWD, "setpwent",   __nss_compat_setpwent,   NSS_NAME(setpwent) },
-  { NSDB_PASSWD, "endpwent",   __nss_compat_endpwent,   NSS_NAME(endpwent) },
+  { NSDB_PASSWD, "getpwnam_r", __nss_compat_getpwnam_r, (void *)NSS_NAME(getpwnam_r) },
+  { NSDB_PASSWD, "getpwuid_r", __nss_compat_getpwuid_r, (void *)NSS_NAME(getpwuid_r) },
+  { NSDB_PASSWD, "getpwent_r", __nss_compat_getpwent_r, (void *)NSS_NAME(getpwent_r) },
+  { NSDB_PASSWD, "setpwent",   __nss_compat_setpwent,   (void *)NSS_NAME(setpwent) },
+  { NSDB_PASSWD, "endpwent",   __nss_compat_endpwent,   (void *)NSS_NAME(endpwent) },
 
-  { NSDB_HOSTS, "gethostbyname",  __nss_compat_gethostbyname,  NSS_NAME(gethostbyname_r) },
-  { NSDB_HOSTS, "gethostbyaddr",  __nss_compat_gethostbyaddr,  NSS_NAME(gethostbyaddr_r) },
-  { NSDB_HOSTS, "gethostbyname2", __nss_compat_gethostbyname2, NSS_NAME(gethostbyname2_r) },
+  { NSDB_HOSTS, "gethostbyname",  __nss_compat_gethostbyname,  (void *)NSS_NAME(gethostbyname_r) },
+  { NSDB_HOSTS, "gethostbyaddr",  __nss_compat_gethostbyaddr,  (void *)NSS_NAME(gethostbyaddr_r) },
+  { NSDB_HOSTS, "gethostbyname2", __nss_compat_gethostbyname2, (void *)NSS_NAME(gethostbyname2_r) },
 
-  { NSDB_GROUP_COMPAT, "getgrnam_r", __nss_compat_getgrnam_r, NSS_NAME(getgrnam_r) },
-  { NSDB_GROUP_COMPAT, "getgrgid_r", __nss_compat_getgrgid_r, NSS_NAME(getgrgid_r) },
-  { NSDB_GROUP_COMPAT, "getgrent_r", __nss_compat_getgrent_r, NSS_NAME(getgrent_r) },
-  { NSDB_GROUP_COMPAT, "setgrent",   __nss_compat_setgrent,   NSS_NAME(setgrent) },
-  { NSDB_GROUP_COMPAT, "endgrent",   __nss_compat_endgrent,   NSS_NAME(endgrent) },
+  { NSDB_GROUP_COMPAT, "getgrnam_r", __nss_compat_getgrnam_r, (void *)NSS_NAME(getgrnam_r) },
+  { NSDB_GROUP_COMPAT, "getgrgid_r", __nss_compat_getgrgid_r, (void *)NSS_NAME(getgrgid_r) },
+  { NSDB_GROUP_COMPAT, "getgrent_r", __nss_compat_getgrent_r, (void *)NSS_NAME(getgrent_r) },
+  { NSDB_GROUP_COMPAT, "setgrent",   __nss_compat_setgrent,   (void *)NSS_NAME(setgrent) },
+  { NSDB_GROUP_COMPAT, "endgrent",   __nss_compat_endgrent,   (void *)NSS_NAME(endgrent) },
 
-  { NSDB_PASSWD_COMPAT, "getpwnam_r", __nss_compat_getpwnam_r, NSS_NAME(getpwnam_r) },
-  { NSDB_PASSWD_COMPAT, "getpwuid_r", __nss_compat_getpwuid_r, NSS_NAME(getpwuid_r) },
-  { NSDB_PASSWD_COMPAT, "getpwent_r", __nss_compat_getpwent_r, NSS_NAME(getpwent_r) },
-  { NSDB_PASSWD_COMPAT, "setpwent",   __nss_compat_setpwent,   NSS_NAME(setpwent) },
-  { NSDB_PASSWD_COMPAT, "endpwent",   __nss_compat_endpwent,   NSS_NAME(endpwent) },
+  { NSDB_PASSWD_COMPAT, "getpwnam_r", __nss_compat_getpwnam_r, (void *)NSS_NAME(getpwnam_r) },
+  { NSDB_PASSWD_COMPAT, "getpwuid_r", __nss_compat_getpwuid_r, (void *)NSS_NAME(getpwuid_r) },
+  { NSDB_PASSWD_COMPAT, "getpwent_r", __nss_compat_getpwent_r, (void *)NSS_NAME(getpwent_r) },
+  { NSDB_PASSWD_COMPAT, "setpwent",   __nss_compat_setpwent,   (void *)NSS_NAME(setpwent) },
+  { NSDB_PASSWD_COMPAT, "endpwent",   __nss_compat_endpwent,   (void *)NSS_NAME(endpwent) },
 };
+
+typedef nss_status_t (*gethbn_t)(const char *, struct hostent *, char *, size_t, int *, int *);
+typedef nss_status_t (*gethba_t)(struct in_addr *, int, int, struct hostent *, char *, size_t, int *, int *);
 
 int __nss_compat_gethostbyname(void UNUSED(*retval), void *mdata, va_list ap)
 {
-  nss_status_t (*fn)(const char *, struct hostent *, char *, size_t, int *, int *);
+  gethbn_t fn;
   const char *name;
   struct hostent *result;
   char buffer[BUFFER_SIZE];
@@ -95,7 +98,7 @@ int __nss_compat_gethostbyname(void UNUSED(*retval), void *mdata, va_list ap)
   int h_errnop;
   int af;
   nss_status_t status;
-  fn = mdata;
+  fn = (gethbn_t)mdata;
   name = va_arg(ap, const char *);
   af = va_arg(ap, int);
   result = va_arg(ap, struct hostent *);
@@ -107,7 +110,7 @@ int __nss_compat_gethostbyname(void UNUSED(*retval), void *mdata, va_list ap)
 
 int __nss_compat_gethostbyname2(void UNUSED(*retval), void *mdata, va_list ap)
 {
-  nss_status_t (*fn)(const char *, struct hostent *, char *, size_t, int *, int *);
+  gethbn_t fn;
   const char *name;
   struct hostent *result;
   char buffer[BUFFER_SIZE];
@@ -115,7 +118,7 @@ int __nss_compat_gethostbyname2(void UNUSED(*retval), void *mdata, va_list ap)
   int h_errnop;
   int af;
   nss_status_t status;
-  fn = mdata;
+  fn = (gethbn_t)mdata;
   name = va_arg(ap, const char *);
   af = va_arg(ap, int);
   result = va_arg(ap, struct hostent *);
@@ -127,6 +130,7 @@ int __nss_compat_gethostbyname2(void UNUSED(*retval), void *mdata, va_list ap)
 
 int __nss_compat_gethostbyaddr(void UNUSED(*retval), void *mdata, va_list ap)
 {
+  gethba_t fn;
   struct in_addr *addr;
   int len;
   int type;
@@ -134,9 +138,8 @@ int __nss_compat_gethostbyaddr(void UNUSED(*retval), void *mdata, va_list ap)
   char buffer[BUFFER_SIZE];
   int errnop;
   int h_errnop;
-  nss_status_t (*fn)(struct in_addr *, int, int, struct hostent *, char *, size_t, int *, int *);
   nss_status_t status;
-  fn = mdata;
+  fn = (gethba_t)mdata;
   addr = va_arg(ap, struct in_addr *);
   len = va_arg(ap, int);
   type = va_arg(ap, int);
