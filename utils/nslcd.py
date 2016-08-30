@@ -96,8 +96,11 @@ class NslcdClient(object):
             # flush the stream
             self.fp.flush()
             # read and check response version number
-            assert self.read_int32() == constants.NSLCD_VERSION
-            assert self.read_int32() == self.action
+            if self.read_int32() != constants.NSLCD_VERSION:
+                raise IOError('NSLCD protocol error')
+            if self.read_int32() != self.action:
+                raise IOError('NSLCD protocol error')
+            # reset action to ensure that it is only the first time
             self.action = None
         # get the NSLCD_RESULT_* marker and return it
         return self.read_int32()
@@ -125,7 +128,8 @@ def usermod(username, asroot=False, password=None, args=None):
         con.write_string(v)
     con.write_int32(constants.NSLCD_USERMOD_END)
     # read the response
-    assert con.get_response() == constants.NSLCD_RESULT_BEGIN
+    if con.get_response() != constants.NSLCD_RESULT_BEGIN:
+        raise IOError('NSLCD protocol error')
     response = {}
     while True:
         key = con.read_int32()
