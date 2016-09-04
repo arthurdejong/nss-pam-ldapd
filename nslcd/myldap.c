@@ -1336,6 +1336,13 @@ static int do_retry_search(MYLDAP_SEARCH *search)
         rc = do_open(search->session);
         if (rc == LDAP_SUCCESS)
           rc = do_try_search(search);
+        /* if we are authenticating a user and get an error regarding failed
+           password we should error out instead of trying all servers */
+        if ((search->session->binddn[0] != '\0') && (rc == LDAP_INVALID_CREDENTIALS))
+        {
+          do_close(search->session);
+          return rc;
+        }
         if (rc == LDAP_SUCCESS)
         {
           pthread_mutex_lock(&uris_mutex);
