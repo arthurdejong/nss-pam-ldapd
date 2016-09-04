@@ -417,7 +417,7 @@ static void handleconnection(int sock, MYLDAP_SESSION *session)
     case NSLCD_ACTION_SERVICE_ALL:      (void)nslcd_service_all(fp, session); break;
     case NSLCD_ACTION_SHADOW_BYNAME:    (void)nslcd_shadow_byname(fp, session, uid); break;
     case NSLCD_ACTION_SHADOW_ALL:
-      if (!nslcd_cfg->nss_disable_enumeration) (void)nslcd_shadow_all(fp, session, uid); break;
+      if (!nslcd_cfg->nss_disable_enumeration) (void)nslcd_shadow_all(fp, session, uid);
       break;
     case NSLCD_ACTION_PAM_AUTHC:        (void)nslcd_pam_authc(fp, session, uid); break;
     case NSLCD_ACTION_PAM_AUTHZ:        (void)nslcd_pam_authz(fp, session); break;
