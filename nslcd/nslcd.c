@@ -894,5 +894,5 @@ int main(int argc, char *argv[])
       log_log(LOG_ERR, "thread %d is still running, shutting down anyway", i);
   }
   /* we're done */
-  return EXIT_FAILURE;
+  return EXIT_SUCCESS;
 }
