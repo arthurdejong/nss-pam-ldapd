@@ -1239,6 +1239,8 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->pagesize = 0;
   cfg->nss_initgroups_ignoreusers = NULL;
   cfg->nss_min_uid = 0;
+  cfg->nss_uid_offset = 0;
+  cfg->nss_gid_offset = 0;
   cfg->nss_nested_groups = 0;
   cfg->nss_getgrent_skipmembers = 0;
   cfg->nss_disable_enumeration = 0;
@@ -1575,6 +1577,16 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       cfg->nss_min_uid = get_int(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
+    else if (strcasecmp(keyword, "nss_uid_offset") == 0)
+    {
+      cfg->nss_uid_offset = get_int(filename, lnr, keyword, &line);
+      get_eol(filename, lnr, keyword, &line);
+    }
+    else if (strcasecmp(keyword, "nss_gid_offset") == 0)
+    {
+      cfg->nss_gid_offset = get_int(filename, lnr, keyword, &line);
+      get_eol(filename, lnr, keyword, &line);
+    }
     else if (strcasecmp(keyword, "nss_nested_groups") == 0)
     {
       cfg->nss_nested_groups = get_boolean(filename, lnr, keyword, &line);
@@ -1864,6 +1876,8 @@ static void cfg_dump(void)
     log_log(LOG_DEBUG, "CFG: nss_initgroups_ignoreusers %s", buffer);
   }
   log_log(LOG_DEBUG, "CFG: nss_min_uid %lu", (unsigned long int)nslcd_cfg->nss_min_uid);
+  log_log(LOG_DEBUG, "CFG: nss_uid_offset %lu", (unsigned long int)nslcd_cfg->nss_uid_offset);
+  log_log(LOG_DEBUG, "CFG: nss_gid_offset %lu", (unsigned long int)nslcd_cfg->nss_gid_offset);
   log_log(LOG_DEBUG, "CFG: nss_nested_groups %s", print_boolean(nslcd_cfg->nss_nested_groups));
   log_log(LOG_DEBUG, "CFG: nss_getgrent_skipmembers %s", print_boolean(nslcd_cfg->nss_getgrent_skipmembers));
   log_log(LOG_DEBUG, "CFG: nss_disable_enumeration %s", print_boolean(nslcd_cfg->nss_disable_enumeration));
