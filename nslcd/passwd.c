@@ -103,6 +103,7 @@ static int mkfilter_passwd_byname(const char *name,
    by uid, return -1 on errors */
 static int mkfilter_passwd_byuid(uid_t uid, char *buffer, size_t buflen)
 {
+  uid -= nslcd_cfg->nss_uid_offset;
   if (uidSid != NULL)
   {
     return mysnprintf(buffer, buflen, "(&%s(%s=%s\\%02x\\%02x\\%02x\\%02x))",
@@ -486,6 +487,7 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
           return 0;
         }
       }
+      uids[numuids] += nslcd_cfg->nss_uid_offset;
       if (uids[numuids] < nslcd_cfg->nss_min_uid)
       {
           log_log(LOG_DEBUG, "%s: %s: less than nss_min_uid",
@@ -529,6 +531,7 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
       return 0;
     }
   }
+  gid += nslcd_cfg->nss_gid_offset;
   /* get the gecos for this entry */
   attmap_get_value(entry, attmap_passwd_gecos, gecos, sizeof(gecos));
   /* get the home directory for this entry */

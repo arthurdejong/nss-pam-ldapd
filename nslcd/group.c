@@ -107,6 +107,7 @@ static int mkfilter_group_byname(const char *name,
    by gid, return -1 on errors */
 static int mkfilter_group_bygid(gid_t gid, char *buffer, size_t buflen)
 {
+  gid -= nslcd_cfg->nss_gid_offset;
   /* if searching for a Windows domain SID */
   if (gidSid != NULL)
   {
@@ -376,6 +377,7 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
           return 0;
         }
       }
+      gids[numgids] += nslcd_cfg->nss_gid_offset;
     }
   }
   /* get group passwd (userPassword) (use only first entry) */

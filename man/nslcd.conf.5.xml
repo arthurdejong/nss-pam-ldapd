@@ -725,6 +725,36 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="nss_uid_offset"> <!-- since 0.9.8 -->
+     <term><option>nss_uid_offset</option> <replaceable>NUMBER</replaceable></term>
+     <listitem>
+      <para>
+       This option specifies an offset that is added to all
+       <acronym>LDAP</acronym> numeric user ids.
+       This can be used to avoid user id collisions with local users or,
+       when using <literal>objectSid</literal> attributes, for compatibility
+       reasons.
+      </para>
+      <para>
+       The value from the <option>nss_min_uid</option> option is evaluated
+       after applying the offset.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry id="nss_gid_offset"> <!-- since 0.9.8 -->
+     <term><option>nss_gid_offset</option> <replaceable>NUMBER</replaceable></term>
+     <listitem>
+      <para>
+       This option specifies an offset that is added to all
+       <acronym>LDAP</acronym> numeric group ids.
+       This can be used to avoid user id collisions with local groups or,
+       when using <literal>objectSid</literal> attributes, for compatibility
+       reasons.
+      </para>
+     </listitem>
+    </varlistentry>
+
     <varlistentry id="nss_nested_groups"> <!-- since 0.9.0 -->
      <term><option>nss_nested_groups</option> yes|no</term>
      <listitem>
