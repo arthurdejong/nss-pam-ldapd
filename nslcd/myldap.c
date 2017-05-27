@@ -647,6 +647,10 @@ static int do_ppolicy_bind(MYLDAP_SESSION *session, LDAP *ld, const char *uri)
       handle_ppolicy_controls(session, ld, responsectrls);
       ldap_controls_free(responsectrls);
     }
+    if (session->policy_response == NSLCD_PAM_NEW_AUTHTOK_REQD)
+    {
+      rc = LDAP_SUCCESS;
+    }
   }
   /* return the result of the BIND operation */
   if (rc != LDAP_SUCCESS)
