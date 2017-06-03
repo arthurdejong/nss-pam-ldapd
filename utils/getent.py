@@ -161,7 +161,7 @@ def getent_hosts(database, keys=None):
         if ipv4_addr and db_af in (socket.AF_INET, None):
             con = NslcdClient(constants.NSLCD_ACTION_HOST_BYADDR)
             con.write_address(socket.AF_INET, ipv4_addr)
-        elif ipv6_addr and db_af in (socket.AF_INET, None):
+        elif ipv6_addr and db_af in (socket.AF_INET6, None):
             con = NslcdClient(constants.NSLCD_ACTION_HOST_BYADDR)
             con.write_address(socket.AF_INET6, ipv6_addr)
         else:
@@ -249,7 +249,7 @@ def getent_networks(database, keys=None):
         if ipv4_addr and db_af in (socket.AF_INET, None):
             con = NslcdClient(constants.NSLCD_ACTION_NETWORK_BYADDR)
             con.write_address(socket.AF_INET, ipv4_addr)
-        elif ipv6_addr and db_af in (socket.AF_INET, None):
+        elif ipv6_addr and db_af in (socket.AF_INET6, None):
             con = NslcdClient(constants.NSLCD_ACTION_NETWORK_BYADDR)
             con.write_address(socket.AF_INET6, ipv6_addr)
         else:
