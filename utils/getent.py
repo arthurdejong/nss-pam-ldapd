@@ -3,7 +3,7 @@
 
 # getent.py - program for querying nslcd
 #
-# Copyright (C) 2013-2016 Arthur de Jong
+# Copyright (C) 2013-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -49,16 +49,11 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-V', '--version', action=VersionAction)
 parser.add_argument('database', metavar='DATABASE',
                     help='any database supported by nslcd')
-parser.add_argument('key', metavar='KEY', nargs='?',
+parser.add_argument('keys', metavar='KEY', nargs='*',
                     help='filter returned database values by key')
 
 
-def getent_aliases(database, key=None):
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_ALIAS_ALL)
-    else:
-        con = NslcdClient(constants.NSLCD_ACTION_ALIAS_BYNAME)
-        con.write_string(key)
+def write_aliases(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
         print '%-16s%s' % (
                 con.read_string() + ': ',
@@ -66,33 +61,38 @@ def getent_aliases(database, key=None):
             )
 
 
-def getent_ethers(database, key=None):
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_ETHER_ALL)
-    elif re.match('^[0-9a-fA-F]{1,2}(:[0-9a-fA-F]{1,2}){5}$', key):
-        con = NslcdClient(constants.NSLCD_ACTION_ETHER_BYETHER)
-        con.write_ether(key)
-    else:
-        con = NslcdClient(constants.NSLCD_ACTION_ETHER_BYNAME)
+def getent_aliases(database, keys=None):
+    if not keys:
+        write_aliases(NslcdClient(constants.NSLCD_ACTION_ALIAS_ALL))
+        return
+    for key in keys:
+        con = NslcdClient(constants.NSLCD_ACTION_ALIAS_BYNAME)
         con.write_string(key)
+        write_aliases(con)
+
+
+def write_ethers(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
         name = con.read_string()
         ether = con.read_ether()
         print '%s %s' % (ether, name)
 
 
-def getent_group(database, key=None):
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_GROUP_ALL)
-    elif database == 'group.bymember':
-        con = NslcdClient(constants.NSLCD_ACTION_GROUP_BYMEMBER)
-        con.write_string(key)
-    elif re.match('^\d+$', key):
-        con = NslcdClient(constants.NSLCD_ACTION_GROUP_BYGID)
-        con.write_int32(int(key))
-    else:
-        con = NslcdClient(constants.NSLCD_ACTION_GROUP_BYNAME)
-        con.write_string(key)
+def getent_ethers(database, keys=None):
+    if not keys:
+        write_ethers(NslcdClient(constants.NSLCD_ACTION_ETHER_ALL))
+        return
+    for key in keys:
+        if re.match('^[0-9a-fA-F]{1,2}(:[0-9a-fA-F]{1,2}){5}$', key):
+            con = NslcdClient(constants.NSLCD_ACTION_ETHER_BYETHER)
+            con.write_ether(key)
+        else:
+            con = NslcdClient(constants.NSLCD_ACTION_ETHER_BYNAME)
+            con.write_string(key)
+        write_ethers(con)
+
+
+def write_group(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
         print '%s:%s:%d:%s' % (
                 con.read_string(),
@@ -100,6 +100,23 @@ def getent_group(database, key=None):
                 con.read_int32(),
                 ','.join(con.read_stringlist()),
             )
+
+
+def getent_group(database, keys=None):
+    if not keys:
+        write_group(NslcdClient(constants.NSLCD_ACTION_GROUP_ALL))
+        return
+    for key in keys:
+        if database == 'group.bymember':
+            con = NslcdClient(constants.NSLCD_ACTION_GROUP_BYMEMBER)
+            con.write_string(key)
+        elif re.match('^\d+$', key):
+            con = NslcdClient(constants.NSLCD_ACTION_GROUP_BYGID)
+            con.write_int32(int(key))
+        else:
+            con = NslcdClient(constants.NSLCD_ACTION_GROUP_BYNAME)
+            con.write_string(key)
+        write_group(con)
 
 
 def _get_ipv4(value):
@@ -125,11 +142,20 @@ def _get_af(database):
         return None
 
 
-def getent_hosts(database, key=None):
+def write_hosts(con, db_af):
+    while con.get_response() == constants.NSLCD_RESULT_BEGIN:
+        names = ' '.join([con.read_string()] + con.read_stringlist())
+        for af, address in con.read_addresslist():
+            if db_af in (af, None):
+                print '%-15s %s' % (address, names)
+
+
+def getent_hosts(database, keys=None):
     db_af = _get_af(database)
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_HOST_ALL)
-    else:
+    if not keys:
+        write_hosts(NslcdClient(constants.NSLCD_ACTION_HOST_ALL), db_af)
+        return
+    for key in keys:
         ipv4_addr = _get_ipv4(key)
         ipv6_addr = _get_ipv6(key)
         if ipv4_addr and db_af in (socket.AF_INET, None):
@@ -141,11 +167,7 @@ def getent_hosts(database, key=None):
         else:
             con = NslcdClient(constants.NSLCD_ACTION_HOST_BYNAME)
             con.write_string(key)
-    while con.get_response() == constants.NSLCD_RESULT_BEGIN:
-        names = ' '.join([con.read_string()] + con.read_stringlist())
-        for af, address in con.read_addresslist():
-            if db_af in (af, None):
-                print '%-15s %s' % (address, names)
+        write_hosts(con, db_af)
 
 
 def _read_netgroup(con):
@@ -187,13 +209,8 @@ def _get_getgroups(con, recurse, netgroups=None):
             yield (name, [], tripples)
 
 
-def getent_netgroup(database, key=None):
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_NETGROUP_ALL)
-    else:
-        con = NslcdClient(constants.NSLCD_ACTION_NETGROUP_BYNAME)
-        con.write_string(key)
-    for name, members, tripples in _get_getgroups(con, database == 'netgroup'):
+def write_netgroup(con, recurse):
+    for name, members, tripples in _get_getgroups(con, recurse):
         print '%-15s %s' % (name, ' '.join(
                 members +
                 ['(%s, %s, %s)' % (host, user, domain)
@@ -201,11 +218,32 @@ def getent_netgroup(database, key=None):
             ))
 
 
-def getent_networks(database, key=None):
+def getent_netgroup(database, keys=None):
+    recurse = database == 'netgroup'
+    if not keys:
+        write_netgroup(
+            NslcdClient(constants.NSLCD_ACTION_NETGROUP_ALL), recurse)
+        return
+    for key in keys:
+        con = NslcdClient(constants.NSLCD_ACTION_NETGROUP_BYNAME)
+        con.write_string(key)
+        write_netgroup(con, recurse)
+
+
+def write_networks(con, db_af):
+    while con.get_response() == constants.NSLCD_RESULT_BEGIN:
+        names = ' '.join([con.read_string()] + con.read_stringlist())
+        for af, address in con.read_addresslist():
+            if db_af in (af, None):
+                print '%-15s %s' % (address, names)
+
+
+def getent_networks(database, keys=None):
     db_af = _get_af(database)
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_NETWORK_ALL)
-    else:
+    if not keys:
+        write_networks(NslcdClient(constants.NSLCD_ACTION_NETWORK_ALL), db_af)
+        return
+    for key in keys:
         ipv4_addr = _get_ipv4(key)
         ipv6_addr = _get_ipv6(key)
         if ipv4_addr and db_af in (socket.AF_INET, None):
@@ -217,22 +255,10 @@ def getent_networks(database, key=None):
         else:
             con = NslcdClient(constants.NSLCD_ACTION_NETWORK_BYNAME)
             con.write_string(key)
-    while con.get_response() == constants.NSLCD_RESULT_BEGIN:
-        names = ' '.join([con.read_string()] + con.read_stringlist())
-        for af, address in con.read_addresslist():
-            if db_af in (af, None):
-                print '%-15s %s' % (address, names)
+        write_networks(con, db_af)
 
 
-def getent_passwd(database, key=None):
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_PASSWD_ALL)
-    elif re.match('^\d+$', key):
-        con = NslcdClient(constants.NSLCD_ACTION_PASSWD_BYUID)
-        con.write_int32(int(key))
-    else:
-        con = NslcdClient(constants.NSLCD_ACTION_PASSWD_BYNAME)
-        con.write_string(key)
+def write_passwd(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
         print '%s:%s:%d:%d:%s:%s:%s' % (
                 con.read_string(),
@@ -245,15 +271,21 @@ def getent_passwd(database, key=None):
             )
 
 
-def getent_protocols(database, key=None):
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_PROTOCOL_ALL)
-    elif re.match('^\d+$', key):
-        con = NslcdClient(constants.NSLCD_ACTION_PROTOCOL_BYNUMBER)
-        con.write_int32(int(key))
-    else:
-        con = NslcdClient(constants.NSLCD_ACTION_PROTOCOL_BYNAME)
-        con.write_string(key)
+def getent_passwd(database, keys=None):
+    if not keys:
+        write_passwd(NslcdClient(constants.NSLCD_ACTION_PASSWD_ALL))
+        return
+    for key in keys:
+        if re.match('^\d+$', key):
+            con = NslcdClient(constants.NSLCD_ACTION_PASSWD_BYUID)
+            con.write_int32(int(key))
+        else:
+            con = NslcdClient(constants.NSLCD_ACTION_PASSWD_BYNAME)
+            con.write_string(key)
+        write_passwd(con)
+
+
+def write_protocols(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
         name = con.read_string()
         aliases = con.read_stringlist()
@@ -261,15 +293,21 @@ def getent_protocols(database, key=None):
         print '%-21s %d %s' % (name, number, ' '.join(aliases))
 
 
-def getent_rpc(database, key=None):
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_RPC_ALL)
-    elif re.match('^\d+$', key):
-        con = NslcdClient(constants.NSLCD_ACTION_RPC_BYNUMBER)
-        con.write_int32(int(key))
-    else:
-        con = NslcdClient(constants.NSLCD_ACTION_RPC_BYNAME)
-        con.write_string(key)
+def getent_protocols(database, keys=None):
+    if not keys:
+        write_protocols(NslcdClient(constants.NSLCD_ACTION_PROTOCOL_ALL))
+        return
+    for key in keys:
+        if re.match('^\d+$', key):
+            con = NslcdClient(constants.NSLCD_ACTION_PROTOCOL_BYNUMBER)
+            con.write_int32(int(key))
+        else:
+            con = NslcdClient(constants.NSLCD_ACTION_PROTOCOL_BYNAME)
+            con.write_string(key)
+        write_protocols(con)
+
+
+def write_rpc(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
         name = con.read_string()
         aliases = con.read_stringlist()
@@ -277,10 +315,34 @@ def getent_rpc(database, key=None):
         print '%-15s %d  %s' % (name, number, ' '.join(aliases))
 
 
-def getent_services(database, key=None):
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_SERVICE_ALL)
-    else:
+def getent_rpc(database, keys=None):
+    if not keys:
+        write_rpc(NslcdClient(constants.NSLCD_ACTION_RPC_ALL))
+        return
+    for key in keys:
+        if re.match('^\d+$', key):
+            con = NslcdClient(constants.NSLCD_ACTION_RPC_BYNUMBER)
+            con.write_int32(int(key))
+        else:
+            con = NslcdClient(constants.NSLCD_ACTION_RPC_BYNAME)
+            con.write_string(key)
+        write_rpc(con)
+
+
+def write_services(con):
+    while con.get_response() == constants.NSLCD_RESULT_BEGIN:
+        name = con.read_string()
+        aliases = con.read_stringlist()
+        number = con.read_int32()
+        protocol = con.read_string()
+        print '%-21s %d/%s %s' % (name, number, protocol, ' '.join(aliases))
+
+
+def getent_services(database, keys=None):
+    if not keys:
+        write_services(NslcdClient(constants.NSLCD_ACTION_SERVICE_ALL))
+        return
+    for key in keys:
         value = key
         protocol = ''
         if '/' in value:
@@ -293,60 +355,63 @@ def getent_services(database, key=None):
             con = NslcdClient(constants.NSLCD_ACTION_SERVICE_BYNAME)
             con.write_string(value)
             con.write_string(protocol)
-    while con.get_response() == constants.NSLCD_RESULT_BEGIN:
-        name = con.read_string()
-        aliases = con.read_stringlist()
-        number = con.read_int32()
-        protocol = con.read_string()
-        print '%-21s %d/%s %s' % (name, number, protocol, ' '.join(aliases))
+        write_services(con)
 
 
-def getent_shadow(database, key=None):
-    if not key:
-        con = NslcdClient(constants.NSLCD_ACTION_SHADOW_ALL)
-    else:
-        con = NslcdClient(constants.NSLCD_ACTION_SHADOW_BYNAME)
-        con.write_string(key)
-    value2str = lambda x: str(x) if x != -1 else ''
+def _shadow_value2str(number):
+    return str(number) if number != -1 else ''
+
+
+def write_shadow(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
         print '%s:%s:%s:%s:%s:%s:%s:%s:%s' % (
                 con.read_string(),
                 con.read_string(),
-                value2str(con.read_int32()),
-                value2str(con.read_int32()),
-                value2str(con.read_int32()),
-                value2str(con.read_int32()),
-                value2str(con.read_int32()),
-                value2str(con.read_int32()),
-                value2str(con.read_int32()),
+                _shadow_value2str(con.read_int32()),
+                _shadow_value2str(con.read_int32()),
+                _shadow_value2str(con.read_int32()),
+                _shadow_value2str(con.read_int32()),
+                _shadow_value2str(con.read_int32()),
+                _shadow_value2str(con.read_int32()),
+                _shadow_value2str(con.read_int32()),
             )
+
+
+def getent_shadow(database, keys=None):
+    if not keys:
+        write_shadow(NslcdClient(constants.NSLCD_ACTION_SHADOW_ALL))
+        return
+    for key in keys:
+        con = NslcdClient(constants.NSLCD_ACTION_SHADOW_BYNAME)
+        con.write_string(key)
+        write_shadow(con)
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
     try:
         if args.database == 'aliases':
-            getent_aliases(args.database, args.key)
+            getent_aliases(args.database, args.keys)
         elif args.database == 'ethers':
-            getent_ethers(args.database, args.key)
+            getent_ethers(args.database, args.keys)
         elif args.database in ('group', 'group.bymember'):
-            getent_group(args.database, args.key)
+            getent_group(args.database, args.keys)
         elif args.database in ('hosts', 'hostsv4', 'hostsv6'):
-            getent_hosts(args.database, args.key)
+            getent_hosts(args.database, args.keys)
         elif args.database in ('netgroup', 'netgroup.norec'):
-            getent_netgroup(args.database, args.key)
+            getent_netgroup(args.database, args.keys)
         elif args.database in ('networks', 'networksv4', 'networksv6'):
-            getent_networks(args.database, args.key)
+            getent_networks(args.database, args.keys)
         elif args.database == 'passwd':
-            getent_passwd(args.database, args.key)
+            getent_passwd(args.database, args.keys)
         elif args.database == 'protocols':
-            getent_protocols(args.database, args.key)
+            getent_protocols(args.database, args.keys)
         elif args.database == 'rpc':
-            getent_rpc(args.database, args.key)
+            getent_rpc(args.database, args.keys)
         elif args.database == 'services':
-            getent_services(args.database, args.key)
+            getent_services(args.database, args.keys)
         elif args.database == 'shadow':
-            getent_shadow(args.database, args.key)
+            getent_shadow(args.database, args.keys)
         else:
             parser.error('Unknown database: %s' % args.database)
     except struct.error:

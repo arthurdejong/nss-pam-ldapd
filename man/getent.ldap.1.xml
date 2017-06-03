@@ -3,9 +3,9 @@
                    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 
 <!--
-   getent.ldap.1.xml - docbook manual page for chsh.ldap
+   getent.ldap.1.xml - docbook manual page for getent.ldap
 
-   Copyright (C) 2013-2016 Arthur de Jong
+   Copyright (C) 2013-2017 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -50,7 +50,7 @@
    <command>getent.ldap</command>
    <arg choice="opt"><replaceable>options</replaceable></arg>
    <arg><replaceable>DATABASE</replaceable></arg>
-   <arg choice="opt"><replaceable>KEY</replaceable></arg>
+   <arg choice="opt"><replaceable>KEY...</replaceable></arg>
   </cmdsynopsis>
  </refsynopsisdiv>
 
