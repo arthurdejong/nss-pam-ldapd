@@ -235,7 +235,7 @@ def write_networks(con, db_af):
         names = ' '.join([con.read_string()] + con.read_stringlist())
         for af, address in con.read_addresslist():
             if db_af in (af, None):
-                print '%-15s %s' % (address, names)
+                print '%-22s %s' % (names, address)
 
 
 def getent_networks(database, keys=None):
