@@ -43,8 +43,8 @@ class User(object):
         """Check if the user we want to modify is an LDAP user and whether
         we may modify the user information."""
         if self.asroot and self.myuid != 0:
-            print "%s: you may not modify user '%s'.\n" % \
-                    (sys.argv[0], self.username)
+            print("%s: you may not modify user '%s'.\n" %
+                  (sys.argv[0], self.username))
             sys.exit(1)
         # FIXME: check if the user is an LDAP user
 

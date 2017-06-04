@@ -2,7 +2,7 @@
 
 # nslcd.py - functions for doing nslcd requests
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ import fcntl
 import os
 import socket
 import struct
+import sys
 
 import constants
 
@@ -40,7 +41,7 @@ class NslcdClient(object):
         # connect to nslcd
         self.sock.connect(constants.NSLCD_SOCKET)
         #self.sock.setblocking(1)
-        self.fp = os.fdopen(self.sock.fileno(), 'r+b', 1024 * 1024)
+        self.fp = os.fdopen(self.sock.fileno(), 'r+b', 0)
         # write a request header with a request code
         self.action = action
         self.write_int32(constants.NSLCD_VERSION)
@@ -52,9 +53,14 @@ class NslcdClient(object):
     def write_int32(self, value):
         self.write(_int32.pack(value))
 
-    def write_string(self, value):
+    def write_bytes(self, value):
         self.write_int32(len(value))
         self.write(value)
+
+    def write_string(self, value):
+        if sys.version_info[0] >= 3:
+            value = value.encode('utf-8')
+        self.write_bytes(value.encode('utf-8'))
 
     def write_ether(self, value):
         value = struct.pack('BBBBBB', *(int(x, 16) for x in value.split(':')))
@@ -62,21 +68,32 @@ class NslcdClient(object):
 
     def write_address(self, af, value):
         self.write_int32(af)
-        self.write_string(value)
+        self.write_bytes(value)
 
     def read(self, size):
-        return self.fp.read(size)
+        value = b''
+        while len(value) < size:
+            data = self.fp.read(size - len(value))
+            if not data:
+                raise IOError('NSLCD protocol cut short')
+            value += data
+        return value
 
     def read_int32(self):
         return _int32.unpack(self.read(_int32.size))[0]
 
+    def read_bytes(self):
+        return self.read(self.read_int32())
+
     def read_string(self):
-        num = self.read_int32()
-        return self.read(num)
+        value = self.read_bytes()
+        if sys.version_info[0] >= 3:
+            value = value.decode('utf-8')
+        return value
 
     def read_stringlist(self):
         num = self.read_int32()
-        return [self.read_string() for x in xrange(num)]
+        return [self.read_string() for x in range(num)]
 
     def read_ether(self):
         value = self.fp.read(6)
@@ -84,11 +101,11 @@ class NslcdClient(object):
 
     def read_address(self):
         af = self.read_int32()
-        return af, socket.inet_ntop(af, self.read_string())
+        return af, socket.inet_ntop(af, self.read_bytes())
 
     def read_addresslist(self):
         num = self.read_int32()
-        return [self.read_address() for x in xrange(num)]
+        return [self.read_address() for x in range(num)]
 
     def get_response(self):
         # complete the request if required and check response header

@@ -55,10 +55,10 @@ parser.add_argument('keys', metavar='KEY', nargs='*',
 
 def write_aliases(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
-        print '%-16s%s' % (
+        print('%-16s%s' % (
                 con.read_string() + ': ',
                 ', '.join(con.read_stringlist()),
-            )
+            ))
 
 
 def getent_aliases(database, keys=None):
@@ -75,7 +75,7 @@ def write_ethers(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
         name = con.read_string()
         ether = con.read_ether()
-        print '%s %s' % (ether, name)
+        print('%s %s' % (ether, name))
 
 
 def getent_ethers(database, keys=None):
@@ -94,12 +94,12 @@ def getent_ethers(database, keys=None):
 
 def write_group(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
-        print '%s:%s:%d:%s' % (
+        print('%s:%s:%d:%s' % (
                 con.read_string(),
                 con.read_string(),
                 con.read_int32(),
                 ','.join(con.read_stringlist()),
-            )
+            ))
 
 
 def getent_group(database, keys=None):
@@ -147,7 +147,7 @@ def write_hosts(con, db_af):
         names = ' '.join([con.read_string()] + con.read_stringlist())
         for af, address in con.read_addresslist():
             if db_af in (af, None):
-                print '%-15s %s' % (address, names)
+                print('%-15s %s' % (address, names))
 
 
 def getent_hosts(database, keys=None):
@@ -211,11 +211,11 @@ def _get_getgroups(con, recurse, netgroups=None):
 
 def write_netgroup(con, recurse):
     for name, members, tripples in _get_getgroups(con, recurse):
-        print '%-15s %s' % (name, ' '.join(
+        print('%-15s %s' % (name, ' '.join(
                 members +
                 ['(%s, %s, %s)' % (host, user, domain)
                  for host, user, domain in tripples]
-            ))
+            )))
 
 
 def getent_netgroup(database, keys=None):
@@ -235,7 +235,7 @@ def write_networks(con, db_af):
         names = ' '.join([con.read_string()] + con.read_stringlist())
         for af, address in con.read_addresslist():
             if db_af in (af, None):
-                print '%-22s %s' % (names, address)
+                print('%-22s %s' % (names, address))
 
 
 def getent_networks(database, keys=None):
@@ -260,7 +260,7 @@ def getent_networks(database, keys=None):
 
 def write_passwd(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
-        print '%s:%s:%d:%d:%s:%s:%s' % (
+        print('%s:%s:%d:%d:%s:%s:%s' % (
                 con.read_string(),
                 con.read_string(),
                 con.read_int32(),
@@ -268,7 +268,7 @@ def write_passwd(con):
                 con.read_string(),
                 con.read_string(),
                 con.read_string(),
-            )
+            ))
 
 
 def getent_passwd(database, keys=None):
@@ -290,7 +290,7 @@ def write_protocols(con):
         name = con.read_string()
         aliases = con.read_stringlist()
         number = con.read_int32()
-        print '%-21s %d %s' % (name, number, ' '.join(aliases))
+        print('%-21s %d %s' % (name, number, ' '.join(aliases)))
 
 
 def getent_protocols(database, keys=None):
@@ -312,7 +312,7 @@ def write_rpc(con):
         name = con.read_string()
         aliases = con.read_stringlist()
         number = con.read_int32()
-        print '%-15s %d  %s' % (name, number, ' '.join(aliases))
+        print('%-15s %d  %s' % (name, number, ' '.join(aliases)))
 
 
 def getent_rpc(database, keys=None):
@@ -335,7 +335,7 @@ def write_services(con):
         aliases = con.read_stringlist()
         number = con.read_int32()
         protocol = con.read_string()
-        print '%-21s %d/%s %s' % (name, number, protocol, ' '.join(aliases))
+        print('%-21s %d/%s %s' % (name, number, protocol, ' '.join(aliases)))
 
 
 def getent_services(database, keys=None):
@@ -364,7 +364,7 @@ def _shadow_value2str(number):
 
 def write_shadow(con):
     while con.get_response() == constants.NSLCD_RESULT_BEGIN:
-        print '%s:%s:%s:%s:%s:%s:%s:%s:%s' % (
+        print('%s:%s:%s:%s:%s:%s:%s:%s:%s' % (
                 con.read_string(),
                 con.read_string(),
                 _shadow_value2str(con.read_int32()),
@@ -374,7 +374,7 @@ def write_shadow(con):
                 _shadow_value2str(con.read_int32()),
                 _shadow_value2str(con.read_int32()),
                 _shadow_value2str(con.read_int32()),
-            )
+            ))
 
 
 def getent_shadow(database, keys=None):
@@ -415,5 +415,5 @@ if __name__ == '__main__':
         else:
             parser.error('Unknown database: %s' % args.database)
     except struct.error:
-        print 'Problem communicating with nslcd'
+        print('Problem communicating with nslcd')
         sys.exit(1)

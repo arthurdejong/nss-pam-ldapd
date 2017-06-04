@@ -51,14 +51,14 @@ def check(shell, asroot=False):
     if not asroot:
         if not shell:
             # FIXME: print to stderr
-            print '%s: empty shell not allowed' % sys.argv[0]
+            print('%s: empty shell not allowed' % sys.argv[0])
         else:
             # FIXME: print to stderr
-            print '%s: %s is an invalid shell' % (sys.argv[0], shell)
+            print('%s: %s is an invalid shell' % (sys.argv[0], shell))
         sys.exit(1)
     # warn if something seems wrong
     if not shell:
         # FIXME: print to stderr
-        print '%s: Warning: setting empty shell' % sys.argv[0]
+        print('%s: Warning: setting empty shell' % sys.argv[0])
     elif not shellexists(shell):
-        print '%s: Warning: %s does not exist' % (sys.argv[0], shell)
+        print('%s: Warning: %s does not exist' % (sys.argv[0], shell))

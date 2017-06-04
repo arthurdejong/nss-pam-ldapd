@@ -60,7 +60,7 @@ if __name__ == '__main__':
     password = user.get_passwd()
     # prompt for a shell if it was not specified on the command line
     if shell is None:
-        print 'Enter the new value, or press ENTER for the default'
+        print('Enter the new value, or press ENTER for the default')
         shell = ask_shell(user.shell)
         shells.check(shell, user.asroot)
     # perform the modification

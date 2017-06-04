@@ -46,7 +46,7 @@ class VersionAction(argparse.Action):
             help=help)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        print version_string
+        print(version_string)
         parser.exit()
 
 
@@ -64,5 +64,5 @@ class ListShellsAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         import shells
         for shell in shells.list_shells():
-            print shell
+            print(shell)
         parser.exit()
