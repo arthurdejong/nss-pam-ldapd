@@ -1,7 +1,7 @@
 # Makefile.am - use automake to generate Makefile.in
 #
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006-2014 Arthur de Jong
+# Copyright (C) 2006-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,8 @@
 
 TESTS = test_dict test_set test_tio test_expr test_getpeercred test_cfg \
         test_attmap test_myldap.sh test_common test_nsscmds.sh \
-        test_pamcmds.sh test_manpages.sh test_clock test_tio_timeout
+        test_ldapcmds.sh test_pamcmds.sh test_manpages.sh test_clock \
+        test_tio_timeout
 if HAVE_PYTHON
   TESTS += test_pycompile.sh test_pylint.sh
 endif
@@ -37,8 +38,8 @@ check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
                  lookup_groupbyuser
 
 EXTRA_DIST = README nslcd-test.conf usernames.txt testenv.sh test_myldap.sh \
-             test_nsscmds.sh  test_pamcmds.sh test_pamcmds.expect \
-             test_manpages.sh \
+             test_nsscmds.sh test_ldapcmds.sh test_pamcmds.sh \
+             test_pamcmds.expect test_manpages.sh \
              test_pycompile.sh test_pylint.sh pylint.rc test_doctest.sh \
              test_pynslcd_cache.py \
              setup_slapd.sh config.ldif test.ldif

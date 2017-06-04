@@ -2,7 +2,7 @@
 
 # testenv.sh - script to check test environment
 #
-# Copyright (C) 2011-2015 Arthur de Jong
+# Copyright (C) 2011-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -77,7 +77,7 @@ nss_enable()
   return 0
 }
 
-# check nsswitch.conf
+# check nsswitch.conf to see if dbs use ldap
 check_nsswitch() {
   required="${1:-passwd group}"
   if [ -r /etc/nsswitch.conf ]
@@ -171,6 +171,7 @@ check_nslcd_running() {
 
 case "$1" in
   nss_enable)
+    # modify /etc/nsswitch.conf to enable ldap for db
     shift
     while [ $# -gt 0 ]
     do
@@ -180,6 +181,7 @@ case "$1" in
     exit 0
     ;;
   check)
+    # perform all tests for test environment
     res=0
     check_nsswitch || res=1
     check_pam || res=1
@@ -190,14 +192,26 @@ case "$1" in
     exit $res
     ;;
   check_nss)
+    # check nsswitch.conf to see if dbs use ldap
     shift
     check_nsswitch "$*" || exit 1
     exit 0
     ;;
   check_ldap)
+    # check availability of LDAP server
+    # (optional URI and BASE arguments)
     shift
     check_ldap_server "$@" || exit 1
     exit 0
+    ;;
+  check_nslcd)
+    # check nslcd availability
+    res=0
+    check_ldap_server || res=1
+    check_nslcd_conf || res=1
+    check_nslcd_running || res=1
+    [ $res -eq 0 ] && echo "$script: test environment OK"  || true
+    exit $res
     ;;
   *)
     echo "Usage: $0 {nss_enable|check|check_nss|check_ldap}" >&2
