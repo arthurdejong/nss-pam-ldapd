@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2014 Arthur de Jong
+   Copyright (C) 2006-2017 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -207,7 +207,12 @@ static int entry_has_valid_uid(MYLDAP_ENTRY *entry)
         continue;
       }
     }
-    if (uid >= nslcd_cfg->nss_min_uid)
+    if (uid < nslcd_cfg->nss_min_uid)
+    {
+      log_log(LOG_DEBUG, "%s: %s: less than nss_min_uid",
+              myldap_get_dn(entry), attmap_passwd_uidNumber);
+    }
+    else
       return 1;
   }
   /* nothing found */
@@ -481,6 +486,11 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
           return 0;
         }
       }
+      if (uids[numuids] < nslcd_cfg->nss_min_uid)
+      {
+          log_log(LOG_DEBUG, "%s: %s: less than nss_min_uid",
+                  myldap_get_dn(entry), attmap_passwd_uidNumber);
+      }
     }
   }
   /* get the gid for this entry */
@@ -530,6 +540,7 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
   attmap_get_value(entry, attmap_passwd_loginShell, shell, sizeof(shell));
   /* write the entries */
   for (i = 0; usernames[i] != NULL; i++)
+  {
     if ((requser == NULL) || (STR_CMP(requser, usernames[i]) == 0))
     {
       if (!isvalidname(usernames[i]))
@@ -555,6 +566,7 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
         }
       }
     }
+  }
   return 0;
 }
 
@@ -582,6 +594,7 @@ NSLCD_HANDLE_UID(
   log_setrequest("passwd=%lu", (unsigned long int)uid);
   if (uid < nslcd_cfg->nss_min_uid)
   {
+    log_log(LOG_DEBUG, "request ignored by nss_min_uid option");
     /* return an empty result */
     WRITE_INT32(fp, NSLCD_VERSION);
     WRITE_INT32(fp, NSLCD_ACTION_PASSWD_BYUID);
