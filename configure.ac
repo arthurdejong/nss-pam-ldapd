@@ -35,7 +35,7 @@ configure.ac file for more details.])
 AC_INIT([nss-pam-ldapd],
         [0.9.7],
         [nss-pam-ldapd-users@lists.arthurdejong.org],,
-        [http://arthurdejong.org/nss-pam-ldapd/])
+        [https://arthurdejong.org/nss-pam-ldapd/])
 RELEASE_MONTH="Aug 2016"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])

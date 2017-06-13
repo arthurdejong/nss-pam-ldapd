@@ -11,11 +11,11 @@
    Howard Chu for the OpenLDAP nssov module was integrated. Solaris
    compatibility was developed by Ted C. Cheng of Symas Corporation.
 
-   http://arthurdejong.org/nss-pam-ldapd/
+   https://arthurdejong.org/nss-pam-ldapd/
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006-2007 West Consulting
-   Copyright (C) 2006-2016 Arthur de Jong
+   Copyright (C) 2006-2017 Arthur de Jong
    Copyright (C) 2009 Howard Chu
    Copyright (C) 2010 Symas Corporation
 

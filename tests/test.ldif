@@ -40111,7 +40111,7 @@ shadowInactive: 2
 uidNumber: 1000
 title:: c3V4AAA=
 title: su
-labeledURI: http://arthurdejong.org/ Arthur's homepage
+labeledURI: https://arthurdejong.org/ Arthur's homepage
 mail: arthur@arthurdejong.org
 objectClass: top
 objectClass: posixAccount
