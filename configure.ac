@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006-2016 Arthur de Jong
+# Copyright (C) 2006-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -720,8 +720,8 @@ then
   AC_REPLACE_FUNCS(getopt_long)
   AC_REPLACE_FUNCS(strndup)
 
-  # replace ether_aton_r() and ether_ntoa_r() if they are not found
-  AC_CHECK_FUNCS(ether_aton_r ether_ntoa_r,, [AC_LIBOBJ(ether)])
+  # replace ether_aton_r() if not found
+  AC_CHECK_FUNCS(ether_aton_r,, [AC_LIBOBJ(ether)])
 
   # check to see if struct sockaddr_storage is defined
   AC_CHECK_TYPE(struct sockaddr_storage,,

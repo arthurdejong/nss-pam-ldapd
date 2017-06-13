@@ -1,7 +1,7 @@
 
 # ether.py - lookup functions for ethernet addresses
 #
-# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2010-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -31,10 +31,11 @@ def ether_aton(ether):
     return struct.pack('BBBBBB', *(int(x, 16) for x in ether.split(':')))
 
 
-def ether_ntoa(ether):
+def ether_ntoa(ether, compact=True):
     """Conversts an ethernet address in network byte order to the string
     representation."""
-    return ':'.join('%x' % x for x in struct.unpack('6B', ether))
+    fmt = '%x' if compact else '%02x'
+    return ':'.join(fmt % x for x in struct.unpack('6B', ether))
 
 
 attmap = common.Attributes(cn='cn', macAddress='macAddress')
@@ -51,7 +52,7 @@ class Search(search.LDAPSearch):
         # we need a custom mk_filter because this is an | query
         if 'macAddress' in self.parameters:
             ether = self.parameters['macAddress']
-            alt_ether = ':'.join('%02x' % int(x, 16) for x in ether.split(':'))
+            alt_ether = ether_ntoa(ether_aton(ether), compact=False)
             return '(&%s(|(%s=%s)(%s=%s)))' % (self.filter,
                       attmap['macAddress'], ether,
                       attmap['macAddress'], alt_ether)

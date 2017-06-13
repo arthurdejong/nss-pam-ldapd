@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2014 Arthur de Jong
+   Copyright (C) 2006-2017 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -78,15 +78,28 @@ static int mkfilter_ether_byname(const char *name,
                     ether_filter, attmap_ether_cn, safename);
 }
 
-static int mkfilter_ether_byether(const char *addrstr,
+static void my_ether_ntoa(const u_int8_t *addr, char *buffer, int compact)
+{
+  int i;
+  for (i = 0; i < 6; i++)
+  {
+    if (i > 0)
+      *buffer++ = ':';
+    buffer += sprintf(buffer, compact ? "%x" : "%02x", addr[i]);
+  }
+  *buffer++ = '\0';
+}
+
+static int mkfilter_ether_byether(const struct ether_addr *addr,
                                   char *buffer, size_t buflen)
 {
-  /* Note: this only works if the address in LDAP has the preferred minimal
-     representation (e.g. 1:0:e:...) and not with extra leading zeros
-     (e.g. 01:00:0e:...) */
+  char addrstr1[20], addrstr2[20];
+  my_ether_ntoa((const u_int8_t *)addr, addrstr1, 1);
+  my_ether_ntoa((const u_int8_t *)addr, addrstr2, 0);
   /* there should be no characters that need escaping */
-  return mysnprintf(buffer, buflen, "(&%s(%s=%s))",
-                    ether_filter, attmap_ether_macAddress, addrstr);
+  return mysnprintf(buffer, buflen, "(&%s(|(%s=%s)(%s=%s)))", ether_filter,
+                    attmap_ether_macAddress, addrstr1,
+                    attmap_ether_macAddress, addrstr2);
 }
 
 void ether_init(void)
@@ -172,10 +185,9 @@ NSLCD_HANDLE(
   char addrstr[20];
   char filter[BUFLEN_FILTER];
   READ(fp, &addr, sizeof(uint8_t[6]));
-  if (ether_ntoa_r(&addr, addrstr) == NULL)
-    return -1;
+  my_ether_ntoa((u_int8_t *)&addr, addrstr, 1);
   log_setrequest("ether=%s", addrstr);,
-  mkfilter_ether_byether(addrstr, filter, sizeof(filter)),
+  mkfilter_ether_byether(&addr, filter, sizeof(filter)),
   write_ether(fp, entry, NULL, addrstr)
 )
 
