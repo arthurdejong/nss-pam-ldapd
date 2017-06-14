@@ -165,14 +165,19 @@ static int do_searches(MYLDAP_SESSION *session, const char *option,
 /* set up a connection and try to bind with the specified DN and password,
    returns an LDAP result code */
 static int try_bind(const char *userdn, const char *password,
+                    const char *username, const char *service,
+                    const char *ruser, const char *rhost, const char *tty,
                     int *authzrc, char *authzmsg, size_t authzmsgsz)
 {
   MYLDAP_SESSION *session;
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   static const char *attrs[2];
-  int rc;
+  int rc = LDAP_SUCCESS;
   const char *msg;
+  DICT *dict;
+  char filter[BUFLEN_FILTER];
+  const char *res;
   /* set up a new connection */
   session = myldap_create_session();
   if (session == NULL)
@@ -183,27 +188,50 @@ static int try_bind(const char *userdn, const char *password,
     myldap_session_close(session);
     return LDAP_LOCAL_ERROR;
   }
-  /* perform search for own object (just to do any kind of search) */
+  /* perform a search to trigger the BIND operation */
   attrs[0] = "dn";
   attrs[1] = NULL;
-  search = myldap_search(session, userdn, LDAP_SCOPE_BASE,
-                         "(objectClass=*)", attrs, &rc);
-  if ((search == NULL) || (rc != LDAP_SUCCESS))
+  if (strcasecmp(nslcd_cfg->pam_authc_search, "BASE") == 0)
   {
-    if (rc == LDAP_SUCCESS)
+    /* do a simple search to check userdn existence */
+    search = myldap_search(session, userdn, LDAP_SCOPE_BASE,
+                           "(objectClass=*)", attrs, &rc);
+    if ((search == NULL) && (rc == LDAP_SUCCESS))
       rc = LDAP_LOCAL_ERROR;
-    log_log(LOG_WARNING, "%s: %s", userdn, ldap_err2string(rc));
+    if (rc == LDAP_SUCCESS)
+    {
+      entry = myldap_get_entry(search, &rc);
+      if ((entry == NULL) && (rc == LDAP_SUCCESS))
+        rc = LDAP_NO_RESULTS_RETURNED;
+    }
   }
   else
   {
-    entry = myldap_get_entry(search, &rc);
-    if ((entry == NULL) || (rc != LDAP_SUCCESS))
+    /* build the search filter */
+    dict = search_vars_new(userdn, username, service, ruser, rhost, tty);
+    if (dict == NULL)
     {
-      if (rc == LDAP_SUCCESS)
-        rc = LDAP_NO_RESULTS_RETURNED;
-      log_log(LOG_WARNING, "%s: %s", userdn, ldap_err2string(rc));
+      myldap_session_close(session);
+      return LDAP_LOCAL_ERROR;
     }
+    res = expr_parse(nslcd_cfg->pam_authc_search, filter, sizeof(filter),
+                     search_var_get, (void *)dict);
+    if (res == NULL)
+    {
+      search_vars_free(dict);
+      myldap_session_close(session);
+      log_log(LOG_ERR, "invalid pam_authc_search \"%s\"",
+              nslcd_cfg->pam_authc_search);
+      return LDAP_LOCAL_ERROR;
+    }
+    /* perform a search for each search base */
+    rc = do_searches(session, "pam_authc_search", filter);
+    /* free search variables */
+    search_vars_free(dict);
   }
+  /* check search result */
+  if (rc != LDAP_SUCCESS)
+    log_log(LOG_WARNING, "%s: %s", userdn, ldap_err2string(rc));
   /* get any policy response from the bind */
   myldap_get_policy_response(session, authzrc, &msg);
   if ((msg != NULL) && (msg[0] != '\0'))
@@ -450,7 +478,8 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
     update_username(entry, username, sizeof(username));
   }
   /* try authentication */
-  rc = try_bind(userdn, password, &authzrc, authzmsg, sizeof(authzmsg));
+  rc = try_bind(userdn, password, username, service, ruser, rhost, tty,
+                &authzrc, authzmsg, sizeof(authzmsg));
   if (rc == LDAP_SUCCESS)
     log_log(LOG_DEBUG, "bind successful");
   /* map result code */
