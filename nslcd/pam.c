@@ -2,7 +2,7 @@
    pam.c - pam processing routines
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009-2014 Arthur de Jong
+   Copyright (C) 2009-2017 Arthur de Jong
    Copyright (C) 2015 Nokia Solutions and Networks
 
    This library is free software; you can redistribute it and/or
@@ -39,6 +39,128 @@
 #include "attmap.h"
 #include "common/dict.h"
 #include "common/expr.h"
+
+static void search_var_add(DICT *dict, const char *name, const char *value)
+{
+  size_t sz;
+  char *escaped_value;
+  /* allocate memory for escaped string */
+  sz = ((strlen(value) + 8) * 120) / 100;
+  escaped_value = (char *)malloc(sz);
+  if (escaped_value == NULL)
+  {
+    log_log(LOG_CRIT, "search_var_add(): malloc() failed to allocate memory");
+    return;
+  }
+  /* perform escaping of the value */
+  if (myldap_escape(value, escaped_value, sz))
+  {
+    log_log(LOG_ERR, "search_var_add(): escaped_value buffer too small");
+    free(escaped_value);
+    return;
+  }
+  /* add to dict */
+  dict_put(dict, name, escaped_value);
+}
+
+/* build a dictionary with variables that can be used in searches */
+static DICT *search_vars_new(const char *dn, const char *username,
+                             const char *service, const char *ruser,
+                             const char *rhost, const char *tty)
+{
+  char hostname[BUFLEN_HOSTNAME];
+  /* allocating this on the stack is OK because search_var_add()
+     will allocate new memory for the value */
+  const char *fqdn;
+  DICT *dict;
+  dict = dict_new();
+  if (dict == NULL)
+  {
+    log_log(LOG_CRIT, "search_vars_new(): dict_new() failed to allocate memory");
+    return NULL;
+  }
+  /* NOTE: any variables added here also need to be added to
+           cfg.c:handle_pam_authz_search() */
+  search_var_add(dict, "username", username);
+  search_var_add(dict, "service", service);
+  search_var_add(dict, "ruser", ruser);
+  search_var_add(dict, "rhost", rhost);
+  search_var_add(dict, "tty", tty);
+  if (gethostname(hostname, sizeof(hostname)) == 0)
+    search_var_add(dict, "hostname", hostname);
+  if ((fqdn = getfqdn()) != NULL)
+    search_var_add(dict, "fqdn", fqdn);
+  search_var_add(dict, "dn", dn);
+  search_var_add(dict, "uid", username);
+  return dict;
+}
+
+static void search_vars_free(DICT *dict)
+{
+  int i;
+  const char **keys;
+  void *value;
+  /* go over all keys and free all the values
+     (they were allocated in search_var_add) */
+  /* loop over dictionary contents */
+  keys = dict_keys(dict);
+  for (i = 0; keys[i] != NULL; i++)
+  {
+    value = dict_get(dict, keys[i]);
+    if (value)
+      free(value);
+  }
+  free(keys);
+  /* after this values from the dict should obviously no longer be used */
+  dict_free(dict);
+}
+
+static const char *search_var_get(const char *name, void *expander_attr)
+{
+  DICT *dict = (DICT *)expander_attr;
+  return (const char *)dict_get(dict, name);
+  /* TODO: if not set use entry to get attribute name (entry can be an
+           element in the dict) */
+}
+
+/* search all search bases using the provided filter */
+static int do_searches(MYLDAP_SESSION *session, const char *option,
+                       const char *filter)
+{
+  int i;
+  int rc;
+  const char *base;
+  static const char *attrs[2];
+  MYLDAP_SEARCH *search;
+  MYLDAP_ENTRY *entry;
+  /* prepare the search */
+  attrs[0] = "dn";
+  attrs[1] = NULL;
+  /* perform a search for each search base */
+  log_log(LOG_DEBUG, "trying %s \"%s\"", option, filter);
+  for (i = 0; (base = nslcd_cfg->bases[i]) != NULL; i++)
+  {
+    /* do the LDAP search */
+    search = myldap_search(session, base, LDAP_SCOPE_SUBTREE, filter, attrs, &rc);
+    if (search == NULL)
+    {
+      log_log(LOG_ERR, "%s \"%s\" failed: %s",
+              option, filter, ldap_err2string(rc));
+      return rc;
+    }
+    /* try to get an entry */
+    entry = myldap_get_entry(search, &rc);
+    if (entry != NULL)
+    {
+      log_log(LOG_DEBUG, "%s found \"%s\"", option, myldap_get_dn(entry));
+      return LDAP_SUCCESS;
+    }
+  }
+  log_log(LOG_ERR, "%s \"%s\" found no matches", option, filter);
+  if (rc == LDAP_SUCCESS)
+    rc = LDAP_NO_SUCH_OBJECT;
+  return rc;
+}
 
 /* set up a connection and try to bind with the specified DN and password,
    returns an LDAP result code */
@@ -352,103 +474,12 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
   return 0;
 }
 
-static void autzsearch_var_add(DICT *dict, const char *name,
-                               const char *value)
-{
-  size_t sz;
-  char *escaped_value;
-  /* allocate memory for escaped string */
-  sz = ((strlen(value) + 8) * 120) / 100;
-  escaped_value = (char *)malloc(sz);
-  if (escaped_value == NULL)
-  {
-    log_log(LOG_CRIT, "autzsearch_var_add(): malloc() failed to allocate memory");
-    return;
-  }
-  /* perform escaping of the value */
-  if (myldap_escape(value, escaped_value, sz))
-  {
-    log_log(LOG_ERR, "autzsearch_var_add(): escaped_value buffer too small");
-    free(escaped_value);
-    return;
-  }
-  /* add to dict */
-  dict_put(dict, name, escaped_value);
-}
-
-static void autzsearch_vars_free(DICT *dict)
-{
-  int i;
-  const char **keys;
-  void *value;
-  /* go over all keys and free all the values
-     (they were allocated in autzsearch_var_add) */
-  /* loop over dictionary contents */
-  keys = dict_keys(dict);
-  for (i = 0; keys[i] != NULL; i++)
-  {
-    value = dict_get(dict, keys[i]);
-    if (value)
-      free(value);
-  }
-  free(keys);
-  /* after this values from the dict should obviously no longer be used */
-}
-
-static const char *autzsearch_var_get(const char *name, void *expander_attr)
-{
-  DICT *dict = (DICT *)expander_attr;
-  return (const char *)dict_get(dict, name);
-  /* TODO: if not set use entry to get attribute name (entry can be an
-           element in the dict) */
-}
-
-/* search all search bases using the provided filter */
-static int do_autzsearches(MYLDAP_SESSION *session, const char *filter)
-{
-  int i;
-  int rc;
-  const char *base;
-  static const char *attrs[2];
-  MYLDAP_SEARCH *search;
-  MYLDAP_ENTRY *entry;
-  /* prepare the search */
-  attrs[0] = "dn";
-  attrs[1] = NULL;
-  /* perform a search for each search base */
-  log_log(LOG_DEBUG, "trying pam_authz_search \"%s\"", filter);
-  for (i = 0; (base = nslcd_cfg->bases[i]) != NULL; i++)
-  {
-    /* do the LDAP search */
-    search = myldap_search(session, base, LDAP_SCOPE_SUBTREE, filter, attrs, &rc);
-    if (search == NULL)
-    {
-      log_log(LOG_ERR, "pam_authz_search \"%s\" failed: %s",
-              filter, ldap_err2string(rc));
-      return rc;
-    }
-    /* try to get an entry */
-    entry = myldap_get_entry(search, &rc);
-    if (entry != NULL)
-    {
-      log_log(LOG_DEBUG, "pam_authz_search found \"%s\"", myldap_get_dn(entry));
-      return LDAP_SUCCESS;
-    }
-  }
-  log_log(LOG_ERR, "pam_authz_search \"%s\" found no matches", filter);
-  if (rc == LDAP_SUCCESS)
-    rc = LDAP_NO_SUCH_OBJECT;
-  return rc;
-}
-
 /* perform an authorisation search, returns an LDAP status code */
-static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
-                          const char *username, const char *servicename,
+static int try_authz_search(MYLDAP_SESSION *session, const char *dn,
+                          const char *username, const char *service,
                           const char *ruser, const char *rhost,
                           const char *tty)
 {
-  char hostname[BUFLEN_HOSTNAME];
-  const char *fqdn;
   DICT *dict = NULL;
   char filter[BUFLEN_FILTER];
   int rc = LDAP_SUCCESS;
@@ -459,45 +490,29 @@ static int try_autzsearch(MYLDAP_SESSION *session, const char *dn,
   {
     if (dict == NULL)
     {
-      /* build the dictionary with variables
-         NOTE: any variables added here also need to be added to
-               cfg.c:parse_pam_authz_search_statement() */
-      dict = dict_new();
-      autzsearch_var_add(dict, "username", username);
-      autzsearch_var_add(dict, "service", servicename);
-      autzsearch_var_add(dict, "ruser", ruser);
-      autzsearch_var_add(dict, "rhost", rhost);
-      autzsearch_var_add(dict, "tty", tty);
-      if (gethostname(hostname, sizeof(hostname)) == 0)
-        autzsearch_var_add(dict, "hostname", hostname);
-      if ((fqdn = getfqdn()) != NULL)
-        autzsearch_var_add(dict, "fqdn", fqdn);
-      autzsearch_var_add(dict, "dn", dn);
-      autzsearch_var_add(dict, "uid", username);
+      dict = search_vars_new(dn, username, service, ruser, rhost, tty);
+      if (dict == NULL)
+        return LDAP_LOCAL_ERROR;
     }
     /* build the search filter */
     res = expr_parse(nslcd_cfg->pam_authz_searches[i],
                      filter, sizeof(filter),
-                     autzsearch_var_get, (void *)dict);
+                     search_var_get, (void *)dict);
     if (res == NULL)
     {
-      autzsearch_vars_free(dict);
-      dict_free(dict);
+      search_vars_free(dict);
       log_log(LOG_ERR, "invalid pam_authz_search \"%s\"",
               nslcd_cfg->pam_authz_searches[i]);
       return LDAP_LOCAL_ERROR;
     }
     /* perform the actual searches on all bases */
-    rc = do_autzsearches(session, filter);
+    rc = do_searches(session, "pam_authz_search", filter);
     if (rc != LDAP_SUCCESS)
       break;
   }
   /* we went over all pam_authz_search entries */
   if (dict != NULL)
-  {
-    autzsearch_vars_free(dict);
-    dict_free(dict);
-  }
+    search_vars_free(dict);
   return rc;
 }
 
@@ -535,7 +550,7 @@ int nslcd_pam_authz(TFILE *fp, MYLDAP_SESSION *session)
     return -1;
   }
   /* check authorisation search */
-  rc = try_autzsearch(session, myldap_get_dn(entry), username, service, ruser,
+  rc = try_authz_search(session, myldap_get_dn(entry), username, service, ruser,
                       rhost, tty);
   if (rc != LDAP_SUCCESS)
   {
