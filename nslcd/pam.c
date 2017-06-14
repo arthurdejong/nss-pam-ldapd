@@ -173,7 +173,7 @@ static int try_bind(const char *userdn, const char *password,
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   static const char *attrs[2];
-  int rc = LDAP_SUCCESS;
+  int rc;
   const char *msg;
   DICT *dict;
   char filter[BUFLEN_FILTER];
@@ -182,58 +182,55 @@ static int try_bind(const char *userdn, const char *password,
   session = myldap_create_session();
   if (session == NULL)
     return LDAP_UNAVAILABLE;
-  /* set up credentials for the session */
-  if (myldap_set_credentials(session, userdn, password))
+  /* perform a BIND operation with user credentials */
+  rc = myldap_bind(session, userdn, password, authzrc, &msg);
+  if (rc == LDAP_SUCCESS)
   {
-    myldap_session_close(session);
-    return LDAP_LOCAL_ERROR;
-  }
-  /* perform a search to trigger the BIND operation */
-  attrs[0] = "dn";
-  attrs[1] = NULL;
-  if (strcasecmp(nslcd_cfg->pam_authc_search, "BASE") == 0)
-  {
-    /* do a simple search to check userdn existence */
-    search = myldap_search(session, userdn, LDAP_SCOPE_BASE,
-                           "(objectClass=*)", attrs, &rc);
-    if ((search == NULL) && (rc == LDAP_SUCCESS))
-      rc = LDAP_LOCAL_ERROR;
-    if (rc == LDAP_SUCCESS)
+    /* perform a search to trigger the BIND operation */
+    attrs[0] = "dn";
+    attrs[1] = NULL;
+    if (strcasecmp(nslcd_cfg->pam_authc_search, "BASE") == 0)
     {
-      entry = myldap_get_entry(search, &rc);
-      if ((entry == NULL) && (rc == LDAP_SUCCESS))
-        rc = LDAP_NO_RESULTS_RETURNED;
+      /* do a simple search to check userdn existence */
+      search = myldap_search(session, userdn, LDAP_SCOPE_BASE,
+                             "(objectClass=*)", attrs, &rc);
+      if ((search == NULL) && (rc == LDAP_SUCCESS))
+        rc = LDAP_LOCAL_ERROR;
+      if (rc == LDAP_SUCCESS)
+      {
+        entry = myldap_get_entry(search, &rc);
+        if ((entry == NULL) && (rc == LDAP_SUCCESS))
+          rc = LDAP_NO_RESULTS_RETURNED;
+      }
     }
-  }
-  else
-  {
-    /* build the search filter */
-    dict = search_vars_new(userdn, username, service, ruser, rhost, tty);
-    if (dict == NULL)
+    else
     {
-      myldap_session_close(session);
-      return LDAP_LOCAL_ERROR;
-    }
-    res = expr_parse(nslcd_cfg->pam_authc_search, filter, sizeof(filter),
-                     search_var_get, (void *)dict);
-    if (res == NULL)
-    {
+      /* build the search filter */
+      dict = search_vars_new(userdn, username, service, ruser, rhost, tty);
+      if (dict == NULL)
+      {
+        myldap_session_close(session);
+        return LDAP_LOCAL_ERROR;
+      }
+      res = expr_parse(nslcd_cfg->pam_authc_search, filter, sizeof(filter),
+                       search_var_get, (void *)dict);
+      if (res == NULL)
+      {
+        search_vars_free(dict);
+        myldap_session_close(session);
+        log_log(LOG_ERR, "invalid pam_authc_search \"%s\"",
+                nslcd_cfg->pam_authc_search);
+        return LDAP_LOCAL_ERROR;
+      }
+      /* perform a search for each search base */
+      rc = do_searches(session, "pam_authc_search", filter);
+      /* free search variables */
       search_vars_free(dict);
-      myldap_session_close(session);
-      log_log(LOG_ERR, "invalid pam_authc_search \"%s\"",
-              nslcd_cfg->pam_authc_search);
-      return LDAP_LOCAL_ERROR;
     }
-    /* perform a search for each search base */
-    rc = do_searches(session, "pam_authc_search", filter);
-    /* free search variables */
-    search_vars_free(dict);
   }
-  /* check search result */
+  /* log any authentication, search or authorsiation messages */
   if (rc != LDAP_SUCCESS)
     log_log(LOG_WARNING, "%s: %s", userdn, ldap_err2string(rc));
-  /* get any policy response from the bind */
-  myldap_get_policy_response(session, authzrc, &msg);
   if ((msg != NULL) && (msg[0] != '\0'))
   {
     mysnprintf(authzmsg, authzmsgsz - 1, "%s", msg);
@@ -738,15 +735,9 @@ static int try_pwmod(MYLDAP_SESSION *oldsession,
   session = myldap_create_session();
   if (session == NULL)
     return LDAP_UNAVAILABLE;
-  /* set up credentials for the session */
-  if (myldap_set_credentials(session, binddn, oldpassword))
-  {
-    myldap_session_close(session);
-    return LDAP_LOCAL_ERROR;
-  }
-  /* perform search for own object (just to do any kind of search) */
-  if ((lookup_dn2uid(session, userdn, &rc, buffer, sizeof(buffer)) != NULL) &&
-      (rc == LDAP_SUCCESS))
+  /* perform a BIND operation */
+  rc = myldap_bind(session, binddn, oldpassword, NULL, NULL);
+  if (rc == LDAP_SUCCESS)
   {
     /* if doing password modification as admin, don't pass old password along */
     if ((nslcd_cfg->rootpwmoddn != NULL) &&
@@ -756,16 +747,6 @@ static int try_pwmod(MYLDAP_SESSION *oldsession,
     rc = myldap_passwd(session, userdn, oldpassword, newpassword);
     if (rc == LDAP_SUCCESS)
     {
-      /* if user modifies own password, update credentials for the session */
-      if (binddn == userdn)
-        if (myldap_set_credentials(session, binddn, newpassword))
-        {
-          rc = LDAP_LOCAL_ERROR;
-          log_log(LOG_WARNING, "%s: shadowLastChange: modification failed: %s",
-                  userdn, ldap_err2string(rc));
-          myldap_session_close(session);
-          return rc;
-        }
       /* try to update the shadowLastChange attribute */
       if (update_lastchange(session, userdn) != LDAP_SUCCESS)
         /* retry with the normal session */

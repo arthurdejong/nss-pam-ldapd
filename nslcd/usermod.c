@@ -2,7 +2,7 @@
    usermod.c - routines for changing user information such as full name,
                login shell, etc
 
-   Copyright (C) 2013-2014 Arthur de Jong
+   Copyright (C) 2013-2017 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -104,11 +104,10 @@ static int is_valid_shell(const char *shell)
   return valid;
 }
 
-static MYLDAP_SESSION *get_session(const char *binddn, const char *userdn,
-                                   const char *password, int *rcp)
+static MYLDAP_SESSION *get_session(const char *binddn, const char *password,
+                                   int *rcp)
 {
   MYLDAP_SESSION *session;
-  char buffer[BUFLEN_DN];
   /* set up a new connection */
   session = myldap_create_session();
   if (session == NULL)
@@ -116,13 +115,9 @@ static MYLDAP_SESSION *get_session(const char *binddn, const char *userdn,
     *rcp = LDAP_UNAVAILABLE;
     return NULL;
   }
-  /* set up credentials for the session */
-  if (myldap_set_credentials(session, binddn, password))
-    return NULL;
-  /* perform search for own object (just to do any kind of search to set
-     up the connection with fail-over) */
-  if ((lookup_dn2uid(session, userdn, rcp, buffer, sizeof(buffer)) == NULL) ||
-      (*rcp != LDAP_SUCCESS))
+  /* check that we can bind */
+  *rcp = myldap_bind(session, binddn, password, NULL, NULL);
+  if (*rcp != LDAP_SUCCESS)
   {
     myldap_session_close(session);
     return NULL;
@@ -274,7 +269,7 @@ int nslcd_usermod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
     shell = NULL;
   }
   /* perform requested changes */
-  newsession = get_session(binddn, myldap_get_dn(entry), password, &rc);
+  newsession = get_session(binddn, password, &rc);
   if (newsession != NULL)
   {
     rc = change(newsession, myldap_get_dn(entry), homedir, shell);
