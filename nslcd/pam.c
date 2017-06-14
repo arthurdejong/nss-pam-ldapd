@@ -80,7 +80,7 @@ static DICT *search_vars_new(const char *dn, const char *username,
     return NULL;
   }
   /* NOTE: any variables added here also need to be added to
-           cfg.c:handle_pam_authz_search() */
+           cfg.c:check_search_variables() */
   search_var_add(dict, "username", username);
   search_var_add(dict, "service", service);
   search_var_add(dict, "ruser", ruser);
