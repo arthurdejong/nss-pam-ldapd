@@ -203,7 +203,7 @@ static int try_bind(const char *userdn, const char *password,
           rc = LDAP_NO_RESULTS_RETURNED;
       }
     }
-    else
+    else if (strcasecmp(nslcd_cfg->pam_authc_search, "NONE") != 0)
     {
       /* build the search filter */
       dict = search_vars_new(userdn, username, service, ruser, rhost, tty);

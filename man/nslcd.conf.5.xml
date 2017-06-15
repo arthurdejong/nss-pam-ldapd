@@ -845,6 +845,13 @@
         The value <literal>BASE</literal> may be used to force the default
         search for the user DN.
       </para>
+      <para>
+        The value <literal>NONE</literal> may be used to indicate that no
+        search should be performed after BIND.
+        Note that some <acronym>LDAP</acronym> servers do not always return a
+        correct error code as a result of a failed BIND operation (e.g. when
+        an empty password is supplied).
+      </para>
      </listitem>
     </varlistentry>
 
