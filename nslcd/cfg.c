@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007-2015 Arthur de Jong
+   Copyright (C) 2007-2017 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -989,12 +989,56 @@ static void handle_validnames(const char *filename, int lnr,
   free(value);
 }
 
+static void check_search_variables(
+                const char *filename, int lnr,
+                const char *expression)
+{
+  SET *set;
+  const char **list;
+  int i;
+  set = expr_vars(expression, NULL);
+  list = set_tolist(set);
+  if (list == NULL)
+  {
+    log_log(LOG_CRIT,
+            "check_search_variables(): malloc() failed to allocate memory");
+    exit(EXIT_FAILURE);
+  }
+  for (i = 0; list[i] != NULL; i++)
+  {
+    if ((strcmp(list[i], "username") != 0) &&
+        (strcmp(list[i], "service") != 0) &&
+        (strcmp(list[i], "ruser") != 0) &&
+        (strcmp(list[i], "rhost") != 0) &&
+        (strcmp(list[i], "tty") != 0) &&
+        (strcmp(list[i], "hostname") != 0) &&
+        (strcmp(list[i], "fqdn") != 0) &&
+        (strcmp(list[i], "dn") != 0) &&
+        (strcmp(list[i], "uid") != 0))
+    {
+      log_log(LOG_ERR, "%s:%d: unknown variable $%s", filename, lnr, list[i]);
+      exit(EXIT_FAILURE);
+    }
+  }
+  /* free memory */
+  set_free(set);
+  free(list);
+}
+
+static void handle_pam_authc_search(
+                const char *filename, int lnr,
+                const char *keyword, char *line, struct ldap_config *cfg)
+{
+  check_argumentcount(filename, lnr, keyword, (line != NULL) && (*line != '\0'));
+  cfg->pam_authc_search = xstrdup(line);
+  /* check the variables used in the expression */
+  check_search_variables(filename, lnr, cfg->pam_authc_search);
+}
+
 static void handle_pam_authz_search(
                 const char *filename, int lnr,
                 const char *keyword, char *line, struct ldap_config *cfg)
 {
-  SET *set;
-  const char **list;
   int i;
   check_argumentcount(filename, lnr, keyword, (line != NULL) && (*line != '\0'));
   /* find free spot for search filter */
@@ -1009,31 +1053,7 @@ static void handle_pam_authz_search(
   }
   cfg->pam_authz_searches[i] = xstrdup(line);
   /* check the variables used in the expression */
-  set = expr_vars(cfg->pam_authz_searches[i], NULL);
-  list = set_tolist(set);
-  if (list == NULL)
-  {
-    log_log(LOG_CRIT, "malloc() failed to allocate memory");
-    exit(EXIT_FAILURE);
-  }
-  for (i = 0; list[i] != NULL; i++)
-  {
-    if ((strcmp(list[i], "username") != 0) &&
-        (strcmp(list[i], "service") != 0) &&
-        (strcmp(list[i], "ruser") != 0) &&
-        (strcmp(list[i], "rhost") != 0) &&
-        (strcmp(list[i], "tty") != 0) &&
-        (strcmp(list[i], "hostname") != 0) &&
-        (strcmp(list[i], "fqdn") != 0) &&
-        (strcmp(list[i], "dn") != 0) && (strcmp(list[i], "uid") != 0))
-    {
-      log_log(LOG_ERR, "%s:%d: unknown variable $%s", filename, lnr, list[i]);
-      exit(EXIT_FAILURE);
-    }
-  }
-  /* free memory */
-  set_free(set);
-  free(list);
+  check_search_variables(filename, lnr, cfg->pam_authz_searches[i]);
 }
 
 static void handle_pam_password_prohibit_message(
@@ -1227,6 +1247,7 @@ static void cfg_defaults(struct ldap_config *cfg)
                     "/^[a-z0-9._@$()]([a-z0-9._@$() \\~-]*[a-z0-9._@$()~-])?$/i",
                     cfg);
   cfg->ignorecase = 0;
+  cfg->pam_authc_search = "BASE";
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)
     cfg->pam_authz_searches[i] = NULL;
   cfg->pam_password_prohibit_message = NULL;
@@ -1578,6 +1599,10 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       cfg->ignorecase = get_boolean(filename, lnr, keyword, &line);
       get_eol(filename, lnr, keyword, &line);
     }
+    else if (strcasecmp(keyword, "pam_authc_search") == 0)
+    {
+      handle_pam_authc_search(filename, lnr, keyword, line, cfg);
+    }
     else if (strcasecmp(keyword, "pam_authz_search") == 0)
     {
       handle_pam_authz_search(filename, lnr, keyword, line, cfg);
@@ -1844,6 +1869,7 @@ static void cfg_dump(void)
   log_log(LOG_DEBUG, "CFG: nss_disable_enumeration %s", print_boolean(nslcd_cfg->nss_disable_enumeration));
   log_log(LOG_DEBUG, "CFG: validnames %s", nslcd_cfg->validnames_str);
   log_log(LOG_DEBUG, "CFG: ignorecase %s", print_boolean(nslcd_cfg->ignorecase));
+  log_log(LOG_DEBUG, "CFG: pam_authc_search %s", nslcd_cfg->pam_authc_search);
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_AUTHZ_SEARCHES; i++)
     if (nslcd_cfg->pam_authz_searches[i] != NULL)
       log_log(LOG_DEBUG, "CFG: pam_authz_search %s", nslcd_cfg->pam_authz_searches[i]);

@@ -2,7 +2,7 @@
    myldap.h - simple interface to do LDAP requests
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007-2014 Arthur de Jong
+   Copyright (C) 2007-2017 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -68,14 +68,12 @@ typedef struct myldap_entry MYLDAP_ENTRY;
    uses the configuration to find the URLs to attempt connections to. */
 MUST_USE MYLDAP_SESSION *myldap_create_session(void);
 
-/* Set alternative credentials for the session. Returns 0 on success. */
-MUST_USE int myldap_set_credentials(MYLDAP_SESSION *session, const char *dn,
-                                    const char *password);
-
-/* Get bind ppolicy results from the last bind operation. This function
-   returns a NSLCD_PAM_* code and optional message. */
-void myldap_get_policy_response(MYLDAP_SESSION *session, int *response,
-                                const char **message);
+/* Perform a simple bind operation and return the ppolicy results.
+   This function returns an LDAP status code while response is an NSLCD_PAM_*
+   code with accompanying message. */
+MUST_USE int myldap_bind(MYLDAP_SESSION *session, const char *dn,
+                         const char *password,
+                         int *response, const char **message);
 
 /* Closes all pending searches and deallocates any memory that is allocated
    with these searches. This does not close the session. */

@@ -215,7 +215,7 @@ class PAMAuthorisationRequest(PAMRequest):
         self.fp.write_string(msg)
         self.fp.write_int32(constants.NSLCD_RESULT_END)
 
-    def check_authzsearch(self, parameters):
+    def check_authz_search(self, parameters):
         if not cfg.pam_authz_searches:
             return
         # escape all parameters
@@ -243,7 +243,7 @@ class PAMAuthorisationRequest(PAMRequest):
         self.validate(parameters)
         # check authorisation search
         try:
-            self.check_authzsearch(parameters)
+            self.check_authz_search(parameters)
         except StopIteration:
             self.write(constants.NSLCD_PAM_PERM_DENIED,
                        'LDAP authorisation check failed')

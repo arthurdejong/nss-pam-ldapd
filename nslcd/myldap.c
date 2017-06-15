@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006-2007 West Consulting
-   Copyright (C) 2006-2015 Arthur de Jong
+   Copyright (C) 2006-2017 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -79,6 +79,10 @@
 
 /* the maximum number of dn's to log to the debug log for each search */
 #define MAX_DEBUG_LOG_DNS 10
+
+/* a fake scope that is used to not perform an actual search but only
+   simulate the handling of the search (used for authentication) */
+#define MYLDAP_SCOPE_BINDONLY 0x1972  /* magic number: should never be a real scope */
 
 /* This refers to a current LDAP session that contains the connection
    information. */
@@ -1121,42 +1125,44 @@ static int do_open(MYLDAP_SESSION *session)
   return LDAP_SUCCESS;
 }
 
-/* Set alternative credentials for the session. */
-int myldap_set_credentials(MYLDAP_SESSION *session, const char *dn,
-                            const char *password)
+/* Perform a simple bind operation and return the ppolicy results. */
+int myldap_bind(MYLDAP_SESSION *session, const char *dn, const char *password,
+                int *response, const char **message)
 {
+  MYLDAP_SEARCH *search;
+  static const char *attrs[2];
+  int rc;
   /* error out when buffers are too small */
   if (strlen(dn) >= sizeof(session->binddn))
   {
-    log_log(LOG_ERR,
-            "myldap_set_credentials(): binddn buffer too small (%lu required)",
+    log_log(LOG_ERR, "myldap_bind(): binddn buffer too small (%lu required)",
             (unsigned long) strlen(dn));
-    return -1;
+    return LDAP_LOCAL_ERROR;
   }
   if (strlen(password) >= sizeof(session->bindpw))
   {
-    log_log(LOG_ERR,
-            "myldap_set_credentials(): bindpw buffer too small (%lu required)",
+    log_log(LOG_ERR, "myldap_bind(): bindpw buffer too small (%lu required)",
             (unsigned long) strlen(password));
-    return -1;
+    return LDAP_LOCAL_ERROR;
   }
   /* copy dn and password into session */
   strncpy(session->binddn, dn, sizeof(session->binddn));
   session->binddn[sizeof(session->binddn) - 1] = '\0';
   strncpy(session->bindpw, password, sizeof(session->bindpw));
   session->bindpw[sizeof(session->bindpw) - 1] = '\0';
-  return 0;
-}
-
-/* Get bind ppolicy results from the last bind operation. This function
-   returns a NSLCD_PAM_* code and optional message. */
-void myldap_get_policy_response(MYLDAP_SESSION *session, int *response,
-                                const char **message)
-{
+  /* construct a fake search to trigger the BIND operation */
+  attrs[0] = "dn";
+  attrs[1] = NULL;
+  search = myldap_search(session, session->binddn, MYLDAP_SCOPE_BINDONLY,
+                         "(objectClass=*)", attrs, &rc);
+  if (search != NULL)
+    myldap_search_close(search);
+  /* return ppolicy results */
   if (response != NULL)
     *response = session->policy_response;
   if (message != NULL)
     *message = session->policy_message;
+  return rc;
 }
 
 /* perform a search operation, the connection is assumed to be open */
@@ -1334,7 +1340,8 @@ static int do_retry_search(MYLDAP_SEARCH *search)
         pthread_mutex_unlock(&uris_mutex);
         /* ensure that we have an open connection and start a search */
         rc = do_open(search->session);
-        if (rc == LDAP_SUCCESS)
+        /* perform the actual search, unless we were only binding */
+        if ((rc == LDAP_SUCCESS) && (search->scope != MYLDAP_SCOPE_BINDONLY))
           rc = do_try_search(search);
         /* if we are authenticating a user and get an error regarding failed
            password we should error out instead of trying all servers */

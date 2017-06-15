@@ -6,7 +6,7 @@
    nslcd.conf.5.xml - docbook manual page for nslcd.conf
 
    Copyright (C) 1997-2005 Luke Howard
-   Copyright (C) 2007-2016 Arthur de Jong
+   Copyright (C) 2007-2017 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -821,6 +821,36 @@
        and handled from the <acronym>LDAP</acronym> server when performing
        user authentication.
        By default the controls are requested and handled if available.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry id="pam_authc_search"> <!-- since 0.9.8 -->
+     <term><option>pam_authc_search</option>
+           <replaceable>FILTER</replaceable></term>
+     <listitem>
+      <para>
+       By default <command>nslcd</command> performs an
+       <acronym>LDAP</acronym> search with the user's credentials after BIND
+       (authentication) to ensure that the BIND operation was successful.
+       The default search is a simple check to see if the user's DN exists.
+      </para>
+      <para>
+        A search filter can be specified that will be used instead.
+        The same substitutions as with the <option>pam_authz_search</option>
+        option will be performed and the search should at least return one
+        entry.
+      </para>
+      <para>
+        The value <literal>BASE</literal> may be used to force the default
+        search for the user DN.
+      </para>
+      <para>
+        The value <literal>NONE</literal> may be used to indicate that no
+        search should be performed after BIND.
+        Note that some <acronym>LDAP</acronym> servers do not always return a
+        correct error code as a result of a failed BIND operation (e.g. when
+        an empty password is supplied).
       </para>
      </listitem>
     </varlistentry>
