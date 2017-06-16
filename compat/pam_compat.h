@@ -1,7 +1,7 @@
 /*
    pam_compat.h - provide a replacement definitions for some pam functions
 
-   Copyright (C) 2009, 2010, 2011, 2012 Arthur de Jong
+   Copyright (C) 2009-2017 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -60,16 +60,16 @@ int pam_prompt(pam_handle_t *pamh, int style, char **response,
 #endif /* not HAVE_PAM_PROMPT */
 
 /* provide pam_info() if needed */
-#ifndef pam_info
+#ifndef HAVE_DECL_PAM_INFO
 #define pam_info(pamh, format...)                                           \
   pam_prompt(pamh, PAM_TEXT_INFO, NULL, ##format)
-#endif /* not pam_info */
+#endif /* not HAVE_DECL_PAM_INFO */
 
 /* provide pam_error() if needed */
-#ifndef pam_error
+#ifndef HAVE_DECL_PAM_ERROR
 #define pam_error(pamh, format...)                                          \
   pam_prompt(pamh, PAM_ERROR_MSG, NULL, ##format)
-#endif /* not pam_error */
+#endif /* not HAVE_DECL_PAM_ERROR */
 
 /* fall back to using getpwnam() if pam_modutil_getpwnam() isn't defined */
 #ifndef HAVE_PAM_MODUTIL_GETGWNAM

@@ -606,6 +606,21 @@ then
   # replace some PAM functions if they are unavailable
   AC_REPLACE_FUNCS(pam_get_authtok pam_prompt)
   AC_CHECK_FUNCS(pam_modutil_getpwnam pam_syslog)
+  AC_CHECK_DECLS([pam_info, pam_error],,, [
+     #ifdef HAVE_SECURITY_PAM_APPL_H
+     #include <security/pam_appl.h>
+     #endif
+     #ifndef HAVE_PAM_PAM_MODULES_H
+     #include <security/pam_modules.h>
+     #ifdef HAVE_SECURITY_PAM_EXT_H
+     #include <security/pam_ext.h>
+     #endif
+     #else
+     #include <pam/pam_modules.h>
+     #endif
+     #ifdef HAVE_SECURITY_PAM_MODUTIL_H
+     #include <security/pam_modutil.h>
+     #endif])
 
   # find out how to link the library
   pam_ldap_so_LINK="\$(CCLD) \$(AM_CFLAGS) \$(CFLAGS) \$(pam_ldap_so_LDFLAGS) \$(LDFLAGS) -o \$@"
