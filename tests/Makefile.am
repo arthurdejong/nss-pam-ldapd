@@ -44,7 +44,7 @@ EXTRA_DIST = README nslcd-test.conf usernames.txt testenv.sh test_myldap.sh \
              test_pynslcd_cache.py \
              setup_slapd.sh config.ldif test.ldif
 
-CLEANFILES = $(EXTRA_PROGRAMS)
+CLEANFILES = $(EXTRA_PROGRAMS) test_pamcmds.log
 
 AM_CPPFLAGS = -I$(top_srcdir)
 AM_CFLAGS = $(PTHREAD_CFLAGS) -g
