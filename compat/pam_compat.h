@@ -60,13 +60,13 @@ int pam_prompt(pam_handle_t *pamh, int style, char **response,
 #endif /* not HAVE_PAM_PROMPT */
 
 /* provide pam_info() if needed */
-#ifndef HAVE_DECL_PAM_INFO
+#if !HAVE_DECL_PAM_INFO
 #define pam_info(pamh, format...)                                           \
   pam_prompt(pamh, PAM_TEXT_INFO, NULL, ##format)
 #endif /* not HAVE_DECL_PAM_INFO */
 
 /* provide pam_error() if needed */
-#ifndef HAVE_DECL_PAM_ERROR
+#if !HAVE_DECL_PAM_ERROR
 #define pam_error(pamh, format...)                                          \
   pam_prompt(pamh, PAM_ERROR_MSG, NULL, ##format)
 #endif /* not HAVE_DECL_PAM_ERROR */
