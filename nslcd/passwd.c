@@ -297,7 +297,7 @@ char *dn2uid(MYLDAP_SESSION *session, const char *dn, char *buf, size_t buflen)
   {
     if ((cacheentry->uid != NULL) && (strlen(cacheentry->uid) < buflen))
     {
-      /* if the cached entry is still valid, return that */
+      /* positive hit: if the cached entry is still valid, return that */
       if ((nslcd_cfg->cache_dn2uid_positive > 0) &&
           (time(NULL) < (cacheentry->timestamp + nslcd_cfg->cache_dn2uid_positive)))
       {
@@ -308,9 +308,9 @@ char *dn2uid(MYLDAP_SESSION *session, const char *dn, char *buf, size_t buflen)
     }
     else
     {
+      /* negative hit: if the cached entry is still valid, return that */
       if ((nslcd_cfg->cache_dn2uid_negative > 0) &&
            (time(NULL) < (cacheentry->timestamp + nslcd_cfg->cache_dn2uid_negative)))
-      /* if the cached entry is still valid, return that */
       {
         pthread_mutex_unlock(&dn2uid_cache_mutex);
         return NULL;
