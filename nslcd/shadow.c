@@ -254,16 +254,24 @@ static int write_shadow(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
   for (i = 0; usernames[i] != NULL; i++)
     if ((requser == NULL) || (STR_CMP(requser, usernames[i]) == 0))
     {
-      WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
-      WRITE_STRING(fp, usernames[i]);
-      WRITE_STRING(fp, passwd);
-      WRITE_INT32(fp, lastchangedate);
-      WRITE_INT32(fp, mindays);
-      WRITE_INT32(fp, maxdays);
-      WRITE_INT32(fp, warndays);
-      WRITE_INT32(fp, inactdays);
-      WRITE_INT32(fp, expiredate);
-      WRITE_INT32(fp, flag);
+      if (!isvalidname(usernames[i]))
+      {
+        log_log(LOG_WARNING, "%s: %s: denied by validnames option",
+                myldap_get_dn(entry), attmap_passwd_uid);
+      }
+      else
+      {
+        WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
+        WRITE_STRING(fp, usernames[i]);
+        WRITE_STRING(fp, passwd);
+        WRITE_INT32(fp, lastchangedate);
+        WRITE_INT32(fp, mindays);
+        WRITE_INT32(fp, maxdays);
+        WRITE_INT32(fp, warndays);
+        WRITE_INT32(fp, inactdays);
+        WRITE_INT32(fp, expiredate);
+        WRITE_INT32(fp, flag);
+      }
     }
   return 0;
 }
@@ -308,7 +316,12 @@ NSLCD_HANDLE_UID(
   char name[BUFLEN_NAME];
   char filter[BUFLEN_FILTER];
   READ_STRING(fp, name);
-  log_setrequest("shadow=\"%s\"", name);,
+  log_setrequest("shadow=\"%s\"", name);
+  if (!isvalidname(name))
+  {
+    log_log(LOG_WARNING, "request denied by validnames option");
+    return -1;
+  },
   mkfilter_shadow_byname(name, filter, sizeof(filter)),
   write_shadow(fp, entry, name, calleruid)
 )
