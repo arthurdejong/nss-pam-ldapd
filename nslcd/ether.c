@@ -78,7 +78,7 @@ static int mkfilter_ether_byname(const char *name,
                     ether_filter, attmap_ether_cn, safename);
 }
 
-static void my_ether_ntoa(const u_int8_t *addr, char *buffer, int compact)
+static void my_ether_ntoa(const uint8_t *addr, char *buffer, int compact)
 {
   int i;
   for (i = 0; i < 6; i++)
@@ -94,8 +94,8 @@ static int mkfilter_ether_byether(const struct ether_addr *addr,
                                   char *buffer, size_t buflen)
 {
   char addrstr1[20], addrstr2[20];
-  my_ether_ntoa((const u_int8_t *)addr, addrstr1, 1);
-  my_ether_ntoa((const u_int8_t *)addr, addrstr2, 0);
+  my_ether_ntoa((const uint8_t *)addr, addrstr1, 1);
+  my_ether_ntoa((const uint8_t *)addr, addrstr2, 0);
   /* there should be no characters that need escaping */
   return mysnprintf(buffer, buflen, "(&%s(|(%s=%s)(%s=%s)))", ether_filter,
                     attmap_ether_macAddress, addrstr1,
@@ -185,7 +185,7 @@ NSLCD_HANDLE(
   char addrstr[20];
   char filter[BUFLEN_FILTER];
   READ(fp, &addr, sizeof(uint8_t[6]));
-  my_ether_ntoa((u_int8_t *)&addr, addrstr, 1);
+  my_ether_ntoa((uint8_t *)&addr, addrstr, 1);
   log_setrequest("ether=%s", addrstr);,
   mkfilter_ether_byether(&addr, filter, sizeof(filter)),
   write_ether(fp, entry, NULL, addrstr)
