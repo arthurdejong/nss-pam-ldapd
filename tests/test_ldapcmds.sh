@@ -30,7 +30,8 @@ top_srcdir="${top_srcdir-${srcdir}/..}"
 builddir="${builddir-`dirname "$0"`}"
 top_builddir="${top_builddir-${builddir}/..}"
 python="${PYTHON-python}"
-export PYTHONPATH="${top_srcdir}/utils:${top_builddir}/utils"
+PYTHONPATH="${top_srcdir}/utils:${top_builddir}/utils"
+export PYTHONPATH
 
 # ensure that we are running in the test environment
 "$srcdir/testenv.sh" check_nslcd || exit 77
@@ -51,14 +52,14 @@ getent_ldap() {
 
 check() {
   # the command to execute
-  cmd="$(echo $1 | sed 's/getent.ldap/getent_ldap/g')"
+  cmd="$1"
   # save the expected output
   expectfile=`mktemp -t expected.XXXXXX 2> /dev/null || tempfile -s .expected 2> /dev/null`
   cat > "$expectfile"
   # run the command
   echo 'test_nsscmds.sh: checking "'"$cmd"'"'
   actualfile=`mktemp -t actual.XXXXXX 2> /dev/null || tempfile -s .actual 2> /dev/null`
-  eval "$cmd" > "$actualfile" 2>&1 || true
+  eval "$(echo $cmd | sed 's/getent.ldap/getent_ldap/g')" > "$actualfile" 2>&1 || true
   # check for differences
   diff -Nauwi "$expectfile" "$actualfile" || FAIL=`expr $FAIL + 1`
   # remove temporary files
@@ -473,11 +474,11 @@ echo "test_ldapcmds.sh: testing shadow..."
 
 # NOTE: the output of this should depend on whether we are root or not
 
-check "getent.ldap shadow ecordas" << EOM
+check "getent.ldap shadow ecordas | sed 's/^\([^:]*\):[^:]*:/\1:*:/'" << EOM
 ecordas:*::::7:2::0
 EOM
 
-check "getent.ldap shadow adishaw" << EOM
+check "getent.ldap shadow adishaw | sed 's/^\([^:]*\):[^:]*:/\1:*:/'" << EOM
 adishaw:*:12302:::7:2::0
 EOM
 

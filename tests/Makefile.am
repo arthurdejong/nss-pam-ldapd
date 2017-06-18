@@ -20,13 +20,16 @@
 
 TESTS = test_dict test_set test_tio test_expr test_getpeercred test_cfg \
         test_attmap test_myldap.sh test_common test_nsscmds.sh \
-        test_ldapcmds.sh test_pamcmds.sh test_manpages.sh test_clock \
+        test_pamcmds.sh test_manpages.sh test_clock \
         test_tio_timeout
 if HAVE_PYTHON
   TESTS += test_pycompile.sh test_pylint.sh
 endif
 if ENABLE_PYNSLCD
   TESTS += test_pynslcd_cache.py test_doctest.sh
+endif
+if ENABLE_UTILS
+  TESTS += test_ldapcmds.sh
 endif
 
 AM_TESTS_ENVIRONMENT = PYTHON='@PYTHON@'; export PYTHON; \
