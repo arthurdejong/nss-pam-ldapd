@@ -107,24 +107,25 @@ static int mkfilter_group_byname(const char *name,
    by gid, return -1 on errors */
 static int mkfilter_group_bygid(gid_t gid, char *buffer, size_t buflen)
 {
+  gid_t g = gid - nslcd_cfg->nss_gid_offset;
   /* if searching for a Windows domain SID */
   if (gidSid != NULL)
   {
     /* the given gid is a BUILTIN gid, the SID prefix is not the domain SID */
-    if ((gid >= min_builtin_rid) && (gid <= max_builtin_rid))
+    if ((g >= min_builtin_rid) && (g <= max_builtin_rid))
       return mysnprintf(buffer, buflen, "(&%s(%s=%s\\%02x\\%02x\\%02x\\%02x))",
                         group_filter, attmap_group_gidNumber, builtinSid,
-                        (int)(gid & 0xff), (int)((gid >> 8) & 0xff),
-                        (int)((gid >> 16) & 0xff), (int)((gid >> 24) & 0xff));
+                        (int)(g & 0xff), (int)((g >> 8) & 0xff),
+                        (int)((g >> 16) & 0xff), (int)((g >> 24) & 0xff));
     return mysnprintf(buffer, buflen, "(&%s(%s=%s\\%02x\\%02x\\%02x\\%02x))",
                       group_filter, attmap_group_gidNumber, gidSid,
-                      (int)(gid & 0xff), (int)((gid >> 8) & 0xff),
-                      (int)((gid >> 16) & 0xff), (int)((gid >> 24) & 0xff));
+                      (int)(g & 0xff), (int)((g >> 8) & 0xff),
+                      (int)((g >> 16) & 0xff), (int)((g >> 24) & 0xff));
   }
   else
   {
     return mysnprintf(buffer, buflen, "(&%s(%s=%lu))",
-                      group_filter, attmap_group_gidNumber, (unsigned long int)gid);
+                      group_filter, attmap_group_gidNumber, (unsigned long int)g);
   }
 }
 
@@ -376,6 +377,7 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
           return 0;
         }
       }
+      gids[numgids] += nslcd_cfg->nss_gid_offset;
     }
   }
   /* get group passwd (userPassword) (use only first entry) */

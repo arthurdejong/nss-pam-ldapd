@@ -714,12 +714,35 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="nss_gid_offset"> <!-- since XXX -->
+      <term><option>nss_gid_offset</option> <replaceable>NUMBER</replaceable></term>
+      <listitem>
+        <para>
+        This option specifies an offset to apply to all
+        <acronym>LDAP</acronym> group numeric ids. This can be used to
+        avoid GID collisions with local groups.
+        </para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry id="nss_uid_offset"> <!-- since XXX -->
+      <term><option>nss_uid_offset</option> <replaceable>NUMBER</replaceable></term>
+      <listitem>
+        <para>
+        This option specifies an offset to apply to all
+        <acronym>LDAP</acronym> user numeric ids. This can be used to
+        avoid UID collisions with local users.
+        </para>
+      </listitem>
+    </varlistentry>
+
     <varlistentry id="nss_min_uid"> <!-- since 0.8.0 -->
      <term><option>nss_min_uid</option> <replaceable>UID</replaceable></term>
      <listitem>
       <para>
        This option ensures that <acronym>LDAP</acronym> users with a numeric
-       user id lower than the specified value are ignored. Also requests for
+       user id lower than the specified value (after applying
+       <option>nss_uid_offset</option>) are ignored. Also requests for
        users with a lower user id are ignored.
       </para>
      </listitem>
