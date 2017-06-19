@@ -720,7 +720,7 @@
         <para>
         This option specifies an offset to apply to all
         <acronym>LDAP</acronym> group numeric ids. This can be used to
-        avoid UID collisions with local groups.
+        avoid GID collisions with local groups.
         </para>
       </listitem>
     </varlistentry>
