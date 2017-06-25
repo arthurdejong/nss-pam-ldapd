@@ -1,7 +1,7 @@
 
 # group.py - group entry lookup routines
 #
-# Copyright (C) 2010-2015 Arthur de Jong
+# Copyright (C) 2010-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -73,6 +73,8 @@ class Search(search.LDAPSearch):
                         attmap['memberUid'], escape_filter_chars(memberuid),
                         attmap['member'], escape_filter_chars(entry[0])
                     )
+        if 'gidNumber' in self.parameters:
+            self.parameters['gidNumber'] -= cfg.nss_gid_offset
         return super(Search, self).mk_filter()
 
 
@@ -151,7 +153,7 @@ class GroupRequest(common.Request):
         if not passwd or self.calleruid != 0:
             passwd = '*'
         # get group id(s)
-        gids = [int(x) for x in attributes['gidNumber']]
+        gids = [int(x) + cfg.nss_gid_offset for x in attributes['gidNumber']]
         # build member list
         members = set()
         subgroups = []

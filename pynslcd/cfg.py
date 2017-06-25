@@ -1,7 +1,7 @@
 
 # cfg.py - module for accessing configuration information
 #
-# Copyright (C) 2010-2015 Arthur de Jong
+# Copyright (C) 2010-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -81,6 +81,8 @@ tls_key = None
 pagesize = 0  # FIXME: add support
 nss_initgroups_ignoreusers = set()
 nss_min_uid = 0
+nss_uid_offset = 0
+nss_gid_offset = 0
 nss_nested_groups = False
 nss_getgrent_skipmembers = False
 nss_disable_enumeration = False
@@ -171,7 +173,7 @@ def read(filename):
         if re.match('(#.*)?$', line, re.IGNORECASE):
             continue
         # parse options with a single integer argument
-        m = re.match('(?P<keyword>threads|ldap_version|bind_timelimit|timelimit|idle_timelimit|reconnect_sleeptime|reconnect_retrytime|pagesize|nss_min_uid)\s+(?P<value>\d+)',
+        m = re.match('(?P<keyword>threads|ldap_version|bind_timelimit|timelimit|idle_timelimit|reconnect_sleeptime|reconnect_retrytime|pagesize|nss_min_uid|nss_uid_offset|nss_gid_offset)\s+(?P<value>\d+)',
                      line, re.IGNORECASE)
         if m:
             globals()[m.group('keyword').lower()] = int(m.group('value'))

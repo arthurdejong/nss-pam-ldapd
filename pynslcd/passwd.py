@@ -1,7 +1,7 @@
 
 # passwd.py - lookup functions for user account information
 #
-# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2010-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -45,6 +45,11 @@ class Search(search.LDAPSearch):
     required = ('uid', 'uidNumber', 'gidNumber', 'gecos', 'homeDirectory',
                 'loginShell')
 
+    def mk_filter(self):
+        if 'uidNumber' in self.parameters:
+            self.parameters['uidNumber'] -= cfg.nss_uid_offset
+        return super(Search, self).mk_filter()
+
 
 class Cache(cache.Cache):
 
@@ -83,8 +88,8 @@ class PasswdRequest(common.Request):
                 passwd = None
             if not passwd or self.calleruid != 0:
                 passwd = '*'
-        uids = [int(x) for x in attributes['uidNumber']]
-        gid = int(attributes['gidNumber'][0])
+        uids = [int(x) + cfg.nss_uid_offset for x in attributes['uidNumber']]
+        gid = int(attributes['gidNumber'][0]) + cfg.nss_gid_offset
         gecos = attributes['gecos'][0]
         home = attributes['homeDirectory'][0]
         shell = attributes['loginShell'][0]
@@ -135,7 +140,7 @@ def uid2entry(conn, uid):
     """Look up the user by uid and return the LDAP entry or None if the user
     was not found."""
     for dn, attributes in Search(conn, parameters=dict(uid=uid)):
-        if any(int(x) >= cfg.nss_min_uid for x in attributes['uidNumber']):
+        if any((int(x) + cfg.nss_uid_offset) >= cfg.nss_min_uid for x in attributes['uidNumber']):
             return dn, attributes
 
 
@@ -146,5 +151,5 @@ def dn2uid(conn, dn):
     """Look up the user by dn and return a uid or None if the user was
     not found."""
     for dn, attributes in Search(conn, base=dn):
-        if any(int(x) >= cfg.nss_min_uid for x in attributes['uidNumber']):
+        if any((int(x) + cfg.nss_uid_offset) >= cfg.nss_min_uid for x in attributes['uidNumber']):
             return attributes['uid'][0]
