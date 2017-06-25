@@ -2,7 +2,7 @@
 
 # pynslcd.py - main daemon module
 #
-# Copyright (C) 2010-2016 Arthur de Jong
+# Copyright (C) 2010-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -339,13 +339,7 @@ if __name__ == '__main__':
             nslcd_serversocket = create_socket()
             # load supplementary groups
             if cfg.uid is not None:
-                import pwd
-                import grp
-                u = pwd.getpwnam(cfg.uid)
-                if cfg.gid is None:
-                    gid = u.pw_gid
-                else:
-                    gid = grp.getgrnam(cfg.gid).gr_gid
+                u, gid = cfg.get_usergid()
                 # set supplementary groups, gid and uid
                 os.initgroups(u.pw_name, gid)
                 os.setgid(gid)

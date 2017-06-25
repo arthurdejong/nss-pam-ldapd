@@ -334,3 +334,15 @@ def read(filename):
     for k, v in globals().items():
         if not k.startswith('_'):
             logging.debug('%s=%r', k, v)
+
+
+def get_usergid():
+    """Return user info and group id."""
+    import pwd
+    import grp
+    u = pwd.getpwnam(uid)
+    if gid is None:
+        g = u.pw_gid
+    else:
+        g = grp.getgrnam(gid).gr_gid
+    return u, g

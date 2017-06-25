@@ -1,7 +1,7 @@
 
 # mypidfile.py - functions for properly locking a PIDFile
 #
-# Copyright (C) 2010, 2011, 2012 Arthur de Jong
+# Copyright (C) 2010-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,8 @@ import errno
 import fcntl
 import os
 
+import cfg
+
 
 class MyPIDLockFile(object):
     """Implementation of a PIDFile fit for use with the daemon module
@@ -32,6 +34,12 @@ class MyPIDLockFile(object):
 
     def __enter__(self):
         """Lock the PID file and write the process ID to the file."""
+        # create the directory for the pidfile if needed
+        piddir = os.path.dirname(self.path)
+        if not os.path.isdir(piddir):
+            os.mkdir(piddir)
+            u, gid = cfg.get_usergid()
+            os.chown(piddir, u.u.pw_uid, gid)
         fd = os.open(self.path, os.O_RDWR | os.O_CREAT, 0644)
         try:
             fcntl.lockf(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
