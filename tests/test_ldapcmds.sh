@@ -37,7 +37,7 @@ export PYTHONPATH
 "$srcdir/testenv.sh" check_nslcd || exit 77
 
 # if Python is missing, ignore
-if ! ${python} --version > /dev/null 2> /dev/null
+if [ -z "${python}" ] || ! ${python} --version > /dev/null 2> /dev/null
 then
   echo "Python (${python}) not found"
   exit 77
@@ -472,13 +472,16 @@ EOM
 
 echo "test_ldapcmds.sh: testing shadow..."
 
-# NOTE: the output of this should depend on whether we are root or not
+# function to remove the password field from output
+rmpasswd() {
+  sed 's/^\([^:]*\):[^:]*:/\1:*:/'
+}
 
-check "getent.ldap shadow ecordas | sed 's/^\([^:]*\):[^:]*:/\1:*:/'" << EOM
+check "getent.ldap shadow ecordas | rmpasswd" << EOM
 ecordas:*::::7:2::0
 EOM
 
-check "getent.ldap shadow adishaw | sed 's/^\([^:]*\):[^:]*:/\1:*:/'" << EOM
+check "getent.ldap shadow adishaw | rmpasswd" << EOM
 adishaw:*:12302:::7:2::0
 EOM
 

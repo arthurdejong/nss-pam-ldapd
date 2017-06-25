@@ -490,13 +490,16 @@ if grep '^shadow.*ldap' /etc/nsswitch.conf > /dev/null 2>&1
 then
 echo "test_nsscmds.sh: testing shadow..."
 
-# NOTE: the output of this should depend on whether we are root or not
+# function to remove the password field from output
+rmpasswd() {
+  sed 's/^\([^:]*\):[^:]*:/\1:*:/'
+}
 
-check "getent shadow ecordas" << EOM
+check "getent shadow ecordas | rmpasswd" << EOM
 ecordas:*::::7:2::0
 EOM
 
-check "getent shadow adishaw" << EOM
+check "getent shadow adishaw | rmpasswd" << EOM
 adishaw:*:12302:::7:2::0
 EOM
 
