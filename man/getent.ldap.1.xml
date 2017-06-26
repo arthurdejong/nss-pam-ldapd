@@ -35,9 +35,9 @@
  <refmeta>
   <refentrytitle>getent.ldap</refentrytitle>
   <manvolnum>1</manvolnum>
-  <refmiscinfo class="version">Version 0.9.7</refmiscinfo>
+  <refmiscinfo class="version">Version 0.9.8</refmiscinfo>
   <refmiscinfo class="manual">User Commands</refmiscinfo>
-  <refmiscinfo class="date">Aug 2016</refmiscinfo>
+  <refmiscinfo class="date">Jun 2017</refmiscinfo>
  </refmeta>
 
  <refnamediv id="name">

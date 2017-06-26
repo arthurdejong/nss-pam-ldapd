@@ -1,3 +1,21 @@
+changes from 0.9.7 to 0.9.8
+---------------------------
+
+* add a pam_authc_search option that can be used to configure the search
+  operation that is performed after authentication
+* add nss_uid_offset and nss_gid_offset options that can be used to
+  change returned numeric user and group ids from LDAP (thanks Seth Wright)
+* do not retry failed user password on second LDAP server
+* fix a crash in the PAM module on FreeBSD when showing password expiration
+  messages
+* the validnames option now also applies to shadow lookups
+* support ethernet addresses in LDAP in compact and long formats
+* improvements to getent.ldap command (a few minor bug fixes and preparations
+  for Python 3 support)
+* log entries and lookups failing nss_min_uid at debug level
+* improvements to the test suite (including tests for getent.ldap)
+
+
 changes from 0.9.6 to 0.9.7
 ---------------------------
 

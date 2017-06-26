@@ -6,7 +6,7 @@
    nslcd.8.xml - docbook manual page for nslcd
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2016 Arthur de Jong
+   Copyright (C) 2006-2017 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,9 +36,9 @@
  <refmeta>
   <refentrytitle>nslcd</refentrytitle>
   <manvolnum>8</manvolnum>
-  <refmiscinfo class="version">Version 0.9.7</refmiscinfo>
+  <refmiscinfo class="version">Version 0.9.8</refmiscinfo>
   <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
-  <refmiscinfo class="date">Aug 2016</refmiscinfo>
+  <refmiscinfo class="date">Jun 2017</refmiscinfo>
  </refmeta>
 
  <refnamediv id="name">
