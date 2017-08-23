@@ -44,7 +44,9 @@ static nss_status_t read_passwd(TFILE *fp, struct passwd *result,
   READ_BUF_STRING(fp, result->pw_gecos);
   READ_BUF_STRING(fp, result->pw_dir);
   READ_BUF_STRING(fp, result->pw_shell);
+#ifdef HAVE_STRUCT_PASSWD_PW_CLASS
   READ_BUF_STRING(fp, result->pw_class);
+#endif /* HAVE_STRUCT_PASSWD_PW_CLASS */
   return NSS_STATUS_SUCCESS;
 }
 
