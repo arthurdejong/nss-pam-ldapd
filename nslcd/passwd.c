@@ -63,6 +63,7 @@ const char *attmap_passwd_gidNumber     = "gidNumber";
 const char *attmap_passwd_gecos         = "\"${gecos:-$cn}\"";
 const char *attmap_passwd_homeDirectory = "homeDirectory";
 const char *attmap_passwd_loginShell    = "loginShell";
+const char *attmap_passwd_class         = "userClass";
 
 /* special properties for objectSid-based searches
    (these are already LDAP-escaped strings) */
@@ -150,6 +151,7 @@ void passwd_init(void)
   attmap_add_attributes(set, attmap_passwd_gecos);
   attmap_add_attributes(set, attmap_passwd_homeDirectory);
   attmap_add_attributes(set, attmap_passwd_loginShell);
+  attmap_add_attributes(set, attmap_passwd_class);
   passwd_attrs = set_tolist(set);
   if (passwd_attrs == NULL)
   {
@@ -429,6 +431,7 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
   char homedir[256];
   char shell[64];
   char passbuffer[BUFLEN_PASSWORDHASH];
+  char class[64];
   int i, j;
   /* get the usernames for this entry */
   usernames = myldap_get_values(entry, attmap_passwd_uid);
@@ -541,6 +544,8 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
             myldap_get_dn(entry), attmap_passwd_homeDirectory);
   /* get the shell for this entry */
   attmap_get_value(entry, attmap_passwd_loginShell, shell, sizeof(shell));
+  /* get the class for this entry */
+  attmap_get_value(entry, attmap_passwd_class, class, sizeof(class));
   /* write the entries */
   for (i = 0; usernames[i] != NULL; i++)
   {
@@ -565,6 +570,7 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
             WRITE_STRING(fp, gecos);
             WRITE_STRING(fp, homedir);
             WRITE_STRING(fp, shell);
+            WRITE_STRING(fp, class);
           }
         }
       }

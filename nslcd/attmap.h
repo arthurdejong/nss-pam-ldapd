@@ -51,6 +51,7 @@ extern const char *attmap_passwd_gidNumber;
 extern const char *attmap_passwd_gecos;
 extern const char *attmap_passwd_homeDirectory;
 extern const char *attmap_passwd_loginShell;
+extern const char *attmap_passwd_class;
 extern const char *attmap_protocol_cn;
 extern const char *attmap_protocol_ipProtocolNumber;
 extern const char *attmap_rpc_cn;
