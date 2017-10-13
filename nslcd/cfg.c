@@ -802,7 +802,7 @@ static void handle_map(const char *filename, int lnr,
 {
   enum ldap_map_selector map;
   const char **var;
-  char oldatt[32], newatt[1024];
+  char oldatt[32], *newatt;
   /* get the map */
   if ((map = get_map(&line)) == LM_NONE)
   {
@@ -811,10 +811,8 @@ static void handle_map(const char *filename, int lnr,
   }
   /* read the other tokens */
   check_argumentcount(filename, lnr, keyword,
-                      (get_token(&line, oldatt, sizeof(oldatt)) != NULL) &&
-                      (get_token(&line, newatt, sizeof(newatt)) != NULL));
-  /* check that there are no more tokens left on the line */
-  get_eol(filename, lnr, keyword, &line);
+                      (get_token(&line, oldatt, sizeof(oldatt)) != NULL));
+  newatt = get_linedup(filename, lnr, keyword, &line);
   /* change attribute mapping */
   var = attmap_get_var(map, oldatt);
   if (var == NULL)
@@ -829,6 +827,7 @@ static void handle_map(const char *filename, int lnr,
             filename, lnr, oldatt);
     exit(EXIT_FAILURE);
   }
+  free(newatt);
 }
 
 #ifdef LDAP_OPT_X_TLS

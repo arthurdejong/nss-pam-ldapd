@@ -203,7 +203,8 @@ static void test_read(void)
           "base dc=test, dc=tld\n"
           "base passwd ou=Some People,dc=test,dc=tld\n"
           "map\tpasswd uid\t\tsAMAccountName\n"
-          "map passwd homeDirectory \"${homeDirectory:-/home/$uid}\"\n"
+          "map passwd homeDirectory \"${homeDirectory:-/home/$uid}\"  \n"
+          "map    passwd gecos            \"${givenName}. ${sn}\"\n"
           "filter group (&(objeclClass=posixGroup)(gid=1*))\n"
           "\n"
           "scope passwd one\n"
@@ -223,6 +224,8 @@ static void test_read(void)
   assertstreq(cfg.bases[0], "dc=test, dc=tld");
   assertstreq(passwd_bases[0], "ou=Some People,dc=test,dc=tld");
   assertstreq(attmap_passwd_uid, "sAMAccountName");
+  assertstreq(attmap_passwd_homeDirectory, "\"${homeDirectory:-/home/$uid}\"");
+  assertstreq(attmap_passwd_gecos, "\"${givenName}. ${sn}\"");
   assertstreq(group_filter, "(&(objeclClass=posixGroup)(gid=1*))");
   assert(passwd_scope == LDAP_SCOPE_ONELEVEL);
   assert(cfg.cache_dn2uid_positive == 10 * 60);
