@@ -1265,7 +1265,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
   char linebuf[MAX_LINE_LENGTH];
   char *line;
   char keyword[32];
-  char token[64];
+  char token[256];
   int i;
 #ifdef LDAP_OPT_X_TLS
   int rc;
