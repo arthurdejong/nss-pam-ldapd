@@ -27,6 +27,7 @@
 
 #include "config.h"
 
+#include <string.h>
 #include <errno.h>
 #include <sys/param.h>
 #include <netinet/in.h>
@@ -36,6 +37,11 @@
 #include "compat/attrs.h"
 
 #define BUFFER_SIZE 1024
+
+struct name_list {
+  struct name_list *next;
+  char *name;
+};
 
 NSS_METHOD_PROTOTYPE(__nss_compat_getgrnam_r);
 NSS_METHOD_PROTOTYPE(__nss_compat_getgrgid_r);
@@ -53,6 +59,10 @@ NSS_METHOD_PROTOTYPE(__nss_compat_endpwent);
 NSS_METHOD_PROTOTYPE(__nss_compat_gethostbyname);
 NSS_METHOD_PROTOTYPE(__nss_compat_gethostbyname2);
 NSS_METHOD_PROTOTYPE(__nss_compat_gethostbyaddr);
+
+NSS_METHOD_PROTOTYPE(__nss_compat_getnetgrent_r);
+NSS_METHOD_PROTOTYPE(__nss_compat_setnetgrent);
+NSS_METHOD_PROTOTYPE(__nss_compat_endnetgrent);
 
 static ns_mtab methods[] = {
   { NSDB_GROUP, "getgrnam_r", __nss_compat_getgrnam_r, (void *)NSS_NAME(getgrnam_r) },
@@ -83,6 +93,10 @@ static ns_mtab methods[] = {
   { NSDB_PASSWD_COMPAT, "getpwent_r", __nss_compat_getpwent_r, (void *)NSS_NAME(getpwent_r) },
   { NSDB_PASSWD_COMPAT, "setpwent",   __nss_compat_setpwent,   (void *)NSS_NAME(setpwent) },
   { NSDB_PASSWD_COMPAT, "endpwent",   __nss_compat_endpwent,   (void *)NSS_NAME(endpwent) },
+
+  { NSDB_NETGROUP, "getnetgrent_r", __nss_compat_getnetgrent_r, (void *)NSS_NAME(getnetgrent_r) },
+  { NSDB_NETGROUP, "setnetgrent", __nss_compat_setnetgrent, (void *)NSS_NAME(setnetgrent) },
+  { NSDB_NETGROUP, "endnetgrent", __nss_compat_endnetgrent, (void *)NSS_NAME(endnetgrent) },
 };
 
 typedef nss_status_t (*gethbn_t)(const char *, struct hostent *, char *, size_t, int *, int *);
@@ -209,4 +223,96 @@ ns_mtab *nss_module_register(const char UNUSED(*source), unsigned int *mtabsize,
   *mtabsize = sizeof(methods) / sizeof(methods[0]);
   *unreg = NULL;
   return methods;
+}
+
+static void *_netgr_result;
+
+int __nss_compat_getnetgrent_r(void UNUSED(*retval), void *mdata, va_list ap)
+{
+  nss_status_t (*fn)(struct __netgrent *, char *, size_t, int *);
+  char **hostp, **userp, **domp;
+  char *buffer;
+  size_t bufsize;
+  enum nss_status rv;
+  int *errorp;
+  int ret;
+  struct name_list *netlist;
+  struct __netgrent *netgr;
+
+  fn = (nss_status_t (*)(struct __netgrent *, char *, size_t, int *))mdata;
+  hostp = va_arg(ap, char **);
+  userp = va_arg(ap, char **);
+  domp = va_arg(ap, char **);
+  buffer = va_arg(ap, char *);
+  bufsize = va_arg(ap, size_t);
+  errorp = va_arg(ap, int *);
+
+  do {
+    *errorp = 0;
+    rv = fn(_netgr_result, buffer, bufsize,
+        errorp);
+
+    ret = __nss_compat_result(rv, *errorp);
+    netgr = (struct __netgrent *)_netgr_result;
+
+    switch (ret){
+      case NS_SUCCESS:
+        if (netgr->type == group_val){
+          netlist = (struct name_list *)malloc(sizeof(struct name_list));
+          netlist->next = netgr->needed_groups;
+          netlist->name = strdup(netgr->val.group);
+          netgr->needed_groups = netlist;
+          ret = NS_TRYAGAIN;
+        }else{
+          *hostp = (char *)netgr->val.triple.host;
+          *userp = (char *)netgr->val.triple.user;
+          *domp = (char *)netgr->val.triple.domain;
+          return (NS_SUCCESS);
+        }
+        break;
+      case NS_RETURN:
+        netlist = netgr->needed_groups;
+        if(netlist != NULL){
+          NSS_NAME(setnetgrent)(netlist->name, netgr);
+          netgr->needed_groups = netlist->next;
+          free(netlist->name);
+          free(netlist);
+          ret = NS_TRYAGAIN;
+        }
+        break;
+      default:
+        ;
+    }
+  } while (ret == NS_TRYAGAIN);
+
+  return ret;
+}
+
+int __nss_compat_setnetgrent(void UNUSED(*retval), void *mdata, va_list ap)
+{
+  nss_status_t (*fn)(const char *, struct __netgrent *);
+  const char *netgroup;
+
+  fn = (nss_status_t (*)(const char *, struct __netgrent *))mdata;
+  netgroup = va_arg(ap, const char *);
+
+  if (_netgr_result != NULL)
+    free(_netgr_result);
+  _netgr_result = calloc(1, sizeof(struct __netgrent));
+  if (_netgr_result == NULL)
+    return (NS_TRYAGAIN);
+
+  return (fn(netgroup, _netgr_result));
+}
+
+int __nss_compat_endnetgrent(void UNUSED(*retval), void *mdata, va_list UNUSED(ap))
+{
+  nss_status_t (*fn)(struct __netgrent *);
+  int ret;
+
+  fn = (nss_status_t (*)(struct __netgrent *))mdata;
+  ret = fn(_netgr_result);
+  free(_netgr_result);
+  _netgr_result = NULL;
+  return (ret);
 }
