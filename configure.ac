@@ -545,7 +545,7 @@ then
     case "$with_nss_flavour" in
       glibc)   with_nss_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow" ;;
       solaris) with_nss_maps="ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow" ;;
-      freebsd) with_nss_maps="group,hosts,passwd" ;;
+      freebsd) with_nss_maps="group,hosts,passwd,netgroup" ;;
     esac
   fi
   AC_MSG_RESULT($with_nss_maps)
