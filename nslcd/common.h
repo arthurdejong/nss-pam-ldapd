@@ -3,7 +3,7 @@
    This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2014 Arthur de Jong
+   Copyright (C) 2006-2018 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -150,15 +150,6 @@ int invalidator_start(void);
 /* signal invalidator to invalidate the selected external cache */
 void invalidator_do(enum ldap_map_selector map);
 
-/* fallback definition of HOST_NAME_MAX */
-#ifndef HOST_NAME_MAX
-#ifdef _POSIX_HOST_NAME_MAX
-#define HOST_NAME_MAX _POSIX_HOST_NAME_MAX
-#else
-#define HOST_NAME_MAX 255
-#endif /* _POSIX_HOST_NAME_MAX */
-#endif /* not HOST_NAME_MAX */
-
 /* common buffer lengths */
 #define BUFLEN_NAME         256  /* user, group names and such */
 #define BUFLEN_SAFENAME     300  /* escaped name */
@@ -167,7 +158,7 @@ void invalidator_do(enum ldap_map_selector map);
 #define BUFLEN_DN           512  /* distinguished names */
 #define BUFLEN_SAFEDN       600  /* escapedd dn */
 #define BUFLEN_FILTER      4096  /* search filters */
-#define BUFLEN_HOSTNAME (HOST_NAME_MAX + 1)  /* host names (+ escaped) */
+#define BUFLEN_HOSTNAME     256  /* host names or FQDN (and safe version) */
 #define BUFLEN_MESSAGE     1024  /* message strings */
 
 /* provide strtouid() function alias */

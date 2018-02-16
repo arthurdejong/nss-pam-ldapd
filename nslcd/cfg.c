@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007-2017 Arthur de Jong
+   Copyright (C) 2007-2018 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -425,7 +425,7 @@ static void add_uris_from_dns(const char *filename, int lnr,
 {
   int rc;
   char *hostlist = NULL, *nxt;
-  char buf[HOST_NAME_MAX + sizeof("ldap://")];
+  char buf[BUFLEN_HOSTNAME + sizeof("ldap://")];
   log_log(LOG_DEBUG, "query %s for SRV records", domain);
   rc = ldap_domain2hostlist(domain, &hostlist);
   if (rc != LDAP_SUCCESS)
