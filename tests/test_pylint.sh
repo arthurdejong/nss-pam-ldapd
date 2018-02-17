@@ -24,6 +24,8 @@ set -e
 # find source directory
 srcdir="${srcdir-`dirname "$0"`}"
 top_srcdir="${top_srcdir-${srcdir}/..}"
+builddir="${builddir-`dirname "$0"`}"
+top_builddir="${top_builddir-${builddir}/..}"
 
 # if Pylint is missing, ignore
 if ! pylint --version > /dev/null 2> /dev/null
@@ -41,10 +43,13 @@ rcfile="$absdir/pylint.rc"
 disable=$(sed -n 's/^disable=\(.*\)$/\1/p' "$rcfile")
 
 # run Pylint in both pynslcd and utils directories
-( cd "$top_srcdir/pynslcd" ;
-  pylint --errors-only --rcfile "$rcfile" --disable "$disable" *.py)
-( cd "$top_srcdir/utils" ;
-  pylint --errors-only --rcfile "$rcfile" --disable "$disable" *.py)
+for dir in pynslcd utils
+do
+  echo "Running pylint in $dir..."
+  dir_builddir="$(cd "${top_builddir}/${dir}" && pwd)"
+  ( cd "${top_srcdir}/${dir}" ;
+    PYTHONPATH="${dir_builddir}" pylint --errors-only --rcfile "$rcfile" --disable "$disable" *.py)
+done
 
 # Pylint has the following exit codes:
 #  0 if everything went fine
