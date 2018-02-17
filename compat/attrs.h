@@ -79,6 +79,13 @@
 #define NORETURN    /* no attribute */
 #endif
 
+/* we don't need an explicit break statement in this case block */
+#if GCC_VERSION(7, 0)
+#define FALLTHROUGH __attribute__((fallthrough))
+#else
+#define FALLTHROUGH /* no attribute */
+#endif
+
 /* define __STRING if it's not yet defined */
 #ifndef __STRING
 #ifdef __STDC__

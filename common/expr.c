@@ -310,6 +310,7 @@ MUST_USE static const char *parse_expression(
         break;
       case '\\': /* escaped character, unescape */
         (*ptr)++;
+        FALLTHROUGH; /* no break needed here */
       default: /* just copy the text */
         if ((size_t)j >= buflen)
           return NULL;
@@ -356,7 +357,7 @@ SET *expr_vars(const char *str, SET *set)
         break;
       case '\\': /* escaped character, unescape */
         i++;
-        /* no break needed here */
+        FALLTHROUGH; /* no break needed here */
       default: /* just skip */
         i++;
     }
