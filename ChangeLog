@@ -1,3 +1,58 @@
+2018-02-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [382b6ea] INSTALL, ar-lib, config.guess, config.sub, depcomp,
+	  py-compile: Update files from latest automake
+
+2018-02-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e8a4705] tests/test_pylint.sh: Fix running pylint on distcheck
+
+	  This sets PYTHONPATH so that both the source and build directories
+	  are used to find constants.py.
+
+2018-02-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9a50971] common/expr.c, compat/attrs.h: Mark case blocks without
+	  break statement
+
+	  This avoids a gcc warning in non-empty case blocks without a
+	  break statement by explicitly marking those blocks.
+
+2018-02-16  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c05e326] nslcd/cfg.c, nslcd/common.h: Increase size of hostname
+	  buffer
+
+	  This increases the host name buffer to support host names (that
+	  include FQDNs) to 255 characters and removes the reliance on
+	  HOST_NAME_MAX and _POSIX_HOST_NAME_MAX which may be smaller in
+	  some situations.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/22
+
+2017-12-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9760dce] nslcd/cfg.c: Increase size of config file token
+
+	  This increases the maximum size of tokens that are read from
+	  the nslcd.conf configuration file to 256 characters. This was
+	  a problem for some very long uri values.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/21
+
+2017-10-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8f76d24] nslcd/cfg.c, tests/test_cfg.c: Support spaces in
+	  attribute mapping expressions
+
+2017-06-26  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [47fd03b] AUTHORS, ChangeLog, NEWS, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml,
+	  nslcd/nslcd.c, pynslcd/pynslcd.py, utils/cmdline.py: Get files
+	  ready for 0.9.8 release
+
 2017-06-25  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [7920d85] tests/test_ldapcmds.sh, tests/test_nsscmds.sh: Ignore

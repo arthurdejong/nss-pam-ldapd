@@ -6,7 +6,7 @@
    nslcd.conf.5.xml - docbook manual page for nslcd.conf
 
    Copyright (C) 1997-2005 Luke Howard
-   Copyright (C) 2007-2017 Arthur de Jong
+   Copyright (C) 2007-2018 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,9 +36,9 @@
  <refmeta>
   <refentrytitle>nslcd.conf</refentrytitle>
   <manvolnum>5</manvolnum>
-  <refmiscinfo class="version">Version 0.9.8</refmiscinfo>
+  <refmiscinfo class="version">Version 0.9.9</refmiscinfo>
   <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
-  <refmiscinfo class="date">Jun 2017</refmiscinfo>
+  <refmiscinfo class="date">Feb 2018</refmiscinfo>
  </refmeta>
 
  <refnamediv id="name">
@@ -725,7 +725,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="nss_uid_offset"> <!-- since 0.9.8 -->
+    <varlistentry id="nss_uid_offset"> <!-- since 0.9.9 -->
      <term><option>nss_uid_offset</option> <replaceable>NUMBER</replaceable></term>
      <listitem>
       <para>
@@ -742,7 +742,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="nss_gid_offset"> <!-- since 0.9.8 -->
+    <varlistentry id="nss_gid_offset"> <!-- since 0.9.9 -->
      <term><option>nss_gid_offset</option> <replaceable>NUMBER</replaceable></term>
      <listitem>
       <para>
@@ -855,7 +855,7 @@
      </listitem>
     </varlistentry>
 
-    <varlistentry id="pam_authc_search"> <!-- since 0.9.8 -->
+    <varlistentry id="pam_authc_search"> <!-- since 0.9.9 -->
      <term><option>pam_authc_search</option>
            <replaceable>FILTER</replaceable></term>
      <listitem>

@@ -1,3 +1,11 @@
+changes from 0.9.8 to 0.9.9
+---------------------------
+
+* support spaces in attribute mapping expressions
+* allow parsing longer lines in the configuration file
+* allow for longer host names
+
+
 changes from 0.9.7 to 0.9.8
 ---------------------------
 
