@@ -2,7 +2,7 @@
    pam.c - pam processing routines
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009-2017 Arthur de Jong
+   Copyright (C) 2009-2018 Arthur de Jong
    Copyright (C) 2015 Nokia Solutions and Networks
 
    This library is free software; you can redistribute it and/or
@@ -71,7 +71,7 @@ static DICT *search_vars_new(const char *dn, const char *username,
   char hostname[BUFLEN_HOSTNAME];
   /* allocating this on the stack is OK because search_var_add()
      will allocate new memory for the value */
-  const char *fqdn;
+  const char *fqdn, *found;
   DICT *dict;
   dict = dict_new();
   if (dict == NULL)
@@ -89,7 +89,11 @@ static DICT *search_vars_new(const char *dn, const char *username,
   if (gethostname(hostname, sizeof(hostname)) == 0)
     search_var_add(dict, "hostname", hostname);
   if ((fqdn = getfqdn()) != NULL)
+  {
     search_var_add(dict, "fqdn", fqdn);
+    if (((found = strchr(fqdn, '.'))) != NULL && (found[1] != '\0'))
+      search_var_add(dict, "domain", found + 1);
+  }
   search_var_add(dict, "dn", dn);
   search_var_add(dict, "uid", username);
   return dict;

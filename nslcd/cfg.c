@@ -1012,6 +1012,7 @@ static void check_search_variables(
         (strcmp(list[i], "tty") != 0) &&
         (strcmp(list[i], "hostname") != 0) &&
         (strcmp(list[i], "fqdn") != 0) &&
+        (strcmp(list[i], "domain") != 0) &&
         (strcmp(list[i], "dn") != 0) &&
         (strcmp(list[i], "uid") != 0))
     {
