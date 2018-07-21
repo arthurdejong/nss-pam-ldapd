@@ -2,7 +2,7 @@
 
 # testenv.sh - script to check test environment
 #
-# Copyright (C) 2011-2017 Arthur de Jong
+# Copyright (C) 2011-2018 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,7 @@ nss_is_enabled()
 
 # check to see if name is configured to do lookups through
 # LDAP and enable if not
-nss_enable()
+enable_nss()
 {
   name="$1"
   if nss_is_enabled "$name"
@@ -75,6 +75,13 @@ nss_enable()
   fi
   # we're done
   return 0
+}
+
+# put a PAM stack in place that enables lookups through LDAP
+# (this is currently hard-coded to only support Debian-based systems)
+enable_pam() {
+  cp "$srcdir"/debian-pam-config /usr/share/pam-configs/ldap
+  pam-auth-update --enable --force ldap
 }
 
 # check nsswitch.conf to see if dbs use ldap
@@ -170,14 +177,18 @@ check_nslcd_running() {
 }
 
 case "$1" in
-  nss_enable)
+  enable_nss|nss_enable)
     # modify /etc/nsswitch.conf to enable ldap for db
     shift
     while [ $# -gt 0 ]
     do
-      nss_enable "$1"
+      enable_nss "$1"
       shift
     done
+    exit 0
+    ;;
+  enable_pam)
+    enable_pam
     exit 0
     ;;
   check)
@@ -214,7 +225,7 @@ case "$1" in
     exit $res
     ;;
   *)
-    echo "Usage: $0 {nss_enable|check|check_nss|check_ldap}" >&2
+    echo "Usage: $0 {enable_nss|enable_pam|check|check_nss|check_ldap}" >&2
     exit 1
     ;;
 esac

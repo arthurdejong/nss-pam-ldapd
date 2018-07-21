@@ -1,0 +1,19 @@
+Name: LDAP Authentication
+Default: yes
+Priority: 128
+Auth-Type: Primary
+Auth-Initial:
+	[success=end default=ignore]	pam_ldap.so minimum_uid=1000
+Auth:
+	[success=end default=ignore]	pam_ldap.so minimum_uid=1000 use_first_pass
+Account-Type: Additional
+Account:
+	[success=ok new_authtok_reqd=done ignore=ignore user_unknown=ignore authinfo_unavail=ignore default=bad]	pam_ldap.so minimum_uid=1000
+Password-Type: Primary
+Password-Initial:
+	[success=end default=ignore]	pam_ldap.so minimum_uid=1000
+Password:
+	[success=end default=ignore]	pam_ldap.so minimum_uid=1000 try_first_pass
+Session-Type: Additional
+Session:
+	[success=ok default=ignore]	pam_ldap.so minimum_uid=1000
