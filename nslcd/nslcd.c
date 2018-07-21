@@ -2,7 +2,7 @@
    nslcd.c - ldap local connection daemon
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2017 Arthur de Jong
+   Copyright (C) 2006-2018 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -769,8 +769,6 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
   adjust_oom_score();
-  /* create socket */
-  nslcd_serversocket = create_socket(NSLCD_SOCKET);
   /* start subprocess to do invalidating if reconnect_invalidate is set */
   for (i = 0; i < LM_NONE; i++)
     if (nslcd_cfg->reconnect_invalidate[i])
@@ -825,6 +823,8 @@ int main(int argc, char *argv[])
     }
     log_log(LOG_DEBUG, "setuid(%lu) done", (unsigned long int)nslcd_cfg->uid);
   }
+  /* create socket */
+  nslcd_serversocket = create_socket(NSLCD_SOCKET);
   /* start worker threads */
   log_log(LOG_INFO, "accepting connections");
   nslcd_threads = (pthread_t *)malloc(nslcd_cfg->threads * sizeof(pthread_t));
