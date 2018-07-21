@@ -230,7 +230,7 @@ void log_log(int pri, const char *format, ...)
 {
   int res;
   struct log_cfg *lst;
-  char buffer[200];
+  char buffer[512];
   va_list ap;
 #ifndef TLS
   char *sessionid, *requestid;
