@@ -435,36 +435,36 @@ static void print_ppolicy_expiry(MYLDAP_SESSION *session, unsigned int sec)
   }
   if (days > 1)
     mysnprintf(session->policy_message, sizeof(session->policy_message),
-               "Password will expires in %u days", days);
+               "Password will expire in %u days", days);
   else if (days > 0)
     mysnprintf(session->policy_message, sizeof(session->policy_message),
-               "Password will expires in %u hours", hours + 24);
+               "Password will expire in %u hours", hours + 24);
   else if (hours > 1)
   {
     if (minutes > 1)
       mysnprintf(session->policy_message, sizeof(session->policy_message),
-                 "Password will expires in %u hours and %u minutes",
+                 "Password will expire in %u hours and %u minutes",
                  hours, minutes);
     else
       mysnprintf(session->policy_message, sizeof(session->policy_message),
-                 "Password will expires in %u hours", hours);
+                 "Password will expire in %u hours", hours);
   }
   else if (hours > 0)
     mysnprintf(session->policy_message, sizeof(session->policy_message),
-               "Password will expires in %u minutes", minutes + 60);
+               "Password will expire in %u minutes", minutes + 60);
   else if (minutes > 1)
   {
     if (sec > 1)
       mysnprintf(session->policy_message, sizeof(session->policy_message),
-                 "Password will expires in %u minutes and %u seconds",
+                 "Password will expire in %u minutes and %u seconds",
                  minutes, sec);
     else
       mysnprintf(session->policy_message, sizeof(session->policy_message),
-                 "Password will expires in %u minutes", minutes);
+                 "Password will expire in %u minutes", minutes);
   }
   else
     mysnprintf(session->policy_message, sizeof(session->policy_message),
-               "Password will expires in %u seconds", sec);
+               "Password will expire in %u seconds", sec);
 }
 
 static void handle_ppolicy_controls(MYLDAP_SESSION *session, LDAP *ld, LDAPControl **ctrls)
