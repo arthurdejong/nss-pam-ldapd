@@ -1,3 +1,13 @@
+changes from 0.9.9 to 0.9.10
+----------------------------
+
+* add FreeBSD netgroup support (thanks HWLin and Mango Yen)
+* make password expiry messages correct and consistent (thanks Têko Mihinto)
+* add domain variable for use in pam_authz_search
+* allow logging longer lines
+* create nslcd socket after dropping privileges to avoid slow start-ups
+
+
 changes from 0.9.8 to 0.9.9
 ---------------------------
 

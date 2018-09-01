@@ -1,3 +1,73 @@
+2018-09-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4f0f4db] ar-lib, compile, config.guess, config.sub, depcomp,
+	  install-sh, missing, mkinstalldirs, py-compile, test-driver:
+	  Update files from latest automake
+
+2018-02-06  HWLin <hwlin1414@gmail.com>
+
+	* [d5a25cf] configure.ac, nss/bsdnss.c: Add FreeBSD netgroup support
+
+	  Closes: https://github.com/arthurdejong/nss-pam-ldapd/pull/29
+
+2018-08-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d8b1640] nslcd/myldap.c, nslcd/pam.c: Make password expiry
+	  messages correct and consistent
+
+	  Thanks to Têko Mihinto.  See
+	  https://bugzilla.redhat.com/show_bug.cgi?id=1612543
+
+2018-07-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [84676ab] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/pam.c: Add
+	  domain variable for use in pam_authz_search
+
+	  This adds a domain variable (if it can be determined on the
+	  system) that can be used in pam_authz_search and pam_authc_search
+	  filters to build search filters that search on the domain name
+	  (the FQDN without the starting host name).
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/8
+
+2018-07-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9fbcdd1] .travis.yml, tests/debian-pam-config, tests/testenv.sh:
+	  Add a Travis configuration file
+
+	  This ensures that the integration tests can be successfully run. It
+	  configures a slapd instance with the test database, configures
+	  the system to use LDAP authentication and runs the tests.
+
+2018-07-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2a468fd] nslcd/log.c: Allow logging longer lines
+
+	  This increases the buffer that holds log messages so longer
+	  messages can be logged.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/26
+
+2018-07-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3760b43] nslcd/nslcd.c: Create /var/run/nslcd/socket after
+	  dropping privileges
+
+	  This is needed to avoid a problem where a call to initgroups()
+	  can result in NSS lookups. If nscd is configured the mechanism
+	  to avoid loopback lookups using nss_ldap_enablelookups will not
+	  work and cause for delays on start-up.
+
+	  Note that this changes ownership of the socket to the user
+	  running nslcd.
+
+2018-02-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fe26b94] ChangeLog, NEWS, README, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml:
+	  Get files ready for 0.9.9 release
+
 2018-02-18  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [382b6ea] INSTALL, ar-lib, config.guess, config.sub, depcomp,
