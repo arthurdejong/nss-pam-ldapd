@@ -28,9 +28,11 @@ import sys
 def list_shells():
     """List the shells from /etc/shells."""
     libc = ctypes.CDLL(ctypes.util.find_library("c"))
+    getusershell = libc.getusershell
+    getusershell.restype = ctypes.c_char_p
     libc.setusershell()
     while True:
-        shell = ctypes.c_char_p(libc.getusershell()).value
+        shell = getusershell()
         if not shell:
             break
         yield shell
