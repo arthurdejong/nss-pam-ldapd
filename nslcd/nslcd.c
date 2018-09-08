@@ -353,15 +353,27 @@ static void handleconnection(int sock, MYLDAP_SESSION *session)
 {
   TFILE *fp;
   int32_t action;
+  pid_t pid = (pid_t)-1;
   uid_t uid = (uid_t)-1;
   gid_t gid = (gid_t)-1;
-  pid_t pid = (pid_t)-1;
+  char peerinfo[80];
   /* log connection */
   if (getpeercred(sock, &uid, &gid, &pid))
     log_log(LOG_DEBUG, "connection from unknown client: %s", strerror(errno));
   else
-    log_log(LOG_DEBUG, "connection from pid=%lu uid=%lu gid=%lu",
-            (unsigned long int)pid, (unsigned long int)uid, (unsigned long int)gid);
+  {
+    peerinfo[0] = '\0';
+    if (pid != (pid_t)-1)
+      mysnprintf(peerinfo + strlen(peerinfo), sizeof(peerinfo) - strlen(peerinfo) - 1,
+                 " pid=%lu", (unsigned long int)pid);
+    if (uid != (uid_t)-1)
+      mysnprintf(peerinfo + strlen(peerinfo), sizeof(peerinfo) - strlen(peerinfo) - 1,
+                 " uid=%lu", (unsigned long int)uid);
+    if (gid != (gid_t)-1)
+      mysnprintf(peerinfo + strlen(peerinfo), sizeof(peerinfo) - strlen(peerinfo) - 1,
+                 " gid=%lu", (unsigned long int)gid);
+    log_log(LOG_DEBUG, "connection from %s", (peerinfo[0] == '\0') ? "unknown" : peerinfo);
+  }
   /* create a stream object */
   if ((fp = tio_fdopen(sock, READ_TIMEOUT, WRITE_TIMEOUT,
                        READBUFFER_MINSIZE, READBUFFER_MAXSIZE,
