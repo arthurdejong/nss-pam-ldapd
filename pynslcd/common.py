@@ -1,7 +1,7 @@
 
 # common.py - functions that are used by different modules
 #
-# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2010-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -130,7 +130,7 @@ def get_handlers(module):
     """Return a dictionary mapping actions to Request classes."""
     import inspect
     res = {}
-    if isinstance(module, basestring):
+    if isinstance(module, (type(''), type(u''))):
         module = __import__(module, globals())
     for name, cls in inspect.getmembers(module, inspect.isclass):
         if issubclass(cls, Request) and hasattr(cls, 'action'):

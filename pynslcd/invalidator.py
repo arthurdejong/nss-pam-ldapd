@@ -1,7 +1,7 @@
 
 # invalidator.py - functions for invalidating external caches
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -57,7 +57,7 @@ def exec_invalidate(*args):
         else:  # p.returncode < 0
             logging.error('invalidator: %s (pid %d) killed by signal %d%s',
                           cmd, p.pid, -p.returncode, output)
-    except:
+    except Exception:
         logging.warn('invalidator: %s failed', cmd, exc_info=True)
 
 
@@ -72,7 +72,7 @@ def loop(fd):
     os.chdir('/')
     os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
     while True:
-        db = os.read(fd, 1)
+        db = os.read(fd, 1).decode('ascii')
         if db == '':
             break  # close process down
         db = _char_to_db.get(db, None)
@@ -107,6 +107,6 @@ def invalidate(db=None):
     else:
         db = ''.join(_db_to_char[x] for x in cfg.reconnect_invalidate)
     try:
-        os.write(signalfd, db)
-    except:
+        os.write(signalfd, db.encode('ascii'))
+    except Exception:
         logging.warn('requesting invalidation (%s) failed', db, exc_info=True)

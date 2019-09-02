@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006-2018 Arthur de Jong
+# Copyright (C) 2006-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ AC_PREREQ(2.61)
 AC_COPYRIGHT(
 [Copyright (C) 2006 Luke Howard
 Copyright (C) 2006 West Consulting
-Copyright (C) 2006-2018 Arthur de Jong
+Copyright (C) 2006-2019 Arthur de Jong
 
 This configure script is derived from configure.ac which is free software;
 you can redistribute it and/or modify it under the terms of the GNU Lesser
@@ -93,7 +93,7 @@ then
 fi
 
 # check for Python and modules
-AM_PATH_PYTHON(2.5,, [:])
+AM_PATH_PYTHON(2.7,, [:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
 if test "x$PYTHON" != "x:"
 then
@@ -681,7 +681,7 @@ fi
 if test "x$enable_utils" = "xyes"
 then
   # check Python interpreter
-  AM_PATH_PYTHON(2.5,, AC_MSG_ERROR([Python is required]))
+  AM_PATH_PYTHON(2.7,, AC_MSG_ERROR([Python is required]))
   AX_PYTHON_MODULE(argparse)
   if test "x$HAVE_PYMOD_ARGPARSE" != "xyes"
   then
@@ -1006,7 +1006,7 @@ fi
 if test "x$enable_pynslcd" = "xyes"
 then
   # check Python interpreter
-  AM_PATH_PYTHON(2.5,, AC_MSG_ERROR([Python is required]))
+  AM_PATH_PYTHON(2.7,, AC_MSG_ERROR([Python is required]))
   AX_PYTHON_MODULE(daemon)
   AX_PYTHON_MODULE(fcntl)
   AX_PYTHON_MODULE(fnmatch)

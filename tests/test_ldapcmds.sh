@@ -2,7 +2,7 @@
 
 # test_ldapcmds.sh - simple test script to test lookups
 #
-# Copyright (C) 2017 Arthur de Jong
+# Copyright (C) 2017-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -32,6 +32,10 @@ top_builddir="${top_builddir-${builddir}/..}"
 python="${PYTHON-python}"
 PYTHONPATH="${top_srcdir}/utils:${top_builddir}/utils"
 export PYTHONPATH
+
+# Force UTF-8 encoding for repeatable tests
+PYTHONIOENCODING='utf-8'
+export PYTHONIOENCODING
 
 # ensure that we are running in the test environment
 "$srcdir/testenv.sh" check_nslcd || exit 77
@@ -142,7 +146,7 @@ check "getent.ldap group testgroup | sortgroup" << EOM
 testgroup:*:6100:arthur,test,testuser4
 EOM
 
-check "getent.ldap group users" << EOM
+check "getent.ldap group users | sortgroup" << EOM
 users:*:100:arthur,test
 EOM
 

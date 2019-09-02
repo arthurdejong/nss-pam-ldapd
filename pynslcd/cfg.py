@@ -1,7 +1,7 @@
 
 # cfg.py - module for accessing configuration information
 #
-# Copyright (C) 2010-2017 Arthur de Jong
+# Copyright (C) 2010-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -170,42 +170,42 @@ def read(filename):
         lineno += 1
         line = line.strip()
         # skip comments and blank lines
-        if re.match('(#.*)?$', line, re.IGNORECASE):
+        if re.match(r'(#.*)?$', line, re.IGNORECASE):
             continue
         # parse options with a single integer argument
-        m = re.match('(?P<keyword>threads|ldap_version|bind_timelimit|timelimit|idle_timelimit|reconnect_sleeptime|reconnect_retrytime|pagesize|nss_min_uid|nss_uid_offset|nss_gid_offset)\s+(?P<value>\d+)',
+        m = re.match(r'(?P<keyword>threads|ldap_version|bind_timelimit|timelimit|idle_timelimit|reconnect_sleeptime|reconnect_retrytime|pagesize|nss_min_uid|nss_uid_offset|nss_gid_offset)\s+(?P<value>\d+)',
                      line, re.IGNORECASE)
         if m:
             globals()[m.group('keyword').lower()] = int(m.group('value'))
             continue
         # parse options with a single boolean argument
-        m = re.match('(?P<keyword>referrals|nss_nested_groups|nss_getgrent_skipmembers|nss_disable_enumeration)\s+(?P<value>%s)' %
+        m = re.match(r'(?P<keyword>referrals|nss_nested_groups|nss_getgrent_skipmembers|nss_disable_enumeration)\s+(?P<value>%s)' %
                          '|'.join(_boolean_options.keys()),
                      line, re.IGNORECASE)
         if m:
             globals()[m.group('keyword').lower()] = _boolean_options[m.group('value').lower()]
             continue
         # parse options with a single no-space value
-        m = re.match('(?P<keyword>uid|gid|bindpw|rootpwmodpw|sasl_mech)\s+(?P<value>\S+)',
+        m = re.match(r'(?P<keyword>uid|gid|bindpw|rootpwmodpw|sasl_mech)\s+(?P<value>\S+)',
                      line, re.IGNORECASE)
         if m:
             globals()[m.group('keyword').lower()] = m.group('value')
             continue
         # parse options with a single value that can contain spaces
-        m = re.match('(?P<keyword>binddn|rootpwmoddn|sasl_realm|sasl_authcid|sasl_authzid|sasl_secprops|krb5_ccname|tls_cacertdir|tls_cacertfile|tls_randfile|tls_ciphers|tls_cert|tls_key|pam_password_prohibit_message)\s+(?P<value>\S.*)',
+        m = re.match(r'(?P<keyword>binddn|rootpwmoddn|sasl_realm|sasl_authcid|sasl_authzid|sasl_secprops|krb5_ccname|tls_cacertdir|tls_cacertfile|tls_randfile|tls_ciphers|tls_cert|tls_key|pam_password_prohibit_message)\s+(?P<value>\S.*)',
                      line, re.IGNORECASE)
         if m:
             globals()[m.group('keyword').lower()] = m.group('value')
             continue
         # log <SCHEME> [<LEVEL>]
-        m = re.match('log\s+(?P<scheme>syslog|/\S*)(\s+(?P<level>%s))?' %
+        m = re.match(r'log\s+(?P<scheme>syslog|/\S*)(\s+(?P<level>%s))?' %
                          '|'.join(_log_levels.keys()),
                      line, re.IGNORECASE)
         if m:
             logs.append((m.group('scheme'), _log_levels[str(m.group('level')).lower()]))
             continue
         # uri <URI>
-        m = re.match('uri\s+(?P<uri>\S+)', line, re.IGNORECASE)
+        m = re.match(r'uri\s+(?P<uri>\S+)', line, re.IGNORECASE)
         if m:
             # FIXME: support multiple URI values
             # FIXME: support special DNS and DNS:domain values
@@ -213,7 +213,7 @@ def read(filename):
             uri = m.group('uri')
             continue
         # base <MAP>? <BASEDN>
-        m = re.match('base\s+((?P<map>%s)\s+)?(?P<value>\S.*)' %
+        m = re.match(r'base\s+((?P<map>%s)\s+)?(?P<value>\S.*)' %
                          '|'.join(maps.keys()),
                      line, re.IGNORECASE)
         if m:
@@ -223,7 +223,7 @@ def read(filename):
             mod.bases.append(m.group('value'))
             continue
         # filter <MAP> <SEARCHFILTER>
-        m = re.match('filter\s+(?P<map>%s)\s+(?P<value>\S.*)' %
+        m = re.match(r'filter\s+(?P<map>%s)\s+(?P<value>\S.*)' %
                          '|'.join(maps.keys()),
                      line, re.IGNORECASE)
         if m:
@@ -231,7 +231,7 @@ def read(filename):
             mod.filter = m.group('value')
             continue
         # scope <MAP>? <SCOPE>
-        m = re.match('scope\s+((?P<map>%s)\s+)?(?P<value>%s)' % (
+        m = re.match(r'scope\s+((?P<map>%s)\s+)?(?P<value>%s)' % (
                          '|'.join(maps.keys()),
                          '|'.join(_scope_options.keys())),
                      line, re.IGNORECASE)
@@ -240,7 +240,7 @@ def read(filename):
             mod.scope = _scope_options[m.group('value').lower()]
             continue
         # map <MAP> <ATTRIBUTE> <ATTMAPPING>
-        m = re.match('map\s+(?P<map>%s)\s+(?P<attribute>\S+)\s+(?P<value>\S.*)' %
+        m = re.match(r'map\s+(?P<map>%s)\s+(?P<attribute>\S+)\s+(?P<value>\S.*)' %
                          '|'.join(maps.keys()),
                      line, re.IGNORECASE)
         if m:
@@ -252,14 +252,14 @@ def read(filename):
             # TODO: filter out attributes that cannot be an expression
             continue
         # deref <DEREF>
-        m = re.match('deref\s+(?P<value>%s)' % '|'.join(_deref_options.keys()),
+        m = re.match(r'deref\s+(?P<value>%s)' % '|'.join(_deref_options.keys()),
                      line, re.IGNORECASE)
         if m:
             global deref
             deref = _deref_options[m.group('value').lower()]
             continue
         # nss_initgroups_ignoreusers <USER,USER>|<ALLLOCAL>
-        m = re.match('nss_initgroups_ignoreusers\s+(?P<value>\S.*)',
+        m = re.match(r'nss_initgroups_ignoreusers\s+(?P<value>\S.*)',
                      line, re.IGNORECASE)
         if m:
             users = m.group('value')
@@ -274,7 +274,7 @@ def read(filename):
             nss_initgroups_ignoreusers.update(users)
             continue
         # pam_authz_search <FILTER>
-        m = re.match('pam_authz_search\s+(?P<value>\S.*)', line, re.IGNORECASE)
+        m = re.match(r'pam_authz_search\s+(?P<value>\S.*)', line, re.IGNORECASE)
         if m:
             from expr import Expression
             pam_authz_searches.append(Expression(m.group('value')))
@@ -283,14 +283,14 @@ def read(filename):
             # uid variables
             continue
         # ssl <on|off|start_tls>
-        m = re.match('ssl\s+(?P<value>%s)' % '|'.join(_ssl_options.keys()),
+        m = re.match(r'ssl\s+(?P<value>%s)' % '|'.join(_ssl_options.keys()),
                      line, re.IGNORECASE)
         if m:
             global ssl
             ssl = _ssl_options[m.group('value').lower()]
             continue
         # sasl_canonicalize yes|no
-        m = re.match('(ldap_?)?sasl_(?P<no>no)?canon(icali[sz]e)?\s+(?P<value>%s)' %
+        m = re.match(r'(ldap_?)?sasl_(?P<no>no)?canon(icali[sz]e)?\s+(?P<value>%s)' %
                          '|'.join(_boolean_options.keys()),
                      line, re.IGNORECASE)
         if m:
@@ -300,7 +300,7 @@ def read(filename):
                 sasl_canonicalize = not sasl_canonicalize
             continue
         # tls_reqcert <demand|hard|yes...>
-        m = re.match('tls_reqcert\s+(?P<value>%s)' %
+        m = re.match(r'tls_reqcert\s+(?P<value>%s)' %
                          '|'.join(_tls_reqcert_options.keys()),
                      line, re.IGNORECASE)
         if m:
@@ -308,7 +308,7 @@ def read(filename):
             tls_reqcert = _tls_reqcert_options[m.group('value').lower()]
             continue
         # validnames /REGEX/i?
-        m = re.match('validnames\s+/(?P<value>.*)/(?P<flags>[i]?)$',
+        m = re.match(r'validnames\s+/(?P<value>.*)/(?P<flags>[i]?)$',
                      line, re.IGNORECASE)
         if m:
             global validnames
@@ -316,12 +316,12 @@ def read(filename):
             validnames = re.compile(m.group('value'), flags=flags)
             continue
         # reconnect_invalidate <MAP>,<MAP>,...
-        m = re.match('reconnect_invalidate\s+(?P<value>\S.*)',
+        m = re.match(r'reconnect_invalidate\s+(?P<value>\S.*)',
                      line, re.IGNORECASE)
         if m:
             dbs = re.split('[ ,]+', m.group('value').lower())
             for db in dbs:
-                if db not in maps.keys() + ['nfsidmap']:
+                if db not in list(maps.keys()) + ['nfsidmap']:
                     raise ParseError(filename, lineno, 'map %s unknown' % db)
             reconnect_invalidate.update(dbs)
             continue

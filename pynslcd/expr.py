@@ -1,7 +1,7 @@
 
 # expr.py - expression handling functions
 #
-# Copyright (C) 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2011-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-"""Module for handling expressions used for LDAP searches.
+r"""Module for handling expressions used for LDAP searches.
 
 >>> expr = Expression('foo=$foo')
 >>> expr.value(dict(foo='XX'))
@@ -90,6 +90,9 @@ class MyIter(object):
             return self.value[self.pos - 1]
         except IndexError:
             return None
+
+    def __next__(self):
+        return self.next()
 
     def startswith(self, value):
         return self.value[self.pos].startswith(value)

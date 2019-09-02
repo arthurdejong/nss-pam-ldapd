@@ -1,7 +1,7 @@
 
 # cache.py - caching layer for pynslcd
 #
-# Copyright (C) 2012, 2013 Arthur de Jong
+# Copyright (C) 2012-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -56,14 +56,20 @@ class regroup(object):
         row[self.group_column] = list(self._grouper(self.tgtkey))
         return row
 
+    def __next__(self):
+        return self.next()
+
     def _grouper(self, tgtkey):
         """Generate the group columns."""
-        while self.currkey == tgtkey:
-            value = self.currvalue[self.group_column]
-            if value is not None:
-                yield value
-            self.currvalue = next(self.it)    # Exit on StopIteration
-            self.currkey = self.keyfunc(self.currvalue)
+        try:
+            while self.currkey == tgtkey:
+                value = self.currvalue[self.group_column]
+                if value is not None:
+                    yield value
+                self.currvalue = next(self.it)
+                self.currkey = self.keyfunc(self.currvalue)
+        except StopIteration:
+            pass
 
 
 class Query(object):

@@ -1,7 +1,7 @@
 
 # mypidfile.py - functions for properly locking a PIDFile
 #
-# Copyright (C) 2010-2017 Arthur de Jong
+# Copyright (C) 2010-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -40,11 +40,11 @@ class MyPIDLockFile(object):
             os.mkdir(piddir)
             u, gid = cfg.get_usergid()
             os.chown(piddir, u.u.pw_uid, gid)
-        fd = os.open(self.path, os.O_RDWR | os.O_CREAT, 0644)
+        fd = os.open(self.path, os.O_RDWR | os.O_CREAT, 0o644)
         try:
             fcntl.lockf(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             pidfile = os.fdopen(fd, 'w')
-        except:
+        except Exception:
             os.close(fd)
             raise
         pidfile.write('%d\n' % os.getpid())
@@ -62,13 +62,13 @@ class MyPIDLockFile(object):
     def is_locked(self):
         """Check whether the file is already present and locked."""
         try:
-            fd = os.open(self.path, os.O_RDWR, 0644)
+            fd = os.open(self.path, os.O_RDWR, 0o644)
             # Python doesn't seem to have F_TEST so we'll just try to lock
             fcntl.lockf(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             # if we're here we must have aquired the lock
             fcntl.lockf(fd, fcntl.LOCK_UN)
             return False
-        except (IOError, OSError), e:
+        except (IOError, OSError) as e:
             if e.errno == errno.ENOENT:
                 return False
             if e.errno in (errno.EACCES, errno.EAGAIN):

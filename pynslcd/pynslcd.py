@@ -2,7 +2,7 @@
 
 # pynslcd.py - main daemon module
 #
-# Copyright (C) 2010-2017 Arthur de Jong
+# Copyright (C) 2010-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -91,7 +91,7 @@ def display_version(fp):
     fp.write('%(PACKAGE_STRING)s\n'
              'Written by Arthur de Jong.\n'
              '\n'
-             'Copyright (C) 2010-2017 Arthur de Jong\n'
+             'Copyright (C) 2010-2019 Arthur de Jong\n'
              'This is free software; see the source for copying conditions.  There is NO\n'
              'warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n'
              % {'PACKAGE_STRING': constants.PACKAGE_STRING, })
@@ -138,7 +138,7 @@ def parse_cmdline():
                 sys.exit(0)
         if len(args):
             raise getopt.GetoptError('unrecognized option \'%s\'' % args[0], args[0])
-    except getopt.GetoptError, reason:
+    except getopt.GetoptError as reason:
         sys.stderr.write(
             "%(program_name)s: %(reason)s\n"
             "Try '%(program_name)s --help' for more information.\n" % {
@@ -163,7 +163,7 @@ def create_socket():
     # close the file descriptor on exit
     fcntl.fcntl(sock, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
     # set permissions of socket so anybody can do requests
-    os.chmod(constants.NSLCD_SOCKET, 0666)
+    os.chmod(constants.NSLCD_SOCKET, 0o666)
     # start listening for connections
     sock.listen(socket.SOMAXCONN)
     return sock
@@ -258,7 +258,7 @@ def worker():
     while True:
         try:
             acceptconnection(session)
-        except:
+        except Exception:
             logging.exception('exception in worker')
             # ignore all exceptions, just keep going
 
@@ -288,7 +288,7 @@ if __name__ == '__main__':
     except ImportError:
         pass
     # set a default umask for the pidfile and socket
-    os.umask(0022)
+    os.umask(0o022)
     # see if someone already locked the pidfile
     pidfile = mypidfile.MyPIDLockFile(constants.NSLCD_PIDFILE)
     # see if --check option was given
@@ -372,6 +372,6 @@ if __name__ == '__main__':
             # wait for all threads to die
             for thread in threads:
                 thread.join(10000)
-        except:
+        except Exception:
             logging.exception('main loop exit')
             # no need to re-raise since we are exiting anyway

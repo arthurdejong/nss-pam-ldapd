@@ -3,7 +3,7 @@
 
 # getent.py - program for querying nslcd
 #
-# Copyright (C) 2013-2017 Arthur de Jong
+# Copyright (C) 2013-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -110,7 +110,7 @@ def getent_group(database, keys=None):
         if database == 'group.bymember':
             con = NslcdClient(constants.NSLCD_ACTION_GROUP_BYMEMBER)
             con.write_string(key)
-        elif re.match('^\d+$', key):
+        elif re.match(r'^\d+$', key):
             con = NslcdClient(constants.NSLCD_ACTION_GROUP_BYGID)
             con.write_int32(int(key))
         else:
@@ -276,7 +276,7 @@ def getent_passwd(database, keys=None):
         write_passwd(NslcdClient(constants.NSLCD_ACTION_PASSWD_ALL))
         return
     for key in keys:
-        if re.match('^\d+$', key):
+        if re.match(r'^\d+$', key):
             con = NslcdClient(constants.NSLCD_ACTION_PASSWD_BYUID)
             con.write_int32(int(key))
         else:
@@ -298,7 +298,7 @@ def getent_protocols(database, keys=None):
         write_protocols(NslcdClient(constants.NSLCD_ACTION_PROTOCOL_ALL))
         return
     for key in keys:
-        if re.match('^\d+$', key):
+        if re.match(r'^\d+$', key):
             con = NslcdClient(constants.NSLCD_ACTION_PROTOCOL_BYNUMBER)
             con.write_int32(int(key))
         else:
@@ -320,7 +320,7 @@ def getent_rpc(database, keys=None):
         write_rpc(NslcdClient(constants.NSLCD_ACTION_RPC_ALL))
         return
     for key in keys:
-        if re.match('^\d+$', key):
+        if re.match(r'^\d+$', key):
             con = NslcdClient(constants.NSLCD_ACTION_RPC_BYNUMBER)
             con.write_int32(int(key))
         else:
@@ -347,7 +347,7 @@ def getent_services(database, keys=None):
         protocol = ''
         if '/' in value:
             value, protocol = value.split('/', 1)
-        if re.match('^\d+$', value):
+        if re.match(r'^\d+$', value):
             con = NslcdClient(constants.NSLCD_ACTION_SERVICE_BYNUMBER)
             con.write_int32(int(value))
             con.write_string(protocol)

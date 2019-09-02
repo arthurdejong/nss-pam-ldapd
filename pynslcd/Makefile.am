@@ -1,6 +1,6 @@
 # Makefile.am - use automake to generate Makefile.in
 #
-# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2010-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,7 @@ all-local: $(nodist_pynslcd_PYTHON)
 
 # clean up locally created compiled Python files
 clean-local:
-	rm -f *.pyc *.pyo
+	-rm -rf *.pyc *.pyo __pycache__
 
 constants.py: constants.py.in $(top_srcdir)/nslcd.h
 

@@ -2,7 +2,7 @@
 
 # test_pylint.sh - run pylint on the source to find errors
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -26,9 +26,19 @@ srcdir="${srcdir-`dirname "$0"`}"
 top_srcdir="${top_srcdir-${srcdir}/..}"
 builddir="${builddir-`dirname "$0"`}"
 top_builddir="${top_builddir-${builddir}/..}"
+PYLINT="${PYLINT-pylint}"
+
+# Find Pylint
+for p in ${PYLINT} pylint pylint3
+do
+  if "$p" --version > /dev/null 2> /dev/null
+  then
+    pylint="$p"
+  fi
+done
 
 # if Pylint is missing, ignore
-if ! pylint --version > /dev/null 2> /dev/null
+if [ -z "$pylint" ]
 then
   echo "Pylint not found"
   exit 77
@@ -48,7 +58,7 @@ do
   echo "Running pylint in $dir..."
   dir_builddir="$(cd "${top_builddir}/${dir}" && pwd)"
   ( cd "${top_srcdir}/${dir}" ;
-    PYTHONPATH="${dir_builddir}" pylint --errors-only --rcfile "$rcfile" --disable "$disable" *.py)
+    PYTHONPATH="${dir_builddir}" "$pylint" --errors-only --rcfile "$rcfile" --disable "$disable" *.py)
 done
 
 # Pylint has the following exit codes:

@@ -1,7 +1,7 @@
 
 # search.py - functions for searching the LDAP database
 #
-# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2010-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -159,6 +159,10 @@ class LDAPSearch(object):
     def _transform(self, dn, attributes):
         """Handle a single search result entry filtering it with the request
         parameters, search options and attribute mapping."""
+        # convert attributes to strings where appropriate
+        attributes = dict(
+            (attr, [value.decode('utf-8') for value in values] if attr != 'objectSid' else values)
+            for attr, values in attributes.items())
         # translate the attributes using the attribute mapping
         if self.attmap:
             attributes = self.attmap.translate(attributes)

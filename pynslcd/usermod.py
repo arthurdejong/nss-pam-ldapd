@@ -1,7 +1,7 @@
 
 # usermod.py - functions for modifying user information
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -117,10 +117,10 @@ class UserModRequest(pam.PAMRequest):
                 conn, authz, msg = pam.authenticate(binddn, password)
                 conn.modify_s(parameters['userdn'], mods)
                 logging.info('changed information for %s', parameters['userdn'])
-            except (ldap.INVALID_CREDENTIALS, ldap.INSUFFICIENT_ACCESS), e:
+            except (ldap.INVALID_CREDENTIALS, ldap.INSUFFICIENT_ACCESS) as e:
                 try:
                     msg = e[0]['desc']
-                except:
+                except Exception:
                     msg = str(e)
                 logging.debug('modification failed: %s', msg)
                 self.write_result(constants.NSLCD_USERMOD_RESULT, msg)

@@ -2,7 +2,7 @@
 
 # test_pycompile.sh - see if all Python files compile
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -50,14 +50,14 @@ for root, dirs, files in os.walk(top_srcdir):
             filename = os.path.join(root, f)
             try:
                 py_compile.compile(filename, tmpfile, doraise=True)
-            except py_compile.PyCompileError, e:
-                print 'Compiling %s ...' % os.path.abspath(filename)
-                print e
+            except py_compile.PyCompileError as e:
+                print('Compiling %s ...' % os.path.abspath(filename))
+                print(e)
                 errors_found += 1
 
 os.unlink(tmpfile)
 
 if errors_found:
-    print '%d errors found' % errors_found
+    print('%d errors found' % errors_found)
     sys.exit(1)
 "

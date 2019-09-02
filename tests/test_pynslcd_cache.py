@@ -2,7 +2,7 @@
 
 # test_pynslcd_cache.py - tests for the pynslcd caching functionality
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -41,6 +41,8 @@ class TestAlias(unittest.TestCase):
         cache.store('alias2', ['member1', 'member3'])
         cache.store('alias3', [])
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(cn='alias1')), [
@@ -69,6 +71,8 @@ class TestEther(unittest.TestCase):
         cache.store('name1', '0:18:8a:54:1a:11')
         cache.store('name2', '0:18:8a:54:1a:22')
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(cn='name1')), [
@@ -101,6 +105,8 @@ class TestGroup(unittest.TestCase):
         cache.store('group3', 'pass3', 30, [])
         cache.store('group4', 'pass4', 40, ['user2', ])
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(cn='group1')), [
@@ -149,6 +155,8 @@ class TestHost(unittest.TestCase):
         cache.store('hostname1', [], ['127.0.0.1', ])
         cache.store('hostname2', ['alias1', 'alias2'], ['127.0.0.2', '127.0.0.3'])
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(cn='hostname1')), [
@@ -180,6 +188,8 @@ class TestNetgroup(unittest.TestCase):
         cache.store('netgroup1', ['(host1, user1,)', '(host1, user2,)', '(host2, user1,)'], ['netgroup2', ])
         cache.store('netgroup2', ['(host3, user1,)', '(host3, user3,)'], [])
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(cn='netgroup1')), [
@@ -198,6 +208,8 @@ class TestNetwork(unittest.TestCase):
         cache.store('networkname1', [], ['127.0.0.1', ])
         cache.store('networkname2', ['alias1', 'alias2'], ['127.0.0.2', '127.0.0.3'])
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(cn='networkname1')), [
@@ -229,6 +241,8 @@ class TestPasswd(unittest.TestCase):
         cache.store('name', 'passwd', 100, 200, 'gecos', '/home/user', '/bin/bash')
         cache.store('name2', 'passwd2', 101, 202, 'gecos2', '/home/user2', '/bin/bash')
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(uid='name')), [
@@ -262,6 +276,8 @@ class TestProtocol(unittest.TestCase):
         cache.store('protocol2', ['alias3', ], 200)
         cache.store('protocol3', [], 300)
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(cn='protocol1')), [
@@ -310,6 +326,8 @@ class TestRpc(unittest.TestCase):
         cache.store('rpc2', ['alias3', ], 200)
         cache.store('rpc3', [], 300)
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(cn='rpc1')), [
@@ -359,6 +377,8 @@ class TestService(unittest.TestCase):
         cache.store('service2', ['alias3', ], 200, 'udp')
         cache.store('service3', [], 300, 'udp')
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(cn='service1')), [
@@ -436,6 +456,8 @@ class Testshadow(unittest.TestCase):
         cache.store('name', 'passwd', 15639, 0, 7, -1, -1, -1, 0)
         cache.store('name2', 'passwd2', 15639, 0, 7, -1, -1, -1, 0)
         self.cache = cache
+        if not hasattr(self, 'assertItemsEqual'):
+            self.assertItemsEqual = self.assertCountEqual
 
     def test_by_name(self):
         self.assertItemsEqual(self.cache.retrieve(dict(uid='name')), [

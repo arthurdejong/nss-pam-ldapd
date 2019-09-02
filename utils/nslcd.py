@@ -2,7 +2,7 @@
 
 # nslcd.py - functions for doing nslcd requests
 #
-# Copyright (C) 2013-2017 Arthur de Jong
+# Copyright (C) 2013-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -55,12 +55,13 @@ class NslcdClient(object):
 
     def write_bytes(self, value):
         self.write_int32(len(value))
-        self.write(value)
+        if value:
+            self.write(value)
 
     def write_string(self, value):
         if sys.version_info[0] >= 3:
             value = value.encode('utf-8')
-        self.write_bytes(value.encode('utf-8'))
+        self.write_bytes(value)
 
     def write_ether(self, value):
         value = struct.pack('BBBBBB', *(int(x, 16) for x in value.split(':')))
