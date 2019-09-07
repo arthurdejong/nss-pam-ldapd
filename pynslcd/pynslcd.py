@@ -30,13 +30,13 @@ import threading
 import daemon
 import ldap
 
-from tio import TIOStream
 import cfg
 import common
 import constants
 import invalidator
 import mypidfile
 import search
+from tio import TIOStream
 
 
 # the name of the program
@@ -94,7 +94,7 @@ def display_version(fp):
              'Copyright (C) 2010-2019 Arthur de Jong\n'
              'This is free software; see the source for copying conditions.  There is NO\n'
              'warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n'
-             % {'PACKAGE_STRING': constants.PACKAGE_STRING, })
+             % {'PACKAGE_STRING': constants.PACKAGE_STRING})
 
 
 def display_usage(fp):
@@ -108,7 +108,7 @@ def display_usage(fp):
              "\n"
              "Report bugs to <%(PACKAGE_BUGREPORT)s>.\n"
              % {'program_name': program_name,
-                'PACKAGE_BUGREPORT': constants.PACKAGE_BUGREPORT, })
+                'PACKAGE_BUGREPORT': constants.PACKAGE_BUGREPORT})
 
 
 def parse_cmdline():
@@ -149,7 +149,7 @@ def parse_cmdline():
 
 
 def create_socket():
-    """Returns a socket ready to answer requests from the client."""
+    """Return a socket ready to answer requests from the client."""
     import socket
     import fcntl
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -179,7 +179,7 @@ def getpeercred(fd):
     import struct
     import socket
     try:
-        SO_PEERCRED = getattr(socket, 'SO_PEERCRED', 17)
+        SO_PEERCRED = getattr(socket, 'SO_PEERCRED', 17)  # noqa: N806
         creds = fd.getsockopt(socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i'))
         pid, uid, gid = struct.unpack('3i', creds)
         return uid, gid, pid
@@ -204,7 +204,7 @@ handlers.update(common.get_handlers('pam'))
 handlers.update(common.get_handlers('usermod'))
 
 
-def acceptconnection(session):
+def acceptconnection(nslcd_serversocket, session):
     # accept a new connection
     conn, addr = nslcd_serversocket.accept()
     # See: http://docs.python.org/library/socket.html#socket.socket.settimeout
@@ -253,17 +253,17 @@ def disable_nss_ldap():
         logging.warn('probably older NSS module loaded', exc_info=True)
 
 
-def worker():
+def worker(nslcd_serversocket):
     session = search.Connection()
     while True:
         try:
-            acceptconnection(session)
+            acceptconnection(nslcd_serversocket, session)
         except Exception:
             logging.exception('exception in worker')
             # ignore all exceptions, just keep going
 
 
-if __name__ == '__main__':
+def main():  # noqa: C901 (long function)
     # parse options
     parse_cmdline()
     # clean the environment
@@ -277,7 +277,7 @@ if __name__ == '__main__':
     # disable ldap lookups of host names to avoid lookup loop
     disable_nss_ldap()
     # TODO: implement
-    #if myldap_set_debuglevel(cfg.debug) != LDAP_SUCCESS:
+    # if myldap_set_debuglevel(cfg.debug) != LDAP_SUCCESS:
     #    sys.exit(1)
     # read configuration file
     cfg.read(constants.NSLCD_CONF_PATH)
@@ -309,12 +309,12 @@ if __name__ == '__main__':
         ctx = pidfile
     else:
         ctx = daemon.DaemonContext(
-                      pidfile=pidfile,
-                      signal_map={
-                          signal.SIGTERM: u'terminate',
-                          signal.SIGINT: u'terminate',
-                          signal.SIGPIPE: None,
-                      })
+            pidfile=pidfile,
+            signal_map={
+                signal.SIGTERM: u'terminate',
+                signal.SIGINT: u'terminate',
+                signal.SIGPIPE: None,
+            })
     # start daemon
     with ctx:
         try:
@@ -364,7 +364,9 @@ if __name__ == '__main__':
             # start worker threads
             threads = []
             for i in range(cfg.threads):
-                thread = threading.Thread(target=worker, name='thread%d' % i)
+                thread = threading.Thread(
+                    target=worker, args=(nslcd_serversocket, ),
+                    name='thread%d' % i)
                 thread.setDaemon(True)
                 thread.start()
                 logging.debug('started thread %s', thread.getName())
@@ -375,3 +377,7 @@ if __name__ == '__main__':
         except Exception:
             logging.exception('main loop exit')
             # no need to re-raise since we are exiting anyway
+
+
+if __name__ == '__main__':
+    main()

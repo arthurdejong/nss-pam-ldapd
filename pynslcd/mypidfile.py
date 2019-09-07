@@ -26,8 +26,10 @@ import cfg
 
 
 class MyPIDLockFile(object):
-    """Implementation of a PIDFile fit for use with the daemon module
-    that locks the PIDFile with fcntl.lockf()."""
+    """A PIDFile for use with the daemon module.
+
+    This class that locks the PIDFile with fcntl.lockf().
+    """
 
     def __init__(self, path):
         self.path = path

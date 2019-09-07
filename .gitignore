@@ -60,6 +60,7 @@ stamp-*
 /pynslcd/constants.py
 
 # /tests/
+/tests/flake8-venv
 /tests/lookup_groupbyuser
 /tests/lookup_netgroup
 /tests/lookup_shadow

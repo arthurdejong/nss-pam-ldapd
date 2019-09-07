@@ -1,7 +1,7 @@
 
 # ether.py - lookup functions for ethernet addresses
 #
-# Copyright (C) 2010-2017 Arthur de Jong
+# Copyright (C) 2010-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,18 +27,19 @@ import search
 
 
 def ether_aton(ether):
-    """Converst an ethernet address to binary form in network byte order."""
+    """Convert an ethernet address to binary form in network byte order."""
     return struct.pack('BBBBBB', *(int(x, 16) for x in ether.split(':')))
 
 
 def ether_ntoa(ether, compact=True):
-    """Conversts an ethernet address in network byte order to the string
-    representation."""
+    """Convert an ethernet address in network byte order to a string."""
     fmt = '%x' if compact else '%02x'
     return ':'.join(fmt % x for x in struct.unpack('6B', ether))
 
 
-attmap = common.Attributes(cn='cn', macAddress='macAddress')
+attmap = common.Attributes(
+    cn='cn',
+    macAddress='macAddress')
 filter = '(objectClass=ieee802Device)'
 
 
@@ -53,9 +54,10 @@ class Search(search.LDAPSearch):
         if 'macAddress' in self.parameters:
             ether = self.parameters['macAddress']
             alt_ether = ether_ntoa(ether_aton(ether), compact=False)
-            return '(&%s(|(%s=%s)(%s=%s)))' % (self.filter,
-                      attmap['macAddress'], ether,
-                      attmap['macAddress'], alt_ether)
+            return '(&%s(|(%s=%s)(%s=%s)))' % (
+                self.filter,
+                attmap['macAddress'], ether,
+                attmap['macAddress'], alt_ether)
         return super(Search, self).mk_filter()
 
 

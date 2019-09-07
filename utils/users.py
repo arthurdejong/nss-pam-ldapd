@@ -2,7 +2,7 @@
 
 # users.py - functions for validating the user to change information for
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -40,8 +40,11 @@ class User(object):
         self.asroot = self.myuid != self.uid
 
     def check(self):
-        """Check if the user we want to modify is an LDAP user and whether
-        we may modify the user information."""
+        """Check whether we can modify the user.
+
+        Check if the user is an LDAP user and whether we may modify the user
+        information.
+        """
         if self.asroot and self.myuid != 0:
             print("%s: you may not modify user '%s'.\n" %
                   (sys.argv[0], self.username))
@@ -53,8 +56,7 @@ class User(object):
         # FIXME: only ask the password if we require it
         # (e.g. when root and nslcd has userpwmoddn we don't need to)
         return getpass.getpass(
-                'LDAP administrator password: '
-                if self.asroot else
-                'LDAP password for %s: ' % self.username
-            )
+            'LDAP administrator password: '
+            if self.asroot else
+            'LDAP password for %s: ' % self.username)
         # FIXME: check if the provided password is valid

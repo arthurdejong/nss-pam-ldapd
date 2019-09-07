@@ -40,7 +40,7 @@ class NslcdClient(object):
         fcntl.fcntl(self.sock, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
         # connect to nslcd
         self.sock.connect(constants.NSLCD_SOCKET)
-        #self.sock.setblocking(1)
+        # self.sock.setblocking(1)
         self.fp = os.fdopen(self.sock.fileno(), 'r+b', 0)
         # write a request header with a request code
         self.action = action

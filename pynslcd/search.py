@@ -37,8 +37,8 @@ first_search = True
 class Connection(ldap.ldapobject.ReconnectLDAPObject):
 
     def __init__(self):
-        ldap.ldapobject.ReconnectLDAPObject.__init__(self, cfg.uri,
-            retry_max=1, retry_delay=cfg.reconnect_retrytime)
+        ldap.ldapobject.ReconnectLDAPObject.__init__(
+            self, cfg.uri, retry_max=1, retry_delay=cfg.reconnect_retrytime)
         # set connection-specific LDAP options
         if cfg.ldap_version:
             self.set_option(ldap.OPT_PROTOCOL_VERSION, cfg.ldap_version)
@@ -82,9 +82,10 @@ class Connection(ldap.ldapobject.ReconnectLDAPObject):
 
 
 class LDAPSearch(object):
-    """
-    Class that performs an LDAP search. Subclasses are expected to define the
-    actual searches and should implement the following members:
+    """Class that performs an LDAP search.
+
+    Subclasses are expected to define the actual searches and should
+    implement the following members:
 
       case_sensitive - check that these attributes are present in the response
                        if they were in the request
@@ -105,7 +106,6 @@ class LDAPSearch(object):
       scope - search scope, falls back to cfg.scope if absent or empty
       filter - an LDAP search filter
       attmap - an attribute mapping definition (using he Attributes class)
-
     """
 
     canonical_first = []
@@ -157,8 +157,11 @@ class LDAPSearch(object):
         return self.filter
 
     def _transform(self, dn, attributes):
-        """Handle a single search result entry filtering it with the request
-        parameters, search options and attribute mapping."""
+        """Filter and transform search result entry.
+
+        This performs filtering with request parameters, search options and
+        performs attribute mapping.
+        """
         # convert attributes to strings where appropriate
         attributes = dict(
             (attr, [value.decode('utf-8') for value in values] if attr != 'objectSid' else values)

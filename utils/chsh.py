@@ -3,7 +3,7 @@
 
 # chsh.py - program for changing the login shell using nslcd
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,11 +22,11 @@
 
 import argparse
 
-from cmdline import VersionAction, ListShellsAction
 import constants
 import nslcd
 import shells
 import users
+from cmdline import ListShellsAction, VersionAction
 
 
 # set up command line parser
@@ -42,11 +42,16 @@ parser.add_argument('username', metavar='USER', nargs='?',
 
 def ask_shell(oldshell):
     """Ask the user to provide a shell."""
-    shell = raw_input('  Login Shell [%s]: ' % oldshell)
+    # Provide Python 2 compatibility
+    try:
+        input = raw_input
+    except NameError:
+        pass
+    shell = input('  Login Shell [%s]: ' % oldshell)
     return shell or oldshell
 
 
-if __name__ == '__main__':
+def main():
     # parse arguments
     args = parser.parse_args()
     # check username part
@@ -64,8 +69,12 @@ if __name__ == '__main__':
         shell = ask_shell(user.shell)
         shells.check(shell, user.asroot)
     # perform the modification
-    result = nslcd.usermod(
+    nslcd.usermod(
         user.username, user.asroot, password, {
             constants.NSLCD_USERMOD_SHELL: shell,
         })
     # TODO: print proper response
+
+
+if __name__ == '__main__':
+    main()

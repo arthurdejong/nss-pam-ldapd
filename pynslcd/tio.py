@@ -36,8 +36,7 @@ class TIOStreamError(Exception):
 
 
 class TIOStream(object):
-    """File-like object that allows reading and writing nslcd-protocol
-    entities."""
+    """File-like object for reading and writing nslcd-protocol entities."""
 
     def __init__(self, conn):
         conn.setblocking(1)
@@ -65,8 +64,10 @@ class TIOStream(object):
         return value
 
     def read_address(self):
-        """Read an address (usually IPv4 or IPv6) from the stream and return
-        the address as a string representation."""
+        """Read an address (usually IPv4 or IPv6) from the stream.
+
+        This returns the address as a string representation.
+        """
         af = self.read_int32()
         return socket.inet_ntop(af, self.read_bytes(maxsize=64))
 
@@ -103,8 +104,7 @@ class TIOStream(object):
         return socket.AF_INET6, socket.inet_pton(socket.AF_INET6, value)
 
     def write_address(self, value):
-        """Write an address (usually IPv4 or IPv6) in a string representation
-        to the stream."""
+        """Write an address (usually IPv4 or IPv6) to the stream."""
         # first try to make it into an IPv6 address
         af, address = TIOStream._to_address(value)
         self.write_int32(af)

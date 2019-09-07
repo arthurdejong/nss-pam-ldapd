@@ -23,9 +23,9 @@ import random
 import socket
 import time
 
+import ldap
 from ldap.controls.ppolicy import PasswordPolicyControl, PasswordPolicyError
 from ldap.filter import escape_filter_chars
-import ldap
 
 import cfg
 import common
@@ -48,24 +48,39 @@ def authenticate(binddn, password):
     for ctrl in ctrls:
         if ctrl.controlType == PasswordPolicyControl.controlType:
             # found a password policy control
-            logging.debug('PasswordPolicyControl found: error=%s (%s), timeBeforeExpiration=%s, graceAuthNsRemaining=%s',
+            logging.debug(
+                'PasswordPolicyControl found: error=%s (%s), '
+                'timeBeforeExpiration=%s, graceAuthNsRemaining=%s',
                 'None' if ctrl.error is None else PasswordPolicyError(ctrl.error).prettyPrint(),
                 ctrl.error, ctrl.timeBeforeExpiration, ctrl.graceAuthNsRemaining)
             if ctrl.error == 0:  # passwordExpired
-                return conn, constants.NSLCD_PAM_AUTHTOK_EXPIRED, PasswordPolicyError(ctrl.error).prettyPrint()
+                return (
+                    conn, constants.NSLCD_PAM_AUTHTOK_EXPIRED,
+                    PasswordPolicyError(ctrl.error).prettyPrint())
             elif ctrl.error == 1:  # accountLocked
-                return conn, constants.NSLCD_PAM_ACCT_EXPIRED, PasswordPolicyError(ctrl.error).prettyPrint()
+                return (
+                    conn, constants.NSLCD_PAM_ACCT_EXPIRED,
+                    PasswordPolicyError(ctrl.error).prettyPrint())
             elif ctrl.error == 2:  # changeAfterReset
-                return conn, constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password change is needed after reset'
+                return (
+                    conn, constants.NSLCD_PAM_NEW_AUTHTOK_REQD,
+                    'Password change is needed after reset')
             elif ctrl.error:
-                return conn, constants.NSLCD_PAM_PERM_DENIED, PasswordPolicyError(ctrl.error).prettyPrint()
+                return (
+                    conn, constants.NSLCD_PAM_PERM_DENIED,
+                    PasswordPolicyError(ctrl.error).prettyPrint())
             elif ctrl.timeBeforeExpiration is not None:
-                return conn, constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password will expire in %d seconds' % ctrl.timeBeforeExpiration
+                return (
+                    conn, constants.NSLCD_PAM_NEW_AUTHTOK_REQD,
+                    'Password will expire in %d seconds' % ctrl.timeBeforeExpiration)
             elif ctrl.graceAuthNsRemaining is not None:
-                return conn, constants.NSLCD_PAM_NEW_AUTHTOK_REQD, 'Password expired, %d grace logins left' % ctrl.graceAuthNsRemaining
+                return (
+                    conn, constants.NSLCD_PAM_NEW_AUTHTOK_REQD,
+                    'Password expired, %d grace logins left' % ctrl.graceAuthNsRemaining)
     # perform search for own object (just to do any kind of search)
-    results = search.LDAPSearch(conn, base=binddn, scope=ldap.SCOPE_BASE,
-                                filter='(objectClass=*)', attributes=['dn', ])
+    results = search.LDAPSearch(
+        conn, base=binddn, scope=ldap.SCOPE_BASE,
+        filter='(objectClass=*)', attributes=['dn'])
     for entry in results:
         if entry[0] == binddn:
             return conn, constants.NSLCD_PAM_SUCCESS, ''
@@ -111,8 +126,7 @@ def update_lastchange(conns, userdn):
 class PAMRequest(common.Request):
 
     def validate(self, parameters):
-        """This method checks the provided username for validity and fills
-        in the DN if needed."""
+        """Check the username for validity and fill in the DN if needed."""
         # check username for validity
         common.validate_name(parameters['username'])
         # look up user DN
@@ -221,11 +235,10 @@ class PAMAuthorisationRequest(PAMRequest):
         # escape all parameters
         variables = dict((k, escape_filter_chars(v)) for k, v in parameters.items())
         variables.update(
-                hostname=escape_filter_chars(socket.gethostname()),
-                fqdn=escape_filter_chars(socket.getfqdn()),
-                dn=variables['userdn'],
-                uid=variables['username'],
-            )
+            hostname=escape_filter_chars(socket.gethostname()),
+            fqdn=escape_filter_chars(socket.getfqdn()),
+            dn=variables['userdn'],
+            uid=variables['username'])
         # go over all authz searches
         for x in cfg.pam_authz_searches:
             filter = x.value(variables)

@@ -115,8 +115,7 @@ class MyIter(object):
 
 
 class DollarExpression(object):
-    """Class for handling a variable $xxx ${xxx}, ${xxx:-yyy} or ${xxx:+yyy}
-    expression."""
+    """Handle variable $xxx ${xxx}, ${xxx:-yyy} or ${xxx:+yyy} expansion."""
 
     def __init__(self, value):
         """Parse the expression as the start of a $-expression."""
@@ -169,22 +168,29 @@ class DollarExpression(object):
             value = value[0]
         # TODO: try to return multiple values, one for each value of the list
         if self.op == ':-':
+            # ${attr:-expr} use expr as default for variable
             return value if value else self.expr.value(variables)
         elif self.op == ':+':
+            # ${attr:+expr} expand expr if variable is set
             return self.expr.value(variables) if value else ''
         elif self.op == ':':
+            # ${attr:offset:length} provide substring of variable
             offset, length = self.expr.value(variables).split(':')
             offset, length = int(offset), int(length)
             return value[offset:offset + length]
         elif self.op in ('#', '##', '%', '%%'):
             match = fnmatch.translate(self.expr.value(variables))
             if self.op == '#':
+                # ${attr#word} remove shortest match of word
                 match = match.replace('*', '*?').replace(r'\Z', r'(?P<replace>.*)\Z')
             elif self.op == '##':
+                # ${attr#word} remove longest match of word
                 match = match.replace(r'\Z', r'(?P<replace>.*?)\Z')
             elif self.op == '%':
+                # ${attr#word} remove shortest match from right
                 match = r'(?P<replace>.*)' + match.replace('*', '*?')
             elif self.op == '%%':
+                # ${attr#word} remove longest match from right
                 match = r'(?P<replace>.*?)' + match
             match = re.match(match, value)
             return match.group('replace') if match else value

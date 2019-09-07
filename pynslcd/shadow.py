@@ -1,7 +1,7 @@
 
 # shadow.py - lookup functions for shadow information
 #
-# Copyright (C) 2010, 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2010-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,15 +25,16 @@ import constants
 import search
 
 
-attmap = common.Attributes(uid='uid',
-                           userPassword='"*"',
-                           shadowLastChange='"${shadowLastChange:--1}"',
-                           shadowMin='"${shadowMin:--1}"',
-                           shadowMax='"${shadowMax:--1}"',
-                           shadowWarning='"${shadowWarning:--1}"',
-                           shadowInactive='"${shadowInactive:--1}"',
-                           shadowExpire='"${shadowExpire:--1}"',
-                           shadowFlag='"${shadowFlag:-0}"')
+attmap = common.Attributes(
+    uid='uid',
+    userPassword='"*"',
+    shadowLastChange='"${shadowLastChange:--1}"',
+    shadowMin='"${shadowMin:--1}"',
+    shadowMax='"${shadowMax:--1}"',
+    shadowWarning='"${shadowWarning:--1}"',
+    shadowInactive='"${shadowInactive:--1}"',
+    shadowExpire='"${shadowExpire:--1}"',
+    shadowFlag='"${shadowFlag:-0}"')
 filter = '(objectClass=shadowAccount)'
 
 

@@ -20,19 +20,31 @@
 
 import datetime
 import os
-import sys
-
 import sqlite3
+import sys
 
 
 # TODO: probably create a config table
-# FIXME: have some way to remove stale entries from the cache if all items from LDAP are queried (perhas use TTL from all request)
+# FIXME: have some way to remove stale entries from the cache if all items
+#        from LDAP are queried (perhas use TTL from all request)
 
 
-class regroup(object):
+class regroup(object):  # noqa: N801 (this has an iterator name)
+    """Regroup the results in the group column by the key columns.
+
+    Get entries from a queryset that has multiple result rows per wanted
+    entry by combining multiple values. E.g.
+
+      1, 2, 3
+      1, 2, 4
+      1, 2, 5
+
+    into
+
+      1, 2, [3, 4, 5]
+    """
 
     def __init__(self, results, group_by=None, group_column=None):
-        """Regroup the results in the group column by the key columns."""
         self.group_by = tuple(group_by)
         self.group_column = group_column
         self.it = iter(results)
@@ -113,8 +125,10 @@ class Cache(object):
 
     def store(self, *values):
         """Store the values in the cache for the specified table.
+
         The order of the values is the order returned by the Reques.convert()
-        function."""
+        function.
+        """
         # split the values into simple (flat) values and one-to-many values
         simple_values = []
         multi_values = []
@@ -144,8 +158,7 @@ class Cache(object):
                 ''' % (self.tables[n + 1]), ((values[0], x) for x in vlist))
 
     def retrieve(self, parameters):
-        """Retrieve all items from the cache based on the parameters
-        supplied."""
+        """Retrieve all items from the cache based on the parameters supplied."""
         query = Query(self.retrieve_sql or '''
             SELECT *
             FROM %s
@@ -165,10 +178,10 @@ class Cache(object):
         return (list(x)[:-1] for x in results)
 
     def __enter__(self):
-        return self.con.__enter__();
+        return self.con.__enter__()
 
     def __exit__(self, *args):
-        return self.con.__exit__(*args);
+        return self.con.__exit__(*args)
 
 
 # the connection to the sqlite database

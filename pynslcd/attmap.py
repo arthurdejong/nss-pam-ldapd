@@ -20,13 +20,14 @@
 
 """Module for handling attribute mappings used for LDAP searches.
 
->>> attrs = Attributes(uid='uid',
-...                    userPassword='userPassword',
-...                    uidNumber='uidNumber',
-...                    gidNumber='gidNumber',
-...                    gecos='"${gecos:-$cn}"',
-...                    homeDirectory='homeDirectory',
-...                    loginShell='loginShell')
+>>> attrs = Attributes(
+...     uid='uid',
+...     userPassword='userPassword',
+...     uidNumber='uidNumber',
+...     gidNumber='gidNumber',
+...     gecos='"${gecos:-$cn}"',
+...     homeDirectory='homeDirectory',
+...     loginShell='loginShell')
 >>> 'cn' in attrs.attributes()
 True
 >>> attrs.translate({'uid': ['UIDVALUE', '2nduidvalue'], 'cn': ['COMMON NAME', ]}) == {
@@ -41,8 +42,8 @@ True
 
 import re
 
-from ldap.filter import escape_filter_chars
 import ldap.dn
+from ldap.filter import escape_filter_chars
 
 from expr import Expression
 
@@ -66,8 +67,7 @@ class SimpleMapping(str):
 
     def mk_filter(self, value):
         return '(%s=%s)' % (
-                self, escape_filter_chars(str(value))
-            )
+            self, escape_filter_chars(str(value)))
 
     def values(self, variables):
         """Expand the expression using the variables specified."""
@@ -123,8 +123,7 @@ class FunctionMapping(object):
 
     def mk_filter(self, value):
         return '(%s=%s)' % (
-                self.attribute, escape_filter_chars(value)
-            )
+            self.attribute, escape_filter_chars(value))
 
     def values(self, variables):
         return [self.function(value)
@@ -156,32 +155,30 @@ class Attributes(dict):
             self[key] = kwargs[key]
 
     def attributes(self):
-        """Return the list of attributes that are referenced in this
-        attribute mapping. These are the attributes that should be
-        requested in the search."""
+        """Return the attributes that are referenced in this attribute mapping.
+
+        These are the attributes that should be requested in the search.
+        """
         attributes = set()
         for mapping in self.values():
             attributes.update(mapping.attributes())
         return list(attributes)
 
     def mk_filter(self, attribute, value):
-        """Construct a search filter for searching for the attribute value
-        combination."""
+        """Construct a search filter for the attribute value combination."""
         mapping = self.get(attribute, SimpleMapping(attribute))
         return mapping.mk_filter(value)
 
     def translate(self, variables):
-        """Return a dictionary with every attribute mapped to their value from
-        the specified variables."""
+        """Return a dictionary with every attribute mapped to their value."""
         results = dict()
         for attribute, mapping in self.items():
             results[attribute] = mapping.values(variables)
         return results
 
     def get_rdn_value(self, dn, attribute):
-        """Extract the attribute value from from DN if possible. Return None
-        otherwise."""
+        """Extract the attribute value from from DN or return None."""
         return self.translate(dict(
-                (x, [y])
-                for x, y, z in ldap.dn.str2dn(dn)[0]
-            ))[attribute][0]
+            (x, [y])
+            for x, y, z in ldap.dn.str2dn(dn)[0]
+        ))[attribute][0]

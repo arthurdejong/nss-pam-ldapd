@@ -47,13 +47,15 @@ check_PROGRAMS = test_dict test_set test_tio test_expr test_getpeercred \
 EXTRA_DIST = README nslcd-test.conf usernames.txt testenv.sh test_myldap.sh \
              test_nsscmds.sh test_ldapcmds.sh test_pamcmds.sh \
              test_pamcmds.expect test_manpages.sh \
-             test_pycompile.sh test_pylint.sh pylint.rc test_doctest.sh \
+             test_pycompile.sh test_doctest.sh \
+             test_pylint.sh pylint.rc \
+             test_flake8.sh flake8.ini \
              test_pynslcd_cache.py \
              setup_slapd.sh config.ldif test.ldif
 
 CLEANFILES = $(EXTRA_PROGRAMS) test_pamcmds.log
 clean-local:
-	-rm -rf *.pyc *.pyo __pycache__
+	-rm -rf *.pyc *.pyo __pycache__ flake8-venv
 
 AM_CPPFLAGS = -I$(top_srcdir)
 AM_CFLAGS = $(PTHREAD_CFLAGS) -g

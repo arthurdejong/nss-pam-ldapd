@@ -1,7 +1,7 @@
 
 # service.py - service entry lookup routines
 #
-# Copyright (C) 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2011-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -26,9 +26,10 @@ import constants
 import search
 
 
-attmap = common.Attributes(cn='cn',
-                           ipServicePort='ipServicePort',
-                           ipServiceProtocol='ipServiceProtocol')
+attmap = common.Attributes(
+    cn='cn',
+    ipServicePort='ipServicePort',
+    ipServiceProtocol='ipServiceProtocol')
 filter = '(objectClass=ipService)'
 
 
@@ -59,8 +60,10 @@ class Cache(cache.Cache):
             ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY(`ipServiceProtocol`) REFERENCES `service_cache`(`ipServiceProtocol`)
             ON DELETE CASCADE ON UPDATE CASCADE );
-        CREATE INDEX IF NOT EXISTS `service_alias_idx1` ON `service_alias_cache`(`ipServicePort`);
-        CREATE INDEX IF NOT EXISTS `service_alias_idx2` ON `service_alias_cache`(`ipServiceProtocol`);
+        CREATE INDEX IF NOT EXISTS `service_alias_idx1`
+            ON `service_alias_cache`(`ipServicePort`);
+        CREATE INDEX IF NOT EXISTS `service_alias_idx2`
+            ON `service_alias_cache`(`ipServiceProtocol`);
     '''
 
     retrieve_sql = '''

@@ -23,45 +23,48 @@ import sys
 
 import ldap
 
-from attmap import Attributes
-#import cache
+from attmap import Attributes  # noqa: F401 (used by other modules)
 import cfg
 import constants
 
 
 def is_valid_name(name):
-    """Checks to see if the specified name seems to be a valid user or group
-    name.
+    """Check if the specified name seems to be a valid user or group name.
 
     This test is based on the definition from POSIX (IEEE Std 1003.1, 2004,
-    3.426 User Name, 3.189 Group Name and 3.276 Portable Filename Character Set):
+    3.426 User Name, 3.189 Group Name and 3.276 Portable Filename Character
+    Set):
     http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_426
     http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_189
     http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_276
 
-    The standard defines user names valid if they contain characters from
-    the set [A-Za-z0-9._-] where the hyphen should not be used as first
-    character. As an extension this test allows some more characters."""
+    The standard defines user names valid if they contain characters from the
+    set [A-Za-z0-9._-] where the hyphen should not be used as first
+    character. As an extension this test allows some more characters.
+    """
     return bool(cfg.validnames.search(name))
 
 
 def validate_name(name):
-    """Checks to see if the specified name seems to be a valid user or group
-    name. See is_valid_name()."""
+    """Check if the specified name seems to be a valid user or group name.
+
+    This raises an exception if this is not the case.
+    """
     if not cfg.validnames.search(name):
         raise ValueError('%r: denied by validnames option' % name)
 
 
 class Request(object):
-    """
-    Request handler class. Subclasses are expected to handle actual requests
-    and should implement the following members:
+    """Request handler class.
+
+    Subclasses are expected to handle actual requests and should implement
+    the following members:
 
       action - the NSLCD_ACTION_* action that should trigger this handler
-
       read_parameters() - a function that reads the request parameters of the
                           request stream
       write() - function that writes a single LDAP entry to the result stream
+      convert() - function that generates result entries from an LDAP result
 
     """
 
@@ -71,15 +74,10 @@ class Request(object):
         self.calleruid = calleruid
         module = sys.modules[self.__module__]
         self.search = getattr(module, 'Search', None)
-        #if not hasattr(module, 'cache_obj'):
-        #    cache_cls = getattr(module, 'Cache', None)
-        #    module.cache_obj = cache_cls() if cache_cls else None
-        #self.cache = module.cache_obj
         self.cache = None
 
     def read_parameters(self, fp):
-        """This method should read and return the parameters from the
-        stream."""
+        """Read and return the parameters from the stream."""
         pass
 
     def get_results(self, parameters):
@@ -89,16 +87,13 @@ class Request(object):
                 yield values
 
     def handle_request(self, parameters):
-        """This method handles the request based on the parameters read
-        with read_parameters()."""
+        """Handle the request based on the parameters."""
         try:
-            #with cache.con:
-            if True:
-                for values in self.get_results(parameters):
-                    self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
-                    self.write(*values)
-                    if self.cache:
-                        self.cache.store(*values)
+            for values in self.get_results(parameters):
+                self.fp.write_int32(constants.NSLCD_RESULT_BEGIN)
+                self.write(*values)
+                if self.cache:
+                    self.cache.store(*values)
         except ldap.SERVER_DOWN:
             if self.cache:
                 logging.debug('read from cache')

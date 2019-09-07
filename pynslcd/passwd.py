@@ -1,7 +1,7 @@
 
 # passwd.py - lookup functions for user account information
 #
-# Copyright (C) 2010-2017 Arthur de Jong
+# Copyright (C) 2010-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,23 +27,25 @@ import constants
 import search
 
 
-attmap = common.Attributes(uid='uid',
-                           userPassword='"*"',
-                           uidNumber='uidNumber',
-                           gidNumber='gidNumber',
-                           gecos='"${gecos:-$cn}"',
-                           homeDirectory='homeDirectory',
-                           loginShell='loginShell',
-                           objectClass='objectClass')
+attmap = common.Attributes(
+    uid='uid',
+    userPassword='"*"',
+    uidNumber='uidNumber',
+    gidNumber='gidNumber',
+    gecos='"${gecos:-$cn}"',
+    homeDirectory='homeDirectory',
+    loginShell='loginShell',
+    objectClass='objectClass')
 filter = '(objectClass=posixAccount)'
 
 
 class Search(search.LDAPSearch):
 
-    case_sensitive = ('uid', 'uidNumber', )
-    limit_attributes = ('uid', 'uidNumber', )
-    required = ('uid', 'uidNumber', 'gidNumber', 'gecos', 'homeDirectory',
-                'loginShell')
+    case_sensitive = ('uid', 'uidNumber')
+    limit_attributes = ('uid', 'uidNumber')
+    required = (
+        'uid', 'uidNumber', 'gidNumber', 'gecos', 'homeDirectory',
+        'loginShell')
 
     def mk_filter(self):
         if 'uidNumber' in self.parameters:
@@ -137,8 +139,7 @@ class PasswdAllRequest(PasswdRequest):
 
 
 def uid2entry(conn, uid):
-    """Look up the user by uid and return the LDAP entry or None if the user
-    was not found."""
+    """Look up the user by uid and return the LDAP entry or None."""
     for dn, attributes in Search(conn, parameters=dict(uid=uid)):
         if any((int(x) + cfg.nss_uid_offset) >= cfg.nss_min_uid for x in attributes['uidNumber']):
             return dn, attributes
@@ -148,8 +149,7 @@ def uid2entry(conn, uid):
 
 
 def dn2uid(conn, dn):
-    """Look up the user by dn and return a uid or None if the user was
-    not found."""
+    """Look up the user by dn and return a uid or None."""
     for dn, attributes in Search(conn, base=dn):
         if any((int(x) + cfg.nss_uid_offset) >= cfg.nss_min_uid for x in attributes['uidNumber']):
             return attributes['uid'][0]

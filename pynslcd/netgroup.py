@@ -1,7 +1,7 @@
 
 # netgroup.py - lookup functions for netgroups
 #
-# Copyright (C) 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2011-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -26,12 +26,14 @@ import constants
 import search
 
 
-_netgroup_triple_re = re.compile(r'^\s*\(\s*(?P<host>.*)\s*,\s*(?P<user>.*)\s*,\s*(?P<domain>.*)\s*\)\s*$')
+_netgroup_triple_re = re.compile(
+    r'^\s*\(\s*(?P<host>.*)\s*,\s*(?P<user>.*)\s*,\s*(?P<domain>.*)\s*\)\s*$')
 
 
-attmap = common.Attributes(cn='cn',
-                           nisNetgroupTriple='nisNetgroupTriple',
-                           memberNisNetgroup='memberNisNetgroup')
+attmap = common.Attributes(
+    cn='cn',
+    nisNetgroupTriple='nisNetgroupTriple',
+    memberNisNetgroup='memberNisNetgroup')
 filter = '(objectClass=nisNetgroup)'
 
 

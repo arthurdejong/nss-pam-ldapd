@@ -1,7 +1,7 @@
 
 # network.py - lookup functions for network names and addresses
 #
-# Copyright (C) 2011, 2012, 2013 Arthur de Jong
+# Copyright (C) 2011-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,9 @@ import constants
 import search
 
 
-attmap = common.Attributes(cn='cn',
-                           ipNetworkNumber='ipNetworkNumber')
+attmap = common.Attributes(
+    cn='cn',
+    ipNetworkNumber='ipNetworkNumber')
 filter = '(objectClass=ipNetwork)'
 
 

@@ -1,7 +1,7 @@
 
 # group.py - group entry lookup routines
 #
-# Copyright (C) 2010-2017 Arthur de Jong
+# Copyright (C) 2010-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,8 @@
 
 import logging
 
-from ldap.filter import escape_filter_chars
 import ldap
+from ldap.filter import escape_filter_chars
 
 import cache
 import cfg
@@ -37,11 +37,12 @@ def clean(lst):
             yield i.replace('\0', '')
 
 
-attmap = common.Attributes(cn='cn',
-                           userPassword='"*"',
-                           gidNumber='gidNumber',
-                           memberUid='memberUid',
-                           member='member')
+attmap = common.Attributes(
+    cn='cn',
+    userPassword='"*"',
+    gidNumber='gidNumber',
+    memberUid='memberUid',
+    member='member')
 filter = '(objectClass=posixGroup)'
 
 
@@ -69,10 +70,10 @@ class Search(search.LDAPSearch):
             entry = passwd.uid2entry(self.conn, memberuid)
             if entry:
                 return '(&%s(|(%s=%s)(%s=%s)))' % (
-                        self.filter,
-                        attmap['memberUid'], escape_filter_chars(memberuid),
-                        attmap['member'], escape_filter_chars(entry[0])
-                    )
+                    self.filter,
+                    attmap['memberUid'], escape_filter_chars(memberuid),
+                    attmap['member'], escape_filter_chars(entry[0]),
+                )
         if 'gidNumber' in self.parameters:
             self.parameters['gidNumber'] -= cfg.nss_gid_offset
         return super(Search, self).mk_filter()

@@ -32,10 +32,10 @@ signalfd = None
 
 # mapping between map name and signal character
 _db_to_char = dict(
-        aliases='A', ethers='E', group='G', hosts='H', netgroup='U',
-        networks='N', passwd='P', protocols='L', rpc='R', services='V',
-        shadow='S', nfsidmap='F',
-    )
+    aliases='A', ethers='E', group='G', hosts='H', netgroup='U',
+    networks='N', passwd='P', protocols='L', rpc='R', services='V',
+    shadow='S', nfsidmap='F',
+)
 _char_to_db = dict((reversed(item) for item in _db_to_char.items()))
 
 
