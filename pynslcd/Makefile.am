@@ -37,6 +37,7 @@ constants.py: constants.py.in $(top_srcdir)/nslcd.h
 
 # create a symbolic link for the pynslcd daemon and fix permissions
 install-data-hook:
-	chmod a+rx $(DESTDIR)$(pynslcddir)/pynslcd.py
 	$(MKDIR_P) $(DESTDIR)$(sbindir)
 	[ -L $(DESTDIR)$(sbindir)/pynslcd ] || $(LN_S) $(pynslcddir)/pynslcd.py $(DESTDIR)$(sbindir)/pynslcd
+	chmod a+rx $(DESTDIR)$(pynslcddir)/pynslcd.py
+	sed -i -e '1 s|^#!.*|#! $(PYTHON)|;1 s|^#! \([^/].*\)|#! /usr/bin/env \1|' $(DESTDIR)$(pynslcddir)/pynslcd.py

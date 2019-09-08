@@ -33,10 +33,11 @@ clean-local:
 constants.py: ../pynslcd/constants.py
 	cp ../pynslcd/constants.py .
 
-# create symbolic links to the commands and fix permissions
+# create symbolic links, fix permissions and set Python interpreter
 install-data-hook:
 	$(MKDIR_P) $(DESTDIR)$(bindir)
 	set -ex; for cmd in getent chsh ; do \
-	  chmod a+rx $(DESTDIR)$(utilsdir)/$$cmd.py ; \
 	  [ -L $(DESTDIR)$(bindir)/$$cmd.$(MODULE_NAME) ] || $(LN_S) $(utilsdir)/$$cmd.py $(DESTDIR)$(bindir)/$$cmd.$(MODULE_NAME) ; \
+	  chmod a+rx $(DESTDIR)$(utilsdir)/$$cmd.py ; \
+	  sed -i -e '1 s|^#!.*|#! $(PYTHON)|;1 s|^#! \([^/].*\)|#! /usr/bin/env \1|' $(DESTDIR)$(utilsdir)/$$cmd.py ; \
 	done
