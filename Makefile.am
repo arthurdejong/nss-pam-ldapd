@@ -40,6 +40,8 @@ SUBDIRS += man tests
 EXTRA_DIST = nslcd.conf nslcd.h $(wildcard ChangeLog-20??) \
              $(wildcard m4/*.m4) HACKING ldapns.schema ldapns.ldif
 
+DISTCLEANFILES = confinc.out
+
 DISTCHECK_CONFIGURE_FLAGS = --enable-warnings --enable-pynslcd --enable-utils \
                             --with-pam-seclib-dir="\$${libdir}/security" \
                             --with-ldap-conf-file="\$${prefix}/nslcd.conf" \

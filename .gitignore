@@ -29,6 +29,7 @@ stamp-*
 /config.status
 /configure
 /configure.lineno
+/confinc.out
 /conftest.tail
 /flawfinder.html
 /nss-pam-ldapd-*
