@@ -18,6 +18,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+import logging
+
 import cache
 import cfg
 import common
@@ -112,8 +114,11 @@ class ShadowRequest(common.Request):
             flag = 0
         # return results
         for name in names:
-            yield (name, passwd, lastchangedate, mindays, maxdays, warndays,
-                   inactdays, expiredate, flag)
+            if not common.is_valid_name(name):
+                logging.warning('%s: %s: denied by validnames option', dn, attmap['uid'])
+            else:
+                yield (name, passwd, lastchangedate, mindays, maxdays, warndays,
+                       inactdays, expiredate, flag)
 
 
 class ShadowByNameRequest(ShadowRequest):
@@ -121,7 +126,9 @@ class ShadowByNameRequest(ShadowRequest):
     action = constants.NSLCD_ACTION_SHADOW_BYNAME
 
     def read_parameters(self, fp):
-        return dict(uid=fp.read_string())
+        name = fp.read_string()
+        common.validate_name(name)
+        return dict(uid=name)
 
 
 class ShadowAllRequest(ShadowRequest):
