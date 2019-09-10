@@ -30,9 +30,9 @@ python="${PYTHON-python}"
 
 # Find Python interpreters
 find_python() {
-  for p in ${python} python python2 python2.7 python3 python3.5 python3.6 python3.7 python3.8
+  for p in "${python}" python python2 python2.7 python3 python3.5 python3.6 python3.7 python3.8
   do
-    if [ -x "$(which $p)" ]
+    if [ -n "$p"] && "$p" --version > /dev/null 2> /dev/null
     then
       readlink -f `which $p` 2> /dev/null || true
     fi

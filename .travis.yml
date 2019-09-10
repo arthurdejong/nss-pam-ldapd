@@ -33,6 +33,7 @@ script:
       --enable-warnings --enable-pynslcd
   - make
   - make distcheck
+  - cat nss-pam-ldapd-*/_build/sub/tests/test-suite.log 2> /dev/null || true
   # Set up a custom LDAP server
   - sudo service slapd stop || true
   - tmpslapd=`mktemp -d -t slapd.XXXXXX` && sudo tests/setup_slapd.sh "$tmpslapd" setup && sudo tests/setup_slapd.sh "$tmpslapd" start
