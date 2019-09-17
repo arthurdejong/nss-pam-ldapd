@@ -111,7 +111,7 @@ struct myldap_search {
   MYLDAP_SESSION *session;
   /* indicator that the search is still valid */
   int valid;
-  /* the parameters descibing the search */
+  /* the parameters describing the search */
   const char *base;
   int scope;
   const char *filter;
@@ -119,7 +119,7 @@ struct myldap_search {
   /* a pointer to the current result entry, used for
      freeing resource allocated with that entry */
   MYLDAP_ENTRY *entry;
-  /* LDAP message id for the search, -1 indicates absense of an active search */
+  /* LDAP message id for the search, -1 indicates absence of an active search */
   int msgid;
   /* the last result that was returned by ldap_result() */
   LDAPMessage *msg;
@@ -127,7 +127,7 @@ struct myldap_search {
   struct berval *cookie;
   /* to indicate that we can retry the search from myldap_get_entry() */
   int may_retry_search;
-  /* the number of resutls returned so far */
+  /* the number of results returned so far */
   int count;
 };
 
@@ -1380,7 +1380,7 @@ static int do_retry_search(MYLDAP_SEARCH *search)
         /* update time of failure and figure out when we should retry */
         pthread_mutex_lock(&uris_mutex);
         t = time(NULL);
-        /* update timestaps unless we are doing an authentication search */
+        /* update timestamps unless we are doing an authentication search */
         if (search->session->binddn[0] == '\0')
         {
           if (current_uri->firstfail == 0)
@@ -1757,7 +1757,7 @@ const char *myldap_get_dn(MYLDAP_ENTRY *entry)
     errno = EINVAL;
     return "unknown";
   }
-  /* if we don't have it yet, retreive it */
+  /* if we don't have it yet, retrieve it */
   if ((entry->dn == NULL) && (entry->search->valid))
   {
     entry->dn = ldap_get_dn(entry->search->session->ld, entry->search->msg);
@@ -1792,7 +1792,7 @@ char *myldap_cpy_dn(MYLDAP_ENTRY *entry, char *buf, size_t buflen)
   return buf;
 }
 
-/* Perform ranged retreival of attributes.
+/* Perform ranged retrieval of attributes.
    http://msdn.microsoft.com/en-us/library/aa367017(vs.85).aspx
    http://www.tkk.fi/cc/docs/kerberos/draft-kashi-incremental-00.txt */
 static char **myldap_get_ranged_values(MYLDAP_ENTRY *entry, const char *attr)
@@ -1919,7 +1919,7 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry, const char *attr)
   {
     if (ldap_get_option(entry->search->session->ld, LDAP_OPT_ERROR_NUMBER, &rc) != LDAP_SUCCESS)
       rc = LDAP_UNAVAILABLE;
-    /* ignore decoding errors as they are just nonexisting attribute values */
+    /* ignore decoding errors as they are just non-existing attribute values */
     if (rc == LDAP_DECODING_ERROR)
     {
       rc = LDAP_SUCCESS;
@@ -2027,7 +2027,7 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *attr)
   {
     if (ldap_get_option(entry->search->session->ld, LDAP_OPT_ERROR_NUMBER, &rc) != LDAP_SUCCESS)
       rc = LDAP_UNAVAILABLE;
-    /* ignore decoding errors as they are just nonexisting attribute values */
+    /* ignore decoding errors as they are just non-existing attribute values */
     if (rc == LDAP_DECODING_ERROR)
     {
       rc = LDAP_SUCCESS;

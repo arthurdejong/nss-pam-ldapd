@@ -39,7 +39,7 @@
 #include "cfg.h"
 
 /* macros for basic read and write operations, the following
-   ERROR_OUT* marcos define the action taken on errors
+   ERROR_OUT* macros define the action taken on errors
    the stream is not closed because the caller closes the
    stream */
 
@@ -156,7 +156,7 @@ void invalidator_do(enum ldap_map_selector map);
 #define BUFLEN_PASSWORD     128  /* passwords */
 #define BUFLEN_PASSWORDHASH 256  /* passwords hashes */
 #define BUFLEN_DN           512  /* distinguished names */
-#define BUFLEN_SAFEDN       600  /* escapedd dn */
+#define BUFLEN_SAFEDN       600  /* escaped dn */
 #define BUFLEN_FILTER      4096  /* search filters */
 #define BUFLEN_HOSTNAME     256  /* host names or FQDN (and safe version) */
 #define BUFLEN_MESSAGE     1024  /* message strings */

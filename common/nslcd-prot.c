@@ -40,7 +40,7 @@
 #include "compat/socket.h"
 
 /* read timeout is 60 seconds because looking up stuff may take some time
-   write timeout is 10 secods because nslcd could be loaded with requests */
+   write timeout is 10 seconds because nslcd could be loaded with requests */
 #define READ_TIMEOUT 60 * 1000
 #define WRITE_TIMEOUT 10 * 1000
 

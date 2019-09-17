@@ -26,10 +26,10 @@
 #include "getopt_long.h"
 
 /* this is a (poor) getopt_long() replacement for systems that don't have it
-   (getopt_long() is generaly a GNU extention)
-   this implementation is by no meens flawless, especialy the optional arguments
-   to options and options following filenames is not quite right, allso
-   minimal error checking is provided
+   (this is generally a GNU extension)
+   this implementation is by no means flawless, especially the optional
+   arguments to options and options following filenames is not quite right,
+   also minimal error checking is performed
    */
 int getopt_long(int argc, char *const argv[],
                 const char *optstring,

@@ -415,7 +415,7 @@ AC_CHECK_DECLS([ether_aton, ether_ntoa],,, [
 
 # check to see if socklen_t is defined
 AC_CHECK_TYPE(socklen_t,,
-    AC_DEFINE(socklen_t, size_t, [Define to `size_t' if not defined elswhere.]), [
+    AC_DEFINE(socklen_t, size_t, [Define to `size_t' if not defined elsewhere.]), [
     #include <sys/types.h>
     #include <sys/socket.h>])
 

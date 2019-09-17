@@ -80,7 +80,7 @@ static const char *empty_expander(const char UNUSED(*name),
   return "";
 }
 
-/* definition of the parse functions (they call eachother) */
+/* definition of the parse functions (they call each other) */
 MUST_USE static const char *parse_dollar_expression(
               const char *str, int *ptr, char *buffer, size_t buflen,
               expr_expander_func expander, void *expander_arg);
@@ -165,7 +165,7 @@ MUST_USE static const char *parse_dollar_substring(
   if (length >= buflen)
     return NULL;
   /* everything's ok, copy data; we use memcpy instead of strncpy
-     because we already know the exact lenght in play */
+     because we already know the exact length in play */
   memcpy(buffer, varvalue + offset, length);
   buffer[length] = '\0';
   return buffer;

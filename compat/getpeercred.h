@@ -26,7 +26,7 @@
 
 /* This function tries to determine the (effective) user id, group id
    and process id of the other end of the specified socket.
-   Any of the uid, gid and pid paramaters may be NULL to not update
+   Any of the uid, gid and pid parameters may be NULL to not update
    that information.
    On success, zero is returned.  On error, -1 is returned, and errno
    is set appropriately. */

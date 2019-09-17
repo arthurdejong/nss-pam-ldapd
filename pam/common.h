@@ -30,7 +30,7 @@
 
 /* These are macros for handling read and write problems, they are
    PAM specific due to the return code so are defined here. They
-   genrally close the open file, set an error code and return with
+   generally close the open file, set an error code and return with
    an error status. */
 
 /* Macro is called to handle errors in opening a client connection. */

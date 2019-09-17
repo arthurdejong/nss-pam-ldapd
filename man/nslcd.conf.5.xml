@@ -820,7 +820,7 @@
        The regular expression should be specified as a POSIX extended regular
        expression. The expression itself needs to be separated by slash (/)
        characters and the 'i' flag may be appended at the end to indicate
-       that the match should be case-insensetive.
+       that the match should be case-insensitive.
        The default value is
        <literal>/^[a-z0-9._@$()]([a-z0-9._@$() \\~-]*[a-z0-9._@$()~-])?$/i</literal>
       </para>
@@ -837,7 +837,7 @@
        Setting this to <literal>yes</literal> could open up the system
        to authorisation bypass vulnerabilities and introduce nscd cache poisoning
        vulnerabilities which allow denial of service.
-       The default is to perform case-sensitve filtering of LDAP search
+       The default is to perform case-sensitive filtering of LDAP search
        results for the above maps.
       </para>
      </listitem>
@@ -1081,7 +1081,7 @@
    <varlistentry>
     <term><literal>${attr:-word}</literal></term>
     <listitem><para>
-     (use default) will substitbute the value of the attribute or, if the
+     (use default) will substitute the value of the attribute or, if the
      attribute is not set or empty substitute the word
     </para></listitem>
    </varlistentry>

@@ -29,7 +29,7 @@
    - (re)set proper signal handlers and signal mask
    - sanitise the environment
    - fork() / setsid() / fork() to detach from terminal, become process
-     leader and run in the background (see daemonize_demon() for that)
+     leader and run in the background (see daemonize_daemon() for that)
    - reconnect stdin/stdout/stderr to /dev/null (see
      daemonize_redirect_stdio() for that)
    - set the umask to a reasonable value
@@ -53,7 +53,7 @@ void daemonize_redirect_stdio(void);
    - in the first child call setsid() to detach from any terminal and
      create an independent session
    - keep the parent process waiting until a call to daemonize_ready() is
-     done by the deamon process
+     done by the daemon process
    This function returns either an error which indicates that the
    daemonizing failed for some reason (usually sets errno), or returns
    without error indicating that the process has been daemonized. */

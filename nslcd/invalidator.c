@@ -234,7 +234,7 @@ int invalidator_start(void)
     /* we are the child: close the write end and handle requests */
     close(pipefds[1]);
     handle_requests(pipefds[0]);
-    /* the handle function should't return */
+    /* the handle function shouldn't return */
     _exit(EXIT_FAILURE);
   }
   /* we are the parent: close the read end and save the write end */

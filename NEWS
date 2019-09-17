@@ -50,7 +50,7 @@ changes from 0.9.6 to 0.9.7
 * fix error when changing PAM user name (thanks 依云)
 * support substring expressions ${var:offset:length} in attribute mapping
   (thanks Giovanni Mascellani)
-* also honor the ignorecase option in PAM
+* also honour the ignorecase option in PAM
 
 
 changes from 0.9.5 to 0.9.6

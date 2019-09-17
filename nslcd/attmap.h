@@ -79,7 +79,7 @@ const char **filter_get_var(enum ldap_map_selector map);
 
 /* return a reference to the attribute mapping variable for the specified name
    the name is the name after the attmap_... variables above with the
-   underscode replaced by a dot (e.g passwd.homeDirectory) */
+   underscore replaced by a dot (e.g passwd.homeDirectory) */
 const char **attmap_get_var(enum ldap_map_selector map, const char *name);
 
 /* Set the attribute mapping of the variable to the value specified.
@@ -92,7 +92,7 @@ MUST_USE const char *attmap_set_mapping(const char **var, const char *value);
 const char *attmap_get_value(MYLDAP_ENTRY *entry, const char *attr,
                              char *buffer, size_t buflen);
 
-/* Add the attributes from attr to the set. The attr argumenent
+/* Add the attributes from attr to the set. The attr argument
    can either be an attribute or an attribute expression. */
 SET *attmap_add_attributes(SET *set, const char *attr);
 

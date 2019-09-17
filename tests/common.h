@@ -43,7 +43,7 @@
 #endif
 #endif /* not HAVE___ASSERT_FAIL */
 
-/* extra assertion function that epxects both strings to be the same
+/* extra assertion function that expects both strings to be the same
    (special macro because strcmp() can be a macro that turns ugly in assert) */
 #define assertstreq(str1, str2)                                             \
   (assertstreq_impl(str1, str2,                                             \

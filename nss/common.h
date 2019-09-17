@@ -48,7 +48,7 @@
 
 /* These are macros for handling read and write problems, they are
    NSS specific due to the return code so are defined here. They
-   genrally close the open file, set an error code and return with
+   generally close the open file, set an error code and return with
    an error status. */
 
 /* Macro is called to handle errors in opening a client connection. */
@@ -83,7 +83,7 @@
   return NSS_STATUS_NOTFOUND;
 
 /* These are some general macros that are used to build parts of the
-   genral macros below. */
+   general macros below. */
 
 /* check to see if we should answer NSS requests */
 #define NSS_AVAILCHECK                                                      \

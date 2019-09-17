@@ -29,7 +29,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(sys.path[0], '..', 'pynslcd')))
 sys.path.insert(2, os.path.abspath(os.path.join('..', 'pynslcd')))
 
 
-# TODO: think about case-sesitivity of cache searches (have tests for that)
+# TODO: think about case-sensitivity of cache searches (have tests for that)
 
 
 class TestAlias(unittest.TestCase):

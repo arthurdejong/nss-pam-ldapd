@@ -232,7 +232,7 @@ static int try_bind(const char *userdn, const char *password,
       search_vars_free(dict);
     }
   }
-  /* log any authentication, search or authorsiation messages */
+  /* log any authentication, search or authorisation messages */
   if (rc != LDAP_SUCCESS)
     log_log(LOG_WARNING, "%s: %s", userdn, ldap_err2string(rc));
   if ((msg != NULL) && (msg[0] != '\0'))

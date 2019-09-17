@@ -29,7 +29,7 @@
 #include "tio.h"
 
 /* If you use these macros you should define the following macros to
-   handle error conditions (these marcos should clean up and return from the
+   handle error conditions (these macros should clean up and return from the
    function):
      ERROR_OUT_WRITEERROR(fp)
      ERROR_OUT_READERROR(fp)
@@ -37,9 +37,9 @@
      ERROR_OUT_NOSUCCESS(fp) */
 
 
-/* Debugging marcos that can be used to enable detailed protocol logging,
+/* Debugging macros that can be used to enable detailed protocol logging,
    pass -DDEBUG_PROT to do overall protocol debugging, and -DDEBUG_PROT_DUMP
-   to dump the actual bytestream. */
+   to dump the actual byte stream. */
 
 #ifdef DEBUG_PROT
 /* define a debugging macro to output logging */
@@ -74,7 +74,7 @@ static void debug_dump(const void *ptr, size_t size)
 #endif /* not DEBUG_PROT_DUMP */
 
 
-/* WRITE marcos, used for writing data, on write error they will
+/* WRITE macros, used for writing data, on write error they will
    call the ERROR_OUT_WRITEERROR macro
    these macros may require the availability of the following
    variables:
@@ -224,10 +224,10 @@ static void debug_dump(const void *ptr, size_t size)
 #define BUF_SKIP(sz)                                                        \
   bufptr += (size_t)(sz);
 
-/* move BUF_CUR foreward so that it is aligned to the specified
+/* move BUF_CUR forward so that it is aligned to the specified
    type width */
 #define BUF_ALIGN(fp, type)                                                 \
-  /* figure out number of bytes to skip foreward */                         \
+  /* figure out number of bytes to skip forward */                         \
   tmp2int32 = (sizeof(type) - ((BUF_CUR - (char *)NULL) % sizeof(type)))    \
               % sizeof(type);                                               \
   /* check and skip */                                                      \
@@ -275,14 +275,14 @@ static void debug_dump(const void *ptr, size_t size)
   (field) = BUF_CUR;                                                        \
   BUF_SKIP(tmpint32 + 1);
 
-/* read an array from a stram and store it as a null-terminated
+/* read an array from a stream and store it as a null-terminated
    array list (size for the array is allocated) */
 #define READ_BUF_STRINGLIST(fp, arr)                                        \
   /* read the number of entries */                                          \
   READ(fp, &tmp3int32, sizeof(int32_t));                                    \
   tmp3int32 = ntohl(tmp3int32);                                             \
   DEBUG_PRINT("READ_STRLST: var="__STRING(arr)" num=%d", (int)tmp3int32);   \
-  /* allocate room for *char[num + 1] */                                      \
+  /* allocate room for *char[num + 1] */                                    \
   BUF_ALLOC(fp, arr, char *, tmp3int32 + 1);                                \
   /* read all entries */                                                    \
   for (tmp2int32 = 0; tmp2int32 < tmp3int32; tmp2int32++)                   \
@@ -295,7 +295,7 @@ static void debug_dump(const void *ptr, size_t size)
 
 /* SKIP macros for skipping over certain parts of the protocol stream. */
 
-/* skip a number of bytes foreward */
+/* skip a number of bytes forward */
 #define SKIP(fp, sz)                                                        \
   DEBUG_PRINT("READ       : skip %d bytes", (int)(sz));                     \
   /* read (skip) the specified number of bytes */                           \
@@ -327,7 +327,7 @@ static void debug_dump(const void *ptr, size_t size)
   }
 
 
-/* These are functions and macors for performing common operations in
+/* These are functions and macros for performing common operations in
    the nslcd request/response protocol. */
 
 /* returns a socket to the server or NULL on error (see errno),

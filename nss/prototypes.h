@@ -25,7 +25,7 @@
 
 #include "compat/nss_compat.h"
 
-/* flag to gloabally disable lookups (all _nss_ldap_*() functions will return
+/* flag to globally disable lookups (all _nss_ldap_*() functions will return
    NSS_STATUS_UNAVAIL */
 extern int NSS_NAME(enablelookups);
 
@@ -135,7 +135,7 @@ nss_status_t NSS_NAME(endspent)(void);
 
 #ifdef NSS_FLAVOUR_SOLARIS
 
-/* helper marcos to do casts */
+/* helper macros to do casts */
 #define NSS_ARGS(args) ((nss_XbyY_args_t *)args)
 #define LDAP_BE(be) ((struct nss_ldap_backend*)(be))
 

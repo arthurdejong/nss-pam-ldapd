@@ -162,7 +162,7 @@ nss_status_t NSS_NAME(gethostbyname2_r)(const char *name, int af,
 }
 
 /* this function just calls the gethostbyname2() variant with the address
-   familiy set */
+   family set */
 nss_status_t NSS_NAME(gethostbyname_r)(const char *name,
                                        struct hostent *result, char *buffer,
                                        size_t buflen, int *errnop,
@@ -173,10 +173,10 @@ nss_status_t NSS_NAME(gethostbyname_r)(const char *name,
 }
 
 /* this function looks up a single host entry and returns all the addresses
-   associated with the host in a single address familiy
+   associated with the host in a single address family
    addr            - IN  - the address to look up
    len             - IN  - the size of the addr struct
-   af              - IN  - address familty the address is specified as
+   af              - IN  - address family the address is specified as
    result          - OUT - entry found
    buffer,buflen   - OUT - buffer to store allocated stuff on
    errnop,h_errnop - OUT - for reporting errors */

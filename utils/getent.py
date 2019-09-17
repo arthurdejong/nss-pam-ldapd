@@ -169,7 +169,7 @@ def getent_hosts(database, keys=None):
 
 
 def _read_netgroup(con):
-    """Read netgroup name, members and tripples from stream."""
+    """Read netgroup name, members and triples from stream."""
     name = con.read_string()
     members = []
     tripples = []

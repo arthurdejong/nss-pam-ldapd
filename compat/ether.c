@@ -33,7 +33,7 @@
 
 #include "ether.h"
 
-/* these functions are not really reentrant */
+/* these functions are not really re-entrant */
 
 #ifndef HAVE_ETHER_ATON_R
 struct ether_addr *ether_aton_r(const char *asc, struct ether_addr *addr)

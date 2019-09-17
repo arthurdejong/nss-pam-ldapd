@@ -347,7 +347,7 @@ static void test_timeout_writer(void)
   /* the error should be timeout */
   assert(saved_errno == ETIME);
   /* close the files */
-  assertok(tio_close(wfp) != 0); /* fails because of bufferred data */
+  assertok(tio_close(wfp) != 0); /* fails because of buffered data */
   assertok(fclose(rfp) == 0);
 }
 

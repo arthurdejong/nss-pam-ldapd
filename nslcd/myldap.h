@@ -25,7 +25,7 @@
    out of using the OpenLDAP library. Memory management, paging, reconnect
    logic, idle timeout of connections, etc is taken care of by the module.
 
-   Use of this module is very straightforeward. You first have to create a
+   Use of this module is very straightforward. You first have to create a
    session (with myldap_create_session()), with this session you can start
    searches (with myldap_search()), from a search you can get entries (with
    myldap_get_entry()) from the LDAP database and from these entries you can
@@ -108,7 +108,7 @@ void myldap_search_close(MYLDAP_SEARCH *search);
 /* Get an entry from the result set, going over all results (returns NULL if
    no more entries are available). Note that any memory allocated to return
    information about the previous entry (e.g. with myldap_get_values()) is
-   freed with this call. The search is autoamtically closed when no more
+   freed with this call. The search is automatically closed when no more
    results are available. The function returns an LDAP status code in the
    location pointed to by rcp if it is non-NULL. */
 MUST_USE MYLDAP_ENTRY *myldap_get_entry(MYLDAP_SEARCH *search, int *rcp);
@@ -141,7 +141,7 @@ MUST_USE const char ***myldap_get_deref_values(MYLDAP_ENTRY *entry,
 /* Get the RDN's value: eg. if the DN was cn=lukeh, ou=People, dc=example,
    dc=com getrdnvalue(entry, cn) would return lukeh. If the attribute was not
    found in the DN or if some error occurs NULL is returned. This method may
-   be used to get the "most authorative" value for an attribute. */
+   be used to get the "most authoritative" value for an attribute. */
 MUST_USE const char *myldap_get_rdn_value(MYLDAP_ENTRY *entry, const char *attr);
 
 /* Just like myldap_get_rdn_value() but use the supplied character sequence

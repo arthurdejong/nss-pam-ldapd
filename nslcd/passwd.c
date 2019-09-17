@@ -268,7 +268,7 @@ char *lookup_dn2uid(MYLDAP_SESSION *session, const char *dn, int *rcp,
   return uid;
 }
 
-/* Translate the DN into a user name. This function tries several aproaches
+/* Translate the DN into a user name. This function tries several approaches
    at getting the user name, including looking in the DN for a uid attribute,
    looking in the cache and falling back to looking up a uid attribute in a
    LDAP query. */
