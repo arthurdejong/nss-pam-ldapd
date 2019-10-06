@@ -1,3 +1,11 @@
+changes from 0.9.10 to 0.9.11
+-----------------------------
+
+* add support for Python 3 in pynslcd and utilities
+* fix crash in chsh.ldap (thanks Mizunashi Mana)
+* test suite improvements
+
+
 changes from 0.9.9 to 0.9.10
 ----------------------------
 

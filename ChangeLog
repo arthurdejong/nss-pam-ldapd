@@ -1,6 +1,122 @@
+2019-10-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [69922e3] tests/test_doctest.sh: Fix Python interpreter detection
+	  in tests
+
+	  Fixes 644bc62
+
+2019-10-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [62522b9] tests/test_nsscmds.sh: Portability improvements to
+	  test suite
+
+	  Some test systems have more local users and some systems prefer
+	  IPv4 addresses over IPv6 addresses.
+
+2019-09-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a8f4ed8] NEWS, common/expr.c, common/nslcd-prot.c,
+	  common/nslcd-prot.h, common/tio.c, compat/attrs.h, compat/ether.c,
+	  compat/getopt_long.c, compat/getopt_long.h, compat/getpeercred.h,
+	  compat/nss_compat.h, configure.ac, man/nslcd.conf.5.xml,
+	  nslcd.h, nslcd/attmap.h, nslcd/common.h, nslcd/daemonize.h,
+	  nslcd/invalidator.c, nslcd/myldap.c, nslcd/myldap.h, nslcd/pam.c,
+	  nslcd/passwd.c, nss/common.h, nss/hosts.c, nss/prototypes.h,
+	  pam/common.h, tests/common.h, tests/test_pynslcd_cache.py,
+	  tests/test_tio.c, utils/getent.py: Various spelling fixes
+
+2019-09-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [644bc62] .travis.yml, tests/test_doctest.sh: Fix Python
+	  interpreter detection
+
+	  Apparently some environments provide certain Python executables
+	  which are not working Python interpreters.
+
+2019-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [768c4be] .gitignore, Makefile.am: Remove confinc.out which is
+	  left behind by aclocal.m4
+
+2019-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0252b05] pynslcd/shadow.py: Correctly validate shadow requests
+	  and responses
+
+2019-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cd887ef] pynslcd/Makefile.am, utils/Makefile.am: Update Python
+	  interpreter in installed scripts
+
+	  Ensure that the Python interpreter that is passed to configure
+	  ends up in the shebang of the Python scripts.
+
+	  This allows one to pass PYTHON=python3 to configure to install
+	  the scripts using the Python 3 interpreter.
+
+2019-09-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d717795] .gitignore, pynslcd/alias.py,
+	  pynslcd/attmap.py, pynslcd/cache.py, pynslcd/cfg.py,
+	  pynslcd/common.py, pynslcd/ether.py, pynslcd/expr.py,
+	  pynslcd/group.py, pynslcd/host.py, pynslcd/invalidator.py,
+	  pynslcd/mypidfile.py, pynslcd/netgroup.py, pynslcd/network.py,
+	  pynslcd/pam.py, pynslcd/passwd.py, pynslcd/protocol.py,
+	  pynslcd/pynslcd.py, pynslcd/rpc.py, pynslcd/search.py,
+	  pynslcd/service.py, pynslcd/shadow.py, pynslcd/tio.py,
+	  tests/Makefile.am, tests/flake8.ini, tests/test_flake8.sh,
+	  tests/test_pynslcd_cache.py, utils/chsh.py, utils/getent.py,
+	  utils/nslcd.py, utils/users.py: Improve Python code style
+
+	  This also adds a flake8 test that checks code style. Note that
+	  this test is not run by default because it requires network
+	  access to create the virtualenv with the test software.
+
+2019-09-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [221ce5a] configure.ac, pynslcd/Makefile.am, pynslcd/attmap.py,
+	  pynslcd/cache.py, pynslcd/cfg.py, pynslcd/common.py,
+	  pynslcd/expr.py, pynslcd/invalidator.py, pynslcd/mypidfile.py,
+	  pynslcd/pam.py, pynslcd/pynslcd.py, pynslcd/search.py,
+	  pynslcd/tio.py, pynslcd/usermod.py, tests/Makefile.am,
+	  tests/test_doctest.sh, tests/test_ldapcmds.sh,
+	  tests/test_pycompile.sh, tests/test_pylint.sh,
+	  tests/test_pynslcd_cache.py, utils/Makefile.am, utils/getent.py,
+	  utils/nslcd.py: Add Python 3 support
+
+	  This ensures that both pynslcd and the command-line utilities
+	  work with Python3 as interpreter and runs some tests with all
+	  installed Python interpreters.
+
+	  This drops support for Python 2.6 and extends 5a84be2 to perform
+	  more testing with Python 3.
+
+2018-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [06ee886] nslcd/nslcd.c: Avoid logging unknown socket peer
+	  information
+
+	  This avoids logging the client PID when the underlying socker
+	  layer cannot provide the relevant information.
+
+2018-09-05  Mizunashi Mana <mizunashi-mana@noreply.git>
+
+	* [bfcf002] utils/shells.py: Fix crash in chsh.ldap
+
+	  Specify result type of getusershell.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/pull/31
+
 2018-09-01  Arthur de Jong <arthur@arthurdejong.org>
 
-	* [4f0f4db] ar-lib, compile, config.guess, config.sub, depcomp,
+	* [bfe0696] AUTHORS, ChangeLog, NEWS, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml:
+	  Get files ready for 0.9.10 release
+
+2018-09-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [acc450e] ar-lib, compile, config.guess, config.sub, depcomp,
 	  install-sh, missing, mkinstalldirs, py-compile, test-driver:
 	  Update files from latest automake
 

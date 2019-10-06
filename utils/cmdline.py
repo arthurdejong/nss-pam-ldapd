@@ -2,7 +2,7 @@
 
 # cmdline.py - functions for handling command-line options
 #
-# Copyright (C) 2013-2017 Arthur de Jong
+# Copyright (C) 2013-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,7 @@ version_string = '''
 %s
 Written by Arthur de Jong.
 
-Copyright (C) 2013-2017 Arthur de Jong
+Copyright (C) 2013-2019 Arthur de Jong
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 '''.strip() % constants.PACKAGE_STRING

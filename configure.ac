@@ -33,10 +33,10 @@ configure.ac file for more details.])
 
 # initialize and set version and bugreport address
 AC_INIT([nss-pam-ldapd],
-        [0.9.10],
+        [0.9.11],
         [nss-pam-ldapd-users@lists.arthurdejong.org],,
         [https://arthurdejong.org/nss-pam-ldapd/])
-RELEASE_MONTH="Sep 2018"
+RELEASE_MONTH="Oct 2018"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])
 AC_CONFIG_MACRO_DIR([m4])
