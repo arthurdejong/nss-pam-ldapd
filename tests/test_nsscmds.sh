@@ -166,7 +166,7 @@ check "getent group 6100 | sortgroup" << EOM
 testgroup:*:6100:arthur,test,testuser4
 EOM
 
-check "groups arthur | sed 's/^.*://'" << EOM
+check "groups arthur | sed 's/^.* *: *//' | sed 's/ debci//'" << EOM
 users testgroup testgroup2 grp4 grp5 grp6 grp7 grp8 grp9 grp10 grp11 grp12 grp13 grp14 grp15 grp16 grp17 grp18
 EOM
 
@@ -255,13 +255,14 @@ check "getent hosts 2001:db8::dead:beef" << EOM
 2001:db8::dead:beef testhost2
 EOM
 
-check "getent ahosts testhost2" << EOM
-2001:db8::dead:beef STREAM testhost2
-2001:db8::dead:beef DGRAM
-2001:db8::dead:beef RAW
-192.0.2.124     STREAM
+# some systems prefer IPv4, others IPv6
+check "getent ahosts testhost2 | sed 's/ testhost2//' | sort" << EOM
 192.0.2.124     DGRAM
 192.0.2.124     RAW
+192.0.2.124     STREAM
+2001:db8::dead:beef DGRAM
+2001:db8::dead:beef RAW
+2001:db8::dead:beef STREAM
 EOM
 
 check "getent hosts testhost3" << EOM
@@ -274,13 +275,14 @@ check "getent ahosts testhost3" << EOM
 2001:db8::feed:c0de RAW
 EOM
 
-check "getent ahosts testhost4" << EOM
-2001:db8::7e27:ac1d STREAM testhost4
-2001:db8::7e27:ac1d DGRAM
-2001:db8::7e27:ac1d RAW
-192.0.2.126     STREAM
+# some systems prefer IPv4, others IPv6
+check "getent ahosts testhost4 | sed 's/ testhost4//' | sort" << EOM
 192.0.2.126     DGRAM
 192.0.2.126     RAW
+192.0.2.126     STREAM
+2001:db8::7e27:ac1d DGRAM
+2001:db8::7e27:ac1d RAW
+2001:db8::7e27:ac1d STREAM
 EOM
 
 fi  # end of hosts tests
