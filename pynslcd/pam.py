@@ -42,8 +42,10 @@ def authenticate(binddn, password):
     # open a new connection
     conn = search.Connection()
     # bind using the specified credentials
-    pwctrl = PasswordPolicyControl()
-    res, data, msgid, ctrls = conn.simple_bind_s(binddn, password, serverctrls=[pwctrl])
+    serverctrls = []
+    if cfg.pam_authc_ppolicy:
+        serverctrls.append(PasswordPolicyControl())
+    res, data, msgid, ctrls = conn.simple_bind_s(binddn, password, serverctrls=serverctrls)
     # go over bind result server controls
     for ctrl in ctrls:
         if ctrl.controlType == PasswordPolicyControl.controlType:

@@ -87,6 +87,7 @@ nss_nested_groups = False
 nss_getgrent_skipmembers = False
 nss_disable_enumeration = False
 validnames = re.compile(r'^[a-z0-9._@$][a-z0-9._@$ \\~-]{0,98}[a-z0-9._@$~-]$', re.IGNORECASE)
+pam_authc_ppolicy = True
 pam_authz_searches = []
 pam_password_prohibit_message = None
 reconnect_invalidate = set()
@@ -184,7 +185,7 @@ def read(filename):  # noqa: C901 (many simple branches)
         # parse options with a single boolean argument
         m = re.match(
             r'(?P<keyword>referrals|nss_nested_groups|nss_getgrent_skipmembers|'
-            r'nss_disable_enumeration)\s+(?P<value>%s)' % (
+            r'nss_disable_enumeration|pam_authc_ppolicy)\s+(?P<value>%s)' % (
                 '|'.join(_boolean_options.keys())),
             line, re.IGNORECASE)
         if m:
