@@ -43,11 +43,11 @@ parser.add_argument('username', metavar='USER', nargs='?',
 def ask_shell(oldshell):
     """Ask the user to provide a shell."""
     # Provide Python 2 compatibility
+    prompt = '  Login Shell [%s]: ' % oldshell
     try:
-        input = raw_input
+        shell = raw_input(prompt)
     except NameError:
-        pass
-    shell = input('  Login Shell [%s]: ' % oldshell)
+        shell = input(prompt)
     return shell or oldshell
 
 

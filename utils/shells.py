@@ -35,7 +35,7 @@ def list_shells():
         shell = getusershell()
         if not shell:
             break
-        yield shell
+        yield shell.decode('utf-8')
     libc.endusershell()
 
 
