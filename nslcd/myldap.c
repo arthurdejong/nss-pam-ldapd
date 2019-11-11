@@ -911,17 +911,17 @@ static int do_set_options(MYLDAP_SESSION *session)
   tv.tv_usec = 0;
 #ifdef LDAP_OPT_TIMEOUT
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_TIMEOUT,%d)",
-          nslcd_cfg->timelimit);
+          nslcd_cfg->bind_timelimit);
   LDAP_SET_OPTION(session->ld, LDAP_OPT_TIMEOUT, &tv);
 #endif /* LDAP_OPT_TIMEOUT */
 #ifdef LDAP_OPT_NETWORK_TIMEOUT
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_NETWORK_TIMEOUT,%d)",
-          nslcd_cfg->timelimit);
+          nslcd_cfg->bind_timelimit);
   LDAP_SET_OPTION(session->ld, LDAP_OPT_NETWORK_TIMEOUT, &tv);
 #endif /* LDAP_OPT_NETWORK_TIMEOUT */
 #ifdef LDAP_X_OPT_CONNECT_TIMEOUT
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_X_OPT_CONNECT_TIMEOUT,%d)",
-          nslcd_cfg->timelimit);
+          nslcd_cfg->bind_timelimit);
   LDAP_SET_OPTION(session->ld, LDAP_X_OPT_CONNECT_TIMEOUT, &tv);
 #endif /* LDAP_X_OPT_CONNECT_TIMEOUT */
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_REFERRALS,%s)",
