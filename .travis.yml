@@ -1,9 +1,31 @@
-language: c
-sudo: required
-os:
-  - linux
-compiler:
-  - gcc
+sudo: true
+language: python
+
+matrix:
+  include:
+    - os: linux
+      dist: bionic
+      python: 3.7
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-bionic-8
+            - ubuntu-toolchain-r-test
+      env:
+        - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
+    - os: linux
+      dist: bionic
+      python: 3.7
+      compiler: gcc
+    - os: linux
+      dist: xenial
+      python: 3.6
+      compiler: gcc
+    - os: linux
+      dist: xenial
+      python: 2.7
+      compiler: gcc
+
 addons:
   apt:
     packages:
