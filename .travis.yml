@@ -5,14 +5,27 @@ matrix:
   include:
     - os: linux
       dist: bionic
-      python: 3.7
+      python: 3.8
       addons:
         apt:
           sources:
             - llvm-toolchain-bionic-8
             - ubuntu-toolchain-r-test
+          packages:
+            - clang-8
+            - docbook-xml
+            - docbook2x
+            - expect
+            - ldap-utils
+            - libkrb5-dev
+            - libldap2-dev
+            - libpam0g-dev
+            - libsasl2-dev
+            - slapd
+            - xmlto
       env:
-        - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
+        - CC=clang-8
+        - CXX=clang++-8
     - os: linux
       dist: bionic
       python: 3.7
