@@ -37,14 +37,12 @@ addons:
       - libldap2-dev
       - libpam0g-dev
       - libsasl2-dev
-      - python
-      - python-daemon
-      - python-ldap
-      - python-pyasn1
-      - python-pyasn1-modules
       - slapd
       - xmlto
-      - pylint
+
+install:
+  - pip install pylint python-daemon python-ldap pyasn1 pyasn1-modules
+
 script:
   # Build the package
   - ./autogen.sh
