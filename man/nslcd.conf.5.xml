@@ -514,7 +514,7 @@
      <term><option>idle_timelimit</option> <replaceable>SECONDS</replaceable></term>
      <listitem>
       <para>
-       Specifies the period if inactivity (in seconds) after which the
+       Specifies the period of inactivity (in seconds) after which the
        connection to the <acronym>LDAP</acronym> server will be closed.
        The default is not to time out connections.
       </para>
