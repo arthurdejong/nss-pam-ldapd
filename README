@@ -201,7 +201,7 @@ CONFIGURATION
 
 After installation, the name service switch configuration file
 (/etc/nsswitch.conf) needs to be modified to do name lookups using the new
-module. This consist mostly of adding ldap in the list of lookup methods in
+module. This consists mostly of adding ldap in the list of lookup methods in
 the right place. See the nsswitch.conf(5) manual page for details on the
 format. As an example the file could look a little like this:
 
