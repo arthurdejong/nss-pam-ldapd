@@ -53,6 +53,7 @@ sasl_canonicalize = None  # FIXME: add support
 # GSS-API configuration
 krb5_ccname = None  # FIXME: add support
 krb5_keytab = None  # FIXME: add support
+krb5_gssproxy = False  # FIXME: add support
 
 # LDAP bases to search
 bases = []
@@ -204,8 +205,8 @@ def read(filename):  # noqa: C901 (many simple branches)
         m = re.match(
             r'(?P<keyword>binddn|rootpwmoddn|sasl_realm|sasl_authcid|'
             r'sasl_authzid|sasl_secprops|krb5_ccname|krb5_keytab|'
-            r'tls_cacertdir|tls_cacertfile|tls_randfile|tls_ciphers|'
-            r'tls_cert|tls_key|pam_password_prohibit_message)'
+            r'krb5_gssproxy|tls_cacertdir|tls_cacertfile|tls_randfile|'
+            r'tls_ciphers|tls_cert|tls_key|pam_password_prohibit_message)'
             r'\s+(?P<value>\S.*)',
             line, re.IGNORECASE)
         if m:

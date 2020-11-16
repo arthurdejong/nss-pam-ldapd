@@ -1539,6 +1539,12 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       handle_krb5_ktname(filename, lnr, keyword, line);
     }
+    else if (strcasecmp(keyword, "krb5_gssproxy") == 0)
+    {
+      if (get_boolean(filename, lnr, keyword, &line))
+        putenv("GSS_USE_PROXY=1");
+      get_eol(filename, lnr, keyword, &line);
+    }
     /* search/mapping options */
     else if (strcasecmp(keyword, "base") == 0)
     {
@@ -1914,6 +1920,9 @@ static void cfg_dump(void)
   str = getenv("KRB5_CLIENT_KTNAME");
   if (str != NULL)
     log_log(LOG_DEBUG, "CFG: krb5_ktname %s", str);
+  str = getenv("GSS_USE_PROXY");
+  if (str != NULL)
+    log_log(LOG_DEBUG, "CFG: krb5_gssproxy %s", str);
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
     if (nslcd_cfg->bases[i] != NULL)
       log_log(LOG_DEBUG, "CFG: base %s", nslcd_cfg->bases[i][0] == '\0' ? "\"\"" : nslcd_cfg->bases[i]);
