@@ -885,6 +885,44 @@ static const char *print_tls_reqcert(int value)
     default:                    return "???";
   }
 }
+
+static void handle_tls_crlcheck(const char *filename, int lnr,
+                               const char *keyword, char *line)
+{
+  char token[16];
+  int value, rc;
+  /* get token */
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(&line, token, sizeof(token)) != NULL);
+  get_eol(filename, lnr, keyword, &line);
+  /* check if it is a valid value for tls_crlcheck option */
+  if (strcasecmp(token, "none") == 0)
+    value = LDAP_OPT_X_TLS_CRL_NONE;
+  else if (strcasecmp(token, "peer") == 0)
+    value = LDAP_OPT_X_TLS_CRL_PEER;
+  else if (strcasecmp(token, "all") == 0)
+    value = LDAP_OPT_X_TLS_CRL_ALL;
+  else
+  {
+    log_log(LOG_ERR, "%s:%d: %s: invalid argument: '%s'",
+            filename, lnr, keyword, token);
+    exit(EXIT_FAILURE);
+  }
+  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CRLCHECK,%s)", token);
+  LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CRLCHECK, &value);
+}
+
+static const char *print_tls_crlcheck(int value)
+{
+  switch (value)
+  {
+    case LDAP_OPT_X_TLS_CRL_NONE:  return "none";
+    case LDAP_OPT_X_TLS_CRL_PEER:  return "peer";
+    case LDAP_OPT_X_TLS_CRL_ALL:   return "all";
+    default:                       return "???";
+  }
+}
+
 #endif /* LDAP_OPT_X_TLS */
 
 /* this function modifies the line argument passed */
@@ -1511,6 +1549,10 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CACERTDIR, value);
       free(value);
     }
+    else if (strcasecmp(keyword, "tls_crlcheck") == 0)
+    {
+      handle_tls_crlcheck(filename, lnr, keyword, line);
+    }
     else if ((strcasecmp(keyword, "tls_cacertfile") == 0) ||
              (strcasecmp(keyword, "tls_cacert") == 0))
     {
@@ -1836,6 +1878,11 @@ static void cfg_dump(void)
     log_log(LOG_DEBUG, "CFG: # tls_reqcert ERROR: %s", ldap_err2string(rc));
   else
     log_log(LOG_DEBUG, "CFG: tls_reqcert %s", print_tls_reqcert(i));
+  rc = ldap_get_option(NULL, LDAP_OPT_X_TLS_CRLCHECK, &i);
+  if (rc != LDAP_SUCCESS)
+    log_log(LOG_DEBUG, "CFG: # tls_crlcheck ERROR: %s", ldap_err2string(rc));
+  else
+    log_log(LOG_DEBUG, "CFG: tls_crlcheck %s", print_tls_crlcheck(i));
   #define LOG_LDAP_OPT_STRING(cfg, option)                                  \
     str = NULL;                                                             \
     rc = ldap_get_option(NULL, option, &str);                               \
