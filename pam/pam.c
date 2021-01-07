@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <regex.h>
 
 /* these are defined (before including pam_modules.h) for staticly linking */
 #define PAM_SM_AUTH
@@ -150,7 +151,114 @@ struct pld_cfg {
   int ignore_authinfo_unavail;
   int debug;
   uid_t minimum_uid;
+  /* username extraction parameters */
+  int     extract_username;
+  char   *extract_username_regex_str;
+  regex_t extract_username_regex;
+  int     extract_username_regex_group;
+  int     extract_username_required;
 };
+
+static char *get_regex_error(int errcode, const regex_t *pattern)
+{
+  char *errbuf;
+  int   errbuf_size;
+  errbuf_size = regerror(errcode, pattern, NULL, 0);
+  errbuf = malloc(errbuf_size);
+  if (errbuf != NULL) {
+    regerror(errcode, pattern, errbuf, errbuf_size);
+  }
+  return errbuf;
+}
+
+static int setup_extract_username(pam_handle_t *pamh,
+                                  const char *value,
+                                  struct pld_cfg *cfg)
+{
+  int rc;
+  int eflags = REG_EXTENDED;
+  char *error_msg;
+  regex_t preg;
+  size_t nmatch = 4;
+  regmatch_t pmatch[4];
+  /* parse extract_username expression */
+  regcomp(&preg, "^(\\d{0,1})\\/(.*)\\/(i?)$", REG_EXTENDED);
+  if ((rc = regexec(&preg, value, nmatch, pmatch, 0)) == 0)
+  {
+    /* group index */
+    if (pmatch[1].rm_so == 0 && (pmatch[1].rm_eo - pmatch[1].rm_so) > 0)
+      cfg->extract_username_regex_group = atoi(&value[pmatch[1].rm_so]);
+    /* extraction pattern */
+    if (pmatch[2].rm_so >= 1)
+      cfg->extract_username_regex_str = strndup(value + pmatch[2].rm_so, pmatch[2].rm_eo - pmatch[2].rm_so);
+    /* flags */
+    if (pmatch[3].rm_so >= 2 && (pmatch[3].rm_eo - pmatch[3].rm_so) > 0)
+      eflags |= REG_ICASE;
+  }
+  else
+  {
+    pam_syslog(pamh, LOG_ERR, "extract_username: invalid configuration: %s", value);
+    rc = EXIT_FAILURE;
+  }
+  regfree(&preg);
+  if (rc == 0 && (rc = regcomp(&cfg->extract_username_regex, cfg->extract_username_regex_str, eflags)) == 0)
+  {
+    if (cfg->extract_username_regex_group <= cfg->extract_username_regex.re_nsub)
+    {
+      cfg->extract_username = 1;
+      pam_syslog(pamh, LOG_DEBUG, "extract_username: regular expression: %s%s, group: %d",
+                 cfg->extract_username_regex_str,
+                 ((eflags & REG_ICASE) == REG_ICASE) ? " (case-insensitive)" : "",
+                 cfg->extract_username_regex_group);
+    }
+    else
+    {
+      pam_syslog(pamh, LOG_ERR, "extract_username: requested capturing group number (%d) exceeds the number of detected groups (%lu)",
+                 cfg->extract_username_regex_group,
+                 cfg->extract_username_regex.re_nsub);
+      rc = EXIT_FAILURE;           
+    }
+  }
+  else
+  {
+    error_msg = get_regex_error(rc, &cfg->extract_username_regex);
+    pam_syslog(pamh, LOG_ERR, "extract_username: error parsing regular expression: %s", error_msg);
+    pam_syslog(pamh, LOG_ERR, "extract_username: invalid regular expression: %s", cfg->extract_username_regex_str);
+    free(error_msg);
+    rc = EXIT_FAILURE;
+  }
+  if (rc != 0)
+    pam_syslog(pamh, LOG_ERR, "extract_username: username extraction disabled");
+  return rc;
+}
+
+static int extract_username(pam_handle_t *pamh,
+                            const char **username,
+                            struct pld_cfg *cfg)
+{
+  int rc;
+  int g = cfg->extract_username_regex_group;
+  char *error_msg;
+  size_t nmatch = g + 1;
+  regmatch_t pmatch[9 + 1];
+  if ((rc = regexec(&cfg->extract_username_regex, *username, nmatch, pmatch, 0)) == 0)
+  { 
+    if (pmatch[g].rm_so >= 0)
+    {
+      *username = strndup(*username + pmatch[g].rm_so, pmatch[g].rm_eo - pmatch[g].rm_so);
+      rc = EXIT_SUCCESS;
+    }
+  }
+  else
+  {
+    error_msg = get_regex_error(rc, &cfg->extract_username_regex);
+    pam_syslog(pamh, LOG_NOTICE, "extract_username: error executing regular expression: %s", error_msg);
+    pam_syslog(pamh, LOG_NOTICE, "extract_username: failed to extract username from [%s]", *username);
+    free(error_msg);
+    rc = EXIT_FAILURE;
+  }
+  return rc;
+}
 
 static void cfg_init(pam_handle_t *pamh, int flags,
                      int argc, const char **argv,
@@ -164,6 +272,10 @@ static void cfg_init(pam_handle_t *pamh, int flags,
   cfg->ignore_authinfo_unavail = 0;
   cfg->debug = 0;
   cfg->minimum_uid = 0;
+  cfg->extract_username = 0;
+  cfg->extract_username_regex_str = NULL;
+  cfg->extract_username_regex_group = 1;
+  cfg->extract_username_required = 0;
   /* go over arguments */
   for (i = 0; i < argc; i++)
   {
@@ -185,6 +297,10 @@ static void cfg_init(pam_handle_t *pamh, int flags,
       cfg->debug = 1;
     else if (strncmp(argv[i], "minimum_uid=", 12) == 0)
       cfg->minimum_uid = (uid_t)atoi(argv[i] + 12);
+    else if (strncmp(argv[i], "extract_username=", 17) == 0)
+      setup_extract_username(pamh, argv[i] + 17, cfg);
+    else if (strcmp(argv[i], "extract_username_required") == 0)
+      cfg->extract_username_required = 1;
     else
       pam_syslog(pamh, LOG_ERR, "unknown option: %s", argv[i]);
   }
@@ -206,6 +322,27 @@ static int init(pam_handle_t *pamh, struct pld_cfg *cfg, struct pld_ctx **ctx,
     pam_syslog(pamh, LOG_ERR, "failed to get user name: %s", pam_strerror(pamh, rc));
     return rc;
   }
+  /* extract username */
+  if (cfg->extract_username)
+  {
+    if (extract_username(pamh, username, cfg) == 0)
+    {
+      pam_syslog(pamh, LOG_INFO, "extracted username: %s", *username);
+    }
+    else
+    {
+      if (cfg->extract_username_required)
+      {
+        pam_syslog(pamh, LOG_ERR, "failed to extract username");
+        return PAM_USER_UNKNOWN;
+      }
+      else
+      {
+        pam_syslog(pamh, LOG_NOTICE, "failed to extract username, continue with [%s]", *username);
+      }
+    }
+  }
+  /* check username */
   if ((*username == NULL) || ((*username)[0] == '\0'))
   {
     pam_syslog(pamh, LOG_ERR, "got empty user name");
