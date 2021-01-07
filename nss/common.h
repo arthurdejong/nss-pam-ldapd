@@ -31,6 +31,15 @@
 #include "compat/attrs.h"
 #include "compat/nss_compat.h"
 
+/* Tolerate missing definitions for NETDB_INTERNAL and NETDB_SUCCESS */
+#ifndef NETDB_INTERNAL
+#define NETDB_INTERNAL -1
+#endif
+
+#ifndef NETDB_SUCCESS
+#define NETDB_SUCCESS 0
+#endif
+
 #ifdef NSS_FLAVOUR_SOLARIS
 #include "solnss.h"
 #endif /* NSS_FLAVOUR_SOLARIS */
