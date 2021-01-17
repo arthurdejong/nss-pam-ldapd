@@ -45,7 +45,8 @@ DISTCLEANFILES = confinc.out
 DISTCHECK_CONFIGURE_FLAGS = --enable-warnings --enable-pynslcd --enable-utils \
                             --with-pam-seclib-dir="\$${libdir}/security" \
                             --with-ldap-conf-file="\$${prefix}/nslcd.conf" \
-                            CPPFLAGS=$(CPPFLAGS) LDFLAGS=$(LDFLAGS)
+                            CPPFLAGS=$(CPPFLAGS) LDFLAGS=$(LDFLAGS) \
+                            PYTHON=$(PYTHON)
 
 ACLOCAL_AMFLAGS = -I m4
 
