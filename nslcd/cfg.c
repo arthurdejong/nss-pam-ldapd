@@ -885,6 +885,45 @@ static const char *print_tls_reqcert(int value)
     default:                    return "???";
   }
 }
+
+#ifdef LDAP_OPT_X_TLS_CRLCHECK
+static void handle_tls_crlcheck(const char *filename, int lnr,
+                               const char *keyword, char *line)
+{
+  char token[16];
+  int value, rc;
+  /* get token */
+  check_argumentcount(filename, lnr, keyword,
+                      get_token(&line, token, sizeof(token)) != NULL);
+  get_eol(filename, lnr, keyword, &line);
+  /* check if it is a valid value for tls_crlcheck option */
+  if (strcasecmp(token, "none") == 0)
+    value = LDAP_OPT_X_TLS_CRL_NONE;
+  else if (strcasecmp(token, "peer") == 0)
+    value = LDAP_OPT_X_TLS_CRL_PEER;
+  else if (strcasecmp(token, "all") == 0)
+    value = LDAP_OPT_X_TLS_CRL_ALL;
+  else
+  {
+    log_log(LOG_ERR, "%s:%d: %s: invalid argument: '%s'",
+            filename, lnr, keyword, token);
+    exit(EXIT_FAILURE);
+  }
+  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CRLCHECK,%s)", token);
+  LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CRLCHECK, &value);
+}
+
+static const char *print_tls_crlcheck(int value)
+{
+  switch (value)
+  {
+    case LDAP_OPT_X_TLS_CRL_NONE:  return "none";
+    case LDAP_OPT_X_TLS_CRL_PEER:  return "peer";
+    case LDAP_OPT_X_TLS_CRL_ALL:   return "all";
+    default:                       return "???";
+  }
+}
+#endif /* LDAP_OPT_X_TLS_CRLCHECK */
 #endif /* LDAP_OPT_X_TLS */
 
 /* this function modifies the line argument passed */
@@ -1560,6 +1599,12 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_KEYFILE, value);
       free(value);
     }
+#ifdef LDAP_OPT_X_TLS_CRLCHECK
+    else if (strcasecmp(keyword, "tls_crlcheck") == 0)
+    {
+      handle_tls_crlcheck(filename, lnr, keyword, line);
+    }
+#endif /* LDAP_OPT_X_TLS_CRLCHECK */
 #endif /* LDAP_OPT_X_TLS */
     /* other options */
     else if (strcasecmp(keyword, "pagesize") == 0)
@@ -1851,6 +1896,13 @@ static void cfg_dump(void)
   LOG_LDAP_OPT_STRING("tls_ciphers", LDAP_OPT_X_TLS_CIPHER_SUITE);
   LOG_LDAP_OPT_STRING("tls_cert", LDAP_OPT_X_TLS_CERTFILE);
   LOG_LDAP_OPT_STRING("tls_key", LDAP_OPT_X_TLS_KEYFILE);
+#ifdef LDAP_OPT_X_TLS_CRLCHECK
+  rc = ldap_get_option(NULL, LDAP_OPT_X_TLS_CRLCHECK, &i);
+  if (rc != LDAP_SUCCESS)
+    log_log(LOG_DEBUG, "CFG: # tls_crlcheck ERROR: %s", ldap_err2string(rc));
+  else
+    log_log(LOG_DEBUG, "CFG: tls_crlcheck %s", print_tls_crlcheck(i));
+#endif /* LDAP_OPT_X_TLS_CRLCHECK */
 #endif /* LDAP_OPT_X_TLS */
   log_log(LOG_DEBUG, "CFG: pagesize %d", nslcd_cfg->pagesize);
   if (nslcd_cfg->nss_initgroups_ignoreusers != NULL)

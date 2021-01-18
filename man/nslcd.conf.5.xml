@@ -656,6 +656,19 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="tls_crlcheck"> <!-- since 0.9.12 -->
+     <term><option>tls_crlcheck</option> <replaceable>none|peer|all</replaceable></term>
+     <listitem>
+      <para>
+       Specifies if the Certificate Revocation List (CRL) of the CA should
+       be used to verify if the server certificates have not been revoked.
+       The meaning of the values is described in the
+       <citerefentry><refentrytitle>ldap.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+       manual page.
+      </para>
+     </listitem>
+    </varlistentry>
+
    </variablelist>
   </refsect2>
 
