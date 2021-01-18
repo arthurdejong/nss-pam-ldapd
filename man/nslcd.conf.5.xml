@@ -655,6 +655,22 @@
       </para>
      </listitem>
     </varlistentry>
+    
+    <varlistentry id="tls_crlcheck"> <!-- since TBD -->
+     <term><option>tls_crlcheck</option> <replaceable>none|peer|all</replaceable></term>
+     <listitem>
+      <para>
+       Specifies if the Certificate Revocation List (CRL) of the CA should 
+       be used to verify if the server certicates have not been revoked.       
+       The meaning of the values is described in the
+       <citerefentry><refentrytitle>ldap.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+       manual page.
+       This requires <option>tls_cacertdir</option> parameter to be set.
+       This parameter is ignored when using GnuTLS.
+       <acronym>TLS</acronym> authentication.
+      </para>
+     </listitem>
+    </varlistentry>       
 
    </variablelist>
   </refsect2>
