@@ -1599,12 +1599,32 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_KEYFILE, value);
       free(value);
     }
-#ifdef LDAP_OPT_X_TLS_CRLCHECK
     else if (strcasecmp(keyword, "tls_crlcheck") == 0)
     {
+#ifdef LDAP_OPT_X_TLS_CRLCHECK
       handle_tls_crlcheck(filename, lnr, keyword, line);
-    }
+#else /* not LDAP_OPT_X_TLS_CRLCHECK */
+      log_log(LOG_ERR, "%s:%d: option %s not supported on platform",
+              filename, lnr, keyword);
+      exit(EXIT_FAILURE);
 #endif /* LDAP_OPT_X_TLS_CRLCHECK */
+    }
+    else if (strcasecmp(keyword, "tls_crlfile") == 0)
+    {
+#ifdef LDAP_OPT_X_TLS_CRLFILE
+      value = get_strdup(filename, lnr, keyword, &line);
+      get_eol(filename, lnr, keyword, &line);
+      check_readable(filename, lnr, keyword, value);
+      log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CRLFILE,\"%s\")",
+              value);
+      LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CRLFILE, value);
+      free(value);
+#else /* not LDAP_OPT_X_TLS_CRLFILE */
+      log_log(LOG_ERR, "%s:%d: option %s not supported on platform",
+              filename, lnr, keyword);
+      exit(EXIT_FAILURE);
+#endif /* LDAP_OPT_X_TLS_CRLFILE */
+    }
 #endif /* LDAP_OPT_X_TLS */
     /* other options */
     else if (strcasecmp(keyword, "pagesize") == 0)
