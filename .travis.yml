@@ -1,9 +1,44 @@
-language: c
-sudo: required
-os:
-  - linux
-compiler:
-  - gcc
+sudo: true
+language: python
+
+matrix:
+  include:
+    - os: linux
+      dist: bionic
+      python: 3.8
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-bionic-8
+            - ubuntu-toolchain-r-test
+          packages:
+            - clang-8
+            - docbook-xml
+            - docbook2x
+            - expect
+            - ldap-utils
+            - libkrb5-dev
+            - libldap2-dev
+            - libpam0g-dev
+            - libsasl2-dev
+            - slapd
+            - xmlto
+      env:
+        - CC=clang-8
+        - CXX=clang++-8
+    - os: linux
+      dist: bionic
+      python: 3.7
+      compiler: gcc
+    - os: linux
+      dist: xenial
+      python: 3.6
+      compiler: gcc
+    - os: linux
+      dist: xenial
+      python: 2.7
+      compiler: gcc
+
 addons:
   apt:
     packages:
@@ -15,14 +50,12 @@ addons:
       - libldap2-dev
       - libpam0g-dev
       - libsasl2-dev
-      - python
-      - python-daemon
-      - python-ldap
-      - python-pyasn1
-      - python-pyasn1-modules
       - slapd
       - xmlto
-      - pylint
+
+install:
+  - pip install pylint python-daemon python-ldap pyasn1 pyasn1-modules
+
 script:
   # Build the package
   - ./autogen.sh
