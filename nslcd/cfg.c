@@ -842,35 +842,30 @@ static const char *print_ssl(int ssl)
   }
 }
 
-static void handle_tls_reqcert(const char *filename, int lnr,
-                               const char *keyword, char *line)
+static int get_tls_reqcert(const char *filename, int lnr,
+                           const char *keyword, char **line)
 {
   char token[16];
-  int value, rc;
-  /* get token */
   check_argumentcount(filename, lnr, keyword,
-                      get_token(&line, token, sizeof(token)) != NULL);
-  get_eol(filename, lnr, keyword, &line);
+                      get_token(line, token, sizeof(token)) != NULL);
   /* check if it is a valid value for tls_reqcert option */
   if ((strcasecmp(token, "never") == 0) || (strcasecmp(token, "no") == 0))
-    value = LDAP_OPT_X_TLS_NEVER;
+    return LDAP_OPT_X_TLS_NEVER;
   else if (strcasecmp(token, "allow") == 0)
-    value = LDAP_OPT_X_TLS_ALLOW;
+    return LDAP_OPT_X_TLS_ALLOW;
   else if (strcasecmp(token, "try") == 0)
-    value = LDAP_OPT_X_TLS_TRY;
+    return LDAP_OPT_X_TLS_TRY;
   else if ((strcasecmp(token, "demand") == 0) ||
            (strcasecmp(token, "yes") == 0))
-    value = LDAP_OPT_X_TLS_DEMAND;
+    return LDAP_OPT_X_TLS_DEMAND;
   else if (strcasecmp(token, "hard") == 0)
-    value = LDAP_OPT_X_TLS_HARD;
+    return LDAP_OPT_X_TLS_HARD;
   else
   {
     log_log(LOG_ERR, "%s:%d: %s: invalid argument: '%s'",
             filename, lnr, keyword, token);
     exit(EXIT_FAILURE);
   }
-  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%s)", token);
-  LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_REQUIRE_CERT, &value);
 }
 
 static const char *print_tls_reqcert(int value)
@@ -885,6 +880,30 @@ static const char *print_tls_reqcert(int value)
     default:                    return "???";
   }
 }
+
+static void handle_tls_reqcert(const char *filename, int lnr,
+                               const char *keyword, char *line)
+{
+  int value, rc;
+  value = get_tls_reqcert(filename, lnr, keyword, &line);
+  get_eol(filename, lnr, keyword, &line);
+  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%s)",
+          print_tls_reqcert(value));
+  LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_REQUIRE_CERT, &value);
+}
+
+#ifdef LDAP_OPT_X_TLS_REQUIRE_SAN
+static void handle_tls_reqsan(const char *filename, int lnr,
+                                   const char *keyword, char *line)
+{
+  int value, rc;
+  value = get_tls_reqcert(filename, lnr, keyword, &line);
+  get_eol(filename, lnr, keyword, &line);
+  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_SAN,%s)",
+          print_tls_reqcert(value));
+  LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_REQUIRE_SAN, &value);
+}
+#endif /* LDAP_OPT_X_TLS_REQUIRE_SAN */
 
 #ifdef LDAP_OPT_X_TLS_CRLCHECK
 static void handle_tls_crlcheck(const char *filename, int lnr,
@@ -1599,6 +1618,16 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_KEYFILE, value);
       free(value);
     }
+    else if (strcasecmp(keyword, "tls_reqsan") == 0)
+    {
+#ifdef LDAP_OPT_X_TLS_REQUIRE_SAN
+      handle_tls_reqsan(filename, lnr, keyword, line);
+#else /* not LDAP_OPT_X_TLS_REQUIRE_SAN */
+      log_log(LOG_ERR, "%s:%d: option %s not supported on platform",
+              filename, lnr, keyword);
+      exit(EXIT_FAILURE);
+#endif /* LDAP_OPT_X_TLS_REQUIRE_SAN */
+    }
     else if (strcasecmp(keyword, "tls_crlcheck") == 0)
     {
 #ifdef LDAP_OPT_X_TLS_CRLCHECK
@@ -1916,6 +1945,13 @@ static void cfg_dump(void)
   LOG_LDAP_OPT_STRING("tls_ciphers", LDAP_OPT_X_TLS_CIPHER_SUITE);
   LOG_LDAP_OPT_STRING("tls_cert", LDAP_OPT_X_TLS_CERTFILE);
   LOG_LDAP_OPT_STRING("tls_key", LDAP_OPT_X_TLS_KEYFILE);
+#ifdef LDAP_OPT_X_TLS_REQUIRE_SAN
+  rc = ldap_get_option(NULL, LDAP_OPT_X_TLS_REQUIRE_SAN, &i);
+  if (rc != LDAP_SUCCESS)
+    log_log(LOG_DEBUG, "CFG: # tls_reqsan ERROR: %s", ldap_err2string(rc));
+  else
+    log_log(LOG_DEBUG, "CFG: tls_reqsan %s", print_tls_reqcert(i));
+#endif /* LDAP_OPT_X_TLS_REQUIRE_SAN */
 #ifdef LDAP_OPT_X_TLS_CRLCHECK
   rc = ldap_get_option(NULL, LDAP_OPT_X_TLS_CRLCHECK, &i);
   if (rc != LDAP_SUCCESS)

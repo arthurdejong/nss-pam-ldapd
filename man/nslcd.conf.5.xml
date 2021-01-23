@@ -656,6 +656,19 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="tls_reqsan"> <!-- since 0.9.12 -->
+     <term><option>tls_reqsan</option> never|allow|try|demand|hard</term>
+     <listitem>
+      <para>
+       Specifies the way server Subject Alternative Name (SAN) is checked in
+       the server-supplied certificate.
+       The meaning of the values is described in the
+       <citerefentry><refentrytitle>ldap.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+       manual page.
+      </para>
+     </listitem>
+    </varlistentry>
+
     <varlistentry id="tls_crlcheck"> <!-- since 0.9.12 -->
      <term><option>tls_crlcheck</option> none|peer|all</term>
      <listitem>
