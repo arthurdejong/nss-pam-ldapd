@@ -287,12 +287,31 @@ then
   case "$target_os" in
     solaris*) PAM_SECLIB_DIR="/usr/lib/security" ;;
     freebsd*|dragonfly*) PAM_SECLIB_DIR="/usr/lib" ;;
+    netbsd*) PAM_SECLIB_DIR="/usr/lib/security" ;;
     *)        PAM_SECLIB_DIR="/lib/security" ;;
   esac
 fi
 AC_MSG_RESULT($PAM_SECLIB_DIR)
 AC_DEFINE_UNQUOTED(PAM_SECLIB_DIR, "$PAM_SECLIB_DIR", [path to PAM security library])
 AC_SUBST(PAM_SECLIB_DIR)
+
+# the directory NSS librabries are expected to be placed into
+AC_MSG_CHECKING([location for NSS module])
+AC_ARG_WITH(nss-libdir,
+            AS_HELP_STRING([--with-nss-libdir=NSS_LIBDIR],
+                           [path to NSS security library @<:@auto@:>@]),
+            [ NSS_LIBDIR="$with_nss_libdir" ],
+            [ NSS_LIBDIR="auto" ])
+if test "x$NSS_LIBDIR" = "xauto"
+then
+  case "$target_os" in
+    netbsd*) NSS_LIBDIR="/usr/lib" ;;
+    *)        NSS_LIBDIR="/lib" ;;
+  esac
+fi
+AC_MSG_RESULT($NSS_LIBDIR)
+AC_DEFINE_UNQUOTED(NSS_LIBDIR, "$NSS_LIBDIR", [path to NSS security library])
+AC_SUBST(NSS_LIBDIR)
 
 # the name to use for the NSS module
 AC_MSG_CHECKING([name of NSS and PAM modules])
@@ -320,6 +339,7 @@ then
   case "$target_os" in
     solaris*) NSS_LDAP_SONAME="nss_$MODULE_NAME.so.1" ;;
     freebsd*|dragonfly*) NSS_LDAP_SONAME="nss_$MODULE_NAME.so.1" ;;
+    netbsd*) NSS_LDAP_SONAME="nss_$MODULE_NAME.so.0" ;;
     *)        NSS_LDAP_SONAME="libnss_$MODULE_NAME.so.2" ;;
   esac
 fi
@@ -517,7 +537,7 @@ then
   # check which NSS flavour to build
   AC_MSG_CHECKING([which NSS flavour to build])
   AC_ARG_WITH(nss-flavour,
-              AS_HELP_STRING([--with-nss-flavour=auto|glibc|solaris|freebsd],
+              AS_HELP_STRING([--with-nss-flavour=auto|glibc|solaris|freebsd|netbsd],
                              [the libc flavour to build our NSS module for @<:@auto@:>@]),,
               with_nss_flavour=auto)
   if test "x$with_nss_flavour" = "xauto"
@@ -526,6 +546,7 @@ then
     case "$target_os" in
       solaris*) with_nss_flavour=solaris ;;
       freebsd*|dragonfly*) with_nss_flavour=freebsd ;;
+      netbsd*) with_nss_flavour=netbsd ;;
       *)        with_nss_flavour=glibc ;;
     esac
   fi
@@ -534,6 +555,7 @@ then
     glibc)   AC_DEFINE(NSS_FLAVOUR_GLIBC, 1, [Whether to use the Glibc NSS interface flavour.]) ;;
     solaris) AC_DEFINE(NSS_FLAVOUR_SOLARIS, 1, [Whether to use the Solaris NSS interface flavour.]) ;;
     freebsd) AC_DEFINE(NSS_FLAVOUR_FREEBSD, 1, [Whether to use the FreeBSD NSS interface flavour.]) ;;
+    netbsd) AC_DEFINE(NSS_FLAVOUR_NETBSD, 1, [Whether to use the NetBSD NSS interface flavour.]) ;;
   esac
   NSS_FLAVOUR="$with_nss_flavour"
   AC_SUBST(NSS_FLAVOUR)
@@ -546,6 +568,7 @@ then
       glibc)   with_nss_maps="aliases,ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow" ;;
       solaris) with_nss_maps="ethers,group,hosts,netgroup,networks,passwd,protocols,rpc,services,shadow" ;;
       freebsd) with_nss_maps="group,hosts,passwd,netgroup" ;;
+      netbsd) with_nss_maps="group,hosts,passwd,netgroup" ;;
     esac
   fi
   AC_MSG_RESULT($with_nss_maps)
@@ -1032,6 +1055,7 @@ fi
 AM_CONDITIONAL([NSS_FLAVOUR_GLIBC], [test "x${with_nss_flavour}" = xglibc])
 AM_CONDITIONAL([NSS_FLAVOUR_SOLARIS], [test "x${with_nss_flavour}" = xsolaris])
 AM_CONDITIONAL([NSS_FLAVOUR_FREEBSD], [test "x${with_nss_flavour}" = xfreebsd])
+AM_CONDITIONAL([NSS_FLAVOUR_NETBSD], [test "x${with_nss_flavour}" = xnetbsd])
 
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile
