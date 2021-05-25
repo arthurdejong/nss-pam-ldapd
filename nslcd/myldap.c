@@ -1062,6 +1062,8 @@ void myldap_session_check(MYLDAP_SESSION *session)
       {
         log_log(LOG_DEBUG, "myldap_session_check(): idle_timelimit reached");
         do_close(session);
+        /* try to use the first URI from the list again */
+        session->current_uri = 0;
       }
     }
   }
