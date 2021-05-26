@@ -2,7 +2,7 @@
 
 # run_slapd.sh - configure and run a slapd instance
 #
-# Copyright (C) 2013 Arthur de Jong
+# Copyright (C) 2013-2021 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -63,7 +63,7 @@ our_slapd_is_running() {
 }
 
 # the directory where to construct the environment
-if test $# -ne 2
+if test $# -lt 2
 then
   usage
   exit 1
@@ -118,8 +118,10 @@ case "$2" in
       echo " already running."
       exit 0
     fi
+    shift
+    shift
     slapd -F "$basedir/slapd.d" -u "$user" -g "$group" \
-      -h "ldap:/// ldaps:/// ldapi:///" || (echo " FAILED"; exit 1)
+      -h "ldap:/// ldaps:/// ldapi:///" "$@" || (echo " FAILED"; exit 1)
     echo "."
     ;;
   stop)

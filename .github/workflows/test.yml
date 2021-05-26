@@ -1,0 +1,70 @@
+---
+
+name: Test
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '9 0 * * 1'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get -y install
+             apparmor-utils
+             docbook-xml
+             docbook2x
+             expect
+             ldap-utils
+             libkrb5-dev
+             libldap2-dev
+             libpam0g-dev
+             libsasl2-dev
+             pylint
+             python3
+             python3-daemon
+             python3-ldap
+             python3-pyasn1
+             python3-pyasn1-modules
+             python3-setproctitle
+             slapd
+             xmlto
+      - name: autogen.sh
+        run: ./autogen.sh
+      - name: configure
+        run: ./configure
+             --prefix=/usr --mandir=/usr/share/man --sysconfdir=/etc
+             --libdir=/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH`
+             --with-pam-seclib-dir=/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH`/security
+             --enable-warnings --enable-pynslcd
+      - name: make
+        run: make
+      - name: make distcheck
+        run: make distcheck || ( cat nss-pam-ldapd-*/_build/sub/tests/test-suite.log 2> /dev/null; exit 1 )
+      # Set up a custom LDAP server
+      - name: service slapd stop
+        run: sudo service slapd stop || true
+      - name: aa-disable slapd
+        run: sudo aa-disable slapd
+      - name: start custom LDAP server
+        run: tmpslapd="$(sudo mktemp -d -t slapd.XXXXXX)" && sudo tests/setup_slapd.sh "$tmpslapd" setup && sudo tests/setup_slapd.sh "$tmpslapd" start || sudo tests/setup_slapd.sh "$tmpslapd" start -d 320
+      # Set up the system to use LDAP for authentication
+      - name: make install
+        run: sudo make install
+      - name: testenv.sh enable_nss
+        run: sudo tests/testenv.sh enable_nss passwd group shadow networks protocols services ethers rpc netgroup aliases
+      - name: testenv.sh enable_pam
+        run: sudo tests/testenv.sh enable_pam
+      - name: configure /etc/nslcd.conf
+        run: sudo su -c "cat tests/nslcd-test.conf > /etc/nslcd.conf && chmod 640 /etc/nslcd.conf && chown root:$(id -g -n) /etc/nslcd.conf"
+      # Run nslcd and run the tests
+      - name: start nslcd
+        run: sudo nslcd/nslcd
+      - name: check test set-up
+        run: sudo tests/testenv.sh check && sudo tests/testenv.sh check_nss passwd group shadow networks protocols services ethers rpc netgroup aliases
+      - name: make check
+        run: sudo rm -f /tmp/pynslcd_cache.sqlite; sudo make check || ( cat tests/test-suite.log 2> /dev/null; exit 1 )

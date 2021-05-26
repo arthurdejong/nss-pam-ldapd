@@ -2,7 +2,7 @@
 
 # test_nsscmds.sh - simple test script to check output of name lookup commands
 #
-# Copyright (C) 2007-2017 Arthur de Jong
+# Copyright (C) 2007-2021 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -166,7 +166,7 @@ check "getent group 6100 | sortgroup" << EOM
 testgroup:*:6100:arthur,test,testuser4
 EOM
 
-check "groups arthur | sed 's/^.* *: *//' | sed 's/ debci//'" << EOM
+check "groups arthur | sed 's/^.* *: *//' | sed 's/ debci//;s/ runneradmin//'" << EOM
 users testgroup testgroup2 grp4 grp5 grp6 grp7 grp8 grp9 grp10 grp11 grp12 grp13 grp14 grp15 grp16 grp17 grp18
 EOM
 
