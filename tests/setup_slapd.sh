@@ -94,6 +94,10 @@ case "$2" in
     echo "Loading cn=config..."
     tmpldif=`mktemp -t slapadd.XXXXXX`
     sed "s|@BASEDIR@|$basedir|g" < "$srcdir/config.ldif" > "$tmpldif"
+    if [ -f /etc/ldap/schema/ppolicy.ldif ]
+    then
+      sed -i "s|#PPOLICY#||g" "$tmpldif"
+    fi
     slapadd -v -F "$basedir/slapd.d" -b "cn=config" -l "$tmpldif" || (echo " FAILED"; exit 1)
     rm -f "$tmpldif"
     echo "Loading dc=test,dc=tld..."

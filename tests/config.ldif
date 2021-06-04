@@ -10,7 +10,7 @@ olcTimeLimit: unlimited
 dn: cn=module{0},cn=config
 objectClass: olcModuleList
 cn: module{0}
-olcModuleLoad: back_bdb
+olcModuleLoad: back_mdb
 olcModuleLoad: ppolicy
 
 dn: cn=schema,cn=config
@@ -22,7 +22,7 @@ include: file:///etc/ldap/schema/cosine.ldif
 include: file:///etc/ldap/schema/nis.ldif
 include: file:///etc/ldap/schema/inetorgperson.ldif
 include: file:///etc/ldap/schema/misc.ldif
-include: file:///etc/ldap/schema/ppolicy.ldif
+#PPOLICY#include: file:///etc/ldap/schema/ppolicy.ldif
 
 dn: cn=samba,cn=schema,cn=config
 objectClass: olcSchemaConfig
@@ -83,10 +83,10 @@ olcAccess: to *
   by * break
 olcRootDN: cn=admin,cn=config
 
-dn: olcDatabase={1}bdb,cn=config
+dn: olcDatabase={1}mdb,cn=config
 objectClass: olcDatabaseConfig
-objectClass: olcBdbConfig
-olcDatabase: {1}bdb
+objectClass: olcmdbConfig
+olcDatabase: {1}mdb
 olcDbDirectory: @BASEDIR@/ldapdb
 olcSuffix: dc=test,dc=tld
 olcAccess: to attrs=userPassword
@@ -106,13 +106,9 @@ olcAccess: to *
 olcRootDN: cn=admin,dc=test,dc=tld
 olcRootPW: test
 olcDbCheckpoint: 512 30
-olcDbConfig: set_cachesize 0 2097152 0
-olcDbConfig: set_lk_max_objects 1500
-olcDbConfig: set_lk_max_locks 1500
-olcDbConfig: set_lk_max_lockers 1500
 olcDbIndex: objectClass eq
 
-dn: olcOverlay={0}ppolicy,olcDatabase={1}bdb,cn=config
+dn: olcOverlay={0}ppolicy,olcDatabase={1}mdb,cn=config
 objectClass: olcOverlayConfig
 objectClass: olcPPolicyConfig
 olcOverlay: {0}ppolicy
