@@ -2,7 +2,7 @@
    expr.c - limited shell-like expression parsing functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2009-2016 Arthur de Jong
+   Copyright (C) 2009-2021 Arthur de Jong
    Copyright (c) 2012 Thorsten Glaser <t.glaser@tarent.de>
    Copyright (c) 2016 Giovanni Mascellani <gio@debian.org>
 
@@ -47,12 +47,12 @@ static inline int my_isdigit(const char c)
 
 static inline int my_isalphanum(const char c)
 {
-  return my_isalpha(c) || ((c >= '0') && (c <= '9'));
+  return my_isalpha(c) || my_isdigit(c);
 }
 
 /* return the part of the string that is a valid name */
 MUST_USE static const char *parse_name(const char *str, int *ptr,
-                                       char *buffer, size_t buflen)
+                                       char *buffer, size_t buflen, int extra_chars)
 {
   int i = 0;
   /* clear the buffer */
@@ -60,7 +60,7 @@ MUST_USE static const char *parse_name(const char *str, int *ptr,
   /* look for an alpha + alphanumeric* string */
   if (!my_isalpha(str[*ptr]))
     return NULL;
-  while (my_isalphanum(str[*ptr]) || (str[*ptr] == ';'))
+  while (my_isalphanum(str[*ptr]) || (str[*ptr] == ';') || (extra_chars && ((str[*ptr] == '-') || (str[*ptr] == '.'))))
   {
     if ((size_t)i >= buflen)
       return NULL;
@@ -230,7 +230,7 @@ MUST_USE static const char *parse_dollar_expression(
   {
     (*ptr)++;
     /* the first part is always a variable name */
-    if (parse_name(str, ptr, varname, sizeof(varname)) == NULL)
+    if (parse_name(str, ptr, varname, sizeof(varname), 1) == NULL)
       return NULL;
     varvalue = expander(varname, expander_arg);
     if (varvalue == NULL)
@@ -277,7 +277,7 @@ MUST_USE static const char *parse_dollar_expression(
   else
   {
     /* it is a simple reference to a variable, like $uidNumber */
-    if (parse_name(str, ptr, varname, sizeof(varname)) == NULL)
+    if (parse_name(str, ptr, varname, sizeof(varname), 0) == NULL)
       return NULL;
     varvalue = expander(varname, expander_arg);
     if (varvalue == NULL)
@@ -352,7 +352,7 @@ SET *expr_vars(const char *str, SET *set)
         if (str[i] == '{')
           i++;
         /* the rest should start with a variable name */
-        if (parse_name(str, &i, varname, sizeof(varname)) != NULL)
+        if (parse_name(str, &i, varname, sizeof(varname), 0) != NULL)
           set_add(set, varname);
         break;
       case '\\': /* escaped character, unescape */

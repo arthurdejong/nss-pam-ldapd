@@ -2,7 +2,7 @@
    test_expr.c - simple tests for the expr module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2009, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2009-2021 Arthur de Jong
    Copyright (c) 2016 Giovanni Mascellani
 
    This library is free software; you can redistribute it and/or
@@ -37,14 +37,22 @@ static void test_parse_name(void)
   char buffer[20];
   int i;
   i = 0;
-  assert(parse_name("fooBar", &i, buffer, sizeof(buffer)) != NULL);
+  assert(parse_name("fooBar", &i, buffer, sizeof(buffer), 0) != NULL);
   assert(i == 6);
   i = 0;
-  assert(parse_name("nameThatWillNotFitInBuffer", &i, buffer, sizeof(buffer)) == NULL);
+  assert(parse_name("nameThatWillNotFitInBuffer", &i, buffer, sizeof(buffer), 0) == NULL);
   i = 0;
-  assert(parse_name("foo Bar", &i, buffer, sizeof(buffer)) != NULL);
+  assert(parse_name("foo Bar", &i, buffer, sizeof(buffer), 0) != NULL);
   assert(i == 3);
   assertstreq(buffer, "foo");
+  i = 0;
+  assert(parse_name("foo-Bar", &i, buffer, sizeof(buffer), 0) != NULL);
+  assert(i == 3);
+  assertstreq(buffer, "foo");
+  i = 0;
+  assert(parse_name("foo-Bar", &i, buffer, sizeof(buffer), 1) != NULL);
+  assert(i == 7);
+  assertstreq(buffer, "foo-Bar");
 }
 
 static const char *expanderfn(const char *name, void UNUSED(*expander_attr))
@@ -70,6 +78,10 @@ static void test_expr_parse(void)
   assertstreq(buffer, "");
   assert(expr_parse("$foo1$empty-$foo2", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
   assertstreq(buffer, "foobar-foobar");
+  assert(expr_parse("$test-var", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "foobar-var");
+  assert(expr_parse("${test-var}", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
+  assertstreq(buffer, "foobar");
   assert(expr_parse("$foo1+$null+$foo2", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
   assertstreq(buffer, "foobar++foobar");
   assert(expr_parse("${test1}\\$", buffer, sizeof(buffer), expanderfn, NULL) != NULL);
