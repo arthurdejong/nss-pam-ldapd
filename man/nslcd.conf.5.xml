@@ -351,7 +351,7 @@
            <replaceable>DN</replaceable></term>
      <listitem>
       <para>
-       Specifies the base distinguished name (<acronym>DN</acronym>)
+       Specifies the distinguished name (<acronym>DN</acronym>)
        to use as search base.
        This option may be supplied multiple times and all specified bases
        will be searched.
@@ -364,10 +364,13 @@
        If, instead of a <acronym>DN</acronym>, the value
        <replaceable>DOMAIN</replaceable> is specified, the host's
        <acronym>DNS</acronym> domain is used to construct a search base.
+       A value of <replaceable>""</replaceable> can be used to indicate an
+       empty search base (quotes are not otherwise supported for base
+       values and not all LDAP server configurations support this). <!-- since 0.9.12 -->
       </para>
       <para>
        If this value is not defined an attempt is made to look it up
-       in the configured <acronym>LDAP</acronym> server. Note that if the
+       in the configured <acronym>LDAP</acronym> server. If the
        <acronym>LDAP</acronym> server is unavailable during start-up
        <command>nslcd</command> will not start.
       </para>

@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007-2018 Arthur de Jong
+   Copyright (C) 2007-2021 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -683,6 +683,8 @@ static void handle_base(const char *filename, int lnr,
     exit(EXIT_FAILURE);
 #endif /* not HAVE_LDAP_DOMAIN2DN */
   }
+  if (strcasecmp(value, "\"\"") == 0)
+    value = "";
   /* find the spot in the list of bases */
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
     if (bases[i] == NULL)
@@ -1848,14 +1850,14 @@ static void cfg_dump(void)
     log_log(LOG_DEBUG, "CFG: krb5_ccname %s", str);
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
     if (nslcd_cfg->bases[i] != NULL)
-      log_log(LOG_DEBUG, "CFG: base %s", nslcd_cfg->bases[i]);
+      log_log(LOG_DEBUG, "CFG: base %s", nslcd_cfg->bases[i][0] == '\0' ? "\"\"" : nslcd_cfg->bases[i]);
   for (map = LM_ALIASES; map < LM_NONE; map++)
   {
     strp = base_get_var(map);
     if (strp != NULL)
       for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
         if (strp[i] != NULL)
-          log_log(LOG_DEBUG, "CFG: base %s %s", print_map(map), strp[i]);
+          log_log(LOG_DEBUG, "CFG: base %s %s", print_map(map), strp[i][0] == '\0' ? "\"\"" : strp[i]);
   }
   log_log(LOG_DEBUG, "CFG: scope %s", print_scope(nslcd_cfg->scope));
   for (map = LM_ALIASES; map < LM_NONE; map++)
@@ -2061,12 +2063,6 @@ void cfg_init(const char *fname)
   if (nslcd_cfg->bases[0] == NULL)
     nslcd_cfg->bases[0] = get_base_from_rootdse();
   /* TODO: handle the case gracefully when no LDAP server is available yet */
-  /* see if we have a valid basedn */
-  if ((nslcd_cfg->bases[0] == NULL) || (nslcd_cfg->bases[0][0] == '\0'))
-  {
-    log_log(LOG_ERR, "no base defined in config and couldn't get one from server");
-    exit(EXIT_FAILURE);
-  }
   /* dump configuration */
   cfg_dump();
   /* initialise all database modules */

@@ -2,7 +2,7 @@
    test_cfg.c - simple test for the cfg module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007, 2009, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2007-2021 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -187,6 +187,7 @@ static void test_tokenize(void)
 }
 
 extern const char *passwd_bases[];
+extern const char *group_bases[];
 extern const char *group_filter;
 extern int passwd_scope;
 
@@ -202,6 +203,7 @@ static void test_read(void)
           "uri ldap:/// ldaps://127.0.0.1/\n"
           "base dc=test, dc=tld\n"
           "base passwd ou=Some People,dc=test,dc=tld\n"
+          "base group \"\"\n"
           "map\tpasswd uid\t\tsAMAccountName\n"
           "map passwd homeDirectory \"${homeDirectory:-/home/$uid}\"  \n"
           "map    passwd gecos            \"${givenName}. ${sn}\"\n"
@@ -223,6 +225,7 @@ static void test_read(void)
   assert(cfg.uris[3].uri == NULL);
   assertstreq(cfg.bases[0], "dc=test, dc=tld");
   assertstreq(passwd_bases[0], "ou=Some People,dc=test,dc=tld");
+  assertstreq(group_bases[0], "");
   assertstreq(attmap_passwd_uid, "sAMAccountName");
   assertstreq(attmap_passwd_homeDirectory, "\"${homeDirectory:-/home/$uid}\"");
   assertstreq(attmap_passwd_gecos, "\"${givenName}. ${sn}\"");
