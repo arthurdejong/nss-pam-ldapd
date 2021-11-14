@@ -2,7 +2,7 @@
 
 # test_ldapcmds.sh - simple test script to test lookups
 #
-# Copyright (C) 2017-2019 Arthur de Jong
+# Copyright (C) 2017-2021 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -143,11 +143,11 @@ sortgroup() {
 }
 
 check "getent.ldap group testgroup | sortgroup" << EOM
-testgroup:*:6100:arthur,test,testuser4
+testgroup:*:6100:test,testuser4,testusr1
 EOM
 
 check "getent.ldap group users | sortgroup" << EOM
-users:*:100:arthur,test
+users:*:100:test,testusr1
 EOM
 
 # group with different case should not be found
@@ -155,10 +155,10 @@ check "getent.ldap group TESTGROUP" << EOM
 EOM
 
 check "getent.ldap group 6100 | sortgroup" << EOM
-testgroup:*:6100:arthur,test,testuser4
+testgroup:*:6100:test,testuser4,testusr1
 EOM
 
-check "getent.ldap group.bymember arthur | sed 's/:.*//' | sort" << EOM
+check "getent.ldap group.bymember testusr1 | sed 's/:.*//' | sort" << EOM
 grp10
 grp11
 grp12
@@ -185,8 +185,8 @@ testgroup2
 EOM
 
 check "getent.ldap group | egrep '^(testgroup|users):' | sortgroup" << EOM
-testgroup:*:6100:arthur,test,testuser4
-users:*:100:arthur,test
+testgroup:*:6100:test,testuser4,testusr1
+users:*:100:test,testusr1
 EOM
 
 check "getent.ldap group | wc -l" << EOM
@@ -298,7 +298,7 @@ echo "test_ldapcmds.sh: testing netgroup..."
 
 # check netgroup lookup of test netgroup
 check "getent.ldap netgroup tstnetgroup" << EOM
-tstnetgroup          ( , arthur, ) (noot, , )
+tstnetgroup          ( , testusr1, ) (noot, , )
 EOM
 
 # check netgroup lookup with different case
@@ -307,7 +307,7 @@ EOM
 
 # check netgroup lookup of test netgroup without recursion
 check "getent.ldap netgroup.norec tstnetgroup" << EOM
-tstnetgroup     tst3netgroup tst2netgroup (, arthur, )
+tstnetgroup     tst3netgroup tst2netgroup (, testusr1, )
 EOM
 
 ###########################################################################
@@ -339,12 +339,12 @@ check "getent.ldap passwd ecolden | sed 's/:[x*]:/:x:/'" << EOM
 ecolden:x:5972:1000:Estelle Colden:/home/ecolden:/bin/bash
 EOM
 
-check "getent.ldap passwd arthur | sed 's/:[x*]:/:x:/'" << EOM
-arthur:x:1000:100:Arthur de Jong:/home/arthur:/bin/bash
+check "getent.ldap passwd testusr1 | sed 's/:[x*]:/:x:/'" << EOM
+testusr1:x:1007:100:Arthur de Jong:/home/testusr1:/bin/bash
 EOM
 
 # check username with different case
-check "getent.ldap passwd ARTHUR" << EOM
+check "getent.ldap passwd TESTUSR1" << EOM
 EOM
 
 check "getent.ldap passwd 4089 | sed 's/:[x*]:/:x:/'" << EOM

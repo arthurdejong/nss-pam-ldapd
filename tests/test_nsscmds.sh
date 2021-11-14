@@ -149,13 +149,13 @@ sortgroup() {
 }
 
 check "getent group testgroup | sortgroup" << EOM
-testgroup:*:6100:arthur,test,testuser4
+testgroup:*:6100:test,testuser4,testusr1
 EOM
 
 # this does not work because users is in /etc/group but it would
 # be nice if libc supported this
 #check "getent group users" << EOM
-#users:*:100:arthur,test
+#users:*:100:testusr1,test
 #EOM
 
 # group with different case should not be found
@@ -163,10 +163,10 @@ check "getent group TESTGROUP" << EOM
 EOM
 
 check "getent group 6100 | sortgroup" << EOM
-testgroup:*:6100:arthur,test,testuser4
+testgroup:*:6100:test,testuser4,testusr1
 EOM
 
-check "groups arthur | sed 's/^.* *: *//' | sed 's/ debci//;s/ runneradmin//'" << EOM
+check "groups testusr1 | sed 's/^.* *: *//'" << EOM
 users testgroup testgroup2 grp4 grp5 grp6 grp7 grp8 grp9 grp10 grp11 grp12 grp13 grp14 grp15 grp16 grp17 grp18
 EOM
 
@@ -176,8 +176,8 @@ EOM
 
 check "getent group | egrep '^(testgroup|users|root):' | sortgroup" << EOM
 $(egrep '^(testgroup|users|root):' /etc/group)
-testgroup:*:6100:arthur,test,testuser4
-users:*:100:arthur,test
+testgroup:*:6100:test,testuser4,testusr1
+users:*:100:test,testusr1
 EOM
 
 check "getent group | wc -l" << EOM
@@ -295,7 +295,7 @@ echo "test_nsscmds.sh: testing netgroup..."
 
 # check netgroup lookup of test netgroup
 check "getent netgroup tstnetgroup" << EOM
-tstnetgroup          ( , arthur, ) (noot, , )
+tstnetgroup          ( , testusr1, ) (noot, , )
 EOM
 
 # check netgroup lookup with different case
@@ -339,12 +339,12 @@ check "getent passwd ecolden | sed 's/:[x*]:/:x:/'" << EOM
 ecolden:x:5972:1000:Estelle Colden:/home/ecolden:/bin/bash
 EOM
 
-check "getent passwd arthur | sed 's/:[x*]:/:x:/'" << EOM
-arthur:x:1000:100:Arthur de Jong:/home/arthur:/bin/bash
+check "getent passwd testusr1 | sed 's/:[x*]:/:x:/'" << EOM
+testusr1:x:1007:100:Arthur de Jong:/home/testusr1:/bin/bash
 EOM
 
 # check username with different case
-check "getent passwd ARTHUR" << EOM
+check "getent passwd TESTUSR1" << EOM
 EOM
 
 check "getent passwd 4089 | sed 's/:[x*]:/:x:/'" << EOM

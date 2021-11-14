@@ -29,7 +29,7 @@ description: desc
 cn: tstnetgroup
 memberNisNetgroup: tst3netgroup
 memberNisNetgroup: tst2netgroup
-nisNetgroupTriple: (,arthur,)
+nisNetgroupTriple: (,testusr1,)
 
 dn: cn=tst3netgroup,ou=netgroups,dc=test,dc=tld
 objectClass: top
@@ -48,7 +48,7 @@ cn: testgroup
 gidNumber: 6100
 objectClass: top
 objectClass: posixGroup
-memberUid: arthur
+memberUid: testusr1
 memberUid: test
 memberUid: testuser4
 
@@ -40092,11 +40092,11 @@ shadowLastChange: 12302
 userPassword:: e1NIQX13bWJpVm14ajJiVVYrT1FGbXNHWkozcnF4UUk9
 loginShell: /bin/bash
 
-dn: uid=arthur,ou=people,dc=test,dc=tld
-uid: arthur
+dn: uid=testusr1,ou=people,dc=test,dc=tld
+uid: testusr1
 gidNumber: 100
 givenName: Arthur
-homeDirectory: /home/arthur
+homeDirectory: /home/testusr1
 sambaLMPassword: 25ABFCD2391656AFEDCB213712461263
 sambaNTPassword: 7213BCD02736ABC64564ABCDFF766DE3
 sambaHomeDrive: H
@@ -40105,14 +40105,14 @@ sambaPwdLastSet: 2043613290
 sambaPwdMustChange: 3043613290
 sambaAcctFlags: [UX         ]
 sn: de Jong
-description: rarthur
+description: rtestusr1
 shadowWarning: 7
 shadowInactive: 2
-uidNumber: 1000
+uidNumber: 1007
 title:: c3V4AAA=
 title: su
-labeledURI: https://arthurdejong.org/ Arthur's homepage
-mail: arthur@arthurdejong.org
+labeledURI: https://testusr1dejong.org/ Arthur's homepage
+mail: testusr1@arthurdejong.org
 objectClass: top
 objectClass: posixAccount
 objectClass: shadowAccount
@@ -41364,7 +41364,7 @@ objectClass: top
 objectClass: posixGroup
 cn: users
 gidNumber: 100
-memberUid: arthur
+memberUid: testusr1
 memberUid: test
 description: cn=Test User2,ou=people,dc=test,dc=tld
 
@@ -41382,7 +41382,7 @@ member: cn=bar,dc=foo,dc=com
 member: cn=testhost,ou=hosts,dc=test,dc=tld
 member:: Y2490JDQkdCSINCT0pDQlNCC0IPQldCBLG91PXBlb3BsZSxkYz10ZXN0LGRjPXRsZA==
 member:: Y2495Y+v5piv5b2T6L+Z5LiqVeebmOWcqCxvdT1wZW9wbGUsZGM9dGVzdCxkYz10bGQ=
-member: uid=arthur,ou=people,dc=test,dc=tld
+member: uid=testusr1,ou=people,dc=test,dc=tld
 
 dn: cn=tst2netgroup,ou=netgroups,dc=test,dc=tld
 objectClass: top
@@ -41426,105 +41426,105 @@ objectClass: top
 objectClass: posixGroup
 cn: grp4
 gidNumber: 704
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp5,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp5
 gidNumber: 705
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp6,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp6
 gidNumber: 706
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp7,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp7
 gidNumber: 707
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp8,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp8
 gidNumber: 708
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp9,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp9
 gidNumber: 709
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp10,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp10
 gidNumber: 710
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp11,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp11
 gidNumber: 711
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp12,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp12
 gidNumber: 712
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp13,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp13
 gidNumber: 713
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp14,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp14
 gidNumber: 714
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp15,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp15
 gidNumber: 715
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp16,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp16
 gidNumber: 716
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp17,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp17
 gidNumber: 717
-memberUid: arthur
+memberUid: testusr1
 
 dn: cn=grp18,ou=groups,dc=test,dc=tld
 objectClass: top
 objectClass: posixGroup
 cn: grp18
 gidNumber: 718
-memberUid: arthur
+memberUid: testusr1
 
 dn: ou=policies,dc=test,dc=tld
 objectClass: organizationalUnit
