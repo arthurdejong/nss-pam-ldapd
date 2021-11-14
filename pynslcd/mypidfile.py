@@ -1,7 +1,7 @@
 
 # mypidfile.py - functions for properly locking a PIDFile
 #
-# Copyright (C) 2010-2019 Arthur de Jong
+# Copyright (C) 2010-2021 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -40,8 +40,9 @@ class MyPIDLockFile(object):
         piddir = os.path.dirname(self.path)
         if not os.path.isdir(piddir):
             os.mkdir(piddir)
-            u, gid = cfg.get_usergid()
-            os.chown(piddir, u.u.pw_uid, gid)
+            if cfg.uid is not None:
+                u, gid = cfg.get_usergid()
+                os.chown(piddir, u.u.pw_uid, gid)
         fd = os.open(self.path, os.O_RDWR | os.O_CREAT, 0o644)
         try:
             fcntl.lockf(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
