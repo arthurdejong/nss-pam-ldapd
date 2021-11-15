@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006-2019 Arthur de Jong
+# Copyright (C) 2006-2021 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -351,7 +351,7 @@ AC_ARG_WITH(nss-maps,
             [ with_nss_maps="all" ])
 
 # checks for availability of header files
-AC_CHECK_HEADERS([ctype.h strings.h pthread.h pthread_np.h fcntl.h limits.h])
+AC_CHECK_HEADERS([ctype.h strings.h pthread.h pthread_np.h fcntl.h limits.h assert.h])
 AC_CHECK_HEADERS([nss.h nss_common.h grp.h shadow.h aliases.h netdb.h rpc/rpcent.h])
 AC_CHECK_HEADERS([netinet/ether.h arpa/inet.h netinet/in.h])
 AC_CHECK_HEADERS([nsswitch.h nss_dbdefs.h])
@@ -368,7 +368,7 @@ AC_SEARCH_LIBS(socket, socket)
 AC_CHECK_FUNCS([strcasecmp strncasecmp strchr strcspn strspn strtol strtoul strtoull strndup])
 AC_CHECK_FUNCS([malloc realloc atexit])
 AC_FUNC_FORK
-AC_CHECK_FUNCS(__assert_fail)
+AC_CHECK_FUNCS([__assert_fail __assert __assert_c99])
 AC_SEARCH_LIBS(clock_gettime, rt)
 AC_CHECK_FUNCS([setusershell getusershell endusershell getgrouplist])
 AC_CHECK_DECLS([setusershell, getusershell, endusershell])
