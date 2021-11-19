@@ -157,17 +157,20 @@
        <acronym>SRV</acronym> records. <!-- since 0.5 -->
        By default the current domain is used but another domain can
        be queried by using the
-       <literal>DNS:</literal><replaceable>DOMAIN</replaceable> syntax.
+       <literal>DNS:DOMAIN</literal> syntax.
        <!-- since 0.8.4 -->
+       To convert <acronym>SRV</acronym> records for port 389 into an
+       <literal>ldaps://</literal> <acronym>URI</acronym>, <literal>DNSLDAPS</literal>
+       can be used. <!-- since 0.9.12 -->
       </para>
       <para>
-       When using the ldapi scheme, %2f should be used to escape slashes
-       (e.g. ldapi://%2fvar%2frun%2fslapd%2fldapi/), although most of the
+       When using the <literal>ldapi</literal> scheme, <literal>%2f</literal> should be used to escape slashes
+       (e.g. <literal>ldapi://%2fvar%2frun%2fslapd%2fldapi/</literal>), although most of the
        time this should not be needed.
       </para>
       <para>
        This option may be specified multiple times and/or with more
-       URIs on the line, separated by space. Normally, only the first
+       URIs on the line, separated by spaces. Normally, only the first
        server will be used with the following servers as fall-back (see
        <option>bind_timelimit</option> below).
       </para>

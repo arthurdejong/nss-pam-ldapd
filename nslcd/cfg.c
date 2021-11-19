@@ -421,11 +421,12 @@ static const char *cfg_getdomainname(const char *filename, int lnr)
 
 /* add URIs by doing DNS queries for SRV records */
 static void add_uris_from_dns(const char *filename, int lnr,
-                              struct ldap_config *cfg, const char *domain)
+                              struct ldap_config *cfg, const char *domain,
+                              int force_ldaps)
 {
   int rc;
   char *hostlist = NULL, *nxt;
-  char buf[BUFLEN_HOSTNAME + sizeof("ldap://")];
+  char buf[BUFLEN_HOSTNAME + sizeof("ldaps://")];
   log_log(LOG_DEBUG, "query %s for SRV records", domain);
   rc = ldap_domain2hostlist(domain, &hostlist);
   if (rc != LDAP_SUCCESS)
@@ -467,7 +468,7 @@ static void add_uris_from_dns(const char *filename, int lnr,
       /* strip default port number */
       if ((strlen(hostlist) > 4) && (strcmp(hostlist + strlen(hostlist) - 4, ":389") == 0))
         hostlist[strlen(hostlist) - 4] = '\0';
-      if (mysnprintf(buf, sizeof(buf), "ldap://%s", hostlist))
+      if (mysnprintf(buf, sizeof(buf), "ldap%s://%s", force_ldaps ? "s" : "", hostlist))
       {
         log_log(LOG_ERR, "add_uris_from_dns(): buf buffer too small (%lu required)",
                 (unsigned long) strlen(hostlist) + 7);
@@ -1389,8 +1390,7 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
         if (strcasecmp(token, "dns") == 0)
         {
 #ifdef HAVE_LDAP_DOMAIN2HOSTLIST
-          add_uris_from_dns(filename, lnr, cfg,
-                            cfg_getdomainname(filename, lnr));
+          add_uris_from_dns(filename, lnr, cfg, cfg_getdomainname(filename, lnr), 0);
 #else /* not HAVE_LDAP_DOMAIN2HOSTLIST */
           log_log(LOG_ERR, "%s:%d: value %s not supported on platform",
                   filename, lnr, token);
@@ -1400,7 +1400,27 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
         else if (strncasecmp(token, "dns:", 4) == 0)
         {
 #ifdef HAVE_LDAP_DOMAIN2HOSTLIST
-          add_uris_from_dns(filename, lnr, cfg, strdup(token + 4));
+          add_uris_from_dns(filename, lnr, cfg, strdup(token + 4), 0);
+#else /* not HAVE_LDAP_DOMAIN2HOSTLIST */
+          log_log(LOG_ERR, "%s:%d: value %s not supported on platform",
+                  filename, lnr, token);
+          exit(EXIT_FAILURE);
+#endif /* not HAVE_LDAP_DOMAIN2HOSTLIST */
+        }
+        else if (strcasecmp(token, "dnsldaps") == 0)
+        {
+#ifdef HAVE_LDAP_DOMAIN2HOSTLIST
+          add_uris_from_dns(filename, lnr, cfg, cfg_getdomainname(filename, lnr), 1);
+#else /* not HAVE_LDAP_DOMAIN2HOSTLIST */
+          log_log(LOG_ERR, "%s:%d: value %s not supported on platform",
+                  filename, lnr, token);
+          exit(EXIT_FAILURE);
+#endif /* not HAVE_LDAP_DOMAIN2HOSTLIST */
+        }
+        else if (strncasecmp(token, "dnsldaps:", 9) == 0)
+        {
+#ifdef HAVE_LDAP_DOMAIN2HOSTLIST
+          add_uris_from_dns(filename, lnr, cfg, strdup(token + 9), 1);
 #else /* not HAVE_LDAP_DOMAIN2HOSTLIST */
           log_log(LOG_ERR, "%s:%d: value %s not supported on platform",
                   filename, lnr, token);
