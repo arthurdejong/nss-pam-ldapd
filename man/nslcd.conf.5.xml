@@ -6,7 +6,7 @@
    nslcd.conf.5.xml - docbook manual page for nslcd.conf
 
    Copyright (C) 1997-2005 Luke Howard
-   Copyright (C) 2007-2019 Arthur de Jong
+   Copyright (C) 2007-2021 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,9 +36,9 @@
  <refmeta>
   <refentrytitle>nslcd.conf</refentrytitle>
   <manvolnum>5</manvolnum>
-  <refmiscinfo class="version">Version 0.9.11</refmiscinfo>
+  <refmiscinfo class="version">Version 0.9.12</refmiscinfo>
   <refmiscinfo class="manual">System Manager's Manual</refmiscinfo>
-  <refmiscinfo class="date">Oct 2019</refmiscinfo>
+  <refmiscinfo class="date">Nov 2021</refmiscinfo>
  </refmeta>
 
  <refnamediv id="name">

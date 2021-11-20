@@ -1,3 +1,196 @@
+2021-11-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6e7e878] man/nslcd.conf.5.xml, nslcd/cfg.c: Support DNSLDAPS
+	  in uri
+
+	  This supports both `uri DNSLDAPS` and `uri DNSLDAPS:some.domain`
+	  variants alongside the pre-existing `uri DNS` that was already
+	  supported generating ldaps URIs for all SRV records found.
+
+2021-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [70819ae] configure.ac, tests/common.h: Fix internal assertion
+	  function detection on Solaris
+
+2021-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7b2a7fe] INSTALL, ar-lib, compile, depcomp, missing, py-compile,
+	  test-driver: Update files from latest automake
+
+2021-11-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9edf95c] tests/test.ldif, tests/test_ldapcmds.sh,
+	  tests/test_nsscmds.sh: Do not use user arthur in tests
+
+	  This makes it more complicated to run the tests on an environment
+	  where a local user arthur exists.
+
+2021-11-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2862447] pynslcd/mypidfile.py: Fix running pynslcd without
+	  uid option
+
+	  Fixes 65695aa
+
+2021-06-04  Ryan Tandy <ryan@nardis.ca>
+
+	* [15f67be] tests/config.ldif, tests/setup_slapd.sh: Support
+	  running tests with OpenLDAP 2.5
+
+	  - Change database backend to LMDB - Load external ppolicy schema
+	  conditionally
+
+2021-11-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4c46eef] .github/workflows/test.yml: Configure CodeQL code
+	  scanning
+
+2021-11-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [906035b] man/nslcd.conf.5.xml, nslcd/cfg.c, tests/test_cfg.c:
+	  Support an empty search base
+
+	  This allows putting `base ""` in nslcd.conf to specify an empty
+	  search base.
+
+	  Note that the LDAP server needs to support this. With slapd this
+	  requires setting up an olcDefaultSearchBase attribute in the
+	  olcFrontendConfig object under cn=config or have the database
+	  have an empty suffix.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/50
+
+2021-10-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7d81616] common/expr.c, tests/test_expr.c: Support minus
+	  character in attribute expressions
+
+	  This requires the attribute name is contained within a ${var-name}
+	  expression.
+
+2021-05-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6d5a2eb] nslcd/myldap.c: Retry connecting to the first URI
+	  after idle_timelimit
+
+	  This ensures that a connection to the first URI listed in the
+	  config file will be re-established once the connection is closed
+	  cleanly after the idle time.
+
+	  This ensures that the listed URIs are handled more in a
+	  primary/fallback manner if an idle time is configured.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/46
+
+2021-05-26  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5226a6f] .github/workflows/test.yml, .travis.yml,
+	  tests/setup_slapd.sh, tests/test_nsscmds.sh: Replace Travis with
+	  GitHub actions
+
+	  This includes a few tweaks to the test scripts to make debugging
+	  easier and to avoid issues on Github action runners.
+
+2021-01-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d9710a2] man/nslcd.conf.5.xml, nslcd/cfg.c: Add tls_reqsan to
+	  check certificate SAN
+
+	  This option is passed to the LDAP library if it is supported.
+
+2021-01-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [026f08c] man/nslcd.conf.5.xml, nslcd/cfg.c: Add tls_crlfile to
+	  check local CRL file
+
+	  This option is passed to the LDAP library if it is supported.
+
+2021-01-18  sebastienblavier
+<72022031+sebastienblavier@users.noreply.github.com>
+
+	* [78c00f1] man/nslcd.conf.5.xml, nslcd.conf, nslcd/cfg.c: Add
+	  tls_crlcheck to check Certificate Revocation List
+
+	  This option is passed to the LDAP library if it is supported.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/pull/41
+
+2021-01-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d55bdb2] Makefile.am: Use the provided Python for `make distcheck`
+
+	  This ensures that if a Python interpreter was previously
+	  supplied to configure it is also used for subsequent calls to
+	  run a distribution check.
+
+2021-01-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b7b812f] ar-lib, compile, depcomp, install-sh, missing,
+	  mkinstalldirs, py-compile, test-driver: Update files from
+	  latest automake
+
+2020-09-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [37a00e9] nslcd/myldap.c: Fix handling of the pam_authc_ppolicy
+	  option
+
+	  Check the result of the BIND operation instead of that of the
+	  ldap_result() call when pam_authc_ppolicy is set to "no".
+
+	  This could have resulted in successful authentication if the BIND
+	  operation to the LDAP server timed out and pam_authc_ppolicy was
+	  set to "no" but should not result in successful authentication
+	  otherwise so it is unlikely that setting pam_authc_ppolicy to
+	  "no" ever worked as intended. The timeout also would have to
+	  occur on the BIND operation, not on setting up the connection.
+
+	  Fixes 31cd2cf
+
+2020-04-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [18740fb] README: Fix typo
+
+	  Thanks Filip Dvorak
+
+	  See https://bugzilla.redhat.com/show_bug.cgi?id=1825240
+
+2020-02-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b335518] man/nslcd.conf.5.xml: Fix typo in manual page
+
+	  Thanks Benedict Reuschling for pointing this out.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/39
+	  Fixes b93838d
+
+2019-11-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [548efe5] nslcd/myldap.c: Log the correct timeout value
+
+	  This fixes logging of the LDAP_OPT_TIMEOUT,
+	  LDAP_OPT_NETWORK_TIMEOUT and LDAP_X_OPT_CONNECT_TIMEOUT options
+	  to actually log the value of the bind_timelimit option instead
+	  of the timelimit option.
+
+2019-10-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fea0f5e] pynslcd/cfg.py, pynslcd/pam.py: Add pam_authc_ppolicy
+	  support in pynslcd
+
+	  See https://bugs.debian.org/900253
+
+2019-10-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1025d5d] utils/chsh.py, utils/shells.py: Fix Python 3
+	  compatibility in chsh.ldap
+
+2019-10-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c4daf27] AUTHORS, ChangeLog, NEWS, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml,
+	  nslcd/nslcd.c, utils/cmdline.py: Get files ready for 0.9.11 release
+
 2019-10-06  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [69922e3] tests/test_doctest.sh: Fix Python interpreter detection
