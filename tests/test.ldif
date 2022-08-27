@@ -41550,7 +41550,7 @@ pwdCheckQuality: 0
 pwdMinAge: 1
 pwdGraceAuthNLimit: 10
 pwdLockoutDuration: 30
-pwdMustChange: TRUE
+pwdMustChange: FALSE
 pwdInHistory: 0
 pwdExpireWarning: 600000
 pwdMaxAge: 660000
