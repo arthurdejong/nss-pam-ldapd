@@ -50,7 +50,7 @@ void daemonize_closefds(void)
      hope we closed enough */
   if (i < 0)
     i = 32;
-  for (; i > 3; i--)
+  for (; i > 2; i--)
     close(i);
 }
 
