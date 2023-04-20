@@ -281,7 +281,7 @@ static int nslcd_request_exists(pam_handle_t *pamh, struct pld_cfg *cfg,
     WRITE_STRING(fp, username),
     /* read the result entry (skip it completely) */
     SKIP_STRING(fp);            /* user name */
-    SKIP_STRING(fp);            /* passwd entry */
+    // SKIP_STRING(fp);            /* passwd entry */
     SKIP(fp, sizeof(int32_t));  /* uid */
     SKIP(fp, sizeof(int32_t));  /* gid */
     SKIP_STRING(fp);            /* gecos */
@@ -294,7 +294,7 @@ static int nslcd_request_exists(pam_handle_t *pamh, struct pld_cfg *cfg,
 static int nslcd_request_authc(pam_handle_t *pamh, struct pld_cfg *cfg,
                                const char *username, const char *service,
                                const char *ruser, const char *rhost,
-                               const char *tty, const char *passwd,
+                               const char *tty
                                struct nslcd_resp *authc_resp,
                                struct nslcd_resp *authz_resp)
 {
@@ -308,7 +308,7 @@ static int nslcd_request_authc(pam_handle_t *pamh, struct pld_cfg *cfg,
     WRITE_STRING(fp, ruser);
     WRITE_STRING(fp, rhost);
     WRITE_STRING(fp, tty);
-    WRITE_STRING(fp, passwd),
+    // WRITE_STRING(fp, passwd),
     /* read the result entry */
     READ_PAM_CODE(fp, authc_resp->res);
     READ_STRING(fp, authc_resp->msg); /* user name */
@@ -458,7 +458,7 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags,
   if (rc != PAM_SUCCESS)
     return remap_pam_rc(rc, &cfg);
   /* if service is "passwd" and pwdmod is not allowed alert user */
-  if (!strcmp(service, "passwd"))
+  /*if (!strcmp(service, "passwd"))
   {
     rc = nslcd_request_config_get(pamh, &cfg, NSLCD_CONFIG_PAM_PASSWORD_PROHIBIT_MESSAGE,
                                   &resp);
@@ -471,25 +471,25 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags,
         pam_error(pamh, "%s", resp.msg);
       return remap_pam_rc(PAM_PERM_DENIED, &cfg);
     }
-  }
+  }*/
   /* prompt the user for a password */
-  rc = pam_get_authtok(pamh, PAM_AUTHTOK, (const char **)&passwd, NULL);
+  /*rc = pam_get_authtok(pamh, PAM_AUTHTOK, (const char **)&passwd, NULL);
   if (rc != PAM_SUCCESS)
   {
     pam_syslog(pamh, LOG_ERR, "failed to get password: %s",
                pam_strerror(pamh, rc));
     return rc;
-  }
+  }*/
   /* check password */
-  if (!cfg.nullok && ((passwd == NULL) || (passwd[0] == '\0')))
+  /*if (!cfg.nullok && ((passwd == NULL) || (passwd[0] == '\0')))
   {
     if (cfg.debug)
       pam_syslog(pamh, LOG_DEBUG, "user has empty password, access denied");
     return PAM_AUTH_ERR;
-  }
+  }*/
   /* do the nslcd request */
   rc = nslcd_request_authc(pamh, &cfg, username, service, ruser, rhost, tty,
-                           passwd, &resp, &(ctx->saved_authz));
+                            &resp, &(ctx->saved_authz));
   if (rc != PAM_SUCCESS)
     return remap_pam_rc(rc, &cfg);
   /* check the authentication result */

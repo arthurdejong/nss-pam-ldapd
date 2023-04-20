@@ -429,7 +429,7 @@ int nslcd_pam_authc(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
   READ_STRING(fp, ruser);
   READ_STRING(fp, rhost);
   READ_STRING(fp, tty);
-  READ_STRING(fp, password);
+  // READ_STRING(fp, password);
   /* log call */
   log_setrequest("authc=\"%s\"", username);
   log_log(LOG_DEBUG, "nslcd_pam_authc(\"%s\",\"%s\",\"%s\")",
