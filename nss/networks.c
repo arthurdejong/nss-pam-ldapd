@@ -49,6 +49,9 @@
   *h_errnop = NO_RECOVERY;                                                  \
   return NSS_STATUS_UNAVAIL;
 
+#ifndef NETDB_INTERNAL
+#define NETDB_INTERNAL -1
+#endif
 #undef ERROR_OUT_BUFERROR
 #define ERROR_OUT_BUFERROR(fp)                                              \
   *errnop = ERANGE;                                                         \
