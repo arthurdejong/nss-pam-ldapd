@@ -153,4 +153,9 @@ struct spwd {
 };
 #endif /* not HAVE_STRUCT_SPWD */
 
+/* Define NETDB_INTERNAL h_errno return code if it is missing */
+#ifndef NETDB_INTERNAL
+#define NETDB_INTERNAL -1
+#endif
+
 #endif /* not COMPAT__NSS_H */
