@@ -311,6 +311,7 @@ passwd (objectClass=posixAccount)
   gecos             - gecos
   homeDirectory     - home directory
   loginShell        - shell
+  userClass         - class (login class on *BSD)
 protocols (objectClass=ipProtocol)
   cn                - protocol name
   ipProtocolNumber  - protocol number

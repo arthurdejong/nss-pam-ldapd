@@ -1921,6 +1921,7 @@ static void cfg_dump(void)
   LOG_ATTMAP(LM_PASSWD, passwd, gecos);
   LOG_ATTMAP(LM_PASSWD, passwd, homeDirectory);
   LOG_ATTMAP(LM_PASSWD, passwd, loginShell);
+  LOG_ATTMAP(LM_PASSWD, passwd, class);
   LOG_ATTMAP(LM_PROTOCOLS, protocol, cn);
   LOG_ATTMAP(LM_PROTOCOLS, protocol, ipProtocolNumber);
   LOG_ATTMAP(LM_RPC, rpc, cn);
