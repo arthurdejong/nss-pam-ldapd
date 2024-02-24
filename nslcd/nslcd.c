@@ -2,7 +2,7 @@
    nslcd.c - ldap local connection daemon
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2019 Arthur de Jong
+   Copyright (C) 2006-2024 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -91,6 +91,9 @@ static int nslcd_nofork = 0;
 /* flag to indicate user requested the --check option */
 static int nslcd_checkonly = 0;
 
+/* name of the configuration file to load */
+static char *nslcd_conf_path = NSLCD_CONF_PATH;
+
 /* the flag to indicate that a signal was received */
 static volatile int nslcd_receivedsignal = 0;
 
@@ -134,6 +137,7 @@ static void display_usage(FILE *fp, const char *program_name)
   fprintf(fp, "  -c, --check        check if the daemon already is running\n");
   fprintf(fp, "  -d, --debug        don't fork and print debugging to stderr\n");
   fprintf(fp, "  -n, --nofork       don't fork\n");
+  fprintf(fp, "  -f, --config=FILE  alternative configuration file (default %s)\n", NSLCD_CONF_PATH);
   fprintf(fp, "      --help         display this help and exit\n");
   fprintf(fp, "      --version      output version information and exit\n");
   fprintf(fp, "\n" "Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
@@ -141,14 +145,15 @@ static void display_usage(FILE *fp, const char *program_name)
 
 /* the definition of options for getopt(). see getopt(2) */
 static struct option const nslcd_options[] = {
-  {"check",   no_argument, NULL, 'c'},
-  {"debug",   no_argument, NULL, 'd'},
-  {"nofork",  no_argument, NULL, 'n'},
-  {"help",    no_argument, NULL, 'h'},
-  {"version", no_argument, NULL, 'V'},
-  {NULL,      0,           NULL, 0}
+  {"check",   no_argument,       NULL, 'c'},
+  {"debug",   no_argument,       NULL, 'd'},
+  {"nofork",  no_argument,       NULL, 'n'},
+  {"config",  required_argument, NULL, 'f'},
+  {"help",    no_argument,       NULL, 'h'},
+  {"version", no_argument,       NULL, 'V'},
+  {NULL,      0,                 NULL, 0}
 };
-#define NSLCD_OPTIONSTRING "cndhV"
+#define NSLCD_OPTIONSTRING "cndf:hV"
 
 /* parse command line options and save settings in struct  */
 static void parse_cmdline(int argc, char *argv[])
@@ -167,6 +172,14 @@ static void parse_cmdline(int argc, char *argv[])
         break;
       case 'n': /* -n, --nofork       don't fork */
         nslcd_nofork++;
+        break;
+      case 'f': /* -f, --config=FILE  alternative configuration file */
+        nslcd_conf_path = strdup(optarg);
+        if (nslcd_conf_path == NULL)
+        {
+          log_log(LOG_CRIT, "strdup() failed to allocate memory");
+          exit(EXIT_FAILURE);
+        }
         break;
       case 'h': /*     --help         display this help and exit */
         display_usage(stdout, argv[0]);
@@ -721,7 +734,7 @@ int main(int argc, char *argv[])
   if (myldap_set_debuglevel(nslcd_debugging) != LDAP_SUCCESS)
     exit(EXIT_FAILURE);
   /* read configuration file */
-  cfg_init(NSLCD_CONF_PATH);
+  cfg_init(nslcd_conf_path);
   /* set default mode for pidfile and socket */
   (void)umask((mode_t)0022);
   /* see if someone already locked the pidfile

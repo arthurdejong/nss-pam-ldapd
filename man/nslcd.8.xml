@@ -6,7 +6,7 @@
    nslcd.8.xml - docbook manual page for nslcd
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2021 Arthur de Jong
+   Copyright (C) 2006-2024 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -112,6 +112,19 @@
      <para>
       Do not fork or daemonise and run <command>nslcd</command> in the
       foreground.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry id="config">
+    <term>
+     <option>-f</option>, <option>--config</option>
+     <option><replaceable>FILE</replaceable></option>
+    </term>
+    <listitem>
+     <para>
+      Parse the supplied configuration file in place of the default
+      <filename>/etc/nslcd.conf</filename> file.
      </para>
     </listitem>
    </varlistentry>
