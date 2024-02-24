@@ -129,6 +129,20 @@
     </listitem>
    </varlistentry>
 
+   <varlistentry id="test">
+    <term>
+     <option>-t</option>, <option>--test</option>
+    </term>
+    <listitem>
+     <para>
+      Validate the configuration and exit. This performs syntax checking of the configuration,
+      checks for presence of files referred in the configuration and does some minimal other
+      sanity checking.
+      This causes <command>nslcd</command> to return 0 if the configuration appears valid and 1 if it is not.
+     </para>
+    </listitem>
+   </varlistentry>
+
    <varlistentry id="help">
     <term>
      <option>--help</option>

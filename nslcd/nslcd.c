@@ -94,6 +94,9 @@ static int nslcd_checkonly = 0;
 /* name of the configuration file to load */
 static char *nslcd_conf_path = NSLCD_CONF_PATH;
 
+/* flag to indicate user requested the --test option */
+static int nslcd_testconfig = 0;
+
 /* the flag to indicate that a signal was received */
 static volatile int nslcd_receivedsignal = 0;
 
@@ -138,6 +141,7 @@ static void display_usage(FILE *fp, const char *program_name)
   fprintf(fp, "  -d, --debug        don't fork and print debugging to stderr\n");
   fprintf(fp, "  -n, --nofork       don't fork\n");
   fprintf(fp, "  -f, --config=FILE  alternative configuration file (default %s)\n", NSLCD_CONF_PATH);
+  fprintf(fp, "  -t, --test         test configuration for validity and exit\n");
   fprintf(fp, "      --help         display this help and exit\n");
   fprintf(fp, "      --version      output version information and exit\n");
   fprintf(fp, "\n" "Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
@@ -149,11 +153,12 @@ static struct option const nslcd_options[] = {
   {"debug",   no_argument,       NULL, 'd'},
   {"nofork",  no_argument,       NULL, 'n'},
   {"config",  required_argument, NULL, 'f'},
+  {"test",    no_argument,       NULL, 't'},
   {"help",    no_argument,       NULL, 'h'},
   {"version", no_argument,       NULL, 'V'},
   {NULL,      0,                 NULL, 0}
 };
-#define NSLCD_OPTIONSTRING "cndf:hV"
+#define NSLCD_OPTIONSTRING "cndf:thV"
 
 /* parse command line options and save settings in struct  */
 static void parse_cmdline(int argc, char *argv[])
@@ -180,6 +185,9 @@ static void parse_cmdline(int argc, char *argv[])
           log_log(LOG_CRIT, "strdup() failed to allocate memory");
           exit(EXIT_FAILURE);
         }
+        break;
+      case 't': /* -t, --test        test configuration for validity and exit */
+        nslcd_testconfig = 1;
         break;
       case 'h': /*     --help         display this help and exit */
         display_usage(stdout, argv[0]);
@@ -735,6 +743,12 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   /* read configuration file */
   cfg_init(nslcd_conf_path);
+  /* exit if we only wanted to check the configuration */
+  if (nslcd_testconfig)
+  {
+    log_log(LOG_INFO, "config (%s) OK", nslcd_conf_path);
+    exit(EXIT_SUCCESS);
+  }
   /* set default mode for pidfile and socket */
   (void)umask((mode_t)0022);
   /* see if someone already locked the pidfile
