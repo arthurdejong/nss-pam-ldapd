@@ -7,11 +7,12 @@
   cp -f /usr/share/misc/config.sub config.sub
 [ -r /usr/share/misc/config.guess ] && \
   cp -f /usr/share/misc/config.guess config.guess
+automake_libdir="`automake --print-libdir`"
 for fname in INSTALL ar-lib compile depcomp install-sh missing \
              mkinstalldirs py-compile test-driver
 do
-  [ -r /usr/share/automake-1.15/$fname ] && \
-    cp -f /usr/share/automake-1.15/$fname $fname
+  [ -r "$automake_libdir/$fname" ] && \
+    cp -f "$automake_libdir/$fname" "$fname"
 done
 
 # generate aclocal.m4 from configure.ac

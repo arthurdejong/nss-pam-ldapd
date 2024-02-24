@@ -30,7 +30,7 @@ stamp-*
 /configure
 /configure.lineno
 /confinc.out
-/conftest.tail
+/conftest*
 /flawfinder.html
 /nss-pam-ldapd-*
 /pscan.txt
