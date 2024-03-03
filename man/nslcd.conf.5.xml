@@ -442,12 +442,15 @@
        The <replaceable>ATTRIBUTE</replaceable> is the one as
        used in <acronym>RFC</acronym> 2307 (e.g. <literal>userPassword</literal>,
        <literal>ipProtocolNumber</literal>, <literal>macAddress</literal>, etc.).
-       The <replaceable>NEWATTRIBUTE</replaceable> may be any attribute
+      </para>
+      <para>
+       The <replaceable>NEWATTRIBUTE</replaceable> may be the name of any attribute
        as it is available in the directory.
       </para>
       <para>
-       If the <replaceable>NEWATTRIBUTE</replaceable> is presented in
-       quotes (") it is treated as an expression which will be evaluated
+       If the <replaceable>NEWATTRIBUTE</replaceable> is quoted (")
+       as <replaceable>"EXPRESSION"</replaceable>
+       it is treated as an expression which will be evaluated
        to build up the actual value used.
        See the section on attribute mapping expressions below for more details.
       </para>
@@ -1118,27 +1121,27 @@
   </para>
   <variablelist remap="TP">
    <varlistentry>
-    <term><literal>${attr}</literal> (or <literal>$attr</literal> for short)</term>
+    <term><literal>"${attr}"</literal> (or <literal>"$attr"</literal> for short)</term>
     <listitem><para>
      will substitute the value of the attribute
     </para></listitem>
    </varlistentry>
    <varlistentry>
-    <term><literal>${attr:-word}</literal></term>
+    <term><literal>"${attr:-word}"</literal></term>
     <listitem><para>
      (use default) will substitute the value of the attribute or, if the
      attribute is not set or empty substitute the word
     </para></listitem>
    </varlistentry>
    <varlistentry>
-    <term><literal>${attr:+word}</literal></term>
+    <term><literal>"${attr:+word}"</literal></term>
     <listitem><para>
      (use alternative) will substitute <literal>word</literal> if attribute
      is set, otherwise substitute the empty string
     </para></listitem>
    </varlistentry>
    <varlistentry> <!-- since 0.9.7 -->
-     <term><literal>${attr:offset:length}</literal></term>
+     <term><literal>"${attr:offset:length}"</literal></term>
      <listitem><para>
        will substitute <literal>length</literal> characters (actually
        bytes) starting from position <literal>offset</literal> (which
@@ -1149,28 +1152,28 @@
      </para></listitem>
    </varlistentry>
    <varlistentry> <!-- since 0.9.0 -->
-    <term><literal>${attr#word}</literal></term>
+    <term><literal>"${attr#word}"</literal></term>
     <listitem><para>
      remove the shortest possible match of <literal>word</literal> from the
      left of the attribute value
     </para></listitem>
    </varlistentry>
    <varlistentry> <!-- since 0.9.0 (pynslcd only) -->
-    <term><literal>${attr##word}</literal></term>
+    <term><literal>"${attr##word}"</literal></term>
     <listitem><para>
      remove the longest possible match of <literal>word</literal> from the
      left of the attribute value (<command>pynslcd</command> only)
     </para></listitem>
    </varlistentry>
    <varlistentry> <!-- since 0.9.0 (pynslcd only) -->
-    <term><literal>${attr%word}</literal></term>
+    <term><literal>"${attr%word}"</literal></term>
     <listitem><para>
      remove the shortest possible match of <literal>word</literal> from the
      right of the attribute value (<command>pynslcd</command> only)
     </para></listitem>
    </varlistentry>
    <varlistentry> <!-- since 0.9.0 (pynslcd only) -->
-    <term><literal>${attr%%word}</literal></term>
+    <term><literal>"${attr%%word}"</literal></term>
     <listitem><para>
      remove the longest possible match of <literal>word</literal> from the
      right of the attribute value (<command>pynslcd</command> only)
@@ -1195,28 +1198,28 @@
   </para>
   <variablelist remap="TP">
    <varlistentry>
-    <term><literal>"${shadowFlag:-0}"</literal></term>
+    <term><literal>map shadow shadowFlag "${shadowFlag:-0}"</literal></term>
     <listitem><para>
      use the <literal>shadowFlag</literal> attribute, using the
      value 0 as default
     </para></listitem>
    </varlistentry>
    <varlistentry>
-    <term><literal>"${homeDirectory:-/home/$uid}"</literal></term>
+    <term><literal>map passd homeDirectory "${homeDirectory:-/home/$uid}"</literal></term>
     <listitem><para>
      use the <literal>uid</literal> attribute to build a
      <literal>homeDirectory</literal> value if that attribute is missing
     </para></listitem>
    </varlistentry>
    <varlistentry>
-    <term><literal>"${isDisabled:+100}"</literal></term>
+    <term><literal>map shadow shadowExpire "${isDisabled:+100}"</literal></term>
     <listitem><para>
      if the <literal>isDisabled</literal> attribute is set, return 100,
      otherwise leave value empty
     </para></listitem>
    </varlistentry>
    <varlistentry>
-    <term><literal>"${userPassword#{crypt\}}"</literal></term>
+    <term><literal>map shadow userPassword "${userPassword#{crypt\}}"</literal></term>
     <listitem><para>
      strip the {crypt} prefix from the userPassword attribute, returning
      the raw hash value
