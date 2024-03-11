@@ -83,3 +83,6 @@ stamp-*
 
 # /utils/
 /utils/constants.py
+
+# /po/
+/po/*.gmo

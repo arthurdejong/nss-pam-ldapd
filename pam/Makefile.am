@@ -20,7 +20,7 @@
 
 noinst_PROGRAMS = pam_ldap.so
 
-AM_CPPFLAGS=-I$(top_srcdir)
+AM_CPPFLAGS=-I$(top_srcdir) -DLOCALEDIR=\"$(localedir)\"
 AM_CFLAGS = $(PIC_CFLAGS)
 
 pam_ldap_so_SOURCES = ../nslcd.h ../common/nslcd-prot.h \
