@@ -20,7 +20,7 @@
 
 sbin_PROGRAMS = nslcd
 
-AM_CPPFLAGS=-I$(top_srcdir)
+AM_CPPFLAGS=-I$(top_srcdir) -DLOCALEDIR=\"$(localedir)\"
 AM_CFLAGS = $(PTHREAD_CFLAGS)
 
 nslcd_SOURCES = nslcd.c ../nslcd.h ../common/nslcd-prot.h \

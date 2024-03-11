@@ -1,0 +1,118 @@
+# Finnish translations for nss-pam-ldapd package.
+# Copyright (C) 2024 THE nss-pam-ldapd'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the nss-pam-ldapd package.
+#  <tero.saarni@est.tech>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: nss-pam-ldapd 0.9.12\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-15 13:10+0300\n"
+"PO-Revision-Date: 2024-03-11 06:10+0000\n"
+"Last-Translator:  <tero.saarni@est.tech>\n"
+"Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../pam/pam.c:719
+msgid "LDAP administrator password: "
+msgstr "LDAP-ylläpitäjän salasana: "
+
+#: ../pam/pam.c:736
+msgid "(current) LDAP Password: "
+msgstr "(nykyinen) LDAP-salasana: "
+
+#: ../nslcd/myldap.c:439
+#, c-format
+msgid "Password will expire in %u days"
+msgstr "Salasana vanhentuu %u päivän päästä"
+
+#: ../nslcd/myldap.c:442 ../nslcd/myldap.c:451
+#, c-format
+msgid "Password will expire in %u hours"
+msgstr "Salasana vanhentuu %u tunnin päästä"
+
+#: ../nslcd/myldap.c:447
+#, c-format
+msgid "Password will expire in %u hours and %u minutes"
+msgstr "Salasana vanhentuu %u tunnin ja %u minuuttin päästä"
+
+#: ../nslcd/myldap.c:455 ../nslcd/myldap.c:464
+#, c-format
+msgid "Password will expire in %u minutes"
+msgstr "Salasana vanhentuu %u minuutin päästä"
+
+#: ../nslcd/myldap.c:460
+#, c-format
+msgid "Password will expire in %u minutes and %u seconds"
+msgstr "Salasana vanhentuu %u minuutin ja %u sekunnin päästä"
+
+#: ../nslcd/myldap.c:468
+#, c-format
+msgid "Password will expire in %u seconds"
+msgstr "Salasana vanhentuu %u sekunnin päästä"
+
+#: ../nslcd/myldap.c:570
+#, c-format
+msgid "Password expired, %d grace logins left"
+msgstr "Salasana vanhentunut, %d kirjautumista jäljellä"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:38
+msgid "Password expired"
+msgstr "Salasana vanhentunut"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:39
+msgid "Account locked"
+msgstr "Käyttäjätili lukittu"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:40
+msgid "Change after reset"
+msgstr "Salasana on vaihdettava nollauksen jälkeen"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:41
+msgid "Password modification not allowed"
+msgstr "Salasanan muuttaminen ei ole sallittua"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:42
+msgid "Must supply old password"
+msgstr "Anna vanha salasana"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:43
+msgid "Insufficient password quality"
+msgstr "Riittämätön salasanan laatu"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:44
+msgid "Password too short"
+msgstr "Salasana on liian lyhyt"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:45
+msgid "Password too young"
+msgstr "Salasana on vaihdettu liian äskettäin"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:46
+msgid "Password in history"
+msgstr "Uusi salasana on vanhojen salasanojen luettelossa"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:47
+msgid "No error"
+msgstr "Ei virhettä"
+
+#: ../compat/ldap_passwordpolicy_err2txt.c:48
+msgid "Unknown error"
+msgstr "Tuntematon virhe"
+
+#: ../compat/pam_get_authtok.c:61
+msgid "New Password: "
+msgstr "Uusi salasana: "
+
+#: ../compat/pam_get_authtok.c:62
+#, c-format
+msgid "Retype %s"
+msgstr "Kirjoita uudelleen %s"
+
+#: ../compat/pam_get_authtok.c:66
+msgid "Password: "
+msgstr "Salasana: "

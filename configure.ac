@@ -1002,6 +1002,29 @@ then
   AC_SUBST(nslcd_LIBS)
 fi
 
+# Optional NLS support
+AC_MSG_CHECKING([whether to build the NLS support])
+AC_ARG_ENABLE([nls],
+  AS_HELP_STRING([--enable-nls], [enable Native Language Support]),
+  [enable_nls=$enableval], [enable_nls=false]
+)
+AC_MSG_RESULT($enable_nls)
+# If NLS is enabled, check for the required functions.
+if test x$enable_nls = xyes; then
+    AC_CHECK_FUNCS([dgettext bindtextdomain], [], [enable_nls=false])
+    if test x$enable_nls != xyes; then
+      AC_MSG_ERROR([Functions required for NLS are not available])
+    fi
+
+    AC_CHECK_PROG(MSGFMT, msgfmt, yes)
+    if test x$MSGFMT != xyes; then
+      AC_MSG_ERROR([Command msgfmt not found])
+    fi
+
+    AC_DEFINE([ENABLE_NLS], [1], [Define if NLS support is enabled])
+fi
+AM_CONDITIONAL([ENABLE_NLS], [test x$enable_nls = xyes])
+
 # pynslcd-specific tests
 if test "x$enable_pynslcd" = "xyes"
 then
@@ -1036,7 +1059,7 @@ AM_CONDITIONAL([NSS_FLAVOUR_FREEBSD], [test "x${with_nss_flavour}" = xfreebsd])
 # generate files
 AC_CONFIG_FILES([Makefile compat/Makefile common/Makefile nss/Makefile
                  pam/Makefile utils/Makefile nslcd/Makefile pynslcd/Makefile
-                 man/Makefile tests/Makefile])
+                 man/Makefile tests/Makefile po/Makefile])
 AC_CONFIG_FILES([pynslcd/constants.py], [[
 (
   echo ''
