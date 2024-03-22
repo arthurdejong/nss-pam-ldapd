@@ -173,6 +173,17 @@
      </para>
     </listitem>
    </varlistentry>
+   <varlistentry id="clear_first_pass">
+    <term>
+     <option>clear_first_pass</option>
+    </term>
+    <listitem>
+     <para>
+      This causes the <acronym>PAM</acronym> module not to retain the password
+      in memory after authentication is complete.
+     </para>
+    </listitem>
+   </varlistentry>
   </variablelist>
  </refsect1>
 
