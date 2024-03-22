@@ -173,6 +173,17 @@
      </para>
     </listitem>
    </varlistentry>
+   <varlistentry id="clear_first_pass">
+    <term>
+     <option>clear_first_pass</option>
+    </term>
+    <listitem>
+     <para>
+      This causes the <acronym>PAM</acronym> module not to use the previous
+      stacked modules password and will always prompt the user.
+     </para>
+    </listitem>
+   </varlistentry>
   </variablelist>
  </refsect1>
 
