@@ -221,13 +221,6 @@ static void sig_handler(int signum)
 /* do some cleaning up before terminating */
 static void exithandler(void)
 {
-  /* close socket if it's still in use */
-  if (nslcd_serversocket >= 0)
-  {
-    if (close(nslcd_serversocket))
-      log_log(LOG_WARNING, "problem closing server socket (ignored): %s",
-              strerror(errno));
-  }
   /* remove existing named socket */
   if (unlink(NSLCD_SOCKET) < 0)
   {
@@ -918,7 +911,6 @@ int main(int argc, char *argv[])
               i, strerror(errno));
   /* close server socket to trigger failures in threads waiting on accept() */
   close(nslcd_serversocket);
-  nslcd_serversocket = -1;
   /* if we can, wait a few seconds for the threads to finish */
 #ifdef HAVE_PTHREAD_TIMEDJOIN_NP
   ts.tv_sec = time(NULL) + 3;
