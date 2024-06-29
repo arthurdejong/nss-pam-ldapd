@@ -927,10 +927,16 @@ int main(int argc, char *argv[])
   for (i = 0; i < nslcd_cfg->threads; i++)
   {
 #ifdef HAVE_PTHREAD_TIMEDJOIN_NP
-    pthread_timedjoin_np(nslcd_threads[i], NULL, &ts);
-#endif /* HAVE_PTHREAD_TIMEDJOIN_NP */
+    if (pthread_timedjoin_np(nslcd_threads[i], NULL, &ts) == -1) {
+      if (errno != EBUSY)
+        log_log(LOG_ERR, "thread %d cannot be joined (ignoring): %s", i,
+                strerror(errno));
+      log_log(LOG_ERR, "thread %d is still running, shutting down anyway", i);
+    }
+#else
     if (pthread_kill(nslcd_threads[i], 0) == 0)
       log_log(LOG_ERR, "thread %d is still running, shutting down anyway", i);
+#endif /* HAVE_PTHREAD_TIMEDJOIN_NP */
   }
   /* we're done */
   return EXIT_SUCCESS;
