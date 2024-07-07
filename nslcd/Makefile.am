@@ -21,7 +21,7 @@
 sbin_PROGRAMS = nslcd
 
 AM_CPPFLAGS=-I$(top_srcdir)
-AM_CFLAGS = $(PTHREAD_CFLAGS)
+AM_CFLAGS = $(PTHREAD_CFLAGS) $(DEBUG_CFLAGS) $(EXTRA_CFLAGS)
 
 nslcd_SOURCES = nslcd.c ../nslcd.h ../common/nslcd-prot.h \
                 ../compat/attrs.h \
