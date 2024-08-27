@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2017 Arthur de Jong
+   Copyright (C) 2006-2024 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -293,8 +293,16 @@ char *dn2uid(MYLDAP_SESSION *session, const char *dn, char *buf, size_t buflen)
   /* see if we have a cached entry */
   pthread_mutex_lock(&dn2uid_cache_mutex);
   if (dn2uid_cache == NULL)
+  {
     dn2uid_cache = dict_new();
-  if ((dn2uid_cache != NULL) && ((cacheentry = dict_get(dn2uid_cache, dn)) != NULL))
+    if (dn2uid_cache == NULL)
+    {
+      log_log(LOG_ERR, "dict_new() failed to allocate memory");
+      pthread_mutex_unlock(&dn2uid_cache_mutex);
+      return NULL;
+    }
+  }
+  if ((cacheentry = dict_get(dn2uid_cache, dn)) != NULL)
   {
     if ((cacheentry->uid != NULL) && (strlen(cacheentry->uid) < buflen))
     {
