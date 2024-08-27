@@ -685,7 +685,10 @@ static void handle_base(const char *filename, int lnr,
 #endif /* not HAVE_LDAP_DOMAIN2DN */
   }
   if (strcasecmp(value, "\"\"") == 0)
+  {
+    free(value);
     value = "";
+  }
   /* find the spot in the list of bases */
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
     if (bases[i] == NULL)
