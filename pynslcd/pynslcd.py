@@ -245,12 +245,12 @@ def disable_nss_ldap():
         ctypes.c_int.in_dll(
             lib, '_nss_%s_enablelookups' % constants.MODULE_NAME).value = 0
     except ValueError:
-        logging.warn('probably older NSS module loaded', exc_info=True)
+        logging.warning('probably older NSS module loaded', exc_info=True)
     try:
         version_info = (ctypes.c_char_p * 2).in_dll(lib, '_nss_ldap_version')
         logging.debug('NSS_LDAP %s %s', version_info[0], version_info[1])
     except ValueError:
-        logging.warn('probably older NSS module loaded', exc_info=True)
+        logging.warning('probably older NSS module loaded', exc_info=True)
 
 
 def worker(nslcd_serversocket):
