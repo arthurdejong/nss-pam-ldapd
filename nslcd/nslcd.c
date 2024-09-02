@@ -61,6 +61,7 @@
 #include "log.h"
 #include "cfg.h"
 #include "common.h"
+#include "common/gettext.h"
 #include "compat/attrs.h"
 #include "compat/getpeercred.h"
 #include "compat/socket.h"
@@ -717,6 +718,12 @@ int main(int argc, char *argv[])
   daemonize_closefds();
   /* parse the command line */
   parse_cmdline(argc, argv);
+  /* initialize locale before environment is cleared */
+#ifdef ENABLE_NLS
+  setlocale(LC_ALL, "");
+  bindtextdomain(PACKAGE, LOCALEDIR);
+  textdomain(PACKAGE);
+#endif
   /* clean the environment */
 #ifdef HAVE_CLEARENV
   if (clearenv() || putenv("HOME=/") || putenv("TMPDIR=/tmp") ||
