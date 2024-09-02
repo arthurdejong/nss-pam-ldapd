@@ -150,6 +150,7 @@ struct pld_cfg {
   int ignore_authinfo_unavail;
   int debug;
   uid_t minimum_uid;
+  int clear_first_pass;
 };
 
 static void cfg_init(pam_handle_t *pamh, int flags,
@@ -164,6 +165,7 @@ static void cfg_init(pam_handle_t *pamh, int flags,
   cfg->ignore_authinfo_unavail = 0;
   cfg->debug = 0;
   cfg->minimum_uid = 0;
+  cfg->clear_first_pass = 0;
   /* go over arguments */
   for (i = 0; i < argc; i++)
   {
@@ -185,6 +187,8 @@ static void cfg_init(pam_handle_t *pamh, int flags,
       cfg->debug = 1;
     else if (strncmp(argv[i], "minimum_uid=", 12) == 0)
       cfg->minimum_uid = (uid_t)atoi(argv[i] + 12);
+    else if (strcmp(argv[i], "clear_first_pass") == 0)
+      cfg->clear_first_pass = 1;
     else
       pam_syslog(pamh, LOG_ERR, "unknown option: %s", argv[i]);
   }
@@ -503,7 +507,9 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags,
   if (cfg.debug)
     pam_syslog(pamh, LOG_DEBUG, "authentication succeeded");
   /* if password change is required, save old password in context */
-  if ((ctx->saved_authz.res == PAM_NEW_AUTHTOK_REQD) && (ctx->oldpassword == NULL))
+  if ((cfg.clear_first_pass == 0) &&
+      (ctx->saved_authz.res == PAM_NEW_AUTHTOK_REQD) &&
+      (ctx->oldpassword == NULL))
     ctx->oldpassword = strdup(passwd);
   /* update caller's idea of the user name */
   if ((resp.msg[0] != '\0') && (strcmp(resp.msg, username) != 0))
@@ -682,6 +688,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh, int flags,
       pam_error(pamh, "%s", resp.msg);
     return remap_pam_rc(PAM_PERM_DENIED, &cfg);
   }
+
   /* see if we are dealing with an LDAP user first */
   rc = nslcd_request_exists(pamh, &cfg, username);
   if (rc != PAM_SUCCESS)
