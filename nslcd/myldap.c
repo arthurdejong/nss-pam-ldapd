@@ -2116,7 +2116,7 @@ static char **get_exploded_rdn(const char *dn)
   if ((dn == NULL) || (strcasecmp(dn, "unknown") == 0))
     return NULL;
   /* explode dn into { "uid=test", "ou=people", ..., NULL } */
-  exploded_dn = ldap_explode_dn(dn, 0);
+  exploded_dn = ldap_explode_dn(dn, LDAP_DN_FORMAT_LDAPV3);
   if ((exploded_dn == NULL) || (exploded_dn[0] == NULL))
   {
     log_log(LOG_WARNING, "ldap_explode_dn(%s) returned NULL: %s",
@@ -2127,7 +2127,7 @@ static char **get_exploded_rdn(const char *dn)
      e.g. "cn=Test User+uid=testusr" into
      { "cn=Test User", "uid=testusr", NULL } */
   errno = 0;
-  exploded_rdn = ldap_explode_rdn(exploded_dn[0], 0);
+  exploded_rdn = ldap_explode_rdn(exploded_dn[0], LDAP_DN_FORMAT_LDAPV3);
   if ((exploded_rdn == NULL) || (exploded_rdn[0] == NULL))
   {
     log_log(LOG_WARNING, "ldap_explode_rdn(%s) returned NULL: %s",
