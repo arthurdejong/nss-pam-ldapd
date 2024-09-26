@@ -462,8 +462,9 @@
        may be mapped with an expression.
        For passwd entries the following attributes may be mapped with an
        expression: <literal>userPassword</literal>, <literal>gidNumber</literal>,
-       <literal>gecos</literal>, <literal>homeDirectory</literal> and
-       <literal>loginShell</literal>.
+       <literal>gecos</literal>, <literal>homeDirectory</literal>, and
+       <literal>loginShell</literal>. Additionally on *BSD systems the
+       passwd attribute <literal>class</literal> may also be mapped.
        For shadow entries the following attributes may be mapped with an
        expression: <literal>userPassword</literal>, <literal>shadowLastChange</literal>,
        <literal>shadowMin</literal>, <literal>shadowMax</literal>,

@@ -176,6 +176,7 @@ const char **attmap_get_var(enum ldap_map_selector map, const char *name)
     if (strcasecmp(name, "gecos") == 0)             return &attmap_passwd_gecos;
     if (strcasecmp(name, "homeDirectory") == 0)     return &attmap_passwd_homeDirectory;
     if (strcasecmp(name, "loginShell") == 0)        return &attmap_passwd_loginShell;
+    if (strcasecmp(name, "class") == 0)             return &attmap_passwd_class;
   }
   else if (map == LM_PROTOCOLS)
   {
@@ -223,6 +224,7 @@ const char *attmap_set_mapping(const char **var, const char *value)
         (var != &attmap_passwd_gecos) &&
         (var != &attmap_passwd_homeDirectory) &&
         (var != &attmap_passwd_loginShell) &&
+        (var != &attmap_passwd_class) &&
         (var != &attmap_shadow_userPassword) &&
         (var != &attmap_shadow_shadowLastChange) &&
         (var != &attmap_shadow_shadowMin) &&
