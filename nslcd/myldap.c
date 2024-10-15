@@ -70,6 +70,7 @@
 #include "common.h"
 #include "log.h"
 #include "cfg.h"
+#include "common/gettext.h"
 #include "common/set.h"
 #include "compat/ldap_compat.h"
 #include "attmap.h"
@@ -435,36 +436,36 @@ static void print_ppolicy_expiry(MYLDAP_SESSION *session, unsigned int sec)
   }
   if (days > 1)
     mysnprintf(session->policy_message, sizeof(session->policy_message),
-               "Password will expire in %u days", days);
+               _("Password will expire in %u days"), days);
   else if (days > 0)
     mysnprintf(session->policy_message, sizeof(session->policy_message),
-               "Password will expire in %u hours", hours + 24);
+               _("Password will expire in %u hours"), hours + 24);
   else if (hours > 1)
   {
     if (minutes > 1)
       mysnprintf(session->policy_message, sizeof(session->policy_message),
-                 "Password will expire in %u hours and %u minutes",
-                 hours, minutes);
+                 _("Password will expire in %u hours and %u minutes"), hours,
+                 minutes);
     else
       mysnprintf(session->policy_message, sizeof(session->policy_message),
-                 "Password will expire in %u hours", hours);
+                 _("Password will expire in %u hours"), hours);
   }
   else if (hours > 0)
     mysnprintf(session->policy_message, sizeof(session->policy_message),
-               "Password will expire in %u minutes", minutes + 60);
+               _("Password will expire in %u minutes"), minutes + 60);
   else if (minutes > 1)
   {
     if (sec > 1)
       mysnprintf(session->policy_message, sizeof(session->policy_message),
-                 "Password will expire in %u minutes and %u seconds",
+                 _("Password will expire in %u minutes and %u seconds"),
                  minutes, sec);
     else
       mysnprintf(session->policy_message, sizeof(session->policy_message),
-                 "Password will expire in %u minutes", minutes);
+                 _("Password will expire in %u minutes"), minutes);
   }
   else
     mysnprintf(session->policy_message, sizeof(session->policy_message),
-               "Password will expire in %u seconds", sec);
+               _("Password will expire in %u seconds"), sec);
 }
 
 static void handle_ppolicy_controls(MYLDAP_SESSION *session, LDAP *ld, LDAPControl **ctrls)
@@ -566,7 +567,7 @@ static void handle_ppolicy_controls(MYLDAP_SESSION *session, LDAP *ld, LDAPContr
           /* this indicates the number of grace logins that are left before
              no further login attempts will be allowed */
           mysnprintf(session->policy_message, sizeof(session->policy_message),
-                     "Password expired, %d grace logins left", grace);
+                     _("Password expired, %d grace logins left"), grace);
         }
       }
     }

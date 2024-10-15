@@ -35,6 +35,9 @@ endif
 if ENABLE_UTILS
   SUBDIRS += utils
 endif
+if ENABLE_NLS
+  SUBDIRS += po
+endif
 SUBDIRS += man tests
 
 EXTRA_DIST = nslcd.conf nslcd.h $(wildcard ChangeLog-20??) \
