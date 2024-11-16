@@ -30,18 +30,21 @@ nss_ldap_so_SOURCES = common.c common.h prototypes.h solnss.h \
                       ../compat/attrs.h
 EXTRA_nss_ldap_so_SOURCES = aliases.c ethers.c group.c hosts.c netgroup.c \
                             networks.c passwd.c protocols.c rpc.c services.c \
-                            shadow.c solnss.c bsdnss.c
+                            shadow.c solnss.c freebsdnss.c netbsdnss.c
 nss_ldap_so_LDADD = $(NSS_MODULE_OBJS)
 if NSS_FLAVOUR_SOLARIS
 nss_ldap_so_LDADD += solnss.$(OBJEXT) ../common/libdict.a
 endif
 if NSS_FLAVOUR_FREEBSD
-nss_ldap_so_LDADD += bsdnss.$(OBJEXT)
+nss_ldap_so_LDADD += freebsdnss.$(OBJEXT)
+endif
+if NSS_FLAVOUR_NETBSD
+nss_ldap_so_LDADD += netbsdnss.$(OBJEXT)
 endif
 nss_ldap_so_LDADD += ../common/libtio.a ../common/libprot.a
 nss_ldap_so_DEPENDENCIES = $(nss_ldap_so_LDADD) exports.map
 
-EXTRA_DIST = exports.glibc exports.solaris exports.freebsd
+EXTRA_DIST = exports.glibc exports.solaris exports.freebsd exports.netbsd
 CLEANFILES = exports.map
 
 exports.map: $(EXTRA_DIST) Makefile
@@ -51,9 +54,9 @@ install-exec-local: install-nss_ldap_so
 uninstall-local: uninstall-nss_ldap_so
 
 install-nss_ldap_so: nss_ldap.so
-	-rm -f $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)
-	$(mkinstalldirs) $(DESTDIR)$(libdir)
-	$(INSTALL_PROGRAM) nss_ldap.so $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)
+	-rm -f $(DESTDIR)$(NSS_LIBDIR)/$(NSS_LDAP_SONAME)
+	$(mkinstalldirs) $(DESTDIR)$(NSS_LIBDIR)
+	$(INSTALL_PROGRAM) nss_ldap.so $(DESTDIR)$(NSS_LIBDIR)/$(NSS_LDAP_SONAME)
 
 uninstall-nss_ldap_so:
-	-rm -f $(DESTDIR)$(libdir)/$(NSS_LDAP_SONAME)
+	-rm -f $(DESTDIR)$(NSS_LIBDIR)/$(NSS_LDAP_SONAME)
