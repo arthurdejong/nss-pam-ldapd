@@ -339,6 +339,15 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="krb5_ktname"> <!-- since 0.9.15 -->
+     <term><option>krb5_ktname</option> <replaceable>NAME</replaceable></term>
+     <listitem>
+      <para>
+       Set the name for the GSS-API Kerberos client keytab.
+      </para>
+     </listitem>
+    </varlistentry>
+
    </variablelist>
   </refsect2>
 
