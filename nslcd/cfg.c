@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2007 West Consulting
-   Copyright (C) 2007-2021 Arthur de Jong
+   Copyright (C) 2007-2025 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -848,7 +848,7 @@ static const char *print_ssl(int ssl)
   }
 }
 
-static int get_tls_reqcert(const char *filename, int lnr,
+static int get_tls_reqcertsan_value(const char *filename, int lnr,
                            const char *keyword, char **line)
 {
   char token[16];
@@ -891,7 +891,7 @@ static void handle_tls_reqcert(const char *filename, int lnr,
                                const char *keyword, char *line)
 {
   int value, rc;
-  value = get_tls_reqcert(filename, lnr, keyword, &line);
+  value = get_tls_reqcertsan_value(filename, lnr, keyword, &line);
   get_eol(filename, lnr, keyword, &line);
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%s)",
           print_tls_reqcert(value));
@@ -903,7 +903,7 @@ static void handle_tls_reqsan(const char *filename, int lnr,
                                    const char *keyword, char *line)
 {
   int value, rc;
-  value = get_tls_reqcert(filename, lnr, keyword, &line);
+  value = get_tls_reqcertsan_value(filename, lnr, keyword, &line);
   get_eol(filename, lnr, keyword, &line);
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_SAN,%s)",
           print_tls_reqcert(value));
