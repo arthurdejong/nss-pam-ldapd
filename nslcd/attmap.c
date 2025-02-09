@@ -2,7 +2,7 @@
    attmap.c - attribute mapping values and functions
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007-2014 Arthur de Jong
+   Copyright (C) 2007-2025 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -294,7 +294,7 @@ const char *attmap_get_value(MYLDAP_ENTRY *entry, const char *attr,
     return NULL;
   }
   /* strip trailing " */
-  if (buffer[strlen(buffer) - 1] == '"')
+  if ((strlen(buffer) > 0) && (buffer[strlen(buffer) - 1] == '"'))
     buffer[strlen(buffer) - 1] = '\0';
   return buffer;
 }
