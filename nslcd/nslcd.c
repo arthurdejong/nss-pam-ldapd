@@ -2,7 +2,7 @@
    nslcd.c - ldap local connection daemon
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2024 Arthur de Jong
+   Copyright (C) 2006-2025 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -127,7 +127,7 @@ static void display_version(FILE *fp)
 {
   fprintf(fp, "%s\n", PACKAGE_STRING);
   fprintf(fp, "Written by Luke Howard and Arthur de Jong.\n\n");
-  fprintf(fp, "Copyright (C) 1997-2019 Arthur de Jong and others\n"
+  fprintf(fp, "Copyright (C) 1997-2025 Arthur de Jong and others\n"
               "This is free software; see the source for copying conditions.  There is NO\n"
               "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }

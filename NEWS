@@ -1,3 +1,22 @@
+changes from 0.9.12 to 0.9.13
+-----------------------------
+
+* add a command line -f, --config option to specify an alternate
+  configuration file
+* add a command line -t, --test option to check the configuration file
+  validity
+* support passwords with up to 255 characters
+* fixes for potential memory issues in parsing configuration file
+* fix NULL pointer deref on out of memory
+* fix race condition in thread start-up (thanks Consus)
+* fix issue with stopping threads on shutdown (thanks Consus)
+* provide compatibility with musl libc (thanks Cristian Othón Martínez Vera)
+* fix compilation issues on NetBSD (thanks Brett Lymn)
+* use closefrom() if available to fix slow invalidation on FreeBSD
+  (thanks Alan Somers)
+* fix file descriptor leaking from process starting nslcd
+
+
 changes from 0.9.11 to 0.9.12
 -----------------------------
 

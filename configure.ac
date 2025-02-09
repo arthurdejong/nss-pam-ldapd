@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Luke Howard
 # Copyright (C) 2006 West Consulting
-# Copyright (C) 2006-2022 Arthur de Jong
+# Copyright (C) 2006-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ AC_PREREQ(2.61)
 AC_COPYRIGHT(
 [Copyright (C) 2006 Luke Howard
 Copyright (C) 2006 West Consulting
-Copyright (C) 2006-2022 Arthur de Jong
+Copyright (C) 2006-2025 Arthur de Jong
 
 This configure script is derived from configure.ac which is free software;
 you can redistribute it and/or modify it under the terms of the GNU Lesser
@@ -33,10 +33,10 @@ configure.ac file for more details.])
 
 # initialize and set version and bugreport address
 AC_INIT([nss-pam-ldapd],
-        [0.9.12],
+        [0.9.13],
         [nss-pam-ldapd-users@lists.arthurdejong.org],,
         [https://arthurdejong.org/nss-pam-ldapd/])
-RELEASE_MONTH="Nov 2021"
+RELEASE_MONTH="Feb 2025"
 AC_SUBST(RELEASE_MONTH)
 AC_CONFIG_SRCDIR([nslcd.h])
 AC_CONFIG_MACRO_DIR([m4])

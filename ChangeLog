@@ -1,3 +1,188 @@
+2025-02-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e5ee16f] INSTALL, ar-lib, compile, depcomp, install-sh,
+	  missing, mkinstalldirs, py-compile, test-driver: Update files
+	  from latest automake
+
+2025-02-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a81bb35] nslcd/attmap.c: Add extra safety check in attribute
+	  parsing
+
+	  This ensures that we never have a buffer underflow in
+	  attmap_get_value() even when expr_parse() would return unexpected
+	  values in the buffer.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/72
+
+2025-02-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4a6c963] nslcd/cfg.c: Clarify the name of the function to parse
+	  TLS values
+
+2024-10-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [09ed954] .github/workflows/test.yml: Switch to Ubuntu 22.04
+	  fir GitHub tests
+
+	  Ubuntu 24.04 has an issue with AppArmor.
+
+2024-08-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9a353ac] nslcd/cfg.c: Fix memory leak in config parsing
+
+	  This fixes a one-time memory leak in reading the base configuration
+	  option.
+
+2024-08-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [91bb8c9] nslcd/passwd.c: Fix NULL pointer deref on memory
+	  allocation failure
+
+	  This fixes a NULL pointer dereference when a call to malloc()
+	  failed.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/70
+
+2024-06-29  Consus <consus@ftml.net>
+
+	* [b7841fc] nslcd/nslcd.c: Do not pass invalid file descriptor
+	  to FD_ISSET()
+
+	  Currently there is a race condition between the main thread and
+	  the workers threads. The main thread sets nslcd_serversocket
+	  to -1 without ensuring that all worker threads are stopped,
+	  giving them the window of opportunity to pass the now invalid
+	  fd to FD_ISSET(). This results in SIGBUS on musl libc.
+
+	  Closing the file descriptor is enough. I've also dropped close()
+	  in exithandler() to prevent misleading logs. The OS will close
+	  the socket anyway.
+
+2024-06-29  Consus <consus@ftml.net>
+
+	* [ed4041c] nslcd/nslcd.c: Do not try to kill thread that was
+	  successfully joined
+
+	  Calling pthread_kill() after a successfull call
+	  pthread_timedjoin_np() is considered a UB because pthread_t object
+	  is no longer valid. This results in SIGSEGV at least on musl libc.
+
+2024-03-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cced213] man/nslcd.conf.5.xml: Clarify the map option in the
+	  manual page
+
+	  This tries to make it a little clearer how expressions in the
+	  map statement may be used.
+
+2024-02-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1cca4b0] .gitignore, autogen.sh, config.guess, config.sub:
+	  Update files from latest automake
+
+	  This also updates the autogen.sh script to just use the latest
+	  version of automake (tested with automake 1.16).
+
+2024-02-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b42d8c0] man/nslcd.8.xml, nslcd/nslcd.c: Add an option to test
+	  the configuration file
+
+2024-02-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [baf3bee] man/nslcd.8.xml, nslcd/nslcd.c: Make configuration
+	  file to use configurable
+
+2023-08-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [33cf91c] compat/nss_compat.h: Define NETDB_INTERNAL for musl libc
+
+	  musl libc doesn't define ```NETDB_INTERNAL```. Add that definition
+	  when it's missing.
+
+	  Thanks Cristian Othón Martínez Vera.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/pull/60
+
+2023-06-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4b6556d] .github/workflows/test.yml: Update GitHub checkout
+	  action to latest version
+
+2023-06-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [737e4a5] tests/pylint.rc: Update Pylint configuration file
+
+	  Some options do not appear to be present in Pylint 2.16.2 but
+	  this used to work in version 1.9.4 (this config works with
+	  both versions).
+
+2023-05-30  Brett Lymn <blymn@internode.on.net>
+
+	* [e9662f1] compat/getpeercred.c: Fix compilation issues on NetBSD
+
+	  Fixes da63099
+
+2022-10-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2f6e65a] configure.ac, nslcd/daemonize.c, nslcd/invalidator.c:
+	  Use closefrom() if available
+
+	  One some systems _SC_OPEN_MAX can be *very* large.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/53
+
+2022-10-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1c9b021] nslcd/daemonize.c: Fix off-by one error in closing
+	  file descriptors
+
+	  This could leave file descriptor 3 open from the parent process
+	  starting nslcd.
+
+2022-09-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2fc652f] nslcd/common.h: Increase password buffer length
+
+	  This allows passwords to contain up to 255 characters even though
+	  they are most likely don't add any meaningful password security.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/52
+
+2022-08-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6ee1981] tests/test.ldif: Don't force password change during tests
+
+	  Change the configuration of the password policy in the test
+	  suite to not set pwdMustChange to TRUE. Between OpenLDAP 2.4
+	  and 2.5 the behaviour of the LDAP server was changed to force
+	  a password change whenever the administrator changed a user's
+	  password. This change ensures that the old behaviour is maintained.
+
+	  See https://bugs.openldap.org/show_bug.cgi?id=7084
+
+2022-08-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ae25521] tests/pylint.rc: Fix pylint config for newer versions
+	  of pylint
+
+	  Apparently newer versions of pylint parse the evaluation option
+	  differently.
+
+2022-08-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3c9edc1] .github/workflows/test.yml: Upgrade to CodeQL Action v2
+
+	  https://github.blog/changelog/2022-04-27-code-scanning-deprecation-of-codeql-action-v1/
+
+2021-11-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0507f25] AUTHORS, ChangeLog, NEWS, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml:
+	  Get files ready for 0.9.12 release
+
 2021-11-19  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [6e7e878] man/nslcd.conf.5.xml, nslcd/cfg.c: Support DNSLDAPS
