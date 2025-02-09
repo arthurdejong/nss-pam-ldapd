@@ -582,6 +582,35 @@ static void handle_krb5_ccname(const char *filename, int lnr,
 #endif /* HAVE_GSS_KRB5_CCACHE_NAME */
 }
 
+static void handle_krb5_keytab(const char *filename, int lnr,
+                               const char *keyword, char *line)
+{
+  char token[80];
+  /* get token */
+  check_argumentcount(filename, lnr, keyword,
+                      (get_token(&line, token, sizeof(token)) != NULL));
+  get_eol(filename, lnr, keyword, &line);
+  /* set default Kerberos client keytab for SASL-GSSAPI */
+  ktname = token;
+  /* check that cache exists and is readable if it is a file */
+  if (strncasecmp(ktname, "FILE:", sizeof("FILE:") - 1) == 0)
+  {
+    ktfile = strchr(ktname, ':') + 1;
+    check_readable(filename, lnr, keyword, ktfile);
+  }
+  /* set the environment variable (we have a memory leak if this option
+     is set multiple times) */
+  ktenvlen = strlen(ktname) + sizeof("KRB5_CLIENT_KEYTAB=");
+  ktenv = (char *)malloc(ktenvlen);
+  if (ktenv == NULL)
+  {
+    log_log(LOG_CRIT, "malloc() failed to allocate memory");
+    exit(EXIT_FAILURE);
+  }
+  mysnprintf(ktenv, ktenvlen, "KRB5_CLIENT_KEYTAB=%s", ktname);
+  putenv(ktenv);
+}
+
 static enum ldap_map_selector parse_map(const char *value)
 {
   if ((strcasecmp(value, "alias") == 0) || (strcasecmp(value, "aliases") == 0))
@@ -1503,6 +1532,10 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     else if (strcasecmp(keyword, "krb5_ccname") == 0)
     {
       handle_krb5_ccname(filename, lnr, keyword, line);
+    }
+    else if (strcasecmp(keyword, "krb5_keytab") == 0)
+    {
+      handle_krb5_keytab(filename, lnr, keyword, line);
     }
     /* search/mapping options */
     else if (strcasecmp(keyword, "base") == 0)
