@@ -23,7 +23,7 @@
 noinst_PROGRAMS = nss_ldap.so
 
 AM_CPPFLAGS=-I$(top_srcdir)
-AM_CFLAGS = $(PIC_CFLAGS)
+AM_CFLAGS = $(PIC_CFLAGS) $(DEBUG_CFLAGS) $(EXTRA_CFLAGS)
 
 nss_ldap_so_SOURCES = common.c common.h prototypes.h solnss.h \
                       ../nslcd.h ../common/nslcd-prot.h \

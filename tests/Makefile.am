@@ -58,7 +58,7 @@ clean-local:
 	-rm -rf *.pyc *.pyo __pycache__ flake8-venv
 
 AM_CPPFLAGS = -I$(top_srcdir)
-AM_CFLAGS = $(PTHREAD_CFLAGS) -g
+AM_CFLAGS = $(PTHREAD_CFLAGS) -g $(DEBUG_CFLAGS) $(EXTRA_CFLAGS)
 
 test_dict_SOURCES = test_dict.c ../common/dict.h
 test_dict_LDADD = ../common/libdict.a

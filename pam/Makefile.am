@@ -21,7 +21,7 @@
 noinst_PROGRAMS = pam_ldap.so
 
 AM_CPPFLAGS=-I$(top_srcdir)
-AM_CFLAGS = $(PIC_CFLAGS)
+AM_CFLAGS = $(PIC_CFLAGS) $(DEBUG_CFLAGS) $(EXTRA_CFLAGS)
 
 pam_ldap_so_SOURCES = ../nslcd.h ../common/nslcd-prot.h \
                       ../compat/attrs.h pam.c common.h

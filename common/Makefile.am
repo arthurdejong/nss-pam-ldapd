@@ -20,7 +20,7 @@
 noinst_LIBRARIES = libtio.a libprot.a libdict.a libexpr.a
 
 AM_CPPFLAGS=-I$(top_srcdir)
-AM_CFLAGS = $(PIC_CFLAGS)
+AM_CFLAGS = $(PIC_CFLAGS) $(DEBUG_CFLAGS) $(EXTRA_CFLAGS)
 
 libtio_a_SOURCES = tio.c tio.h
 
