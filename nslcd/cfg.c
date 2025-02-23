@@ -207,10 +207,10 @@ static int get_boolean(const char *filename, int lnr,
   return parse_boolean(filename, lnr, token);
 }
 
-static const char *print_boolean(int bool)
+static const char *print_boolean(int value)
 {
-  if (bool) return "yes";
-  else      return "no";
+  if (value) return "yes";
+  else       return "no";
 }
 
 #define TIME_MINUTES 60
