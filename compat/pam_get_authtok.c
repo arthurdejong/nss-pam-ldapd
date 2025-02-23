@@ -33,6 +33,8 @@
 #include "compat/attrs.h"
 #include "compat/pam_compat.h"
 
+#include "common/gettext.h"
+
 /* warning: this version assumes that try_first_pass is specified */
 
 int pam_get_authtok(pam_handle_t *pamh, int item, const char **authtok,
@@ -56,12 +58,12 @@ int pam_get_authtok(pam_handle_t *pamh, int item, const char **authtok,
     rc = pam_get_item(pamh, PAM_OLDAUTHTOK, (PAM_ITEM_CONST void **)&oldauthtok);
     if ((rc == PAM_SUCCESS) && (oldauthtok != NULL))
     {
-      prompt = (prompt != NULL) ? prompt : "New Password: ";
-      snprintf(retype_prompt, sizeof(retype_prompt), "Retype %s", prompt);
+      prompt = (prompt != NULL) ? prompt : _("New Password: ");
+      snprintf(retype_prompt, sizeof(retype_prompt), _("Retype %s"), prompt);
       retype_prompt[sizeof(retype_prompt) - 1] = '\0';
     }
     else
-      prompt = (prompt != NULL) ? prompt : "Password: ";
+      prompt = (prompt != NULL) ? prompt : _("Password: ");
   }
   /* prepare prompt and get password */
   rc = pam_prompt(pamh, PAM_PROMPT_ECHO_OFF, &passwd, "%s", prompt);

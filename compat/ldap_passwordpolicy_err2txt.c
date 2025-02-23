@@ -28,21 +28,23 @@
 
 #include "compat/ldap_compat.h"
 #include "compat/attrs.h"
+#include "common/gettext.h"
+
 
 const char *ldap_passwordpolicy_err2txt(LDAPPasswordPolicyError error)
 {
   switch (error)
   {
-    case PP_passwordExpired:        return "Password expired";
-    case PP_accountLocked:          return "Account locked";
-    case PP_changeAfterReset:       return "Change after reset";
-    case PP_passwordModNotAllowed:  return "Password modification not allowed";
-    case PP_mustSupplyOldPassword:  return "Must supply old password";
-    case PP_insufficientPasswordQuality: return "Insufficient password quality";
-    case PP_passwordTooShort:       return "Password too short";
-    case PP_passwordTooYoung:       return "Password too young";
-    case PP_passwordInHistory:      return "Password in history";
-    case PP_noError:                return "No error";
-    default:                        return "Unknown error";
+    case PP_passwordExpired:        return _("Password expired");
+    case PP_accountLocked:          return _("Account locked");
+    case PP_changeAfterReset:       return _("Change after reset");
+    case PP_passwordModNotAllowed:  return _("Password modification not allowed");
+    case PP_mustSupplyOldPassword:  return _("Must supply old password");
+    case PP_insufficientPasswordQuality: return _("Insufficient password quality");
+    case PP_passwordTooShort:       return _("Password too short");
+    case PP_passwordTooYoung:       return _("Password too young");
+    case PP_passwordInHistory:      return _("Password in history");
+    case PP_noError:                return _("No error");
+    default:                        return _("Unknown error");
   }
 }
