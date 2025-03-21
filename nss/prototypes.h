@@ -29,17 +29,17 @@
    NSS_STATUS_UNAVAIL */
 extern int NSS_NAME(enablelookups);
 
-#ifdef NSS_FLAVOUR_FREEBSD
+#if defined(NSS_FLAVOUR_FREEBSD) || defined(NSS_FLAVOUR_NETBSD)
 
 /* for FreeBSD we want the GlibC prototypes and functions to be built
-   (we provide some wrappers in bsdnss.c) */
+   (we provide some wrappers in freebsdnss.c and netbsdnss.c) */
 #define NSS_FLAVOUR_GLIBC 1
 
 /* FreeBSD specific register function */
 ns_mtab *nss_module_register(const char *source, unsigned int *mtabsize,
                              nss_module_unregister_fn *unreg);
 
-#endif /* NSS_FLAVOUR_FREEBSD */
+#endif /* NSS_FLAVOUR_FREEBSD || NSS_FLAVOUR_NETBSD */
 
 #ifdef NSS_FLAVOUR_GLIBC
 
