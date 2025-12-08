@@ -244,11 +244,14 @@ static int do_write_group(TFILE *fp, MYLDAP_ENTRY *entry,
     {
       for (j = 0; j < numgids; j++)
       {
-        WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
-        WRITE_STRING(fp, names[i]);
-        WRITE_STRING(fp, passwd);
-        WRITE_INT32(fp, gids[j]);
-        WRITE_STRINGLIST(fp, members);
+        if (gids[j] >= nslcd_cfg->nss_min_gid)
+        {
+          WRITE_INT32(fp, NSLCD_RESULT_BEGIN);
+          WRITE_STRING(fp, names[i]);
+          WRITE_STRING(fp, passwd);
+          WRITE_INT32(fp, gids[j]);
+          WRITE_STRINGLIST(fp, members);
+        }
       }
     }
   }
@@ -376,6 +379,11 @@ static int write_group(TFILE *fp, MYLDAP_ENTRY *entry, const char *reqname,
         }
       }
       gids[numgids] += nslcd_cfg->nss_gid_offset;
+      if (gids[numgids] < nslcd_cfg->nss_min_gid)
+      {
+        log_log(LOG_DEBUG, "%s: %s: less than nss_min_gid",
+                myldap_get_dn(entry), attmap_group_gidNumber);
+      }
     }
   }
   /* get group passwd (userPassword) (use only first entry) */
@@ -446,7 +454,17 @@ NSLCD_HANDLE(
   gid_t gid;
   char filter[BUFLEN_FILTER];
   READ_INT32(fp, gid);
-  log_setrequest("group=%lu", (unsigned long int)gid);,
+  log_setrequest("group=%lu", (unsigned long int)gid);
+  if (gid < nslcd_cfg->nss_min_gid)
+  {
+    log_log(LOG_DEBUG, "request ignored by nss_min_gid option");
+    /* return an empty result */
+    WRITE_INT32(fp, NSLCD_VERSION);
+    WRITE_INT32(fp, NSLCD_ACTION_GROUP_BYGID);
+    WRITE_INT32(fp, NSLCD_RESULT_END);
+    return 0;
+  }
+  ,
   mkfilter_group_bygid(gid, filter, sizeof(filter)),
   write_group(fp, entry, NULL, &gid, 1, session)
 )

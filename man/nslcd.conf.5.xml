@@ -771,6 +771,21 @@
      </listitem>
     </varlistentry>
 
+    <varlistentry id="nss_min_gid"> <!-- since 0.9.14 -->
+     <term><option>nss_min_gid</option> <replaceable>GID</replaceable></term>
+     <listitem>
+      <para>
+       This option ensures that <acronym>LDAP</acronym> users and groups with a
+       numeric group id lower than the specified value are ignored. Also requests for
+       groups with a lower group id are ignored.
+      </para>
+      <para>
+       Group membership is not restricted so users with a too low primary GID
+       will still show up as members of a group.
+      </para>
+     </listitem>
+    </varlistentry>
+
     <varlistentry id="nss_uid_offset"> <!-- since 0.9.9 -->
      <term><option>nss_uid_offset</option> <replaceable>NUMBER</replaceable></term>
      <listitem>
@@ -797,6 +812,10 @@
        This can be used to avoid user id collisions with local groups or,
        when using <literal>objectSid</literal> attributes, for compatibility
        reasons.
+      </para>
+      <para>
+       The value from the <option>nss_min_gid</option> option is evaluated
+       after applying the offset.
       </para>
      </listitem>
     </varlistentry>

@@ -122,6 +122,7 @@ struct ldap_config {
   int pagesize; /* set to a greater than 0 to enable handling of paged results with the specified size */
   SET *nss_initgroups_ignoreusers;  /* the users for which no initgroups() searches should be done */
   uid_t nss_min_uid;  /* minimum uid for users retrieved from LDAP */
+  uid_t nss_min_gid;  /* minimum gid for users retrieved from LDAP */
   uid_t nss_uid_offset; /* offset for uids retrieved from LDAP to avoid local uid clashes */
   gid_t nss_gid_offset; /* offset for gids retrieved from LDAP to avoid local gid clashes */
   int nss_nested_groups; /* whether to expand nested groups */

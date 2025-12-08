@@ -544,6 +544,12 @@ static int write_passwd(TFILE *fp, MYLDAP_ENTRY *entry, const char *requser,
     }
   }
   gid += nslcd_cfg->nss_gid_offset;
+  if (gid < nslcd_cfg->nss_min_gid)
+  {
+    log_log(LOG_DEBUG, "%s: %s: less than nss_min_gid",
+            myldap_get_dn(entry), attmap_group_gidNumber);
+    return 0;
+  }
   /* get the gecos for this entry */
   attmap_get_value(entry, attmap_passwd_gecos, gecos, sizeof(gecos));
   /* get the home directory for this entry */
