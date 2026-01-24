@@ -119,6 +119,21 @@ struct ldap_config {
 #ifdef LDAP_OPT_X_TLS
   /* SSL enabled */
   enum ldap_ssl_options ssl;
+  /* TLS configuration options for dynamic reload */
+  char *tls_cacertdir;  /* CA certificate directory */
+  char *tls_cacertfile; /* CA certificate file */
+  char *tls_randfile;   /* random file for TLS */
+  char *tls_ciphers;    /* cipher suite */
+  char *tls_certfile;   /* client certificate file */
+  char *tls_keyfile;    /* client key file */
+  char *tls_crlfile;    /* CRL file */
+  int tls_reqcert;      /* certificate verification requirement */
+#ifdef LDAP_OPT_X_TLS_REQUIRE_SAN
+  int tls_reqsan;       /* SAN verification requirement */
+#endif /* LDAP_OPT_X_TLS_REQUIRE_SAN */
+#ifdef LDAP_OPT_X_TLS_CRLCHECK
+  int tls_crlcheck;     /* CRL check mode */
+#endif /* LDAP_OPT_X_TLS_CRLCHECK */
 #endif /* LDAP_OPT_X_TLS */
 
   int pagesize; /* set to a greater than 0 to enable handling of paged results with the specified size */
@@ -148,5 +163,8 @@ extern struct ldap_config *nslcd_cfg;
 /* Initialize the configuration in nslcd_cfg. This method will read the
    default configuration file and call exit() if an error occurs. */
 void cfg_init(const char *fname);
+
+/* Reload TLS configuration dynamically from the same configuration file. */
+void cfg_reload_tls(void);
 
 #endif /* NSLCD__CFG_H */
