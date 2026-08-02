@@ -3,7 +3,7 @@
    This file is part of the nss-pam-ldapd library.
 
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2006-2026 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -327,9 +327,19 @@ char *sid2search(const char *sid)
 /* return the last security identifier of the binary sid */
 unsigned long int binsid2id(const char *binsid)
 {
-  int i;
+  unsigned int n, i;
+  /*
+     The SID consists of (so total max 68 bytes):
+     - 1 byte: revision
+     - 1 byte: number of sub-authorities (N) (max 15, but usually much less)
+     - 6 bytes: authority ID
+     - N * 4 bytes: sub-authority ID
+  */
+  n = ((unsigned int)binsid[1]) & 0xff;
+  if (n > 15)
+    return 65534;  /* nobody / nogroup */
   /* find the position of the last security id */
-  i = 2 + 6 + ((((unsigned int)binsid[1]) & 0xff) - 1) * 4;
+  i = 2 + 6 + (n - 1) * 4;
   return (((unsigned long int)binsid[i]) & 0xff) |
          ((((unsigned long int)binsid[i + 1]) & 0xff) << 8) |
          ((((unsigned long int)binsid[i + 2]) & 0xff) << 16) |
