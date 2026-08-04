@@ -2,7 +2,7 @@
    myldap.h - simple interface to do LDAP requests
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2007-2017 Arthur de Jong
+   Copyright (C) 2007-2026 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -123,8 +123,9 @@ char *myldap_cpy_dn(MYLDAP_ENTRY *entry, char *buf, size_t buflen);
 MUST_USE const char **myldap_get_values(MYLDAP_ENTRY *entry, const char *attr);
 
 /* Get the attribute values from a certain entry as a NULL terminated list.
-   May return NULL or an empty array. */
-MUST_USE const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *attr);
+   May return NULL or an empty array. This function is meant to be used
+   with binary values. */
+MUST_USE const char **myldap_get_values_bin(MYLDAP_ENTRY *entry, const char *attr);
 
 /* Checks to see if the entry has the specified object class. */
 MUST_USE int myldap_has_objectclass(MYLDAP_ENTRY *entry, const char *objectclass);

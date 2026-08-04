@@ -1995,8 +1995,8 @@ static const char **bervalues_to_values(struct berval **bvalues)
   return (const char **)values;
 }
 
-/* Simple wrapper around ldap_get_values(). */
-const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *attr)
+/* Simple wrapper around ldap_get_values_len(). */
+const char **myldap_get_values_bin(MYLDAP_ENTRY *entry, const char *attr)
 {
   const char **values;
   struct berval **bvalues;
@@ -2005,13 +2005,13 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *attr)
   /* check parameters */
   if (!is_valid_entry(entry))
   {
-    log_log(LOG_ERR, "myldap_get_values_len(): invalid result entry passed");
+    log_log(LOG_ERR, "myldap_get_values_bin(): invalid result entry passed");
     errno = EINVAL;
     return NULL;
   }
   else if (attr == NULL)
   {
-    log_log(LOG_ERR, "myldap_get_values_len(): invalid attribute name passed");
+    log_log(LOG_ERR, "myldap_get_values_bin(): invalid attribute name passed");
     errno = EINVAL;
     return NULL;
   }
@@ -2040,7 +2040,7 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *attr)
     else
     {
       myldap_err(LOG_WARNING, entry->search->session->ld, rc,
-                 "myldap_get_values_len() of attribute \"%s\" on entry \"%s\" returned NULL",
+                 "myldap_get_values_bin() of attribute \"%s\" on entry \"%s\" returned NULL",
                  attr, myldap_get_dn(entry));
       return NULL;
     }
@@ -2061,7 +2061,7 @@ const char **myldap_get_values_len(MYLDAP_ENTRY *entry, const char *attr)
       return values;
     }
   /* we found no room to store the values */
-  log_log(LOG_ERR, "myldap_get_values_len() couldn't store results, increase MAX_BUFFERS_PER_ENTRY");
+  log_log(LOG_ERR, "myldap_get_values_bin() couldn't store results, increase MAX_BUFFERS_PER_ENTRY");
   free(values);
   return NULL;
 }
