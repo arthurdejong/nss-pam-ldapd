@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006-2007 West Consulting
-   Copyright (C) 2006-2020 Arthur de Jong
+   Copyright (C) 2006-2026 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -1960,20 +1960,29 @@ const char **myldap_get_values(MYLDAP_ENTRY *entry, const char *attr)
   return NULL;
 }
 
+/* Minimum buffer size to allocate for myldap_get_values_bin() returned entries
+   (this is required for the binsid2id() function) */
+#define GET_VALUES_BIN_MIN_SIZE 68
+
 /* Convert the bervalues to a simple list of strings that can be freed
    with one call to free(). */
 static const char **bervalues_to_values(struct berval **bvalues)
 {
   int num_values;
   int i;
-  size_t sz;
+  size_t sz, l;
   char *buf;
   char **values;
   /* figure out how much memory to allocate */
   num_values = ldap_count_values_len(bvalues);
   sz = (num_values + 1) * sizeof(char *);
   for (i = 0; i < num_values; i++)
-    sz += bvalues[i]->bv_len + 1;
+  {
+    l = bvalues[i]->bv_len;
+    if (l < GET_VALUES_BIN_MIN_SIZE)
+      l = GET_VALUES_BIN_MIN_SIZE;
+    sz += l + 1;
+  }
   /* allocate the needed memory */
   values = (char **)malloc(sz);
   if (values == NULL)
@@ -1988,8 +1997,11 @@ static const char **bervalues_to_values(struct berval **bvalues)
   {
     values[i] = buf;
     memcpy(values[i], bvalues[i]->bv_val, bvalues[i]->bv_len);
-    values[i][bvalues[i]->bv_len] = '\0';
-    buf += bvalues[i]->bv_len + 1;
+    l = bvalues[i]->bv_len;
+    if (l < GET_VALUES_BIN_MIN_SIZE)
+      l = GET_VALUES_BIN_MIN_SIZE;
+    memset(values[i] + bvalues[i]->bv_len, 0, l + 1 - bvalues[i]->bv_len);
+    buf += l + 1;
   }
   values[i] = NULL;
   return (const char **)values;
