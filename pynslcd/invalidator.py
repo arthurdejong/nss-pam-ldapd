@@ -56,7 +56,7 @@ def exec_invalidate(*args):
             logging.error('invalidator: %s (pid %d) killed by signal %d%s',
                           cmd, p.pid, -p.returncode, output)
     except Exception:
-        logging.warn('invalidator: %s failed', cmd, exc_info=True)
+        logging.warning('invalidator: %s failed', cmd, exc_info=True)
 
 
 def loop(fd):
@@ -107,4 +107,4 @@ def invalidate(db=None):
     try:
         os.write(signalfd, db.encode('ascii'))
     except Exception:
-        logging.warn('requesting invalidation (%s) failed', db, exc_info=True)
+        logging.warning('requesting invalidation (%s) failed', db, exc_info=True)
