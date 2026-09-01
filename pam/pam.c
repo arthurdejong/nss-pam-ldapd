@@ -50,6 +50,8 @@
 #include <pam/pam_modules.h>
 #endif /* not HAVE_PAM_PAM_MODULES_H */
 
+#include "common/gettext.h"
+
 /* the name we store our context under */
 #define PLD_CTX "PAM_LDAPD_CTX"
 
@@ -197,6 +199,9 @@ static int init(pam_handle_t *pamh, struct pld_cfg *cfg, struct pld_ctx **ctx,
 {
   int rc;
   struct passwd *pwent;
+
+  bindtextdomain(PACKAGE, LOCALEDIR);
+
   /* get user name */
   rc = pam_get_user(pamh, username, NULL);
   if (rc != PAM_SUCCESS)
@@ -709,7 +714,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh, int flags,
       /* try to  authenticate with the LDAP administrator password by passing
          an empty username to the authc request */
       rc = pam_get_authtok(pamh, PAM_OLDAUTHTOK, &oldpassword,
-                           "LDAP administrator password: ");
+                           _("LDAP administrator password: "));
       if (rc != PAM_SUCCESS)
         return rc;
       ctx->asroot = 1;
@@ -726,7 +731,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh, int flags,
     {
       /* prompt the user for a password if needed */
       rc = pam_get_authtok(pamh, PAM_OLDAUTHTOK, (const char **)&oldpassword,
-                           "(current) LDAP Password: ");
+                           _("(current) LDAP Password: "));
       if (rc != PAM_SUCCESS)
         return rc;
     }
