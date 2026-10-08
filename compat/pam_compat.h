@@ -70,12 +70,12 @@ int pam_prompt(pam_handle_t *pamh, int style, char **response,
 #endif /* not HAVE_DECL_PAM_ERROR */
 
 /* fall back to using getpwnam() if pam_modutil_getpwnam() isn't defined */
-#ifndef HAVE_PAM_MODUTIL_GETGWNAM
+#ifndef HAVE_PAM_MODUTIL_GETPWNAM
 #include <sys/types.h>
 #include <pwd.h>
 #define pam_modutil_getpwnam(pamh, user)                                    \
   getpwnam(user)
-#endif /* not HAVE_PAM_MODUTIL_GETGWNAM */
+#endif /* not HAVE_PAM_MODUTIL_GETPWNAM */
 
 /* fall back to using syslog() if pam_syslog() doesn't exist */
 #ifndef HAVE_PAM_SYSLOG
