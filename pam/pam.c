@@ -212,7 +212,7 @@ static int init(pam_handle_t *pamh, struct pld_cfg *cfg, struct pld_ctx **ctx,
   /* check uid */
   if (cfg->minimum_uid > 0)
   {
-    pwent = pam_modutil_getpwnam(args->pamh, *username);
+    pwent = pam_modutil_getpwnam(pamh, *username);
     if ((pwent != NULL) && (pwent->pw_uid < cfg->minimum_uid))
     {
       if (cfg->debug)
@@ -690,7 +690,7 @@ int pam_sm_chauthtok(pam_handle_t *pamh, int flags,
     ctx->asroot = 0;
     /* see if the user is trying to modify another user's password */
     /* TODO: perhaps this can be combined with the nslcd_request_exists() call above */
-    pwent = pam_modutil_getpwnam(args->pamh, username);
+    pwent = pam_modutil_getpwnam(pamh, username);
     myuid = getuid();
     if ((pwent != NULL) && (pwent->pw_uid != myuid) && (!(flags & PAM_CHANGE_EXPIRED_AUTHTOK)))
     {
