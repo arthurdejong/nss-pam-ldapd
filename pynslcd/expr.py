@@ -177,23 +177,23 @@ class DollarExpression(object):
             offset, length = int(offset), int(length)
             return value[offset:offset + length]
         elif self.op in ('#', '##', '%', '%%'):
-            match = fnmatch.translate(self.expr.value(variables))
+            regex = fnmatch.translate(self.expr.value(variables))
             # We mangle the regex to change its behaviour
-            match = match.replace(r'\Z', r'\z')
+            regex = regex.replace(r'\Z', r'\z')
             if self.op == '#':
                 # ${attr#word} remove shortest match of word
-                match = match.replace('*', '*?').replace(r'\z', r'(?P<replace>.*)\z')
+                regex = regex.replace('*', '*?').replace(r'\z', r'(?P<replace>.*)\z')
             elif self.op == '##':
                 # ${attr##word} remove longest match of word
-                match = match.replace(r'\z', r'(?P<replace>.*?)\z')
+                regex = regex.replace(r'\z', r'(?P<replace>.*?)\z')
             elif self.op == '%':
                 # ${attr%word} remove shortest match from right
-                match = r'(?P<replace>.*)' + match.replace('*', '*?')
+                regex = r'(?P<replace>.*)' + regex.replace('*', '*?')
             elif self.op == '%%':
                 # ${attr%%word} remove longest match from right
-                match = r'(?P<replace>.*?)' + match
-            match = re.match(match, value)
-            return match.group('replace') if match else value
+                regex = r'(?P<replace>.*?)' + regex
+            m = re.match(regex, value)
+            return m.group('replace') if m else value
         elif self.op == 'lower':
             return self.expr.value(variables).lower()
         elif self.op == 'upper':
