@@ -178,17 +178,19 @@ class DollarExpression(object):
             return value[offset:offset + length]
         elif self.op in ('#', '##', '%', '%%'):
             match = fnmatch.translate(self.expr.value(variables))
+            # We mangle the regex to change its behaviour
+            match = match.replace(r'\Z', r'\z')
             if self.op == '#':
                 # ${attr#word} remove shortest match of word
-                match = match.replace('*', '*?').replace(r'\Z', r'(?P<replace>.*)\Z')
+                match = match.replace('*', '*?').replace(r'\z', r'(?P<replace>.*)\z')
             elif self.op == '##':
-                # ${attr#word} remove longest match of word
-                match = match.replace(r'\Z', r'(?P<replace>.*?)\Z')
+                # ${attr##word} remove longest match of word
+                match = match.replace(r'\z', r'(?P<replace>.*?)\z')
             elif self.op == '%':
-                # ${attr#word} remove shortest match from right
+                # ${attr%word} remove shortest match from right
                 match = r'(?P<replace>.*)' + match.replace('*', '*?')
             elif self.op == '%%':
-                # ${attr#word} remove longest match from right
+                # ${attr%%word} remove longest match from right
                 match = r'(?P<replace>.*?)' + match
             match = re.match(match, value)
             return match.group('replace') if match else value
