@@ -894,6 +894,8 @@ static void handle_tls_reqcert(const char *filename, int lnr,
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%s)",
           print_tls_reqcert(value));
   LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_REQUIRE_CERT, &value);
+  if (nslcd_cfg != NULL)
+    nslcd_cfg->tls_reqcert = value;
 }
 
 #ifdef LDAP_OPT_X_TLS_REQUIRE_SAN
@@ -906,6 +908,8 @@ static void handle_tls_reqsan(const char *filename, int lnr,
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_SAN,%s)",
           print_tls_reqcert(value));
   LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_REQUIRE_SAN, &value);
+  if (nslcd_cfg != NULL)
+    nslcd_cfg->tls_reqsan = value;
 }
 #endif /* LDAP_OPT_X_TLS_REQUIRE_SAN */
 
@@ -934,6 +938,8 @@ static void handle_tls_crlcheck(const char *filename, int lnr,
   }
   log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CRLCHECK,%s)", token);
   LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CRLCHECK, &value);
+  if (nslcd_cfg != NULL)
+    nslcd_cfg->tls_crlcheck = value;
 }
 
 static const char *print_tls_crlcheck(int value)
@@ -1297,6 +1303,20 @@ static void cfg_defaults(struct ldap_config *cfg)
   cfg->reconnect_retrytime = 10;
 #ifdef LDAP_OPT_X_TLS
   cfg->ssl = SSL_OFF;
+  cfg->tls_cacertdir = NULL;
+  cfg->tls_cacertfile = NULL;
+  cfg->tls_randfile = NULL;
+  cfg->tls_ciphers = NULL;
+  cfg->tls_certfile = NULL;
+  cfg->tls_keyfile = NULL;
+  cfg->tls_crlfile = NULL;
+  cfg->tls_reqcert = LDAP_OPT_X_TLS_DEMAND;
+#ifdef LDAP_OPT_X_TLS_REQUIRE_SAN
+  cfg->tls_reqsan = LDAP_OPT_X_TLS_ALLOW;
+#endif /* LDAP_OPT_X_TLS_REQUIRE_SAN */
+#ifdef LDAP_OPT_X_TLS_CRLCHECK
+  cfg->tls_crlcheck = LDAP_OPT_X_TLS_CRL_NONE;
+#endif /* LDAP_OPT_X_TLS_CRLCHECK */
 #endif /* LDAP_OPT_X_TLS */
   cfg->pagesize = 0;
   cfg->nss_initgroups_ignoreusers = NULL;
@@ -1590,6 +1610,9 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CACERTDIR,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CACERTDIR, value);
+      if (cfg->tls_cacertdir != NULL)
+        free(cfg->tls_cacertdir);
+      cfg->tls_cacertdir = strdup(value);
       free(value);
     }
     else if ((strcasecmp(keyword, "tls_cacertfile") == 0) ||
@@ -1601,6 +1624,9 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CACERTFILE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CACERTFILE, value);
+      if (cfg->tls_cacertfile != NULL)
+        free(cfg->tls_cacertfile);
+      cfg->tls_cacertfile = strdup(value);
       free(value);
     }
     else if (strcasecmp(keyword, "tls_randfile") == 0)
@@ -1611,6 +1637,9 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_RANDOM_FILE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_RANDOM_FILE, value);
+      if (cfg->tls_randfile != NULL)
+        free(cfg->tls_randfile);
+      cfg->tls_randfile = strdup(value);
       free(value);
     }
     else if (strcasecmp(keyword, "tls_ciphers") == 0)
@@ -1619,6 +1648,9 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CIPHER_SUITE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CIPHER_SUITE, value);
+      if (cfg->tls_ciphers != NULL)
+        free(cfg->tls_ciphers);
+      cfg->tls_ciphers = strdup(value);
       free(value);
     }
     else if (strcasecmp(keyword, "tls_cert") == 0)
@@ -1629,6 +1661,9 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CERTFILE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CERTFILE, value);
+      if (cfg->tls_certfile != NULL)
+        free(cfg->tls_certfile);
+      cfg->tls_certfile = strdup(value);
       free(value);
     }
     else if (strcasecmp(keyword, "tls_key") == 0)
@@ -1639,6 +1674,9 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_KEYFILE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_KEYFILE, value);
+      if (cfg->tls_keyfile != NULL)
+        free(cfg->tls_keyfile);
+      cfg->tls_keyfile = strdup(value);
       free(value);
     }
     else if (strcasecmp(keyword, "tls_reqsan") == 0)
@@ -1670,6 +1708,9 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
       log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CRLFILE,\"%s\")",
               value);
       LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CRLFILE, value);
+      if (cfg->tls_crlfile != NULL)
+        free(cfg->tls_crlfile);
+      cfg->tls_crlfile = strdup(value);
       free(value);
 #else /* not LDAP_OPT_X_TLS_CRLFILE */
       log_log(LOG_ERR, "%s:%d: option %s not supported on platform",
@@ -2099,3 +2140,99 @@ void cfg_init(const char *fname)
   service_init();
   shadow_init();
 }
+
+#ifdef LDAP_OPT_X_TLS
+/* Reload TLS configuration dynamically */
+void cfg_reload_tls(void)
+{
+  int rc;
+
+  /* Check if configuration is initialized */
+  if (nslcd_cfg == NULL)
+  {
+    log_log(LOG_ERR, "cfg_reload_tls() called before cfg_init()");
+    return;
+  }
+
+  log_log(LOG_INFO, "Reloading TLS configuration");
+
+  /* Reload TLS CA certificate directory */
+  if (nslcd_cfg->tls_cacertdir != NULL)
+  {
+    log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CACERTDIR,\"%s\")",
+            nslcd_cfg->tls_cacertdir);
+    LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CACERTDIR, nslcd_cfg->tls_cacertdir);
+  }
+
+  /* Reload TLS CA certificate file */
+  if (nslcd_cfg->tls_cacertfile != NULL)
+  {
+    log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CACERTFILE,\"%s\")",
+            nslcd_cfg->tls_cacertfile);
+    LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CACERTFILE, nslcd_cfg->tls_cacertfile);
+  }
+
+  /* Reload TLS random file */
+  if (nslcd_cfg->tls_randfile != NULL)
+  {
+    log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_RANDOM_FILE,\"%s\")",
+            nslcd_cfg->tls_randfile);
+    LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_RANDOM_FILE, nslcd_cfg->tls_randfile);
+  }
+
+  /* Reload TLS cipher suite */
+  if (nslcd_cfg->tls_ciphers != NULL)
+  {
+    log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CIPHER_SUITE,\"%s\")",
+            nslcd_cfg->tls_ciphers);
+    LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CIPHER_SUITE, nslcd_cfg->tls_ciphers);
+  }
+
+  /* Reload TLS client certificate file */
+  if (nslcd_cfg->tls_certfile != NULL)
+  {
+    log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CERTFILE,\"%s\")",
+            nslcd_cfg->tls_certfile);
+    LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CERTFILE, nslcd_cfg->tls_certfile);
+  }
+
+  /* Reload TLS client key file */
+  if (nslcd_cfg->tls_keyfile != NULL)
+  {
+    log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_KEYFILE,\"%s\")",
+            nslcd_cfg->tls_keyfile);
+    LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_KEYFILE, nslcd_cfg->tls_keyfile);
+  }
+
+  /* Reload TLS certificate requirement */
+  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_CERT,%s)",
+          print_tls_reqcert(nslcd_cfg->tls_reqcert));
+  LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_REQUIRE_CERT, &nslcd_cfg->tls_reqcert);
+
+#ifdef LDAP_OPT_X_TLS_REQUIRE_SAN
+  /* Reload TLS SAN requirement */
+  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_REQUIRE_SAN,%s)",
+          print_tls_reqcert(nslcd_cfg->tls_reqsan));
+  LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_REQUIRE_SAN, &nslcd_cfg->tls_reqsan);
+#endif /* LDAP_OPT_X_TLS_REQUIRE_SAN */
+
+#ifdef LDAP_OPT_X_TLS_CRLCHECK
+  /* Reload TLS CRL check mode */
+  log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CRLCHECK,%s)",
+          print_tls_crlcheck(nslcd_cfg->tls_crlcheck));
+  LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CRLCHECK, &nslcd_cfg->tls_crlcheck);
+#endif /* LDAP_OPT_X_TLS_CRLCHECK */
+
+#ifdef LDAP_OPT_X_TLS_CRLFILE
+  /* Reload TLS CRL file */
+  if (nslcd_cfg->tls_crlfile != NULL)
+  {
+    log_log(LOG_DEBUG, "ldap_set_option(LDAP_OPT_X_TLS_CRLFILE,\"%s\")",
+            nslcd_cfg->tls_crlfile);
+    LDAP_SET_OPTION(NULL, LDAP_OPT_X_TLS_CRLFILE, nslcd_cfg->tls_crlfile);
+  }
+#endif /* LDAP_OPT_X_TLS_CRLFILE */
+
+  log_log(LOG_INFO, "TLS configuration reloaded successfully");
+}
+#endif /* LDAP_OPT_X_TLS */

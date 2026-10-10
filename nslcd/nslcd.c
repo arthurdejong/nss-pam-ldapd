@@ -888,7 +888,7 @@ int main(int argc, char *argv[])
   /* enable receiving of signals */
   pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
   /* wait until we received a signal */
-  while ((nslcd_receivedsignal == 0) || (nslcd_receivedsignal == SIGUSR1))
+  while ((nslcd_receivedsignal == 0) || (nslcd_receivedsignal == SIGUSR1) || (nslcd_receivedsignal == SIGHUP))
   {
     sleep(INT_MAX); /* sleep as long as we can or until we receive a signal */
     if (nslcd_receivedsignal == SIGUSR1)
@@ -896,6 +896,15 @@ int main(int argc, char *argv[])
       log_log(LOG_INFO, "caught signal %s (%d), refresh retries",
               signame(nslcd_receivedsignal), nslcd_receivedsignal);
       myldap_immediate_reconnect();
+      nslcd_receivedsignal = 0;
+    }
+    else if (nslcd_receivedsignal == SIGHUP)
+    {
+      log_log(LOG_INFO, "caught signal %s (%d), reloading TLS configuration",
+              signame(nslcd_receivedsignal), nslcd_receivedsignal);
+#ifdef LDAP_OPT_X_TLS
+      cfg_reload_tls();
+#endif /* LDAP_OPT_X_TLS */
       nslcd_receivedsignal = 0;
     }
   }
