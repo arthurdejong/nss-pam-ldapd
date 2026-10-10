@@ -179,13 +179,13 @@ class DollarExpression(object):
         elif self.op in ('#', '##', '%', '%%'):
             regex = fnmatch.translate(self.expr.value(variables))
             # We mangle the regex to change its behaviour
-            regex = regex.replace(r'\Z', r'\z')
+            regex = regex.replace(r'\z', r'\Z')
             if self.op == '#':
                 # ${attr#word} remove shortest match of word
-                regex = regex.replace('*', '*?').replace(r'\z', r'(?P<replace>.*)\z')
+                regex = regex.replace('*', '*?').replace(r'\Z', r'(?P<replace>.*)\Z')
             elif self.op == '##':
                 # ${attr##word} remove longest match of word
-                regex = regex.replace(r'\z', r'(?P<replace>.*?)\z')
+                regex = regex.replace(r'\Z', r'(?P<replace>.*?)\Z')
             elif self.op == '%':
                 # ${attr%word} remove shortest match from right
                 regex = r'(?P<replace>.*)' + regex.replace('*', '*?')
