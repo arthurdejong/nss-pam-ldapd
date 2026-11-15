@@ -402,3 +402,6 @@ the distributor's bug tracking system. Please include as much information as
 possible (platform, output of configure if compilation fails, error messages,
 output of nslcd -d, etc). Patches are more than welcome (also see the file
 HACKING).
+
+For reporting security vulnerabilities see
+https://arthurdejong.org/nss-pam-ldapd/security
