@@ -250,17 +250,25 @@ int write_address(TFILE *fp, MYLDAP_ENTRY *entry, const char *attr,
 int read_address(TFILE *fp, char *addr, int *addrlen, int *af)
 {
   int32_t tmpint32;
-  int len;
+  int len, xlen;
   /* read address family */
   READ_INT32(fp, *af);
-  if ((*af != AF_INET) && (*af != AF_INET6))
+  if (*af == AF_INET)
+  {
+    xlen = 4;
+  }
+  else if (*af == AF_INET6)
+  {
+    xlen = 16;
+  }
+  else
   {
     log_log(LOG_WARNING, "incorrect address family specified: %d", *af);
     return -1;
   }
   /* read address length */
   READ_INT32(fp, len);
-  if ((len > *addrlen) || (len <= 0))
+  if ((len != xlen) || (len > *addrlen))
   {
     log_log(LOG_WARNING, "address length incorrect: %d", len);
     return -1;
