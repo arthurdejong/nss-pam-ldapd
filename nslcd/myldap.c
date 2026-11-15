@@ -1128,6 +1128,12 @@ int myldap_bind(MYLDAP_SESSION *session, const char *dn, const char *password,
   MYLDAP_SEARCH *search;
   static const char *attrs[2];
   int rc;
+  /* check parameters */
+  if ((session == NULL) || (dn == NULL) || (password == NULL))
+  {
+    log_log(LOG_ERR, "myldap_bind(): invalid parameter passed");
+    return LDAP_LOCAL_ERROR;
+  }
   /* error out when buffers are too small */
   if (strlen(dn) >= sizeof(session->binddn))
   {
