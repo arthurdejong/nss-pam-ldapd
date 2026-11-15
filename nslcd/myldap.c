@@ -1873,7 +1873,10 @@ static char **myldap_get_ranged_values(MYLDAP_ENTRY *entry, const char *attr)
       break;
     entry = myldap_get_entry(search, NULL);
     if (entry == NULL)
+    {
+      search = NULL;  /* search is closed by myldap_get_entry() */
       break;
+    }
   }
   /* close any started searches */
   if (search != NULL)
