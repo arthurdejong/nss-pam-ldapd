@@ -1811,7 +1811,7 @@ static char **myldap_get_ranged_values(MYLDAP_ENTRY *entry, const char *attr)
             (unsigned long) strlen(attr) + 10);
     return NULL;
   }
-  /* keep doing lookups untul we can't get any more results */
+  /* keep doing lookups until we can't get any more results */
   while (1)
   {
     /* go over all attributes to find the ranged attribute */
