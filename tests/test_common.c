@@ -2,7 +2,7 @@
    test_common.c - simple test for the common module
    This file is part of the nss-pam-ldapd library.
 
-   Copyright (C) 2008, 2009, 2011, 2012, 2013 Arthur de Jong
+   Copyright (C) 2008-2026 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <sys/stat.h>
 
@@ -40,6 +41,19 @@ static void test_isvalidname(void)
   assert(isvalidname("me"));    /* try short name */
   assert(isvalidname("f"));
   assert(isvalidname("(foo bar)"));
+}
+
+static void test_mysnprintf(void)
+{
+  char buffer[8];  /* fixed size buffer */
+  /* test normal string formatting */
+  assert(!mysnprintf(buffer, sizeof(buffer), "%s %d", "foo", 10));
+  assert(strcmp(buffer, "foo 10") == 0);
+  /* test string truncation (buffer too small) */
+  assert(mysnprintf(buffer, sizeof(buffer), "this string is much too long"));
+  assert(strcmp(buffer, "this st") == 0);
+  assert(mysnprintf(buffer, sizeof(buffer), "%s", "this string is much too long"));
+  assert(strcmp(buffer, "this st") == 0);
 }
 
 /* the main program... */
@@ -62,5 +76,6 @@ int main(int UNUSED(argc), char UNUSED(*argv[]))
   log_setdefaultloglevel(LOG_DEBUG);
   /* run the tests */
   test_isvalidname();
+  test_mysnprintf();
   return 0;
 }
