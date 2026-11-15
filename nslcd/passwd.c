@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2024 Arthur de Jong
+   Copyright (C) 2006-2026 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -82,7 +82,7 @@ static const char **passwd_attrs = NULL;
 
 /* create a search filter for searching a passwd entry
    by name, return -1 on errors */
-static int mkfilter_passwd_byname(const char *name,
+MUST_USE static int mkfilter_passwd_byname(const char *name,
                                   char *buffer, size_t buflen)
 {
   char safename[BUFLEN_SAFENAME];
@@ -99,7 +99,7 @@ static int mkfilter_passwd_byname(const char *name,
 
 /* create a search filter for searching a passwd entry
    by uid, return -1 on errors */
-static int mkfilter_passwd_byuid(uid_t uid, char *buffer, size_t buflen)
+MUST_USE static int mkfilter_passwd_byuid(uid_t uid, char *buffer, size_t buflen)
 {
   uid -= nslcd_cfg->nss_uid_offset;
   if (uidSid != NULL)
@@ -360,7 +360,7 @@ char *dn2uid(MYLDAP_SESSION *session, const char *dn, char *buf, size_t buflen)
   return uid;
 }
 
-MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session, const char *uid, int *rcp)
+MUST_USE MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session, const char *uid, int *rcp)
 {
   MYLDAP_SEARCH *search = NULL;
   MYLDAP_ENTRY *entry = NULL;

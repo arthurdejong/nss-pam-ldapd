@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2014 Arthur de Jong
+   Copyright (C) 2006-2026 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -63,8 +63,8 @@ const char *attmap_service_ipServiceProtocol = "ipServiceProtocol";
 /* the attribute list to request with searches */
 static const char *service_attrs[4];
 
-static int mkfilter_service_byname(const char *name, const char *protocol,
-                                   char *buffer, size_t buflen)
+MUST_USE static int mkfilter_service_byname(const char *name, const char *protocol,
+                                            char *buffer, size_t buflen)
 {
   char safename[BUFLEN_SAFENAME], safeprotocol[BUFLEN_SAFENAME];
   /* escape attributes */
@@ -90,8 +90,8 @@ static int mkfilter_service_byname(const char *name, const char *protocol,
                       service_filter, attmap_service_cn, safename);
 }
 
-static int mkfilter_service_bynumber(int number, const char *protocol,
-                                     char *buffer, size_t buflen)
+MUST_USE static int mkfilter_service_bynumber(int number, const char *protocol,
+                                              char *buffer, size_t buflen)
 {
   char safeprotocol[BUFLEN_SAFENAME];
   if (*protocol != '\0')

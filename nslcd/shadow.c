@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2014 Arthur de Jong
+   Copyright (C) 2006-2026 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -68,7 +68,7 @@ static const char *default_shadow_userPassword = "*"; /* unmatchable */
 /* the attribute list to request with searches */
 static const char **shadow_attrs = NULL;
 
-static int mkfilter_shadow_byname(const char *name, char *buffer, size_t buflen)
+MUST_USE static int mkfilter_shadow_byname(const char *name, char *buffer, size_t buflen)
 {
   char safename[BUFLEN_SAFENAME];
   /* escape attribute */

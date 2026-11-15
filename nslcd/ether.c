@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2017 Arthur de Jong
+   Copyright (C) 2006-2026 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -61,8 +61,8 @@ static const char *ether_attrs[3];
 
 /* create a search filter for searching an ethernet address
    by name, return -1 on errors */
-static int mkfilter_ether_byname(const char *name,
-                                 char *buffer, size_t buflen)
+MUST_USE static int mkfilter_ether_byname(const char *name,
+                                          char *buffer, size_t buflen)
 {
   char safename[BUFLEN_HOSTNAME];
   /* escape attribute */
@@ -88,8 +88,8 @@ static void my_ether_ntoa(const uint8_t *addr, char *buffer, int compact)
   *buffer++ = '\0';
 }
 
-static int mkfilter_ether_byether(const struct ether_addr *addr,
-                                  char *buffer, size_t buflen)
+MUST_USE static int mkfilter_ether_byether(const struct ether_addr *addr,
+                                           char *buffer, size_t buflen)
 {
   char addrstr1[20], addrstr2[20];
   my_ether_ntoa((const uint8_t *)addr, addrstr1, 1);

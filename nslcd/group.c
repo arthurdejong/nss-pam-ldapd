@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2006 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2015 Arthur de Jong
+   Copyright (C) 2006-2026 Arthur de Jong
    Copyright (C) 2013 Steve Hill
 
    This library is free software; you can redistribute it and/or
@@ -86,8 +86,8 @@ static const char **group_bymember_attrs = NULL;
 
 /* create a search filter for searching a group entry
    by name, return -1 on errors */
-static int mkfilter_group_byname(const char *name,
-                                 char *buffer, size_t buflen)
+MUST_USE static int mkfilter_group_byname(const char *name,
+                                          char *buffer, size_t buflen)
 {
   char safename[BUFLEN_SAFENAME];
   /* escape attribute */
@@ -103,7 +103,7 @@ static int mkfilter_group_byname(const char *name,
 
 /* create a search filter for searching a group entry
    by gid, return -1 on errors */
-static int mkfilter_group_bygid(gid_t gid, char *buffer, size_t buflen)
+MUST_USE static int mkfilter_group_bygid(gid_t gid, char *buffer, size_t buflen)
 {
   gid -= nslcd_cfg->nss_gid_offset;
   /* if searching for a Windows domain SID */
@@ -129,9 +129,9 @@ static int mkfilter_group_bygid(gid_t gid, char *buffer, size_t buflen)
 
 /* create a search filter for searching a group entry
    by member uid, return -1 on errors */
-static int mkfilter_group_bymember(MYLDAP_SESSION *session,
-                                   const char *uid,
-                                   char *buffer, size_t buflen)
+MUST_USE static int mkfilter_group_bymember(MYLDAP_SESSION *session,
+                                            const char *uid,
+                                            char *buffer, size_t buflen)
 {
   char dn[BUFLEN_DN];
   char safeuid[BUFLEN_SAFENAME];
@@ -160,8 +160,8 @@ static int mkfilter_group_bymember(MYLDAP_SESSION *session,
                     attmap_group_member, safedn);
 }
 
-static int mkfilter_group_bymemberdn(const char *dn,
-                                     char *buffer, size_t buflen)
+MUST_USE static int mkfilter_group_bymemberdn(const char *dn,
+                                              char *buffer, size_t buflen)
 {
   char safedn[BUFLEN_SAFEDN];
   /* escape DN */

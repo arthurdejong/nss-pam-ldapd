@@ -5,7 +5,7 @@
 
    Copyright (C) 1997-2005 Luke Howard
    Copyright (C) 2006 West Consulting
-   Copyright (C) 2006-2014 Arthur de Jong
+   Copyright (C) 2006-2026 Arthur de Jong
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -59,8 +59,8 @@ static const char *alias_attrs[3];
 
 /* create a search filter for searching an alias by name,
    return -1 on errors */
-static int mkfilter_alias_byname(const char *name,
-                                 char *buffer, size_t buflen)
+MUST_USE static int mkfilter_alias_byname(const char *name,
+                                          char *buffer, size_t buflen)
 {
   char safename[BUFLEN_SAFENAME];
   /* escape attribute */
