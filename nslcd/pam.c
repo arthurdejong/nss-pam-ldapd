@@ -2,7 +2,7 @@
    pam.c - pam processing routines
 
    Copyright (C) 2009 Howard Chu
-   Copyright (C) 2009-2018 Arthur de Jong
+   Copyright (C) 2009-2026 Arthur de Jong
    Copyright (C) 2015 Nokia Solutions and Networks
 
    This library is free software; you can redistribute it and/or
@@ -826,6 +826,14 @@ int nslcd_pam_pwmod(TFILE *fp, MYLDAP_SESSION *session, uid_t calleruid)
   /* check if the the user passed the rootpwmoddn */
   if (asroot)
   {
+    if (nslcd_cfg->rootpwmoddn == NULL)
+    {
+      log_log(LOG_NOTICE, "rootpwmoddn not configured");
+      /* we break the protocol */
+      memset(oldpassword, 0, sizeof(oldpassword));
+      memset(newpassword, 0, sizeof(newpassword));
+      return -1;
+    }
     binddn = nslcd_cfg->rootpwmoddn;
     /* check if rootpwmodpw should be used */
     if ((*oldpassword == '\0') && (calleruid == 0) &&
