@@ -380,7 +380,13 @@ MUST_USE MYLDAP_ENTRY *uid2entry(MYLDAP_SESSION *session, const char *uid, int *
   attrs[1] = attmap_passwd_uidNumber;
   attrs[2] = NULL;
   /* we have to look up the entry */
-  mkfilter_passwd_byname(uid, filter, sizeof(filter));
+  if (mkfilter_passwd_byname(uid, filter, sizeof(filter)))
+  {
+    log_log(LOG_ERR, "uid2entry(): filter buffer too small");
+    if (rcp != NULL)
+      *rcp = LDAP_INVALID_SYNTAX;
+    return NULL;
+  }
   for (i = 0; (i < NSS_LDAP_CONFIG_MAX_BASES) && ((base = passwd_bases[i]) != NULL); i++)
   {
     search = myldap_search(session, base, passwd_scope, filter, attrs, rcp);

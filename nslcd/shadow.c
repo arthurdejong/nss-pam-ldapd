@@ -290,7 +290,13 @@ MYLDAP_ENTRY *shadow_uid2entry(MYLDAP_SESSION *session, const char *username,
     return NULL;
   }
   /* we have to look up the entry */
-  mkfilter_shadow_byname(username, filter, sizeof(filter));
+  if (mkfilter_shadow_byname(username, filter, sizeof(filter)))
+  {
+    log_log(LOG_ERR, "uid2shadow(): filter buffer too small");
+    if (rcp != NULL)
+      *rcp = LDAP_INVALID_SYNTAX;
+    return NULL;
+  }
   for (i = 0; (i < NSS_LDAP_CONFIG_MAX_BASES) && ((base = shadow_bases[i]) != NULL); i++)
   {
     search = myldap_search(session, base, shadow_scope, filter, shadow_attrs, rcp);
