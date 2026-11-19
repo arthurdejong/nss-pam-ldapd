@@ -28,3 +28,5 @@ libdict_a_SOURCES = dict.c dict.h \
                     set.c set.h
 
 libexpr_a_SOURCES = expr.c expr.h
+
+noinst_HEADERS = gettext.h
