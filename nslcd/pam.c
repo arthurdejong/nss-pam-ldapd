@@ -349,7 +349,7 @@ static int check_shadow(MYLDAP_SESSION *session, const char *username,
     else if (today < lastchangedate)
       log_log(LOG_WARNING, "%s: %s: password changed in the future",
               myldap_get_dn(entry), attmap_shadow_shadowLastChange);
-    else if (maxdays != -1)
+    else if (maxdays > 0)
     {
       /* check maxdays */
       daysleft = lastchangedate + maxdays - today;
