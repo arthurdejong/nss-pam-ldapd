@@ -1208,7 +1208,6 @@ static MUST_USE char *get_base_from_rootdse(void)
   MYLDAP_SEARCH *search;
   MYLDAP_ENTRY *entry;
   const char *attrs[] = { "+", NULL };
-  int i;
   int rc;
   const char **values;
   char *base = NULL;
@@ -1224,7 +1223,7 @@ static MUST_USE char *get_base_from_rootdse(void)
     return NULL;
   }
   /* go over results */
-  for (i = 0; (entry = myldap_get_entry(search, &rc)) != NULL; i++)
+  while ((entry = myldap_get_entry(search, &rc)) != NULL)
   {
     /* get defaultNamingContext */
     values = myldap_get_values(entry, "defaultNamingContext");
