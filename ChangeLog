@@ -1,3 +1,261 @@
+2025-12-08  CHAPUIS Bertille <bertille.chapuis@alstomgroup.com>
+
+	* [d237dc6] man/nslcd.conf.5.xml, nslcd/cfg.c, nslcd/cfg.h,
+	  nslcd/group.c, nslcd/passwd.c: Add nss_min_gid option to filter
+	  users and groups
+
+	  This option, somewhat similarly to nss_min_uid will filter out
+	  users and groups with a GID from the LDAP server lower than a
+	  particular value.
+
+2024-07-06  Christopher Byrne <salah.coronya@gmail.com>
+
+	* [15de33b] common/Makefile.am, compat/Makefile.am, configure.ac,
+	  m4/ax_append_compile_flags.m4, m4/ax_append_flag.m4,
+	  m4/ax_check_compile_flag.m4, m4/ax_require_defined.m4,
+	  nslcd/Makefile.am, nss/Makefile.am, pam/Makefile.am,
+	  tests/Makefile.am: Pass extra compiler flags via automake variables
+
+	  The statements in configure.ac "pollute" the environmental
+	  variables.  This causes problem when --enable-warnings is set and
+	  clang is the compiler. It only works by accident on gcc because
+	  gcc aborts on illegal flags anyway, but clang does not which
+	  causes -Werror to get added to the check. One of the warning
+	  conflicts with that, causing it to be uncompiliable under clang.
+
+	  This patch removes the environmental polluation by storing
+	  the flags in automake variables. The flags are then added by
+	  automake. Also, there already a function in autoconf-archive to
+	  determine valid flags, so use that instead of the hand-rolled one.
+
+	  Signed-off-by: Christopher Byrne <salah.coronya@gmail.com>
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/pull/68
+
+2026-11-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3bd15be] nslcd/cfg.c: Simplify loop construction in
+	  get_base_from_rootdse()
+
+2026-11-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b9a3546] m4/ax_pthread.m4, m4/ax_python_module.m4, m4/ax_tls.m4:
+	  Update macros from autoconf-archive
+
+2026-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [441b9c6] README: Add pointer to README for reporting securty issues
+
+2026-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8fbea9a] nslcd/common.c: Check that address size matches
+	  address family
+
+	  This prevents an out-of-buffer read (data from the stack) when
+	  calling inet_ntop().
+
+	  Thanks to Andrey Vasilevsky for reporting this.
+
+2026-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a856d0d] tests/test_common.c: Add tests for mysprintf() function
+
+2026-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9b45176] nslcd/myldap.c: Add extra argument checking to
+	  myldap_bind()
+
+	  Thanks to Andrey Vasilevsky for reporting this.
+
+2026-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8b1cfc5] nslcd/myldap.c: Fix potential double free in
+	  myldap_get_ranged_values()
+
+	  The myldap_get_entry() function will close the search on error
+	  and this will prevent double closing of the search if some error
+	  in myldap_get_entry() occurs.
+
+	  Thanks to Andrey Vasilevsky for reporting this.
+
+2026-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9bd73ca] nslcd/myldap.c: Fix typo in comment
+
+2026-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b5bdefb] nslcd/passwd.c, nslcd/shadow.c: Add buffer length
+	  checking to search filters
+
+	  This makes the uid2entry() and shadow_uid2entry() functions
+	  more robust (not returning an entry instead of performing an
+	  LDAP search with an incomplete filter).
+
+	  Thanks to Andrey Vasilevsky for reporting this.
+
+2026-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b19675b] nslcd/alias.c, nslcd/ether.c, nslcd/group.c, nslcd/host.c,
+	  nslcd/netgroup.c, nslcd/network.c, nslcd/passwd.c, nslcd/protocol.c,
+	  nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c: Mark mkfilter_*()
+	  functions with __warn_unused_result__
+
+	  This ensures that the outcome of the function call is always
+	  checked.
+
+2026-11-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e0fd424] nslcd/pam.c: Fix crash when doing pwmod with asroot
+	  when rootpwmoddn is not set
+
+	  Thanks to Andrey Vasilevsky for reporting this crash (NULL
+	  pointer dereference) which could result in a local DoS of nslcd
+	  if it is not always restarted.
+
+2026-10-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [bb9f3aa] pynslcd/expr.py: Fix regex matching for older Python
+	  versions
+
+	  Fixes ad08f81
+
+2026-10-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ee1330d] pynslcd/expr.py: Avoid using the match keyword in Python
+
+2026-10-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ad08f81] pynslcd/expr.py: Fix problem with Python version >= 3.14
+
+	  The fnmatch.translate() match function now returns \z instead
+	  of \Z which we relied upon to mangle the regular expression.
+
+	  This also fixes and improves the comments in the code.
+
+2026-10-08  Anya Shanahan <codedev@neverten.org>
+
+	* [30aba46] compat/pam_compat.h, pam/pam.c: Fix multithreaded use
+	  of PAM module
+
+	  This corrects the guard variable used to check for the existance
+	  of the pam_modutil_getpwnam() function.
+
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/pull/87
+	  Closes https://github.com/arthurdejong/nss-pam-ldapd/issues/86
+
+2026-10-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5fd15cc] .github/workflows/test.yml: Update GitHub actions
+
+	  This also explicitly sets workflow permissions.
+
+2026-10-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [33cc4d7] INSTALL, ar-lib, compile, config.guess, config.sub,
+	  depcomp, install-sh, missing, mkinstalldirs, py-compile,
+	  test-driver: Update files from latest automake
+
+2026-08-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b115326] .github/workflows/test.yml: Drop GitHub CodeQL action
+
+	  This is now configured with the default setup.
+
+2026-08-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d8bc607] nslcd/myldap.c: Ensure myldap_get_values_bin() returns
+	  large enough values
+
+	  This ensurs that myldap_get_values_bin() for each entry will
+	  at least return a buffer of 68 bytes per entry. This is needed
+	  to ensure that the binsid2id() function can assume the buffer
+	  always at least has this size to avoid and out-of-bounds read
+	  when the LDAP server returns an invalid binary SID value.
+
+	  Fixes https://github.com/arthurdejong/nss-pam-ldapd/issues/85
+
+2026-08-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f02fba8] nslcd/group.c, nslcd/myldap.c, nslcd/myldap.h,
+	  nslcd/passwd.c: Rename myldap_get_values_len() to
+	  myldap_get_values_bin()
+
+2026-08-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c1720c5] nslcd/common.c: Limit the number of sub-authorities
+	  to parse from a SID
+
+	  See https://github.com/arthurdejong/nss-pam-ldapd/issues/85
+
+2026-08-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [76abe05] COPYING, Makefile.am, README, common/Makefile.am,
+	  common/dict.c, common/dict.h, common/expr.c, common/expr.h,
+	  common/nslcd-prot.c, common/nslcd-prot.h, common/set.c,
+	  common/set.h, common/tio.c, common/tio.h, compat/Makefile.am,
+	  compat/attrs.h, compat/derefctrl.c, compat/ether.c,
+	  compat/ether.h, compat/getopt_long.c, compat/getopt_long.h,
+	  compat/getpeercred.c, compat/getpeercred.h,
+	  compat/ldap_compat.h, compat/ldap_initialize.c,
+	  compat/ldap_parse_passwordpolicy_control.c, compat/ldap_passwd_s.c,
+	  compat/ldap_passwordpolicy_err2txt.c, compat/nss_compat.h,
+	  compat/pagectrl.c, compat/pam_compat.h, compat/pam_get_authtok.c,
+	  compat/pam_prompt.c, compat/shell.h, compat/socket.h,
+	  compat/strndup.c, compat/strndup.h, configure.ac, man/Makefile.am,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml,
+	  nslcd.h, nslcd/Makefile.am, nslcd/alias.c, nslcd/attmap.c,
+	  nslcd/attmap.h, nslcd/cfg.c, nslcd/cfg.h, nslcd/common.c,
+	  nslcd/common.h, nslcd/config.c, nslcd/daemonize.c,
+	  nslcd/daemonize.h, nslcd/ether.c, nslcd/group.c, nslcd/host.c,
+	  nslcd/invalidator.c, nslcd/log.c, nslcd/log.h, nslcd/myldap.c,
+	  nslcd/myldap.h, nslcd/netgroup.c, nslcd/network.c, nslcd/nslcd.c,
+	  nslcd/nsswitch.c, nslcd/pam.c, nslcd/passwd.c, nslcd/protocol.c,
+	  nslcd/rpc.c, nslcd/service.c, nslcd/shadow.c, nslcd/usermod.c,
+	  nss/Makefile.am, nss/aliases.c, nss/bsdnss.c, nss/common.c,
+	  nss/common.h, nss/ethers.c, nss/group.c, nss/hosts.c,
+	  nss/netgroup.c, nss/networks.c, nss/passwd.c, nss/protocols.c,
+	  nss/prototypes.h, nss/rpc.c, nss/services.c, nss/shadow.c,
+	  nss/solnss.c, nss/solnss.h, pam/Makefile.am, pam/common.h,
+	  pam/pam.c, pynslcd/Makefile.am, pynslcd/alias.py, pynslcd/attmap.py,
+	  pynslcd/cache.py, pynslcd/cfg.py, pynslcd/common.py,
+	  pynslcd/config.py, pynslcd/constants.py.in, pynslcd/ether.py,
+	  pynslcd/expr.py, pynslcd/group.py, pynslcd/host.py,
+	  pynslcd/invalidator.py, pynslcd/mypidfile.py, pynslcd/netgroup.py,
+	  pynslcd/network.py, pynslcd/pam.py, pynslcd/passwd.py,
+	  pynslcd/protocol.py, pynslcd/pynslcd.py, pynslcd/rpc.py,
+	  pynslcd/search.py, pynslcd/service.py, pynslcd/shadow.py,
+	  pynslcd/tio.py, pynslcd/usermod.py, tests/Makefile.am,
+	  tests/common.h, tests/lookup_groupbyuser.c, tests/lookup_netgroup.c,
+	  tests/lookup_shadow.c, tests/setup_slapd.sh, tests/test_attmap.c,
+	  tests/test_cfg.c, tests/test_clock.c, tests/test_common.c,
+	  tests/test_dict.c, tests/test_doctest.sh, tests/test_expr.c,
+	  tests/test_flake8.sh, tests/test_getpeercred.c,
+	  tests/test_ldapcmds.sh, tests/test_manpages.sh,
+	  tests/test_myldap.c, tests/test_myldap.sh, tests/test_nsscmds.sh,
+	  tests/test_pamcmds.expect, tests/test_pamcmds.sh,
+	  tests/test_pycompile.sh, tests/test_pylint.sh,
+	  tests/test_pynslcd_cache.py, tests/test_set.c, tests/test_tio.c,
+	  tests/test_tio_timeout.c, tests/testenv.sh, utils/Makefile.am,
+	  utils/chsh.py, utils/cmdline.py, utils/getent.py, utils/nslcd.py,
+	  utils/shells.py, utils/users.py: Update LGPL to latest 2.1 version
+
+	  This mostly replaces the FSF physical address with their web site.
+
+2025-02-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8ddb983] nslcd/cfg.c: Fix variable name (bool) which is a
+	  keyword in C23
+
+	  Closes https://bugs.debian.org/1097481
+
+2025-02-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5f4aacc] AUTHORS, ChangeLog, NEWS, README, configure.ac,
+	  man/chsh.ldap.1.xml, man/getent.ldap.1.xml, man/nslcd.8.xml,
+	  man/nslcd.conf.5.xml, man/pam_ldap.8.xml, man/pynslcd.8.xml,
+	  nslcd/nslcd.c: Get files ready for 0.9.13 release
+
 2025-02-09  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [e5ee16f] INSTALL, ar-lib, compile, depcomp, install-sh,

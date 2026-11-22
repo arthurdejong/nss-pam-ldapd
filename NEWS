@@ -1,3 +1,22 @@
+changes from 0.9.13 to 0.9.14
+-----------------------------
+
+* add nss_min_gid option to filter users and groups (thanks CHAPUIS Bertille)
+* fix NULL pointer dereference when doing a pwmod request with asroot and no
+  rootpwmoddn configured (thanks Andrey Vasilevsky)
+* fix potential out-of-buffer read with unexpected objectSid response from
+  LDAP server (thanks afldl)
+* fix potential double free if the LDAP server has an unexpected response
+  while performing a search (thanks Andrey Vasilevsky)
+* fix potential out-of-buffer read by validating address lengths
+  (thanks Andrey Vasilevsky)
+* fix for multi-threaded use of the PAM module (thanks Anya Shanahan)
+* replace `bool` variable for C23 compatibility
+* add support for Python 3.13 in pynslcd
+* pass extra compiler flags via automake variables (thanks Christopher Byrne)
+* some minor refactoring and robustness improvements
+
+
 changes from 0.9.12 to 0.9.13
 -----------------------------
 
