@@ -50,6 +50,11 @@ sasl_authzid = None  # FIXME: add support
 sasl_secprops = None  # FIXME: add support
 sasl_canonicalize = None  # FIXME: add support
 
+# GSS-API configuration
+krb5_ccname = None  # FIXME: add support
+krb5_keytab = None  # FIXME: add support
+krb5_gssproxy = False  # FIXME: add support
+
 # LDAP bases to search
 bases = []
 # default search scope for searches
@@ -199,9 +204,10 @@ def read(filename):  # noqa: C901 (many simple branches)
         # parse options with a single value that can contain spaces
         m = re.match(
             r'(?P<keyword>binddn|rootpwmoddn|sasl_realm|sasl_authcid|'
-            r'sasl_authzid|sasl_secprops|krb5_ccname|tls_cacertdir|'
-            r'tls_cacertfile|tls_randfile|tls_ciphers|tls_cert|tls_key|'
-            r'pam_password_prohibit_message)\s+(?P<value>\S.*)',
+            r'sasl_authzid|sasl_secprops|krb5_ccname|krb5_keytab|'
+            r'krb5_gssproxy|tls_cacertdir|tls_cacertfile|tls_randfile|'
+            r'tls_ciphers|tls_cert|tls_key|pam_password_prohibit_message)'
+            r'\s+(?P<value>\S.*)',
             line, re.IGNORECASE)
         if m:
             globals()[m.group('keyword').lower()] = m.group('value')

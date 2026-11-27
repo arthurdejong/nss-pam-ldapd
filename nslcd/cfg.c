@@ -580,6 +580,39 @@ static void handle_krb5_ccname(const char *filename, int lnr,
 #endif /* HAVE_GSS_KRB5_CCACHE_NAME */
 }
 
+static void handle_krb5_ktname(const char *filename, int lnr,
+                               const char *keyword, char *line)
+{
+  char token[80];
+  const char *ktname;
+  const char *ktfile;
+  size_t ktenvlen;
+  char *ktenv;
+  /* get token */
+  check_argumentcount(filename, lnr, keyword,
+                      (get_token(&line, token, sizeof(token)) != NULL));
+  get_eol(filename, lnr, keyword, &line);
+  /* set default kerberos client keytab for SASL-GSSAPI */
+  ktname = token;
+  /* check that keytab exists and is readable if it is a file */
+  if (strncasecmp(ktname, "FILE:", sizeof("FILE:") - 1) == 0)
+  {
+    ktfile = strchr(ktname, ':') + 1;
+    check_readable(filename, lnr, keyword, ktfile);
+  }
+  /* set the environment variable (we have a memory leak if this option
+     is set multiple times) */
+  ktenvlen = strlen(ktname) + sizeof("KRB5_CLIENT_KTNAME=");
+  ktenv = (char *)malloc(ktenvlen);
+  if (ktenv == NULL)
+  {
+    log_log(LOG_CRIT, "malloc() failed to allocate memory");
+    exit(EXIT_FAILURE);
+  }
+  mysnprintf(ktenv, ktenvlen, "KRB5_CLIENT_KTNAME=%s", ktname);
+  putenv(ktenv);
+}
+
 static enum ldap_map_selector parse_map(const char *value)
 {
   if ((strcasecmp(value, "alias") == 0) || (strcasecmp(value, "aliases") == 0))
@@ -1502,6 +1535,16 @@ static void cfg_read(const char *filename, struct ldap_config *cfg)
     {
       handle_krb5_ccname(filename, lnr, keyword, line);
     }
+    else if (strcasecmp(keyword, "krb5_ktname") == 0)
+    {
+      handle_krb5_ktname(filename, lnr, keyword, line);
+    }
+    else if (strcasecmp(keyword, "krb5_gssproxy") == 0)
+    {
+      if (get_boolean(filename, lnr, keyword, &line))
+        putenv("GSS_USE_PROXY=1");
+      get_eol(filename, lnr, keyword, &line);
+    }
     /* search/mapping options */
     else if (strcasecmp(keyword, "base") == 0)
     {
@@ -1874,6 +1917,12 @@ static void cfg_dump(void)
   str = getenv("KRB5CCNAME");
   if (str != NULL)
     log_log(LOG_DEBUG, "CFG: krb5_ccname %s", str);
+  str = getenv("KRB5_CLIENT_KTNAME");
+  if (str != NULL)
+    log_log(LOG_DEBUG, "CFG: krb5_ktname %s", str);
+  str = getenv("GSS_USE_PROXY");
+  if (str != NULL)
+    log_log(LOG_DEBUG, "CFG: krb5_gssproxy %s", str);
   for (i = 0; i < NSS_LDAP_CONFIG_MAX_BASES; i++)
     if (nslcd_cfg->bases[i] != NULL)
       log_log(LOG_DEBUG, "CFG: base %s", nslcd_cfg->bases[i][0] == '\0' ? "\"\"" : nslcd_cfg->bases[i]);
